@@ -1,0 +1,16 @@
+[
+{
+  "modid": "replaymod",
+  "name": "Replay Mod",
+  "description": "Example placeholder mod.",
+  "version": "0.0.1",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["CrushedPixel"],
+  "credits": "Johni0702 for helping me out!",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
