@@ -1,14 +1,14 @@
-package eu.crushedpixel.replaymod.unused;
+package eu.crushedpixel.replaymod.holders;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.Packet;
 
-public class DataReciever {
+public class PacketData {
 
 	private byte[] array;
 	private int timestamp;
 	
-	public DataReciever(byte[] array, int timestamp) {
+	public PacketData(byte[] array, int timestamp) {
 		this.array = array;
 		this.timestamp = timestamp;
 	}

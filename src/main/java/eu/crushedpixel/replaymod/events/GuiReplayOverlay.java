@@ -54,7 +54,7 @@ public class GuiReplayOverlay extends Gui {
 
 	private int ppButtonX = 10;
 	private int ppButtonY = 10;
-	
+
 	private int r_ppButtonX = 10;
 	private int r_ppButtonY = realTimelineY+1;
 
@@ -191,8 +191,10 @@ public class GuiReplayOverlay extends Gui {
 			}
 
 		} else {
-			speedSlider.mouseReleased(mouseX, mouseY);
-			mouseDown = false;
+			try {
+				speedSlider.mouseReleased(mouseX, mouseY);
+				mouseDown = false;
+			} catch(Exception e) {}
 		}
 
 
@@ -605,10 +607,10 @@ public class GuiReplayOverlay extends Gui {
 				this.drawModalRectWithCustomSizedTexture((int)real_x, ry, dx, dy, 5, 5, 64, 64);
 			}
 		}
-		
+
 		//Draw Play/Pause Button
 		//Play/Pause button
-		
+
 		int dx = 0;
 		int dy = 0;
 
@@ -633,7 +635,7 @@ public class GuiReplayOverlay extends Gui {
 
 		GlStateManager.resetColor();
 		this.drawModalRectWithCustomSizedTexture(r_ppButtonX, r_ppButtonY, dx, dy, 20, 20, 64, 64);
-		
+
 		//Handling the click on the Replay starter
 		if(hover && Mouse.isButtonDown(0) && isClick()) {
 			if(ReplayHandler.isReplaying()) {

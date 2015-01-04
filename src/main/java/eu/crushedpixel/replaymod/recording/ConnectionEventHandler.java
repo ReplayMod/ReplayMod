@@ -35,15 +35,15 @@ public class ConnectionEventHandler {
 
 	private File currentFile;
 	private String fileName;
-	
+
 	private static PacketListener packetListener = null;
 
 	private static boolean isRecording = false;
-	
+
 	public static boolean isRecording() {
 		return isRecording;
 	}
-	
+
 	public static void insertPacket(Packet packet) {
 		if(!isRecording || packetListener == null) {
 			System.out.println("Invalid attempt to insert Packet!");
@@ -55,7 +55,7 @@ public class ConnectionEventHandler {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
 		System.out.println("Connected to server");
@@ -101,17 +101,10 @@ public class ConnectionEventHandler {
 
 			PacketListener insert = null;
 
-			if(event.isLocal) {
-				pipeline.addBefore(packetHandlerKey, "replay_recorder", insert = new PacketListener(currentFile, fileName, worldName, System.currentTimeMillis(), maxFileSize));
-				ChatMessageRequests.addChatMessage("Recording started!", ChatMessageType.INFORMATION);
-				isRecording = true;
-
-			} else {
-				//pipeline.addBefore(decoderKey, "replay_recorder", insert = new DataListener(currentFile, fileName, worldName, System.currentTimeMillis(), maxFileSize));
-				pipeline.addBefore(packetHandlerKey, "replay_recorder", insert = new PacketListener(currentFile, fileName, worldName, System.currentTimeMillis(), maxFileSize));
-				ChatMessageRequests.addChatMessage("Recording started!", ChatMessageType.INFORMATION);
-				isRecording = true;
-			}
+			pipeline.addBefore(packetHandlerKey, "replay_recorder", insert = new PacketListener
+					(currentFile, fileName, worldName, System.currentTimeMillis(),  maxFileSize, event.isLocal));
+			ChatMessageRequests.addChatMessage("Recording started!", ChatMessageType.INFORMATION);
+			isRecording = true;
 
 			final PacketListener listener = insert;
 
@@ -139,7 +132,7 @@ public class ConnectionEventHandler {
 					}
 				}).start();
 			}
-			
+
 			packetListener = listener;
 
 		} catch(Exception e) {

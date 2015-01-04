@@ -15,17 +15,19 @@ import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
 import net.minecraft.network.play.server.S0FPacketSpawnMob;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
+import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 
 public class PacketListener extends DataListener {
 
-	public PacketListener(File file, String name, String worldName, long startTime, int maxSize) throws FileNotFoundException {
-		super(file, name, worldName, startTime, maxSize);
-		isPacketListener = true;
+	public PacketListener(File file, String name, String worldName, long startTime, int maxSize, boolean singleplayer) throws FileNotFoundException {
+		super(file, name, worldName, startTime, maxSize, singleplayer);
 	}
 	
 	private ChannelHandlerContext context = null;
 
+	private static final PacketSerializer packetSerializer = new PacketSerializer(EnumPacketDirection.CLIENTBOUND);
+	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		if(ctx == null) {
@@ -44,11 +46,11 @@ public class PacketListener extends DataListener {
 			try {
 				Packet packet = (Packet)msg;
 				
+				if(startTime == null) startTime = System.currentTimeMillis();
+				
 				int timestamp = (int)(System.currentTimeMillis() - startTime);
 
 				//Converts the packet back to a ByteBuffer for correct saving
-
-				PacketSerializer ps = new PacketSerializer(EnumPacketDirection.CLIENTBOUND);
 
 				ByteBuf bb = Unpooled.buffer();
 				if(packet instanceof S0FPacketSpawnMob) {
@@ -71,12 +73,11 @@ public class PacketListener extends DataListener {
 					}
 				}
 				
-				ps.encode(ctx, packet, bb);
+				packetSerializer.encode(ctx, packet, bb);
 
 				bb.readerIndex(0);
 				byte[] array = new byte[bb.readableBytes()];
 				bb.readBytes(array);
-
 
 				totalBytes += (array.length + (2*4)); //two Integer values and the Packet size
 				if(totalBytes >= maxSize && maxSize > 0) {
@@ -87,11 +88,9 @@ public class PacketListener extends DataListener {
 
 				bb.readerIndex(0);
 
-				out.writeInt(timestamp); //Timestamp
-				out.writeInt(array.length); //Lenght
-				out.write(array);
-				out.flush();
+				dataWriter.writeData(new PacketData(array, timestamp));
 
+				lastSentPacket = timestamp;
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
