@@ -347,8 +347,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			ByteBuf bb = Unpooled.wrappedBuffer(ba);
 			PacketBuffer pb = new PacketBuffer(bb);
 
-			pb.writeBytes(ba);
-
 			int i = pb.readVarIntFromBuffer();
 
 			Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
