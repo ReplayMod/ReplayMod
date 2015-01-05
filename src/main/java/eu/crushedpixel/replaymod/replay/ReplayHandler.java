@@ -284,7 +284,7 @@ public class ReplayHandler {
 		return 0;
 	}
 
-	public static void startReplay(File file) throws NoSuchMethodException, SecurityException, NoSuchFieldException {	
+	public static void startReplay(File file) throws NoSuchMethodException, SecurityException, NoSuchFieldException {
 		
 		ChatMessageRequests.initialize();
 		mc.ingameGUI.getChatGUI().clearChatMessages();

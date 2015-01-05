@@ -319,7 +319,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	});
 
 	private List<Class> packetClasses = new ArrayList<Class>();
-
+	
 	private static Field field_149074_a; //TODO: REMOVE
 	static {
 		try {
@@ -344,7 +344,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		byte[] ba = (byte[])msg;
 
 		try {
-			ByteBuf bb = Unpooled.buffer(ba.length);
+			ByteBuf bb = Unpooled.wrappedBuffer(ba);
 			PacketBuffer pb = new PacketBuffer(bb);
 
 			pb.writeBytes(ba);
@@ -393,24 +393,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			if(p instanceof S02PacketChat) {
 				byte pos = (Byte)chatPacketPosition.get(p);
 				if(pos == 1) { //Ignores command block output sent
-					return;
-				}
-			}
-
-			if(p instanceof S1CPacketEntityMetadata) {
-				int entityId = (Integer)metadataPacketEntityId.get(p);
-			}
-
-			if(p instanceof S0BPacketAnimation) {
-				int entityId = (Integer)animationPacketEntityId.get(p);
-				if(entityId == 0) {
-					return;
-				}
-			}
-
-			if(p instanceof S1DPacketEntityEffect) {
-				int entityId = (Integer)effectPacketEntityId.get(p);
-				if(entityId == 0) {
 					return;
 				}
 			}
@@ -468,7 +450,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 									e.printStackTrace();
 								}
 							}
-
 
 							Entity ent = ReplayHandler.getCameraEntity();
 							if(ent == null || !(ent instanceof CameraEntity)) ent = new CameraEntity(mc.theWorld);

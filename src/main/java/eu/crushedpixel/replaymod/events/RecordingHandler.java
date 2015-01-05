@@ -1,10 +1,11 @@
 package eu.crushedpixel.replaymod.events;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 import java.io.IOException;
 import java.util.UUID;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -14,6 +15,8 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
 import net.minecraft.network.play.server.S14PacketEntity.S17PacketEntityLookMove;
 import net.minecraft.network.play.server.S18PacketEntityTeleport;
+import net.minecraft.network.play.server.S38PacketPlayerListItem;
+import net.minecraft.network.play.server.S38PacketPlayerListItem.Action;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -31,6 +34,27 @@ public class RecordingHandler {
 		if(e.entity != mc.thePlayer) return;
 		if(!ConnectionEventHandler.isRecording()) return;
 		
+		EntityPlayer player = (EntityPlayer)e.entity;
+		
+		S38PacketPlayerListItem ppli = new S38PacketPlayerListItem();
+		ByteBuf buf = Unpooled.buffer();
+		PacketBuffer pbuf = new PacketBuffer(buf);
+		
+		pbuf.writeEnumValue(Action.ADD_PLAYER);
+		pbuf.writeVarIntToBuffer(1);
+		pbuf.writeUuid(e.entity.getUniqueID());
+		
+		pbuf.writeString(player.getName());
+		pbuf.writeVarIntToBuffer(0);
+		pbuf.writeVarIntToBuffer(mc.playerController.getCurrentGameType().getID());
+		pbuf.writeVarIntToBuffer(0);
+		
+		pbuf.writeBoolean(true);
+		pbuf.writeChatComponent(player.getDisplayName());
+		
+		ppli.readPacketData(pbuf);
+		ConnectionEventHandler.insertPacket(ppli);
+		
 		//Packet packet = new S0CPacketSpawnPlayer((EntityPlayer)e.entity);
 		Packet packet = new S0CPacketSpawnPlayer();
 		
@@ -39,7 +63,7 @@ public class RecordingHandler {
 		
 		pb.writeVarIntToBuffer(entityID);
 		//pb.writeUuid((e.entity).getUniqueID());
-		pb.writeUuid(UUID.randomUUID());
+		pb.writeUuid(e.entity.getUniqueID());
 		
 		pb.writeInt(MathHelper.floor_double(e.entity.posX * 32.0D));
 		pb.writeInt(MathHelper.floor_double(e.entity.posY * 32.0D));
