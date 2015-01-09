@@ -47,6 +47,7 @@ import net.minecraft.network.play.server.S37PacketStatistics;
 import net.minecraft.network.play.server.S39PacketPlayerAbilities;
 import net.minecraft.network.play.server.S43PacketCamera;
 import net.minecraft.network.play.server.S45PacketTitle;
+import net.minecraft.network.play.server.S48PacketResourcePackSend;
 import net.minecraft.network.play.server.S14PacketEntity.S17PacketEntityLookMove;
 import net.minecraft.util.Timer;
 import net.minecraft.world.EnumDifficulty;
@@ -73,8 +74,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private boolean hurryToTimestamp;
 	private long desiredTimeStamp;
 	private long lastTimeStamp, lastPacketSent;
-
-	private long toleratedTimeStamp;
 
 	private File replayFile;
 	private PacketDeserializer ds = new PacketDeserializer(EnumPacketDirection.SERVERBOUND);
@@ -138,24 +137,11 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		}
 	}
 
-	public void jumpToTime(int millis, boolean forceReload) {
+	public void jumpToTime(int millis) {
 		setReplaySpeed(replaySpeed);
 
-		if((millis < currentTimeStamp && !isHurrying()) || forceReload) {
-			if(forceReload) System.out.println("forced");
-			if(ReplayHandler.isReplaying()) {
-				if(forceReload) {
-					startFromBeginning = true;
-				}
-				else {
-					startFromBeginning = false;
-					desiredTimeStamp = millis;
-					hurryToTimestamp = false;
-					return;
-				}
-			} else {
-				startFromBeginning = true;
-			}
+		if((millis < currentTimeStamp && !isHurrying())) {
+			startFromBeginning = true;
 		}
 
 		desiredTimeStamp = millis;
@@ -276,17 +262,20 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							 * If hurrying, don't wait for correct timing.
 							 */
 
+							/*
 							if(!hurryToTimestamp && ReplayHandler.isReplaying()) {
 								continue;
 							} else if(ReplayHandler.isReplaying()) {
 								System.out.println("nocont "+currentTimeStamp+" | "+((Timer)mcTimer.get(mc)).timerSpeed);
 							}
+							 */
 
 							int timestamp = dis.readInt();
 
 							currentTimeStamp = timestamp;
 
-							if(!ReplayHandler.isReplaying() && !hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
+							//if(!ReplayHandler.isReplaying() && !hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
+							if(!hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
 								int timeWait = (int)Math.round((currentTimeStamp - lastTimeStamp)/replaySpeed);
 								long timeDiff = System.currentTimeMillis() - lastPacketSent;
 								lastPacketSent = System.currentTimeMillis();
@@ -302,7 +291,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							lastTimeStamp = currentTimeStamp;
 
 							if(hurryToTimestamp && currentTimeStamp >= desiredTimeStamp && !startFromBeginning) {
-								toleratedTimeStamp = currentTimeStamp;
 								hurryToTimestamp = false;
 								System.out.println("stop hurrying");
 							}
@@ -318,18 +306,21 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		}
 	});
 
-	private List<Class> packetClasses = new ArrayList<Class>();
-	
-	private static Field field_149074_a; //TODO: REMOVE
-	static {
-		try {
-			field_149074_a = S14PacketEntity.class.getDeclaredField(MCPNames.field("field_149074_a"));
-			field_149074_a.setAccessible(true);
-		} catch(Exception e) {
-			e.printStackTrace();
+	private ArrayList<Class> badPackets = new ArrayList<Class>() {
+		{
+			add(S28PacketEffect.class);
+			add(S48PacketResourcePackSend.class);
+			add(S2BPacketChangeGameState.class);
+			add(S06PacketUpdateHealth.class);
+			add(S2DPacketOpenWindow.class);
+			add(S2EPacketCloseWindow.class);
+			add(S2FPacketSetSlot.class);
+			add(S30PacketWindowItems.class);
+			add(S36PacketSignEditorOpen.class);
+			add(S37PacketStatistics.class);
 		}
-	}
-
+	};
+	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 			throws Exception {
@@ -356,52 +347,19 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 						p instanceof S29PacketSoundEffect) return;
 			}
 
-			if(p instanceof S28PacketEffect) {
-				return;
-			}
-
-			if(p instanceof S2BPacketChangeGameState) { //TODO: Test with rain
-				return;
-			}
-
-			if(p instanceof S06PacketUpdateHealth) {
-				return;
-			}
-
-			if(p instanceof S2DPacketOpenWindow) {
-				return;
-			}
-
-			if(p instanceof S2EPacketCloseWindow) {
-				return;
-			}
-
-			if(p instanceof S2FPacketSetSlot) {
-				return;
-			}
-
-			if(p instanceof S30PacketWindowItems) {
-				return;
-			}
-
-			if(p instanceof S36PacketSignEditorOpen) {
-				return;
-			}
-
 			if(p instanceof S02PacketChat) {
 				byte pos = (Byte)chatPacketPosition.get(p);
 				if(pos == 1) { //Ignores command block output sent
 					return;
 				}
 			}
-
-			if(p instanceof S37PacketStatistics) {
-				return;
-			}
+			
+			if(badPackets.contains(p.getClass())) return;
 
 			try {
 				p.readPacketData(pb);
 
+				/*
 				if(p instanceof S0CPacketSpawnPlayer) {
 					S0CPacketSpawnPlayer sp = (S0CPacketSpawnPlayer)p;
 					System.out.println("PACKET SPAWN PLAYER ----------");
@@ -415,7 +373,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 					System.out.println("ITEM: "+sp.func_148947_k());
 					System.out.println("PACKET END -------------------");
 				}
-				
+				 */
+
 				if(p instanceof S01PacketJoinGame) {
 
 					int entId = (Integer)joinPacketEntityId.get(p);
@@ -464,8 +423,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				if(p instanceof S43PacketCamera) {
 					return;
 				}
-				if(ReplayHandler.isReplaying())
-					System.out.println("packet arrived");
+				//if(ReplayHandler.isReplaying())
+				//	System.out.println("packet arrived");
 				super.channelRead(ctx, p);
 			} catch(Exception e) {
 				System.out.println(p.getClass());

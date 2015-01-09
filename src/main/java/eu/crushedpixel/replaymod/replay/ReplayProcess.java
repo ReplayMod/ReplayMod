@@ -48,11 +48,13 @@ public class ReplayProcess {
 		ReplayHandler.sortKeyframes();
 		ReplayHandler.setReplaying(true);
 		previousReplaySpeed = ReplayHandler.getSpeed();
+		/*
 		TimeKeyframe tf = ReplayHandler.getNextTimeKeyframe(-1);
 		if(tf != null) {
 			int ts = tf.getTimestamp();
-			ReplayHandler.setReplayPos(ts, true);
+			ReplayHandler.setReplayPos(ts);
 		}
+		*/
 		ChatMessageRequests.addChatMessage("Replay started!", ChatMessageType.INFORMATION);
 	}
 
@@ -66,6 +68,7 @@ public class ReplayProcess {
 
 	public static void tickReplay() {
 		if(!ReplayHandler.isReplaying()) return;
+		
 		if(ReplayHandler.isHurrying()) {
 			lastRealTime = System.currentTimeMillis();
 			System.out.println("rethurrn");

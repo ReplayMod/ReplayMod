@@ -230,9 +230,9 @@ public class ReplayHandler {
 		selectKeyframe(null);
 	}
 
-	public static void setReplayPos(int pos, boolean force) {
+	public static void setReplayPos(int pos) {
 		if(replaySender != null) {
-			replaySender.jumpToTime(pos, force);
+			replaySender.jumpToTime(pos);
 		}
 	}
 	

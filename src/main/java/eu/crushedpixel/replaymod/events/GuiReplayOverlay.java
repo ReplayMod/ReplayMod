@@ -186,7 +186,7 @@ public class GuiReplayOverlay extends Gui {
 						mc.displayGuiScreen((GuiScreen)null);
 					}
 
-					ReplayHandler.setReplayPos((int)time, false);
+					ReplayHandler.setReplayPos((int)time);
 				}
 			}
 
