@@ -33,6 +33,8 @@ public class ReplayHandler {
 	private static ReplaySender replaySender;
 	private static OpenEmbeddedChannel channel;
 
+	private static int realTimelinePosition = 0;
+	
 	private static Keyframe selectedKeyframe;
 
 	private static boolean isReplaying = false;
@@ -232,7 +234,13 @@ public class ReplayHandler {
 
 	public static void setReplayPos(int pos) {
 		if(replaySender != null) {
-			replaySender.jumpToTime(pos);
+			replaySender.jumpToTime(pos, false);
+		}
+	}
+	
+	public static void forceReplayPos(int pos) {
+		if(replaySender != null) {
+			replaySender.jumpToTime(pos, true);
 		}
 	}
 	
@@ -357,5 +365,13 @@ public class ReplayHandler {
 
 	public static Keyframe getSelected() {
 		return selectedKeyframe;
+	}
+	
+	public static int getRealTimelineCursor() {
+		return realTimelinePosition;
+	}
+	
+	public static void setRealTimelineCursor(int pos) {
+		realTimelinePosition = pos;
 	}
 }

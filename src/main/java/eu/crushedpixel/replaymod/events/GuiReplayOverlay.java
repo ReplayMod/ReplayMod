@@ -50,8 +50,6 @@ public class GuiReplayOverlay extends Gui {
 	private int realTimelineX = 10 + 3*25;
 	private int realTimelineY = 33+10;
 
-	private int realTimePosition = 0;
-
 	private int ppButtonX = 10;
 	private int ppButtonY = 10;
 
@@ -110,7 +108,7 @@ public class GuiReplayOverlay extends Gui {
 		if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			mc.displayGuiScreen((GuiScreen)null);
 		}
-		realTimePosition = 0;
+		ReplayHandler.setRealTimelineCursor(0);
 		speedSlider = new GuiReplaySpeedSlider(1, sliderX, sliderY, "Speed");
 	}
 
@@ -163,7 +161,8 @@ public class GuiReplayOverlay extends Gui {
 
 		//GlStateManager.resetColor();
 
-		if(Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) { //clicking the Button
+		//When hurrying, no Timeline jumping etc. is possible
+		if(Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class) && !ReplayHandler.isHurrying()) { //clicking the Button
 			speedSlider.mousePressed(mc, mouseX, mouseY);
 			if(!mouseDown) {
 				mouseDown = true;
@@ -543,7 +542,7 @@ public class GuiReplayOverlay extends Gui {
 			float abs_width = (zoom_scale*(float)timelineLength);
 			int real_pos = Math.round(left_real+((rel_pos)*abs_width));
 
-			realTimePosition = real_pos;
+			ReplayHandler.setRealTimelineCursor(real_pos);
 
 			//Keyframe click handling here
 			if(isClick()) {
@@ -551,18 +550,18 @@ public class GuiReplayOverlay extends Gui {
 				int tolerance = 2*Math.round(abs_width/(float)width);
 
 				if(mouseY >= y+9) {
-					TimeKeyframe close = ReplayHandler.getClosestTimeKeyframeForRealTime(realTimePosition, tolerance);
+					TimeKeyframe close = ReplayHandler.getClosestTimeKeyframeForRealTime(ReplayHandler.getRealTimelineCursor(), tolerance);
 					ReplayHandler.selectKeyframe(close); //can be null, deselects keyframe
 				} else {
-					PositionKeyframe close = ReplayHandler.getClosestPlaceKeyframeForRealTime(realTimePosition, tolerance);
+					PositionKeyframe close = ReplayHandler.getClosestPlaceKeyframeForRealTime(ReplayHandler.getRealTimelineCursor(), tolerance);
 					ReplayHandler.selectKeyframe(close); //can be null, deselects keyframe
 				}
 			}
 		}
 
 		//Draw Realtime Cursor
-		if(realTimePosition >= left_real && realTimePosition <= right_real) {
-			long rel_pos = realTimePosition-left_real;
+		if(ReplayHandler.getRealTimelineCursor() >= left_real && ReplayHandler.getRealTimelineCursor() <= right_real) {
+			long rel_pos = ReplayHandler.getRealTimelineCursor()-left_real;
 			long rel_width = right_real-left_real;
 			double perc = (double)rel_pos/(double)rel_width;
 
@@ -650,11 +649,11 @@ public class GuiReplayOverlay extends Gui {
 	private void addPlaceKeyframe() {
 		CameraEntity cam = ReplayHandler.getCameraEntity();
 		if(cam == null) return;
-		ReplayHandler.addKeyframe(new PositionKeyframe(realTimePosition, new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw)));
+		ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw)));
 	}
 
 	private void addTimeKeyframe() {
-		ReplayHandler.addKeyframe(new TimeKeyframe(realTimePosition, ReplayHandler.getReplayTime()));
+		ReplayHandler.addKeyframe(new TimeKeyframe(ReplayHandler.getRealTimelineCursor(), ReplayHandler.getReplayTime()));
 	}
 
 	private enum MarkerType {
