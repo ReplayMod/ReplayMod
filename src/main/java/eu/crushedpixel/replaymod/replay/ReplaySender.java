@@ -20,6 +20,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
@@ -30,11 +31,10 @@ import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.network.play.server.S06PacketUpdateHealth;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
 import net.minecraft.network.play.server.S0BPacketAnimation;
-import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
-import net.minecraft.network.play.server.S14PacketEntity;
 import net.minecraft.network.play.server.S18PacketEntityTeleport;
 import net.minecraft.network.play.server.S1CPacketEntityMetadata;
 import net.minecraft.network.play.server.S1DPacketEntityEffect;
+import net.minecraft.network.play.server.S1FPacketSetExperience;
 import net.minecraft.network.play.server.S28PacketEffect;
 import net.minecraft.network.play.server.S29PacketSoundEffect;
 import net.minecraft.network.play.server.S2BPacketChangeGameState;
@@ -48,13 +48,11 @@ import net.minecraft.network.play.server.S39PacketPlayerAbilities;
 import net.minecraft.network.play.server.S43PacketCamera;
 import net.minecraft.network.play.server.S45PacketTitle;
 import net.minecraft.network.play.server.S48PacketResourcePackSend;
-import net.minecraft.network.play.server.S14PacketEntity.S17PacketEntityLookMove;
 import net.minecraft.util.Timer;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
 import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -75,6 +73,10 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private long desiredTimeStamp;
 	private long lastTimeStamp, lastPacketSent;
 
+	private boolean hasRestarted = false;
+
+	private long toleratedTimeStamp = Long.MAX_VALUE;
+
 	private File replayFile;
 	private PacketDeserializer ds = new PacketDeserializer(EnumPacketDirection.SERVERBOUND);
 	private boolean active = true;
@@ -86,8 +88,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	private NetworkManager networkManager;
 	private boolean terminate = false;
-
-	private float defaultReplaySpeed = 0.5f;
 
 	private double replaySpeed = 1f;
 
@@ -135,13 +135,16 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		}
 	}
 
-	public void jumpToTime(int millis, boolean force) {
+	public void jumpToTime(int millis) {
 		setReplaySpeed(replaySpeed);
 
 		if((millis < currentTimeStamp && !isHurrying())) {
-			if(!(ReplayHandler.isReplaying() && !force)) {
-				startFromBeginning = true;
+			if(ReplayHandler.isReplaying()) {
+				if(millis < toleratedTimeStamp) {
+					return;
+				}
 			}
+			startFromBeginning = true;
 		}
 
 		desiredTimeStamp = millis;
@@ -244,6 +247,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				}
 				while(!terminate) {
 					if(startFromBeginning) {
+						hasRestarted = true;
 						currentTimeStamp = 0;
 						dis.close();
 						dis = new DataInputStream(archive.getInputStream(replayEntry));
@@ -265,17 +269,17 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							 * If hurrying, don't wait for correct timing.
 							 */
 
-							
+
 							if(!hurryToTimestamp && ReplayHandler.isReplaying()) {
 								continue;
 							}
-					
+
 							int timestamp = dis.readInt();
 
 							currentTimeStamp = timestamp;
 
 							if(!ReplayHandler.isReplaying() && !hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
-							//if(!hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
+								//if(!hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
 								int timeWait = (int)Math.round((currentTimeStamp - lastTimeStamp)/replaySpeed);
 								long timeDiff = System.currentTimeMillis() - lastPacketSent;
 								lastPacketSent = System.currentTimeMillis();
@@ -291,11 +295,23 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 							lastTimeStamp = currentTimeStamp;
 
+							if(ReplayHandler.isReplaying()) {
+								toleratedTimeStamp = lastTimeStamp;
+							} else {
+								toleratedTimeStamp = -1;
+							}
+
 							if(hurryToTimestamp && currentTimeStamp >= desiredTimeStamp && !startFromBeginning) {
 								hurryToTimestamp = false;
+								if(!ReplayHandler.isReplaying() || hasRestarted) {
+									((Timer)mcTimer.get(mc)).elapsedPartialTicks = 5;
+									((Timer)mcTimer.get(mc)).elapsedTicks = 5;
+									((Timer)mcTimer.get(mc)).renderPartialTicks = 5;
+								}
 								if(!ReplayHandler.isReplaying()) {
 									setReplaySpeed(0);
 								}
+								hasRestarted = false;
 							}
 
 						} catch(EOFException eof) {
@@ -321,6 +337,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			add(S30PacketWindowItems.class);
 			add(S36PacketSignEditorOpen.class);
 			add(S37PacketStatistics.class);
+			add(S1FPacketSetExperience.class);
+			add(S43PacketCamera.class);
+			add(S39PacketPlayerAbilities.class);
 		}
 	};
 
@@ -391,8 +410,13 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							difficulty, maxPlayers, worldType, false);
 				}
 
-				if(p instanceof S39PacketPlayerAbilities) {
-					return;
+				if(p instanceof S18PacketEntityTeleport) {
+					//System.out.println(((S18PacketEntityTeleport) p).func_149449_d());
+					if(mc.theWorld != null) {
+						for(EntityPlayer ep : (List<EntityPlayer>)mc.theWorld.playerEntities) {
+							System.out.println(ep.posX+" "+ep.posY+" "+ep.posZ);
+						}
+					}
 				}
 
 				if(p instanceof S08PacketPlayerPosLook) {

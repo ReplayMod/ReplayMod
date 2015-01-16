@@ -24,6 +24,16 @@ public class ReplayMod
 	
 	//TODO: Set ReplayHandler replaying to false when replay is exited
 	
+	//XXX
+	//Known Bugs
+	//
+	//Keyframe removal doesn't seem to properly work
+	//
+	//
+	//
+	//
+	
+	
 	public static final String MODID = "replaymod";
 	public static final String VERSION = "0.0.1";
 	
@@ -31,6 +41,8 @@ public class ReplayMod
 	
 	public static ReplaySettings replaySettings = new ReplaySettings(0, true, true, true, false);
 	public static Configuration config;
+	
+	public static RecordingHandler recordingHandler;
 	
 	public static int PLAYER_ID = -1;
 
@@ -62,9 +74,9 @@ public class ReplayMod
 		FMLCommonHandler.instance().bus().register(tickHandler);
 		MinecraftForge.EVENT_BUS.register(tickHandler);
 		
-		RecordingHandler rh = new RecordingHandler();
-		FMLCommonHandler.instance().bus().register(rh);
-		MinecraftForge.EVENT_BUS.register(rh);
+		recordingHandler = new RecordingHandler();
+		FMLCommonHandler.instance().bus().register(recordingHandler);
+		MinecraftForge.EVENT_BUS.register(recordingHandler);
 	}
 
 	@EventHandler

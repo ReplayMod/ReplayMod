@@ -229,18 +229,13 @@ public class ReplayHandler {
 
 	public static void resetKeyframes() {
 		keyframes = new ArrayList<Keyframe>();
+		
 		selectKeyframe(null);
 	}
 
 	public static void setReplayPos(int pos) {
 		if(replaySender != null) {
-			replaySender.jumpToTime(pos, false);
-		}
-	}
-	
-	public static void forceReplayPos(int pos) {
-		if(replaySender != null) {
-			replaySender.jumpToTime(pos, true);
+			replaySender.jumpToTime(pos);
 		}
 	}
 	

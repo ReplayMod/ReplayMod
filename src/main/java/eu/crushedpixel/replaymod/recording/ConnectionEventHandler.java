@@ -50,7 +50,7 @@ public class ConnectionEventHandler {
 			return;
 		}
 		try {
-			packetListener.channelRead(null, packet);
+			packetListener.saveOnly(packet);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -61,6 +61,8 @@ public class ConnectionEventHandler {
 		System.out.println("Connected to server");
 
 		ChatMessageRequests.initialize();
+		
+		ReplayMod.recordingHandler.resetLastPositions();
 
 		try {
 			if(event.isLocal) {

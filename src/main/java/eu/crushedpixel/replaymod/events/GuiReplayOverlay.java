@@ -15,8 +15,10 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -83,6 +85,13 @@ public class GuiReplayOverlay extends Gui {
 	}
 
 	@SubscribeEvent
+	public void renderHand(RenderHandEvent event) {
+		if(ReplayHandler.replayActive()) {
+			event.setCanceled(true);
+		}
+	}
+
+	@SubscribeEvent
 	public void tick(TickEvent event) {
 		if(!ReplayHandler.replayActive()) return;
 		if(ReplayHandler.getCameraEntity() != null)
@@ -114,7 +123,12 @@ public class GuiReplayOverlay extends Gui {
 
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
-		if(!ReplayHandler.replayActive()) return;
+		if(!ReplayHandler.replayActive()) {
+			GuiIngameForge.renderExperiance = true;
+			return;
+		}
+
+		GuiIngameForge.renderExperiance = false;
 		GL11.glEnable(GL11.GL_BLEND);
 		drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 
@@ -289,7 +303,10 @@ public class GuiReplayOverlay extends Gui {
 			Mouse.setCursorPosition(width/2, height/2);
 		}
 
-		speedSlider.drawButton(mc, mouseX, mouseY);
+		try {
+			speedSlider.drawButton(mc, mouseX, mouseY);
+		} catch(Exception e) {}
+		
 		GlStateManager.resetColor();
 
 		Entity player = ReplayHandler.getCameraEntity();

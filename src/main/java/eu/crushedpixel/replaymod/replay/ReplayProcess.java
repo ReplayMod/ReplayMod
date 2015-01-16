@@ -56,7 +56,7 @@ public class ReplayProcess {
 			if(ts < ReplayHandler.getReplayTime()) {
 				mc.displayGuiScreen((GuiScreen)null);
 			}
-			ReplayHandler.forceReplayPos(ts);
+			ReplayHandler.setReplayPos(ts);
 		}
 
 		ChatMessageRequests.addChatMessage("Replay started!", ChatMessageType.INFORMATION);
@@ -69,7 +69,7 @@ public class ReplayProcess {
 		ReplayHandler.setSpeed(previousReplaySpeed);
 		ReplayHandler.setSpeed(0);
 	}
-	
+
 	public static void tickReplay() {		
 		if(ReplayHandler.isHurrying()) {
 			lastRealTime = System.currentTimeMillis();
@@ -128,7 +128,7 @@ public class ReplayProcess {
 		PositionKeyframe nextPos = ReplayHandler.getNextPositionKeyframe(curRealReplayTime);
 
 		ReplayHandler.setRealTimelineCursor(curRealReplayTime);
-		
+
 		int lastPosStamp = 0;
 		int nextPosStamp = 0;
 
@@ -188,27 +188,18 @@ public class ReplayProcess {
 			pos = motionLinear.getPoint(Math.max(0, Math.min(1, splinePos)));
 		}
 
-		int curPos = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
-
-		//set replay speed
-		if(pos != null) ReplayHandler.getCameraEntity().movePath(pos);
-		//System.out.println(curSpeed+" | "+curPos);
-		ReplayHandler.setSpeed(curSpeed);
-		//System.out.println("sent "+curPos);
-		ReplayHandler.setReplayPos(curPos);
-
-
-		//calculate replay speed
-
-		/*
-		int ts = timeLinear.getPoint(Math.max(0, Math.min(1, splinePos)));
-		if(ts != lastTimestamp) {
-			lastTimestamp = ts;
+		Integer curPos = null;
+		if(timeLinear != null) {
+			curPos = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
 		}
-		 */
+
+		if(pos != null) ReplayHandler.getCameraEntity().movePath(pos);
+
+		ReplayHandler.setSpeed(curSpeed);
+
+		if(curPos != null) ReplayHandler.setReplayPos(curPos);
 
 		//splinePos = (index of last entry + add) / total entries
-
 
 		lastRealReplayTime = curRealReplayTime;
 		lastRealTime = curTime;
