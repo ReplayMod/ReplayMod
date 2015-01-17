@@ -45,18 +45,16 @@ public class GuiExitReplay extends GuiIngameMenu {
 
 				@Override
 				public void run() {
+					mc.displayGuiScreen(new GuiReplaySaving());
 					ReplayHandler.endReplay();
 					ReplayHandler.setSpeed(1f);
 
 					ReplayHandler.lastExit = System.currentTimeMillis();
 					mc.theWorld.sendQuittingDisconnectingPacket();
-					mc.displayGuiScreen(new GuiMainMenu());
-					//mc.loadWorld((WorldClient)null);		
 				}
 			});
 			
 			t.run();
-
 
 		} else {
 			super.actionPerformed(button);

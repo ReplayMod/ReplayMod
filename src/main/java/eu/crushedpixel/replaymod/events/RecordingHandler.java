@@ -121,6 +121,8 @@ public class RecordingHandler {
 		playerItems = new ItemStack[5];
 	}
 
+	private int ticksSinceLastCorrection = 0;
+
 	@SubscribeEvent
 	public void onPlayerTick(PlayerTickEvent e) {
 		try {
@@ -133,6 +135,12 @@ public class RecordingHandler {
 				lastX = e.player.posX;
 				lastY = e.player.posY;
 				lastZ = e.player.posZ;
+			}
+
+			ticksSinceLastCorrection++;
+			if(ticksSinceLastCorrection >= 100) {
+				ticksSinceLastCorrection = 0;
+				force = true;
 			}
 
 			double dx = e.player.posX - lastX;
@@ -151,7 +159,6 @@ public class RecordingHandler {
 				byte yaw = (byte)((int)(e.player.rotationYaw * 256.0F / 360.0F));
 				byte pitch = (byte)((int)(e.player.rotationPitch * 256.0F / 360.0F));
 				packet = new S18PacketEntityTeleport(entityID, x, y, z, yaw, pitch, e.player.onGround);
-
 			} else {
 				byte oldYaw = (byte)((int)(e.player.prevRotationYaw * 256.0F / 360.0F));
 				byte newYaw = (byte)((int)(e.player.rotationYaw * 256.0F / 360.0F));
@@ -259,7 +266,7 @@ public class RecordingHandler {
 				} else {
 					lastRiding = mc.thePlayer.ridingEntity.getEntityId();
 				}
-				
+
 				S1BPacketEntityAttach pea = new S1BPacketEntityAttach();
 
 				ByteBuf buf = Unpooled.buffer();
@@ -272,6 +279,23 @@ public class RecordingHandler {
 				pea.readPacketData(pbuf);
 
 				ConnectionEventHandler.insertPacket(pea);
+			}
+			
+			//Sleeping
+			if(!mc.thePlayer.isPlayerSleeping() && wasSleeping) {
+				S0BPacketAnimation pac = new S0BPacketAnimation();
+
+				ByteBuf bb = Unpooled.buffer();
+				PacketBuffer pb = new PacketBuffer(bb);
+
+				pb.writeVarIntToBuffer(entityID);
+				pb.writeByte(2);
+
+				pac.readPacketData(pb);
+
+				ConnectionEventHandler.insertPacket(pac);
+				
+				wasSleeping = false;
 			}
 
 		} catch(Exception e1) {
@@ -377,29 +401,32 @@ public class RecordingHandler {
 			e.printStackTrace();
 		}
 	}
+	
+	private boolean wasSleeping = false;
 
 	@SubscribeEvent
 	public void onSleep(PlayerSleepInBedEvent event) {
 		try {
-			if(event.entity.getEntityId() != mc.thePlayer.getEntityId()) {
+
+			if(event.entityPlayer != mc.thePlayer) {
 				return;
 			};
 
-			if(event.result == EnumStatus.OK) {
-				S0APacketUseBed pub = new S0APacketUseBed();
+			System.out.println(event.getResult());
+			S0APacketUseBed pub = new S0APacketUseBed();
 
-				ByteBuf buf = Unpooled.buffer();
-				PacketBuffer pbuf = new PacketBuffer(buf);
+			ByteBuf buf = Unpooled.buffer();
+			PacketBuffer pbuf = new PacketBuffer(buf);
 
-				pbuf.writeVarIntToBuffer(entityID);
-				pbuf.writeBlockPos(event.pos);
+			pbuf.writeVarIntToBuffer(entityID);
+			pbuf.writeBlockPos(event.pos);
 
-				pub.readPacketData(pbuf);
+			pub.readPacketData(pbuf);
 
-				ConnectionEventHandler.insertPacket(pub);
+			ConnectionEventHandler.insertPacket(pub);
 
-				System.out.println("SLEEP PACKET SENT");
-			}
+			wasSleeping = true;
+
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

@@ -5,23 +5,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
-import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.handshake.client.C00Handshake;
-import net.minecraft.network.login.client.C00PacketLoginStart;
 import net.minecraft.util.Util;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -36,7 +31,6 @@ import com.mojang.realmsclient.util.Pair;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.replay.ReplaySender;
 
 public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
@@ -103,7 +97,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 		@Override
 		public int compare(Pair<File, ReplayMetaData> o1, Pair<File, ReplayMetaData> o2) {
-			return (int) (o2.second().getDate() - o1.second().getDate());
+			return (int)(new Date(o2.second().getDate()).compareTo(new Date(o1.second().getDate())));
 		}
 		
 	}

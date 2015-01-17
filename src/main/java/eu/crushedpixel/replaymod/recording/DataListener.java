@@ -17,6 +17,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.network.Packet;
 
 import com.google.gson.Gson;
@@ -142,6 +144,8 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 			byte[] buffer = new byte[1024];
 
 			try {
+				ConnectionEventHandler.saving = true;
+				
 				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime);
 				String json = gson.toJson(metaData);
 
@@ -173,8 +177,11 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 				zos.close();
 
 				file.delete();
+				
+				ConnectionEventHandler.saving = false;
 			} catch(Exception e) {
 				e.printStackTrace();
+				ConnectionEventHandler.saving = false;
 			}
 		}
 
