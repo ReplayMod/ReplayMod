@@ -29,6 +29,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.network.play.server.S06PacketUpdateHealth;
+import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
 import net.minecraft.network.play.server.S0BPacketAnimation;
 import net.minecraft.network.play.server.S18PacketEntityTeleport;
@@ -61,6 +62,7 @@ import org.apache.commons.io.FilenameUtils;
 import com.google.gson.Gson;
 
 import eu.crushedpixel.replaymod.entities.CameraEntity;
+import eu.crushedpixel.replaymod.events.RecordingHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
@@ -109,6 +111,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	private int replayLength = 0;
 
+	private int actualID = -1;
+	
 	private EffectRenderer old = mc.effectRenderer;
 
 	private ZipArchiveEntry replayEntry;
@@ -304,9 +308,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							if(hurryToTimestamp && currentTimeStamp >= desiredTimeStamp && !startFromBeginning) {
 								hurryToTimestamp = false;
 								if(!ReplayHandler.isReplaying() || hasRestarted) {
-									((Timer)mcTimer.get(mc)).elapsedPartialTicks = 5;
-									((Timer)mcTimer.get(mc)).elapsedTicks = 5;
-									((Timer)mcTimer.get(mc)).renderPartialTicks = 5;
+									((Timer)mcTimer.get(mc)).elapsedPartialTicks += 5;
+									((Timer)mcTimer.get(mc)).elapsedTicks += 5;
+									((Timer)mcTimer.get(mc)).renderPartialTicks += 5;
 								}
 								if(!ReplayHandler.isReplaying()) {
 									setReplaySpeed(0);
@@ -343,6 +347,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		}
 	};
 
+	private boolean allowMovement = false;
+	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 			throws Exception {
@@ -397,10 +403,17 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				}
 				 */
 
-				if(p instanceof S01PacketJoinGame) {
+				if(p instanceof S1CPacketEntityMetadata) {
+					if((Integer)metadataPacketEntityId.get(p) == actualID) {
+						metadataPacketEntityId.set(p, RecordingHandler.entityID);
+					}
+				}
 
+				if(p instanceof S01PacketJoinGame) {
+					allowMovement = true;
 					int entId = (Integer)joinPacketEntityId.get(p);
-					entId = -1;
+					actualID = entId;
+					entId = Integer.MIN_VALUE+9002;
 					int dimension = (Integer)joinPacketDimension.get(p);
 					EnumDifficulty difficulty = (EnumDifficulty)joinPacketDifficulty.get(p);
 					int maxPlayers = (Integer)joinPacketMaxPlayers.get(p);
@@ -409,20 +422,26 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 					p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension, 
 							difficulty, maxPlayers, worldType, false);
 				}
-
-				if(p instanceof S18PacketEntityTeleport) {
-					//System.out.println(((S18PacketEntityTeleport) p).func_149449_d());
-					if(mc.theWorld != null) {
-						for(EntityPlayer ep : (List<EntityPlayer>)mc.theWorld.playerEntities) {
-							System.out.println(ep.posX+" "+ep.posY+" "+ep.posZ);
-						}
-					}
+				
+				
+				if(p instanceof S07PacketRespawn) {
+					allowMovement = true;
 				}
+				
 
 				if(p instanceof S08PacketPlayerPosLook) {
 					final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook)p;
 
-					//if(ReplayHandler.isReplaying()) return;
+					if(ReplayHandler.isReplaying() && !hurryToTimestamp) return;
+					
+					CameraEntity cent = ReplayHandler.getCameraEntity();
+					
+					if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > 100) || (Math.abs(cent.posZ - ppl.func_148933_e()) > 100))) {
+						return;
+					} else {
+						allowMovement = false;
+					}
+					
 					Thread t = new Thread(new Runnable() {
 
 						@Override

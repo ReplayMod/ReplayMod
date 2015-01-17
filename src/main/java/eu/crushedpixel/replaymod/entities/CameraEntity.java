@@ -39,13 +39,13 @@ public class CameraEntity extends Entity {
 			mc.thePlayer.rotationYaw = ReplayHandler.getCameraEntity().rotationYaw;
 			
 			//removes water/suffocation/shadow overlays in screen
-			//mc.thePlayer.posX = 0;
-			//mc.thePlayer.posY = 500;
-			//mc.thePlayer.posZ = 0;
+			mc.thePlayer.posX = 0;
+			mc.thePlayer.posY = 500;
+			mc.thePlayer.posZ = 0;
 			
-			mc.thePlayer.posX = ReplayHandler.getCameraEntity().posX;
-			mc.thePlayer.posY = ReplayHandler.getCameraEntity().posY;
-			mc.thePlayer.posZ = ReplayHandler.getCameraEntity().posZ;
+			//mc.thePlayer.posX = ReplayHandler.getCameraEntity().posX;
+			//mc.thePlayer.posY = ReplayHandler.getCameraEntity().posY;
+			//mc.thePlayer.posZ = ReplayHandler.getCameraEntity().posZ;
 		}
 		
 		if(direction == null || motion < 0.1) {

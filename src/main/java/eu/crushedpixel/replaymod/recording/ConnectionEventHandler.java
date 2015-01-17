@@ -62,7 +62,7 @@ public class ConnectionEventHandler {
 
 		ChatMessageRequests.initialize();
 		
-		ReplayMod.recordingHandler.resetLastPositions();
+		ReplayMod.recordingHandler.resetVars();
 
 		try {
 			if(event.isLocal) {

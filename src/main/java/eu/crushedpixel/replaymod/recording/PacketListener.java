@@ -9,10 +9,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.DataWatcher;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
+import net.minecraft.network.play.server.S0DPacketCollectItem;
 import net.minecraft.network.play.server.S0FPacketSpawnMob;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
@@ -24,11 +26,13 @@ public class PacketListener extends DataListener {
 	public PacketListener(File file, String name, String worldName, long startTime, int maxSize, boolean singleplayer) throws FileNotFoundException {
 		super(file, name, worldName, startTime, maxSize, singleplayer);
 	}
-	
+
+	private static final Minecraft mc = Minecraft.getMinecraft();
+
 	private ChannelHandlerContext context = null;
 
 	private static final PacketSerializer packetSerializer = new PacketSerializer(EnumPacketDirection.CLIENTBOUND);
-	
+
 	public void saveOnly(Packet packet) {
 		try {
 			PacketData pd = getPacketData(context, packet);
@@ -38,8 +42,8 @@ public class PacketListener extends DataListener {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
+
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		if(ctx == null) {
@@ -58,6 +62,14 @@ public class PacketListener extends DataListener {
 			try {
 				Packet packet = (Packet)msg;
 
+				if(packet instanceof S0DPacketCollectItem) {
+					if(mc.thePlayer != null || 
+							((S0DPacketCollectItem) packet).func_149353_d() == mc.thePlayer.getEntityId()) {
+						super.channelRead(ctx, msg);
+						return;
+					}
+				}
+
 				PacketData pd = getPacketData(ctx, packet);
 				dataWriter.writeData(pd);
 				lastSentPacket = pd.getTimestamp();
@@ -69,11 +81,11 @@ public class PacketListener extends DataListener {
 
 		super.channelRead(ctx, msg);
 	}
-	
+
 	private PacketData getPacketData(ChannelHandlerContext ctx, Packet packet) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
-		
+
 		if(startTime == null) startTime = System.currentTimeMillis();
-		
+
 		int timestamp = (int)(System.currentTimeMillis() - startTime);
 
 		//Converts the packet back to a ByteBuffer for correct saving
@@ -98,7 +110,7 @@ public class PacketListener extends DataListener {
 				field_149043_l.set(packet, dw);
 			}
 		}
-		
+
 		packetSerializer.encode(ctx, packet, bb);
 
 		bb.readerIndex(0);
@@ -113,7 +125,7 @@ public class PacketListener extends DataListener {
 		}
 
 		bb.readerIndex(0);
-	
+
 		return new PacketData(array, timestamp);
 	}
 

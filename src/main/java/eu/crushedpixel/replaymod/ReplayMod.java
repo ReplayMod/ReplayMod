@@ -28,7 +28,7 @@ public class ReplayMod
 	//Known Bugs
 	//
 	//Keyframe removal doesn't seem to properly work
-	//
+	//Rain isn't working
 	//
 	//
 	//
