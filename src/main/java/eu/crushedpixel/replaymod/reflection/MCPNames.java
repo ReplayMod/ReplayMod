@@ -32,7 +32,7 @@ public final class MCPNames {
 
 	private static final Map<String, String> fields;
 	private static final Map<String, String> methods;
-	private static final MCPEnvironment env = new MCPEnvironment();
+	public static final MCPEnvironment env = new MCPEnvironment();
 
 	static {
 		if (use()) {

@@ -1,3 +1,4 @@
+
 package eu.crushedpixel.replaymod.events;
 
 import java.awt.Color;
@@ -25,10 +26,12 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
@@ -199,6 +202,13 @@ public class GuiReplayOverlay extends Gui {
 						mc.displayGuiScreen((GuiScreen)null);
 					}
 
+					CameraEntity cam = ReplayHandler.getCameraEntity();
+					if(cam != null) {
+					ReplayHandler.setLastPosition(new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
+					} else {
+						ReplayHandler.setLastPosition(null);
+					}
+					
 					ReplayHandler.setReplayPos((int)time);
 				}
 			}
@@ -736,7 +746,7 @@ public class GuiReplayOverlay extends Gui {
 			return false;
 		}
 	}
-
+	
 	@SubscribeEvent
 	public void onMouseMove(MouseEvent event) {
 		if(!ReplayHandler.replayActive()) return;
@@ -777,7 +787,11 @@ public class GuiReplayOverlay extends Gui {
 		if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			return;
 		}
-
+		
+		if(Keyboard.isKeyDown(Keyboard.KEY_V) && !Keyboard.isRepeatEvent() && Keyboard.getKeyCount() == 1) {
+			ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());
+		}
+		
 		KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
 		for(KeyBinding kb : keyBindings) {
 			if(!kb.isKeyDown()) {

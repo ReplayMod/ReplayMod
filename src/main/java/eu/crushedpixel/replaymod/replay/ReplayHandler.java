@@ -23,6 +23,7 @@ import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeComparator;
+import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 
@@ -47,6 +48,16 @@ public class ReplayHandler {
 
 	public static long lastExit = 0;
 
+	private static float gamma = 0f;
+	
+	public static void setInitialGamma(float initial) {
+		gamma = initial;
+	}
+	
+	public static float getInitialGamma() {
+		return gamma;
+	}
+	
 	public static void setReplaying(boolean replaying) {
 		isReplaying = replaying;
 	}
@@ -368,5 +379,14 @@ public class ReplayHandler {
 	
 	public static void setRealTimelineCursor(int pos) {
 		realTimelinePosition = pos;
+	}
+
+	private static Position lastPosition = null;
+	public static void setLastPosition(Position position) {
+		lastPosition = position;
+	}
+	
+	public static Position getLastPosition() {
+		return lastPosition;
 	}
 }

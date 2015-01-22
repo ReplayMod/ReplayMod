@@ -2,9 +2,11 @@ package eu.crushedpixel.replaymod.gui;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiOptionButton;
 import net.minecraft.client.gui.GuiOptionSlider;
@@ -12,6 +14,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 
 public class GuiReplaySettings extends GuiScreen {
@@ -24,8 +27,9 @@ public class GuiReplaySettings extends GuiScreen {
 	private static final int RECORDSP_ID = 9005;
 	private static final int SEND_CHAT = 9006;
 	private static final int FORCE_LINEAR = 9007;
+	private static final int ENABLE_LIGHTING = 9008;
 
-	private GuiButton recordServerButton, recordSPButton, sendChatButton, linearButton;
+	private GuiButton recordServerButton, recordSPButton, sendChatButton, linearButton, lightingButton;
 
 	public GuiReplaySettings(GuiScreen parentGuiScreen)
 	{
@@ -62,6 +66,9 @@ public class GuiReplaySettings extends GuiScreen {
 			} else if(e.getKey().equals("Force Linear Movement")) {
 				linearButton = new GuiButton(FORCE_LINEAR, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Camera Path: "+linearOnOff((Boolean)e.getValue()));
 				this.buttonList.add(linearButton);
+			} else if(e.getKey().equals("Enable Lighting")) {
+				lightingButton = new GuiButton(ENABLE_LIGHTING, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Enable Lighting: "+onOff((Boolean)e.getValue()));
+				this.buttonList.add(lightingButton);
 			}
 
 			++i;
@@ -88,7 +95,7 @@ public class GuiReplaySettings extends GuiScreen {
 		this.drawDefaultBackground();
 		this.drawCenteredString(this.fontRendererObj, "Replay Mod Settings", this.width / 2, 20, 16777215);
 		if (FMLClientHandler.instance().getClient().thePlayer != null) {
-			this.drawCenteredString(this.fontRendererObj, "WARNING: These settings are going to be", this.width / 2, 180, Color.RED.getRGB());
+			this.drawCenteredString(this.fontRendererObj, "WARNING: Recording settings are going to be", this.width / 2, 180, Color.RED.getRGB());
 			this.drawCenteredString(this.fontRendererObj, "applied the next time you join a world.", this.width / 2, 190, Color.RED.getRGB());
 		}
 		super.drawScreen(mouseX, mouseY, partialTicks);
@@ -126,6 +133,12 @@ public class GuiReplaySettings extends GuiScreen {
 				enabled = !enabled;
 				linearButton.displayString = "Camera Path: "+linearOnOff(enabled);
 				ReplayMod.replaySettings.setLinearMovement(enabled);
+				break;
+			case ENABLE_LIGHTING:
+				enabled = ReplayMod.replaySettings.isLightingEnabled();
+				enabled = !enabled;
+				lightingButton.displayString = "Enable Lighting: "+onOff(enabled);
+				ReplayMod.replaySettings.setLightingEnabled(enabled);
 				break;
 			}
 		}

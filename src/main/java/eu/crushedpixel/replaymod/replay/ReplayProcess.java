@@ -31,20 +31,24 @@ public class ReplayProcess {
 	private static LinearTimestamp timeLinear = null;
 
 	private static double previousReplaySpeed = 0;
+	
+	private static boolean calculated = false;
 
 	public static void startReplayProcess() {
+		lastPosition = null;
+		motionSpline = null;
+		timeLinear = null;
+		calculated = false;
+		
 		ChatMessageRequests.initialize();
-		if(ReplayHandler.getKeyframes().isEmpty()) {
-			ChatMessageRequests.addChatMessage("No keyframes set!", ChatMessageType.WARNING);
+		if(ReplayHandler.getPosKeyframeCount() < 2) {
+			ChatMessageRequests.addChatMessage("At least 2 position keyframes required!", ChatMessageType.WARNING);
 			return;
 		}
 		startRealTime = System.currentTimeMillis();
 		lastRealTime = startRealTime;
 		lastRealReplayTime = 0;
 		lastTimestamp = -1;
-		lastPosition = null;
-		motionSpline = null;
-		timeLinear = null;
 		linear = ReplayMod.replaySettings.isLinearMovement();
 		ReplayHandler.sortKeyframes();
 		ReplayHandler.setReplaying(true);
@@ -86,10 +90,8 @@ public class ReplayProcess {
 					motionSpline.addPoint(pos);
 				}
 			}
-			if(motionSpline.getPoints().size() < 3) linear = true;
-			else motionSpline.calcSpline();
-
 		}
+		
 		if(linear && motionLinear == null) {
 			//set up linear path
 			motionLinear = new LinearPoint();
@@ -109,16 +111,13 @@ public class ReplayProcess {
 				}
 			}
 
-			/*
-			for(float x = 0; x <= 1f; x+=0.1) {
-				//timeLinear.getPoint(x);
-				System.out.println(x+" | "+timeLinear.getPoint(x));
-			}
-			 */
-			//System.out.println(timeLinear.getPoint(0));
-
 		}
 
+		if(!calculated) {
+			calculated = true;
+			motionSpline.calcSpline();
+		}
+		
 		long curTime = System.currentTimeMillis();
 		long timeStep = curTime - lastRealTime;
 
@@ -169,6 +168,10 @@ public class ReplayProcess {
 
 			if(!(nextTime == null || lastTime == null)) {
 				curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
+			}
+			
+			if(lastTimeStamp == nextTimeStamp) {
+				curSpeed = 0f;
 			}
 		}
 

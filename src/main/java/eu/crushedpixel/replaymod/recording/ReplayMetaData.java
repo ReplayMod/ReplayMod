@@ -9,37 +9,34 @@ public class ReplayMetaData {
 	private String serverName;
 	private int duration;
 	private long date;
-	
+	private String[] players;
+	private String mcversion;
 	
 	public ReplayMetaData(boolean singleplayer, String serverName,
-			int duration, long date) {
+			int duration, long date, String[] players, String mcversion) {
 		this.singleplayer = singleplayer;
 		this.serverName = serverName;
 		this.duration = duration;
 		this.date = date;
+		this.players = players;
+		this.mcversion = mcversion;
 	}
 	public boolean isSingleplayer() {
 		return singleplayer;
 	}
-	public void setSingleplayer(boolean singleplayer) {
-		this.singleplayer = singleplayer;
-	}
 	public String getServerName() {
 		return serverName;
-	}
-	public void setServer_name(String serverName) {
-		this.serverName = serverName;
 	}
 	public int getDuration() {
 		return duration;
 	}
-	public void setDuration(int duration) {
-		this.duration = duration;
-	}
 	public long getDate() {
 		return date;
 	}
-	public void setDate(long date) {
-		this.date = date;
+	public String[] getPlayers() {
+		return players;
+	}
+	public String getMCVersion() {
+		return mcversion;
 	}
 }

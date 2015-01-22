@@ -30,11 +30,4 @@ public class ReplayTickHandler {
 		}
 	}
 
-	@SubscribeEvent
-	public void onFovChange(FOVUpdateEvent event) {
-		if(ReplayHandler.replayActive()) {
-			event.newfov = 1f;
-		}
-	}
-
 }

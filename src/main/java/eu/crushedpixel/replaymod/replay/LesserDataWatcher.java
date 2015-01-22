@@ -26,22 +26,22 @@ public class LesserDataWatcher extends DataWatcher {
 
 	@Override
 	public byte getWatchableObjectByte(int id) {
-		return 0;
+		return 10;
 	}
 
 	@Override
 	public short getWatchableObjectShort(int id) {
-		return 0;
+		return 10;
 	}
 
 	@Override
 	public int getWatchableObjectInt(int id) {
-		return 0;
+		return 10;
 	}
 
 	@Override
 	public float getWatchableObjectFloat(int id) {
-		return 0;
+		return 10f;
 	}
 
 	@Override

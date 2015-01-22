@@ -15,7 +15,8 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import eu.crushedpixel.replaymod.gui.GuiCustomOptions;
+import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.gui.GuiExitReplay;
 import eu.crushedpixel.replaymod.gui.GuiReplayManager;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
@@ -27,6 +28,7 @@ public class GuiEventHandler {
 
 	@SubscribeEvent
 	public void onGui(GuiOpenEvent event) {
+		if(!AuthenticationHandler.isAuthenticated()) return;
 		if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
 			if(ReplayHandler.replayActive()) {
 				event.setCanceled(true);
@@ -60,7 +62,9 @@ public class GuiEventHandler {
 				}
 			}
 
-			event.buttonList.add(new GuiButton(REPLAY_MANAGER_ID, event.gui.width / 2 - 100, i1 + 2*24, I18n.format("Replay Manager", new Object[0])));
+			GuiButton rm = new GuiButton(REPLAY_MANAGER_ID, event.gui.width / 2 - 100, i1 + 2*24, I18n.format("Replay Manager", new Object[0]));
+			rm.enabled = AuthenticationHandler.isAuthenticated();
+			event.buttonList.add(rm);
 		} else if(event.gui instanceof GuiOptions) {
 			event.buttonList.add(new GuiButton(9001, event.gui.width / 2 - 155, event.gui.height / 6 + 48 - 6 - 24, 310, 20, "Replay Mod Settings..."));
 		}
@@ -68,6 +72,7 @@ public class GuiEventHandler {
 	
 	@SubscribeEvent
 	public void onButton(ActionPerformedEvent event) {
+		if(!AuthenticationHandler.isAuthenticated()) return;
 		if(event.gui instanceof GuiMainMenu && event.button.id == REPLAY_MANAGER_ID) {
 			if(ConnectionEventHandler.saving) {
 				Minecraft.getMinecraft().displayGuiScreen(new GuiReplaySaving());

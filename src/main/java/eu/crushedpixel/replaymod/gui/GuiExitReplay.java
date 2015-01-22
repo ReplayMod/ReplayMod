@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.settings.GameSettings.Options;
 
 public class GuiExitReplay extends GuiIngameMenu {
 
@@ -49,6 +50,8 @@ public class GuiExitReplay extends GuiIngameMenu {
 					ReplayHandler.endReplay();
 					ReplayHandler.setSpeed(1f);
 
+					mc.gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
+					
 					ReplayHandler.lastExit = System.currentTimeMillis();
 					mc.theWorld.sendQuittingDisconnectingPacket();
 				}

@@ -14,13 +14,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
@@ -32,7 +30,6 @@ import net.minecraft.network.play.server.S06PacketUpdateHealth;
 import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
 import net.minecraft.network.play.server.S0BPacketAnimation;
-import net.minecraft.network.play.server.S18PacketEntityTeleport;
 import net.minecraft.network.play.server.S1CPacketEntityMetadata;
 import net.minecraft.network.play.server.S1DPacketEntityEffect;
 import net.minecraft.network.play.server.S1FPacketSetExperience;
@@ -61,8 +58,10 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.gson.Gson;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
+import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
@@ -112,7 +111,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private int replayLength = 0;
 
 	private int actualID = -1;
-	
+
 	private EffectRenderer old = mc.effectRenderer;
 
 	private ZipArchiveEntry replayEntry;
@@ -209,6 +208,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		ReplayHandler.setInitialGamma(mc.gameSettings.gammaSetting);
 
 		this.replayFile = replayFile;
 		this.networkManager = nm;
@@ -313,6 +314,18 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 									((Timer)mcTimer.get(mc)).renderPartialTicks += 5;
 								}
 								if(!ReplayHandler.isReplaying()) {
+									Position pos = ReplayHandler.getLastPosition();
+									CameraEntity cam = ReplayHandler.getCameraEntity();
+									if(cam != null) {
+										if(Math.abs(pos.getX() - cam.posX) < ReplayMod.TP_DISTANCE_LIMIT && Math.abs(pos.getZ() - cam.posZ) < ReplayMod.TP_DISTANCE_LIMIT)
+											if(pos != null) {
+												cam.moveAbsolute(pos.getX(), pos.getY(), pos.getZ());
+												cam.rotationPitch = pos.getPitch();
+												cam.rotationYaw = pos.getYaw();
+											}
+									}
+								}
+								if(!ReplayHandler.isReplaying()) {
 									setReplaySpeed(0);
 								}
 								hasRestarted = false;
@@ -348,7 +361,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	};
 
 	private boolean allowMovement = false;
-	
+
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 			throws Exception {
@@ -422,26 +435,27 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 					p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension, 
 							difficulty, maxPlayers, worldType, false);
 				}
-				
-				
+
+
 				if(p instanceof S07PacketRespawn) {
 					allowMovement = true;
 				}
-				
+
 
 				if(p instanceof S08PacketPlayerPosLook) {
 					final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook)p;
 
 					if(ReplayHandler.isReplaying() && !hurryToTimestamp) return;
-					
+
 					CameraEntity cent = ReplayHandler.getCameraEntity();
-					
-					if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > 100) || (Math.abs(cent.posZ - ppl.func_148933_e()) > 100))) {
+
+					if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > ReplayMod.TP_DISTANCE_LIMIT) || 
+							(Math.abs(cent.posZ - ppl.func_148933_e()) > ReplayMod.TP_DISTANCE_LIMIT))) {
 						return;
 					} else {
 						allowMovement = false;
 					}
-					
+
 					Thread t = new Thread(new Runnable() {
 
 						@Override

@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.recording;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -12,19 +11,18 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.network.Packet;
 
 import com.google.gson.Gson;
 
-import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
-import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
 import eu.crushedpixel.replaymod.holders.PacketData;
 
 public abstract class DataListener extends ChannelInboundHandlerAdapter {
@@ -45,6 +43,8 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 	protected DataWriter dataWriter;
 
 	private Gson gson = new Gson();
+	
+	protected Set<String> players = new HashSet<String>();
 
 	public void setWorldName(String worldName) {
 		this.worldName = worldName;
@@ -69,7 +69,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 	
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-		dataWriter.requestFinish();
+		dataWriter.requestFinish(players);
 	}
 	
 	public class DataWriter {
@@ -139,14 +139,17 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 			outputThread.start();
 		}
 
-		public void requestFinish() {
+		public void requestFinish(Set<String> players) {
 			active = false;
 			byte[] buffer = new byte[1024];
 
 			try {
 				ConnectionEventHandler.saving = true;
 				
-				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime);
+				String mcversion = Minecraft.getMinecraft().getVersion();
+				String[] pl = players.toArray(new String[players.size()]);
+				
+				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime, pl, mcversion);
 				String json = gson.toJson(metaData);
 
 				File folder = new File("./replay_recordings/");

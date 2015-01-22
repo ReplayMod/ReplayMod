@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod;
 
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -11,6 +12,7 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import eu.crushedpixel.replaymod.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
@@ -33,19 +35,18 @@ public class ReplayMod
 	//
 	//
 	
-	
 	public static final String MODID = "replaymod";
 	public static final String VERSION = "0.0.1";
 	
 	public static GuiReplayOverlay overlay = new GuiReplayOverlay();
 	
-	public static ReplaySettings replaySettings = new ReplaySettings(0, true, true, true, false);
+	public static ReplaySettings replaySettings = new ReplaySettings(0, true, true, true, false, false);
 	public static Configuration config;
 	
 	public static RecordingHandler recordingHandler;
-	
-	public static int PLAYER_ID = -1;
 
+	public static int TP_DISTANCE_LIMIT = 128;
+	
 	// The instance of your mod that Forge uses.
 	@Instance(value = "ReplayModID")
 	public static ReplayMod instance;
@@ -60,8 +61,10 @@ public class ReplayMod
 		Property maxFileSize = config.get("settings", "maximumFileSize", 0, "The maximum File size (in MB) of a recording. 0 means unlimited.");
 		Property showNot = ReplayMod.instance.config.get("settings", "showNotifications", true, "Defines whether notifications should be sent to the player.");
 		Property linear = ReplayMod.instance.config.get("settings", "forceLinearPath", false, "Defines whether travelling paths should be linear instead of interpolated.");
+		Property lighting = ReplayMod.instance.config.get("settings", "enableLighting", false, "If enabled, the whole map is lighted.");
 		
-		replaySettings = new ReplaySettings(maxFileSize.getInt(0), recServer.getBoolean(true), recSP.getBoolean(true), showNot.getBoolean(true), linear.getBoolean(false));
+		replaySettings = new ReplaySettings(maxFileSize.getInt(0), recServer.getBoolean(true), recSP.getBoolean(true), showNot.getBoolean(true), 
+				linear.getBoolean(false), lighting.getBoolean(false));
 		
 		config.save();
 	}
@@ -84,5 +87,7 @@ public class ReplayMod
 		overlay = new GuiReplayOverlay();
 		FMLCommonHandler.instance().bus().register(overlay);
 		MinecraftForge.EVENT_BUS.register(overlay);
+		
+		AuthenticationHandler.authenticate();
 	}
 }

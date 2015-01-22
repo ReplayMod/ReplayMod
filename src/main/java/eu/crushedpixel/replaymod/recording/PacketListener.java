@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.DataWatcher;
@@ -35,9 +36,13 @@ public class PacketListener extends DataListener {
 
 	public void saveOnly(Packet packet) {
 		try {
+			if(packet instanceof S0CPacketSpawnPlayer) {
+				UUID uuid = ((S0CPacketSpawnPlayer)packet).func_179819_c();
+				players.add(uuid.toString());
+			}
+			
 			PacketData pd = getPacketData(context, packet);
-			dataWriter.writeData(pd);
-			lastSentPacket = pd.getTimestamp();
+			writeData(pd);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -69,10 +74,14 @@ public class PacketListener extends DataListener {
 						return;
 					}
 				}
+				
+				if(packet instanceof S0CPacketSpawnPlayer) {
+					UUID uuid = ((S0CPacketSpawnPlayer)packet).func_179819_c();
+					players.add(uuid.toString());
+				}
 
 				PacketData pd = getPacketData(ctx, packet);
-				dataWriter.writeData(pd);
-				lastSentPacket = pd.getTimestamp();
+				writeData(pd);
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
@@ -82,6 +91,12 @@ public class PacketListener extends DataListener {
 		super.channelRead(ctx, msg);
 	}
 
+	private void writeData(PacketData pd) {
+		dataWriter.writeData(pd);
+		lastSentPacket = pd.getTimestamp();
+	}
+	
+	
 	private PacketData getPacketData(ChannelHandlerContext ctx, Packet packet) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
 
 		if(startTime == null) startTime = System.currentTimeMillis();
