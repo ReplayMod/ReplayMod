@@ -1,5 +1,7 @@
 package eu.crushedpixel.replaymod;
 
+import java.io.IOException;
+
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -12,6 +14,9 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import eu.crushedpixel.replaymod.api.client.ApiClient;
+import eu.crushedpixel.replaymod.api.client.ApiException;
+import eu.crushedpixel.replaymod.api.client.holders.AuthKey;
 import eu.crushedpixel.replaymod.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
@@ -29,9 +34,9 @@ public class ReplayMod
 	//XXX
 	//Known Bugs
 	//
-	//Keyframe removal doesn't seem to properly work
+	//Keyframes have problems with Linear Paths
 	//Rain isn't working
-	//
+	//Incompatible with Shaders Mod
 	//
 	//
 	
