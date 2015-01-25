@@ -23,6 +23,7 @@ import net.minecraft.client.Minecraft;
 
 import com.google.gson.Gson;
 
+import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.holders.PacketData;
 
 public abstract class DataListener extends ChannelInboundHandlerAdapter {
@@ -144,7 +145,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 			byte[] buffer = new byte[1024];
 
 			try {
-				ConnectionEventHandler.saving = true;
+				GuiReplaySaving.replaySaving = true;
 				
 				String mcversion = Minecraft.getMinecraft().getVersion();
 				String[] pl = players.toArray(new String[players.size()]);
@@ -181,10 +182,10 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
 				file.delete();
 				
-				ConnectionEventHandler.saving = false;
+				GuiReplaySaving.replaySaving = false;
 			} catch(Exception e) {
 				e.printStackTrace();
-				ConnectionEventHandler.saving = false;
+				GuiReplaySaving.replaySaving = false;
 			}
 		}
 

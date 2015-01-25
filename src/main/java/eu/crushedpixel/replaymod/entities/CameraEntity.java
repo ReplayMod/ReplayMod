@@ -28,7 +28,7 @@ public class CameraEntity extends EntityPlayer {
 	private double decay = 6; //decays by 75% per second;
 
 	private long lastCall = 0;
-
+	
 	//frac = time since last tick
 	public void updateMovement() {
 		Minecraft mc = Minecraft.getMinecraft();

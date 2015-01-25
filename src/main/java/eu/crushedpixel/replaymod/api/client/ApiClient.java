@@ -3,7 +3,9 @@ package eu.crushedpixel.replaymod.api.client;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
@@ -26,6 +28,7 @@ import eu.crushedpixel.replaymod.api.client.holders.Category;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.api.client.holders.Success;
 import eu.crushedpixel.replaymod.api.client.holders.UserFiles;
+import eu.crushedpixel.replaymod.utils.StreamTools;
 
 public class ApiClient {
 
@@ -61,23 +64,25 @@ public class ApiClient {
 		builder.put("auth", auth);
 		builder.put("category", category.getId());
 		String url = builder.toString();
-		
+
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(url);
-		
-		((InputStream)client).close();
-		
+
 		FileEntity entity = new FileEntity(file);
 		post.setEntity(entity);
 		HttpResponse response = client.execute(post);
-		
-		JsonElement element = jsonParser.parse(EntityUtils.toString(response.getEntity()));
-		try {
-			ApiError err = gson.fromJson(element, ApiError.class);
-			if(err.getDesc() != null) {
-				throw new ApiException(err);
-			}
-		} catch(Exception e) {}
+
+		//((InputStream)client).close(); TODO: Find working solution
+
+		if(response.getStatusLine().getStatusCode() != 200) {
+			JsonElement element = jsonParser.parse(EntityUtils.toString(response.getEntity()));
+			try {
+				ApiError err = gson.fromJson(element, ApiError.class);
+				if(err.getDesc() != null) {
+					throw new ApiException(err);
+				}
+			} catch(Exception e) {}
+		}
 	}
 
 	public void downloadFile(String auth, int file, File target) throws IOException {
@@ -86,11 +91,19 @@ public class ApiClient {
 		builder.put("id", file);
 		String url = builder.toString();
 		URL website = new URL(url);
-		InputStream is = website.openStream();
-		try { //If valid json, an error occured
-			jsonParser.parse(StreamTools.readStreamtoString(is));
-		} catch(Exception e) {
+		HttpURLConnection con = (HttpURLConnection)website.openConnection();
+		InputStream is = con.getInputStream();
+
+		if(con.getResponseCode() == 200) {
 			Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} else {
+			JsonElement element = jsonParser.parse(StreamTools.readStreamtoString(is));
+			try {
+				ApiError err = gson.fromJson(element, ApiError.class);
+				if(err.getDesc() != null) {
+					throw new ApiException(err);
+				}
+			} catch(Exception e) {}
 		}
 	}
 

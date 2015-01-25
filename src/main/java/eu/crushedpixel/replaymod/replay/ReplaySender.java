@@ -523,4 +523,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		//return timeInfo.get().getSpeed();
 	}
 
+	public File getReplayFile() {
+		return replayFile;
+	}
+
 }

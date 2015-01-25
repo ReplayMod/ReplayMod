@@ -1,5 +1,11 @@
-package eu.crushedpixel.replaymod.gui;
+package eu.crushedpixel.replaymod.gui.replaymanager;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.Unpooled;
+
+import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -12,10 +18,13 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
 
@@ -28,9 +37,11 @@ import org.lwjgl.input.Keyboard;
 import com.google.gson.Gson;
 import com.mojang.realmsclient.util.Pair;
 
+import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.utils.ImageUtils;
 
 public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
@@ -41,12 +52,12 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 	private String hoveringText;
 	private boolean initialized;
 	private GuiReplayListExtended replayGuiList;
-	private List<Pair<File, ReplayMetaData>> replayFileList = new ArrayList<Pair<File, ReplayMetaData>>();
+	private List<Pair<Pair<File, ReplayMetaData>, BufferedImage>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, BufferedImage>>();
 	private GuiButton loadButton, folderButton, renameButton, deleteButton, cancelButton, settingsButton;
 
 	private static Gson gson = new Gson();
 	private boolean replaying = false;
-	
+
 	private static final int LOAD_BUTTON_ID = 9001;
 	private static final int FOLDER_BUTTON_ID = 9002;
 	private static final int RENAME_BUTTON_ID = 9003;
@@ -55,14 +66,14 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 	private static final int CANCEL_BUTTON_ID = 9006;
 
 	private boolean delete_file = false;
-
+	
 	private void reloadFiles() {
 		replayGuiList.clearEntries();
-		replayFileList = new ArrayList<Pair<File, ReplayMetaData>>();
+		replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, BufferedImage>>();
 
 		File folder = new File("./replay_recordings/");
 		folder.mkdirs();
-		
+
 		for(File file : folder.listFiles()) {
 			if(("."+FilenameUtils.getExtension(file.getAbsolutePath())).equals(ConnectionEventHandler.ZIP_FILE_EXTENSION)) {
 				try {
@@ -70,14 +81,33 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 					ZipArchiveEntry recfile = archive.getEntry("recording"+ConnectionEventHandler.TEMP_FILE_EXTENSION);
 					ZipArchiveEntry metadata = archive.getEntry("metaData"+ConnectionEventHandler.JSON_FILE_EXTENSION);
 
+					ZipArchiveEntry image = archive.getEntry("thumb");
+					BufferedImage img = null;
+					if(image != null) {
+						InputStream is = archive.getInputStream(image);
+						is.skip(7);
+						BufferedImage bimg = ImageIO.read(is);
+						if(bimg != null) {
+							img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
+						} 
+						
+						/* Old way of reading thumbnail
+						else {
+							is = archive.getInputStream(image);
+							bimg = ImageIO.read(is);
+							img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
+						}
+						*/
+					}
+
 					InputStream is = archive.getInputStream(metadata);
 					BufferedReader br = new BufferedReader(new InputStreamReader(is));
-					
+
 					String json = br.readLine();
-					
+
 					ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
-					
-					replayFileList.add(Pair.of(file, metaData));
+
+					replayFileList.add(Pair.of(Pair.of(file, metaData), img));
 
 					archive.close();
 				} catch(Exception e) {
@@ -85,21 +115,25 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 				}
 			}
 		}
-		
+
 		Collections.sort(replayFileList, new FileAgeComparator());
-		
-		for(Pair<File, ReplayMetaData> p : replayFileList) {
-			replayGuiList.addEntry(FilenameUtils.getBaseName(p.first().getName()), p.second());
+
+		for(Pair<Pair<File, ReplayMetaData>, BufferedImage> p : replayFileList) {
+			replayGuiList.addEntry(FilenameUtils.getBaseName(p.first().first().getName()), p.first().second(), p.second());
 		}
 	}
-	
-	public class FileAgeComparator implements Comparator<Pair<File, ReplayMetaData>> {
+
+	public class FileAgeComparator implements Comparator<Pair<Pair<File, ReplayMetaData>, BufferedImage>> {
 
 		@Override
-		public int compare(Pair<File, ReplayMetaData> o1, Pair<File, ReplayMetaData> o2) {
-			return (int)(new Date(o2.second().getDate()).compareTo(new Date(o1.second().getDate())));
+		public int compare(Pair<Pair<File, ReplayMetaData>, BufferedImage> o1, Pair<Pair<File, ReplayMetaData>, BufferedImage> o2) {
+			try {
+				return (int)(new Date(o2.first().second().getDate()).compareTo(new Date(o1.first().second().getDate())));
+			} catch(Exception e) {
+				return 0;
+			}
 		}
-		
+
 	}
 
 	public void initGui()
@@ -183,7 +217,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 			}
 			else if(button.id == RENAME_BUTTON_ID) 
 			{
-				File file = replayFileList.get(replayGuiList.selected).first();
+				File file = replayFileList.get(replayGuiList.selected).first().first();
 				this.mc.displayGuiScreen(new GuiRenameReplay(this, file));
 			}
 			else if(button.id == FOLDER_BUTTON_ID)
@@ -241,7 +275,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 			if (result)
 			{
-				replayFileList.get(replayGuiList.selected).first().delete();
+				replayFileList.get(replayGuiList.selected).first().first().delete();
 				replayFileList.remove(replayGuiList.selected);
 			}
 
@@ -265,16 +299,15 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 		deleteButton.enabled = b;
 	}
 
-	public void loadReplay(int id)
-    {
-        mc.displayGuiScreen((GuiScreen)null);
+	public void loadReplay(int id) {
+		mc.displayGuiScreen((GuiScreen)null);
 
-        try {
-			ReplayHandler.startReplay(replayFileList.get(id).first());
+		try {
+			ReplayHandler.startReplay(replayFileList.get(id).first().first());
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 
-    }
+	}
 
 }

@@ -1,5 +1,6 @@
-package eu.crushedpixel.replaymod.gui;
+package eu.crushedpixel.replaymod.gui.replaymanager;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class GuiReplayListExtended extends GuiListExtended {
 
         for (int j1 = 0; j1 < i1; ++j1)
         {
+        	
             int k1 = p_148120_2_ + j1 * this.slotHeight + this.headerPadding;
             int l1 = this.slotHeight - 4;
 
@@ -76,7 +78,7 @@ public class GuiReplayListExtended extends GuiListExtended {
                 tessellator.draw();
                 GlStateManager.enableTexture2D();
             }
-
+            
             this.drawSlot(j1, p_148120_1_, k1, l1, p_148120_3_, p_148120_4_);
         }
     }
@@ -88,8 +90,8 @@ public class GuiReplayListExtended extends GuiListExtended {
 		entries = new ArrayList<GuiReplayListEntry>();
 	}
 	
-	public void addEntry(String fileName, ReplayMetaData metaData) {
-		entries.add(new GuiReplayListEntry(this, fileName, metaData));
+	public void addEntry(String fileName, ReplayMetaData metaData, BufferedImage image) {
+		entries.add(new GuiReplayListEntry(this, fileName, metaData, image));
 	}
 
 	@Override

@@ -389,4 +389,11 @@ public class ReplayHandler {
 	public static Position getLastPosition() {
 		return lastPosition;
 	}
+
+	public static File getReplayFile() {
+		if(replaySender != null) {
+			return replaySender.getReplayFile();
+		}
+		return null;
+	}
 }

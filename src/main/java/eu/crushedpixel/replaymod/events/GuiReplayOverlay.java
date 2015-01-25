@@ -19,6 +19,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -43,6 +44,7 @@ import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
+import eu.crushedpixel.replaymod.screenshot.ReplayScreenshot;
 
 public class GuiReplayOverlay extends Gui {
 
@@ -76,6 +78,8 @@ public class GuiReplayOverlay extends Gui {
 	private GuiReplaySpeedSlider speedSlider;
 
 	private boolean mouseDown = false;
+
+	private boolean requestScreenshot = false;
 
 	private Field drawBlockOutline;
 
@@ -114,6 +118,10 @@ public class GuiReplayOverlay extends Gui {
 			if(mc != null && mc.thePlayer != null)
 				MinecraftTicker.runMouseKeyboardTick(mc);
 		}
+		if(requestScreenshot) {
+			requestScreenshot = false;
+			ReplayScreenshot.saveScreenshot(mc.getFramebuffer());
+		}
 	}
 
 	public void resetUI() throws Exception {
@@ -128,10 +136,42 @@ public class GuiReplayOverlay extends Gui {
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
 		if(!ReplayHandler.replayActive()) {
 			GuiIngameForge.renderExperiance = true;
+			GuiIngameForge.renderArmor = true;
+			GuiIngameForge.renderAir = true;
+			GuiIngameForge.renderHealth = true;
+			GuiIngameForge.renderHotbar = true;
+			GuiIngameForge.renderFood = true;
+			GuiIngameForge.renderBossHealth = true;
+			GuiIngameForge.renderCrosshairs = true;
+			GuiIngameForge.renderHelmet = true;
+			GuiIngameForge.renderPortal = true;
+			GuiIngameForge.renderHealthMount = true;
+			GuiIngameForge.renderJumpBar = true;
+			GuiIngameForge.renderObjective = true;
+			return;
+		}
+
+		if(event.type == ElementType.PLAYER_LIST) {
+			if(event.isCancelable()) {
+				event.setCanceled(true);
+			}
 			return;
 		}
 
 		GuiIngameForge.renderExperiance = false;
+		GuiIngameForge.renderArmor = false;
+		GuiIngameForge.renderAir = false;
+		GuiIngameForge.renderHealth = false;
+		GuiIngameForge.renderHotbar = false;
+		GuiIngameForge.renderFood = false;
+		GuiIngameForge.renderBossHealth = false;
+		GuiIngameForge.renderCrosshairs = false;
+		GuiIngameForge.renderHelmet = false;
+		GuiIngameForge.renderPortal = false;
+		GuiIngameForge.renderHealthMount = false;
+		GuiIngameForge.renderJumpBar = false;
+		GuiIngameForge.renderObjective = false;
+		
 		GL11.glEnable(GL11.GL_BLEND);
 		drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 
@@ -204,11 +244,11 @@ public class GuiReplayOverlay extends Gui {
 
 					CameraEntity cam = ReplayHandler.getCameraEntity();
 					if(cam != null) {
-					ReplayHandler.setLastPosition(new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
+						ReplayHandler.setLastPosition(new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
 					} else {
 						ReplayHandler.setLastPosition(null);
 					}
-					
+
 					ReplayHandler.setReplayPos((int)time);
 				}
 			}
@@ -316,7 +356,7 @@ public class GuiReplayOverlay extends Gui {
 		try {
 			speedSlider.drawButton(mc, mouseX, mouseY);
 		} catch(Exception e) {}
-		
+
 		GlStateManager.resetColor();
 
 		Entity player = ReplayHandler.getCameraEntity();
@@ -746,7 +786,7 @@ public class GuiReplayOverlay extends Gui {
 			return false;
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onMouseMove(MouseEvent event) {
 		if(!ReplayHandler.replayActive()) return;
@@ -783,15 +823,16 @@ public class GuiReplayOverlay extends Gui {
 
 	@SubscribeEvent
 	public void onKeyInput(KeyInputEvent event) {
+
 		if(!ReplayHandler.replayActive()) return;
 		if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			return;
 		}
-		
-		if(Keyboard.isKeyDown(Keyboard.KEY_V) && !Keyboard.isRepeatEvent() && Keyboard.getKeyCount() == 1) {
+
+		if(Keyboard.isKeyDown(Keyboard.KEY_V) && !Keyboard.isRepeatEvent()) {
 			ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());
 		}
-		
+
 		KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
 		for(KeyBinding kb : keyBindings) {
 			if(!kb.isKeyDown()) {
@@ -832,6 +873,12 @@ public class GuiReplayOverlay extends Gui {
 				if(kb.getKeyDescription().equals("key.chat")) {
 					mc.displayGuiScreen(new GuiMouseInput());
 					continue;
+				}
+
+				//TODO: Register key handlers
+				if(kb.getKeyDescription().equals("key.screenshot") && kb.isPressed()) {
+					ReplayScreenshot.prepareScreenshot();
+					requestScreenshot = true;
 				}
 			} catch(Exception e) {
 				e.printStackTrace();

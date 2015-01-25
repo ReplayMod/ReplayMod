@@ -39,8 +39,6 @@ public class ConnectionEventHandler {
 	private static PacketListener packetListener = null;
 
 	private static boolean isRecording = false;
-	
-	public static boolean saving = false;
 
 	public static boolean isRecording() {
 		return isRecording;

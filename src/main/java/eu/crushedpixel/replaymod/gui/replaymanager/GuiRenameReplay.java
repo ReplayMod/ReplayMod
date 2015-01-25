@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui;
+package eu.crushedpixel.replaymod.gui.replaymanager;
 
 import java.io.File;
 import java.io.IOException;

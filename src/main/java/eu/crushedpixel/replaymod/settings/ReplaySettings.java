@@ -20,9 +20,9 @@ public class ReplaySettings {
 	private boolean showNotifications = true;
 	private boolean forceLinearPath = false;
 	private boolean lightingEnabled = false;
-	
+
 	private static Field mcTimer;
-	
+
 	static {
 		try {
 			mcTimer = Minecraft.class.getDeclaredField(MCPNames.field("field_71428_T"));
@@ -89,13 +89,17 @@ public class ReplaySettings {
 			Minecraft.getMinecraft().gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
 		}
 		try {
-			Timer timer = (Timer)mcTimer.get(Minecraft.getMinecraft());
-			timer.elapsedPartialTicks++;
-			timer.renderPartialTicks++;
+			if(ReplayHandler.isPaused()) {
+				Timer timer = (Timer)mcTimer.get(Minecraft.getMinecraft());
+				timer.elapsedPartialTicks++;
+				timer.renderPartialTicks++;
+			} else {
+				Minecraft.getMinecraft().entityRenderer.updateCameraAndRender(0);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		rewriteSettings();
 	}
 

@@ -1,8 +1,5 @@
 package eu.crushedpixel.replaymod;
 
-import java.io.IOException;
-
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -10,18 +7,13 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import eu.crushedpixel.replaymod.api.client.ApiClient;
-import eu.crushedpixel.replaymod.api.client.ApiException;
-import eu.crushedpixel.replaymod.api.client.holders.AuthKey;
 import eu.crushedpixel.replaymod.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
-import eu.crushedpixel.replaymod.events.ReplayTickHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 
@@ -78,9 +70,6 @@ public class ReplayMod
 	public void init(FMLInitializationEvent event) {
 		FMLCommonHandler.instance().bus().register(new ConnectionEventHandler());
 		MinecraftForge.EVENT_BUS.register(new GuiEventHandler());
-		ReplayTickHandler tickHandler = new ReplayTickHandler();
-		FMLCommonHandler.instance().bus().register(tickHandler);
-		MinecraftForge.EVENT_BUS.register(tickHandler);
 		
 		recordingHandler = new RecordingHandler();
 		FMLCommonHandler.instance().bus().register(recordingHandler);

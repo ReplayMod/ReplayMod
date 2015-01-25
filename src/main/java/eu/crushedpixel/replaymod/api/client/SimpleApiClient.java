@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import eu.crushedpixel.replaymod.api.client.holders.ApiError;
+import eu.crushedpixel.replaymod.utils.StreamTools;
 
 public class SimpleApiClient {
 
@@ -73,7 +74,7 @@ public class SimpleApiClient {
 		HttpURLConnection.setFollowRedirects(false);
 		try {
 			URL url = new URL(urlString);
-			httpUrlConnection = (HttpURLConnection) url.openConnection();
+			httpUrlConnection = (HttpURLConnection)url.openConnection();
 
 			httpUrlConnection.setRequestMethod("GET");
 
