@@ -35,6 +35,7 @@ import net.minecraft.network.play.server.S1DPacketEntityEffect;
 import net.minecraft.network.play.server.S1FPacketSetExperience;
 import net.minecraft.network.play.server.S28PacketEffect;
 import net.minecraft.network.play.server.S29PacketSoundEffect;
+import net.minecraft.network.play.server.S2APacketParticles;
 import net.minecraft.network.play.server.S2BPacketChangeGameState;
 import net.minecraft.network.play.server.S2DPacketOpenWindow;
 import net.minecraft.network.play.server.S2EPacketCloseWindow;
@@ -385,7 +386,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 			if(hurryToTimestamp) { //If hurrying, ignore some packets
 				if(p instanceof S45PacketTitle ||
-						p instanceof S29PacketSoundEffect) return;
+						p instanceof S29PacketSoundEffect ||
+						p instanceof S2APacketParticles) return;
 			}
 
 			if(p instanceof S02PacketChat) {

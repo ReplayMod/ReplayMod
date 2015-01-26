@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiDisconnected;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings.Options;
+import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
@@ -23,6 +25,8 @@ import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.replaymanager.GuiReplayManager;
 import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
+import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
+import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 
 public class GuiEventHandler {
@@ -102,12 +106,13 @@ public class GuiEventHandler {
 			mc.displayGuiScreen(new GuiReplaySettings(event.gui));
 		}
 		
-		if(ReplayHandler.isReplaying() && event.gui instanceof GuiIngameMenu && event.button.id == 1) {
+		if(ReplayHandler.replayActive() && event.gui instanceof GuiIngameMenu && event.button.id == 1) {
 			event.button.enabled = false;
 			Thread t = new Thread(new Runnable() {
 				@Override
-				public void run() {
-					mc.displayGuiScreen(new GuiReplaySaving(new GuiMainMenu()));
+				public void run() {			
+					//mc.displayGuiScreen(new GuiReplaySaving(new GuiMainMenu()));
+
 					ReplayHandler.setSpeed(1f);
 					ReplayHandler.endReplay();
 
@@ -115,6 +120,8 @@ public class GuiEventHandler {
 					
 					ReplayHandler.lastExit = System.currentTimeMillis();
 					mc.theWorld.sendQuittingDisconnectingPacket();
+					
+					ReplayGuiRegistry.show();
 				}
 			});		
 			t.run();

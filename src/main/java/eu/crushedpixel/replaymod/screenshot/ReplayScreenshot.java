@@ -50,8 +50,7 @@ public class ReplayScreenshot {
 		beforeScreen = mc.currentScreen;
 	}
 
-	public static void saveScreenshot(Framebuffer buffer)
-	{
+	public static void saveScreenshot(Framebuffer buffer) {
 
 		try {
 			GuiReplaySaving.replaySaving = true;

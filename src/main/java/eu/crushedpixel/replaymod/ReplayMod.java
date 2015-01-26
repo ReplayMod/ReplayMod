@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod;
 
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -15,6 +16,8 @@ import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
+import eu.crushedpixel.replaymod.registry.KeybindRegistry;
+import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 
 @Mod(modid = ReplayMod.MODID, version = ReplayMod.VERSION)
@@ -34,6 +37,8 @@ public class ReplayMod
 	
 	public static final String MODID = "replaymod";
 	public static final String VERSION = "0.0.1";
+	
+	private static final Minecraft mc = Minecraft.getMinecraft();
 	
 	public static GuiReplayOverlay overlay = new GuiReplayOverlay();
 	
@@ -83,5 +88,13 @@ public class ReplayMod
 		MinecraftForge.EVENT_BUS.register(overlay);
 		
 		AuthenticationHandler.authenticate();
+		
+		KeybindRegistry.initialize();
+		
+		try {
+			mc.entityRenderer = new SafeEntityRenderer(mc, mc.entityRenderer);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

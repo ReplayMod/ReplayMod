@@ -42,6 +42,7 @@ import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.screenshot.ReplayScreenshot;
@@ -135,21 +136,10 @@ public class GuiReplayOverlay extends Gui {
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
 		if(!ReplayHandler.replayActive()) {
-			GuiIngameForge.renderExperiance = true;
-			GuiIngameForge.renderArmor = true;
-			GuiIngameForge.renderAir = true;
-			GuiIngameForge.renderHealth = true;
-			GuiIngameForge.renderHotbar = true;
-			GuiIngameForge.renderFood = true;
-			GuiIngameForge.renderBossHealth = true;
-			GuiIngameForge.renderCrosshairs = true;
-			GuiIngameForge.renderHelmet = true;
-			GuiIngameForge.renderPortal = true;
-			GuiIngameForge.renderHealthMount = true;
-			GuiIngameForge.renderJumpBar = true;
-			GuiIngameForge.renderObjective = true;
 			return;
 		}
+		
+		ReplayGuiRegistry.hide();
 
 		if(event.type == ElementType.PLAYER_LIST) {
 			if(event.isCancelable()) {
@@ -157,20 +147,6 @@ public class GuiReplayOverlay extends Gui {
 			}
 			return;
 		}
-
-		GuiIngameForge.renderExperiance = false;
-		GuiIngameForge.renderArmor = false;
-		GuiIngameForge.renderAir = false;
-		GuiIngameForge.renderHealth = false;
-		GuiIngameForge.renderHotbar = false;
-		GuiIngameForge.renderFood = false;
-		GuiIngameForge.renderBossHealth = false;
-		GuiIngameForge.renderCrosshairs = false;
-		GuiIngameForge.renderHelmet = false;
-		GuiIngameForge.renderPortal = false;
-		GuiIngameForge.renderHealthMount = false;
-		GuiIngameForge.renderJumpBar = false;
-		GuiIngameForge.renderObjective = false;
 		
 		GL11.glEnable(GL11.GL_BLEND);
 		drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
@@ -829,10 +805,6 @@ public class GuiReplayOverlay extends Gui {
 			return;
 		}
 
-		if(Keyboard.isKeyDown(Keyboard.KEY_V) && !Keyboard.isRepeatEvent()) {
-			ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());
-		}
-
 		KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
 		for(KeyBinding kb : keyBindings) {
 			if(!kb.isKeyDown()) {
@@ -875,11 +847,18 @@ public class GuiReplayOverlay extends Gui {
 					continue;
 				}
 
-				//TODO: Register key handlers
-				if(kb.getKeyDescription().equals("key.screenshot") && kb.isPressed()) {
+				//Custom registered handlers
+				if(kb.getKeyDescription().equals("key.thumbnail") && kb.isPressed()) {
 					ReplayScreenshot.prepareScreenshot();
 					requestScreenshot = true;
+					continue;
 				}
+				
+				if(kb.getKeyDescription().equals("key.lighting") && kb.isPressed()) {
+					ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());
+					continue;
+				}
+				
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
