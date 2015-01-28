@@ -1,23 +1,37 @@
-package eu.crushedpixel.replaymod.authentication;
+package eu.crushedpixel.replaymod.online.authentication;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.api.client.ApiException;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 
 public class AuthenticationHandler {
 
+	public static final int SUCCESS = 1;
+	public static final int INVALID = 2;
+	public static final int NO_CONNECTION = 3;
+	
 	private static Minecraft mc = Minecraft.getMinecraft();
 
-	private static boolean auth = false;
+	private static String authkey = null;
 
 	public static boolean isAuthenticated() {
-		return auth;
+		return authkey != null;
 	}
 
-	public static void authenticate() {
-		auth = isPremiumUsername(Minecraft.getMinecraft().getSession().getUsername());
+	public static int authenticate(String username, String password) {
+		try {
+			authkey = ReplayMod.apiClient.getLogin(username, password).getAuthkey();
+			return SUCCESS;
+		} catch(ApiException e) {
+			return INVALID;
+		} catch(Exception e) {
+			return NO_CONNECTION;
+		}
 	}
 
 	private static final List<String> PREMIUM_USERS = new ArrayList<String>() {

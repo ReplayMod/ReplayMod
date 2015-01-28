@@ -11,10 +11,11 @@ import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import eu.crushedpixel.replaymod.authentication.AuthenticationHandler;
+import eu.crushedpixel.replaymod.api.client.ApiClient;
 import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
+import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
@@ -48,6 +49,8 @@ public class ReplayMod
 	public static RecordingHandler recordingHandler;
 
 	public static int TP_DISTANCE_LIMIT = 128;
+	
+	public static final ApiClient apiClient = new ApiClient();
 	
 	// The instance of your mod that Forge uses.
 	@Instance(value = "ReplayModID")
@@ -86,8 +89,6 @@ public class ReplayMod
 		overlay = new GuiReplayOverlay();
 		FMLCommonHandler.instance().bus().register(overlay);
 		MinecraftForge.EVENT_BUS.register(overlay);
-		
-		AuthenticationHandler.authenticate();
 		
 		KeybindRegistry.initialize();
 		

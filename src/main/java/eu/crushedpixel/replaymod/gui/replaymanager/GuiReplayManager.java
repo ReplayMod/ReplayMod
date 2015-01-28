@@ -89,15 +89,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 						BufferedImage bimg = ImageIO.read(is);
 						if(bimg != null) {
 							img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
-						} 
-						
-						/* Old way of reading thumbnail
-						else {
-							is = archive.getInputStream(image);
-							bimg = ImageIO.read(is);
-							img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
 						}
-						*/
 					}
 
 					InputStream is = archive.getInputStream(metadata);
@@ -136,8 +128,8 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 	}
 
-	public void initGui()
-	{
+	@Override
+	public void initGui() {
 		replayGuiList = new GuiReplayListExtended(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
 		Keyboard.enableRepeatEvents(true);
 		this.buttonList.clear();

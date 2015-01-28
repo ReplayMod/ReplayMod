@@ -20,11 +20,14 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import eu.crushedpixel.replaymod.authentication.AuthenticationHandler;
+import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
+import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
+import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
 import eu.crushedpixel.replaymod.gui.replaymanager.GuiReplayManager;
 import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
+import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -64,9 +67,6 @@ public class GuiEventHandler {
 		}
 	}
 
-	private static final int REPLAY_MANAGER_ID = 9001;
-	private static final int REPLAY_OPTIONS_ID = 9001;
-
 	@SubscribeEvent
 	public void onInit(InitGuiEvent event) {
 		if(event.gui instanceof GuiIngameMenu && ReplayHandler.replayActive()) {
@@ -89,9 +89,15 @@ public class GuiEventHandler {
 				}
 			}
 
-			GuiButton rm = new GuiButton(REPLAY_MANAGER_ID, event.gui.width / 2 - 100, i1 + 2*24, I18n.format("Replay Manager", new Object[0]));
+			GuiButton rm = new GuiButton(GuiConstants.REPLAY_MANAGER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 2*24, I18n.format("Replay Manager", new Object[0]));
+			rm.width = rm.width/2 - 2;
 			rm.enabled = AuthenticationHandler.isAuthenticated();
 			event.buttonList.add(rm);
+			
+			GuiButton rc = new GuiButton(GuiConstants.REPLAY_CENTER_BUTTON_ID, event.gui.width / 2 + 2, i1 + 2*24, I18n.format("Replay Center", new Object[0]));
+			rc.width = rc.width/2 - 2;
+			rc.enabled = true;
+			event.buttonList.add(rc);
 		} else if(event.gui instanceof GuiOptions) {
 			event.buttonList.add(new GuiButton(9001, event.gui.width / 2 - 155, event.gui.height / 6 + 48 - 6 - 24, 310, 20, "Replay Mod Settings..."));
 		}
@@ -99,10 +105,14 @@ public class GuiEventHandler {
 
 	@SubscribeEvent
 	public void onButton(ActionPerformedEvent event) {
-		if(!AuthenticationHandler.isAuthenticated()) return;
-		if(event.gui instanceof GuiMainMenu && event.button.id == REPLAY_MANAGER_ID) {
-			mc.displayGuiScreen(new GuiReplayManager());
-		} else if(event.gui instanceof GuiOptions && event.button.id == REPLAY_OPTIONS_ID) {
+		if(!event.button.enabled) return;
+		if(event.gui instanceof GuiMainMenu) {
+			if(event.button.id == GuiConstants.REPLAY_MANAGER_BUTTON_ID) {
+				mc.displayGuiScreen(new GuiReplayManager());
+			} else if(event.button.id == GuiConstants.REPLAY_CENTER_BUTTON_ID) {
+				mc.displayGuiScreen(new GuiLoginPrompt(event.gui, new GuiReplayCenter()));
+			}
+		} else if(event.gui instanceof GuiOptions && event.button.id == GuiConstants.REPLAY_OPTIONS_BUTTON_ID) {
 			mc.displayGuiScreen(new GuiReplaySettings(event.gui));
 		}
 		
@@ -111,8 +121,6 @@ public class GuiEventHandler {
 			Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {			
-					//mc.displayGuiScreen(new GuiReplaySaving(new GuiMainMenu()));
-
 					ReplayHandler.setSpeed(1f);
 					ReplayHandler.endReplay();
 

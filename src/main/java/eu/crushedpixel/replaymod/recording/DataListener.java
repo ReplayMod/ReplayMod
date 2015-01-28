@@ -20,6 +20,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 
 import com.google.gson.Gson;
 
@@ -146,8 +147,13 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
 			try {
 				GuiReplaySaving.replaySaving = true;
-				
+
 				String mcversion = Minecraft.getMinecraft().getVersion();
+				String[] split = mcversion.split("-");
+				if(split.length > 0) {
+					mcversion = split[0];
+				}
+				
 				String[] pl = players.toArray(new String[players.size()]);
 				
 				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime, pl, mcversion);
