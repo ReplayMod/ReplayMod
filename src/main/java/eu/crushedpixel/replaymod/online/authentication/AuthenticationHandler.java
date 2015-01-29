@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.online.authentication;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,10 +21,26 @@ public class AuthenticationHandler {
 	public static boolean isAuthenticated() {
 		return authkey != null;
 	}
+	
+	public static String getKey() {
+		return authkey;
+	}
 
 	public static int authenticate(String username, String password) {
 		try {
 			authkey = ReplayMod.apiClient.getLogin(username, password).getAuthkey();
+			return SUCCESS;
+		} catch(ApiException e) {
+			return INVALID;
+		} catch(Exception e) {
+			return NO_CONNECTION;
+		}
+	}
+	
+	public static int logout() {
+		try {
+			boolean success = ReplayMod.apiClient.logout(authkey);
+			authkey = null;
 			return SUCCESS;
 		} catch(ApiException e) {
 			return INVALID;

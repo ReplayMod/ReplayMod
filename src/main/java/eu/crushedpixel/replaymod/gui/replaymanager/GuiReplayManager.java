@@ -275,8 +275,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 		}
 	}
 
-	public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, String file, int p_152129_2_)
-	{
+	public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, String file, int p_152129_2_) {
 		String s1 = I18n.format("Are you sure you want to delete this replay?", new Object[0]);
 		String s2 = "\'" + file + "\' " + I18n.format("will be lost forever! (A long time!)", new Object[0]);
 		String s3 = I18n.format("Delete", new Object[0]);

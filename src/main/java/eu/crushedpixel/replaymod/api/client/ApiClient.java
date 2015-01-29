@@ -5,21 +5,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.FileEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import eu.crushedpixel.replaymod.api.client.holders.ApiError;
@@ -42,6 +40,13 @@ public class ApiClient {
 		AuthKey auth = invokeAndReturn(builder, AuthKey.class);
 		return auth;
 	}
+	
+	public boolean logout(String auth) throws IOException, ApiException {
+		QueryBuilder builder = new QueryBuilder(ApiMethods.logout);
+		builder.put("auth", auth);
+		Success succ = invokeAndReturn(builder, Success.class);
+		return succ.isSuccess();
+	}
 
 	public UserFiles getUserFiles(String auth, String user) throws IOException, ApiException {
 		QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
@@ -58,6 +63,20 @@ public class ApiClient {
 		FileInfo[] info = invokeAndReturn(builder, FileInfo[].class); //TODO: Test if that works
 		return info;
 	}
+	
+	public FileInfo[] getRecentFiles() throws IOException, ApiException {
+		QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
+		builder.put("recent", true);
+		FileInfo[] info = invokeAndReturn(builder, FileInfo[].class); //TODO: Test if that works
+		return info;
+	}
+	
+	public FileInfo[] getBestFiles() throws IOException, ApiException {
+		QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
+		builder.put("best", true);
+		FileInfo[] info = invokeAndReturn(builder, FileInfo[].class); //TODO: Test if that works
+		return info;
+	}
 
 	public void uploadFile(String auth, File file, Category category) throws IOException, ApiException {
 		QueryBuilder builder = new QueryBuilder(ApiMethods.upload_file);
@@ -65,24 +84,25 @@ public class ApiClient {
 		builder.put("category", category.getId());
 		String url = builder.toString();
 
-		HttpClient client = new DefaultHttpClient();
+		CloseableHttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(url);
 
 		FileEntity entity = new FileEntity(file);
 		post.setEntity(entity);
 		HttpResponse response = client.execute(post);
 
-		//((InputStream)client).close(); TODO: Find working solution
-
 		if(response.getStatusLine().getStatusCode() != 200) {
 			JsonElement element = jsonParser.parse(EntityUtils.toString(response.getEntity()));
 			try {
 				ApiError err = gson.fromJson(element, ApiError.class);
 				if(err.getDesc() != null) {
+					client.close();
 					throw new ApiException(err);
 				}
 			} catch(Exception e) {}
 		}
+		
+		client.close();
 	}
 
 	public void downloadFile(String auth, int file, File target) throws IOException {
@@ -123,8 +143,8 @@ public class ApiClient {
 	}
 
 	private <T> T invokeAndReturn(QueryBuilder builder,Class<T> classOfT) throws IOException, ApiException {
-		JsonObject arr = GsonApiClient.invoke(builder);
-		return gson.fromJson(arr, classOfT);
+		JsonElement ele = GsonApiClient.invoke(builder);
+		return gson.fromJson(ele, classOfT);
 	}
 
 	@SuppressWarnings("rawtypes")

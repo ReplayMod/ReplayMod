@@ -1,10 +1,10 @@
 package eu.crushedpixel.replaymod.events;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiDisconnected;
@@ -15,11 +15,12 @@ import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings.Options;
-import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
+import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
@@ -29,13 +30,12 @@ import eu.crushedpixel.replaymod.gui.replaymanager.GuiReplayManager;
 import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
-import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 
 public class GuiEventHandler {
 
 	private static Minecraft mc = Minecraft.getMinecraft();
-	
+
 	private static List<Class> allowedGUIs = new ArrayList<Class>() {
 		{
 			add(GuiReplaySettings.class);
@@ -45,9 +45,15 @@ public class GuiEventHandler {
 			add(GuiVideoSettings.class);
 		}
 	};
-	
+
 	@SubscribeEvent
 	public void onGui(GuiOpenEvent event) {
+		if(ReplayMod.firstMainMenu && event.gui instanceof GuiMainMenu) {
+			ReplayMod.firstMainMenu = false;
+			event.gui = new GuiLoginPrompt(event.gui, event.gui);
+			return;
+		}
+
 		if(!AuthenticationHandler.isAuthenticated()) return;
 		if(event.gui != null && GuiReplaySaving.replaySaving && !allowedGUIs.contains(event.gui.getClass())) {
 			event.gui = new GuiReplaySaving(event.gui);
@@ -63,6 +69,21 @@ public class GuiEventHandler {
 		else if(event.gui instanceof GuiDisconnected) {
 			if(!ReplayHandler.replayActive() && System.currentTimeMillis() - ReplayHandler.lastExit < 5000) {
 				event.setCanceled(true);
+			}
+		}
+	}
+
+	private static final Color DARK_RED = Color.decode("#DF0101");
+	private static final Color DARK_GREEN = Color.decode("#01DF01");
+	
+	@SubscribeEvent
+	public void onDraw(DrawScreenEvent e) {
+		if(e.gui instanceof GuiMainMenu) {
+			e.gui.drawString(mc.fontRendererObj, "Replay Mod:", 5, 5, Color.WHITE.getRGB());
+			if(AuthenticationHandler.isAuthenticated()) {
+				e.gui.drawString(mc.fontRendererObj, "LOGGED IN", 5, 15, DARK_GREEN.getRGB());
+			} else {
+				e.gui.drawString(mc.fontRendererObj, "LOGGED OUT", 5, 15, DARK_RED.getRGB());
 			}
 		}
 	}
@@ -93,7 +114,7 @@ public class GuiEventHandler {
 			rm.width = rm.width/2 - 2;
 			rm.enabled = AuthenticationHandler.isAuthenticated();
 			event.buttonList.add(rm);
-			
+
 			GuiButton rc = new GuiButton(GuiConstants.REPLAY_CENTER_BUTTON_ID, event.gui.width / 2 + 2, i1 + 2*24, I18n.format("Replay Center", new Object[0]));
 			rc.width = rc.width/2 - 2;
 			rc.enabled = true;
@@ -110,12 +131,16 @@ public class GuiEventHandler {
 			if(event.button.id == GuiConstants.REPLAY_MANAGER_BUTTON_ID) {
 				mc.displayGuiScreen(new GuiReplayManager());
 			} else if(event.button.id == GuiConstants.REPLAY_CENTER_BUTTON_ID) {
-				mc.displayGuiScreen(new GuiLoginPrompt(event.gui, new GuiReplayCenter()));
+				if(AuthenticationHandler.isAuthenticated()) {
+					mc.displayGuiScreen(new GuiReplayCenter());
+				} else {
+					mc.displayGuiScreen(new GuiLoginPrompt(event.gui, new GuiReplayCenter()));
+				}
 			}
 		} else if(event.gui instanceof GuiOptions && event.button.id == GuiConstants.REPLAY_OPTIONS_BUTTON_ID) {
 			mc.displayGuiScreen(new GuiReplaySettings(event.gui));
 		}
-		
+
 		if(ReplayHandler.replayActive() && event.gui instanceof GuiIngameMenu && event.button.id == 1) {
 			event.button.enabled = false;
 			Thread t = new Thread(new Runnable() {
@@ -125,10 +150,10 @@ public class GuiEventHandler {
 					ReplayHandler.endReplay();
 
 					mc.gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
-					
+
 					ReplayHandler.lastExit = System.currentTimeMillis();
 					mc.theWorld.sendQuittingDisconnectingPacket();
-					
+
 					ReplayGuiRegistry.show();
 				}
 			});		

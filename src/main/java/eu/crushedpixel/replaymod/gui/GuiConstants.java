@@ -2,6 +2,12 @@ package eu.crushedpixel.replaymod.gui;
 
 public class GuiConstants {
 
+	public static final int CENTER_OVERVIEW_BUTTON = 2000;
+	public static final int CENTER_MY_REPLAYS_BUTTON = 2001;
+	public static final int CENTER_UPLOAD_BUTTON = 2002;
+	public static final int CENTER_BACK_BUTTON = 2003;
+	public static final int CENTER_LOGOUT_BUTTON = 2004;
+	
 	public static final int REPLAY_OPTIONS_BUTTON_ID = 8000;
 	
 	public static final int REPLAY_MANAGER_BUTTON_ID = 9001;

@@ -46,6 +46,8 @@ public class ReplayMod
 	public static ReplaySettings replaySettings = new ReplaySettings(0, true, true, true, false, false);
 	public static Configuration config;
 	
+	public static boolean firstMainMenu = true;
+	
 	public static RecordingHandler recordingHandler;
 
 	public static int TP_DISTANCE_LIMIT = 128;

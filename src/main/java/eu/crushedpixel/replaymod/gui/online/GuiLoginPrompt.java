@@ -66,7 +66,7 @@ public class GuiLoginPrompt extends GuiScreen {
 				//Authenticate
 				textState = LOGGING_IN; 
 				
-				Thread loginThread = new Thread(new Runnable() {
+				mc.addScheduledTask(new Runnable() {
 					@Override
 					public void run() {
 						switch(AuthenticationHandler.authenticate(username.getText(), password.getText())) {
@@ -83,8 +83,6 @@ public class GuiLoginPrompt extends GuiScreen {
 						}
 					}
 				});
-				
-				loginThread.start();
 			}
 		} else if(button.id == GuiConstants.LOGIN_CANCEL_BUTTON) {
 			mc.displayGuiScreen(parent);
