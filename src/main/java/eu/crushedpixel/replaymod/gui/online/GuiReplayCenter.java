@@ -56,7 +56,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 			int w2 = w/buttonBar.size();
 
 			int x = 15+(w2*i);
-			b.xPosition = x;
+			b.xPosition = x+2;
 			b.yPosition = 20;
 			b.width = w2-4;
 
@@ -83,7 +83,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 			int w2 = w/bottomBar.size();
 
 			int x = 15+(w2*i);
-			b.xPosition = x;
+			b.xPosition = x+2;
 			b.yPosition = height-30;
 			b.width = w2-4;
 

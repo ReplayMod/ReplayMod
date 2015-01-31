@@ -44,7 +44,7 @@ import eu.crushedpixel.replaymod.utils.ImageUtils;
 
 public class GuiUploadFile extends GuiScreen {
 
-	private GuiTextField fileTitleInput;
+	private GuiTextField fileTitleInput, tagInput, messageTextField;
 	private GuiButton categoryButton, startUploadButton, cancelUploadButton, backButton;
 
 	private Gson gson = new Gson();
@@ -52,7 +52,7 @@ public class GuiUploadFile extends GuiScreen {
 	private File replayFile;
 	private ReplayMetaData metaData;
 	private BufferedImage thumb;
-
+	
 	private FileUploader uploader = new FileUploader();
 
 	private Category category = Category.MINIGAME;
@@ -127,13 +127,12 @@ public class GuiUploadFile extends GuiScreen {
 	public void initGui() {
 		if(replayFile == null) return;
 
-		fileTitleInput = new GuiTextField(GuiConstants.UPLOAD_NAME_INPUT, fontRendererObj, 200, 21, 120, 20);
+		fileTitleInput = new GuiTextField(GuiConstants.UPLOAD_NAME_INPUT, fontRendererObj, (this.width/2)+20+10, 21, Math.min(200, this.width-20-260), 20);
 		String fname = FilenameUtils.getBaseName(replayFile.getAbsolutePath());
 		fileTitleInput.setText(fname);
 
-
-		categoryButton = new GuiButton(GuiConstants.UPLOAD_CATEGORY_BUTTON, 200, 80, "Category: "+category.toNiceString());
-		categoryButton.width = 120;
+		categoryButton = new GuiButton(GuiConstants.UPLOAD_CATEGORY_BUTTON, (this.width/2)+20+10-1, 80, "Category: "+category.toNiceString());
+		categoryButton.width = Math.min(202, this.width-20-260+2);
 		buttonList.add(categoryButton);
 
 		List<GuiButton> bottomBar = new ArrayList<GuiButton>();
@@ -146,6 +145,12 @@ public class GuiUploadFile extends GuiScreen {
 
 		backButton = new GuiButton(GuiConstants.UPLOAD_BACK_BUTTON, 0, 0, "Back");
 		bottomBar.add(backButton);
+		
+		messageTextField = new GuiTextField(GuiConstants.UPLOAD_INFO_FIELD, fontRendererObj, 20, height-80, width-40, 20);
+		messageTextField.setEnabled(true);
+		messageTextField.setFocused(false);
+		
+		tagInput = new GuiTextField(GuiConstants.UPLOAD_TAG_INPUT, fontRendererObj, (this.width/2)+20+10, 110, Math.min(200, this.width-20-260), 20);
 
 		int i = 0;
 		for(GuiButton b : bottomBar) {
@@ -153,7 +158,7 @@ public class GuiUploadFile extends GuiScreen {
 			int w2 = w/bottomBar.size();
 
 			int x = 15+(w2*i);
-			b.xPosition = x;
+			b.xPosition = x+2;
 			b.yPosition = height-30;
 			b.width = w2-4;
 
@@ -175,22 +180,25 @@ public class GuiUploadFile extends GuiScreen {
 		} else if(button.id == GuiConstants.UPLOAD_BACK_BUTTON) {
 			mc.displayGuiScreen(new GuiMainMenu());
 		} else if(button.id == GuiConstants.UPLOAD_START_BUTTON) {
-			mc.addScheduledTask(new Runnable() {
+			final String name = fileTitleInput.getText().trim();
+			new Thread(new Runnable() {
 				@Override
 				public void run() {
 					try {
-						uploader.uploadFile(AuthenticationHandler.getKey(), fileTitleInput.getText().trim(), replayFile, category);
+						uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, replayFile, category);
 					} catch (ApiException e) { //TODO: Error handling
 						e.printStackTrace();
-						mc.displayGuiScreen(new GuiMainMenu());
+						//mc.displayGuiScreen(new GuiMainMenu());
 					} catch (RuntimeException e) {
 						e.printStackTrace();
-						mc.displayGuiScreen(new GuiMainMenu());
+						//mc.displayGuiScreen(new GuiMainMenu());
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
-			});
+			}).start();
+		} else if(button.id == GuiConstants.UPLOAD_CANCEL_BUTTON) {
+			uploader.cancelUploading();
 		}
 	}
 
@@ -198,12 +206,12 @@ public class GuiUploadFile extends GuiScreen {
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawDefaultBackground();
 
-		drawString(fontRendererObj, metaData.getServerName(), 200, 50, Color.GRAY.getRGB());
+		drawString(fontRendererObj, metaData.getServerName(), (this.width/2)+20+10, 50, Color.GRAY.getRGB());
 		drawString(fontRendererObj, "Duration: "+String.format("%02dm%02ds",
 				TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()),
 				TimeUnit.MILLISECONDS.toSeconds(metaData.getDuration()) - 
 				TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()))
-				), 200, 65, Color.GRAY.getRGB());
+				), (this.width/2)+20+10, 65, Color.GRAY.getRGB());
 
 		drawCenteredString(fontRendererObj, "Upload File", this.width/2, 5, Color.WHITE.getRGB());
 
@@ -217,20 +225,28 @@ public class GuiUploadFile extends GuiScreen {
 			} 
 
 			mc.getTextureManager().bindTexture(textureResource); //Will be freed by the ResourceHelper
-			Gui.drawScaledCustomSizeModalRect(20, 20, 0, 0, 1280, 720, 57*3, 32*3, 1280, 720);
+			int wid = (this.width)/2;
+			int hei = Math.round(wid*(720f/1280f));
+			Gui.drawScaledCustomSizeModalRect(19, 20, 0, 0, 1280, 720, wid, hei, 1280, 720);
 		}
 
 		fileTitleInput.drawTextBox();
-
+		messageTextField.drawTextBox();
+		tagInput.drawTextBox();
+		
 		super.drawScreen(mouseX, mouseY, partialTicks);
 
-		this.drawRect(20, this.height-100, width-20, this.height-80, Color.BLACK.getRGB());
-		this.drawRect(22, this.height-98, width-22, this.height-82, Color.WHITE.getRGB());
+		this.drawRect(19, this.height-52, width-19, this.height-37, Color.BLACK.getRGB());
+		this.drawRect(21, this.height-50, width-21, this.height-39, Color.WHITE.getRGB());
 
-		int width = this.width-22 - 22;
-		float w = width*uploader.getUploadProgress();
+		int width = this.width-21 - 21;
+		float prog = uploader.getUploadProgress();
+		float w = width*prog;
 
-		this.drawRect(22, this.height-98, Math.round(22+w), this.height-82, Color.RED.getRGB());
+		this.drawRect(21, this.height-50, Math.round(21+w), this.height-39, Color.RED.getRGB());
+
+		String perc = (int)Math.floor(prog*100)+"%";
+		fontRendererObj.drawString(perc, this.width/2 - fontRendererObj.getStringWidth(perc)/2, this.height-48, Color.BLACK.getRGB());
 	}
 
 	@Override
@@ -257,8 +273,37 @@ public class GuiUploadFile extends GuiScreen {
 			fileTitleInput.textboxKeyTyped(typedChar, keyCode);
 		}
 
+		if(uploader.isUploading()) {
+			startUploadButton.enabled = false;
+		} else {
+			startUploadButton.enabled = (!(fileTitleInput.getText().trim().length() < 5 || fileTitleInput.getText().trim().length() > 30 || 
+					p.matcher(fileTitleInput.getText()).find()));
+		}
+	}
+
+	public void onStartUploading() {
+		startUploadButton.enabled = false;
+		cancelUploadButton.enabled = true;
+		backButton.enabled = false;
+		categoryButton.enabled = false;
+		fileTitleInput.setEnabled(false);
+		messageTextField.setText("Uploading...");
+		messageTextField.setTextColor(Color.WHITE.getRGB());
+	}
+
+	public void onFinishUploading(boolean success, String info) {
 		startUploadButton.enabled = (!(fileTitleInput.getText().trim().length() < 5 || fileTitleInput.getText().trim().length() > 30 || 
 				p.matcher(fileTitleInput.getText()).find()));
-
+		cancelUploadButton.enabled = false;
+		backButton.enabled = true;
+		categoryButton.enabled = true;
+		fileTitleInput.setEnabled(true);
+		if(success) {
+			messageTextField.setText("File has been successfully uploaded");
+			messageTextField.setTextColor(Color.GREEN.getRGB());
+		} else {
+			messageTextField.setText(info);
+			messageTextField.setTextColor(Color.RED.getRGB());
+		}
 	}
 }

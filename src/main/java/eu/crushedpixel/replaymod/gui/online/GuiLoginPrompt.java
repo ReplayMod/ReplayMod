@@ -66,13 +66,18 @@ public class GuiLoginPrompt extends GuiScreen {
 				//Authenticate
 				textState = LOGGING_IN; 
 				
-				mc.addScheduledTask(new Runnable() {
+				new Thread(new Runnable() {
 					@Override
 					public void run() {
 						switch(AuthenticationHandler.authenticate(username.getText(), password.getText())) {
 						case AuthenticationHandler.SUCCESS:
 							textState = EMPTY;
-							mc.displayGuiScreen(successScreen);
+							mc.addScheduledTask(new Runnable() {
+								@Override
+								public void run() {
+									mc.displayGuiScreen(successScreen);
+								}
+							});
 							break;
 						case AuthenticationHandler.INVALID:
 							textState = INVALID_LOGIN;
@@ -82,7 +87,7 @@ public class GuiLoginPrompt extends GuiScreen {
 							break;
 						}
 					}
-				});
+				}).start();
 			}
 		} else if(button.id == GuiConstants.LOGIN_CANCEL_BUTTON) {
 			mc.displayGuiScreen(parent);
