@@ -37,8 +37,6 @@ public final class MCPNames {
 	static {
 		if (use()) {
 			String mappingsDir = "./../build/unpacked/mappings/";
-			ResourceLocation fieldsLocation = new ResourceLocation("assets/replaymod/fields.csv");
-			ResourceLocation methodsLocation = new ResourceLocation("assets/replaymod/methods.csv");
 			
 			InputStream fieldsIs = MCPNames.class.getClassLoader().getResourceAsStream("fields.csv");
 			InputStream methodsIs = MCPNames.class.getClassLoader().getResourceAsStream("methods.csv");

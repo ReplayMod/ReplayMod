@@ -22,6 +22,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.client.ApiException;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
+import eu.crushedpixel.replaymod.gui.replaymanager.GuiReplayManager;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 
 public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
@@ -37,14 +38,17 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		//Top Button Bar
 		List<GuiButton> buttonBar = new ArrayList<GuiButton>();
 
-		GuiButton overviewButton = new GuiButton(GuiConstants.CENTER_OVERVIEW_BUTTON, 20, 30, "Overview");
-		buttonBar.add(overviewButton);
+		GuiButton recentButton = new GuiButton(GuiConstants.CENTER_RECENT_BUTTON, 20, 30, "Newest Replays");
+		buttonBar.add(recentButton);
+		
+		GuiButton bestButton = new GuiButton(GuiConstants.CENTER_BEST_BUTTON, 20, 30, "Best Replays");
+		buttonBar.add(bestButton);
 
 		GuiButton ownReplayButton = new GuiButton(GuiConstants.CENTER_MY_REPLAYS_BUTTON, 20, 30, "My Replays");
 		buttonBar.add(ownReplayButton);
 
-		GuiButton uploadReplayButton = new GuiButton(GuiConstants.CENTER_UPLOAD_BUTTON, 20, 30, "Upload");
-		buttonBar.add(uploadReplayButton);
+		GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, "Search");
+		buttonBar.add(searchButton);
 
 		int i = 0;
 		for(GuiButton b : buttonBar) {
@@ -64,8 +68,11 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		//Bottom Button Bar (dat alliteration)
 		List<GuiButton> bottomBar = new ArrayList<GuiButton>();
 
-		GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, "Back");
+		GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, "Main Menu");
 		bottomBar.add(exitButton);
+		
+		GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, "Replay Manager");
+		bottomBar.add(managerButton);
 
 		GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, "Logout");
 		bottomBar.add(logoutButton);
@@ -85,7 +92,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 			i++;
 		}
 		
-		showOverview();
+		showOnlineRecent();
 	}
 
 	@Override
@@ -93,9 +100,18 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		if(!button.enabled) return;
 		if(button.id == GuiConstants.CENTER_BACK_BUTTON) {
 			mc.displayGuiScreen(new GuiMainMenu());
-			return;
 		} else if(button.id == GuiConstants.CENTER_LOGOUT_BUTTON) {
 			mc.displayGuiScreen(getYesNoGui(this, LOGOUT_CALLBACK_ID));
+		} else if(button.id == GuiConstants.CENTER_MANAGER_BUTTON) {
+			mc.displayGuiScreen(new GuiReplayManager());
+		} else if(button.id == GuiConstants.CENTER_RECENT_BUTTON) {
+			showOnlineRecent();
+		} else if(button.id == GuiConstants.CENTER_BEST_BUTTON) {
+			
+		} else if(button.id == GuiConstants.CENTER_MY_REPLAYS_BUTTON) {
+			
+		} else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
+			
 		}
 	}
 
@@ -136,7 +152,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		Keyboard.enableRepeatEvents(false);
 	}
 
-	public void showOverview() {
+	public void showOnlineRecent() {
 		mc.addScheduledTask(new Runnable() {
 			@Override
 			public void run() {

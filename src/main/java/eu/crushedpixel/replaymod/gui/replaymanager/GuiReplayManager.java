@@ -38,8 +38,11 @@ import com.google.gson.Gson;
 import com.mojang.realmsclient.util.Pair;
 
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
+import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
+import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
+import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 
@@ -53,20 +56,21 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 	private boolean initialized;
 	private GuiReplayListExtended replayGuiList;
 	private List<Pair<Pair<File, ReplayMetaData>, BufferedImage>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, BufferedImage>>();
-	private GuiButton loadButton, folderButton, renameButton, deleteButton, cancelButton, settingsButton;
+	private GuiButton loadButton, uploadButton, folderButton, renameButton, deleteButton, cancelButton, settingsButton;
 
 	private static Gson gson = new Gson();
 	private boolean replaying = false;
 
 	private static final int LOAD_BUTTON_ID = 9001;
-	private static final int FOLDER_BUTTON_ID = 9002;
-	private static final int RENAME_BUTTON_ID = 9003;
-	private static final int DELETE_BUTTON_ID = 9004;
-	private static final int SETTINGS_BUTTON_ID = 9005;
-	private static final int CANCEL_BUTTON_ID = 9006;
+	private static final int UPLOAD_BUTTON_ID = 9002;
+	private static final int FOLDER_BUTTON_ID = 9003;
+	private static final int RENAME_BUTTON_ID = 9004;
+	private static final int DELETE_BUTTON_ID = 9005;
+	private static final int SETTINGS_BUTTON_ID = 9006;
+	private static final int CANCEL_BUTTON_ID = 9007;
 
 	private boolean delete_file = false;
-	
+
 	private void reloadFiles() {
 		replayGuiList.clearEntries();
 		replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, BufferedImage>>();
@@ -90,6 +94,11 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 						if(bimg != null) {
 							img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
 						}
+					}
+					
+					//If thumb is null, set image to placeholder
+					if(img == null) {
+						img = ImageIO.read(MCPNames.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
 					}
 
 					InputStream is = archive.getInputStream(metadata);
@@ -146,7 +155,8 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 	}
 
 	private void createButtons() {
-		this.buttonList.add(loadButton = new GuiButton(LOAD_BUTTON_ID, this.width / 2 - 154, this.height - 52, 150, 20, I18n.format("Load Replay", new Object[0])));
+		this.buttonList.add(loadButton = new GuiButton(LOAD_BUTTON_ID, this.width / 2 - 154, this.height - 52, 73, 20, I18n.format("Load", new Object[0])));
+		this.buttonList.add(uploadButton = new GuiButton(UPLOAD_BUTTON_ID, this.width / 2 - 154 + 78, this.height - 52, 73, 20, I18n.format("Upload", new Object[0])));
 		this.buttonList.add(folderButton =  new GuiButton(FOLDER_BUTTON_ID, this.width / 2 + 4, this.height - 52, 150, 20, I18n.format("Open Replay Folder...", new Object[0])));
 		this.buttonList.add(renameButton = new GuiButton(RENAME_BUTTON_ID, this.width / 2 - 154, this.height - 28, 72, 20, I18n.format("Rename", new Object[0])));
 		this.buttonList.add(deleteButton = new GuiButton(DELETE_BUTTON_ID, this.width / 2 - 76, this.height - 28, 72, 20, I18n.format("Delete", new Object[0])));
@@ -185,20 +195,17 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException
 	{
-		if (button.enabled) {
+		if(button.enabled) {
 			if(button.id == LOAD_BUTTON_ID) {
 				loadReplay(replayGuiList.selected);
 			}
-			else if (button.id == CANCEL_BUTTON_ID)
-			{
+			else if(button.id == CANCEL_BUTTON_ID) {
 				mc.displayGuiScreen(parentScreen);
 			}
-			else if (button.id == DELETE_BUTTON_ID)
-			{
+			else if(button.id == DELETE_BUTTON_ID) {
 				String s = replayGuiList.getListEntry(replayGuiList.selected).getFileName();
 
-				if (s != null)
-				{
+				if (s != null) {
 					delete_file = true;
 					GuiYesNo guiyesno = getYesNoGui(this, s, 1);
 					this.mc.displayGuiScreen(guiyesno);
@@ -207,53 +214,48 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 			else if(button.id == SETTINGS_BUTTON_ID) {
 				this.mc.displayGuiScreen(new GuiReplaySettings(this));
 			}
-			else if(button.id == RENAME_BUTTON_ID) 
-			{
+			else if(button.id == RENAME_BUTTON_ID) {
 				File file = replayFileList.get(replayGuiList.selected).first().first();
 				this.mc.displayGuiScreen(new GuiRenameReplay(this, file));
 			}
-			else if(button.id == FOLDER_BUTTON_ID)
-			{
+			else if(button.id == UPLOAD_BUTTON_ID) {
+				File file = replayFileList.get(replayGuiList.selected).first().first();
+				this.mc.displayGuiScreen(new GuiUploadFile(file));
+			}
+			else if(button.id == FOLDER_BUTTON_ID) {
 				File file1 = new File("./replay_recordings/");
 				file1.mkdirs();
 				String s = file1.getAbsolutePath();
 
-				if (Util.getOSType() == Util.EnumOS.OSX)
-				{
-					try
-					{
+				if(Util.getOSType() == Util.EnumOS.OSX) {
+					try {
 						Runtime.getRuntime().exec(new String[] {"/usr/bin/open", s});
 						return;
 					}
-					catch (IOException ioexception1) {}
+					catch(IOException ioexception1) {}
 				}
-				else if (Util.getOSType() == Util.EnumOS.WINDOWS)
-				{
+				else if(Util.getOSType() == Util.EnumOS.WINDOWS) {
 					String s1 = String.format("cmd.exe /C start \"Open file\" \"%s\"", new Object[] {s});
 
-					try
-					{
+					try{
 						Runtime.getRuntime().exec(s1);
 						return;
 					}
-					catch (IOException ioexception) {}
+					catch(IOException ioexception) {}
 				}
 
 				boolean flag = false;
 
-				try
-				{
+				try {
 					Class oclass = Class.forName("java.awt.Desktop");
 					Object object = oclass.getMethod("getDesktop", new Class[0]).invoke((Object)null, new Object[0]);
 					oclass.getMethod("browse", new Class[] {URI.class}).invoke(object, new Object[] {file1.toURI()});
 				}
-				catch (Throwable throwable)
-				{
+				catch(Throwable throwable) {
 					flag = true;
 				}
 
-				if (flag)
-				{
+				if(flag) {
 					Sys.openURL("file://" + s);
 				}
 			}
@@ -286,6 +288,12 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 	public void setButtonsEnabled(boolean b) {
 		loadButton.enabled = b;
+		if(!b || !AuthenticationHandler.isAuthenticated()) {
+			uploadButton.enabled = false;
+		} else {
+			uploadButton.enabled = true;
+		}
+
 		renameButton.enabled = b;
 		deleteButton.enabled = b;
 	}

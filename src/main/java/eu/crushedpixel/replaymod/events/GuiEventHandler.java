@@ -26,6 +26,7 @@ import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
 import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
+import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import eu.crushedpixel.replaymod.gui.replaymanager.GuiReplayManager;
 import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
@@ -59,7 +60,7 @@ public class GuiEventHandler {
 			event.gui = new GuiReplaySaving(event.gui);
 			return;
 		}
-		if(!(event.gui instanceof GuiReplayManager)) ResourceHelper.freeResources();
+		if(!(event.gui instanceof GuiReplayManager || event.gui instanceof GuiUploadFile)) ResourceHelper.freeResources();
 		if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
 			if(ReplayHandler.replayActive()) {
 				event.setCanceled(true);
@@ -112,7 +113,7 @@ public class GuiEventHandler {
 
 			GuiButton rm = new GuiButton(GuiConstants.REPLAY_MANAGER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 2*24, I18n.format("Replay Manager", new Object[0]));
 			rm.width = rm.width/2 - 2;
-			rm.enabled = AuthenticationHandler.isAuthenticated();
+			//rm.enabled = AuthenticationHandler.isAuthenticated();
 			event.buttonList.add(rm);
 
 			GuiButton rc = new GuiButton(GuiConstants.REPLAY_CENTER_BUTTON_ID, event.gui.width / 2 + 2, i1 + 2*24, I18n.format("Replay Center", new Object[0]));

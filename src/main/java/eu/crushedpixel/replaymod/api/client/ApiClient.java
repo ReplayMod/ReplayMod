@@ -78,33 +78,6 @@ public class ApiClient {
 		return info;
 	}
 
-	public void uploadFile(String auth, File file, Category category) throws IOException, ApiException {
-		QueryBuilder builder = new QueryBuilder(ApiMethods.upload_file);
-		builder.put("auth", auth);
-		builder.put("category", category.getId());
-		String url = builder.toString();
-
-		CloseableHttpClient client = new DefaultHttpClient();
-		HttpPost post = new HttpPost(url);
-
-		FileEntity entity = new FileEntity(file);
-		post.setEntity(entity);
-		HttpResponse response = client.execute(post);
-
-		if(response.getStatusLine().getStatusCode() != 200) {
-			JsonElement element = jsonParser.parse(EntityUtils.toString(response.getEntity()));
-			try {
-				ApiError err = gson.fromJson(element, ApiError.class);
-				if(err.getDesc() != null) {
-					client.close();
-					throw new ApiException(err);
-				}
-			} catch(Exception e) {}
-		}
-		
-		client.close();
-	}
-
 	public void downloadFile(String auth, int file, File target) throws IOException {
 		QueryBuilder builder = new QueryBuilder(ApiMethods.download_file);
 		builder.put("auth", auth);
