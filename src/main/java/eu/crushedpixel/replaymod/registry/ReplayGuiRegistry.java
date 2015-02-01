@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraftforge.client.GuiIngameForge;
+import eu.crushedpixel.replaymod.reflection.MCPNames;
 
 public class ReplayGuiRegistry {
 
@@ -15,7 +16,7 @@ public class ReplayGuiRegistry {
 	
 	static {
 		try {
-			renderHand = EntityRenderer.class.getDeclaredField("renderHand"); //TODO: MCPNames
+			renderHand = EntityRenderer.class.getDeclaredField(MCPNames.field("field_175074_C"));
 			renderHand.setAccessible(true);
 		} catch(Exception e) {
 			e.printStackTrace();
