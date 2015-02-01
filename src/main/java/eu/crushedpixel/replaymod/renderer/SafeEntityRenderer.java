@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.renderer;
 
 import java.lang.reflect.Field;
 
+import eu.crushedpixel.replaymod.reflection.MCPNames;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.resources.IResourceManager;
@@ -11,7 +12,7 @@ public class SafeEntityRenderer extends EntityRenderer {
 	private static Field resourceManager;
 	static {
 		try {
-			resourceManager = EntityRenderer.class.getDeclaredField("resourceManager"); //TODO: MCPNames
+			resourceManager = EntityRenderer.class.getDeclaredField(MCPNames.field("field_147711_ac"));
 			resourceManager.setAccessible(true);
 		} catch(Exception e) {
 			e.printStackTrace();

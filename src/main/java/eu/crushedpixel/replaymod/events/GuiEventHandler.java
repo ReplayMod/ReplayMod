@@ -15,6 +15,7 @@ import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings.Options;
+import net.minecraft.util.Timer;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
@@ -32,6 +33,7 @@ import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.replay.ReplaySender;
 
 public class GuiEventHandler {
 
@@ -55,7 +57,12 @@ public class GuiEventHandler {
 				event.gui = new GuiLoginPrompt(event.gui, event.gui);
 				return;
 			} else {
-				ReplayHandler.setSpeed(1f);
+				try {
+					Timer timer = (Timer)ReplaySender.mcTimer.get(mc);
+					timer.timerSpeed = 1f;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -125,7 +132,8 @@ public class GuiEventHandler {
 			rc.enabled = true;
 			event.buttonList.add(rc);
 		} else if(event.gui instanceof GuiOptions) {
-			event.buttonList.add(new GuiButton(9001, event.gui.width / 2 - 155, event.gui.height / 6 + 48 - 6 - 24, 310, 20, "Replay Mod Settings..."));
+			event.buttonList.add(new GuiButton(GuiConstants.REPLAY_OPTIONS_BUTTON_ID, 
+					event.gui.width / 2 - 155, event.gui.height / 6 + 48 - 6 - 24, 310, 20, "Replay Mod Settings..."));
 		}
 	}
 
@@ -150,7 +158,7 @@ public class GuiEventHandler {
 			event.button.enabled = false;
 			Thread t = new Thread(new Runnable() {
 				@Override
-				public void run() {			
+				public void run() {	
 					ReplayHandler.endReplay();
 
 					mc.gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
@@ -161,7 +169,7 @@ public class GuiEventHandler {
 					ReplayGuiRegistry.show();
 				}
 			});		
-			t.run();
+			t.start();
 		}
 	}
 

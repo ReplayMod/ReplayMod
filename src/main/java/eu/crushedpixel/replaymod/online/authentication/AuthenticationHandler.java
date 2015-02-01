@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.online.authentication;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import eu.crushedpixel.replaymod.ReplayMod;
@@ -26,6 +27,16 @@ public class AuthenticationHandler {
 		return authkey;
 	}
 
+	private static List<String> blackUUIDs = new ArrayList<String>() {
+		{
+			add("23978392a78c49cf9f5235a151fd4083"); //Hudelsohn
+		}
+	};
+	
+	public static boolean isBlacklisted(String uuid) {
+		return blackUUIDs.contains(uuid.replace("-", ""));
+	}
+	
 	public static int authenticate(String username, String password) {
 		try {
 			authkey = ReplayMod.apiClient.getLogin(username, password).getAuthkey();

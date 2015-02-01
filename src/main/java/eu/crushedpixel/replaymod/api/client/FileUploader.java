@@ -9,7 +9,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
@@ -37,7 +39,7 @@ public class FileUploader {
 	private GuiUploadFile parent;
 	//private CountingHttpEntity counter;
 
-	public void uploadFile(GuiUploadFile gui, String auth, String filename, File file, Category category) throws IOException, ApiException, RuntimeException {
+	public void uploadFile(GuiUploadFile gui, String auth, String filename, List<String> tags, File file, Category category) throws IOException, ApiException, RuntimeException {
 		parent = gui;
 		gui.onStartUploading();
 		filesize = 0;
@@ -45,7 +47,20 @@ public class FileUploader {
 		if(uploading) throw new RuntimeException("FileUploader is already uploading");
 		uploading = true;
 
-		String postData = "?auth="+auth+"&category="+category.getId()+"&name="+filename;
+		String postData = "?auth="+auth+"&category="+category.getId();
+		
+		if(tags.size() > 0) {
+			postData += "&tags=";
+			for(String tag : tags) {
+				postData += tag;
+				if(!tag.equals(tags.get(tags.size()-1))) {
+					postData += ",";
+				}
+			}
+		}
+		
+		postData +="&name="+URLEncoder.encode(filename, "UTF-8");
+		System.out.println(postData);
 
 		String url = "http://ReplayMod.com/api/upload_file"+postData;
 		HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
@@ -108,10 +123,14 @@ public class FileUploader {
 		String info = null;
 		if(responseCode != 200) {
 			ApiError error = new ApiError(-1, "An unknown error occured");
+			String json = "";
 			while(r.ready()) {
-				error = gson.fromJson(r.readLine(), ApiError.class);
+				json += r.readLine();
 			}
+			System.out.println(json);
+			error = gson.fromJson(json, ApiError.class);
 			info = error.getDesc();
+			System.out.println(info);
 		}
 
 		con.disconnect();

@@ -8,6 +8,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -105,7 +106,16 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private Field chatPacketPosition;
 
 	private Minecraft mc = Minecraft.getMinecraft();
-	private Field mcTimer;
+	public static Field mcTimer;
+
+	static {
+		try {
+			mcTimer = Minecraft.class.getDeclaredField(MCPNames.field("field_71428_T"));
+			mcTimer.setAccessible(true);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	private long now = System.currentTimeMillis();
 
@@ -158,7 +168,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	public void setReplaySpeed(final double d) {
 		if(d != 0) this.replaySpeed = d;
-
 		try {
 			Timer timer = (Timer)mcTimer.get(mc);
 			timer.timerSpeed = (float)d;
@@ -185,9 +194,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			joinPacketWorldType = S01PacketJoinGame.class.getDeclaredField(MCPNames.field("field_149201_g"));
 			joinPacketWorldType.setAccessible(true);
 
-			mcTimer = Minecraft.class.getDeclaredField(MCPNames.field("field_71428_T"));
-			mcTimer.setAccessible(true);
-
 			effectPacketEntityId = S1DPacketEntityEffect.class.getDeclaredField(MCPNames.field("field_149434_a"));
 			effectPacketEntityId.setAccessible(true);
 
@@ -209,7 +215,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		ReplayHandler.setInitialGamma(mc.gameSettings.gammaSetting);
 
 		this.replayFile = replayFile;
@@ -332,9 +338,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 								hasRestarted = false;
 							}
 
-						} catch(IOException eof) {
+						} catch(EOFException eof) {
 							setReplaySpeed(0);
-						}
+						} catch(IOException e) {}
 					}
 				}
 			} catch(Exception e) {

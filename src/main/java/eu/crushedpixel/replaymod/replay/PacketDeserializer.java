@@ -68,7 +68,7 @@ public class PacketDeserializer extends MessageDeserializer {
 	            
 	            Field state_by_id = null;
 	            try {
-	            	state_by_id = EnumConnectionState.class.getDeclaredField("STATES_BY_ID"); //TODO: Localize
+	            	state_by_id = EnumConnectionState.class.getDeclaredField(MCPNames.field("field_150764_e"));
 	            	state_by_id.setAccessible(true);
 	            	state = (EnumConnectionState)((TIntObjectMap)state_by_id.get(null)).get(i);
 	            	TIntObjectMap map = (TIntObjectMap)state_by_id.get(null);

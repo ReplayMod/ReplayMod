@@ -17,6 +17,7 @@ public class GuiConstants {
 	public static final int UPLOAD_BACK_BUTTON = 3005;
 	public static final int UPLOAD_INFO_FIELD = 3006;
 	public static final int UPLOAD_TAG_INPUT = 3007;
+	public static final int UPLOAD_TAG_PLACEHOLDER = 3008;
 	
 	public static final int REPLAY_OPTIONS_BUTTON_ID = 8000;
 	
