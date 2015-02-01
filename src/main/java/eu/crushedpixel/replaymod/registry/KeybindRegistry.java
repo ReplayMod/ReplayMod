@@ -13,11 +13,16 @@ public class KeybindRegistry {
 
 	private static Minecraft mc = Minecraft.getMinecraft();
 	
+	public static final String KEY_LIGHTING = "Toggle Lighting";
+	public static final String KEY_THUMBNAIL = "Create Thumbnail";
+	public static final String KEY_SPECTATE = "Spectate Entity";
+	
 	public static void initialize() {
 		List<KeyBinding> bindings = new ArrayList<KeyBinding>(Arrays.asList(mc.gameSettings.keyBindings));
 		
-		bindings.add(new KeyBinding("key.lighting", Keyboard.KEY_V, "category.replaymod"));
-		bindings.add(new KeyBinding("key.thumbnail", Keyboard.KEY_B, "category.replaymod"));
+		bindings.add(new KeyBinding(KEY_LIGHTING, Keyboard.KEY_V, "Replay Mod"));
+		bindings.add(new KeyBinding(KEY_THUMBNAIL, Keyboard.KEY_B, "Replay Mod"));
+		bindings.add(new KeyBinding(KEY_SPECTATE, Keyboard.KEY_C, "Replay Mod"));
 		
 		mc.gameSettings.keyBindings = bindings.toArray(new KeyBinding[bindings.size()]);
 	}

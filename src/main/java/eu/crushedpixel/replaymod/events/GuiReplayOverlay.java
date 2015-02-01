@@ -23,8 +23,10 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import org.lwjgl.input.Keyboard;
@@ -37,6 +39,7 @@ import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
+import eu.crushedpixel.replaymod.gui.GuiSpectateSelection;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
@@ -45,7 +48,7 @@ import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
-import eu.crushedpixel.replaymod.screenshot.ReplayScreenshot;
+import eu.crushedpixel.replaymod.replay.screenshot.ReplayScreenshot;
 
 public class GuiReplayOverlay extends Gui {
 
@@ -80,9 +83,13 @@ public class GuiReplayOverlay extends Gui {
 
 	private boolean mouseDown = false;
 
-	private boolean requestScreenshot = false;
+	private static boolean requestScreenshot = false;
 
 	private Field drawBlockOutline;
+
+	public static void requestScreenshot() {
+		requestScreenshot = true;
+	}
 
 	public GuiReplayOverlay() {
 		try {
@@ -105,19 +112,32 @@ public class GuiReplayOverlay extends Gui {
 		if(ReplayHandler.getCameraEntity() != null)
 			ReplayHandler.getCameraEntity().updateMovement();
 		onMouseMove(new MouseEvent());
-		onKeyInput(new KeyInputEvent());
+		FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
 		if(ReplayHandler.isReplaying()) ReplayProcess.tickReplay();
 	}
+
+	private double lastX, lastY, lastZ;
+	private float lastPitch, lastYaw;
 
 	@SubscribeEvent
 	public void onRenderWorld(RenderWorldLastEvent event) 
 			throws IllegalAccessException, IllegalArgumentException, 
 			InvocationTargetException, IOException {
 		if(!ReplayHandler.replayActive()) return;
-		ReplayHandler.setCameraEntity(ReplayHandler.getCameraEntity());
+		if(ReplayHandler.isCamera()) ReplayHandler.setCameraEntity(ReplayHandler.getCameraEntity());
 		if(ReplayHandler.replayActive() && ReplayHandler.isPaused()) {
 			if(mc != null && mc.thePlayer != null)
 				MinecraftTicker.runMouseKeyboardTick(mc);
+		}
+		if(mc.getRenderViewEntity() == mc.thePlayer) {
+			ReplayHandler.spectateCamera();
+			ReplayHandler.getCameraEntity().movePath(new Position(lastX, lastY, lastZ, lastPitch, lastYaw));
+		} else if(!ReplayHandler.isCamera()) {
+			lastX = mc.getRenderViewEntity().posX;
+			lastY = mc.getRenderViewEntity().posY;
+			lastZ = mc.getRenderViewEntity().posZ;
+			lastPitch = mc.getRenderViewEntity().rotationPitch;
+			lastYaw = mc.getRenderViewEntity().rotationYaw;
 		}
 		if(requestScreenshot) {
 			requestScreenshot = false;
@@ -135,11 +155,11 @@ public class GuiReplayOverlay extends Gui {
 
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
-		if(!ReplayHandler.replayActive()) {
+		if(!ReplayHandler.replayActive() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class)) {
 			return;
 		}
 		
-		ReplayGuiRegistry.hide();
+		if(!ReplayGuiRegistry.hidden) ReplayGuiRegistry.hide();
 
 		if(event.type == ElementType.PLAYER_LIST) {
 			if(event.isCancelable()) {
@@ -147,7 +167,7 @@ public class GuiReplayOverlay extends Gui {
 			}
 			return;
 		}
-		
+
 		GL11.glEnable(GL11.GL_BLEND);
 		drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 
@@ -259,7 +279,7 @@ public class GuiReplayOverlay extends Gui {
 
 		mc.renderEngine.bindTexture(keyframeLocation);
 
-		if(hover && Mouse.isButtonDown(0) && isClick()) {
+		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof PositionKeyframe)) {
 				addPlaceKeyframe();
 			} else {
@@ -300,7 +320,7 @@ public class GuiReplayOverlay extends Gui {
 
 		mc.renderEngine.bindTexture(keyframeLocation);
 
-		if(hover && Mouse.isButtonDown(0) && isClick()) {
+		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof TimeKeyframe)) {
 				addTimeKeyframe();
 			} else {
@@ -455,7 +475,7 @@ public class GuiReplayOverlay extends Gui {
 				slider_end_width, slider_height, 64, 64);
 
 		//Slider dragging
-		if(Mouse.isButtonDown(0) && (mouseX >= slider_min && mouseX <= sl_max && mouseY >= sl_y && mouseY <= sl_y+slider_height || wasSliding)) {
+		if(Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class) && (mouseX >= slider_min && mouseX <= sl_max && mouseY >= sl_y && mouseY <= sl_y+slider_height || wasSliding)) {
 			wasSliding = true;
 			float dx = ((float)Mouse.getDX() * (float)new ScaledResolution(mc, mc.displayWidth, mc.displayHeight).getScaledWidth() / mc.displayWidth);
 			this.pos_left = Math.min(1f-this.zoom_scale, Math.max(0f, this.pos_left+(dx/(float)tlWidth)));
@@ -482,7 +502,7 @@ public class GuiReplayOverlay extends Gui {
 
 		this.drawModalRectWithCustomSizedTexture(maxX+2, y+1, px, plus_y, 9, 9, 64, 64);
 
-		if(hover && Mouse.isButtonDown(0)) {
+		if(hover && Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			zoomIn();
 		}
 
@@ -502,7 +522,7 @@ public class GuiReplayOverlay extends Gui {
 
 		this.drawModalRectWithCustomSizedTexture(maxX+2, y+9+3, mx, minus_y, 9, 9, 64, 64);
 
-		if(hover && Mouse.isButtonDown(0)) {
+		if(hover && Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			zoomOut();
 		}
 
@@ -573,7 +593,7 @@ public class GuiReplayOverlay extends Gui {
 		}
 
 		//handle Mouse clicks on realTimeLine
-		if(Mouse.isButtonDown(0) && !wasSliding && mouseX >= minX+tl_begin_width && mouseX <= maxX-tl_end_width &&
+		if(Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class) && !wasSliding && mouseX >= minX+tl_begin_width && mouseX <= maxX-tl_end_width &&
 				mouseY >= y && mouseY <= y+22) {
 
 			//calculate real time and set cursor accordingly
@@ -679,7 +699,7 @@ public class GuiReplayOverlay extends Gui {
 		this.drawModalRectWithCustomSizedTexture(r_ppButtonX, r_ppButtonY, dx, dy, 20, 20, 64, 64);
 
 		//Handling the click on the Replay starter
-		if(hover && Mouse.isButtonDown(0) && isClick()) {
+		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			if(ReplayHandler.isReplaying()) {
 				ReplayHandler.interruptReplay();
 			} else {
@@ -793,75 +813,6 @@ public class GuiReplayOverlay extends Gui {
 			}
 
 			ReplayHandler.getCameraEntity().setAngles(f3, f4 * (float)b0);
-
-		}
-	}
-
-	@SubscribeEvent
-	public void onKeyInput(KeyInputEvent event) {
-
-		if(!ReplayHandler.replayActive()) return;
-		if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
-			return;
-		}
-
-		KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
-		for(KeyBinding kb : keyBindings) {
-			if(!kb.isKeyDown()) {
-				continue;
-			}
-			try {
-
-				if(kb.getKeyDescription().equals("key.forward")) {
-					ReplayHandler.getCameraEntity().setMovement(MoveDirection.FORWARD);
-					continue;
-				}
-
-				if(kb.getKeyDescription().equals("key.back")) {
-					ReplayHandler.getCameraEntity().setMovement(MoveDirection.BACKWARD);
-					continue;
-				}
-
-				if(kb.getKeyDescription().equals("key.jump")) {
-					ReplayHandler.getCameraEntity().setMovement(MoveDirection.UP);
-					continue;
-				}
-
-				if(kb.getKeyDescription().equals("key.sneak")) {
-					ReplayHandler.getCameraEntity().setMovement(MoveDirection.DOWN);
-					continue;
-				}
-
-				if(kb.getKeyDescription().equals("key.left")) {
-					ReplayHandler.getCameraEntity().setMovement(MoveDirection.LEFT);
-					continue;
-				}
-
-				if(kb.getKeyDescription().equals("key.right")) {
-					ReplayHandler.getCameraEntity().setMovement(MoveDirection.RIGHT);
-					continue;
-				}
-
-				if(kb.getKeyDescription().equals("key.chat")) {
-					mc.displayGuiScreen(new GuiMouseInput());
-					continue;
-				}
-
-				//Custom registered handlers
-				if(kb.getKeyDescription().equals("key.thumbnail") && kb.isPressed()) {
-					ReplayScreenshot.prepareScreenshot();
-					requestScreenshot = true;
-					continue;
-				}
-				
-				if(kb.getKeyDescription().equals("key.lighting") && kb.isPressed()) {
-					ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());
-					continue;
-				}
-				
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
 
 		}
 	}

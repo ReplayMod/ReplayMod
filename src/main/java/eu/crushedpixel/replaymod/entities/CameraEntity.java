@@ -28,23 +28,19 @@ public class CameraEntity extends EntityPlayer {
 	private double decay = 6; //decays by 75% per second;
 
 	private long lastCall = 0;
-	
+
 	//frac = time since last tick
 	public void updateMovement() {
 		Minecraft mc = Minecraft.getMinecraft();
 		if(ReplayHandler.getCameraEntity() != null && mc.thePlayer != null) {
 			//Aligns the particle rotation
-			mc.thePlayer.rotationPitch = ReplayHandler.getCameraEntity().rotationPitch;
-			mc.thePlayer.rotationYaw = ReplayHandler.getCameraEntity().rotationYaw;
+			mc.thePlayer.rotationPitch = mc.getRenderViewEntity().rotationPitch;
+			mc.thePlayer.rotationYaw = mc.getRenderViewEntity().rotationYaw;
 
 			//removes water/suffocation/shadow overlays in screen
 			mc.thePlayer.posX = 0;
 			mc.thePlayer.posY = 500;
 			mc.thePlayer.posZ = 0;
-
-			//mc.thePlayer.posX = ReplayHandler.getCameraEntity().posX;
-			//mc.thePlayer.posY = ReplayHandler.getCameraEntity().posY;
-			//mc.thePlayer.posZ = ReplayHandler.getCameraEntity().posZ;
 		}
 
 		if(direction == null || motion < 0.1) {
@@ -182,5 +178,5 @@ public class CameraEntity extends EntityPlayer {
 	public boolean isSpectator() {
 		return true;
 	}
-		
+
 }

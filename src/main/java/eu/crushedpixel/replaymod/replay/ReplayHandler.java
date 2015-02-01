@@ -12,6 +12,7 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -26,6 +27,7 @@ import eu.crushedpixel.replaymod.holders.KeyframeComparator;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
+import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 
 public class ReplayHandler {
 
@@ -35,7 +37,7 @@ public class ReplayHandler {
 	private static OpenEmbeddedChannel channel;
 
 	private static int realTimelinePosition = 0;
-	
+
 	private static Keyframe selectedKeyframe;
 
 	private static boolean isReplaying = false;
@@ -49,15 +51,39 @@ public class ReplayHandler {
 	public static long lastExit = 0;
 
 	private static float gamma = 0f;
-	
+
+	private static Entity currentEntity = null;
+
+	public static void spectateEntity(Entity e) {
+		currentEntity = e;
+		mc.setRenderViewEntity(currentEntity);
+	}
+
+	public static Entity getSpectatedEntity() {
+		return currentEntity;
+	}
+
+	public static void spectateCamera() {
+		if(currentEntity != null) {
+			Position prev = new Position(currentEntity);
+			cameraEntity.movePath(prev);
+		}
+		currentEntity = cameraEntity;
+		mc.setRenderViewEntity(cameraEntity);
+	}
+
+	public static boolean isCamera() {
+		return currentEntity == cameraEntity;
+	}
+
 	public static void setInitialGamma(float initial) {
 		gamma = initial;
 	}
-	
+
 	public static float getInitialGamma() {
 		return gamma;
 	}
-	
+
 	public static void setReplaying(boolean replaying) {
 		isReplaying = replaying;
 	}
@@ -73,11 +99,11 @@ public class ReplayHandler {
 	public static boolean isReplaying() {
 		return isReplaying;
 	}
-	
+
 	public static void setCameraEntity(CameraEntity entity) {
 		if(entity == null) return;
 		cameraEntity = entity;
-		mc.setRenderViewEntity(cameraEntity);
+		spectateCamera();
 	}
 
 	public static CameraEntity getCameraEntity() {
@@ -135,7 +161,7 @@ public class ReplayHandler {
 		}
 		return size;
 	}
-	
+
 	public static int getTimeKeyframeCount() {
 		int size = 0;
 		for(Keyframe kf : keyframes) {
@@ -240,7 +266,7 @@ public class ReplayHandler {
 
 	public static void resetKeyframes() {
 		keyframes = new ArrayList<Keyframe>();
-		
+
 		selectKeyframe(null);
 	}
 
@@ -249,7 +275,7 @@ public class ReplayHandler {
 			replaySender.jumpToTime(pos);
 		}
 	}
-	
+
 	public static boolean isHurrying() {
 		if(replaySender != null) {
 			return replaySender.isHurrying();
@@ -299,7 +325,7 @@ public class ReplayHandler {
 	}
 
 	public static void startReplay(File file) throws NoSuchMethodException, SecurityException, NoSuchFieldException {
-		
+
 		ChatMessageRequests.initialize();
 		mc.ingameGUI.getChatGUI().clearChatMessages();
 		resetKeyframes();
@@ -372,11 +398,11 @@ public class ReplayHandler {
 	public static Keyframe getSelected() {
 		return selectedKeyframe;
 	}
-	
+
 	public static int getRealTimelineCursor() {
 		return realTimelinePosition;
 	}
-	
+
 	public static void setRealTimelineCursor(int pos) {
 		realTimelinePosition = pos;
 	}
@@ -385,7 +411,7 @@ public class ReplayHandler {
 	public static void setLastPosition(Position position) {
 		lastPosition = position;
 	}
-	
+
 	public static Position getLastPosition() {
 		return lastPosition;
 	}

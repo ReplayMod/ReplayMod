@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.screenshot;
+package eu.crushedpixel.replaymod.replay.screenshot;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;

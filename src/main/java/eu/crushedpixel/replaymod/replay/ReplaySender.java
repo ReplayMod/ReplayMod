@@ -8,8 +8,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -332,7 +332,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 								hasRestarted = false;
 							}
 
-						} catch(EOFException eof) {
+						} catch(IOException eof) {
 							setReplaySpeed(0);
 						}
 					}

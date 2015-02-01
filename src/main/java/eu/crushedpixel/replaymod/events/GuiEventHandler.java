@@ -49,10 +49,14 @@ public class GuiEventHandler {
 
 	@SubscribeEvent
 	public void onGui(GuiOpenEvent event) {
-		if(ReplayMod.firstMainMenu && event.gui instanceof GuiMainMenu) {
-			ReplayMod.firstMainMenu = false;
-			event.gui = new GuiLoginPrompt(event.gui, event.gui);
-			return;
+		if(event.gui instanceof GuiMainMenu) {
+			if(ReplayMod.firstMainMenu) {
+				ReplayMod.firstMainMenu = false;
+				event.gui = new GuiLoginPrompt(event.gui, event.gui);
+				return;
+			} else {
+				ReplayHandler.setSpeed(1f);
+			}
 		}
 
 		if(!AuthenticationHandler.isAuthenticated()) return;
@@ -76,7 +80,7 @@ public class GuiEventHandler {
 
 	private static final Color DARK_RED = Color.decode("#DF0101");
 	private static final Color DARK_GREEN = Color.decode("#01DF01");
-	
+
 	@SubscribeEvent
 	public void onDraw(DrawScreenEvent e) {
 		if(e.gui instanceof GuiMainMenu) {
@@ -147,7 +151,6 @@ public class GuiEventHandler {
 			Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {			
-					ReplayHandler.setSpeed(1f);
 					ReplayHandler.endReplay();
 
 					mc.gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());

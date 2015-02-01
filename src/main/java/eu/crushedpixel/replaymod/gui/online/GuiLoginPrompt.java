@@ -119,6 +119,9 @@ public class GuiLoginPrompt extends GuiScreen {
 		case LOGGING_IN:
 			drawCenteredString(fontRendererObj, "Logging in...", this.width/2, 92, Color.WHITE.getRGB());
 			break;
+		case NO_CONNECTION:
+			drawCenteredString(fontRendererObj, "Could not connect to ReplayMod.com", this.width/2, 92, Color.RED.getRGB());
+			break;
 		}
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}

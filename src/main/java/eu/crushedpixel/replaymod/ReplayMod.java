@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import eu.crushedpixel.replaymod.api.client.ApiClient;
 import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
+import eu.crushedpixel.replaymod.events.KeyInputHandler;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
@@ -80,6 +81,8 @@ public class ReplayMod
 	public void init(FMLInitializationEvent event) {
 		FMLCommonHandler.instance().bus().register(new ConnectionEventHandler());
 		MinecraftForge.EVENT_BUS.register(new GuiEventHandler());
+		
+		FMLCommonHandler.instance().bus().register(new KeyInputHandler());
 		
 		recordingHandler = new RecordingHandler();
 		FMLCommonHandler.instance().bus().register(recordingHandler);

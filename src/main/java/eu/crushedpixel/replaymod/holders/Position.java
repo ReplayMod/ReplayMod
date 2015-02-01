@@ -1,9 +1,19 @@
 package eu.crushedpixel.replaymod.holders;
 
+import net.minecraft.entity.Entity;
+
 public class Position {
 
 	private double x, y, z;
 	private float pitch, yaw;
+	
+	public Position(Entity e) {
+		this.x = e.posX;
+		this.y = e.posY;
+		this.z = e.posZ;
+		this.pitch = e.rotationPitch;
+		this.yaw = e.rotationYaw;
+	}
 	
 	public Position(double x, double y, double z, float pitch, float yaw) {
 		this.x = x;
