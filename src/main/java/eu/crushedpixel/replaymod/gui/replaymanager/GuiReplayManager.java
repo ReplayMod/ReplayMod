@@ -55,7 +55,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 	private String hoveringText;
 	private boolean initialized;
 	private GuiReplayListExtended replayGuiList;
-	private List<Pair<Pair<File, ReplayMetaData>, BufferedImage>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, BufferedImage>>();
+	private List<Pair<Pair<File, ReplayMetaData>, File>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
 	private GuiButton loadButton, uploadButton, folderButton, renameButton, deleteButton, cancelButton, settingsButton;
 
 	private static Gson gson = new Gson();
@@ -73,7 +73,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 	private void reloadFiles() {
 		replayGuiList.clearEntries();
-		replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, BufferedImage>>();
+		replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
 
 		File folder = new File("./replay_recordings/");
 		folder.mkdirs();
@@ -100,6 +100,11 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 					if(img == null) {
 						img = ImageIO.read(MCPNames.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
 					}
+					
+					File tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
+					tmp.deleteOnExit();
+					
+					ImageIO.write(img, "jpg", tmp);
 
 					InputStream is = archive.getInputStream(metadata);
 					BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -108,7 +113,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 					ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
 
-					replayFileList.add(Pair.of(Pair.of(file, metaData), img));
+					replayFileList.add(Pair.of(Pair.of(file, metaData), tmp));
 
 					archive.close();
 				} catch(Exception e) {
@@ -119,15 +124,15 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 		Collections.sort(replayFileList, new FileAgeComparator());
 
-		for(Pair<Pair<File, ReplayMetaData>, BufferedImage> p : replayFileList) {
+		for(Pair<Pair<File, ReplayMetaData>, File> p : replayFileList) {
 			replayGuiList.addEntry(FilenameUtils.getBaseName(p.first().first().getName()), p.first().second(), p.second());
 		}
 	}
 
-	public class FileAgeComparator implements Comparator<Pair<Pair<File, ReplayMetaData>, BufferedImage>> {
+	public class FileAgeComparator implements Comparator<Pair<Pair<File, ReplayMetaData>, File>> {
 
 		@Override
-		public int compare(Pair<Pair<File, ReplayMetaData>, BufferedImage> o1, Pair<Pair<File, ReplayMetaData>, BufferedImage> o2) {
+		public int compare(Pair<Pair<File, ReplayMetaData>, File> o1, Pair<Pair<File, ReplayMetaData>, File> o2) {
 			try {
 				return (int)(new Date(o2.first().second().getDate()).compareTo(new Date(o1.first().second().getDate())));
 			} catch(Exception e) {

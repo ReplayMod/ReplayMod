@@ -1,20 +1,19 @@
 package eu.crushedpixel.replaymod.gui.replaymanager;
 
-import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiListExtended;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.util.MathHelper;
 
 import org.lwjgl.input.Mouse;
 
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiListExtended;
-import net.minecraft.client.gui.ServerListEntryLanScan;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.resources.ResourcePackListEntry;
-import net.minecraft.util.MathHelper;
 
 public class GuiReplayListExtended extends GuiListExtended {
 
@@ -90,7 +89,7 @@ public class GuiReplayListExtended extends GuiListExtended {
 		entries = new ArrayList<GuiReplayListEntry>();
 	}
 	
-	public void addEntry(String fileName, ReplayMetaData metaData, BufferedImage image) {
+	public void addEntry(String fileName, ReplayMetaData metaData, File image) {
 		entries.add(new GuiReplayListEntry(this, fileName, metaData, image));
 	}
 

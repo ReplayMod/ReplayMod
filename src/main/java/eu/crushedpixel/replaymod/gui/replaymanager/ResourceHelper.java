@@ -14,7 +14,12 @@ public class ResourceHelper {
 		openResources.add(loc);
 	}
 	
-	public static void freeResources() {
+	public static void freeResource(ResourceLocation loc) {
+		Minecraft.getMinecraft().getTextureManager().deleteTexture(loc);
+		openResources.remove(loc);
+	}
+	
+	public static void freeAllResources() {
 		for(ResourceLocation loc : openResources) {
 			Minecraft.getMinecraft().getTextureManager().deleteTexture(loc);
 		}

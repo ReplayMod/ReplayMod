@@ -37,10 +37,14 @@ public class CameraEntity extends EntityPlayer {
 			mc.thePlayer.rotationPitch = mc.getRenderViewEntity().rotationPitch;
 			mc.thePlayer.rotationYaw = mc.getRenderViewEntity().rotationYaw;
 
+			mc.thePlayer.posX = mc.getRenderViewEntity().posX;
+			mc.thePlayer.posY = mc.getRenderViewEntity().posY;
+			mc.thePlayer.posZ = mc.getRenderViewEntity().posZ;
+			
 			//removes water/suffocation/shadow overlays in screen
-			mc.thePlayer.posX = 0;
-			mc.thePlayer.posY = 500;
-			mc.thePlayer.posZ = 0;
+			//mc.thePlayer.posX = 0;
+			//mc.thePlayer.posY = 500;
+			//mc.thePlayer.posZ = 0;
 		}
 
 		if(direction == null || motion < 0.1) {

@@ -51,6 +51,8 @@ public class GuiEventHandler {
 
 	@SubscribeEvent
 	public void onGui(GuiOpenEvent event) {
+		if(!(event.gui instanceof GuiReplayManager || event.gui instanceof GuiUploadFile)) ResourceHelper.freeAllResources();
+		
 		if(event.gui instanceof GuiMainMenu) {
 			if(ReplayMod.firstMainMenu) {
 				ReplayMod.firstMainMenu = false;
@@ -71,7 +73,6 @@ public class GuiEventHandler {
 			event.gui = new GuiReplaySaving(event.gui);
 			return;
 		}
-		if(!(event.gui instanceof GuiReplayManager || event.gui instanceof GuiUploadFile)) ResourceHelper.freeResources();
 		if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
 			if(ReplayHandler.replayActive()) {
 				event.setCanceled(true);
