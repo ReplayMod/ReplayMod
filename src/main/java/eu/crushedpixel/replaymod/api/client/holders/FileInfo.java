@@ -10,6 +10,9 @@ public class FileInfo {
 	private Rating ratings;
 	private int size;
 	private int category;
+	private int downloads;
+	private String name;
+	private boolean thumbnail;
 	
 	public int getId() {
 		return id;
@@ -29,5 +32,15 @@ public class FileInfo {
 	public int getCategory() {
 		return category;
 	}
+	public int getDownloads() {
+		return downloads;
+	}
+	public String getName() {
+		return name;
+	}
+	public boolean hasThumbnail() {
+		return thumbnail;
+	}
+	
 	
 }

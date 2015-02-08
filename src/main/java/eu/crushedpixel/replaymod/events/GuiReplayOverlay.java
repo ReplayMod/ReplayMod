@@ -46,9 +46,11 @@ import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
+import eu.crushedpixel.replaymod.replay.MCTimerHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
-import eu.crushedpixel.replaymod.replay.screenshot.ReplayScreenshot;
+import eu.crushedpixel.replaymod.video.ReplayScreenshot;
+import eu.crushedpixel.replaymod.video.VideoWriter;
 
 public class GuiReplayOverlay extends Gui {
 
@@ -58,7 +60,7 @@ public class GuiReplayOverlay extends Gui {
 	private int sliderY = 10;
 
 	private int timelineX = sliderX+100+5;
-	private int realTimelineX = 10 + 3*25;
+	private int realTimelineX = 10 + 4*25;
 	private int realTimelineY = 33+10;
 
 	private int ppButtonX = 10;
@@ -67,10 +69,13 @@ public class GuiReplayOverlay extends Gui {
 	private int r_ppButtonX = 10;
 	private int r_ppButtonY = realTimelineY+1;
 
-	private int place_ButtonX = 35;
+	private int exportButtonX = 35;
+	private int exportButtonY = realTimelineY+1;
+
+	private int place_ButtonX = 60;
 	private int place_ButtonY = realTimelineY+1;
 
-	private int time_ButtonX = 60;
+	private int time_ButtonX = 85;
 	private int time_ButtonY = realTimelineY+1;
 
 	private long lastSystemTime = System.currentTimeMillis();
@@ -109,11 +114,12 @@ public class GuiReplayOverlay extends Gui {
 	@SubscribeEvent
 	public void tick(TickEvent event) {
 		if(!ReplayHandler.replayActive()) return;
+		if(ReplayHandler.isReplaying() && !ReplayProcess.isVideoRecording()) ReplayProcess.tickReplay();
+		ReplayProcess.unblock();
 		if(ReplayHandler.getCameraEntity() != null)
 			ReplayHandler.getCameraEntity().updateMovement();
-		onMouseMove(new MouseEvent());
+		if(!ReplayHandler.isReplaying()) onMouseMove(new MouseEvent());
 		FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
-		if(ReplayHandler.isReplaying()) ReplayProcess.tickReplay();
 	}
 
 	private double lastX, lastY, lastZ;
@@ -129,7 +135,7 @@ public class GuiReplayOverlay extends Gui {
 			if(mc != null && mc.thePlayer != null)
 				MinecraftTicker.runMouseKeyboardTick(mc);
 		}
-		if(mc.getRenderViewEntity() == mc.thePlayer) {
+		if(mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive()) {
 			ReplayHandler.spectateCamera();
 			ReplayHandler.getCameraEntity().movePath(new Position(lastX, lastY, lastZ, lastPitch, lastYaw));
 		} else if(!ReplayHandler.isCamera()) {
@@ -154,11 +160,21 @@ public class GuiReplayOverlay extends Gui {
 	}
 
 	@SubscribeEvent
+	public void onRenderGui(RenderGameOverlayEvent event) {
+		if(VideoWriter.isRecording()) {
+			event.setCanceled(true);
+		}
+	}
+
+
+	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
-		if(!ReplayHandler.replayActive() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class)) {
+		if(!ReplayHandler.replayActive() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class) || VideoWriter.isRecording()) {
 			return;
 		}
-		
+
+		//System.out.println(System.currentTimeMillis()+" | "+MCTimerHandler.getTicks()+" | "+MCTimerHandler.getPartialTicks());
+
 		if(!ReplayGuiRegistry.hidden) ReplayGuiRegistry.hide();
 
 		if(event.type == ElementType.PLAYER_LIST) {
@@ -227,6 +243,8 @@ public class GuiReplayOverlay extends Gui {
 						ReplayHandler.setSpeed(speedSlider.getSliderValue());
 					}
 
+				} else if(mouseX >= exportButtonX && mouseX <= exportButtonX+20 && mouseY >= exportButtonY && exportButtonY <= exportButtonY+20) {
+					ReplayHandler.startPath(true);
 				}
 
 				if(mouseX >= timelineX+4 && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29) {
@@ -256,6 +274,28 @@ public class GuiReplayOverlay extends Gui {
 			} catch(Exception e) {}
 		}
 
+		//TODO: Save Video Button
+		hover = false;
+		x = 0;
+		y = 18;
+
+		if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
+			if(mouseX >= exportButtonX && mouseX <= exportButtonX+20
+					&& mouseY >= exportButtonY && mouseY <= exportButtonY+20) {
+				hover = true;
+			}
+		}
+
+		if(hover) {
+			x = 20;
+		}
+
+		mc.renderEngine.bindTexture(timelineLocation);
+
+		GlStateManager.resetColor();
+		this.drawModalRectWithCustomSizedTexture(exportButtonX, exportButtonY, x, y, 20, 20, 64, 64);
+
+		//GlStateManager.resetColor();
 
 		//Place Keyframe Button
 		hover = false;
@@ -703,7 +743,7 @@ public class GuiReplayOverlay extends Gui {
 			if(ReplayHandler.isReplaying()) {
 				ReplayHandler.interruptReplay();
 			} else {
-				ReplayHandler.startPath();
+				ReplayHandler.startPath(false);
 			}
 		}
 

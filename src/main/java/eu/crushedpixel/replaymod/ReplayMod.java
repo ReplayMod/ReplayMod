@@ -27,6 +27,8 @@ public class ReplayMod
 {
 	
 	//TODO: Set ReplayHandler replaying to false when replay is exited
+	//TODO: Hide Titles upon hurrying
+	//TODO: Override Enchantment Rendering for items when replaying (to adjust speed of animation)
 	
 	//XXX
 	//Known Bugs
@@ -44,7 +46,7 @@ public class ReplayMod
 	
 	public static GuiReplayOverlay overlay = new GuiReplayOverlay();
 	
-	public static ReplaySettings replaySettings = new ReplaySettings(0, true, true, true, false, false);
+	public static ReplaySettings replaySettings = new ReplaySettings(true, true, true, false, false, 30, 0.5f);
 	public static Configuration config;
 	
 	public static boolean firstMainMenu = true;
@@ -66,13 +68,14 @@ public class ReplayMod
 		
 		Property recServer = config.get("settings", "enableRecordingServer", true, "Defines whether a recording should be started upon joining a server.");
 		Property recSP = config.get("settings", "enableRecordingSingleplayer", true, "Defines whether a recording should be started upon joining a singleplayer world.");
-		Property maxFileSize = config.get("settings", "maximumFileSize", 0, "The maximum File size (in MB) of a recording. 0 means unlimited.");
 		Property showNot = ReplayMod.instance.config.get("settings", "showNotifications", true, "Defines whether notifications should be sent to the player.");
 		Property linear = ReplayMod.instance.config.get("settings", "forceLinearPath", false, "Defines whether travelling paths should be linear instead of interpolated.");
 		Property lighting = ReplayMod.instance.config.get("settings", "enableLighting", false, "If enabled, the whole map is lighted.");
+		Property vq = ReplayMod.instance.config.get("settings", "videoQuality", 0.5f, "The quality of the exported video files from 0.1 to 0.9");
+		Property framerate = ReplayMod.instance.config.get("settings", "videoFramerate", 30, "The framerate of the exported video files from 10 to 120");
 		
-		replaySettings = new ReplaySettings(maxFileSize.getInt(0), recServer.getBoolean(true), recSP.getBoolean(true), showNot.getBoolean(true), 
-				linear.getBoolean(false), lighting.getBoolean(false));
+		replaySettings = new ReplaySettings(recServer.getBoolean(true), recSP.getBoolean(true), showNot.getBoolean(true), 
+				linear.getBoolean(false), lighting.getBoolean(false), framerate.getInt(30), (float)vq.getDouble(0.5));
 		
 		config.save();
 	}

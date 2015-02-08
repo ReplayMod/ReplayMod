@@ -31,8 +31,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
 	protected File file;
 	protected Long startTime = null;
-	protected long maxSize;
-	protected long totalBytes = 0;
 	protected String name;
 	protected String worldName;
 	
@@ -53,10 +51,9 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 		System.out.println(worldName);
 	}
 
-	public DataListener(File file, String name, String worldName, long startTime, int maxSize, boolean singleplayer) throws FileNotFoundException {
+	public DataListener(File file, String name, String worldName, long startTime, boolean singleplayer) throws FileNotFoundException {
 		this.file = file;
 		this.startTime = startTime;
-		this.maxSize = maxSize*1024*1024;
 		this.name = name;
 		this.worldName = worldName;
 		this.singleplayer = singleplayer;

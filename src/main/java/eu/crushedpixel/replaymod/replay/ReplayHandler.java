@@ -15,6 +15,7 @@ import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
 import net.minecraft.network.play.INetHandlerPlayClient;
 
 import com.mojang.authlib.GameProfile;
@@ -27,7 +28,6 @@ import eu.crushedpixel.replaymod.holders.KeyframeComparator;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
-import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 
 public class ReplayHandler {
 
@@ -54,6 +54,15 @@ public class ReplayHandler {
 
 	private static Entity currentEntity = null;
 
+	public static void insertPacketInstantly(Packet p) {
+		if(replaySender != null) {
+			try {
+				replaySender.channelRead(null, p);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	public static void spectateEntity(Entity e) {
 		currentEntity = e;
 		mc.setRenderViewEntity(currentEntity);
@@ -88,8 +97,8 @@ public class ReplayHandler {
 		isReplaying = replaying;
 	}
 
-	public static void startPath() {
-		ReplayProcess.startReplayProcess();
+	public static void startPath(boolean save) {
+		if(!ReplayHandler.isReplaying()) ReplayProcess.startReplayProcess(save);
 	}
 
 	public static void interruptReplay() {

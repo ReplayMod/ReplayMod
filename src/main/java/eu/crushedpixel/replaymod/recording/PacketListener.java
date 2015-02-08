@@ -24,8 +24,8 @@ import eu.crushedpixel.replaymod.reflection.MCPNames;
 
 public class PacketListener extends DataListener {
 
-	public PacketListener(File file, String name, String worldName, long startTime, int maxSize, boolean singleplayer) throws FileNotFoundException {
-		super(file, name, worldName, startTime, maxSize, singleplayer);
+	public PacketListener(File file, String name, String worldName, long startTime, boolean singleplayer) throws FileNotFoundException {
+		super(file, name, worldName, startTime, singleplayer);
 	}
 
 	private static final Minecraft mc = Minecraft.getMinecraft();
@@ -131,13 +131,6 @@ public class PacketListener extends DataListener {
 		bb.readerIndex(0);
 		byte[] array = new byte[bb.readableBytes()];
 		bb.readBytes(array);
-
-		totalBytes += (array.length + (2*4)); //two Integer values and the Packet size
-		if(totalBytes >= maxSize && maxSize > 0) {
-			ChatMessageRequests.addChatMessage("Maximum file size exceeded", ChatMessageType.WARNING);
-			ChatMessageRequests.addChatMessage("The Recording has been stopped", ChatMessageType.WARNING);
-			alive = false;
-		}
 
 		bb.readerIndex(0);
 

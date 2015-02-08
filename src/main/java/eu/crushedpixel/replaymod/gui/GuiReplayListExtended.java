@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui.replaymanager;
+package eu.crushedpixel.replaymod.gui;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,29 +15,21 @@ import org.lwjgl.input.Mouse;
 
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 
-public class GuiReplayListExtended extends GuiListExtended {
+public abstract class GuiReplayListExtended extends GuiListExtended {
 
-	private GuiReplayManager parent;
-	public int selected = -1;
-	
-	public GuiReplayListExtended(GuiReplayManager parent, Minecraft mcIn, int p_i45010_2_,
+	public GuiReplayListExtended(Minecraft mcIn, int p_i45010_2_,
 			int p_i45010_3_, int p_i45010_4_, int p_i45010_5_, int p_i45010_6_) {
 		super(mcIn, p_i45010_2_, p_i45010_3_, p_i45010_4_, p_i45010_5_, p_i45010_6_);
-		this.parent = parent;
 	}
 
+	public int selected = -1;
 	
 	@Override
 	protected void elementClicked(int slotIndex, boolean isDoubleClick,
 			int mouseX, int mouseY) {
 		super.elementClicked(slotIndex, isDoubleClick, mouseX, mouseY);
 		this.selected = slotIndex;
-		parent.setButtonsEnabled(true);
-		if(isDoubleClick) {
-			parent.loadReplay(slotIndex);
-		}
 	}
-
 	
 	@Override
 	protected void drawSelectionBox(int p_148120_1_, int p_148120_2_, int p_148120_3_, int p_148120_4_)

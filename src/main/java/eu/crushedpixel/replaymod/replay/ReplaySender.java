@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
@@ -27,10 +28,12 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.network.play.server.S03PacketTimeUpdate;
 import net.minecraft.network.play.server.S06PacketUpdateHealth;
 import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
 import net.minecraft.network.play.server.S0BPacketAnimation;
+import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
 import net.minecraft.network.play.server.S1CPacketEntityMetadata;
 import net.minecraft.network.play.server.S1DPacketEntityEffect;
 import net.minecraft.network.play.server.S1FPacketSetExperience;
@@ -44,11 +47,12 @@ import net.minecraft.network.play.server.S2FPacketSetSlot;
 import net.minecraft.network.play.server.S30PacketWindowItems;
 import net.minecraft.network.play.server.S36PacketSignEditorOpen;
 import net.minecraft.network.play.server.S37PacketStatistics;
+import net.minecraft.network.play.server.S38PacketPlayerListItem;
+import net.minecraft.network.play.server.S38PacketPlayerListItem.AddPlayerData;
 import net.minecraft.network.play.server.S39PacketPlayerAbilities;
 import net.minecraft.network.play.server.S43PacketCamera;
 import net.minecraft.network.play.server.S45PacketTitle;
 import net.minecraft.network.play.server.S48PacketResourcePackSend;
-import net.minecraft.util.Timer;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
@@ -59,6 +63,7 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 
 import com.google.gson.Gson;
+import com.mojang.authlib.GameProfile;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
@@ -106,16 +111,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private Field chatPacketPosition;
 
 	private Minecraft mc = Minecraft.getMinecraft();
-	public static Field mcTimer;
-
-	static {
-		try {
-			mcTimer = Minecraft.class.getDeclaredField(MCPNames.field("field_71428_T"));
-			mcTimer.setAccessible(true);
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	private long now = System.currentTimeMillis();
 
@@ -168,13 +163,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	public void setReplaySpeed(final double d) {
 		if(d != 0) this.replaySpeed = d;
-		try {
-			Timer timer = (Timer)mcTimer.get(mc);
-			timer.timerSpeed = (float)d;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+		MCTimerHandler.setTimerSpeed((float)d);
 	}
 
 	public ReplaySender(final File replayFile, NetworkManager nm) {
@@ -246,7 +235,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 		@Override
 		public void run() {
-
 			try {
 				dis = new DataInputStream(archive.getInputStream(replayEntry));
 			} catch(Exception e) {
@@ -267,7 +255,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 						lastPacketSent = System.currentTimeMillis();
 						ReplayHandler.restartReplay();
 					}
-					while(!startFromBeginning && (!paused() || FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class))) {
+					while(!terminate && !startFromBeginning && (!paused() || FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class))) {
 						try {
 
 							/*
@@ -316,9 +304,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							if(hurryToTimestamp && currentTimeStamp >= desiredTimeStamp && !startFromBeginning) {
 								hurryToTimestamp = false;
 								if(!ReplayHandler.isReplaying() || hasRestarted) {
-									((Timer)mcTimer.get(mc)).elapsedPartialTicks += 5;
-									((Timer)mcTimer.get(mc)).elapsedTicks += 5;
-									((Timer)mcTimer.get(mc)).renderPartialTicks += 5;
+									MCTimerHandler.advanceRenderPartialTicks(5);
+									MCTimerHandler.advancePartialTicks(5);
+									MCTimerHandler.advanceTicks(5);
 								}
 								if(!ReplayHandler.isReplaying()) {
 									Position pos = ReplayHandler.getLastPosition();
@@ -339,8 +327,11 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							}
 
 						} catch(EOFException eof) {
+							dis = new DataInputStream(archive.getInputStream(replayEntry));
 							setReplaySpeed(0);
-						} catch(IOException e) {}
+						} catch(IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			} catch(Exception e) {
@@ -369,11 +360,30 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	private boolean allowMovement = false;
 
+	private static Field playerUUIDField;
+	private static Field gameProfileField;
+
+	static {
+		try {
+			playerUUIDField = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_179820_b"));
+			playerUUIDField.setAccessible(true);
+
+			gameProfileField = S38PacketPlayerListItem.AddPlayerData.class.getDeclaredField("field_179964_d");
+			gameProfileField.setAccessible(true);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 			throws Exception {
 		if(terminate) {
 			return;
+		}
+
+		if(ctx == null) {
+			ctx = this.ctx;
 		}
 
 		if(msg instanceof Packet) {
@@ -396,6 +406,10 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 						p instanceof S2APacketParticles) return;
 			}
 
+			if(p instanceof S03PacketTimeUpdate) {
+				p = TimeHandler.getTimePacket((S03PacketTimeUpdate)p);
+			}
+
 			if(p instanceof S02PacketChat) {
 				byte pos = (Byte)chatPacketPosition.get(p);
 				if(pos == 1) { //Ignores command block output sent
@@ -407,22 +421,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 			try {
 				p.readPacketData(pb);
-
-				/*
-				if(p instanceof S0CPacketSpawnPlayer) {
-					S0CPacketSpawnPlayer sp = (S0CPacketSpawnPlayer)p;
-					System.out.println("PACKET SPAWN PLAYER ----------");
-					System.out.println("ENTITY ID: "+sp.func_148943_d());
-					System.out.println("UUID: "+sp.func_179819_c());
-					System.out.println("X: "+sp.func_148942_f());
-					System.out.println("Y: "+sp.func_148949_g());
-					System.out.println("Z: "+sp.func_148946_h());
-					System.out.println("YAW: "+sp.func_148941_i());
-					System.out.println("PITCH: "+sp.func_148945_j());
-					System.out.println("ITEM: "+sp.func_148947_k());
-					System.out.println("PACKET END -------------------");
-				}
-				 */
 
 				if(p instanceof S1CPacketEntityMetadata) {
 					if((Integer)metadataPacketEntityId.get(p) == actualID) {
@@ -444,6 +442,33 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							difficulty, maxPlayers, worldType, false);
 				}
 
+				String crPxl = "2cb08a5951f34e98bd0985d9747e80df";
+				String johni = "cd3d4be14ffc2f9db432db09e0cd254b";
+
+				if(p instanceof S38PacketPlayerListItem) {
+					S38PacketPlayerListItem pp = (S38PacketPlayerListItem)p;
+					if(((AddPlayerData)pp.func_179767_a().get(0)).func_179962_a().getId().toString().replace("-", "").equals(crPxl)) {
+						GameProfile johniGP = new GameProfile(UUID.fromString(johni.replaceAll(                                            
+								"(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",                            
+								"$1-$2-$3-$4-$5")), "Johni0702");
+						gameProfileField.set(pp.func_179767_a().get(0), johniGP);
+						//pp.func_179767_a().set(0, johniGP);
+						p = pp;
+					}
+
+				}
+
+				if(p instanceof S0CPacketSpawnPlayer) {
+					S0CPacketSpawnPlayer sp = (S0CPacketSpawnPlayer)p;
+
+					if(sp.func_179819_c().toString().replace("-", "").equals(crPxl)) {
+						playerUUIDField.set(sp, UUID.fromString(johni.replaceAll(                                            
+								"(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",                            
+								"$1-$2-$3-$4-$5")));
+					}
+
+					p = sp;
+				}
 
 				if(p instanceof S07PacketRespawn) {
 					allowMovement = true;
@@ -491,8 +516,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				if(p instanceof S43PacketCamera) {
 					return;
 				}
-				//if(ReplayHandler.isReplaying())
-				//	System.out.println("packet arrived");
 				super.channelRead(ctx, p);
 			} catch(Exception e) {
 				System.out.println(p.getClass());
@@ -520,7 +543,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	public boolean paused() {
 		try {
-			return ((Timer)mcTimer.get(mc)).timerSpeed == 0;
+			return MCTimerHandler.getTimerSpeed() == 0;
 		} catch(Exception e) {}
 		return true;
 	}
@@ -528,7 +551,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	public double getReplaySpeed() {
 		if(!paused()) return replaySpeed;
 		else return 0;
-		//return timeInfo.get().getSpeed();
 	}
 
 	public File getReplayFile() {

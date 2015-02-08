@@ -37,6 +37,7 @@ import org.lwjgl.input.Keyboard;
 import com.google.gson.Gson;
 import com.mojang.realmsclient.util.Pair;
 
+import eu.crushedpixel.replaymod.gui.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
@@ -95,16 +96,14 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 							img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
 						}
 					}
-					
-					//If thumb is null, set image to placeholder
-					if(img == null) {
-						img = ImageIO.read(MCPNames.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
+
+					File tmp = null;
+					if(img != null) {
+						tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
+						tmp.deleteOnExit();
+
+						ImageIO.write(img, "jpg", tmp);
 					}
-					
-					File tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
-					tmp.deleteOnExit();
-					
-					ImageIO.write(img, "jpg", tmp);
 
 					InputStream is = archive.getInputStream(metadata);
 					BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -116,9 +115,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 					replayFileList.add(Pair.of(Pair.of(file, metaData), tmp));
 
 					archive.close();
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
+				} catch(Exception e) {}
 			}
 		}
 
@@ -144,7 +141,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 	@Override
 	public void initGui() {
-		replayGuiList = new GuiReplayListExtended(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
+		replayGuiList = new ReplayManagerReplayList(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
 		Keyboard.enableRepeatEvents(true);
 		this.buttonList.clear();
 
@@ -170,26 +167,26 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 		setButtonsEnabled(false);
 	}
 
-	public void handleMouseInput() throws IOException
-	{
+	@Override
+	public void handleMouseInput() throws IOException {
 		super.handleMouseInput();
 		this.replayGuiList.handleMouseInput();
 	}
 
-	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
-	{
+	@Override
+	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		this.replayGuiList.mouseClicked(mouseX, mouseY, mouseButton);
 	}
 
-	protected void mouseReleased(int mouseX, int mouseY, int state)
-	{
+	@Override
+	protected void mouseReleased(int mouseX, int mouseY, int state) {
 		super.mouseReleased(mouseX, mouseY, state);
 		this.replayGuiList.mouseReleased(mouseX, mouseY, state);
 	}
 
-	public void drawScreen(int mouseX, int mouseY, float partialTicks)
-	{
+	@Override
+	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.hoveringText = null;
 		this.drawDefaultBackground();
 		this.replayGuiList.drawScreen(mouseX, mouseY, partialTicks);
@@ -198,8 +195,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 	}
 
 	@Override
-	protected void actionPerformed(GuiButton button) throws IOException
-	{
+	protected void actionPerformed(GuiButton button) throws IOException {
 		if(button.enabled) {
 			if(button.id == LOAD_BUTTON_ID) {
 				loadReplay(replayGuiList.selected);

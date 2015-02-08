@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.server.S03PacketTimeUpdate;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -15,6 +16,7 @@ import org.lwjgl.Sys;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.replay.LesserDataWatcher;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.replay.TimeHandler;
 
 public class CameraEntity extends EntityPlayer {
 
@@ -37,14 +39,19 @@ public class CameraEntity extends EntityPlayer {
 			mc.thePlayer.rotationPitch = mc.getRenderViewEntity().rotationPitch;
 			mc.thePlayer.rotationYaw = mc.getRenderViewEntity().rotationYaw;
 
+			/*
 			mc.thePlayer.posX = mc.getRenderViewEntity().posX;
 			mc.thePlayer.posY = mc.getRenderViewEntity().posY;
 			mc.thePlayer.posZ = mc.getRenderViewEntity().posZ;
 			
+			TimeHandler.setDesiredDaytime(18000);
+			TimeHandler.setTimeOverridden(true);
+			*/
+			
 			//removes water/suffocation/shadow overlays in screen
-			//mc.thePlayer.posX = 0;
-			//mc.thePlayer.posY = 500;
-			//mc.thePlayer.posZ = 0;
+			mc.thePlayer.posX = 0;
+			mc.thePlayer.posY = 500;
+			mc.thePlayer.posZ = 0;
 		}
 
 		if(direction == null || motion < 0.1) {

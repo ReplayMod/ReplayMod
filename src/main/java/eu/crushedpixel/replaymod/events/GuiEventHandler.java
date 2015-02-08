@@ -15,11 +15,11 @@ import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings.Options;
-import net.minecraft.util.Timer;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
@@ -32,8 +32,9 @@ import eu.crushedpixel.replaymod.gui.replaymanager.GuiReplayManager;
 import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
+import eu.crushedpixel.replaymod.replay.MCTimerHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.replay.ReplaySender;
+import eu.crushedpixel.replaymod.video.VideoWriter;
 
 public class GuiEventHandler {
 
@@ -51,6 +52,11 @@ public class GuiEventHandler {
 
 	@SubscribeEvent
 	public void onGui(GuiOpenEvent event) {
+		if(VideoWriter.isRecording()) {
+			event.gui = null;
+			return;
+		}
+		
 		if(!(event.gui instanceof GuiReplayManager || event.gui instanceof GuiUploadFile)) ResourceHelper.freeAllResources();
 		
 		if(event.gui instanceof GuiMainMenu) {
@@ -60,8 +66,7 @@ public class GuiEventHandler {
 				return;
 			} else {
 				try {
-					Timer timer = (Timer)ReplaySender.mcTimer.get(mc);
-					timer.timerSpeed = 1f;
+					MCTimerHandler.setTimerSpeed(1);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

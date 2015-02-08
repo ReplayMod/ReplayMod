@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.replay.screenshot;
+package eu.crushedpixel.replaymod.video;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -33,8 +33,6 @@ import eu.crushedpixel.replaymod.utils.ImageUtils;
 public class ReplayScreenshot {
 
 	private static Minecraft mc = Minecraft.getMinecraft();
-	private static IntBuffer pixelBuffer;
-	private static int[] pixelValues;
 
 	private static final byte[] uniqueBytes = new byte[]{0,1,1,2,3,5,8};
 
@@ -45,13 +43,20 @@ public class ReplayScreenshot {
 	private static GuiScreen beforeScreen;
 
 	public static void prepareScreenshot() {
+		System.out.println("thumbnail preparing");
 		before = mc.gameSettings.hideGUI;
 		beforeSpeed = ReplayHandler.getSpeed();
 		beforeScreen = mc.currentScreen;
 	}
+	
+	private static boolean locked = false;
 
 	public static void saveScreenshot(Framebuffer buffer) {
 
+		if(locked) return;
+		locked = true;
+		
+		System.out.println("thumbnail started");
 		try {
 			GuiReplaySaving.replaySaving = true;
 
@@ -61,59 +66,7 @@ public class ReplayScreenshot {
 			mc.entityRenderer.updateCameraAndRender(0);
 			ReplayHandler.setSpeed(0);
 
-			int width = mc.displayWidth;
-			int height = mc.displayHeight;
-
-			if (OpenGlHelper.isFramebufferEnabled())
-			{
-				width = buffer.framebufferTextureWidth;
-				height = buffer.framebufferTextureHeight;
-			}
-
-			int k = width * height;
-
-			if (pixelBuffer == null || pixelBuffer.capacity() < k)
-			{
-				pixelBuffer = BufferUtils.createIntBuffer(k);
-				pixelValues = new int[k];
-			}
-
-			GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
-			GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-			pixelBuffer.clear();
-
-			if (OpenGlHelper.isFramebufferEnabled()) {
-				GlStateManager.bindTexture(buffer.framebufferTexture);
-				GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
-			}
-			else {
-				GL11.glReadPixels(0, 0, width, height, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
-			}
-
-			pixelBuffer.get(pixelValues);
-			TextureUtil.processPixelValues(pixelValues, width, height);
-			BufferedImage bufferedimage = null;
-
-
-			if (OpenGlHelper.isFramebufferEnabled())
-			{
-				bufferedimage = new BufferedImage(buffer.framebufferWidth, buffer.framebufferHeight, 1);
-				int l = buffer.framebufferTextureHeight - buffer.framebufferHeight;
-
-				for (int i1 = l; i1 < buffer.framebufferTextureHeight; ++i1)
-				{
-					for (int j1 = 0; j1 < buffer.framebufferWidth; ++j1)
-					{
-						bufferedimage.setRGB(j1, i1 - l, pixelValues[i1 * buffer.framebufferTextureWidth + j1]);
-					}
-				}
-			}
-			else {	 
-				bufferedimage = new BufferedImage(width, height, 1);
-				bufferedimage.setRGB(0, 0, width, height, pixelValues, 0, width);
-			}
-
-			final BufferedImage fbi = bufferedimage;
+			final BufferedImage fbi = ScreenCapture.captureScreen();
 
 			mc.gameSettings.hideGUI = before;
 			mc.currentScreen = beforeScreen;
@@ -125,15 +78,13 @@ public class ReplayScreenshot {
 				@Override
 				public void run() {
 					try {
-
-
+						System.out.println("thumbnail saving started");
 						float aspect = 1280f/720f;
 
 						Rectangle rect;
 						if((float)fbi.getWidth()/(float)fbi.getHeight() <= aspect) {
 							int h = Math.round(fbi.getWidth()/aspect);
 							int y = (fbi.getHeight()/2) - (h/2);
-							System.out.println(h+" | "+y);
 							rect = new Rectangle(0, y, fbi.getWidth(), h);
 						} else {
 							int w = Math.round(fbi.getHeight()*aspect);
@@ -152,7 +103,6 @@ public class ReplayScreenshot {
 
 						int h = 720;
 						int w = 1280;
-						//int w = width*(h/height);
 
 						BufferedImage img = ImageUtils.scaleImage(nbi, new Dimension(w, h));
 
@@ -207,11 +157,13 @@ public class ReplayScreenshot {
 						zout.close();
 						tempFile.delete();
 						temp.delete();
+						System.out.println("thumbnail saving finished");
 
 						ChatMessageRequests.addChatMessage("Thumbnail has been successfully saved", ChatMessageType.INFORMATION);
 					} catch(Exception e) {}
 					finally {
 						GuiReplaySaving.replaySaving = false;
+						locked = false;
 					}
 				}
 			});

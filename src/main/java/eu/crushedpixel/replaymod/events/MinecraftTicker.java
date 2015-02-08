@@ -76,6 +76,7 @@ public class MinecraftTicker {
 
 	public static void runMouseKeyboardTick(Minecraft mc) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
 
+		if(mc.thePlayer == null) return;
 		try {
 			mc.mcProfiler.endStartSection("mouse");
 			int i;
@@ -435,8 +436,6 @@ public class MinecraftTicker {
 
 			if(mc != null)
 				systemTime.set(mc, getSystemTime.invoke(mc));
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
+		} catch(Exception e) {}
 	}
 }

@@ -63,5 +63,8 @@ public class Position {
 		this.yaw = yaw;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return "X="+x+", Y="+y+", Z="+z+", Yaw="+yaw+", Pitch="+pitch;
+	}
 }

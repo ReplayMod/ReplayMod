@@ -11,8 +11,8 @@ import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.replay.screenshot.ReplayScreenshot;
 import eu.crushedpixel.replaymod.replay.spectate.SpectateHandler;
+import eu.crushedpixel.replaymod.video.ReplayScreenshot;
 
 public class KeyInputHandler {
 
@@ -25,7 +25,9 @@ public class KeyInputHandler {
 		if(mc.currentScreen != null) {
 			return;
 		}
-
+		
+		boolean found = false;
+		
 		KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
 		for(KeyBinding kb : keyBindings) {
 			if(!kb.isKeyDown()) {
@@ -36,27 +38,22 @@ public class KeyInputHandler {
 				if(ReplayHandler.isCamera()) {
 					if(kb.getKeyDescription().equals("key.forward")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.FORWARD);
-						continue;
 					}
 
 					if(kb.getKeyDescription().equals("key.back")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.BACKWARD);
-						continue;
 					}
 
 					if(kb.getKeyDescription().equals("key.jump")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.UP);
-						continue;
 					}
 
 					if(kb.getKeyDescription().equals("key.left")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.LEFT);
-						continue;
 					}
 
 					if(kb.getKeyDescription().equals("key.right")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.RIGHT);
-						continue;
 					}
 				}
 				if(kb.getKeyDescription().equals("key.sneak")) {
@@ -65,35 +62,31 @@ public class KeyInputHandler {
 					} else {
 						ReplayHandler.spectateCamera();
 					}
-					continue;
 				}
 
 				if(kb.getKeyDescription().equals("key.chat")) {
 					mc.displayGuiScreen(new GuiMouseInput());
-					continue;
 				}
 
 				//Custom registered handlers
-				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && kb.isPressed()) {
+				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && kb.isPressed() && !found) {
+					System.out.println("thumbnail key pressed");
 					ReplayScreenshot.prepareScreenshot();
 					GuiReplayOverlay.requestScreenshot();
-					continue;
 				}
 
-				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SPECTATE) && kb.isPressed()) {
+				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SPECTATE) && kb.isPressed() && !found) {
 					SpectateHandler.openSpectateSelection();
-					continue;
 				}
 
-				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && kb.isPressed()) {
+				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && kb.isPressed() && !found) {
 					ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());			
-					continue;
 				}
 
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
-
+			found = true;
 		}
 	}
 }

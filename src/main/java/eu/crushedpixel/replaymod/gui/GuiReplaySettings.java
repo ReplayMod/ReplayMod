@@ -22,12 +22,14 @@ public class GuiReplaySettings extends GuiScreen {
 	private GuiScreen parentGuiScreen;
 	protected String screenTitle = "Replay Mod Settings";
 
-	private static final int MAXSIZE_SLIDER_ID = 9003;
+	//TODO: Move to GuiConstants
+	private static final int QUALITY_SLIDER_ID = 9003;
 	private static final int RECORDSERVER_ID = 9004;
 	private static final int RECORDSP_ID = 9005;
 	private static final int SEND_CHAT = 9006;
 	private static final int FORCE_LINEAR = 9007;
 	private static final int ENABLE_LIGHTING = 9008;
+	private static final int FRAMERATE_SLIDER_ID = 9009;
 
 	private GuiButton recordServerButton, recordSPButton, sendChatButton, linearButton, lightingButton;
 
@@ -47,18 +49,11 @@ public class GuiReplaySettings extends GuiScreen {
 		int i = 0;
 		for (Entry<String, Object> e : aoptions.entrySet()) {
 
-			/*
-			if(e.getKey().equals("Maximum File Size")) {
-				float minValue = -1;
-				float maxValue = 10000;
-				float valueSteps = 1;
-
-				int val = (Integer)e.getValue();
-				this.buttonList.add(new GuiSizeLimitOptionSlider(MAXSIZE_SLIDER_ID, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 0, 39, 1, val, e.getKey()));
-
-			} else
-			 */
-			if(e.getKey().equals("Enable Notifications")) {
+			if(e.getKey().equals("Video Quality")) {
+				this.buttonList.add(new GuiVideoQualitySlider(QUALITY_SLIDER_ID, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (Float)e.getValue(), "Video Quality"));
+			} else if(e.getKey().equals("Video Framerate")) { 
+				this.buttonList.add(new GuiVideoFramerateSlider(FRAMERATE_SLIDER_ID, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (Integer)e.getValue(), "Video Framerate"));
+			} else if(e.getKey().equals("Enable Notifications")) {
 				sendChatButton = new GuiButton(SEND_CHAT, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Enable Notifications: "+onOff((Boolean)e.getValue()));
 				this.buttonList.add(sendChatButton);
 			} else if(e.getKey().equals("Record Server")) {

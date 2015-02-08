@@ -14,12 +14,13 @@ import eu.crushedpixel.replaymod.replay.ReplayHandler;
 
 public class ReplaySettings {
 
-	private int maximumFileSize = 0;
 	private boolean enableRecordingServer = true;
 	private boolean enableRecordingSingleplayer = true;
 	private boolean showNotifications = true;
 	private boolean forceLinearPath = false;
 	private boolean lightingEnabled = false;
+	private float videoQuality = 0.5f;
+	private int videoFramerate = 30;
 
 	private static Field mcTimer;
 
@@ -33,21 +34,29 @@ public class ReplaySettings {
 		}
 	}
 
-	public ReplaySettings(int maximumFileSize, boolean enableRecordingServer,
-			boolean enableRecordingSingleplayer, boolean showNotifications, boolean forceLinearPath, boolean lightingEnabled) {
-		this.maximumFileSize = maximumFileSize;
+	public ReplaySettings(boolean enableRecordingServer,
+			boolean enableRecordingSingleplayer, boolean showNotifications, boolean forceLinearPath, boolean lightingEnabled, int framerate, float videoQuality) {
 		this.enableRecordingServer = enableRecordingServer;
 		this.enableRecordingSingleplayer = enableRecordingSingleplayer;
 		this.showNotifications = showNotifications;
 		this.forceLinearPath = forceLinearPath;
 		this.lightingEnabled = lightingEnabled;
+		this.videoFramerate = Math.min(120, Math.max(10, framerate));
+		this.videoQuality = Math.min(0.9f, Math.max(0.1f, videoQuality));
 	}
 
-	public int getMaximumFileSize() {
-		return maximumFileSize;
+	public int getVideoFramerate() {
+		return videoFramerate;
 	}
-	public void setMaximumFileSize(int maximumFileSize) {
-		this.maximumFileSize = maximumFileSize;
+	public void setVideoFramerate(int framerate) {
+		this.videoFramerate = Math.min(120, Math.max(10, framerate));
+		rewriteSettings();
+	}
+	public float getVideoQuality() {
+		return videoQuality;
+	}
+	public void setVideoQuality(float videoQuality) {
+		this.videoQuality = Math.min(0.9f, Math.max(0.1f, videoQuality));
 		rewriteSettings();
 	}
 	public boolean isEnableRecordingServer() {
@@ -108,11 +117,13 @@ public class ReplaySettings {
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
 
 		map.put("Enable Notifications", showNotifications);
-		map.put("Maximum File Size", maximumFileSize);
 		map.put("Record Server", enableRecordingServer);
 		map.put("Record Singleplayer", enableRecordingSingleplayer);
+		map.put("Placeholder 1", null);
 		map.put("Force Linear Movement", forceLinearPath);
 		map.put("Enable Lighting", lightingEnabled);
+		map.put("Video Quality", videoQuality);
+		map.put("Video Framerate", videoFramerate);
 
 		return map;
 	}
@@ -120,12 +131,13 @@ public class ReplaySettings {
 	public void setOptions(Map<String, Object> map) {
 		try {
 
-			maximumFileSize = (Integer)map.get("Maximum File Size");
 			showNotifications = (Boolean)map.get("Enable Notifications");
 			enableRecordingServer = (Boolean)map.get("Record Server");
 			enableRecordingSingleplayer = (Boolean)map.get("Record Singleplayer");
 			forceLinearPath = (Boolean)map.get("Force Linear Movement");
 			lightingEnabled = (Boolean)map.get("Enable Lighting");
+			videoQuality = (Float)map.get("Video Quality");
+			videoFramerate = (Integer)map.get("Video Framerate");
 
 			rewriteSettings();
 		} catch(Exception e) {
@@ -139,11 +151,12 @@ public class ReplaySettings {
 		ReplayMod.instance.config.removeCategory(ReplayMod.instance.config.getCategory("settings"));
 		Property recServer = ReplayMod.instance.config.get("settings", "enableRecordingServer", enableRecordingServer, "Defines whether a recording should be started upon joining a server.");
 		Property recSP = ReplayMod.instance.config.get("settings", "enableRecordingSingleplayer", enableRecordingSingleplayer, "Defines whether a recording should be started upon joining a singleplayer world.");
-		Property maxFileSize = ReplayMod.instance.config.get("settings", "maximumFileSize", maximumFileSize, "The maximum File size (in MB) of a recording. 0 means unlimited.");
 		Property showNot = ReplayMod.instance.config.get("settings", "showNotifications", showNotifications, "Defines whether notifications should be sent to the player.");
 		Property linear = ReplayMod.instance.config.get("settings", "forceLinearPath", forceLinearPath, "Defines whether travelling paths should be linear instead of interpolated.");
 		Property lighting = ReplayMod.instance.config.get("settings", "enableLighting", lightingEnabled, "If enabled, the whole map is lighted.");
-
+		Property vq = ReplayMod.instance.config.get("settings", "videoQuality", videoQuality, "The quality of the exported video files from 0.1 to 0.9");
+		Property framerate = ReplayMod.instance.config.get("settings", "videoFramerate", videoFramerate, "The framerate of the exported video files from 10 to 120");
+		
 		ReplayMod.instance.config.save();
 	}
 }

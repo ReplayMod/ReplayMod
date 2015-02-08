@@ -7,6 +7,10 @@ import akka.japi.Pair;
 
 public abstract class LinearInterpolation<K> {
 
+	public LinearInterpolation() {
+		points = new ArrayList<K>();
+	}
+	
 	protected List<K> points = new ArrayList<K>();
 	
 	public abstract K getPoint(float position);
@@ -21,9 +25,9 @@ public abstract class LinearInterpolation<K> {
 	
 	protected Pair<Float, Pair<K, K>> getCurrentPoints(float position) {
 		if(points.size() == 0) return null;
-		float pos = position * (points.size()-1);
-		int      cubicNum = Math.round(pos);
-		float    cubicPos = (pos - cubicNum);
+		position = position * (points.size()-1);
+		int      cubicNum = (int)Math.min(points.size()-1, position);
+		float    cubicPos = (position - cubicNum);
 		
 		if(cubicNum == points.size()-1) {
 			cubicNum--;

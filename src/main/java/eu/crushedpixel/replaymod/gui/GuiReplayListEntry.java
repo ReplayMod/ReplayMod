@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui.replaymanager;
+package eu.crushedpixel.replaymod.gui;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -18,6 +18,7 @@ import net.minecraft.client.gui.GuiListExtended.IGuiListEntry;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
+import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 
 public class GuiReplayListEntry implements IGuiListEntry {
@@ -66,7 +67,7 @@ public class GuiReplayListEntry implements IGuiListEntry {
 	public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
 		try {
 			minecraft.fontRendererObj.drawString(fileName, x + 3, y + 1, 16777215);
-			
+
 			if(y < -slotHeight || y > parent.height) {
 				if(registered) {
 					registered = false;
@@ -79,7 +80,11 @@ public class GuiReplayListEntry implements IGuiListEntry {
 			} else {
 				if(!registered) {
 					textureResource = new ResourceLocation("thumbs/"+fileName);
-					image = ImageIO.read(imageFile);
+					if(imageFile == null) {
+						image = ResourceHelper.getDefaultThumbnail();
+					} else {
+						image = ImageIO.read(imageFile);
+					}
 					dynTex = new DynamicTexture(image);
 					minecraft.getTextureManager().loadTexture(textureResource, dynTex);
 					dynTex.updateDynamicTexture();

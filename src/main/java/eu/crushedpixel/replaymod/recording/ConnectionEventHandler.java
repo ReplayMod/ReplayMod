@@ -99,12 +99,10 @@ public class ConnectionEventHandler {
 
 			currentFile.createNewFile();
 
-			int maxFileSize = ReplayMod.replaySettings.getMaximumFileSize();
-
 			PacketListener insert = null;
 
 			pipeline.addBefore(packetHandlerKey, "replay_recorder", insert = new PacketListener
-					(currentFile, fileName, worldName, System.currentTimeMillis(),  maxFileSize, event.isLocal));
+					(currentFile, fileName, worldName, System.currentTimeMillis(), event.isLocal));
 			ChatMessageRequests.addChatMessage("Recording started!", ChatMessageType.INFORMATION);
 			isRecording = true;
 

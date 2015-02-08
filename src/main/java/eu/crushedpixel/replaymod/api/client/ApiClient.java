@@ -9,12 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.FileEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.io.FileUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -22,7 +17,6 @@ import com.google.gson.JsonParser;
 
 import eu.crushedpixel.replaymod.api.client.holders.ApiError;
 import eu.crushedpixel.replaymod.api.client.holders.AuthKey;
-import eu.crushedpixel.replaymod.api.client.holders.Category;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.api.client.holders.Success;
 import eu.crushedpixel.replaymod.api.client.holders.UserFiles;
@@ -76,6 +70,13 @@ public class ApiClient {
 		builder.put("best", true);
 		FileInfo[] info = invokeAndReturn(builder, FileInfo[].class); //TODO: Test if that works
 		return info;
+	}
+	
+	public void downloadThumbnail(int file, File target) throws IOException {
+		QueryBuilder builder = new QueryBuilder(ApiMethods.get_thumbnail);
+		builder.put("id", file);
+		URL url = new URL(builder.toString());
+		FileUtils.copyURLToFile(url, target);
 	}
 
 	public void downloadFile(String auth, int file, File target) throws IOException {
