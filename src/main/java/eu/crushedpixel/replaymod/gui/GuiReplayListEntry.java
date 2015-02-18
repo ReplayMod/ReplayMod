@@ -2,7 +2,6 @@ package eu.crushedpixel.replaymod.gui;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,47 +14,31 @@ import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiListExtended.IGuiListEntry;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
+import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
-import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 
 public class GuiReplayListEntry implements IGuiListEntry {
 
 	private Minecraft minecraft = Minecraft.getMinecraft();
 	private final DateFormat dateFormat = new SimpleDateFormat();
 
-	private ReplayMetaData metaData;
-	private String fileName;
-
+	private FileInfo fileInfo;
+	
 	private ResourceLocation textureResource;
 	private DynamicTexture dynTex = null;
 
 	private File imageFile;
 	private BufferedImage image = null;
-
-	public ReplayMetaData getMetaData() {
-		return metaData;
-	}
-
-	public void setMetaData(ReplayMetaData metaData) {
-		this.metaData = metaData;
-	}
-
-	public String getFileName() {
-		return fileName;
-	}
-
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
-	}
-
 	private GuiReplayListExtended parent;
+	
+	public FileInfo getFileInfo() {
+		return fileInfo;
+	}
 
-	public GuiReplayListEntry(GuiReplayListExtended parent, String fileName, ReplayMetaData metaData, File imageFile) {
-		this.metaData = metaData;
-		this.fileName = fileName;
+	public GuiReplayListEntry(GuiReplayListExtended parent, FileInfo fileInfo, File imageFile) {
+		this.fileInfo = fileInfo;
 		this.parent = parent;
 		dynTex = null;
 		this.imageFile = imageFile;
@@ -66,7 +49,10 @@ public class GuiReplayListEntry implements IGuiListEntry {
 	@Override
 	public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
 		try {
-			minecraft.fontRendererObj.drawString(fileName, x + 3, y + 1, 16777215);
+			if(fileInfo.getName() == null || fileInfo.getName().length() < 1) {
+				fileInfo.setName("No Name");
+			}
+			minecraft.fontRendererObj.drawString(fileInfo.getName(), x + 3, y + 1, 16777215);
 
 			if(y < -slotHeight || y > parent.height) {
 				if(registered) {
@@ -79,7 +65,7 @@ public class GuiReplayListEntry implements IGuiListEntry {
 				return;
 			} else {
 				if(!registered) {
-					textureResource = new ResourceLocation("thumbs/"+fileName);
+					textureResource = new ResourceLocation("thumbs/"+fileInfo.getName()+fileInfo.getId());
 					if(imageFile == null) {
 						image = ResourceHelper.getDefaultThumbnail();
 					} else {
@@ -97,12 +83,12 @@ public class GuiReplayListEntry implements IGuiListEntry {
 			}
 
 			List<String> list = new ArrayList<String>();
-			list.add(metaData.getServerName()+" ("+dateFormat.format(new Date(metaData.getDate()))+")");
+			list.add(fileInfo.getMetadata().getServerName()+" ("+dateFormat.format(new Date(fileInfo.getMetadata().getDate()))+")");
 
 			list.add(String.format("%02dm%02ds",
-					TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()),
-					TimeUnit.MILLISECONDS.toSeconds(metaData.getDuration()) - 
-					TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()))
+					TimeUnit.MILLISECONDS.toMinutes(fileInfo.getMetadata().getDuration()),
+					TimeUnit.MILLISECONDS.toSeconds(fileInfo.getMetadata().getDuration()) - 
+					TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(fileInfo.getMetadata().getDuration()))
 					));
 
 			for (int l1 = 0; l1 < Math.min(list.size(), 2); ++l1) {

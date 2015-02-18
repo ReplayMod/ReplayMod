@@ -4,24 +4,27 @@ import java.lang.reflect.Field;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
 import net.minecraftforge.client.GuiIngameForge;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 
 public class ReplayGuiRegistry {
 
-	private static Field renderHand;
+	//private static Field renderHand;
 	private static Minecraft mc = Minecraft.getMinecraft();
 	
 	public static boolean hidden = false;
 	
+	/*
 	static {
 		try {
-			renderHand = EntityRenderer.class.getDeclaredField(MCPNames.field("field_175074_C"));
-			renderHand.setAccessible(true);
+			//renderHand = EntityRenderer.class.getDeclaredField(MCPNames.field("field_175074_C"));
+			//renderHand.setAccessible(true);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
+	*/
 	
 	public static void hide() {
 		if(hidden) return;
@@ -39,11 +42,13 @@ public class ReplayGuiRegistry {
 		GuiIngameForge.renderJumpBar = false;
 		GuiIngameForge.renderObjective = false;
 		
+		/*
 		try {
 			renderHand.set(mc.entityRenderer, false);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		*/
 		
 		hidden = true;
 	}
@@ -65,11 +70,13 @@ public class ReplayGuiRegistry {
 		GuiIngameForge.renderJumpBar = true;
 		GuiIngameForge.renderObjective = true;
 		
+		/*
 		try {
 			renderHand.set(mc.entityRenderer, true);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		*/
 		
 		hidden = false;
 	}

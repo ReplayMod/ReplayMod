@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class QueryBuilder {
 
-	private static final String API_BASE_URL = "http://ReplayMod.com/api/";
+	public static final String API_BASE_URL = "http://ReplayMod.com/api/";
 
 	public String apiMethod;
 	public Map<String,String> paramMap;

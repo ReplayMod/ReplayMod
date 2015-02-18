@@ -90,7 +90,7 @@ public class GuiReplayOverlay extends Gui {
 
 	private static boolean requestScreenshot = false;
 
-	private Field drawBlockOutline;
+	//private Field drawBlockOutline;
 
 	public static void requestScreenshot() {
 		requestScreenshot = true;
@@ -98,13 +98,13 @@ public class GuiReplayOverlay extends Gui {
 
 	public GuiReplayOverlay() {
 		try {
-			drawBlockOutline = EntityRenderer.class.getDeclaredField(MCPNames.field("field_175073_D"));
-			drawBlockOutline.setAccessible(true);
-			drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
+//			drawBlockOutline = EntityRenderer.class.getDeclaredField(MCPNames.field("field_175073_D"));
+	//		drawBlockOutline.setAccessible(true);
+		//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 		} catch(Exception e) {}
 	}
 
-	@SubscribeEvent
+	//@SubscribeEvent TODO
 	public void renderHand(RenderHandEvent event) {
 		if(ReplayHandler.replayActive()) {
 			event.setCanceled(true);
@@ -135,7 +135,8 @@ public class GuiReplayOverlay extends Gui {
 			if(mc != null && mc.thePlayer != null)
 				MinecraftTicker.runMouseKeyboardTick(mc);
 		}
-		if(mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive()) {
+		if(mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive() 
+				&& ReplayHandler.getCameraEntity() != null) {
 			ReplayHandler.spectateCamera();
 			ReplayHandler.getCameraEntity().movePath(new Position(lastX, lastY, lastZ, lastPitch, lastYaw));
 		} else if(!ReplayHandler.isCamera()) {
@@ -169,6 +170,7 @@ public class GuiReplayOverlay extends Gui {
 
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
+		
 		if(!ReplayHandler.replayActive() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class) || VideoWriter.isRecording()) {
 			return;
 		}
@@ -185,7 +187,7 @@ public class GuiReplayOverlay extends Gui {
 		}
 
 		GL11.glEnable(GL11.GL_BLEND);
-		drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
+	//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 
 		if(!ReplayHandler.replayActive()) {
 			return;
@@ -750,7 +752,7 @@ public class GuiReplayOverlay extends Gui {
 	}
 
 	private void addPlaceKeyframe() {
-		CameraEntity cam = ReplayHandler.getCameraEntity();
+		Entity cam = mc.getRenderViewEntity();
 		if(cam == null) return;
 		ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw)));
 	}

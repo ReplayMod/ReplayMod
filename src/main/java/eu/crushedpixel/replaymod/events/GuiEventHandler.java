@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiOptions;
 import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.gui.inventory.GuiInventory;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings.Options;
 import net.minecraftforge.client.event.GuiOpenEvent;
@@ -56,9 +57,9 @@ public class GuiEventHandler {
 			event.gui = null;
 			return;
 		}
-		
+
 		if(!(event.gui instanceof GuiReplayManager || event.gui instanceof GuiUploadFile)) ResourceHelper.freeAllResources();
-		
+
 		if(event.gui instanceof GuiMainMenu) {
 			if(ReplayMod.firstMainMenu) {
 				ReplayMod.firstMainMenu = false;
@@ -162,20 +163,20 @@ public class GuiEventHandler {
 
 		if(ReplayHandler.replayActive() && event.gui instanceof GuiIngameMenu && event.button.id == 1) {
 			event.button.enabled = false;
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {	
-					ReplayHandler.endReplay();
+			
+			mc.gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
 
-					mc.gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
+			ReplayHandler.lastExit = System.currentTimeMillis();
 
-					ReplayHandler.lastExit = System.currentTimeMillis();
-					mc.theWorld.sendQuittingDisconnectingPacket();
+			/* This is already being executed by the default Exit action handling (vanilla code)
+			mc.theWorld.sendQuittingDisconnectingPacket();
+			mc.loadWorld((WorldClient)null);
+			mc.displayGuiScreen(new GuiMainMenu());
+			*/
+			
+			ReplayHandler.endReplay();
 
-					ReplayGuiRegistry.show();
-				}
-			});		
-			t.start();
+			ReplayGuiRegistry.show();
 		}
 	}
 

@@ -361,6 +361,9 @@ public class ReplayHandler {
 			ReplayMod.overlay.resetUI();
 		} catch(Exception e) {}
 
+		//Load lighting and trigger update
+		ReplayMod.replaySettings.setLightingEnabled(ReplayMod.replaySettings.isLightingEnabled());
+		
 		replayActive = true;
 	}
 
@@ -397,9 +400,11 @@ public class ReplayHandler {
 
 		resetKeyframes();
 
-		if(channel != null) {
+		/*
+		if(channel != null && channel.isOpen()) {
 			channel.close();
 		}
+		*/
 
 		replayActive = false;
 	}

@@ -39,7 +39,6 @@ public class MCTimerHandler {
 		try {
 			if(!(getTimer() instanceof ReplayTimer)) {
 				timerBefore = getTimer();
-				System.out.println("here");
 				mcTimer.set(mc, rpt);
 			}
 		} catch(Exception e) {
@@ -152,12 +151,12 @@ public class MCTimerHandler {
 		}
 		return 1;
 	}
-
+	
 	public static void updateTimer(double d) {
-		try{
+		try {
 			Timer t = getTimer();
 			double d2 = d;
-			d2 = MathHelper.clamp_double(d2, 0.0D, 1.0D);
+			//d2 = MathHelper.clamp_double(d2, 0.0D, 1.0D);
 			t.elapsedPartialTicks = (float)((double)t.elapsedPartialTicks + d2 * (double)t.timerSpeed * 20);
 			t.elapsedTicks = (int)t.elapsedPartialTicks;
 			t.elapsedPartialTicks -= (float)t.elapsedTicks;

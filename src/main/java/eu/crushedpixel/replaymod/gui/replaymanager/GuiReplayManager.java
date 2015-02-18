@@ -37,6 +37,7 @@ import org.lwjgl.input.Keyboard;
 import com.google.gson.Gson;
 import com.mojang.realmsclient.util.Pair;
 
+import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
@@ -122,7 +123,9 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 		Collections.sort(replayFileList, new FileAgeComparator());
 
 		for(Pair<Pair<File, ReplayMetaData>, File> p : replayFileList) {
-			replayGuiList.addEntry(FilenameUtils.getBaseName(p.first().first().getName()), p.first().second(), p.second());
+			FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null, 
+					-1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true);
+			replayGuiList.addEntry(fileInfo, p.second());
 		}
 	}
 
@@ -204,7 +207,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 				mc.displayGuiScreen(parentScreen);
 			}
 			else if(button.id == DELETE_BUTTON_ID) {
-				String s = replayGuiList.getListEntry(replayGuiList.selected).getFileName();
+				String s = replayGuiList.getListEntry(replayGuiList.selected).getFileInfo().getName();
 
 				if (s != null) {
 					delete_file = true;

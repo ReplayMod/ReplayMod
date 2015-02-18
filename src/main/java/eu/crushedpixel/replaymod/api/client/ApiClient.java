@@ -18,6 +18,7 @@ import com.google.gson.JsonParser;
 import eu.crushedpixel.replaymod.api.client.holders.ApiError;
 import eu.crushedpixel.replaymod.api.client.holders.AuthKey;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
+import eu.crushedpixel.replaymod.api.client.holders.SearchResult;
 import eu.crushedpixel.replaymod.api.client.holders.Success;
 import eu.crushedpixel.replaymod.api.client.holders.UserFiles;
 import eu.crushedpixel.replaymod.utils.StreamTools;
@@ -54,21 +55,19 @@ public class ApiClient {
 		QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
 		builder.put("auth", auth);
 		builder.put("ids", buildListString(ids));
-		FileInfo[] info = invokeAndReturn(builder, FileInfo[].class); //TODO: Test if that works
+		FileInfo[] info = invokeAndReturn(builder, FileInfo[].class);
 		return info;
 	}
 	
-	public FileInfo[] getRecentFiles() throws IOException, ApiException {
-		QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
-		builder.put("recent", true);
-		FileInfo[] info = invokeAndReturn(builder, FileInfo[].class); //TODO: Test if that works
-		return info;
-	}
-	
-	public FileInfo[] getBestFiles() throws IOException, ApiException {
-		QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
-		builder.put("best", true);
-		FileInfo[] info = invokeAndReturn(builder, FileInfo[].class); //TODO: Test if that works
+	public FileInfo[] searchFiles(SearchQuery query) throws IOException, ApiException {
+		StringBuilder sb = new StringBuilder();
+
+		// build base url
+		sb.append(QueryBuilder.API_BASE_URL);
+		sb.append("search");
+		sb.append(query.buildQuery());
+		
+		FileInfo[] info = invokeAndReturn(sb.toString(), SearchResult.class).getResults();
 		return info;
 	}
 	
@@ -116,8 +115,12 @@ public class ApiClient {
 		invokeAndReturn(builder, Success.class);
 	}
 
-	private <T> T invokeAndReturn(QueryBuilder builder,Class<T> classOfT) throws IOException, ApiException {
-		JsonElement ele = GsonApiClient.invoke(builder);
+	private <T> T invokeAndReturn(QueryBuilder builder, Class<T> classOfT) throws IOException, ApiException {
+		return invokeAndReturn(builder.toString(), classOfT);
+	}
+	
+	private <T> T invokeAndReturn(String url, Class<T> classOfT) throws IOException, ApiException {
+		JsonElement ele = GsonApiClient.invokeJson(url);
 		return gson.fromJson(ele, classOfT);
 	}
 

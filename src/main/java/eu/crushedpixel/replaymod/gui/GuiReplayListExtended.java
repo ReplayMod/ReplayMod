@@ -13,7 +13,7 @@ import net.minecraft.util.MathHelper;
 
 import org.lwjgl.input.Mouse;
 
-import eu.crushedpixel.replaymod.recording.ReplayMetaData;
+import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 
 public abstract class GuiReplayListExtended extends GuiListExtended {
 
@@ -81,8 +81,8 @@ public abstract class GuiReplayListExtended extends GuiListExtended {
 		entries = new ArrayList<GuiReplayListEntry>();
 	}
 	
-	public void addEntry(String fileName, ReplayMetaData metaData, File image) {
-		entries.add(new GuiReplayListEntry(this, fileName, metaData, image));
+	public void addEntry(FileInfo fileInfo, File image) {
+		entries.add(new GuiReplayListEntry(this, fileInfo, image));
 	}
 
 	@Override

@@ -330,7 +330,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							dis = new DataInputStream(archive.getInputStream(replayEntry));
 							setReplaySpeed(0);
 						} catch(IOException e) {
-							e.printStackTrace();
+							//e.printStackTrace();
 						}
 					}
 				}
@@ -442,6 +442,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							difficulty, maxPlayers, worldType, false);
 				}
 
+				/*
+				 * Proof of concept for some nasty player manipulation ;)
 				String crPxl = "2cb08a5951f34e98bd0985d9747e80df";
 				String johni = "cd3d4be14ffc2f9db432db09e0cd254b";
 
@@ -469,6 +471,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 					p = sp;
 				}
+				*/
 
 				if(p instanceof S07PacketRespawn) {
 					allowMovement = true;

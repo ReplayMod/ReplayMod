@@ -17,6 +17,8 @@ import org.lwjgl.input.Keyboard;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.client.ApiException;
+import eu.crushedpixel.replaymod.api.client.SearchPagination;
+import eu.crushedpixel.replaymod.api.client.SearchQuery;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.GuiReplayListExtended;
@@ -35,12 +37,25 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
 	private Tab currentTab = Tab.RECENT_FILES;
 
+	private static final SearchQuery recentFileSearchQuery = new SearchQuery(false, null, null, null, null, null,
+			null, null, null, null);
+
+	private static final SearchQuery bestFileSearchQuery = new SearchQuery(true, null, null, null, null, null,
+			null, null, null, null);
+
+	private final SearchPagination recentFilePagination = new SearchPagination(recentFileSearchQuery);
+	private final SearchPagination bestFilePagination = new SearchPagination(bestFileSearchQuery);
+	private SearchPagination myFilePagination;
+
 	@Override
 	public void initGui() {
 		Keyboard.enableRepeatEvents(true);
-		if(!AuthenticationHandler.isAuthenticated()) {
-			mc.displayGuiScreen(new GuiLoginPrompt(new GuiMainMenu(), this));
-			return;
+
+		if(AuthenticationHandler.isAuthenticated()) {
+			SearchQuery query = new SearchQuery();
+			query.auth = AuthenticationHandler.getKey();
+			query.order = false;
+			myFilePagination = new SearchPagination(query);
 		}
 
 		//Top Button Bar
@@ -53,6 +68,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		buttonBar.add(bestButton);
 
 		GuiButton ownReplayButton = new GuiButton(GuiConstants.CENTER_MY_REPLAYS_BUTTON, 20, 30, "My Replays");
+		ownReplayButton.enabled = AuthenticationHandler.isAuthenticated();
 		buttonBar.add(ownReplayButton);
 
 		GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, "Search");
@@ -115,9 +131,9 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		} else if(button.id == GuiConstants.CENTER_RECENT_BUTTON) {
 			showOnlineRecent();
 		} else if(button.id == GuiConstants.CENTER_BEST_BUTTON) {
-
+			showOnlineBest();
 		} else if(button.id == GuiConstants.CENTER_MY_REPLAYS_BUTTON) {
-
+			showOnlineOwnFiles();
 		} else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
 
 		}
@@ -188,40 +204,67 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		Keyboard.enableRepeatEvents(false);
 	}
 
+	private void updateCurrentList(ReplayFileList list, SearchPagination pagination) {
+		currentList = list;
+		if(currentList == null) {
+			currentList = new ReplayFileList(mc, width, height, 50, height-40, 36);
+		} else {
+			currentList.clearEntries();
+			currentList.width = width;
+			currentList.height = height;
+			currentList.top = 50;
+			currentList.bottom = height-40;
+		}
+
+		if(pagination.getLoadedPages() < 0) {
+			pagination.fetchPage();
+		}
+
+		for(FileInfo i : pagination.getFiles()) {
+			try {
+				File tmp = null;
+				if(i.hasThumbnail()) {
+					tmp = File.createTempFile("thumb_online_"+i.getId(), "jpg");
+					ReplayMod.apiClient.downloadThumbnail(i.getId(), tmp);
+				}
+				currentList.addEntry(i, tmp);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public void showOnlineRecent() {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					if(recentFileList == null) {
-						recentFileList = new ReplayFileList(mc, width, height, 50, height-40, 36);
-					} else {
-						recentFileList.clearEntries();
-						recentFileList.width = width;
-						recentFileList.height = height;
-						recentFileList.top = 50;
-						recentFileList.bottom = height-40;
-					}
-					currentTab = Tab.RECENT_FILES;
-					currentList = recentFileList;
-					FileInfo[] files = ReplayMod.apiClient.getRecentFiles();
-					for(FileInfo i : files) {
-						File tmp = null;
-						if(i.hasThumbnail()) {
-							tmp = File.createTempFile("thumb_online_"+i.getId(), "jpg");
-							ReplayMod.apiClient.downloadThumbnail(i.getId(), tmp);
-						}
-						recentFileList.addEntry(i.getName(), i.getMetadata(), tmp);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (ApiException e) { //TODO: Error message
-					e.printStackTrace();
-				}
+				updateCurrentList(recentFileList, recentFilePagination);
+				currentTab = Tab.RECENT_FILES;
 			}
 		});
 		t.start();
+	}
 
+	public void showOnlineBest() {
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				updateCurrentList(bestFileList, bestFilePagination);
+				currentTab = Tab.BEST_FILES;
+			}
+		});
+		t.start();
+	}
 
+	public void showOnlineOwnFiles() {
+		if(!AuthenticationHandler.isAuthenticated() || myFilePagination == null) return;
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				updateCurrentList(myFileList, myFilePagination);
+				currentTab = Tab.MY_FILES;
+			}
+		});
+		t.start();
 	}
 }

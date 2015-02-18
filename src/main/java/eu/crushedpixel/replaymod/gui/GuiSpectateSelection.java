@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -14,7 +15,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.versioning.ComparableVersion;
 
 import com.mojang.realmsclient.util.Pair;
 
@@ -53,7 +53,7 @@ public class GuiSpectateSelection extends GuiScreen {
 	public GuiSpectateSelection(List<EntityPlayer> players) {
 		this.prevSpeed = ReplayHandler.getSpeed();
 		
-		players.sort(new PlayerComparator());
+		Collections.sort(players, new PlayerComparator());
 		
 		this.players = new ArrayList<Pair<EntityPlayer, ResourceLocation>>();
 

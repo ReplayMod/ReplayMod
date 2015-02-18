@@ -5,7 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiOptions;
+import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.settings.GameSettings.Options;
+import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.util.Timer;
 import net.minecraftforge.common.config.Property;
 import eu.crushedpixel.replaymod.ReplayMod;
@@ -90,6 +93,7 @@ public class ReplaySettings {
 	public boolean isLightingEnabled() {
 		return lightingEnabled;
 	}
+	
 	public void setLightingEnabled(boolean enabled) {
 		this.lightingEnabled = enabled;
 		if(enabled) {

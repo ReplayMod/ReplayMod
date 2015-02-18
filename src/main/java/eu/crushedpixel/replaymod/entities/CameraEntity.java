@@ -34,7 +34,8 @@ public class CameraEntity extends EntityPlayer {
 	//frac = time since last tick
 	public void updateMovement() {
 		Minecraft mc = Minecraft.getMinecraft();
-		if(ReplayHandler.getCameraEntity() != null && mc.thePlayer != null) {
+		if(ReplayHandler.getCameraEntity() != null && mc.thePlayer != null 
+				&& mc.getRenderViewEntity() != null) {
 			//Aligns the particle rotation
 			mc.thePlayer.rotationPitch = mc.getRenderViewEntity().rotationPitch;
 			mc.thePlayer.rotationYaw = mc.getRenderViewEntity().rotationYaw;

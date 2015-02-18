@@ -48,7 +48,7 @@ public class FileUploader {
 		uploading = true;
 
 		String postData = "?auth="+auth+"&category="+category.getId();
-		
+
 		if(tags.size() > 0) {
 			postData += "&tags=";
 			for(String tag : tags) {
@@ -58,7 +58,7 @@ public class FileUploader {
 				}
 			}
 		}
-		
+
 		postData +="&name="+URLEncoder.encode(filename, "UTF-8");
 		System.out.println(postData);
 
@@ -118,23 +118,28 @@ public class FileUploader {
 			is = con.getErrorStream();
 		}
 
-		BufferedReader r = new BufferedReader(new InputStreamReader(is));
-
 		String info = null;
-		if(responseCode != 200) {
-			ApiError error = new ApiError(-1, "An unknown error occured");
-			String json = "";
-			while(r.ready()) {
-				json += r.readLine();
+		
+		if(is != null) {
+			BufferedReader r = new BufferedReader(new InputStreamReader(is));
+			info = null;
+			if(responseCode != 200) {
+				ApiError error = new ApiError(-1, "An unknown error occured");
+				String json = "";
+				while(r.ready()) {
+					json += r.readLine();
+				}
+				error = gson.fromJson(json, ApiError.class);
+				info = error.getDesc();
+				System.out.println(info);
 			}
-			System.out.println(json);
-			error = gson.fromJson(json, ApiError.class);
-			info = error.getDesc();
-			System.out.println(info);
 		}
+
 
 		con.disconnect();
 
+		if(info == null) info = "An unknown error occured";
+		
 		parent.onFinishUploading(success, info);
 
 		uploading = false;
