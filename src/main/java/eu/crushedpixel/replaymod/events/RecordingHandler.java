@@ -3,13 +3,12 @@ package eu.crushedpixel.replaymod.events;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayer.EnumStatus;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
@@ -21,18 +20,17 @@ import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
 import net.minecraft.network.play.server.S0DPacketCollectItem;
 import net.minecraft.network.play.server.S12PacketEntityVelocity;
 import net.minecraft.network.play.server.S13PacketDestroyEntities;
-import net.minecraft.network.play.server.S1BPacketEntityAttach;
 import net.minecraft.network.play.server.S14PacketEntity.S17PacketEntityLookMove;
 import net.minecraft.network.play.server.S18PacketEntityTeleport;
 import net.minecraft.network.play.server.S19PacketEntityHeadLook;
 import net.minecraft.network.play.server.S19PacketEntityStatus;
+import net.minecraft.network.play.server.S1BPacketEntityAttach;
 import net.minecraft.network.play.server.S38PacketPlayerListItem;
 import net.minecraft.network.play.server.S38PacketPlayerListItem.Action;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.minecart.MinecartEvent;
 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
@@ -41,6 +39,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
+import eu.crushedpixel.replaymod.reflection.MCPNames;
 
 public class RecordingHandler {
 
@@ -81,6 +80,17 @@ public class RecordingHandler {
 		}
 	}
 
+	private static Field dataWatcherField;
+
+	static {
+		try {
+			dataWatcherField = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_148960_i"));
+			dataWatcherField.setAccessible(true);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private S0CPacketSpawnPlayer spawnPlayer(EntityPlayer player) {
 		try {
 			S0CPacketSpawnPlayer packet = new S0CPacketSpawnPlayer();
@@ -98,11 +108,14 @@ public class RecordingHandler {
 			pb.writeByte((byte)((int)(player.rotationPitch * 256.0F / 360.0F)));
 
 			ItemStack itemstack = player.inventory.getCurrentItem();
-			pb.writeInt(itemstack == null ? 0 : Item.getIdFromItem(itemstack.getItem()));
+			pb.writeShort(itemstack == null ? 0 : Item.getIdFromItem(itemstack.getItem()));
+			
 			player.getDataWatcher().writeTo(pb);
 
 			packet.readPacketData(pb);
-
+			
+			dataWatcherField.set(packet, player.getDataWatcher());
+			
 			return packet;
 		} catch(Exception e) {
 			e.printStackTrace();

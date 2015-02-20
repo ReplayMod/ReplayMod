@@ -135,7 +135,7 @@ public class GuiReplayOverlay extends Gui {
 			if(mc != null && mc.thePlayer != null)
 				MinecraftTicker.runMouseKeyboardTick(mc);
 		}
-		if(mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive() 
+		if((mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive())
 				&& ReplayHandler.getCameraEntity() != null) {
 			ReplayHandler.spectateCamera();
 			ReplayHandler.getCameraEntity().movePath(new Position(lastX, lastY, lastZ, lastPitch, lastYaw));

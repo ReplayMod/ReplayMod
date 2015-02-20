@@ -362,6 +362,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	private static Field playerUUIDField;
 	private static Field gameProfileField;
+	
+	//private static Field dataWatcherField;
 
 	static {
 		try {
@@ -370,6 +372,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 			gameProfileField = S38PacketPlayerListItem.AddPlayerData.class.getDeclaredField("field_179964_d");
 			gameProfileField.setAccessible(true);
+			
+			//dataWatcherField = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_148960_i"));
+			//dataWatcherField.setAccessible(true);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -470,6 +475,13 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 					}
 
 					p = sp;
+				}
+				*/
+				
+				/*
+				if(p instanceof S0CPacketSpawnPlayer) {
+					System.out.println(dataWatcherField.get(p));
+					System.out.println(((S0CPacketSpawnPlayer) p).func_148944_c());
 				}
 				*/
 

@@ -19,6 +19,8 @@ public class GuiConstants {
 	public static final int UPLOAD_TAG_INPUT = 3007;
 	public static final int UPLOAD_TAG_PLACEHOLDER = 3008;
 	
+	public static final int EXIT_REPLAY_BUTTON = 4001;
+	
 	public static final int REPLAY_OPTIONS_BUTTON_ID = 8000;
 	
 	public static final int REPLAY_MANAGER_BUTTON_ID = 9001;

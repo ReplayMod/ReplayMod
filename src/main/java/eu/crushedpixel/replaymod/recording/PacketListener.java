@@ -106,26 +106,7 @@ public class PacketListener extends DataListener {
 		//Converts the packet back to a ByteBuffer for correct saving
 
 		ByteBuf bb = Unpooled.buffer();
-		if(packet instanceof S0FPacketSpawnMob) {
-			Field field_149043_l = S0FPacketSpawnMob.class.getDeclaredField(MCPNames.field("field_149043_l"));
-			field_149043_l.setAccessible(true);
-			DataWatcher l = (DataWatcher)field_149043_l.get(packet);
-			DataWatcher dw = new DataWatcher(null);
-			if(l == null) {
-				field_149043_l.set(packet, dw);
-			}
-		}
-
-		if(packet instanceof S0CPacketSpawnPlayer) {
-			Field field_149043_l = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_148960_i"));
-			field_149043_l.setAccessible(true);
-			DataWatcher l = (DataWatcher)field_149043_l.get(packet);
-			DataWatcher dw = new DataWatcher(null);
-			if(l == null) {
-				field_149043_l.set(packet, dw);
-			}
-		}
-
+		
 		packetSerializer.encode(ctx, packet, bb);
 
 		bb.readerIndex(0);

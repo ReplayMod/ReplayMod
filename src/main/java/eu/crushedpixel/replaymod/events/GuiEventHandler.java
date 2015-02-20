@@ -14,12 +14,14 @@ import net.minecraft.client.gui.GuiOptions;
 import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings.Options;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import eu.crushedpixel.replaymod.ReplayMod;
@@ -114,6 +116,7 @@ public class GuiEventHandler {
 				if(b.id == 1) {
 					b.displayString = "Exit Replay";
 					b.yPosition -= 24*2;
+					b.id = GuiConstants.EXIT_REPLAY_BUTTON;
 				} else if(b.id >= 5 && b.id <= 7) {
 					event.buttonList.remove(b);
 				} else if(b.id != 4) {
@@ -161,21 +164,19 @@ public class GuiEventHandler {
 			mc.displayGuiScreen(new GuiReplaySettings(event.gui));
 		}
 
-		if(ReplayHandler.replayActive() && event.gui instanceof GuiIngameMenu && event.button.id == 1) {
+		if(ReplayHandler.replayActive() && event.gui instanceof GuiIngameMenu && event.button.id == GuiConstants.EXIT_REPLAY_BUTTON) {
+			ReplayHandler.endReplay();
+			
 			event.button.enabled = false;
 			
 			mc.gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
 
 			ReplayHandler.lastExit = System.currentTimeMillis();
 
-			/* This is already being executed by the default Exit action handling (vanilla code)
 			mc.theWorld.sendQuittingDisconnectingPacket();
 			mc.loadWorld((WorldClient)null);
 			mc.displayGuiScreen(new GuiMainMenu());
-			*/
 			
-			ReplayHandler.endReplay();
-
 			ReplayGuiRegistry.show();
 		}
 	}
