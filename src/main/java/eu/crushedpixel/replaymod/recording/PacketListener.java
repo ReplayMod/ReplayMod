@@ -96,6 +96,19 @@ public class PacketListener extends DataListener {
 		lastSentPacket = pd.getTimestamp();
 	}
 	
+	private static Field spawnMobDataWatcher, spawnPlayerDataWatcher;
+	
+	static {
+		try {
+			spawnMobDataWatcher = S0FPacketSpawnMob.class.getDeclaredField(MCPNames.field("field_149043_l"));
+			spawnMobDataWatcher.setAccessible(true);
+			
+			spawnPlayerDataWatcher = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_148960_i"));
+			spawnPlayerDataWatcher.setAccessible(true);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private PacketData getPacketData(ChannelHandlerContext ctx, Packet packet) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
 
@@ -106,6 +119,22 @@ public class PacketListener extends DataListener {
 		//Converts the packet back to a ByteBuffer for correct saving
 
 		ByteBuf bb = Unpooled.buffer();
+		
+		if(packet instanceof S0FPacketSpawnMob) {
+			DataWatcher l = (DataWatcher)spawnMobDataWatcher.get(packet);
+			DataWatcher dw = new DataWatcher(null);
+			if(l == null) {
+				spawnMobDataWatcher.set(packet, dw);
+			}
+		}
+
+		if(packet instanceof S0CPacketSpawnPlayer) {
+			DataWatcher l = (DataWatcher)spawnPlayerDataWatcher.get(packet);
+			DataWatcher dw = new DataWatcher(null);
+			if(l == null) {
+				spawnPlayerDataWatcher.set(packet, dw);
+			}
+		}
 		
 		packetSerializer.encode(ctx, packet, bb);
 
