@@ -106,8 +106,8 @@ public class ReplayMod
 			e.printStackTrace();
 		}
 		
-		if(AuthenticationHandler.isBlacklisted(Minecraft.getMinecraft().getSession().getPlayerID())) {
-			System.exit(0);
-		}
+		//if(AuthenticationHandler.isBlacklisted(Minecraft.getMinecraft().getSession().getPlayerID())) {
+			//System.exit(0);
+		//}
 	}
 }
