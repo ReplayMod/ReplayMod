@@ -24,6 +24,7 @@ import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -89,6 +90,17 @@ public class GuiReplayOverlay extends Gui {
 	private boolean mouseDown = false;
 
 	private static boolean requestScreenshot = false;
+	
+	private static Field isGamePaused;
+	
+	static {
+		try {
+			isGamePaused = Minecraft.class.getDeclaredField(MCPNames.field("field_71445_n"));
+			isGamePaused.setAccessible(true);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	//private Field drawBlockOutline;
 
@@ -106,32 +118,41 @@ public class GuiReplayOverlay extends Gui {
 
 	//@SubscribeEvent TODO
 	public void renderHand(RenderHandEvent event) {
-		if(ReplayHandler.replayActive()) {
+		if(ReplayHandler.isInReplay()) {
 			event.setCanceled(true);
 		}
 	}
 
 	@SubscribeEvent
 	public void tick(TickEvent event) {
-		if(!ReplayHandler.replayActive()) return;
-		if(ReplayHandler.isReplaying() && !ReplayProcess.isVideoRecording()) ReplayProcess.tickReplay();
+		if(!ReplayHandler.isInReplay()) return;
+		if(ReplayHandler.isInPath() && !ReplayProcess.isVideoRecording()) ReplayProcess.tickReplay();
 		ReplayProcess.unblock();
 		if(ReplayHandler.getCameraEntity() != null)
 			ReplayHandler.getCameraEntity().updateMovement();
-		if(!ReplayHandler.isReplaying()) onMouseMove(new MouseEvent());
+		if(!ReplayHandler.isInPath()) onMouseMove(new MouseEvent());
 		FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
+		
 	}
 
 	private double lastX, lastY, lastZ;
 	private float lastPitch, lastYaw;
 
+	
+	@SubscribeEvent
+	public void onChangeView(MouseEvent event) {
+		if(ReplayHandler.isInPath()) {
+			event.setCanceled(true);
+		}
+	}
+	
 	@SubscribeEvent
 	public void onRenderWorld(RenderWorldLastEvent event) 
 			throws IllegalAccessException, IllegalArgumentException, 
 			InvocationTargetException, IOException {
-		if(!ReplayHandler.replayActive()) return;
+		if(!ReplayHandler.isInReplay()) return;
 		if(ReplayHandler.isCamera()) ReplayHandler.setCameraEntity(ReplayHandler.getCameraEntity());
-		if(ReplayHandler.replayActive() && ReplayHandler.isPaused()) {
+		if(ReplayHandler.isInReplay() && ReplayHandler.isPaused()) {
 			if(mc != null && mc.thePlayer != null)
 				MinecraftTicker.runMouseKeyboardTick(mc);
 		}
@@ -149,6 +170,9 @@ public class GuiReplayOverlay extends Gui {
 		if(requestScreenshot) {
 			requestScreenshot = false;
 			ReplayScreenshot.saveScreenshot(mc.getFramebuffer());
+		}
+		if(mc.isGamePaused() && ReplayHandler.isInPath()) {
+			isGamePaused.set(mc, false);
 		}
 	}
 
@@ -171,7 +195,7 @@ public class GuiReplayOverlay extends Gui {
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
 		
-		if(!ReplayHandler.replayActive() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class) || VideoWriter.isRecording()) {
+		if(!ReplayHandler.isInReplay() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class) || VideoWriter.isRecording()) {
 			return;
 		}
 
@@ -189,7 +213,7 @@ public class GuiReplayOverlay extends Gui {
 		GL11.glEnable(GL11.GL_BLEND);
 	//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 
-		if(!ReplayHandler.replayActive()) {
+		if(!ReplayHandler.isInReplay()) {
 			return;
 		}
 
@@ -718,7 +742,7 @@ public class GuiReplayOverlay extends Gui {
 		int dx = 0;
 		int dy = 0;
 
-		boolean play = ReplayHandler.isReplaying();
+		boolean play = ReplayHandler.isInPath();
 		hover = false;
 
 		if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
@@ -742,7 +766,7 @@ public class GuiReplayOverlay extends Gui {
 
 		//Handling the click on the Replay starter
 		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
-			if(ReplayHandler.isReplaying()) {
+			if(ReplayHandler.isInPath()) {
 				ReplayHandler.interruptReplay();
 			} else {
 				ReplayHandler.startPath(false);
@@ -827,7 +851,7 @@ public class GuiReplayOverlay extends Gui {
 
 	@SubscribeEvent
 	public void onMouseMove(MouseEvent event) {
-		if(!ReplayHandler.replayActive()) return;
+		if(!ReplayHandler.isInReplay()) return;
 		boolean flag = Display.isActive();
 		flag = true;
 

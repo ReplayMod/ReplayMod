@@ -24,7 +24,7 @@ public class SpectateHandler {
 	};
 	
 	public static void openSpectateSelection() {
-		if(!ReplayHandler.replayActive()) {
+		if(!ReplayHandler.isInReplay()) {
 			return;
 		}
 		

@@ -63,7 +63,7 @@ public class ReplayProcess {
 		lastTimestamp = -1;
 		linear = ReplayMod.replaySettings.isLinearMovement();
 		ReplayHandler.sortKeyframes();
-		ReplayHandler.setReplaying(true);
+		ReplayHandler.setInPath(true);
 		previousReplaySpeed = ReplayHandler.getSpeed();
 
 		TimeKeyframe tf = ReplayHandler.getNextTimeKeyframe(-1);
@@ -85,7 +85,7 @@ public class ReplayProcess {
 
 				@Override
 				public void run() {
-					while(ReplayHandler.isReplaying()) {
+					while(ReplayHandler.isInPath()) {
 						if(!blocked) {
 							mc.addScheduledTask(new Runnable() {
 								@Override
@@ -109,10 +109,10 @@ public class ReplayProcess {
 	}
 
 	public static void stopReplayProcess(boolean finished) {
-		if(!ReplayHandler.isReplaying()) return;
+		if(!ReplayHandler.isInPath()) return;
 		if(finished) ChatMessageRequests.addChatMessage("Replay finished!", ChatMessageType.INFORMATION);
 		else ChatMessageRequests.addChatMessage("Replay stopped!", ChatMessageType.INFORMATION);
-		ReplayHandler.setReplaying(false);
+		ReplayHandler.setInPath(false);
 		MCTimerHandler.setActiveTimer();
 		ReplayHandler.setSpeed(previousReplaySpeed);
 		ReplayHandler.setSpeed(0);
@@ -434,7 +434,7 @@ public class ReplayProcess {
 		//Video capturing, for testing purposes
 		if(isVideoRecording()) {
 			try {
-				if(!VideoWriter.isRecording() && ReplayHandler.isReplaying()) {
+				if(!VideoWriter.isRecording() && ReplayHandler.isInPath()) {
 					VideoWriter.startRecording(mc.displayWidth, mc.displayHeight);
 				} else {
 					VideoWriter.writeImage(ScreenCapture.captureScreen());

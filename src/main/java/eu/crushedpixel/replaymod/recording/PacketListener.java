@@ -19,6 +19,7 @@ import net.minecraft.network.play.server.S0DPacketCollectItem;
 import net.minecraft.network.play.server.S0FPacketSpawnMob;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
+import eu.crushedpixel.replaymod.editor.ReplayFileIO;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 
@@ -31,8 +32,6 @@ public class PacketListener extends DataListener {
 	private static final Minecraft mc = Minecraft.getMinecraft();
 
 	private ChannelHandlerContext context = null;
-
-	private static final PacketSerializer packetSerializer = new PacketSerializer(EnumPacketDirection.CLIENTBOUND);
 
 	public void saveOnly(Packet packet) {
 		try {
@@ -69,7 +68,7 @@ public class PacketListener extends DataListener {
 
 				if(packet instanceof S0DPacketCollectItem) {
 					if(mc.thePlayer != null || 
-							((S0DPacketCollectItem) packet).func_149353_d() == mc.thePlayer.getEntityId()) {
+							((S0DPacketCollectItem)packet).func_149353_d() == mc.thePlayer.getEntityId()) {
 						super.channelRead(ctx, msg);
 						return;
 					}
@@ -115,10 +114,6 @@ public class PacketListener extends DataListener {
 		if(startTime == null) startTime = System.currentTimeMillis();
 
 		int timestamp = (int)(System.currentTimeMillis() - startTime);
-
-		//Converts the packet back to a ByteBuffer for correct saving
-
-		ByteBuf bb = Unpooled.buffer();
 		
 		if(packet instanceof S0FPacketSpawnMob) {
 			DataWatcher l = (DataWatcher)spawnMobDataWatcher.get(packet);
@@ -135,14 +130,8 @@ public class PacketListener extends DataListener {
 				spawnPlayerDataWatcher.set(packet, dw);
 			}
 		}
-		
-		packetSerializer.encode(ctx, packet, bb);
 
-		bb.readerIndex(0);
-		byte[] array = new byte[bb.readableBytes()];
-		bb.readBytes(array);
-
-		bb.readerIndex(0);
+		byte[] array = ReplayFileIO.serializePacket(packet);
 
 		return new PacketData(array, timestamp);
 	}

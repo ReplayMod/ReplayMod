@@ -40,13 +40,13 @@ public class ReplayHandler {
 
 	private static Keyframe selectedKeyframe;
 
-	private static boolean isReplaying = false;
+	private static boolean inPath = false;
 
 	private static CameraEntity cameraEntity;
 
 	private static List<Keyframe> keyframes = new ArrayList<Keyframe>();
 
-	private static boolean replayActive = false;
+	private static boolean inReplay = false;
 
 	public static long lastExit = 0;
 
@@ -93,20 +93,20 @@ public class ReplayHandler {
 		return gamma;
 	}
 
-	public static void setReplaying(boolean replaying) {
-		isReplaying = replaying;
+	public static void setInPath(boolean replaying) {
+		inPath = replaying;
 	}
 
 	public static void startPath(boolean save) {
-		if(!ReplayHandler.isReplaying()) ReplayProcess.startReplayProcess(save);
+		if(!ReplayHandler.isInPath()) ReplayProcess.startReplayProcess(save);
 	}
 
 	public static void interruptReplay() {
 		ReplayProcess.stopReplayProcess(false);
 	}
 
-	public static boolean isReplaying() {
-		return isReplaying;
+	public static boolean isInPath() {
+		return inPath;
 	}
 
 	public static void setCameraEntity(CameraEntity entity) {
@@ -309,8 +309,8 @@ public class ReplayHandler {
 		sortKeyframes();
 	}
 
-	public static boolean replayActive() {
-		return replayActive;
+	public static boolean isInReplay() {
+		return inReplay;
 	}
 
 	public static boolean isPaused() {
@@ -364,7 +364,7 @@ public class ReplayHandler {
 		//Load lighting and trigger update
 		ReplayMod.replaySettings.setLightingEnabled(ReplayMod.replaySettings.isLightingEnabled());
 		
-		replayActive = true;
+		inReplay = true;
 	}
 
 	public static void restartReplay() {
@@ -390,7 +390,7 @@ public class ReplayHandler {
 			ReplayMod.overlay.resetUI();
 		} catch(Exception e) {}
 
-		replayActive = true;
+		inReplay = true;
 	}
 
 	public static void endReplay() {
@@ -406,7 +406,7 @@ public class ReplayHandler {
 		}
 		*/
 
-		replayActive = false;
+		inReplay = false;
 	}
 
 	public static Keyframe getSelected() {

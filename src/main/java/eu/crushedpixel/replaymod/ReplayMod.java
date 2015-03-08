@@ -1,5 +1,7 @@
 package eu.crushedpixel.replaymod;
 
+import java.io.File;
+
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -12,11 +14,11 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import eu.crushedpixel.replaymod.api.client.ApiClient;
+import eu.crushedpixel.replaymod.editor.ReplayTrimmer;
 import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.events.KeyInputHandler;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
@@ -106,6 +108,7 @@ public class ReplayMod
 			e.printStackTrace();
 		}
 		
+		//ReplayTrimmer.trim(new File("/Users/mariusmetzger/toTrim.mcpr"), new File("/Users/mariusmetzger/trimmed.mcpr"), 1000*60, 2000*60);
 		//if(AuthenticationHandler.isBlacklisted(Minecraft.getMinecraft().getSession().getPlayerID())) {
 			//System.exit(0);
 		//}

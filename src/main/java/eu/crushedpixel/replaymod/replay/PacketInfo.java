@@ -8,8 +8,6 @@ public class PacketInfo {
 	private EnumConnectionState connectionState;
 	private int packetID;
 	
-	
-	
 	public PacketInfo(byte[] bytes, EnumConnectionState connectionState,
 			int packetID) {
 		super();

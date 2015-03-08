@@ -82,13 +82,13 @@ public class GuiEventHandler {
 			return;
 		}
 		if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
-			if(ReplayHandler.replayActive()) {
+			if(ReplayHandler.isInReplay()) {
 				event.setCanceled(true);
 			}
 		}
 
 		else if(event.gui instanceof GuiDisconnected) {
-			if(!ReplayHandler.replayActive() && System.currentTimeMillis() - ReplayHandler.lastExit < 5000) {
+			if(!ReplayHandler.isInReplay() && System.currentTimeMillis() - ReplayHandler.lastExit < 5000) {
 				event.setCanceled(true);
 			}
 		}
@@ -111,7 +111,7 @@ public class GuiEventHandler {
 
 	@SubscribeEvent
 	public void onInit(InitGuiEvent event) {
-		if(event.gui instanceof GuiIngameMenu && ReplayHandler.replayActive()) {
+		if(event.gui instanceof GuiIngameMenu && ReplayHandler.isInReplay()) {
 			for(GuiButton b : new ArrayList<GuiButton>(event.buttonList)) {
 				if(b.id == 1) {
 					b.displayString = "Exit Replay";
@@ -164,7 +164,7 @@ public class GuiEventHandler {
 			mc.displayGuiScreen(new GuiReplaySettings(event.gui));
 		}
 
-		if(ReplayHandler.replayActive() && event.gui instanceof GuiIngameMenu && event.button.id == GuiConstants.EXIT_REPLAY_BUTTON) {
+		if(ReplayHandler.isInReplay() && event.gui instanceof GuiIngameMenu && event.button.id == GuiConstants.EXIT_REPLAY_BUTTON) {
 			ReplayHandler.endReplay();
 			
 			event.button.enabled = false;

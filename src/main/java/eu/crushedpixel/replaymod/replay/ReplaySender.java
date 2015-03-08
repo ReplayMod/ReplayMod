@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
@@ -48,7 +47,6 @@ import net.minecraft.network.play.server.S30PacketWindowItems;
 import net.minecraft.network.play.server.S36PacketSignEditorOpen;
 import net.minecraft.network.play.server.S37PacketStatistics;
 import net.minecraft.network.play.server.S38PacketPlayerListItem;
-import net.minecraft.network.play.server.S38PacketPlayerListItem.AddPlayerData;
 import net.minecraft.network.play.server.S39PacketPlayerAbilities;
 import net.minecraft.network.play.server.S43PacketCamera;
 import net.minecraft.network.play.server.S45PacketTitle;
@@ -63,11 +61,12 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 
 import com.google.gson.Gson;
-import com.mojang.authlib.GameProfile;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.editor.ReplayFileIO;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
+import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
@@ -86,7 +85,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private long toleratedTimeStamp = Long.MAX_VALUE;
 
 	private File replayFile;
-	private PacketDeserializer ds = new PacketDeserializer(EnumPacketDirection.SERVERBOUND);
 	private boolean active = true;
 	private ZipFile archive;
 	private DataInputStream dis;
@@ -148,7 +146,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		setReplaySpeed(replaySpeed);
 
 		if((millis < currentTimeStamp && !isHurrying())) {
-			if(ReplayHandler.isReplaying()) {
+			if(ReplayHandler.isInPath()) {
 				if(millis < toleratedTimeStamp) {
 					return;
 				}
@@ -255,9 +253,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 						lastPacketSent = System.currentTimeMillis();
 						ReplayHandler.restartReplay();
 					}
+					
 					while(!terminate && !startFromBeginning && (!paused() || FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class))) {
 						try {
-
 							/*
 							 * LOGIC: 
 							 * While behind desired timestamp, only send packets
@@ -270,15 +268,16 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							 */
 
 
-							if(!hurryToTimestamp && ReplayHandler.isReplaying()) {
+							if(!hurryToTimestamp && ReplayHandler.isInPath()) {
 								continue;
 							}
 
-							int timestamp = dis.readInt();
+							PacketData pd = ReplayFileIO.readPacketData(dis);
 
-							currentTimeStamp = timestamp;
+							currentTimeStamp = pd.getTimestamp();
+							//System.out.println(currentTimeStamp);
 
-							if(!ReplayHandler.isReplaying() && !hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
+							if(!ReplayHandler.isInPath() && !hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
 								//if(!hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
 								int timeWait = (int)Math.round((currentTimeStamp - lastTimeStamp)/replaySpeed);
 								long timeDiff = System.currentTimeMillis() - lastPacketSent;
@@ -287,15 +286,11 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 								Thread.sleep(timeToSleep);
 							}
 
-							int bytes = dis.readInt();
-							byte[] bb = new byte[bytes];
-							dis.readFully(bb);
-
-							ReplaySender.this.channelRead(ctx, bb);
+							ReplaySender.this.channelRead(ctx, pd.getByteArray());
 
 							lastTimeStamp = currentTimeStamp;
 
-							if(ReplayHandler.isReplaying()) {
+							if(ReplayHandler.isInPath()) {
 								toleratedTimeStamp = lastTimeStamp;
 							} else {
 								toleratedTimeStamp = -1;
@@ -303,12 +298,12 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 							if(hurryToTimestamp && currentTimeStamp >= desiredTimeStamp && !startFromBeginning) {
 								hurryToTimestamp = false;
-								if(!ReplayHandler.isReplaying() || hasRestarted) {
+								if(!ReplayHandler.isInPath() || hasRestarted) {
 									MCTimerHandler.advanceRenderPartialTicks(5);
 									MCTimerHandler.advancePartialTicks(5);
 									MCTimerHandler.advanceTicks(5);
 								}
-								if(!ReplayHandler.isReplaying()) {
+								if(!ReplayHandler.isInPath()) {
 									Position pos = ReplayHandler.getLastPosition();
 									CameraEntity cam = ReplayHandler.getCameraEntity();
 									if(cam != null) {
@@ -320,17 +315,18 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 											}
 									}
 								}
-								if(!ReplayHandler.isReplaying()) {
+								if(!ReplayHandler.isInPath()) {
 									setReplaySpeed(0);
 								}
 								hasRestarted = false;
 							}
 
 						} catch(EOFException eof) {
+							System.out.println("End of File encountered!");
 							dis = new DataInputStream(archive.getInputStream(replayEntry));
 							setReplaySpeed(0);
 						} catch(IOException e) {
-							//e.printStackTrace();
+							e.printStackTrace();
 						}
 					}
 				}
@@ -398,12 +394,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		byte[] ba = (byte[])msg;
 
 		try {
-			ByteBuf bb = Unpooled.wrappedBuffer(ba);
-			PacketBuffer pb = new PacketBuffer(bb);
-
-			int i = pb.readVarIntFromBuffer();
-
-			Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
+			Packet p = ReplayFileIO.deserializePacket(ba);
 
 			if(hurryToTimestamp) { //If hurrying, ignore some packets
 				if(p instanceof S45PacketTitle ||
@@ -425,8 +416,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			if(badPackets.contains(p.getClass())) return;
 
 			try {
-				p.readPacketData(pb);
-
 				if(p instanceof S1CPacketEntityMetadata) {
 					if((Integer)metadataPacketEntityId.get(p) == actualID) {
 						metadataPacketEntityId.set(p, RecordingHandler.entityID);
@@ -434,6 +423,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				}
 
 				if(p instanceof S01PacketJoinGame) {
+					//System.out.println("FOUND JOIN PACKET");
 					allowMovement = true;
 					int entId = (Integer)joinPacketEntityId.get(p);
 					actualID = entId;
@@ -493,7 +483,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				if(p instanceof S08PacketPlayerPosLook) {
 					final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook)p;
 
-					if(ReplayHandler.isReplaying() && !hurryToTimestamp) return;
+					if(ReplayHandler.isInPath() && !hurryToTimestamp) return;
 
 					CameraEntity cent = ReplayHandler.getCameraEntity();
 
@@ -531,6 +521,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				if(p instanceof S43PacketCamera) {
 					return;
 				}
+				
 				super.channelRead(ctx, p);
 			} catch(Exception e) {
 				System.out.println(p.getClass());
@@ -538,7 +529,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			}
 
 		} catch(Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}

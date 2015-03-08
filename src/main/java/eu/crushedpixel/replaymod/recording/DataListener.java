@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.ActiveRenderInfo;
 
 import com.google.gson.Gson;
 
+import eu.crushedpixel.replaymod.editor.ReplayFileIO;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.holders.PacketData;
 
@@ -33,17 +34,17 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 	protected Long startTime = null;
 	protected String name;
 	protected String worldName;
-	
+
 	private boolean singleplayer;
-	
+
 	protected long lastSentPacket = 0;
 
 	protected boolean alive = true;
-	
+
 	protected DataWriter dataWriter;
 
 	private Gson gson = new Gson();
-	
+
 	protected Set<String> players = new HashSet<String>();
 
 	public void setWorldName(String worldName) {
@@ -65,12 +66,12 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 		DataOutputStream out = new DataOutputStream(bos);
 		dataWriter = new DataWriter(out);
 	}
-	
+
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		dataWriter.requestFinish(players);
 	}
-	
+
 	public class DataWriter {
 
 		private boolean active = true;
@@ -80,27 +81,24 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 		public void writeData(PacketData data) {
 			queue.add(data);
 		}
-		
+
 		Thread outputThread = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				
+
 				HashMap<Class, Integer> counts = new HashMap<Class, Integer>();
-				
+
 				while(active) {
 					PacketData dataReciever = queue.poll();
 					if(dataReciever != null) {
 						//write the ByteBuf to the given OutputStream
 
 						byte[] array = dataReciever.getByteArray();
-						
+
 						if(array != null) {
 							try {
-								stream.writeInt(dataReciever.getTimestamp()); //Timestamp
-								stream.writeInt(array.length); //Lenght
-
-								stream.write(array); //Content
+								ReplayFileIO.writePacket(dataReciever, stream);
 								stream.flush();
 							} catch(Exception e) {
 								e.printStackTrace();
@@ -127,7 +125,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 				for(Entry<Class, Integer> entries : counts.entrySet()) {
 					System.out.println(entries.getKey()+ "| "+entries.getValue());
 				}
-				
+
 			}
 		});
 
@@ -140,7 +138,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
 		public void requestFinish(Set<String> players) {
 			active = false;
-			byte[] buffer = new byte[1024];
 
 			try {
 				GuiReplaySaving.replaySaving = true;
@@ -150,9 +147,9 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 				if(split.length > 0) {
 					mcversion = split[0];
 				}
-				
+
 				String[] pl = players.toArray(new String[players.size()]);
-				
+
 				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime, pl, mcversion);
 				String json = gson.toJson(metaData);
 
@@ -162,29 +159,10 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 				File archive = new File(folder, name+ConnectionEventHandler.ZIP_FILE_EXTENSION);
 				archive.createNewFile();
 
-				FileOutputStream fos = new FileOutputStream(archive);
-				ZipOutputStream zos = new ZipOutputStream(fos);
-
-				zos.putNextEntry(new ZipEntry("metaData.json"));
-				PrintWriter pw = new PrintWriter(zos);
-				pw.write(json);
-				pw.flush();
-				zos.closeEntry();
-
-				zos.putNextEntry(new ZipEntry("recording"+ConnectionEventHandler.TEMP_FILE_EXTENSION));
-				FileInputStream fis = new FileInputStream(file);
-				int len;
-				while((len = fis.read(buffer)) > 0) {
-					zos.write(buffer, 0, len);
-				}
-
-				fis.close();
-				zos.closeEntry();
-
-				zos.close();
-
-				file.delete();
+				ReplayFileIO.writeReplayFile(archive, file, metaData);
 				
+				file.delete();
+
 				GuiReplaySaving.replaySaving = false;
 			} catch(Exception e) {
 				e.printStackTrace();

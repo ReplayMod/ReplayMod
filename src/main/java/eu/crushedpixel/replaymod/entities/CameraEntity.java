@@ -109,14 +109,14 @@ public class CameraEntity extends EntityPlayer {
 	}
 
 	public void moveAbsolute(double x, double y, double z) {
-		if(ReplayHandler.isReplaying()) return;
+		if(ReplayHandler.isInPath()) return;
 		this.lastTickPosX = this.prevPosX = this.posX = x;
 		this.lastTickPosY = this.prevPosY = this.posY = y;
 		this.lastTickPosZ = this.prevPosZ = this.posZ = z;
 	}
 
 	public void moveRelative(double x, double y, double z) {
-		if(ReplayHandler.isReplaying()) return;
+		if(ReplayHandler.isInPath()) return;
 		this.lastTickPosX = this.prevPosX = this.posX = this.posX+x;
 		this.lastTickPosY = this.prevPosY = this.posY = this.posY+y;
 		this.lastTickPosZ = this.prevPosZ = this.posZ = this.posZ+z;

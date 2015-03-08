@@ -24,31 +24,24 @@ public class PacketSerializer extends MessageSerializer {
 	}
 
 	@Override
-	public void encode(ChannelHandlerContext p_encode_1_, Packet p_encode_2_, ByteBuf p_encode_3_) throws IOException {
-		//super.encode(p_encode_1_, p_encode_2_, p_encode_3_);
-		
-		Integer integer = ((EnumConnectionState)p_encode_1_.channel().attr(NetworkManager.attrKeyConnectionState).get()).getPacketId(EnumPacketDirection.CLIENTBOUND, p_encode_2_);
+	public void encode(ChannelHandlerContext ctx, Packet packet, ByteBuf byteBuf) throws IOException {
+		EnumConnectionState state =  ((EnumConnectionState)ctx.channel().attr(NetworkManager.attrKeyConnectionState).get());
+		encode(state, packet, byteBuf);
+	}
+	
+	public void encode(EnumConnectionState state, Packet packet, ByteBuf byteBuf) {
+		Integer integer = state.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
 
-        if (integer == null)
-        {
+        if (integer == null) {
             return;
-        }
-        else
-        {
-            PacketBuffer packetbuffer = new PacketBuffer(p_encode_3_);
+        } else {
+            PacketBuffer packetbuffer = new PacketBuffer(byteBuf);
             packetbuffer.writeVarIntToBuffer(integer.intValue());
 
-            try
-            {
-                if (p_encode_2_ instanceof S0CPacketSpawnPlayer)
-                {
-                    //p_encode_2_ = p_encode_2_; FML: Kill warning
-                }
-
-                p_encode_2_.writePacketData(packetbuffer);
+            try {
+                packet.writePacketData(packetbuffer);
             }
-            catch (Throwable throwable)
-            {
+            catch (Throwable throwable) {
                throwable.printStackTrace();
             }
         }

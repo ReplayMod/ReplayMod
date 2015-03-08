@@ -21,7 +21,7 @@ public class KeyInputHandler {
 	@SubscribeEvent
 	public void onKeyInput(KeyInputEvent event) {
 
-		if(!ReplayHandler.replayActive()) return;
+		if(!ReplayHandler.isInReplay()) return;
 		if(mc.currentScreen != null) {
 			return;
 		}
