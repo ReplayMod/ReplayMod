@@ -63,7 +63,6 @@ import org.apache.commons.io.FilenameUtils;
 import com.google.gson.Gson;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.editor.ReplayFileIO;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
 import eu.crushedpixel.replaymod.holders.PacketData;
@@ -71,6 +70,7 @@ import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 @Sharable
 public class ReplaySender extends ChannelInboundHandlerAdapter {
@@ -396,7 +396,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		try {
 			Packet p = ReplayFileIO.deserializePacket(ba);
 
-			if(hurryToTimestamp) { //If hurrying, ignore some packets
+			if(hurryToTimestamp && !ReplayHandler.isInPath()) { //If hurrying, ignore some packets
 				if(p instanceof S45PacketTitle ||
 						p instanceof S29PacketSoundEffect ||
 						p instanceof S2APacketParticles) return;

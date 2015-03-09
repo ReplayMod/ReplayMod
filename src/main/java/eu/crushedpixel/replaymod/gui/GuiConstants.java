@@ -24,11 +24,15 @@ public class GuiConstants {
 	public static final int REPLAY_OPTIONS_BUTTON_ID = 8000;
 	
 	public static final int REPLAY_MANAGER_BUTTON_ID = 9001;
-	
-	public static final int REPLAY_CENTER_BUTTON_ID = 1000;
-	public static final int REPLAY_CENTER_LOGIN_TEXT_ID = 1001;
-	public static final int REPLAY_CENTER_PASSWORD_TEXT_ID = 1002;
+	public static final int REPLAY_EDITOR_BUTTON_ID = 9002;
+	public static final int REPLAY_CENTER_BUTTON_ID = 9003;
+	public static final int REPLAY_CENTER_LOGIN_TEXT_ID = 9004;
+	public static final int REPLAY_CENTER_PASSWORD_TEXT_ID = 9005;
 	
 	public static final int LOGIN_OKAY_BUTTON = 1100;
 	public static final int LOGIN_CANCEL_BUTTON = 1101;
+	
+	public static final int REPLAY_EDITOR_TRIM_TAB = 5000;
+	public static final int REPLAY_EDITOR_CONNECT_TAB = 5001;
+	public static final int REPLAY_EDITOR_MODIFY_TAB = 5002;
 }

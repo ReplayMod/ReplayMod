@@ -22,7 +22,7 @@ import eu.crushedpixel.replaymod.api.client.SearchQuery;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.GuiReplayListExtended;
-import eu.crushedpixel.replaymod.gui.replaymanager.GuiReplayManager;
+import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 
 public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
@@ -127,7 +127,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		} else if(button.id == GuiConstants.CENTER_LOGOUT_BUTTON) {
 			mc.displayGuiScreen(getYesNoGui(this, LOGOUT_CALLBACK_ID));
 		} else if(button.id == GuiConstants.CENTER_MANAGER_BUTTON) {
-			mc.displayGuiScreen(new GuiReplayManager());
+			mc.displayGuiScreen(new GuiReplayViewer());
 		} else if(button.id == GuiConstants.CENTER_RECENT_BUTTON) {
 			showOnlineRecent();
 		} else if(button.id == GuiConstants.CENTER_BEST_BUTTON) {

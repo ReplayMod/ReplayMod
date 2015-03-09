@@ -35,12 +35,12 @@ import eu.crushedpixel.replaymod.api.client.ApiException;
 import eu.crushedpixel.replaymod.api.client.FileUploader;
 import eu.crushedpixel.replaymod.api.client.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
+import eu.crushedpixel.replaymod.utils.ResourceHelper;
 
 public class GuiUploadFile extends GuiScreen {
 

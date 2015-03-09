@@ -19,9 +19,9 @@ import net.minecraft.network.play.server.S0DPacketCollectItem;
 import net.minecraft.network.play.server.S0FPacketSpawnMob;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
-import eu.crushedpixel.replaymod.editor.ReplayFileIO;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class PacketListener extends DataListener {
 

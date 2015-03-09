@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui.replaymanager;
+package eu.crushedpixel.replaymod.gui.replayviewer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
@@ -48,7 +48,7 @@ import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 
-public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
+public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
 	private GuiScreen parentScreen;
 	private GuiButton btnEditServer;
@@ -144,7 +144,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 
 	@Override
 	public void initGui() {
-		replayGuiList = new ReplayManagerReplayList(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
+		replayGuiList = new ReplayList(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
 		Keyboard.enableRepeatEvents(true);
 		this.buttonList.clear();
 
@@ -193,7 +193,7 @@ public class GuiReplayManager extends GuiScreen implements GuiYesNoCallback {
 		this.hoveringText = null;
 		this.drawDefaultBackground();
 		this.replayGuiList.drawScreen(mouseX, mouseY, partialTicks);
-		this.drawCenteredString(this.fontRendererObj, I18n.format("Replay Manager", new Object[0]), this.width / 2, 20, 16777215);
+		this.drawCenteredString(this.fontRendererObj, "Replay Viewer", this.width / 2, 20, 16777215);
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 

@@ -24,9 +24,9 @@ import net.minecraft.client.renderer.ActiveRenderInfo;
 
 import com.google.gson.Gson;
 
-import eu.crushedpixel.replaymod.editor.ReplayFileIO;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.holders.PacketData;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public abstract class DataListener extends ChannelInboundHandlerAdapter {
 

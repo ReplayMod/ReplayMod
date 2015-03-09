@@ -1,13 +1,13 @@
-package eu.crushedpixel.replaymod.gui.replaymanager;
+package eu.crushedpixel.replaymod.gui.replayviewer;
 
 import eu.crushedpixel.replaymod.gui.GuiReplayListExtended;
 import net.minecraft.client.Minecraft;
 
-public class ReplayManagerReplayList extends GuiReplayListExtended {
+public class ReplayList extends GuiReplayListExtended {
 
-	private GuiReplayManager parent;
+	private GuiReplayViewer parent;
 	
-	public ReplayManagerReplayList(GuiReplayManager parent, Minecraft mcIn,
+	public ReplayList(GuiReplayViewer parent, Minecraft mcIn,
 			int p_i45010_2_, int p_i45010_3_, int p_i45010_4_, int p_i45010_5_,
 			int p_i45010_6_) {
 		super(mcIn, p_i45010_2_, p_i45010_3_, p_i45010_4_, p_i45010_5_,

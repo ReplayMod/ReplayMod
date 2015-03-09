@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.gui;
 
 import java.awt.Color;
 
-import eu.crushedpixel.replaymod.gui.replaymanager.GuiReplayManager;
+import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngameMenu;

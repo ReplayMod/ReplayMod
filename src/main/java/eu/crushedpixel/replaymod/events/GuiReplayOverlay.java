@@ -2,6 +2,7 @@
 package eu.crushedpixel.replaymod.events;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -11,12 +12,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -24,20 +22,15 @@ import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
-import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
-import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
 import eu.crushedpixel.replaymod.gui.GuiSpectateSelection;
@@ -47,9 +40,9 @@ import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
-import eu.crushedpixel.replaymod.replay.MCTimerHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
+import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.video.ReplayScreenshot;
 import eu.crushedpixel.replaymod.video.VideoWriter;
 
@@ -217,13 +210,14 @@ public class GuiReplayOverlay extends Gui {
 			return;
 		}
 
-		ScaledResolution sr = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-		final int width = sr.getScaledWidth();
-		final int height = sr.getScaledHeight();
+		Point mousePoint = MouseUtils.getMousePos();
+		final int mouseX = (int) mousePoint.getX();
+		final int mouseY = (int) mousePoint.getY();
 
-		final int mouseX = (Mouse.getX() * width / mc.displayWidth);
-		final int mouseY = (height - Mouse.getY() * height / mc.displayHeight);
-
+		Point scaled = MouseUtils.getScaledDimensions();
+		final int width = (int)scaled.getX();
+		final int height = (int)scaled.getY();
+		
 		//Draw Timeline
 		drawTimeline(timelineX, width - 14, 9);
 		drawRealTimeline(realTimelineX, width - 14 - 11, realTimelineY, mouseX, mouseY);

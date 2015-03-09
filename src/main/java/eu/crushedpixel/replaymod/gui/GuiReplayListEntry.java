@@ -17,7 +17,7 @@ import net.minecraft.client.gui.GuiListExtended.IGuiListEntry;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
-import eu.crushedpixel.replaymod.gui.replaymanager.ResourceHelper;
+import eu.crushedpixel.replaymod.utils.ResourceHelper;
 
 public class GuiReplayListEntry implements IGuiListEntry {
 
