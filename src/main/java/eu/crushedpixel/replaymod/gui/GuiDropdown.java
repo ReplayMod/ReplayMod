@@ -22,17 +22,19 @@ public class GuiDropdown extends GuiTextField {
 	private final int maxDropoutHeight = dropoutElementHeight*visibleDropout;
 
 	private int upperIndex = 0;
-	
+
 	public GuiDropdown(int id, FontRenderer fontRenderer,
 			int xPos, int yPos, int width) {
 		super(id, fontRenderer, xPos, yPos, width, 20);
+		setCursorPositionZero();
 	}
-
+	
 	@Override
 	public void drawTextBox() {
-		
+		setCursorPositionZero();
 		if(elements.size() > selectionIndex) {
-			setText(elements.get(selectionIndex).toString());
+			setText(mc.fontRendererObj.trimStringToWidth(
+					elements.get(selectionIndex).toString(), width-8));
 		} else {
 			setText("");
 		}
@@ -47,17 +49,17 @@ public class GuiDropdown extends GuiTextField {
 			drawHorizontalLine(xPosition+width-height+i+4, xPosition+width-i-4, yPosition+(height/4)+i+2, -6250336);
 		}
 
-		if(open) {
+		if(open && elements.size() > 0) {
 			//draw the dropout part when opened
-			
+
 			boolean drawScrollBar = false;
-			
+
 			int requiredHeight = elements.size()*dropoutElementHeight;
 			if(requiredHeight > maxDropoutHeight) {
 				requiredHeight = maxDropoutHeight;
 				drawScrollBar = true;
 			}
-			
+
 			//The light outline
 			drawRect(xPosition-1, yPosition+height, xPosition+width+1, yPosition+height+requiredHeight+1, -6250336);
 
@@ -73,7 +75,8 @@ public class GuiDropdown extends GuiTextField {
 					continue;
 				}
 				drawHorizontalLine(xPosition, xPosition+width, yPosition+height+y, -6250336);
-				drawString(mc.fontRendererObj, obj.toString(), xPosition+4, yPosition+height+y+4, Color.WHITE.getRGB());
+				String toWrite = mc.fontRendererObj.trimStringToWidth(obj.toString(), width-8);
+				drawString(mc.fontRendererObj, toWrite, xPosition+4, yPosition+height+y+4, Color.WHITE.getRGB());
 
 				y += dropoutElementHeight;
 				i++;
@@ -81,26 +84,26 @@ public class GuiDropdown extends GuiTextField {
 					break;
 				}
 			}
-			
+
 			if(drawScrollBar) {
-			//The scroll bar
+				//The scroll bar
 				int dw = Mouse.getDWheel();
 				if(dw > 0) {
 					dw = -1;
 				} else if(dw < 0) {
 					dw = 1;
 				}
-				
+
 				upperIndex = Math.max(Math.min(upperIndex+dw, elements.size()-visibleDropout), 0);
-				
+
 				drawRect(xPosition+width-3, yPosition+height+1, xPosition+width, yPosition+height+requiredHeight, Color.DARK_GRAY.getRGB());
-				
+
 				float visiblePerc = ((float)visibleDropout)/elements.size();
 				int barHeight = (int)(visiblePerc*(requiredHeight-1));
-				
+
 				float posPerc = ((float)upperIndex)/elements.size();
 				int barY = (int)(posPerc*(requiredHeight-1));
-				
+
 				drawRect(xPosition+width-3, yPosition+height+1+barY, xPosition+width, yPosition+height+2+barY+barHeight, -6250336);
 			}
 		}
@@ -111,7 +114,7 @@ public class GuiDropdown extends GuiTextField {
 		if(xPos > xPosition+width-height && xPos < xPosition+width && yPos > yPosition && yPos < yPosition+height) {
 			open = !open;
 		} else {
-			if(xPos > xPosition && xPos < xPosition+width) {
+			if(xPos > xPosition && xPos < xPosition+width && open) {
 				int requiredHeight = Math.min(maxDropoutHeight, elements.size()*dropoutElementHeight);
 				if(yPos > yPosition+height && yPos < yPosition+height+requiredHeight) {
 					int clickedIndex = (int)Math.floor((yPos - (yPosition+height)) / dropoutElementHeight) + upperIndex;
@@ -123,7 +126,7 @@ public class GuiDropdown extends GuiTextField {
 			}
 		}
 	}
-	
+
 	@Override
 	public void setText(String text) {
 		if(!getText().equals(text)) {
@@ -139,6 +142,10 @@ public class GuiDropdown extends GuiTextField {
 
 	public void setElements(List<Object> elements) {
 		this.elements = elements;
+	}
+
+	public void clearElements() {
+		this.elements = new ArrayList<Object>();
 	}
 
 	public void addElement(Object element) {

@@ -1,9 +1,5 @@
 package eu.crushedpixel.replaymod.gui.replayviewer;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.Unpooled;
-
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -24,7 +20,6 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
-import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
 
@@ -44,9 +39,9 @@ import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
-import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
@@ -77,47 +72,42 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 		replayGuiList.clearEntries();
 		replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
 
-		File folder = new File("./replay_recordings/");
-		folder.mkdirs();
+		for(File file : ReplayFileIO.getAllReplayFiles()) {
+			try {
+				ZipFile archive = new ZipFile(file);
+				ZipArchiveEntry recfile = archive.getEntry("recording"+ConnectionEventHandler.TEMP_FILE_EXTENSION);
+				ZipArchiveEntry metadata = archive.getEntry("metaData"+ConnectionEventHandler.JSON_FILE_EXTENSION);
 
-		for(File file : folder.listFiles()) {
-			if(("."+FilenameUtils.getExtension(file.getAbsolutePath())).equals(ConnectionEventHandler.ZIP_FILE_EXTENSION)) {
-				try {
-					ZipFile archive = new ZipFile(file);
-					ZipArchiveEntry recfile = archive.getEntry("recording"+ConnectionEventHandler.TEMP_FILE_EXTENSION);
-					ZipArchiveEntry metadata = archive.getEntry("metaData"+ConnectionEventHandler.JSON_FILE_EXTENSION);
-
-					ZipArchiveEntry image = archive.getEntry("thumb");
-					BufferedImage img = null;
-					if(image != null) {
-						InputStream is = archive.getInputStream(image);
-						is.skip(7);
-						BufferedImage bimg = ImageIO.read(is);
-						if(bimg != null) {
-							img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
-						}
+				ZipArchiveEntry image = archive.getEntry("thumb");
+				BufferedImage img = null;
+				if(image != null) {
+					InputStream is = archive.getInputStream(image);
+					is.skip(7);
+					BufferedImage bimg = ImageIO.read(is);
+					if(bimg != null) {
+						img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
 					}
+				}
 
-					File tmp = null;
-					if(img != null) {
-						tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
-						tmp.deleteOnExit();
+				File tmp = null;
+				if(img != null) {
+					tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
+					tmp.deleteOnExit();
 
-						ImageIO.write(img, "jpg", tmp);
-					}
+					ImageIO.write(img, "jpg", tmp);
+				}
 
-					InputStream is = archive.getInputStream(metadata);
-					BufferedReader br = new BufferedReader(new InputStreamReader(is));
+				InputStream is = archive.getInputStream(metadata);
+				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
-					String json = br.readLine();
+				String json = br.readLine();
 
-					ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
+				ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
 
-					replayFileList.add(Pair.of(Pair.of(file, metaData), tmp));
+				replayFileList.add(Pair.of(Pair.of(file, metaData), tmp));
 
-					archive.close();
-				} catch(Exception e) {}
-			}
+				archive.close();
+			} catch(Exception e) {}
 		}
 
 		Collections.sort(replayFileList, new FileAgeComparator());

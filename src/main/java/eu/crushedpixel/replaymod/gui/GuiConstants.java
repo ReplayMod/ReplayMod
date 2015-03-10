@@ -35,4 +35,7 @@ public class GuiConstants {
 	public static final int REPLAY_EDITOR_TRIM_TAB = 5000;
 	public static final int REPLAY_EDITOR_CONNECT_TAB = 5001;
 	public static final int REPLAY_EDITOR_MODIFY_TAB = 5002;
+	
+	public static final int REPLAY_EDITOR_SAVEMODE_BUTTON = 5003;
+	public static final int REPLAY_EDITOR_SAVE_BUTTON = 5004;
 }
