@@ -1,6 +1,6 @@
 /*
 /*/
-!/src/main/**
+!src/main/**
 !.gitignore
 !gradlew*
 !build.gradle

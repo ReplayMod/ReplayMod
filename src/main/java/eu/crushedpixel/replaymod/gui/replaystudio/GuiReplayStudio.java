@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.studio;
+package eu.crushedpixel.replaymod.gui.replaystudio;
 
 import java.awt.Color;
 import java.io.File;
@@ -26,6 +26,8 @@ public class GuiReplayStudio extends GuiScreen {
 	private boolean initialized = false;
 
 	private List<File> replayFiles = new ArrayList<File>();
+	
+	private GuiTrimPart trimPart = new GuiTrimPart(100);
 
 	private void refreshReplayDropdown() {
 		replayDropdown.clearElements();
@@ -91,6 +93,10 @@ public class GuiReplayStudio extends GuiScreen {
 		
 		initialized = true;
 	};
+	
+	private String getSaveModeLabel() {
+		return overrideSave ? "Replace Source File" : "Save to new File";
+	}
 
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
@@ -99,10 +105,6 @@ public class GuiReplayStudio extends GuiScreen {
 			overrideSave = !overrideSave;
 			button.displayString = getSaveModeLabel();
 		}
-	}
-	
-	private String getSaveModeLabel() {
-		return overrideSave ? "Replace Source File" : "Save to new File";
 	}
 	
 	@Override
@@ -120,6 +122,7 @@ public class GuiReplayStudio extends GuiScreen {
 		this.drawString(fontRendererObj, "Save Mode:", 30, 97, Color.WHITE.getRGB());
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		replayDropdown.drawTextBox();
+		trimPart.drawScreen(mouseX, mouseY, partialTicks);
+		
 	}
-
 }
