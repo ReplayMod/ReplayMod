@@ -1,11 +1,14 @@
 package eu.crushedpixel.replaymod.gui.replaystudio;
 
 import java.awt.Color;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.client.Minecraft;
+
+import org.lwjgl.input.Keyboard;
 
 import eu.crushedpixel.replaymod.gui.GuiNumberInput;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 
 public class GuiTrimPart extends GuiStudioPart {
 
@@ -15,28 +18,36 @@ public class GuiTrimPart extends GuiStudioPart {
 
 	private static final String DESCRIPTION = "Removes the beginning and end of a Replay File and only keeps the Replay between the given Timestamps";
 	private static final String TITLE = "Trim Replay";
-	
+
 	private boolean initialized = false;
 
 	private GuiNumberInput startMinInput, startSecInput, startMsInput;
 	private GuiNumberInput endMinInput, endSecInput, endMsInput;
 
+	private List<GuiNumberInput> inputOrder = new ArrayList<GuiNumberInput>();
+
 	public GuiTrimPart(int yPos) {
 		this.yPos = yPos;
 		fontRendererObj = mc.fontRendererObj;
 		initGui();
+		inputOrder.add(startMinInput);
+		inputOrder.add(startSecInput);
+		inputOrder.add(startMsInput);
+		inputOrder.add(endMinInput);
+		inputOrder.add(endSecInput);
+		inputOrder.add(endMsInput);
 	}
 
 	@Override
 	public void applyFilters() {
 		// TODO Auto-generated method stub
 	}
-	
+
 	@Override
 	public String getDescription() {
 		return DESCRIPTION;
 	}
-	
+
 	@Override
 	public String getTitle() {
 		return TITLE;
@@ -77,14 +88,14 @@ public class GuiTrimPart extends GuiStudioPart {
 		drawString(mc.fontRendererObj, "s", 150, yPos+7+30, Color.WHITE.getRGB());
 		drawString(mc.fontRendererObj, "ms", 200, yPos+7, Color.WHITE.getRGB());
 		drawString(mc.fontRendererObj, "ms", 200, yPos+7+30, Color.WHITE.getRGB());
-		
+
 		startMinInput.drawTextBox();
 		startSecInput.drawTextBox();
 		startMsInput.drawTextBox();
 		endMinInput.drawTextBox();
 		endSecInput.drawTextBox();
 		endMsInput.drawTextBox();
-		
+
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 
@@ -99,14 +110,25 @@ public class GuiTrimPart extends GuiStudioPart {
 			endMsInput.updateCursorCounter();
 		}
 	}
-	
+
 	@Override
 	public void keyTyped(char typedChar, int keyCode) {
-		startMinInput.textboxKeyTyped(typedChar, keyCode);
-		startSecInput.textboxKeyTyped(typedChar, keyCode);
-		startMsInput.textboxKeyTyped(typedChar, keyCode);
-		endMinInput.textboxKeyTyped(typedChar, keyCode);
-		endSecInput.textboxKeyTyped(typedChar, keyCode);
-		endMsInput.textboxKeyTyped(typedChar, keyCode);
+		if(keyCode == Keyboard.KEY_TAB) { //Tab handling
+			int i=0;
+			for(GuiNumberInput input: inputOrder) {
+				if(input.isFocused()) {
+					input.setFocused(false);
+					i++;
+					if(i >= inputOrder.size()) i=0;
+					inputOrder.get(i).setFocused(true);
+					break;
+				}
+				i++;
+			}
+		} else {
+			for(GuiNumberInput input: inputOrder) {
+				input.textboxKeyTyped(typedChar, keyCode);
+			}
+		}
 	}
 }
