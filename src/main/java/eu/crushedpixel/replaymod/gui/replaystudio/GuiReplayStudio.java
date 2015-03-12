@@ -18,22 +18,30 @@ import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class GuiReplayStudio extends GuiScreen {
 
+	public static GuiReplayStudio instance = null;
+
+	private static final int tabYPos = 110;
+
 	private enum StudioTab {
-		TRIM(new GuiTrimPart(110)), CONNECT(null), MODIFY(null);
-		
+		TRIM(new GuiTrimPart(tabYPos)), CONNECT(new GuiConnectPart(tabYPos)), MODIFY(new GuiConnectPart(tabYPos));
+
 		private GuiStudioPart studioPart;
-		
+
 		public GuiStudioPart getStudioPart() {
 			return studioPart;
 		}
-		
+
 		private StudioTab(GuiStudioPart part) {
 			this.studioPart = part;
 		}
 	}
-	
+
+	public GuiReplayStudio() {
+		instance = this;
+	}
+
 	private StudioTab currentTab = StudioTab.TRIM;
-	
+
 	private GuiDropdown replayDropdown;
 	private GuiButton saveModeButton, saveButton;
 
@@ -42,6 +50,14 @@ public class GuiReplayStudio extends GuiScreen {
 	private boolean initialized = false;
 
 	private List<File> replayFiles = new ArrayList<File>();
+
+	public File getSelectedFile() {
+		try {
+			return replayFiles.get(replayDropdown.getSelectionIndex());
+		} catch(ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
 
 	private void refreshReplayDropdown() {
 		replayDropdown.clearElements();
@@ -75,14 +91,14 @@ public class GuiReplayStudio extends GuiScreen {
 		}
 
 		int modeWidth = tabButtons.get(0).width;
-		
+
 		if(!initialized) {
 			replayDropdown = new GuiDropdown(1, fontRendererObj, 15+2+1+80, 60, this.width-30-8-80-modeWidth-4);
 			refreshReplayDropdown();
 		} else {
 			replayDropdown.width = this.width-30-8-80-modeWidth-4;
 		}
-		
+
 		if(!initialized) {
 			saveModeButton = new GuiButton(GuiConstants.REPLAY_EDITOR_SAVEMODE_BUTTON, width-15-modeWidth-3, 60, getSaveModeLabel());
 		} else {
@@ -91,15 +107,18 @@ public class GuiReplayStudio extends GuiScreen {
 		saveModeButton.width = modeWidth;
 		buttonList.add(saveModeButton);
 
-		
+
 		GuiButton backButton = new GuiButton(GuiConstants.REPLAY_EDITOR_BACK_BUTTON, width-70-18, height-20-5, "Back");
 		backButton.width = 70;
 		buttonList.add(backButton);
-		
+
 		saveButton = new GuiButton(GuiConstants.REPLAY_EDITOR_SAVE_BUTTON, width-70-18, height-(2*20)-5-3, "Save");
 		saveButton.width = 70;
 		buttonList.add(saveButton);
-		
+
+		for(StudioTab tab : StudioTab.values()) {
+			tab.getStudioPart().initGui();
+		}
 		
 		initialized = true;
 	};
@@ -116,6 +135,12 @@ public class GuiReplayStudio extends GuiScreen {
 			button.displayString = getSaveModeLabel();
 		} else if(button.id == GuiConstants.REPLAY_EDITOR_BACK_BUTTON) {
 			mc.displayGuiScreen(new GuiMainMenu());
+		} else if(button.id == GuiConstants.REPLAY_EDITOR_TRIM_TAB) {
+			currentTab = StudioTab.TRIM;
+		} else if(button.id == GuiConstants.REPLAY_EDITOR_CONNECT_TAB) {
+			currentTab = StudioTab.CONNECT;
+		} else if(button.id == GuiConstants.REPLAY_EDITOR_MODIFY_TAB) {
+			currentTab = StudioTab.MODIFY;
 		}
 	}
 
@@ -132,8 +157,8 @@ public class GuiReplayStudio extends GuiScreen {
 		drawDefaultBackground();
 		currentTab.getStudioPart().drawScreen(mouseX, mouseY, partialTicks);
 
-		drawCenteredString(fontRendererObj, currentTab.getStudioPart().getTitle(), width/2, 92, Color.WHITE.getRGB());
-		
+		drawCenteredString(fontRendererObj, "§n"+currentTab.getStudioPart().getTitle(), width/2, 92, Color.WHITE.getRGB());
+
 		List<String> rows = new ArrayList<String>();
 		String remaining = currentTab.getStudioPart().getDescription();
 		while(remaining.length() > 0) {
@@ -158,7 +183,7 @@ public class GuiReplayStudio extends GuiScreen {
 			drawString(fontRendererObj, row, 30, height-(15*(rows.size()-i)), Color.WHITE.getRGB());
 			i++;
 		}
-		
+
 		drawCenteredString(fontRendererObj, "Replay Studio", this.width / 2, 10, 16777215);
 		drawString(fontRendererObj, "Replay File:", 30, 67, Color.WHITE.getRGB());
 		super.drawScreen(mouseX, mouseY, partialTicks);

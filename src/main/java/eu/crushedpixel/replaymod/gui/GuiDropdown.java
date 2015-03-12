@@ -12,7 +12,7 @@ import net.minecraft.client.gui.GuiTextField;
 
 public class GuiDropdown extends GuiTextField {
 
-	private int selectionIndex = 0;
+	private int selectionIndex = -1;
 	private boolean open = false;
 
 	private Minecraft mc = Minecraft.getMinecraft();
@@ -30,8 +30,7 @@ public class GuiDropdown extends GuiTextField {
 	
 	@Override
 	public void drawTextBox() {
-		setCursorPositionZero();
-		if(elements.size() > selectionIndex) {
+		if(elements.size() > selectionIndex && selectionIndex >= 0) {
 			setText(mc.fontRendererObj.trimStringToWidth(
 					elements.get(selectionIndex).toString(), width-8));
 		} else {
@@ -103,7 +102,7 @@ public class GuiDropdown extends GuiTextField {
 				float posPerc = ((float)upperIndex)/elements.size();
 				int barY = (int)(posPerc*(requiredHeight-1));
 
-				drawRect(xPosition+width-3, yPosition+height+1+barY, xPosition+width, yPosition+height+2+barY+barHeight, -6250336);
+				drawRect(xPosition+width-3, yPosition+height+barY, xPosition+width, yPosition+height+2+barY+barHeight, -6250336);
 			}
 		}
 	}
@@ -137,18 +136,26 @@ public class GuiDropdown extends GuiTextField {
 
 	private void select(int index) {
 		this.selectionIndex = index;
+		if(selectionIndex < 0) selectionIndex = -1;
 	}
 
 	public void setElements(List<Object> elements) {
 		this.elements = elements;
+		if(selectionIndex == -1 && elements.size() > 0) {
+			selectionIndex = 0;
+		}
 	}
 
 	public void clearElements() {
 		this.elements = new ArrayList<Object>();
+		selectionIndex = -1;
 	}
 
 	public void addElement(Object element) {
 		this.elements.add(element);
+		if(selectionIndex == -1) {
+			selectionIndex = 0;
+		}
 	}
 
 	public Object getElement(int index) {
