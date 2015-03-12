@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.lwjgl.input.Mouse;
+
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
@@ -185,17 +187,25 @@ public class GuiSpectateSelection extends GuiScreen {
 				break;
 			}
 		}
+		
+		int dw = Mouse.getDWheel();
+		if(dw > 0) {
+			dw = -1;
+		} else if(dw < 0) {
+			dw = 1;
+		}
+		
+		upperPlayer = Math.max(Math.min(upperPlayer+dw, playerCount-fitting), 0);
 
 		if(fitting < playerCount) {
-			float visiblePerc = (float)fitting/(float)playerCount;
+			float visiblePerc = ((float)fitting)/playerCount;
+			int barHeight = (int)(visiblePerc*(height-32-32));
 
-			int h = this.height-32-32;
-			int offset = Math.round((upperPlayer/(fitting))*visiblePerc*h);
-
-			int lower = Math.round(32+offset+(h*visiblePerc));
+			float posPerc = ((float)upperPlayer)/playerCount;
+			int barY = (int)(posPerc*(height-32-32));
 
 			this.drawRect(k2-18, 30-2, k2-10, this.height-30-2, Color.BLACK.getRGB());
-			this.drawRect(k2-16, 32-2+offset, k2-12, lower-2, Color.LIGHT_GRAY.getRGB());
+			this.drawRect(k2-16, 32-2+barY, k2-12, 32-1+barY+barHeight, Color.LIGHT_GRAY.getRGB());
 		} else {
 
 		}

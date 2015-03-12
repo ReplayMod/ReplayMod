@@ -29,6 +29,10 @@ public class ReplayMod
 	//TODO: Hide Titles upon hurrying
 	//TODO: Override Enchantment Rendering for items when replaying (to adjust speed of animation)
 	
+	//TODO: Show the player whether he has already uploaded a replay
+	
+	//TODO: Hinting to the b/v key feature
+	
 	//XXX
 	//Known Bugs
 	//

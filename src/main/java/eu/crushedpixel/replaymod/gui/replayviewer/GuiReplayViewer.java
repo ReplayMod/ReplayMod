@@ -214,7 +214,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 			}
 			else if(button.id == UPLOAD_BUTTON_ID) {
 				File file = replayFileList.get(replayGuiList.selected).first().first();
-				this.mc.displayGuiScreen(new GuiUploadFile(file));
+				this.mc.displayGuiScreen(new GuiUploadFile(file, this));
 			}
 			else if(button.id == FOLDER_BUTTON_ID) {
 				File file1 = new File("./replay_recordings/");

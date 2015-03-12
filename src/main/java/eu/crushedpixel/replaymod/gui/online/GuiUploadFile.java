@@ -35,6 +35,7 @@ import eu.crushedpixel.replaymod.api.client.ApiException;
 import eu.crushedpixel.replaymod.api.client.FileUploader;
 import eu.crushedpixel.replaymod.api.client.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
+import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
@@ -65,7 +66,11 @@ public class GuiUploadFile extends GuiScreen {
 	private static final Pattern p = Pattern.compile("[^a-z0-9 \\-_]", Pattern.CASE_INSENSITIVE);
 	private static final Pattern pt = Pattern.compile("[^a-z0-9,]", Pattern.CASE_INSENSITIVE);
 
-	public GuiUploadFile(File file) {
+	private GuiReplayViewer parent;
+	
+	public GuiUploadFile(File file, GuiReplayViewer parent) {
+		this.parent = parent;
+		
 		this.textureResource = new ResourceLocation("upload_thumbs/"+FilenameUtils.getBaseName(file.getAbsolutePath()));
 		dynTex = null;
 
@@ -111,7 +116,7 @@ public class GuiUploadFile extends GuiScreen {
 
 		if(!correctFile) {
 			System.out.println("Invalid file provided to upload");
-			mc.displayGuiScreen(new GuiMainMenu()); //TODO: Error message
+			mc.displayGuiScreen(parent); //TODO: Error message
 			replayFile = null;
 			return;
 		}
@@ -236,7 +241,7 @@ public class GuiUploadFile extends GuiScreen {
 			category = category.next();
 			categoryButton.displayString = "Category: "+category.toNiceString();
 		} else if(button.id == GuiConstants.UPLOAD_BACK_BUTTON) {
-			mc.displayGuiScreen(new GuiMainMenu());
+			mc.displayGuiScreen(parent);
 		} else if(button.id == GuiConstants.UPLOAD_START_BUTTON) {
 			final String name = fileTitleInput.getText().trim();
 			new Thread(new Runnable() {

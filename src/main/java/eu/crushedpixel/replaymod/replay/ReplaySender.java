@@ -396,7 +396,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		try {
 			Packet p = ReplayFileIO.deserializePacket(ba);
 
-			if(hurryToTimestamp && !ReplayHandler.isInPath()) { //If hurrying, ignore some packets
+			//If hurrying, ignore some packets, unless during Replay Path and *not* in initial hurry
+			if(hurryToTimestamp && (!ReplayHandler.isInPath() || (desiredTimeStamp-currentTimeStamp > 1000))) { 
 				if(p instanceof S45PacketTitle ||
 						p instanceof S29PacketSoundEffect ||
 						p instanceof S2APacketParticles) return;

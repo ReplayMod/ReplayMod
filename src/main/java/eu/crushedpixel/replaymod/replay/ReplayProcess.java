@@ -48,6 +48,7 @@ public class ReplayProcess {
 		isVideoRecording = record;
 		lastPosition = null;
 		motionSpline = null;
+		motionLinear = null;
 		timeLinear = null;
 		calculated = false;
 		requestFinish = false;
@@ -239,14 +240,21 @@ public class ReplayProcess {
 			}
 		}
 
-		int currentDiff = nextPosStamp - lastPosStamp;
-		int current = curRealReplayTime - lastPosStamp;
+		int currentPosDiff = nextPosStamp - lastPosStamp;
+		int currentPos = curRealReplayTime - lastPosStamp;
 
-		float currentStepPerc = (float)current/(float)currentDiff; //The percentage of the travelled path between the current positions
-		if(Float.isInfinite(currentStepPerc)) currentStepPerc = 0;
+		float currentPosStepPerc = (float)currentPos/(float)currentPosDiff; //The percentage of the travelled path between the current positions
+		if(Float.isInfinite(currentPosStepPerc)) currentPosStepPerc = 0;
+		
+		int currentTimeDiff = nextTimeStamp - lastTimeStamp;
+		int currentTime = curRealReplayTime - lastTimeStamp;
+		
+		float currentTimeStepPerc = (float)currentTime/(float)currentTimeDiff; //The percentage of the travelled path between the current timestamps
+		if(Float.isInfinite(currentTimeStepPerc)) currentTimeStepPerc = 0;
 
-		float splinePos = ((float)ReplayHandler.getKeyframeIndex(lastPos) + currentStepPerc)/(float)(ReplayHandler.getPosKeyframeCount()-1);
-		float timePos = ((float)ReplayHandler.getKeyframeIndex(lastTime) + currentStepPerc)/(float)(ReplayHandler.getTimeKeyframeCount()-1);
+		float splinePos = ((float)ReplayHandler.getKeyframeIndex(lastPos) + currentPosStepPerc)/(float)(ReplayHandler.getPosKeyframeCount()-1);
+		
+		float timePos = ((float)ReplayHandler.getKeyframeIndex(lastTime) + currentTimeStepPerc)/(float)(ReplayHandler.getTimeKeyframeCount()-1);
 		
 		Position pos = null;
 		if(!linear) {

@@ -26,7 +26,6 @@ public class GuiDropdown extends GuiTextField {
 	public GuiDropdown(int id, FontRenderer fontRenderer,
 			int xPos, int yPos, int width) {
 		super(id, fontRenderer, xPos, yPos, width, 20);
-		setCursorPositionZero();
 	}
 	
 	@Override

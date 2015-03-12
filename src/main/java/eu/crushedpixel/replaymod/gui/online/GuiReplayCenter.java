@@ -95,7 +95,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 		GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, "Main Menu");
 		bottomBar.add(exitButton);
 
-		GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, "Replay Manager");
+		GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, "Replay Viewer");
 		bottomBar.add(managerButton);
 
 		GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, "Logout");

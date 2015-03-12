@@ -11,12 +11,7 @@ public class LinearPoint extends LinearInterpolation<Position> {
 		if(pair == null) return null;
 		
 		float perc = pair.first();
-		//float position = positionIn * (points.size()-1);
-		//int      cubicNum = (int)Math.min(points.size()-1, position);
-		//float    perc = (position - cubicNum);
-		
-		//System.out.println(cubicNum+" | "+perc+" | "+positionIn);
-		
+
 		Position first = pair.second().first();
 		Position second = pair.second().second();
 		
@@ -28,7 +23,7 @@ public class LinearPoint extends LinearInterpolation<Position> {
 		float yaw = (float)getInterpolatedValue(first.getYaw(), second.getYaw(), perc);
 		
 		Position inter = new Position(x, y, z, pitch, yaw);
-		//System.out.println(position+" | "+cubicNum+" | "+perc+" | "+first+" | "+second+" | "+inter);
+
 		return inter;
 	}
 }
