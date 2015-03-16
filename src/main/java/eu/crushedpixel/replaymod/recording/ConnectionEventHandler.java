@@ -13,8 +13,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import sun.java2d.SunGraphics2D;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
+import net.minecraft.network.play.server.S42PacketCombatEvent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
@@ -46,7 +48,8 @@ public class ConnectionEventHandler {
 
 	public static void insertPacket(Packet packet) {
 		if(!isRecording || packetListener == null) {
-			System.out.println("Invalid attempt to insert Packet!");
+			String reason = isRecording ? " (recording)":" (null)";
+			System.out.println("Invalid attempt to insert Packet!"+reason);
 			return;
 		}
 		try {

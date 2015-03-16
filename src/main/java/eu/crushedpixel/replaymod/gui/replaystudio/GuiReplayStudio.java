@@ -13,7 +13,7 @@ import net.minecraft.client.gui.GuiScreen;
 import org.apache.commons.io.FilenameUtils;
 
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.gui.GuiDropdown;
+import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class GuiReplayStudio extends GuiScreen {
@@ -93,7 +93,7 @@ public class GuiReplayStudio extends GuiScreen {
 		int modeWidth = tabButtons.get(0).width;
 
 		if(!initialized) {
-			replayDropdown = new GuiDropdown(1, fontRendererObj, 15+2+1+80, 60, this.width-30-8-80-modeWidth-4);
+			replayDropdown = new GuiDropdown(1, fontRendererObj, 15+2+1+80, 60, this.width-30-8-80-modeWidth-4, 5);
 			refreshReplayDropdown();
 		} else {
 			replayDropdown.width = this.width-30-8-80-modeWidth-4;
@@ -155,6 +155,7 @@ public class GuiReplayStudio extends GuiScreen {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		drawDefaultBackground();
+		super.drawScreen(mouseX, mouseY, partialTicks);
 		currentTab.getStudioPart().drawScreen(mouseX, mouseY, partialTicks);
 
 		drawCenteredString(fontRendererObj, "§n"+currentTab.getStudioPart().getTitle(), width/2, 92, Color.WHITE.getRGB());
@@ -186,7 +187,7 @@ public class GuiReplayStudio extends GuiScreen {
 
 		drawCenteredString(fontRendererObj, "Replay Studio", this.width / 2, 10, 16777215);
 		drawString(fontRendererObj, "Replay File:", 30, 67, Color.WHITE.getRGB());
-		super.drawScreen(mouseX, mouseY, partialTicks);
+		
 		replayDropdown.drawTextBox();
 	}
 

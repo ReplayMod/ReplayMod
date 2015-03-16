@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui;
+package eu.crushedpixel.replaymod.gui.elements;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

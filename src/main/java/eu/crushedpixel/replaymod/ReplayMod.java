@@ -59,7 +59,7 @@ public class ReplayMod
 	public static int TP_DISTANCE_LIMIT = 128;
 	
 	public static final ApiClient apiClient = new ApiClient();
-	
+
 	// The instance of your mod that Forge uses.
 	@Instance(value = "ReplayModID")
 	public static ReplayMod instance;
@@ -108,7 +108,6 @@ public class ReplayMod
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		
 		//ReplayTrimmer.trim(new File("/Users/mariusmetzger/toTrim.mcpr"), new File("/Users/mariusmetzger/trimmed.mcpr"), 1000*60, 2000*60);
 		//if(AuthenticationHandler.isBlacklisted(Minecraft.getMinecraft().getSession().getPlayerID())) {
 			//System.exit(0);

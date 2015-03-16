@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.replayviewer;
 
-import eu.crushedpixel.replaymod.gui.GuiReplayListExtended;
+import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
 import net.minecraft.client.Minecraft;
 
 public class ReplayList extends GuiReplayListExtended {

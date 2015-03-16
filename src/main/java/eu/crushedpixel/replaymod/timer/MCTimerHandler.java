@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.replay;
+package eu.crushedpixel.replaymod.timer;
 
 import java.lang.reflect.Field;
 

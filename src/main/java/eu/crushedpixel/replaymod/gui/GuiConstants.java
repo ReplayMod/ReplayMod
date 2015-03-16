@@ -39,4 +39,7 @@ public class GuiConstants {
 	public static final int REPLAY_EDITOR_SAVEMODE_BUTTON = 5003;
 	public static final int REPLAY_EDITOR_SAVE_BUTTON = 5004;
 	public static final int REPLAY_EDITOR_BACK_BUTTON = 5005;
+	
+	public static final int REPLAY_EDITOR_UP_BUTTON = 5006;
+	public static final int REPLAY_EDITOR_DOWN_BUTTON = 5007;
 }

@@ -21,7 +21,7 @@ import eu.crushedpixel.replaymod.api.client.SearchPagination;
 import eu.crushedpixel.replaymod.api.client.SearchQuery;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.gui.GuiReplayListExtended;
+import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 

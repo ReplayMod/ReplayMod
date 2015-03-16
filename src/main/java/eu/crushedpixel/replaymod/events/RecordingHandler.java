@@ -138,6 +138,7 @@ public class RecordingHandler {
 
 	@SubscribeEvent
 	public void onPlayerTick(PlayerTickEvent e) {
+		if(!ConnectionEventHandler.isRecording()) return;
 		try {
 			if(e.player != mc.thePlayer) return;
 			if(!ConnectionEventHandler.isRecording()) return;
@@ -318,6 +319,7 @@ public class RecordingHandler {
 
 	@SubscribeEvent
 	public void onPickupItem(ItemPickupEvent event) {
+		if(!ConnectionEventHandler.isRecording()) return;
 		try {
 			ConnectionEventHandler.insertPacket(new S0DPacketCollectItem(event.pickedUp.getEntityId(), entityID));
 		} catch(Exception e) {
@@ -327,6 +329,7 @@ public class RecordingHandler {
 
 	@SubscribeEvent
 	public void onRespawn(PlayerRespawnEvent event) {
+		if(!ConnectionEventHandler.isRecording()) return;
 		try {
 			//destroy entity, then respawn
 			ConnectionEventHandler.insertPacket(new S13PacketDestroyEntities(entityID));
@@ -338,6 +341,7 @@ public class RecordingHandler {
 
 	@SubscribeEvent
 	public void onHurt(LivingHurtEvent event) {
+		if(!ConnectionEventHandler.isRecording()) return;
 		try {
 			if(event.entity.getEntityId() != mc.thePlayer.getEntityId()) {
 				return;
@@ -374,6 +378,7 @@ public class RecordingHandler {
 
 	@SubscribeEvent
 	public void onDeath(LivingDeathEvent event) {
+		if(!ConnectionEventHandler.isRecording()) return;
 		try {
 			if(event.entity.getEntityId() != mc.thePlayer.getEntityId()) {
 				return;
@@ -397,6 +402,7 @@ public class RecordingHandler {
 
 	@SubscribeEvent
 	public void onStartEating(PlayerUseItemEvent.Start event) {
+		if(!ConnectionEventHandler.isRecording()) return;
 		try {
 			if(!event.entityPlayer.isEating()) return;
 			S0BPacketAnimation packet = new S0BPacketAnimation();
@@ -419,8 +425,8 @@ public class RecordingHandler {
 
 	@SubscribeEvent
 	public void onSleep(PlayerSleepInBedEvent event) {
+		if(!ConnectionEventHandler.isRecording()) return;
 		try {
-
 			if(event.entityPlayer != mc.thePlayer) {
 				return;
 			};
@@ -449,6 +455,7 @@ public class RecordingHandler {
 
 	@SubscribeEvent
 	public void enterMinecart(MinecartInteractEvent event) {
+		if(!ConnectionEventHandler.isRecording()) return;
 		try {
 			if(event.player != mc.thePlayer) {
 				return;

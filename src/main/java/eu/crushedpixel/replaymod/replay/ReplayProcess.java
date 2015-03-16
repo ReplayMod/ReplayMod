@@ -4,6 +4,7 @@ import java.io.File;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.enchantment.Enchantment;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
@@ -14,6 +15,8 @@ import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.interpolation.LinearPoint;
 import eu.crushedpixel.replaymod.interpolation.LinearTimestamp;
 import eu.crushedpixel.replaymod.interpolation.SplinePoint;
+import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
+import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.video.ScreenCapture;
 import eu.crushedpixel.replaymod.video.VideoWriter;
 
@@ -67,6 +70,8 @@ public class ReplayProcess {
 		ReplayHandler.setInPath(true);
 		previousReplaySpeed = ReplayHandler.getSpeed();
 
+		EnchantmentTimer.resetRecordingTime();
+		
 		TimeKeyframe tf = ReplayHandler.getNextTimeKeyframe(-1);
 		if(tf != null) {
 			int ts = tf.getTimestamp();
@@ -253,7 +258,6 @@ public class ReplayProcess {
 		if(Float.isInfinite(currentTimeStepPerc)) currentTimeStepPerc = 0;
 
 		float splinePos = ((float)ReplayHandler.getKeyframeIndex(lastPos) + currentPosStepPerc)/(float)(ReplayHandler.getPosKeyframeCount()-1);
-		
 		float timePos = ((float)ReplayHandler.getKeyframeIndex(lastTime) + currentTimeStepPerc)/(float)(ReplayHandler.getTimeKeyframeCount()-1);
 		
 		Position pos = null;
@@ -431,6 +435,7 @@ public class ReplayProcess {
 		ReplayHandler.setSpeed((float)curSpeed);
 		if(isVideoRecording()) {
 			MCTimerHandler.updateTimer((1f/ReplayMod.replaySettings.getVideoFramerate()));
+			EnchantmentTimer.increaseRecordingTime((1000/ReplayMod.replaySettings.getVideoFramerate()));
 		}
 		if(curPos != null) ReplayHandler.setReplayPos(curPos);
 

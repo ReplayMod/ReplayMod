@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui;
+package eu.crushedpixel.replaymod.gui.elements;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -6,26 +6,31 @@ import java.util.List;
 
 import org.lwjgl.input.Mouse;
 
+import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiTextField;
 
-public class GuiDropdown extends GuiTextField {
+public class GuiDropdown<T> extends GuiTextField {
 
 	private int selectionIndex = -1;
 	private boolean open = false;
 
 	private Minecraft mc = Minecraft.getMinecraft();
 
-	private final int visibleDropout = 5;
+	private final int visibleDropout;
 	private final int dropoutElementHeight = 14;
-	private final int maxDropoutHeight = dropoutElementHeight*visibleDropout;
+	private final int maxDropoutHeight;
 
+	private List<SelectionListener> selectionListeners = new ArrayList<SelectionListener>();
+	
 	private int upperIndex = 0;
 
 	public GuiDropdown(int id, FontRenderer fontRenderer,
-			int xPos, int yPos, int width) {
+			int xPos, int yPos, int width, int visibleDropout) {
 		super(id, fontRenderer, xPos, yPos, width, 20);
+		this.visibleDropout = visibleDropout;
+		this.maxDropoutHeight = dropoutElementHeight*visibleDropout;
 	}
 	
 	@Override
@@ -67,7 +72,7 @@ public class GuiDropdown extends GuiTextField {
 			//The elements
 			int y = 0;
 			int i = 0;
-			for(Object obj : elements) {
+			for(T obj : elements) {
 				if(i<upperIndex) {
 					i++;
 					continue;
@@ -117,6 +122,7 @@ public class GuiDropdown extends GuiTextField {
 				if(yPos > yPosition+height && yPos < yPosition+height+requiredHeight) {
 					int clickedIndex = (int)Math.floor((yPos - (yPosition+height)) / dropoutElementHeight) + upperIndex;
 					this.selectionIndex = clickedIndex;
+					fireSelectionChangeEvent();
 				}
 				open = false;
 			} else {
@@ -132,14 +138,15 @@ public class GuiDropdown extends GuiTextField {
 		}
 	}
 
-	private List<Object> elements = new ArrayList<Object>();
+	private List<T> elements = new ArrayList<T>();
 
-	private void select(int index) {
+	public void setSelectionIndex(int index) {
 		this.selectionIndex = index;
 		if(selectionIndex < 0) selectionIndex = -1;
+		fireSelectionChangeEvent();
 	}
 
-	public void setElements(List<Object> elements) {
+	public void setElements(List<T> elements) {
 		this.elements = elements;
 		if(selectionIndex == -1 && elements.size() > 0) {
 			selectionIndex = 0;
@@ -147,23 +154,40 @@ public class GuiDropdown extends GuiTextField {
 	}
 
 	public void clearElements() {
-		this.elements = new ArrayList<Object>();
+		this.elements = new ArrayList<T>();
 		selectionIndex = -1;
 	}
 
-	public void addElement(Object element) {
+	public void addElement(T element) {
 		this.elements.add(element);
 		if(selectionIndex == -1) {
 			selectionIndex = 0;
 		}
 	}
 
-	public Object getElement(int index) {
+	public T getElement(int index) {
 		return elements.get(index);
 	}
 
+	public List<T> getAllElements() {
+		return elements;
+	}
+	
 	public int getSelectionIndex() {
 		return selectionIndex;
 	}
 
+	private void fireSelectionChangeEvent() {
+		for(SelectionListener listener : selectionListeners) {
+			listener.onSelectionChanged(selectionIndex);
+		}
+	}
+	
+	public void addSelectionListener(SelectionListener listener) {
+		this.selectionListeners.add(listener);
+	}
+
+	public void removeSelectionListener(SelectionListener listener) {
+		this.selectionListeners.remove(listener);
+	}
 }

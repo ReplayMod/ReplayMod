@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
 
-import eu.crushedpixel.replaymod.gui.GuiNumberInput;
+import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
 
 public class GuiTrimPart extends GuiStudioPart {
 

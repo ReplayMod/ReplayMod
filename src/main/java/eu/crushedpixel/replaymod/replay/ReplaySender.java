@@ -1,7 +1,5 @@
 package eu.crushedpixel.replaymod.replay;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -21,10 +19,8 @@ import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.network.play.server.S03PacketTimeUpdate;
@@ -70,6 +66,7 @@ import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 @Sharable
@@ -399,8 +396,11 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			//If hurrying, ignore some packets, unless during Replay Path and *not* in initial hurry
 			if(hurryToTimestamp && (!ReplayHandler.isInPath() || (desiredTimeStamp-currentTimeStamp > 1000))) { 
 				if(p instanceof S45PacketTitle ||
-						p instanceof S29PacketSoundEffect ||
 						p instanceof S2APacketParticles) return;
+			}
+			
+			if(p instanceof S29PacketSoundEffect && ReplayHandler.isInPath() && ReplayProcess.isVideoRecording()) {
+				return;
 			}
 
 			if(p instanceof S03PacketTimeUpdate) {
@@ -436,6 +436,13 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 					p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension, 
 							difficulty, maxPlayers, worldType, false);
+				}
+				
+				if(p instanceof S07PacketRespawn) {
+					S07PacketRespawn respawn = (S07PacketRespawn)p;
+					p = new S07PacketRespawn(respawn.func_149082_c(), 
+							respawn.func_149081_d(), respawn.func_149080_f(), GameType.SPECTATOR);
+					allowMovement = true;
 				}
 
 				/*
@@ -475,12 +482,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 					System.out.println(((S0CPacketSpawnPlayer) p).func_148944_c());
 				}
 				*/
-
-				if(p instanceof S07PacketRespawn) {
-					allowMovement = true;
-				}
-
-
+				
 				if(p instanceof S08PacketPlayerPosLook) {
 					final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook)p;
 
@@ -508,6 +510,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							}
 
 							Entity ent = ReplayHandler.getCameraEntity();
+			
 							if(ent == null || !(ent instanceof CameraEntity)) ent = new CameraEntity(mc.theWorld);
 							CameraEntity cent = (CameraEntity)ent;
 							cent.moveAbsolute(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
