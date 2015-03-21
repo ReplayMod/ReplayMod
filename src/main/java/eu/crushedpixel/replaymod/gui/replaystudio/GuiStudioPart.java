@@ -1,5 +1,7 @@
 package eu.crushedpixel.replaymod.gui.replaystudio;
 
+import java.io.IOException;
+
 import net.minecraft.client.gui.GuiScreen;
 
 public abstract class GuiStudioPart extends GuiScreen {
@@ -20,5 +22,7 @@ public abstract class GuiStudioPart extends GuiScreen {
 	public abstract void keyTyped(char typedChar, int keyCode);
 	
 	@Override
-	public abstract void mouseClicked(int mouseX, int mouseY, int mouseButton);
+	public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+		super.mouseClicked(mouseX, mouseY, mouseButton);
+	}
 }

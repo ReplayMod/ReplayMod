@@ -1,13 +1,11 @@
 package eu.crushedpixel.replaymod.studio;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import de.johni0702.replaystudio.Studio;
-import de.johni0702.replaystudio.collection.PacketData;
+import de.johni0702.replaystudio.PacketData;
 import de.johni0702.replaystudio.filter.RemoveFilter;
 import de.johni0702.replaystudio.filter.SquashFilter;
 import de.johni0702.replaystudio.io.ReplayOutputStream;

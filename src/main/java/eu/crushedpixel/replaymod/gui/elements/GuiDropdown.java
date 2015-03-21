@@ -190,4 +190,8 @@ public class GuiDropdown<T> extends GuiTextField {
 	public void removeSelectionListener(SelectionListener listener) {
 		this.selectionListeners.remove(listener);
 	}
+
+	public boolean isExpanded() {
+		return open;
+	}
 }

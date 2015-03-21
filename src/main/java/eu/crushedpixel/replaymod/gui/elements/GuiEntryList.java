@@ -42,7 +42,7 @@ public class GuiEntryList<T> extends GuiTextField {
 			//drawing the entries
 			for(int i=0; i-upperIndex<visibleElements; i++) {
 				if(i<upperIndex) continue;
-				
+
 				if(i >= elements.size()) break;
 
 				if(i == selectionIndex) {
@@ -84,6 +84,7 @@ public class GuiEntryList<T> extends GuiTextField {
 
 	@Override
 	public void mouseClicked(int xPos, int yPos, int mouseButton) {
+		if(!(xPos >= xPosition && xPos <= xPosition+width && yPos >= yPosition && yPos <= yPosition+height)) return;
 		int clickedIndex = (int)Math.floor((yPos-yPosition) / elementHeight) + upperIndex;
 		if(clickedIndex < elements.size() && clickedIndex >= 0) {
 			selectionIndex = clickedIndex;
@@ -96,7 +97,7 @@ public class GuiEntryList<T> extends GuiTextField {
 			listener.onSelectionChanged(selectionIndex);
 		}
 	}
-	
+
 	@Override
 	public void setText(String text) {}
 
@@ -122,13 +123,16 @@ public class GuiEntryList<T> extends GuiTextField {
 	}
 
 	public T getElement(int index) {
-		return elements.get(index);
+		if(index >= 0) {
+			return elements.get(index);
+		}
+		return null;
 	}
 
 	public int getSelectionIndex() {
 		return selectionIndex;
 	}
-	
+
 	public void setSelectionIndex(int index) {
 		this.selectionIndex = index;
 		if(selectionIndex < 0) selectionIndex = -1;

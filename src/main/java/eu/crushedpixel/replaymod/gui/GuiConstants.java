@@ -42,4 +42,7 @@ public class GuiConstants {
 	
 	public static final int REPLAY_EDITOR_UP_BUTTON = 5006;
 	public static final int REPLAY_EDITOR_DOWN_BUTTON = 5007;
+	
+	public static final int REPLAY_EDITOR_REMOVE_BUTTON = 5008;
+	public static final int REPLAY_EDITOR_ADD_BUTTON = 5009;
 }

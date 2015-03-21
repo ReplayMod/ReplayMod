@@ -77,3 +77,19 @@ processResources
         exclude 'mcmod.info'
     }
 }
+
+
+def shade() {
+    exec {
+        executable "./shade.sh"
+        args "./build/libs/replaymod-0.6.jar", "./libs", "replaymod-0.6.jar"
+    }
+}
+
+task doShade {
+    doLast {
+        shade()
+    }
+}
+
+defaultTasks 'build', 'doShade'

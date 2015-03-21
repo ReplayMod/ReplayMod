@@ -13,11 +13,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
@@ -29,6 +32,8 @@ import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
 import net.minecraft.network.play.server.S0BPacketAnimation;
 import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
+import net.minecraft.network.play.server.S0EPacketSpawnObject;
+import net.minecraft.network.play.server.S0FPacketSpawnMob;
 import net.minecraft.network.play.server.S1CPacketEntityMetadata;
 import net.minecraft.network.play.server.S1DPacketEntityEffect;
 import net.minecraft.network.play.server.S1FPacketSetExperience;
@@ -56,6 +61,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 
+import com.google.common.base.Predicate;
 import com.google.gson.Gson;
 
 import eu.crushedpixel.replaymod.ReplayMod;
@@ -250,7 +256,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 						lastPacketSent = System.currentTimeMillis();
 						ReplayHandler.restartReplay();
 					}
-					
+
 					while(!terminate && !startFromBeginning && (!paused() || FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class))) {
 						try {
 							/*
@@ -355,7 +361,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	private static Field playerUUIDField;
 	private static Field gameProfileField;
-	
+
 	//private static Field dataWatcherField;
 
 	static {
@@ -365,7 +371,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 			gameProfileField = S38PacketPlayerListItem.AddPlayerData.class.getDeclaredField("field_179964_d");
 			gameProfileField.setAccessible(true);
-			
+
 			//dataWatcherField = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_148960_i"));
 			//dataWatcherField.setAccessible(true);
 		} catch(Exception e) {
@@ -398,7 +404,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				if(p instanceof S45PacketTitle ||
 						p instanceof S2APacketParticles) return;
 			}
-			
+
 			if(p instanceof S29PacketSoundEffect && ReplayHandler.isInPath() && ReplayProcess.isVideoRecording()) {
 				return;
 			}
@@ -415,6 +421,22 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			}
 
 			if(badPackets.contains(p.getClass())) return;
+
+			/*
+			if(p instanceof S0EPacketSpawnObject) {
+				if(mc.theWorld != null) {
+					List<EntityArrow> arrows = mc.theWorld.getEntities(EntityArrow.class, new Predicate<EntityArrow>() {
+						@Override
+						public boolean apply(EntityArrow input) {
+							return true;
+						}
+					});
+ 					if(arrows.size() > 20) {
+						System.out.println(currentTimeStamp);
+					}
+				}
+			}
+			*/
 
 			try {
 				if(p instanceof S1CPacketEntityMetadata) {
@@ -437,11 +459,12 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 					p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension, 
 							difficulty, maxPlayers, worldType, false);
 				}
-				
+
 				if(p instanceof S07PacketRespawn) {
 					S07PacketRespawn respawn = (S07PacketRespawn)p;
 					p = new S07PacketRespawn(respawn.func_149082_c(), 
 							respawn.func_149081_d(), respawn.func_149080_f(), GameType.SPECTATOR);
+
 					allowMovement = true;
 				}
 
@@ -474,15 +497,15 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 					p = sp;
 				}
-				*/
-				
+				 */
+
 				/*
 				if(p instanceof S0CPacketSpawnPlayer) {
 					System.out.println(dataWatcherField.get(p));
 					System.out.println(((S0CPacketSpawnPlayer) p).func_148944_c());
 				}
-				*/
-				
+				 */
+
 				if(p instanceof S08PacketPlayerPosLook) {
 					final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook)p;
 
@@ -510,7 +533,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							}
 
 							Entity ent = ReplayHandler.getCameraEntity();
-			
+
 							if(ent == null || !(ent instanceof CameraEntity)) ent = new CameraEntity(mc.theWorld);
 							CameraEntity cent = (CameraEntity)ent;
 							cent.moveAbsolute(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
@@ -525,7 +548,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				if(p instanceof S43PacketCamera) {
 					return;
 				}
-				
+
 				super.channelRead(ctx, p);
 			} catch(Exception e) {
 				System.out.println(p.getClass());
