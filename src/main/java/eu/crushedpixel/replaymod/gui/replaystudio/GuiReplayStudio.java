@@ -141,6 +141,21 @@ public class GuiReplayStudio extends GuiScreen {
 			currentTab = StudioTab.CONNECT;
 		} else if(button.id == GuiConstants.REPLAY_EDITOR_MODIFY_TAB) {
 			currentTab = StudioTab.MODIFY;
+		} else if(button.id == GuiConstants.REPLAY_EDITOR_SAVE_BUTTON) {
+			File outputFile = getSelectedFile();
+			File folder = ReplayFileIO.getReplayFolder();
+			if(!overrideSave) {
+				String name = FilenameUtils.getBaseName(outputFile.getAbsolutePath())+"_edited";
+				File f = new File(folder, name+".mcpr");
+				int num = 0;
+				while(f.exists()) {
+					num++;
+					String fileName = name+"_"+num;
+					f = new File(folder, fileName+".mcpr");
+				}
+				outputFile = f;
+			}
+			currentTab.getStudioPart().applyFilters(getSelectedFile(), outputFile);
 		}
 	}
 

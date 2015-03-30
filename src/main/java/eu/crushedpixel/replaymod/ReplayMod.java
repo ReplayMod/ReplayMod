@@ -1,5 +1,9 @@
 package eu.crushedpixel.replaymod;
 
+import java.io.IOException;
+
+import javax.swing.JOptionPane;
+
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -12,10 +16,12 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import eu.crushedpixel.replaymod.api.client.ApiClient;
+import eu.crushedpixel.replaymod.api.client.ApiException;
 import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.events.KeyInputHandler;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
+import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
@@ -108,9 +114,21 @@ public class ReplayMod
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		//ReplayTrimmer.trim(new File("/Users/mariusmetzger/toTrim.mcpr"), new File("/Users/mariusmetzger/trimmed.mcpr"), 1000*60, 2000*60);
-		//if(AuthenticationHandler.isBlacklisted(Minecraft.getMinecraft().getSession().getPlayerID())) {
-			//System.exit(0);
-		//}
+		
+		
+		/*
+		boolean auth = false;
+		try {
+			auth = AuthenticationHandler.hasDonated(Minecraft.getMinecraft().getSession().getPlayerID());
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(null, "Couldn't connect to the Replay Mod Server to verify whether you donated!");
+			FMLCommonHandler.instance().exitJava(0, false);
+		}
+		
+		if(!auth) {
+			JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
+			FMLCommonHandler.instance().exitJava(0, false);
+		}
+		*/
 	}
 }

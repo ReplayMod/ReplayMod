@@ -45,10 +45,15 @@ import eu.crushedpixel.replaymod.replay.PacketDeserializer;
 @SuppressWarnings("resource") //Gets handled by finalizer
 public class ReplayFileIO {
 
-	public static List<File> getAllReplayFiles() {
+	public static File getReplayFolder() {
 		File folder = new File("./replay_recordings/");
 		folder.mkdirs();
+		return folder;
+	}
+	
+	public static List<File> getAllReplayFiles() {
 		List<File> files = new ArrayList<File>();
+		File folder = getReplayFolder();
 		for(File file : folder.listFiles()) {
 			if(("."+FilenameUtils.getExtension(file.getAbsolutePath())).equals(
 					ConnectionEventHandler.ZIP_FILE_EXTENSION)) {
@@ -58,7 +63,7 @@ public class ReplayFileIO {
 		return files;
 	}
 	
-	private static DataInputStream getMetaDataInputStream(File replayFile) throws Exception {
+	private static DataInputStream getMetaDataInputStream(File replayFile) throws IOException {
 		ZipFile archive = null;
 
 		try {
@@ -67,7 +72,7 @@ public class ReplayFileIO {
 					ConnectionEventHandler.JSON_FILE_EXTENSION);
 
 			return new DataInputStream(archive.getInputStream(tmcpr));
-		} catch(Exception e) {
+		} catch(IOException e) {
 			throw e;
 		}
 	}
@@ -118,7 +123,7 @@ public class ReplayFileIO {
 		}
 	}
 
-	public static ReplayMetaData getMetaData(File replayFile) throws Exception {
+	public static ReplayMetaData getMetaData(File replayFile) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(getMetaDataInputStream(replayFile)));
 		String json = br.readLine();
 

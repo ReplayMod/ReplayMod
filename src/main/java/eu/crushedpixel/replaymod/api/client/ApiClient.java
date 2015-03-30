@@ -17,6 +17,7 @@ import com.google.gson.JsonParser;
 
 import eu.crushedpixel.replaymod.api.client.holders.ApiError;
 import eu.crushedpixel.replaymod.api.client.holders.AuthKey;
+import eu.crushedpixel.replaymod.api.client.holders.Donated;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.api.client.holders.SearchResult;
 import eu.crushedpixel.replaymod.api.client.holders.Success;
@@ -35,7 +36,7 @@ public class ApiClient {
 		AuthKey auth = invokeAndReturn(builder, AuthKey.class);
 		return auth;
 	}
-	
+
 	public boolean logout(String auth) throws IOException, ApiException {
 		QueryBuilder builder = new QueryBuilder(ApiMethods.logout);
 		builder.put("auth", auth);
@@ -43,6 +44,13 @@ public class ApiClient {
 		return succ.isSuccess();
 	}
 
+	public boolean hasDonated(String uuid) throws IOException, ApiException {
+		QueryBuilder builder = new QueryBuilder(ApiMethods.check_auth);
+		builder.put("uuid", uuid);
+		Donated succ = invokeAndReturn(builder, Donated.class);
+		return succ.hasDonated();
+	}
+	
 	public UserFiles getUserFiles(String auth, String user) throws IOException, ApiException {
 		QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
 		builder.put("auth", auth);

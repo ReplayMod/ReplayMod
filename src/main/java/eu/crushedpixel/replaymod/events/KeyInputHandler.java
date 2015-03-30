@@ -34,38 +34,50 @@ public class KeyInputHandler {
 				continue;
 			}
 			try {
-
+				boolean speedup = false;
+				
 				if(ReplayHandler.isCamera()) {
 					if(kb.getKeyDescription().equals("key.forward")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.FORWARD);
+						speedup = true;
 					}
 
 					if(kb.getKeyDescription().equals("key.back")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.BACKWARD);
+						speedup = true;
 					}
 
 					if(kb.getKeyDescription().equals("key.jump")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.UP);
+						speedup = true;
 					}
 
 					if(kb.getKeyDescription().equals("key.left")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.LEFT);
+						speedup = true;
 					}
 
 					if(kb.getKeyDescription().equals("key.right")) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.RIGHT);
+						speedup = true;
 					}
 				}
 				if(kb.getKeyDescription().equals("key.sneak")) {
 					if(ReplayHandler.isCamera()) {
 						ReplayHandler.getCameraEntity().setMovement(MoveDirection.DOWN);
+						speedup = true;
 					} else {
 						ReplayHandler.spectateCamera();
 					}
 				}
+				
+				if(speedup) {
+					ReplayHandler.getCameraEntity().speedUp();
+				}
 
 				if(kb.getKeyDescription().equals("key.chat")) {
 					mc.displayGuiScreen(new GuiMouseInput());
+					break;
 				}
 
 				//Custom registered handlers

@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -83,9 +84,9 @@ public class GuiReplayOverlay extends Gui {
 	private boolean mouseDown = false;
 
 	private static boolean requestScreenshot = false;
-	
+
 	private static Field isGamePaused;
-	
+
 	static {
 		try {
 			isGamePaused = Minecraft.class.getDeclaredField(MCPNames.field("field_71445_n"));
@@ -103,9 +104,9 @@ public class GuiReplayOverlay extends Gui {
 
 	public GuiReplayOverlay() {
 		try {
-//			drawBlockOutline = EntityRenderer.class.getDeclaredField(MCPNames.field("field_175073_D"));
-	//		drawBlockOutline.setAccessible(true);
-		//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
+			//			drawBlockOutline = EntityRenderer.class.getDeclaredField(MCPNames.field("field_175073_D"));
+			//		drawBlockOutline.setAccessible(true);
+			//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 		} catch(Exception e) {}
 	}
 
@@ -125,20 +126,20 @@ public class GuiReplayOverlay extends Gui {
 			ReplayHandler.getCameraEntity().updateMovement();
 		if(!ReplayHandler.isInPath()) onMouseMove(new MouseEvent());
 		FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
-		
+
 	}
 
 	private double lastX, lastY, lastZ;
 	private float lastPitch, lastYaw;
 
-	
+
 	@SubscribeEvent
 	public void onChangeView(MouseEvent event) {
 		if(ReplayHandler.isInPath()) {
 			event.setCanceled(true);
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onRenderWorld(RenderWorldLastEvent event) 
 			throws IllegalAccessException, IllegalArgumentException, 
@@ -187,7 +188,7 @@ public class GuiReplayOverlay extends Gui {
 
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
-		
+
 		if(!ReplayHandler.isInReplay() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class) || VideoWriter.isRecording()) {
 			return;
 		}
@@ -195,7 +196,11 @@ public class GuiReplayOverlay extends Gui {
 		//System.out.println(System.currentTimeMillis()+" | "+MCTimerHandler.getTicks()+" | "+MCTimerHandler.getPartialTicks());
 
 		if(!ReplayGuiRegistry.hidden) ReplayGuiRegistry.hide();
-
+		
+		if(FMLClientHandler.instance().isGUIOpen(GuiChat.class)) {
+			mc.displayGuiScreen(new GuiMouseInput());
+		}
+		
 		if(event.type == ElementType.PLAYER_LIST) {
 			if(event.isCancelable()) {
 				event.setCanceled(true);
@@ -204,7 +209,7 @@ public class GuiReplayOverlay extends Gui {
 		}
 
 		GL11.glEnable(GL11.GL_BLEND);
-	//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
+		//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 
 		if(!ReplayHandler.isInReplay()) {
 			return;
@@ -217,7 +222,7 @@ public class GuiReplayOverlay extends Gui {
 		Point scaled = MouseUtils.getScaledDimensions();
 		final int width = (int)scaled.getX();
 		final int height = (int)scaled.getY();
-		
+
 		//Draw Timeline
 		drawTimeline(timelineX, width - 14, 9);
 		drawRealTimeline(realTimelineX, width - 14 - 11, realTimelineY, mouseX, mouseY);
@@ -872,8 +877,9 @@ public class GuiReplayOverlay extends Gui {
 				b0 = -1;
 			}
 
-			ReplayHandler.getCameraEntity().setAngles(f3, f4 * (float)b0);
-
+			if(ReplayHandler.getCameraEntity() != null) {
+				ReplayHandler.getCameraEntity().setAngles(f3, f4 * (float)b0);
+			}
 		}
 	}
 }

@@ -25,11 +25,13 @@ public class CameraEntity extends EntityPlayer {
 
 	private Field drawBlockOutline;
 
-	private static final double SPEED = 10; //2 blocks per second
+	private static final double MAX_SPEED = 20;
 
-	private double decay = 6; //decays by 75% per second;
+	private double decay = 4;
 
 	private long lastCall = 0;
+
+	private boolean speedup = false;
 
 	//frac = time since last tick
 	public void updateMovement() {
@@ -40,15 +42,6 @@ public class CameraEntity extends EntityPlayer {
 			mc.thePlayer.rotationPitch = mc.getRenderViewEntity().rotationPitch;
 			mc.thePlayer.rotationYaw = mc.getRenderViewEntity().rotationYaw;
 
-			/*
-			mc.thePlayer.posX = mc.getRenderViewEntity().posX;
-			mc.thePlayer.posY = mc.getRenderViewEntity().posY;
-			mc.thePlayer.posZ = mc.getRenderViewEntity().posZ;
-			
-			TimeHandler.setDesiredDaytime(18000);
-			TimeHandler.setTimeOverridden(true);
-			*/
-			
 			//removes water/suffocation/shadow overlays in screen
 			mc.thePlayer.posX = 0;
 			mc.thePlayer.posY = 500;
@@ -70,13 +63,23 @@ public class CameraEntity extends EntityPlayer {
 		moveRelative(movement.xCoord*factor, movement.yCoord*factor, movement.zCoord*factor);
 
 		double decFac = Math.max(0, 1-(decay*(frac/1000D)));
-		motion *= decFac;
+
+		if(!speedup) {
+			motion *= decFac;
+		} else {
+			speedup = false;
+		}
 
 		lastCall = Sys.getTime();
 	}
 
 	public void setDirection(float pitch, float yaw) {
 		this.setRotation(yaw, pitch);
+	}
+
+	public void speedUp() {
+		this.motion = Math.min(MAX_SPEED, motion+0.1);
+		speedup = true;
 	}
 
 	public void setMovement(MoveDirection dir) {
@@ -104,8 +107,6 @@ public class CameraEntity extends EntityPlayer {
 		}
 
 		if(oldDir != null) direction = direction.normalize().add(new Vec3(oldDir.xCoord*(motion/4f), oldDir.yCoord*(motion/4f), oldDir.zCoord*(motion/4f)).normalize());
-
-		this.motion = SPEED;
 	}
 
 	public void moveAbsolute(double x, double y, double z) {

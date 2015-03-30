@@ -49,7 +49,7 @@ public class ReplayProcess {
 
 	public static void startReplayProcess(boolean record) {
 		ReplayHandler.selectKeyframe(null);
-		
+
 		isVideoRecording = record;
 		lastPosition = null;
 		motionSpline = null;
@@ -59,10 +59,11 @@ public class ReplayProcess {
 		requestFinish = false;
 
 		ChatMessageRequests.initialize();
-		if(ReplayHandler.getPosKeyframeCount() < 2) {
-			ChatMessageRequests.addChatMessage("At least 2 position keyframes required!", ChatMessageType.WARNING);
+		if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
+			ChatMessageRequests.addChatMessage("At least 2 position or time keyframes required!", ChatMessageType.WARNING);
 			return;
 		}
+
 		startRealTime = System.currentTimeMillis();
 		lastRealTime = startRealTime;
 		lastRealReplayTime = 0;
@@ -73,7 +74,7 @@ public class ReplayProcess {
 		previousReplaySpeed = ReplayHandler.getSpeed();
 
 		EnchantmentTimer.resetRecordingTime();
-		
+
 		TimeKeyframe tf = ReplayHandler.getNextTimeKeyframe(-1);
 		if(tf != null) {
 			int ts = tf.getTimestamp();
@@ -138,19 +139,25 @@ public class ReplayProcess {
 	}
 
 	public static void tickReplay() {
-		if(isVideoRecording()) {
-			recordingTick();
-		} else {
-			normalTick();
-		}
+		pathTick(isVideoRecording());
 	}
 
-	private static void normalTick() {
-
+	private static void pathTick(boolean recording) {
 		if(ReplayHandler.isHurrying()) {
-			lastRealTime = System.currentTimeMillis();
+			if(!recording)
+				lastRealTime = System.currentTimeMillis();
 			return;
 		}
+
+		if(recording) {
+			if(blocked) return;
+
+			deepBlock = true;
+			blocked = true;
+		}
+
+		int posCount = ReplayHandler.getPosKeyframeCount();
+		int timeCount = ReplayHandler.getTimeKeyframeCount();
 
 		if(!linear && motionSpline == null) {
 			//set up spline path
@@ -182,16 +189,21 @@ public class ReplayProcess {
 					timeLinear.addPoint(((TimeKeyframe)kf).getTimestamp());
 				}
 			}
-
 		}
 
 		if(!calculated) {
 			calculated = true;
-			if(motionSpline != null) motionSpline.calcSpline();
+			if(posCount > 1)
+				motionSpline.calcSpline();
 		}
 
 		long curTime = System.currentTimeMillis();
-		long timeStep = curTime - lastRealTime;
+		long timeStep;
+		if(recording) {
+			timeStep = 1000/ReplayMod.replaySettings.getVideoFramerate();
+		} else {
+			timeStep = curTime - lastRealTime;
+		}
 
 		int curRealReplayTime = (int)(lastRealReplayTime + timeStep);
 
@@ -225,7 +237,7 @@ public class ReplayProcess {
 
 		double curSpeed = 0f;
 
-		if(nextTime != null || lastTime != null) {
+		if(timeCount > 1 && (nextTime != null || lastTime != null)) {
 			if(nextTime != null) {
 				nextTimeStamp = nextTime.getRealTimestamp();
 			} else {
@@ -239,7 +251,8 @@ public class ReplayProcess {
 			}
 
 			if(!(nextTime == null || lastTime == null)) {
-				curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
+				if(lastTimeStamp == nextTimeStamp) curSpeed = 0f;
+				else curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
 			}
 
 			if(lastTimeStamp == nextTimeStamp) {
@@ -252,25 +265,31 @@ public class ReplayProcess {
 
 		float currentPosStepPerc = (float)currentPos/(float)currentPosDiff; //The percentage of the travelled path between the current positions
 		if(Float.isInfinite(currentPosStepPerc)) currentPosStepPerc = 0;
-		
+
 		int currentTimeDiff = nextTimeStamp - lastTimeStamp;
 		int currentTime = curRealReplayTime - lastTimeStamp;
-		
+
 		float currentTimeStepPerc = (float)currentTime/(float)currentTimeDiff; //The percentage of the travelled path between the current timestamps
 		if(Float.isInfinite(currentTimeStepPerc)) currentTimeStepPerc = 0;
 
-		float splinePos = ((float)ReplayHandler.getKeyframeIndex(lastPos) + currentPosStepPerc)/(float)(ReplayHandler.getPosKeyframeCount()-1);
-		float timePos = ((float)ReplayHandler.getKeyframeIndex(lastTime) + currentTimeStepPerc)/(float)(ReplayHandler.getTimeKeyframeCount()-1);
-		
+		float splinePos = ((float)ReplayHandler.getKeyframeIndex(lastPos) + currentPosStepPerc)/(float)(posCount-1);
+		float timePos = ((float)ReplayHandler.getKeyframeIndex(lastTime) + currentTimeStepPerc)/(float)(timeCount-1);
+
 		Position pos = null;
-		if(!linear) {
-			pos = motionSpline.getPoint(Math.max(0, Math.min(1, splinePos)));
+		if(posCount > 1) {
+			if(!linear) {
+				pos = motionSpline.getPoint(Math.max(0, Math.min(1, splinePos)));
+			} else {
+				pos = motionLinear.getPoint(Math.max(0, Math.min(1, splinePos)));
+			}
 		} else {
-			pos = motionLinear.getPoint(Math.max(0, Math.min(1, splinePos)));
+			if(posCount == 1) {
+				pos = ReplayHandler.getNextPositionKeyframe(-1).getPosition();
+			}
 		}
 
 		Integer curPos = null;
-		if(timeLinear != null) {
+		if(timeLinear != null && timeCount > 1) {
 			curPos = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
 		}
 
@@ -278,164 +297,11 @@ public class ReplayProcess {
 
 		ReplayHandler.setSpeed(curSpeed);
 
-		if(curPos != null) ReplayHandler.setReplayPos(curPos);
-
-		//splinePos = (index of last entry + add) / total entries
-
-		lastRealReplayTime = curRealReplayTime;
-		lastRealTime = curTime;
-
-		if(requestFinish) {
-			stopReplayProcess(true);
-			requestFinish = false;
-		}
-
-		if(splinePos >= 1) {
-			requestFinish = true;
-		}
-	}
-
-	private static void recordingTick() {
-		if(ReplayHandler.isHurrying()) {
-			return;
-		}
-
-		if(blocked && isVideoRecording()) {
-			return;
-		}
-
-		deepBlock = true;
-		blocked = true;
-
-		if(!linear && motionSpline == null) {
-			//set up spline path
-			motionSpline = new SplinePoint();
-			for(Keyframe kf : ReplayHandler.getKeyframes()) {
-				if(kf instanceof PositionKeyframe) {
-					PositionKeyframe pkf = (PositionKeyframe)kf;
-					Position pos = pkf.getPosition();
-					motionSpline.addPoint(pos);
-				}
-			}
-		}
-
-		if(linear && motionLinear == null) {
-			//set up linear path
-			motionLinear = new LinearPoint();
-			for(Keyframe kf : ReplayHandler.getKeyframes()) {
-				if(kf instanceof PositionKeyframe) {
-					PositionKeyframe pkf = (PositionKeyframe)kf;
-					Position pos = pkf.getPosition();
-					motionLinear.addPoint(pos);
-				}
-			}
-		}
-		if(timeLinear == null) {
-			timeLinear = new LinearTimestamp();
-			for(Keyframe kf : ReplayHandler.getKeyframes()) {
-				if(kf instanceof TimeKeyframe) {
-					timeLinear.addPoint(((TimeKeyframe)kf).getTimestamp());
-				}
-			}
-
-		}
-
-		if(!calculated) {
-			calculated = true;
-			motionSpline.calcSpline();
-		}
-
-		long curTime = System.currentTimeMillis();
-		long timeStep = 1000/ReplayMod.replaySettings.getVideoFramerate();
-
-		int curRealReplayTime = (int)(lastRealReplayTime + timeStep);
-
-		PositionKeyframe lastPos = ReplayHandler.getPreviousPositionKeyframe(curRealReplayTime);
-		PositionKeyframe nextPos = ReplayHandler.getNextPositionKeyframe(curRealReplayTime);
-
-		ReplayHandler.setRealTimelineCursor(curRealReplayTime);
-
-		int lastPosStamp = 0;
-		int nextPosStamp = 0;
-
-		if(nextPos != null || lastPos != null) {
-			if(nextPos != null) {
-				nextPosStamp = nextPos.getRealTimestamp();
-			} else {
-				nextPosStamp = lastPos.getRealTimestamp();
-			}
-
-			if(lastPos != null) {
-				lastPosStamp = lastPos.getRealTimestamp();
-			} else {
-				lastPosStamp = nextPos.getRealTimestamp();
-			}
-		}
-
-		TimeKeyframe lastTime = ReplayHandler.getPreviousTimeKeyframe(curRealReplayTime);
-		TimeKeyframe nextTime = ReplayHandler.getNextTimeKeyframe(curRealReplayTime);
-
-		int lastTimeStamp = 0;
-		int nextTimeStamp = 0;
-
-		double curSpeed = 0f;
-
-		if(nextTime != null || lastTime != null) {
-			if(nextTime != null) {
-				nextTimeStamp = nextTime.getRealTimestamp();
-			} else {
-				nextTimeStamp = lastTime.getRealTimestamp();
-			}
-
-			if(lastTime != null) {
-				lastTimeStamp = lastTime.getRealTimestamp();
-			} else {
-				lastTimeStamp = nextTime.getRealTimestamp();
-			}
-
-			if(!(nextTime == null || lastTime == null)) {
-				curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
-			}
-
-			if(lastTimeStamp == nextTimeStamp) {
-				curSpeed = 0f;
-			}
-		}
-
-		int currentPosDiff = nextPosStamp - lastPosStamp;
-		int currentPos = curRealReplayTime - lastPosStamp;
-
-		float currentPosStepPerc = (float)currentPos/(float)currentPosDiff; //The percentage of the travelled path between the current positions
-		if(Float.isInfinite(currentPosStepPerc)) currentPosStepPerc = 0;
-
-		int currentTimeDiff = nextTimeStamp - lastTimeStamp;
-		int currentTime = curRealReplayTime - lastTimeStamp;
-		
-		float currentTimeStepPerc = (float)currentTime/(float)currentTimeDiff; //The percentage of the travelled path between the current timestamps
-		if(Float.isInfinite(currentTimeStepPerc)) currentTimeStepPerc = 0;
-
-		float splinePos = ((float)ReplayHandler.getKeyframeIndex(lastPos) + currentPosStepPerc)/(float)(ReplayHandler.getPosKeyframeCount()-1);
-		float timePos = ((float)ReplayHandler.getKeyframeIndex(lastTime) + currentTimeStepPerc)/(float)(ReplayHandler.getTimeKeyframeCount()-1);
-
-		Position pos = null;
-		if(!linear) {
-			pos = motionSpline.getPoint(Math.max(0, Math.min(1, splinePos)));
-		} else {
-			pos = motionLinear.getPoint(Math.max(0, Math.min(1, splinePos)));
-		}
-
-		Integer curPos = null;
-		if(timeLinear != null) {
-			curPos = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
-		}
-
-		if(pos != null) ReplayHandler.getCameraEntity().movePath(pos);
-
-		ReplayHandler.setSpeed((float)curSpeed);
-		if(isVideoRecording()) {
+		if(recording) {
 			MCTimerHandler.updateTimer((1f/ReplayMod.replaySettings.getVideoFramerate()));
 			EnchantmentTimer.increaseRecordingTime((1000/ReplayMod.replaySettings.getVideoFramerate()));
 		}
+
 		if(curPos != null) ReplayHandler.setReplayPos(curPos);
 
 		//splinePos = (index of last entry + add) / total entries
@@ -458,13 +324,19 @@ public class ReplayProcess {
 
 		if(requestFinish) {
 			stopReplayProcess(true);
-			VideoWriter.endRecording();
+			requestFinish = false;
+			if(recording) {
+				VideoWriter.endRecording();
+			} 
 		}
 
-		if(splinePos >= 1) {
+		if((splinePos >= 1 || posCount <= 1) && (timePos >= 1 || timeCount <= 1)) {
+			System.out.println(timePos+" | "+timeCount);
 			requestFinish = true;
 		}
 
-		deepBlock = false;
+		if(recording) {
+			deepBlock = false;
+		}
 	}
 }

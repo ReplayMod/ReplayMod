@@ -36,6 +36,7 @@ import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
 import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.ResourceHelper;
 import eu.crushedpixel.replaymod.video.VideoWriter;
 
@@ -43,6 +44,8 @@ public class GuiEventHandler {
 
 	private static Minecraft mc = Minecraft.getMinecraft();
 
+	private static int replayCount = 0;
+	
 	private static List<Class> allowedGUIs = new ArrayList<Class>() {
 		{
 			add(GuiReplaySettings.class);
@@ -107,7 +110,12 @@ public class GuiEventHandler {
 				e.gui.drawString(mc.fontRendererObj, "LOGGED OUT", 5, 15, DARK_RED.getRGB());
 			}
 			
-			if(!VersionValidator.isValid) {
+			if(replayCount == 0) {
+				if(editorButton.isMouseOver()) {
+					Point mouse = MouseUtils.getMousePos();
+					e.gui.drawCenteredString(mc.fontRendererObj, "At least one Replay required", (int)mouse.getX(), (int)mouse.getY()+4, Color.RED.getRGB());
+				}
+			} else if(!VersionValidator.isValid) {
 				if(editorButton.isMouseOver()) {
 					Point mouse = MouseUtils.getMousePos();
 					e.gui.drawCenteredString(mc.fontRendererObj, "Java 1.7 or newer required", (int)mouse.getX(), (int)mouse.getY()+4, Color.RED.getRGB());
@@ -146,9 +154,11 @@ public class GuiEventHandler {
 			//rm.enabled = AuthenticationHandler.isAuthenticated();
 			event.buttonList.add(rm);
 
+			replayCount = ReplayFileIO.getAllReplayFiles().size();
+			
 			GuiButton re = new GuiButton(GuiConstants.REPLAY_EDITOR_BUTTON_ID, event.gui.width / 2 + 2, i1 + 2*24, "Replay Editor");
 			re.width = re.width/2 - 2;
-			re.enabled = VersionValidator.isValid;
+			re.enabled = VersionValidator.isValid && replayCount > 0;
 			event.buttonList.add(re);
 			
 			editorButton = re;

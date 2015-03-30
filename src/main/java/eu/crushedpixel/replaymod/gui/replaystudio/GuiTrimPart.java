@@ -1,6 +1,10 @@
 package eu.crushedpixel.replaymod.gui.replaystudio;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import org.lwjgl.input.Keyboard;
 
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
+import eu.crushedpixel.replaymod.studio.StudioImplementation;
 
 public class GuiTrimPart extends GuiStudioPart {
 
@@ -30,8 +35,12 @@ public class GuiTrimPart extends GuiStudioPart {
 	}
 
 	@Override
-	public void applyFilters() {
-		// TODO Auto-generated method stub
+	public void applyFilters(File replayFile, File outputFile) {
+		try {
+			StudioImplementation.trimReplay(replayFile, false, getStartTimestamp(), getEndTimestamp(), outputFile);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private int valueOf(String text) {

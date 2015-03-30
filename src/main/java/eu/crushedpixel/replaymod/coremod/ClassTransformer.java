@@ -21,7 +21,6 @@ public class ClassTransformer implements IClassTransformer {
 	@Override
 	public byte[] transform(String name, String transformedName,
 			byte[] basicClass) {
-		
 		if(name.equals("cqh")) {
 			return patchRenderEffectMethod(name, basicClass, true);
 		}

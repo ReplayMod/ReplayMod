@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.gui.replaystudio;
 
+import java.io.File;
 import java.io.IOException;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -12,7 +13,7 @@ public abstract class GuiStudioPart extends GuiScreen {
 	
 	protected int yPos = 0;
 	
-	public abstract void applyFilters();
+	public abstract void applyFilters(File replayFile, File outputFile);
 	
 	public abstract String getDescription();
 	

@@ -280,7 +280,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							currentTimeStamp = pd.getTimestamp();
 							//System.out.println(currentTimeStamp);
 
-							if(!ReplayHandler.isInPath() && !hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
+							if(!ReplayHandler.isInPath() && !hurryToTimestamp && (mc.theWorld != null && mc.theWorld.getChunkProvider().getLoadedChunkCount() > 0)) {
 								//if(!hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
 								int timeWait = (int)Math.round((currentTimeStamp - lastTimeStamp)/replaySpeed);
 								long timeDiff = System.currentTimeMillis() - lastPacketSent;

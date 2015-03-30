@@ -1,11 +1,13 @@
 package eu.crushedpixel.replaymod.online.authentication;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.api.client.ApiClient;
 import eu.crushedpixel.replaymod.api.client.ApiException;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 
@@ -14,6 +16,8 @@ public class AuthenticationHandler {
 	public static final int SUCCESS = 1;
 	public static final int INVALID = 2;
 	public static final int NO_CONNECTION = 3;
+	
+	private static final ApiClient apiClient = new ApiClient();
 	
 	private static Minecraft mc = Minecraft.getMinecraft();
 
@@ -26,15 +30,9 @@ public class AuthenticationHandler {
 	public static String getKey() {
 		return authkey;
 	}
-
-	private static List<String> blackUUIDs = new ArrayList<String>() {
-		{
-			add("23978392a78c49cf9f5235a151fd4083"); //Hudelsohn
-		}
-	};
 	
-	public static boolean isBlacklisted(String uuid) {
-		return blackUUIDs.contains(uuid.replace("-", ""));
+	public static boolean hasDonated(String uuid) throws IOException, ApiException {
+		return apiClient.hasDonated(uuid);
 	}
 	
 	public static int authenticate(String username, String password) {
