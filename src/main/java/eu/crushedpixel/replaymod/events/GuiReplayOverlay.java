@@ -288,7 +288,7 @@ public class GuiReplayOverlay extends Gui {
 						ReplayHandler.setLastPosition(null);
 					}
 
-					ReplayHandler.setReplayPos((int)time);
+					ReplayHandler.setReplayTime((int)time);
 				}
 			}
 

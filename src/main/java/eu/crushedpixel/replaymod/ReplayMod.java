@@ -113,8 +113,7 @@ public class ReplayMod
 			mc.entityRenderer = new SafeEntityRenderer(mc, mc.entityRenderer);
 		} catch(Exception e) {
 			e.printStackTrace();
-		}
-		
+		}	
 		
 		/*
 		boolean auth = false;

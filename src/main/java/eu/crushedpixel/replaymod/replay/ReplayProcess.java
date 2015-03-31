@@ -81,7 +81,7 @@ public class ReplayProcess {
 			if(ts < ReplayHandler.getReplayTime()) {
 				mc.displayGuiScreen((GuiScreen)null);
 			}
-			ReplayHandler.setReplayPos(ts);
+			ReplayHandler.setReplayTime(ts);
 		}
 
 		ChatMessageRequests.addChatMessage("Replay started!", ChatMessageType.INFORMATION);
@@ -235,28 +235,33 @@ public class ReplayProcess {
 		int lastTimeStamp = 0;
 		int nextTimeStamp = 0;
 
-		double curSpeed = 0f;
+		double curSpeed = 0;
 
 		if(timeCount > 1 && (nextTime != null || lastTime != null)) {
-			if(nextTime != null) {
-				nextTimeStamp = nextTime.getRealTimestamp();
+
+			if(nextTime != null && lastTime != null && nextTime.getRealTimestamp() == lastTime.getRealTimestamp()) {
+				curSpeed = 0;
 			} else {
-				nextTimeStamp = lastTime.getRealTimestamp();
-			}
+				if(nextTime != null) {
+					nextTimeStamp = nextTime.getRealTimestamp();
+				} else {
+					nextTimeStamp = lastTime.getRealTimestamp();
+				}
 
-			if(lastTime != null) {
-				lastTimeStamp = lastTime.getRealTimestamp();
-			} else {
-				lastTimeStamp = nextTime.getRealTimestamp();
-			}
+				if(lastTime != null) {
+					lastTimeStamp = lastTime.getRealTimestamp();
+				} else {
+					lastTimeStamp = nextTime.getRealTimestamp();
+				}
 
-			if(!(nextTime == null || lastTime == null)) {
-				if(lastTimeStamp == nextTimeStamp) curSpeed = 0f;
-				else curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
-			}
+				if(!(nextTime == null || lastTime == null)) {
+					if(lastTimeStamp == nextTimeStamp) curSpeed = 0f;
+					else curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
+				}
 
-			if(lastTimeStamp == nextTimeStamp) {
-				curSpeed = 0f;
+				if(lastTimeStamp == nextTimeStamp) {
+					curSpeed = 0f;
+				}
 			}
 		}
 
@@ -302,7 +307,7 @@ public class ReplayProcess {
 			EnchantmentTimer.increaseRecordingTime((1000/ReplayMod.replaySettings.getVideoFramerate()));
 		}
 
-		if(curPos != null) ReplayHandler.setReplayPos(curPos);
+		if(curPos != null && curPos != ReplayHandler.getDesiredTimestamp()) ReplayHandler.setReplayTime(curPos);
 
 		//splinePos = (index of last entry + add) / total entries
 
@@ -331,7 +336,6 @@ public class ReplayProcess {
 		}
 
 		if((splinePos >= 1 || posCount <= 1) && (timePos >= 1 || timeCount <= 1)) {
-			System.out.println(timePos+" | "+timeCount);
 			requestFinish = true;
 		}
 

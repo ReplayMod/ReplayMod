@@ -144,6 +144,10 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			e.printStackTrace();
 		}
 	}
+	
+	public long getDesiredTimestamp() {
+		return desiredTimeStamp;
+	}
 
 	public void jumpToTime(int millis) {
 		setReplaySpeed(replaySpeed);

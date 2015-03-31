@@ -119,12 +119,12 @@ public class ReplayHandler {
 		return cameraEntity;
 	}
 
+	public static int getDesiredTimestamp() {
+		return replaySender == null ? 0 : (int)replaySender.getDesiredTimestamp();
+	}
+	
 	public static int getReplayTime() {
-		if(replaySender != null) {
-			return (int)replaySender.currentTimeStamp();
-		}
-
-		return 0;
+		return replaySender == null ? 0 : (int)replaySender.currentTimeStamp();
 	}
 
 	public static void sortKeyframes() {
@@ -279,7 +279,7 @@ public class ReplayHandler {
 		selectKeyframe(null);
 	}
 
-	public static void setReplayPos(int pos) {
+	public static void setReplayTime(int pos) {
 		if(replaySender != null) {
 			replaySender.jumpToTime(pos);
 		}

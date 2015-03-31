@@ -50,7 +50,7 @@ public class ReplayFileIO {
 		folder.mkdirs();
 		return folder;
 	}
-	
+
 	public static List<File> getAllReplayFiles() {
 		List<File> files = new ArrayList<File>();
 		File folder = getReplayFolder();
@@ -62,7 +62,7 @@ public class ReplayFileIO {
 		}
 		return files;
 	}
-	
+
 	private static DataInputStream getMetaDataInputStream(File replayFile) throws IOException {
 		ZipFile archive = null;
 
@@ -179,15 +179,19 @@ public class ReplayFileIO {
 	}
 
 	public static Packet deserializePacket(byte[] bytes) throws InstantiationException, IllegalAccessException, IOException {
-		ByteBuf bb = Unpooled.wrappedBuffer(bytes);
-		PacketBuffer pb = new PacketBuffer(bb);
+		try {
+			ByteBuf bb = Unpooled.wrappedBuffer(bytes);
+			PacketBuffer pb = new PacketBuffer(bb);
 
-		int i = pb.readVarIntFromBuffer();
+			int i = pb.readVarIntFromBuffer();
 
-		Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
-		p.readPacketData(pb);
+			Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
+			p.readPacketData(pb);
 
-		return p;
+			return p;
+		} catch(Exception e) {
+			return null;
+		}
 	}
 
 	public static byte[] serializePacket(Packet packet) throws IOException {
@@ -207,7 +211,7 @@ public class ReplayFileIO {
 		out.writeInt(pd.getByteArray().length);
 		out.write(pd.getByteArray());
 	}
-	
+
 	public static int getWrittenByteSize(PacketData pd) {
 		return (2*4)+pd.getByteArray().length;
 	}
@@ -261,9 +265,9 @@ public class ReplayFileIO {
 			Pair<Long, DataInputStream> pair = getTempFileInputStream(replayFile);
 			dis = pair.second();
 			long fileLength = pair.first();
-			
+
 			raf.setLength(fileLength);
-			
+
 			long pointerBefore = fileLength;
 
 			while(dis.available() > 0) {
