@@ -13,6 +13,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
@@ -197,7 +198,7 @@ public class GuiReplayOverlay extends Gui {
 
 		if(!ReplayGuiRegistry.hidden) ReplayGuiRegistry.hide();
 		
-		if(FMLClientHandler.instance().isGUIOpen(GuiChat.class)) {
+		if(FMLClientHandler.instance().isGUIOpen(GuiChat.class) || FMLClientHandler.instance().isGUIOpen(GuiInventory.class)) {
 			mc.displayGuiScreen(new GuiMouseInput());
 		}
 		
@@ -288,7 +289,8 @@ public class GuiReplayOverlay extends Gui {
 						ReplayHandler.setLastPosition(null);
 					}
 
-					ReplayHandler.setReplayTime((int)time);
+					if((int)time != ReplayHandler.getDesiredTimestamp())
+						ReplayHandler.setReplayTime((int)time);
 				}
 			}
 

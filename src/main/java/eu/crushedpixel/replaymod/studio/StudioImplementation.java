@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import com.google.gson.JsonObject;
 
-import net.minecraft.network.play.server.S3EPacketTeams;
 import de.johni0702.replaystudio.PacketData;
 import de.johni0702.replaystudio.filter.ChangeTimestampFilter;
 import de.johni0702.replaystudio.filter.RemoveFilter;
@@ -57,5 +57,9 @@ public class StudioImplementation {
         outputFile.createNewFile();
         
         ReplayFileIO.writeReplayFile(outputFile, temp, metaData);
+	}
+	
+	public static void connectReplayFiles(List<File> filesToConnect, File outputFile) {
+		
 	}
 }

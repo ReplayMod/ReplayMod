@@ -41,6 +41,13 @@ public class GuiConnectPart extends GuiStudioPart {
 		fontRendererObj = mc.fontRendererObj;
 	}
 
+
+	@Override
+	public void applyFilters(File replayFile, File outputFile) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	@Override
 	public String getDescription() {
 		return DESCRIPTION;
@@ -189,11 +196,5 @@ public class GuiConnectPart extends GuiStudioPart {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void applyFilters(File replayFile, File outputFile) {
-		// TODO Auto-generated method stub
-		
 	}
 }

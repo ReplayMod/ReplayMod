@@ -402,6 +402,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 		try {
 			Packet p = ReplayFileIO.deserializePacket(ba);
+			
+			if(p == null) return;
 
 			//If hurrying, ignore some packets, unless during Replay Path and *not* in initial hurry
 			if(hurryToTimestamp && (!ReplayHandler.isInPath() || (desiredTimeStamp-currentTimeStamp > 1000))) { 

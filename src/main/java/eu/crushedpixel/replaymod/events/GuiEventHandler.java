@@ -33,6 +33,7 @@ import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
 import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
@@ -193,6 +194,7 @@ public class GuiEventHandler {
 		}
 
 		if(ReplayHandler.isInReplay() && event.gui instanceof GuiIngameMenu && event.button.id == GuiConstants.EXIT_REPLAY_BUTTON) {
+			if(ReplayHandler.isInPath()) ReplayProcess.stopReplayProcess(false);
 			ReplayHandler.endReplay();
 			
 			event.button.enabled = false;
