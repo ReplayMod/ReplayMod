@@ -12,15 +12,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.particle.EffectRenderer;
+import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
@@ -32,8 +31,6 @@ import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
 import net.minecraft.network.play.server.S0BPacketAnimation;
 import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
-import net.minecraft.network.play.server.S0EPacketSpawnObject;
-import net.minecraft.network.play.server.S0FPacketSpawnMob;
 import net.minecraft.network.play.server.S1CPacketEntityMetadata;
 import net.minecraft.network.play.server.S1DPacketEntityEffect;
 import net.minecraft.network.play.server.S1FPacketSetExperience;
@@ -59,9 +56,9 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import com.google.common.base.Predicate;
 import com.google.gson.Gson;
 
 import eu.crushedpixel.replaymod.ReplayMod;
@@ -144,7 +141,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public long getDesiredTimestamp() {
 		return desiredTimeStamp;
 	}
@@ -346,7 +343,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private ArrayList<Class> badPackets = new ArrayList<Class>() {
 		{
 			add(S28PacketEffect.class);
-			add(S48PacketResourcePackSend.class);
 			add(S2BPacketChangeGameState.class);
 			add(S06PacketUpdateHealth.class);
 			add(S2DPacketOpenWindow.class);
@@ -367,6 +363,98 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private static Field gameProfileField;
 
 	//private static Field dataWatcherField;
+
+	private static class ResourcePackCheck extends Thread {
+
+		public ResourcePackCheck(String url, String hash) {
+			this.url = url;
+			this.hash = hash;
+		}
+
+		private String url, hash;
+
+		private static Field serverResourcePackDirectory;
+		private static Minecraft mc = Minecraft.getMinecraft();
+		private static ResourcePackRepository repo = mc.getResourcePackRepository();
+
+		static {
+			try {
+				serverResourcePackDirectory = ResourcePackRepository.class.getDeclaredField(MCPNames.field("field_148534_e"));
+				serverResourcePackDirectory.setAccessible(true);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		private File getServerResourcePackLocation(String url, String hash) throws IOException, IllegalArgumentException, IllegalAccessException {
+
+			String filename;
+
+			if (hash.matches("^[a-f0-9]{40}$")) {
+				filename = hash;
+			} else {
+				filename = url.substring(url.lastIndexOf("/") + 1);
+
+				if (filename.contains("?"))
+				{
+					filename = filename.substring(0, filename.indexOf("?"));
+				}
+
+				if (!filename.endsWith(".zip"))
+				{
+					return null;
+				}
+
+				filename = "legacy_" + filename.replaceAll("\\W", "");
+			}
+
+			File folder = (File)serverResourcePackDirectory.get(repo);
+			File rp = new File(folder, filename);
+
+			return rp;
+		}
+
+		private boolean downloadServerResourcePack(String url, File file) {
+			try {
+				FileUtils.copyURLToFile(new URL(url), file);
+				return true;
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+
+		@Override
+		public void run() {
+			try {
+				boolean use = ReplayMod.instance.replaySettings.getUseResourcePacks();
+				if(!use) return;
+
+				System.out.println("Looking for downloaded Resource Pack...");
+				File rp = getServerResourcePackLocation(url, hash);
+				if(rp == null) {
+					System.out.println("Invalid Resource Pack provided");
+					return;
+				}
+				if(rp.exists()) {
+					System.out.println("Resource Pack found!");
+					repo.func_177319_a(rp);
+
+				} else {
+					System.out.println("No Resource Pack found.");
+					System.out.println("Attempting to download Resource Pack...");
+					boolean success = downloadServerResourcePack(url, rp);
+					System.out.println(success ? "Resource pack was successfully downloaded!" : "Resource Pack download failed.");
+					if(success) {
+						repo.func_177319_a(rp);
+					}
+				}
+
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	static {
 		try {
@@ -402,7 +490,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 		try {
 			Packet p = ReplayFileIO.deserializePacket(ba);
-			
+
 			if(p == null) return;
 
 			//If hurrying, ignore some packets, unless during Replay Path and *not* in initial hurry
@@ -417,6 +505,14 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 			if(p instanceof S03PacketTimeUpdate) {
 				p = TimeHandler.getTimePacket((S03PacketTimeUpdate)p);
+			}
+
+			if(p instanceof S48PacketResourcePackSend) {
+				S48PacketResourcePackSend pa = (S48PacketResourcePackSend)p;
+				Thread t = new ResourcePackCheck(pa.func_179783_a(), pa.func_179784_b());
+				t.start();
+
+				return;
 			}
 
 			if(p instanceof S02PacketChat) {
@@ -442,7 +538,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 					}
 				}
 			}
-			*/
+			 */
 
 			try {
 				if(p instanceof S1CPacketEntityMetadata) {

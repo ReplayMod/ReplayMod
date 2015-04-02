@@ -55,7 +55,7 @@ public class ReplayMod
 	
 	public static GuiReplayOverlay overlay = new GuiReplayOverlay();
 	
-	public static ReplaySettings replaySettings = new ReplaySettings(true, true, true, false, false, 30, 0.5f);
+	public static ReplaySettings replaySettings;
 	public static Configuration config;
 	
 	public static boolean firstMainMenu = true;

@@ -1,29 +1,35 @@
 package eu.crushedpixel.replaymod.settings;
 
 import java.lang.reflect.Field;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiOptions;
-import net.minecraft.client.gui.GuiVideoSettings;
 import net.minecraft.client.settings.GameSettings.Options;
-import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.util.Timer;
-import net.minecraftforge.common.config.Property;
+import net.minecraftforge.common.config.Configuration;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 
 public class ReplaySettings {
 
-	private boolean enableRecordingServer = true;
-	private boolean enableRecordingSingleplayer = true;
-	private boolean showNotifications = true;
-	private boolean forceLinearPath = false;
-	private boolean lightingEnabled = false;
-	private float videoQuality = 0.5f;
-	private int videoFramerate = 30;
+	public enum Option {
+		recordServer(true), recordSingleplayer(true), notifications(true), linear(false), 
+		lighting(false), useResources(true), videoQuality(0.5f), videoFramerate(30);
+		
+		private Object value;
+		
+		public Object getValue() {
+			return value;
+		}
+		
+		public void setValue(Object value) {
+			this.value = value;
+		}
+		
+		Option(Object value) {
+			this.value = value;
+		}
+	}
 
 	private static Field mcTimer;
 
@@ -39,63 +45,71 @@ public class ReplaySettings {
 
 	public ReplaySettings(boolean enableRecordingServer,
 			boolean enableRecordingSingleplayer, boolean showNotifications, boolean forceLinearPath, boolean lightingEnabled, int framerate, float videoQuality) {
-		this.enableRecordingServer = enableRecordingServer;
-		this.enableRecordingSingleplayer = enableRecordingSingleplayer;
-		this.showNotifications = showNotifications;
-		this.forceLinearPath = forceLinearPath;
-		this.lightingEnabled = lightingEnabled;
-		this.videoFramerate = Math.min(120, Math.max(10, framerate));
-		this.videoQuality = Math.min(0.9f, Math.max(0.1f, videoQuality));
+		setEnableRecordingServer(enableRecordingServer);
+		setEnableRecordingSingleplayer(enableRecordingSingleplayer);
+		setLinearMovement(forceLinearPath);
+		setShowNotifications(showNotifications);
+		setLightingEnabled(lightingEnabled);
+		setVideoFramerate(Math.min(120, Math.max(10, framerate)));
+		setVideoQuality(Math.min(0.9f, Math.max(0.1f, videoQuality)));
 	}
 
 	public int getVideoFramerate() {
-		return videoFramerate;
+		return (Integer)Option.videoFramerate.getValue();
 	}
 	public void setVideoFramerate(int framerate) {
-		this.videoFramerate = Math.min(120, Math.max(10, framerate));
+		Option.videoFramerate.setValue(Math.min(120, Math.max(10, framerate)));
 		rewriteSettings();
 	}
 	public float getVideoQuality() {
-		return videoQuality;
+		return (Float)Option.videoQuality.getValue();
 	}
 	public void setVideoQuality(float videoQuality) {
-		this.videoQuality = Math.min(0.9f, Math.max(0.1f, videoQuality));
+		Option.videoQuality.setValue(Math.min(0.9f, Math.max(0.1f, videoQuality)));
 		rewriteSettings();
 	}
 	public boolean isEnableRecordingServer() {
-		return enableRecordingServer;
+		return (Boolean)Option.recordServer.getValue();
 	}
 	public void setEnableRecordingServer(boolean enableRecordingServer) {
-		this.enableRecordingServer = enableRecordingServer;
+		Option.recordServer.setValue(enableRecordingServer);
 		rewriteSettings();
 	}
 	public boolean isEnableRecordingSingleplayer() {
-		return enableRecordingSingleplayer;
+		return (Boolean)Option.recordSingleplayer.getValue();
 	}
 	public void setEnableRecordingSingleplayer(boolean enableRecordingSingleplayer) {
-		this.enableRecordingSingleplayer = enableRecordingSingleplayer;
+		Option.recordSingleplayer.setValue(enableRecordingSingleplayer);
 		rewriteSettings();
 	}
 	public boolean isShowNotifications() {
-		return showNotifications;
+		return (Boolean)Option.notifications.getValue();
 	}
 	public void setShowNotifications(boolean showNotifications) {
-		this.showNotifications = showNotifications;
+		Option.notifications.setValue(showNotifications);
 		rewriteSettings();
 	}
 	public boolean isLinearMovement() {
-		return forceLinearPath;
+		return (Boolean)Option.linear.getValue();
 	}
 	public void setLinearMovement(boolean linear) {
-		this.forceLinearPath = linear;
+		Option.linear.setValue(linear);
 		rewriteSettings();
 	}
 	public boolean isLightingEnabled() {
-		return lightingEnabled;
+		return (Boolean)Option.lighting.getValue();
+	}
+	public void setUseResourcePacks(boolean use) {
+		Option.useResources.setValue(use);
+		rewriteSettings();
+	}
+	public boolean getUseResourcePacks() {
+		return (Boolean)Option.useResources.getValue();
 	}
 	
+	//TODO: FIX
 	public void setLightingEnabled(boolean enabled) {
-		this.lightingEnabled = enabled;
+		Option.lighting.setValue(enabled);
 		if(enabled) {
 			Minecraft.getMinecraft().gameSettings.setOptionFloatValue(Options.GAMMA, 1000);
 		} else {
@@ -115,52 +129,28 @@ public class ReplaySettings {
 
 		rewriteSettings();
 	}
-
-
-	public Map<String, Object> getOptions() {
-		Map<String, Object> map = new LinkedHashMap<String, Object>();
-
-		map.put("Enable Notifications", showNotifications);
-		map.put("Record Server", enableRecordingServer);
-		map.put("Record Singleplayer", enableRecordingSingleplayer);
-		map.put("Placeholder 1", null);
-		map.put("Force Linear Movement", forceLinearPath);
-		map.put("Enable Lighting", lightingEnabled);
-		map.put("Video Quality", videoQuality);
-		map.put("Video Framerate", videoFramerate);
-
-		return map;
-	}
-
-	public void setOptions(Map<String, Object> map) {
-		try {
-
-			showNotifications = (Boolean)map.get("Enable Notifications");
-			enableRecordingServer = (Boolean)map.get("Record Server");
-			enableRecordingSingleplayer = (Boolean)map.get("Record Singleplayer");
-			forceLinearPath = (Boolean)map.get("Force Linear Movement");
-			lightingEnabled = (Boolean)map.get("Enable Lighting");
-			videoQuality = (Float)map.get("Video Quality");
-			videoFramerate = (Integer)map.get("Video Framerate");
-
-			rewriteSettings();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
+	
 	public void rewriteSettings() {
 		ReplayMod.instance.config.load();
-
 		ReplayMod.instance.config.removeCategory(ReplayMod.instance.config.getCategory("settings"));
-		Property recServer = ReplayMod.instance.config.get("settings", "enableRecordingServer", enableRecordingServer, "Defines whether a recording should be started upon joining a server.");
-		Property recSP = ReplayMod.instance.config.get("settings", "enableRecordingSingleplayer", enableRecordingSingleplayer, "Defines whether a recording should be started upon joining a singleplayer world.");
-		Property showNot = ReplayMod.instance.config.get("settings", "showNotifications", showNotifications, "Defines whether notifications should be sent to the player.");
-		Property linear = ReplayMod.instance.config.get("settings", "forceLinearPath", forceLinearPath, "Defines whether travelling paths should be linear instead of interpolated.");
-		Property lighting = ReplayMod.instance.config.get("settings", "enableLighting", lightingEnabled, "If enabled, the whole map is lighted.");
-		Property vq = ReplayMod.instance.config.get("settings", "videoQuality", videoQuality, "The quality of the exported video files from 0.1 to 0.9");
-		Property framerate = ReplayMod.instance.config.get("settings", "videoFramerate", videoFramerate, "The framerate of the exported video files from 10 to 120");
+		
+		for(Option o : Option.values()) {
+			addConfigSetting(ReplayMod.instance.config, o);
+		}
 		
 		ReplayMod.instance.config.save();
+	}
+	
+	private void addConfigSetting(Configuration config, Option o) {
+		Object value = o.getValue();
+		if(value instanceof Integer) {
+			config.get("settings", o.name(), (Integer)o.getValue());
+		} else if(value instanceof Boolean) {
+			config.get("settings", o.name(), (Boolean)o.getValue());
+		} else if(value instanceof Double) {
+			config.get("settings", o.name(), (Double)o.getValue());
+		} else if(value instanceof String) {
+			config.get("settings", o.name(), (String)o.getValue());
+		}
 	}
 }

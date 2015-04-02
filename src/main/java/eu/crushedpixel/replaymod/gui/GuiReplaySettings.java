@@ -2,20 +2,14 @@ package eu.crushedpixel.replaymod.gui;
 
 import java.awt.Color;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Map;
 import java.util.Map.Entry;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiOptionButton;
-import net.minecraft.client.gui.GuiOptionSlider;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.reflection.MCPNames;
-import eu.crushedpixel.replaymod.settings.ReplaySettings;
+import eu.crushedpixel.replaymod.settings.ReplaySettings.Option;
 
 public class GuiReplaySettings extends GuiScreen {
 
@@ -30,8 +24,9 @@ public class GuiReplaySettings extends GuiScreen {
 	private static final int FORCE_LINEAR = 9007;
 	private static final int ENABLE_LIGHTING = 9008;
 	private static final int FRAMERATE_SLIDER_ID = 9009;
+	private static final int RESOURCEPACK_ID = 9010;
 
-	private GuiButton recordServerButton, recordSPButton, sendChatButton, linearButton, lightingButton;
+	private GuiButton recordServerButton, recordSPButton, sendChatButton, linearButton, lightingButton, resourcePackButton;
 
 	public GuiReplaySettings(GuiScreen parentGuiScreen)
 	{
@@ -43,31 +38,48 @@ public class GuiReplaySettings extends GuiScreen {
 		this.buttonList.clear();
 		this.buttonList.add(new GuiButton(200, this.width / 2 - 100, this.height - 27, I18n.format("gui.done", new Object[0])));
 
-		Map<String, Object> aoptions = ReplayMod.replaySettings.getOptions();
+		Option[] aoptions = Option.values();
 
 		int k = 0;
 		int i = 0;
-		for (Entry<String, Object> e : aoptions.entrySet()) {
+		for (Option o : aoptions) {
 
-			if(e.getKey().equals("Video Quality")) {
-				this.buttonList.add(new GuiVideoQualitySlider(QUALITY_SLIDER_ID, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (Float)e.getValue(), "Video Quality"));
-			} else if(e.getKey().equals("Video Framerate")) { 
-				this.buttonList.add(new GuiVideoFramerateSlider(FRAMERATE_SLIDER_ID, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (Integer)e.getValue(), "Video Framerate"));
-			} else if(e.getKey().equals("Enable Notifications")) {
-				sendChatButton = new GuiButton(SEND_CHAT, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Enable Notifications: "+onOff((Boolean)e.getValue()));
-				this.buttonList.add(sendChatButton);
-			} else if(e.getKey().equals("Record Server")) {
-				recordServerButton = new GuiButton(RECORDSERVER_ID, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Record Server: "+onOff((Boolean)e.getValue()));
-				this.buttonList.add(recordServerButton);
-			} else if(e.getKey().equals("Record Singleplayer")) {
-				recordSPButton = new GuiButton(RECORDSP_ID, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Record Singleplayer: "+onOff((Boolean)e.getValue()));
-				this.buttonList.add(recordSPButton);
-			} else if(e.getKey().equals("Force Linear Movement")) {
-				linearButton = new GuiButton(FORCE_LINEAR, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Camera Path: "+linearOnOff((Boolean)e.getValue()));
-				this.buttonList.add(linearButton);
-			} else if(e.getKey().equals("Enable Lighting")) {
-				lightingButton = new GuiButton(ENABLE_LIGHTING, this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Enable Lighting: "+onOff((Boolean)e.getValue()));
-				this.buttonList.add(lightingButton);
+			switch(o) {
+			case lighting:
+				this.buttonList.add(lightingButton = new GuiButton(ENABLE_LIGHTING, this.width / 2 - 155 + i % 2 * 160, 
+						this.height / 6 + 24 * (i >> 1), 150, 20, "Enable Lighting: "+onOff((Boolean)o.getValue())));
+				break;
+			case linear:
+				this.buttonList.add(linearButton = new GuiButton(FORCE_LINEAR, this.width / 2 - 155 + i % 2 * 160, 
+						this.height / 6 + 24 * (i >> 1), 150, 20, "Camera Path: "+linearOnOff((Boolean)o.getValue())));
+				break;
+			case notifications:
+				this.buttonList.add(sendChatButton = new GuiButton(SEND_CHAT, 
+						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, 
+						"Enable Notifications: "+onOff((Boolean)o.getValue())));
+				break;
+			case recordServer:
+				this.buttonList.add(recordServerButton = new GuiButton(RECORDSERVER_ID, 
+						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Record Server: "+onOff((Boolean)o.getValue())));
+				break;
+			case recordSingleplayer:
+				this.buttonList.add(recordSPButton = new GuiButton(RECORDSP_ID, this.width / 2 - 155 + i % 2 * 160, 
+						this.height / 6 + 24 * (i >> 1), 150, 20, "Record Singleplayer: "+onOff((Boolean)o.getValue())));
+				break;
+			case useResources:
+				this.buttonList.add(resourcePackButton = new GuiButton(RESOURCEPACK_ID, this.width / 2 - 155 + i % 2 * 160, 
+						this.height / 6 + 24 * (i >> 1), 150, 20, "Server Resource Packs: "+onOff((Boolean)o.getValue())));
+				break;
+			case videoFramerate:
+				this.buttonList.add(new GuiVideoFramerateSlider(FRAMERATE_SLIDER_ID, 
+						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (Integer)o.getValue(), "Video Framerate"));
+				break;
+			case videoQuality:
+				this.buttonList.add(new GuiVideoQualitySlider(QUALITY_SLIDER_ID, 
+						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (Float)o.getValue(), "Video Quality"));
+				break;
+			default:
+				break;
 			}
 
 			++i;
@@ -135,6 +147,12 @@ public class GuiReplaySettings extends GuiScreen {
 				enabled = !enabled;
 				lightingButton.displayString = "Enable Lighting: "+onOff(enabled);
 				ReplayMod.replaySettings.setLightingEnabled(enabled);
+				break;
+			case RESOURCEPACK_ID:
+				enabled = ReplayMod.replaySettings.getUseResourcePacks();
+				enabled = !enabled;
+				resourcePackButton.displayString = "Server Resource Packs: "+onOff(enabled);
+				ReplayMod.replaySettings.setUseResourcePacks(enabled);
 				break;
 			}
 		}
