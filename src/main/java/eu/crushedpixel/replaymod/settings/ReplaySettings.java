@@ -65,7 +65,7 @@ public class ReplaySettings {
 	public double getVideoQuality() {
 		return (Double)Option.videoQuality.getValue();
 	}
-	public void setVideoQuality(float videoQuality) {
+	public void setVideoQuality(double videoQuality) {
 		Option.videoQuality.setValue(Math.min(0.9f, Math.max(0.1f, videoQuality)));
 		rewriteSettings();
 	}
