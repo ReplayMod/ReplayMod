@@ -75,18 +75,8 @@ public class ReplayMod
 		config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
 		
-		Property recServer = config.get("settings", "enableRecordingServer", true, "Defines whether a recording should be started upon joining a server.");
-		Property recSP = config.get("settings", "enableRecordingSingleplayer", true, "Defines whether a recording should be started upon joining a singleplayer world.");
-		Property showNot = ReplayMod.instance.config.get("settings", "showNotifications", true, "Defines whether notifications should be sent to the player.");
-		Property linear = ReplayMod.instance.config.get("settings", "forceLinearPath", false, "Defines whether travelling paths should be linear instead of interpolated.");
-		Property lighting = ReplayMod.instance.config.get("settings", "enableLighting", false, "If enabled, the whole map is lighted.");
-		Property vq = ReplayMod.instance.config.get("settings", "videoQuality", 0.5f, "The quality of the exported video files from 0.1 to 0.9");
-		Property framerate = ReplayMod.instance.config.get("settings", "videoFramerate", 30, "The framerate of the exported video files from 10 to 120");
-		
-		replaySettings = new ReplaySettings(recServer.getBoolean(true), recSP.getBoolean(true), showNot.getBoolean(true), 
-				linear.getBoolean(false), lighting.getBoolean(false), framerate.getInt(30), (float)vq.getDouble(0.5));
-		
-		config.save();
+		replaySettings = new ReplaySettings();
+		replaySettings.readValues();
 	}
 
 	@EventHandler

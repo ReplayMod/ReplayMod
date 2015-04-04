@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.monte.media.Buffer;
 import org.monte.media.Format;
@@ -21,9 +23,9 @@ public class VideoWriter {
 
 	private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
 	private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-	
+
 	private static final String VIDEO_EXTENSION = ".avi";
-	
+
 	private static MovieWriter out;
 	private static boolean isRecording = false;
 	private static boolean requestFinish = false;
@@ -42,12 +44,14 @@ public class VideoWriter {
 		}
 		isRecording = true;
 
+		toWrite = new LinkedBlockingQueue<BufferedImage>();
+
 		try {
 			File folder = new File("./replay_videos/");
 			folder.mkdirs();
-			
+
 			String fileName = sdf.format(Calendar.getInstance().getTime());
-			
+
 			File file = new File(folder, fileName+VIDEO_EXTENSION);
 			file.createNewFile();
 
@@ -69,7 +73,38 @@ public class VideoWriter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while(true) {
+					if(toWrite.isEmpty()) {
+						if(requestFinish) {
+							requestFinish = false;
+							isRecording = false;
+							try {
+								out.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							return;
+						}
+						try {
+							Thread.sleep(10);
+						} catch(Exception e) {
+							e.printStackTrace();
+						}
+					} else {
+						write();
+					}
+				}
+			}
+		});
+		t.start();
 	}
+
+	private static Queue<BufferedImage> toWrite = new LinkedBlockingQueue<BufferedImage>();
 
 	public static void writeImage(BufferedImage image) {
 		if(requestFinish || !isRecording) {
@@ -78,20 +113,22 @@ public class VideoWriter {
 			throw up; //lolololo^2
 		}
 
-		try {
-			buf.data = image;
-			out.write(track, buf);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		toWrite.add(image);
 	}
 
 	public static void endRecording() {
 		if(!isRecording) return;
-		isRecording = false;
+		requestFinish = true;
+	}
+
+	private static void write() {
 		try {
-			out.close();
-		} catch(Exception e) {
+			BufferedImage img = toWrite.poll();
+			if(img != null) {
+				buf.data = img;
+				out.write(track, buf);
+			}
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

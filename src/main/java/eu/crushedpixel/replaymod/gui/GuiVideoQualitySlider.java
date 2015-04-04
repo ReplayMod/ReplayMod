@@ -9,10 +9,10 @@ import eu.crushedpixel.replaymod.ReplayMod;
 
 public class GuiVideoQualitySlider extends GuiButton {
 
-	public GuiVideoQualitySlider(int buttonId, int p_i45017_2_, int p_i45017_3_, float initialQuality, String displayKey) {
+	public GuiVideoQualitySlider(int buttonId, int p_i45017_2_, int p_i45017_3_, float d, String displayKey) {
 		super(buttonId, p_i45017_2_, p_i45017_3_, 150, 20, "");
-		this.sliderValue = normalizeValue(initialQuality);
-		this.displayString = displayKey+": "+translate(initialQuality);
+		this.sliderValue = normalizeValue(d);
+		this.displayString = displayKey+": "+translate(d);
 		this.displayKey = displayKey;
 	}
 	

@@ -7,8 +7,15 @@ import java.util.Map.Entry;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.item.EntityArmorStand;
+import net.minecraft.network.play.server.S0EPacketSpawnObject;
+import net.minecraft.network.play.server.S0FPacketSpawnMob;
+import net.minecraft.network.play.server.S14PacketEntity;
+import net.minecraft.network.play.server.S14PacketEntity.S15PacketEntityRelMove;
+import net.minecraft.network.play.server.S14PacketEntity.S16PacketEntityLook;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.settings.ReplaySettings.Option;
 
 public class GuiReplaySettings extends GuiScreen {
@@ -28,8 +35,7 @@ public class GuiReplaySettings extends GuiScreen {
 
 	private GuiButton recordServerButton, recordSPButton, sendChatButton, linearButton, lightingButton, resourcePackButton;
 
-	public GuiReplaySettings(GuiScreen parentGuiScreen)
-	{
+	public GuiReplaySettings(GuiScreen parentGuiScreen) {
 		this.parentGuiScreen = parentGuiScreen;
 	}
 
@@ -40,6 +46,8 @@ public class GuiReplaySettings extends GuiScreen {
 
 		Option[] aoptions = Option.values();
 
+		ReplaySettings settings = ReplayMod.replaySettings;
+		
 		int k = 0;
 		int i = 0;
 		for (Option o : aoptions) {
@@ -47,36 +55,37 @@ public class GuiReplaySettings extends GuiScreen {
 			switch(o) {
 			case lighting:
 				this.buttonList.add(lightingButton = new GuiButton(ENABLE_LIGHTING, this.width / 2 - 155 + i % 2 * 160, 
-						this.height / 6 + 24 * (i >> 1), 150, 20, "Enable Lighting: "+onOff((Boolean)o.getValue())));
+						this.height / 6 + 24 * (i >> 1), 150, 20, "Enable Lighting: "+onOff(settings.isLightingEnabled())));
 				break;
 			case linear:
 				this.buttonList.add(linearButton = new GuiButton(FORCE_LINEAR, this.width / 2 - 155 + i % 2 * 160, 
-						this.height / 6 + 24 * (i >> 1), 150, 20, "Camera Path: "+linearOnOff((Boolean)o.getValue())));
+						this.height / 6 + 24 * (i >> 1), 150, 20, "Camera Path: "+linearOnOff(settings.isLinearMovement())));
 				break;
 			case notifications:
 				this.buttonList.add(sendChatButton = new GuiButton(SEND_CHAT, 
 						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, 
-						"Enable Notifications: "+onOff((Boolean)o.getValue())));
+						"Enable Notifications: "+onOff(settings.isShowNotifications())));
 				break;
 			case recordServer:
 				this.buttonList.add(recordServerButton = new GuiButton(RECORDSERVER_ID, 
-						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Record Server: "+onOff((Boolean)o.getValue())));
+						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), 150, 20, "Record Server: "
+								+onOff(settings.isEnableRecordingServer())));
 				break;
 			case recordSingleplayer:
 				this.buttonList.add(recordSPButton = new GuiButton(RECORDSP_ID, this.width / 2 - 155 + i % 2 * 160, 
-						this.height / 6 + 24 * (i >> 1), 150, 20, "Record Singleplayer: "+onOff((Boolean)o.getValue())));
+						this.height / 6 + 24 * (i >> 1), 150, 20, "Record Singleplayer: "+onOff(settings.isEnableRecordingSingleplayer())));
 				break;
 			case useResources:
 				this.buttonList.add(resourcePackButton = new GuiButton(RESOURCEPACK_ID, this.width / 2 - 155 + i % 2 * 160, 
-						this.height / 6 + 24 * (i >> 1), 150, 20, "Server Resource Packs: "+onOff((Boolean)o.getValue())));
+						this.height / 6 + 24 * (i >> 1), 150, 20, "Server Resource Packs: "+onOff(settings.getUseResourcePacks())));
 				break;
 			case videoFramerate:
 				this.buttonList.add(new GuiVideoFramerateSlider(FRAMERATE_SLIDER_ID, 
-						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (Integer)o.getValue(), "Video Framerate"));
+						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), settings.getVideoFramerate(), "Video Framerate"));
 				break;
 			case videoQuality:
 				this.buttonList.add(new GuiVideoQualitySlider(QUALITY_SLIDER_ID, 
-						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (Float)o.getValue(), "Video Quality"));
+						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (float)settings.getVideoQuality(), "Video Quality"));
 				break;
 			default:
 				break;

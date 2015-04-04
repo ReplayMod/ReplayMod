@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings.Options;
 import net.minecraft.util.Timer;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -42,18 +43,18 @@ public class ReplaySettings {
 			e.printStackTrace();
 		}
 	}
-
-	public ReplaySettings(boolean enableRecordingServer,
-			boolean enableRecordingSingleplayer, boolean showNotifications, boolean forceLinearPath, boolean lightingEnabled, int framerate, float videoQuality) {
-		setEnableRecordingServer(enableRecordingServer);
-		setEnableRecordingSingleplayer(enableRecordingSingleplayer);
-		setLinearMovement(forceLinearPath);
-		setShowNotifications(showNotifications);
-		setLightingEnabled(lightingEnabled);
-		setVideoFramerate(Math.min(120, Math.max(10, framerate)));
-		setVideoQuality(Math.min(0.9f, Math.max(0.1f, videoQuality)));
+	
+	public void readValues() {
+		Configuration config = ReplayMod.config;
+		
+		for(Option o : Option.values()) {
+			Property p = getConfigSetting(config, o);
+			o.setValue(getValueObject(p));
+		}
+		
+		config.save();
 	}
-
+	
 	public int getVideoFramerate() {
 		return (Integer)Option.videoFramerate.getValue();
 	}
@@ -61,8 +62,8 @@ public class ReplaySettings {
 		Option.videoFramerate.setValue(Math.min(120, Math.max(10, framerate)));
 		rewriteSettings();
 	}
-	public float getVideoQuality() {
-		return (Float)Option.videoQuality.getValue();
+	public double getVideoQuality() {
+		return (Double)Option.videoQuality.getValue();
 	}
 	public void setVideoQuality(float videoQuality) {
 		Option.videoQuality.setValue(Math.min(0.9f, Math.max(0.1f, videoQuality)));
@@ -135,22 +136,36 @@ public class ReplaySettings {
 		ReplayMod.instance.config.removeCategory(ReplayMod.instance.config.getCategory("settings"));
 		
 		for(Option o : Option.values()) {
-			addConfigSetting(ReplayMod.instance.config, o);
+			getConfigSetting(ReplayMod.instance.config, o);
 		}
 		
 		ReplayMod.instance.config.save();
 	}
 	
-	private void addConfigSetting(Configuration config, Option o) {
+	private Property getConfigSetting(Configuration config, Option o) {
 		Object value = o.getValue();
 		if(value instanceof Integer) {
-			config.get("settings", o.name(), (Integer)o.getValue());
+			return config.get("settings", o.name(), (Integer)o.getValue());
 		} else if(value instanceof Boolean) {
-			config.get("settings", o.name(), (Boolean)o.getValue());
+			return config.get("settings", o.name(), (Boolean)o.getValue());
 		} else if(value instanceof Double) {
-			config.get("settings", o.name(), (Double)o.getValue());
+			return config.get("settings", o.name(), (Double)o.getValue());
+		} else if(value instanceof Float) {
+			return config.get("settings", o.name(), (double)(Float)o.getValue());
 		} else if(value instanceof String) {
-			config.get("settings", o.name(), (String)o.getValue());
+			return config.get("settings", o.name(), (String)o.getValue());
 		}
+		return null;
+	}
+	
+	private Object getValueObject(Property p) {
+		if(p.isIntValue()) {
+			return p.getInt();
+		} else if(p.isDoubleValue()) {
+			return p.getDouble();
+		} else if(p.isBooleanValue()) {
+			return p.getBoolean();
+		}
+		return null;
 	}
 }

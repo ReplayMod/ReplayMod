@@ -1,10 +1,9 @@
 package eu.crushedpixel.replaymod.replay;
 
-import java.io.File;
+import java.awt.image.BufferedImage;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.enchantment.Enchantment;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
@@ -87,33 +86,8 @@ public class ReplayProcess {
 		ChatMessageRequests.addChatMessage("Replay started!", ChatMessageType.INFORMATION);
 
 		if(isVideoRecording()) {
-			ticks = 0;
 			MCTimerHandler.setTimerSpeed(1);
 			MCTimerHandler.setPassiveTimer();
-			Thread t = new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					while(ReplayHandler.isInPath()) {
-						if(!blocked) {
-							mc.addScheduledTask(new Runnable() {
-								@Override
-								public void run() {
-									ReplayProcess.tickReplay();
-								}
-							});
-						} else {
-							try {
-								Thread.sleep(10);
-							} catch(Exception e) {
-								e.printStackTrace();
-							}
-						}
-					}
-				}
-			});
-
-			t.start();
 		}
 	}
 
@@ -130,12 +104,13 @@ public class ReplayProcess {
 	private static boolean blocked = false;
 	private static boolean deepBlock = false;
 
-	private static float ticks = 0;
-
 	private static boolean requestFinish = false;
 
-	public static void unblock() {
+	public static void unblockAndTick() {
 		if(!deepBlock) blocked = false;
+		if(!blocked || !isVideoRecording()) 
+			ReplayProcess.tickReplay();
+		else System.out.println("nope");
 	}
 
 	public static void tickReplay() {
@@ -144,8 +119,7 @@ public class ReplayProcess {
 
 	private static void pathTick(boolean recording) {
 		if(ReplayHandler.isHurrying()) {
-			if(!recording)
-				lastRealTime = System.currentTimeMillis();
+			lastRealTime = System.currentTimeMillis();
 			return;
 		}
 
@@ -193,7 +167,7 @@ public class ReplayProcess {
 
 		if(!calculated) {
 			calculated = true;
-			if(posCount > 1)
+			if(posCount > 1 && motionSpline != null)
 				motionSpline.calcSpline();
 		}
 
@@ -320,7 +294,8 @@ public class ReplayProcess {
 				if(!VideoWriter.isRecording() && ReplayHandler.isInPath()) {
 					VideoWriter.startRecording(mc.displayWidth, mc.displayHeight);
 				} else {
-					VideoWriter.writeImage(ScreenCapture.captureScreen());
+					final BufferedImage screen = ScreenCapture.captureScreen();
+					VideoWriter.writeImage(screen);
 				}
 			} catch(Exception e) {
 				e.printStackTrace();

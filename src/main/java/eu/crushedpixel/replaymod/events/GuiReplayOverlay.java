@@ -121,8 +121,7 @@ public class GuiReplayOverlay extends Gui {
 	@SubscribeEvent
 	public void tick(TickEvent event) {
 		if(!ReplayHandler.isInReplay()) return;
-		if(ReplayHandler.isInPath() && !ReplayProcess.isVideoRecording()) ReplayProcess.tickReplay();
-		ReplayProcess.unblock();
+		if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick();
 		if(ReplayHandler.getCameraEntity() != null)
 			ReplayHandler.getCameraEntity().updateMovement();
 		if(!ReplayHandler.isInPath()) onMouseMove(new MouseEvent());
