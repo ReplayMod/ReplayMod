@@ -62,7 +62,7 @@ public class VideoWriter {
 					VideoFormatKeys.WidthKey, width,
 					VideoFormatKeys.HeightKey, height,
 					VideoFormatKeys.DepthKey, 24,
-					VideoFormatKeys.QualityKey, ReplayMod.replaySettings.getVideoQuality());
+					VideoFormatKeys.QualityKey, (float)ReplayMod.replaySettings.getVideoQuality());
 
 
 			track = out.addTrack(format);

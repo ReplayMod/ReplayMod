@@ -121,7 +121,6 @@ public class GuiReplayOverlay extends Gui {
 	@SubscribeEvent
 	public void tick(TickEvent event) {
 		if(!ReplayHandler.isInReplay()) return;
-		if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick();
 		if(ReplayHandler.getCameraEntity() != null)
 			ReplayHandler.getCameraEntity().updateMovement();
 		if(!ReplayHandler.isInPath()) onMouseMove(new MouseEvent());
@@ -145,15 +144,15 @@ public class GuiReplayOverlay extends Gui {
 			throws IllegalAccessException, IllegalArgumentException, 
 			InvocationTargetException, IOException {
 		if(!ReplayHandler.isInReplay()) return;
+		if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick();
 		if(ReplayHandler.isCamera()) ReplayHandler.setCameraEntity(ReplayHandler.getCameraEntity());
 		if(ReplayHandler.isInReplay() && ReplayHandler.isPaused()) {
 			if(mc != null && mc.thePlayer != null)
 				MinecraftTicker.runMouseKeyboardTick(mc);
 		}
 		if((mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive())
-				&& ReplayHandler.getCameraEntity() != null) {
+				&& ReplayHandler.getCameraEntity() != null && !ReplayHandler.isInPath()) {
 			ReplayHandler.spectateCamera();
-			ReplayHandler.getCameraEntity().movePath(new Position(lastX, lastY, lastZ, lastPitch, lastYaw));
 		} else if(!ReplayHandler.isCamera()) {
 			lastX = mc.getRenderViewEntity().posX;
 			lastY = mc.getRenderViewEntity().posY;

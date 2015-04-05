@@ -615,11 +615,13 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 					CameraEntity cent = ReplayHandler.getCameraEntity();
 
-					if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > ReplayMod.TP_DISTANCE_LIMIT) || 
-							(Math.abs(cent.posZ - ppl.func_148933_e()) > ReplayMod.TP_DISTANCE_LIMIT))) {
-						return;
-					} else {
-						allowMovement = false;
+					if(cent != null) {
+						if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > ReplayMod.TP_DISTANCE_LIMIT) || 
+								(Math.abs(cent.posZ - ppl.func_148933_e()) > ReplayMod.TP_DISTANCE_LIMIT))) {
+							return;
+						} else {
+							allowMovement = false;
+						}
 					}
 
 					Thread t = new Thread(new Runnable() {

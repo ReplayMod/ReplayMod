@@ -30,5 +30,12 @@ public class SafeEntityRenderer extends EntityRenderer {
 		} catch(Exception e) {} //This is plain easier than doing proper error prevention.
 		//If Johni reads this, don't think I'm a bad programmer... Just a lazy one :P
 	}
+	
+	@Override
+	public void updateRenderer() {
+		try {
+			super.updateRenderer();
+		} catch(Exception e) {}
+	}
 
 }

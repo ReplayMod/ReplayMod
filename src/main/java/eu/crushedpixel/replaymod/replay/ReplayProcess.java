@@ -63,6 +63,8 @@ public class ReplayProcess {
 			return;
 		}
 
+		blocked = deepBlock = false;
+		
 		startRealTime = System.currentTimeMillis();
 		lastRealTime = startRealTime;
 		lastRealReplayTime = 0;
@@ -110,7 +112,6 @@ public class ReplayProcess {
 		if(!deepBlock) blocked = false;
 		if(!blocked || !isVideoRecording()) 
 			ReplayProcess.tickReplay();
-		else System.out.println("nope");
 	}
 
 	public static void tickReplay() {
@@ -272,7 +273,9 @@ public class ReplayProcess {
 			curPos = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
 		}
 
-		if(pos != null) ReplayHandler.getCameraEntity().movePath(pos);
+		if(pos != null) {
+			ReplayHandler.getCameraEntity().movePath(pos);
+		}
 
 		ReplayHandler.setSpeed(curSpeed);
 
@@ -288,7 +291,6 @@ public class ReplayProcess {
 		lastRealReplayTime = curRealReplayTime;
 		lastRealTime = curTime;
 
-		//Video capturing, for testing purposes
 		if(isVideoRecording()) {
 			try {
 				if(!VideoWriter.isRecording() && ReplayHandler.isInPath()) {
