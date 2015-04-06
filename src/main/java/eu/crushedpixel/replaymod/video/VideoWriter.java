@@ -27,8 +27,10 @@ public class VideoWriter {
 	private static final String VIDEO_EXTENSION = ".avi";
 
 	private static MovieWriter out;
+	private static File file;
 	private static boolean isRecording = false;
 	private static boolean requestFinish = false;
+	private static boolean abort = false;
 
 	private static Buffer buf;
 	private static int track;
@@ -52,7 +54,7 @@ public class VideoWriter {
 
 			String fileName = sdf.format(Calendar.getInstance().getTime());
 
-			File file = new File(folder, fileName+VIDEO_EXTENSION);
+			file = new File(folder, fileName+VIDEO_EXTENSION);
 			file.createNewFile();
 
 			out = Registry.getInstance().getWriter(file);
@@ -79,15 +81,20 @@ public class VideoWriter {
 			@Override
 			public void run() {
 				while(true) {
-					if(toWrite.isEmpty()) {
+					if(toWrite.isEmpty() || abort) {
 						if(requestFinish) {
 							requestFinish = false;
 							isRecording = false;
 							try {
 								out.close();
+								if(abort) {
+									file.delete();
+								}
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
+							abort = false;
+							toWrite = new LinkedBlockingQueue<BufferedImage>();
 							return;
 						}
 						try {
@@ -131,5 +138,10 @@ public class VideoWriter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void abortRecording() {
+		requestFinish = true;
+		abort = true;
 	}
 }

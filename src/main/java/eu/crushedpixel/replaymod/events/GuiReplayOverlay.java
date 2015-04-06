@@ -3,36 +3,26 @@ package eu.crushedpixel.replaymod.events;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.TimeUnit;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
-import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
+import eu.crushedpixel.replaymod.gui.GuiCancelRender;
 import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
 import eu.crushedpixel.replaymod.gui.GuiSpectateSelection;
 import eu.crushedpixel.replaymod.gui.elements.GuiMouseInput;
@@ -40,12 +30,10 @@ import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
-import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
-import eu.crushedpixel.replaymod.video.ReplayScreenshot;
 import eu.crushedpixel.replaymod.video.VideoWriter;
 
 public class GuiReplayOverlay extends Gui {
@@ -76,102 +64,17 @@ public class GuiReplayOverlay extends Gui {
 
 	private long lastSystemTime = System.currentTimeMillis();
 
-	private ResourceLocation guiLocation = new ResourceLocation("replaymod", "replay_gui.png");
-	private ResourceLocation keyframeLocation = new ResourceLocation("replaymod", "extended_gui.png");
-	private ResourceLocation timelineLocation = new ResourceLocation("replaymod", "timeline_icons.png");
+	private ResourceLocation replay_gui = new ResourceLocation("replaymod", "replay_gui.png");
+	private ResourceLocation extended_gui = new ResourceLocation("replaymod", "extended_gui.png");
+	private ResourceLocation timeline_icons = new ResourceLocation("replaymod", "timeline_icons.png");
 
 	private GuiReplaySpeedSlider speedSlider;
 
 	private boolean mouseDown = false;
 
-	private static boolean requestScreenshot = false;
-
-	private static Field isGamePaused;
-
-	static {
-		try {
-			isGamePaused = Minecraft.class.getDeclaredField(MCPNames.field("field_71445_n"));
-			isGamePaused.setAccessible(true);
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	//private Field drawBlockOutline;
-
-	public static void requestScreenshot() {
-		requestScreenshot = true;
-	}
-
-	public GuiReplayOverlay() {
-		try {
-			//			drawBlockOutline = EntityRenderer.class.getDeclaredField(MCPNames.field("field_175073_D"));
-			//		drawBlockOutline.setAccessible(true);
-			//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
-		} catch(Exception e) {}
-	}
-
-	//@SubscribeEvent TODO
-	public void renderHand(RenderHandEvent event) {
-		if(ReplayHandler.isInReplay()) {
-			event.setCanceled(true);
-		}
-	}
-
-	@SubscribeEvent
-	public void tick(TickEvent event) {
-		if(!ReplayHandler.isInReplay()) return;
-		if(ReplayHandler.getCameraEntity() != null)
-			ReplayHandler.getCameraEntity().updateMovement();
-		if(!ReplayHandler.isInPath()) onMouseMove(new MouseEvent());
-		FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
-
-	}
-
-	private double lastX, lastY, lastZ;
-	private float lastPitch, lastYaw;
-
-
-	@SubscribeEvent
-	public void onChangeView(MouseEvent event) {
-		if(ReplayHandler.isInPath()) {
-			event.setCanceled(true);
-		}
-	}
-
-	@SubscribeEvent
-	public void onRenderWorld(RenderWorldLastEvent event) 
-			throws IllegalAccessException, IllegalArgumentException, 
-			InvocationTargetException, IOException {
-		if(!ReplayHandler.isInReplay()) return;
-		if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick();
-		if(ReplayHandler.isCamera()) ReplayHandler.setCameraEntity(ReplayHandler.getCameraEntity());
-		if(ReplayHandler.isInReplay() && ReplayHandler.isPaused()) {
-			if(mc != null && mc.thePlayer != null)
-				MinecraftTicker.runMouseKeyboardTick(mc);
-		}
-		if((mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive())
-				&& ReplayHandler.getCameraEntity() != null && !ReplayHandler.isInPath()) {
-			ReplayHandler.spectateCamera();
-		} else if(!ReplayHandler.isCamera()) {
-			lastX = mc.getRenderViewEntity().posX;
-			lastY = mc.getRenderViewEntity().posY;
-			lastZ = mc.getRenderViewEntity().posZ;
-			lastPitch = mc.getRenderViewEntity().rotationPitch;
-			lastYaw = mc.getRenderViewEntity().rotationYaw;
-		}
-		if(requestScreenshot) {
-			requestScreenshot = false;
-			ReplayScreenshot.saveScreenshot(mc.getFramebuffer());
-		}
-		if(mc.isGamePaused() && ReplayHandler.isInPath()) {
-			isGamePaused.set(mc, false);
-		}
-	}
-
 	public void resetUI() throws Exception {
 		if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
-			mc.displayGuiScreen((GuiScreen)null);
+			mc.displayGuiScreen(null);
 		}
 		ReplayHandler.setRealTimelineCursor(0);
 		speedSlider = new GuiReplaySpeedSlider(1, sliderX, sliderY, "Speed");
@@ -179,12 +82,22 @@ public class GuiReplayOverlay extends Gui {
 
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent event) {
-		if(VideoWriter.isRecording()) {
+		if(VideoWriter.isRecording() && !(mc.currentScreen instanceof GuiCancelRender)) {
 			event.setCanceled(true);
 		}
 	}
-
-
+	
+	@SubscribeEvent
+	public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
+		if(!ReplayHandler.isInReplay() && ReplayMod.replaySettings.showRecordingIndicator() && ConnectionEventHandler.isRecording()) {
+			GlStateManager.resetColor();
+			GlStateManager.enableAlpha();
+			mc.renderEngine.bindTexture(replay_gui);
+			this.drawModalRectWithCustomSizedTexture(10, 10, 40, 21, 16, 16, 64, 64);
+			this.drawString(mc.fontRendererObj, "RECORDING", 30, 18-(mc.fontRendererObj.FONT_HEIGHT/2), Color.WHITE.getRGB());
+		}
+	}
+	
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
 
@@ -192,23 +105,13 @@ public class GuiReplayOverlay extends Gui {
 			return;
 		}
 
-		//System.out.println(System.currentTimeMillis()+" | "+MCTimerHandler.getTicks()+" | "+MCTimerHandler.getPartialTicks());
-
 		if(!ReplayGuiRegistry.hidden) ReplayGuiRegistry.hide();
 		
 		if(FMLClientHandler.instance().isGUIOpen(GuiChat.class) || FMLClientHandler.instance().isGUIOpen(GuiInventory.class)) {
 			mc.displayGuiScreen(new GuiMouseInput());
 		}
-		
-		if(event.type == ElementType.PLAYER_LIST) {
-			if(event.isCancelable()) {
-				event.setCanceled(true);
-			}
-			return;
-		}
 
 		GL11.glEnable(GL11.GL_BLEND);
-		//	drawBlockOutline.set(Minecraft.getMinecraft().entityRenderer, false);
 
 		if(!ReplayHandler.isInReplay()) {
 			return;
@@ -247,7 +150,7 @@ public class GuiReplayOverlay extends Gui {
 			x = 20;
 		}
 
-		mc.renderEngine.bindTexture(guiLocation);
+		mc.renderEngine.bindTexture(replay_gui);
 
 		GlStateManager.resetColor();
 		this.drawModalRectWithCustomSizedTexture(ppButtonX, ppButtonY, x, y, 20, 20, 64, 64);
@@ -277,7 +180,7 @@ public class GuiReplayOverlay extends Gui {
 					double time = perc*(double)ReplayHandler.getReplayLength();
 
 					if(time < ReplayHandler.getReplayTime()) {
-						mc.displayGuiScreen((GuiScreen)null);
+						mc.displayGuiScreen(null);
 					}
 
 					CameraEntity cam = ReplayHandler.getCameraEntity();
@@ -315,7 +218,7 @@ public class GuiReplayOverlay extends Gui {
 			x = 20;
 		}
 
-		mc.renderEngine.bindTexture(timelineLocation);
+		mc.renderEngine.bindTexture(timeline_icons);
 
 		GlStateManager.resetColor();
 		this.drawModalRectWithCustomSizedTexture(exportButtonX, exportButtonY, x, y, 20, 20, 64, 64);
@@ -342,7 +245,7 @@ public class GuiReplayOverlay extends Gui {
 			y += 20;
 		}
 
-		mc.renderEngine.bindTexture(keyframeLocation);
+		mc.renderEngine.bindTexture(extended_gui);
 
 		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof PositionKeyframe)) {
@@ -383,7 +286,7 @@ public class GuiReplayOverlay extends Gui {
 			}
 		}
 
-		mc.renderEngine.bindTexture(keyframeLocation);
+		mc.renderEngine.bindTexture(extended_gui);
 
 		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
 			if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof TimeKeyframe)) {
@@ -443,7 +346,7 @@ public class GuiReplayOverlay extends Gui {
 		int full = maxX-tl_end_width;
 
 		GlStateManager.resetColor();
-		mc.renderEngine.bindTexture(guiLocation);
+		mc.renderEngine.bindTexture(replay_gui);
 		this.drawModalRectWithCustomSizedTexture(minX, y, tl_begin_x, tl_y, tl_begin_width, 22, 64, 64);
 
 		for(int i=minX+tl_begin_width; i<maxX-tl_end_width; i += tl_end_x-tl_begin_width) {
@@ -494,7 +397,7 @@ public class GuiReplayOverlay extends Gui {
 
 		//the real timeline
 		GlStateManager.resetColor();
-		mc.renderEngine.bindTexture(guiLocation);
+		mc.renderEngine.bindTexture(replay_gui);
 		this.drawModalRectWithCustomSizedTexture(minX, y, tl_begin_x, tl_y, tl_begin_width, 22, 64, 64);
 
 		for(int i=minX+tl_begin_width; i<maxX-tl_end_width; i += tl_end_x-tl_begin_width) {
@@ -508,7 +411,7 @@ public class GuiReplayOverlay extends Gui {
 		//Time Slider
 		int yo = y+22+1;
 		GlStateManager.resetColor();
-		mc.renderEngine.bindTexture(timelineLocation);
+		mc.renderEngine.bindTexture(timeline_icons);
 		this.drawModalRectWithCustomSizedTexture(minX, yo, sl_begin_x, sl_y, 2, 9, 64, 64);
 
 		for(int i=minX+2; i<maxX-1; i+= sl_end_x-2) {
@@ -697,7 +600,7 @@ public class GuiReplayOverlay extends Gui {
 			double rel_x = (float)real_width*perc;
 
 			int real_x = (int)Math.round((minX+tl_begin_width)+rel_x);
-			mc.renderEngine.bindTexture(this.guiLocation);
+			mc.renderEngine.bindTexture(this.replay_gui);
 
 			GL11.glEnable(GL11.GL_BLEND);
 			this.drawModalRectWithCustomSizedTexture(real_x-3, y+3, 44, 0, 8, 16, 64, 64);
@@ -706,7 +609,7 @@ public class GuiReplayOverlay extends Gui {
 
 
 		//Draw Keyframe logos
-		mc.renderEngine.bindTexture(timelineLocation);
+		mc.renderEngine.bindTexture(timeline_icons);
 		for(Keyframe kf : ReplayHandler.getKeyframes()) {
 			if(kf.getRealTimestamp() > right_real) break;
 			if(kf.getRealTimestamp() >= left_real) {
@@ -758,7 +661,7 @@ public class GuiReplayOverlay extends Gui {
 			dx = 20;
 		}
 
-		mc.renderEngine.bindTexture(guiLocation);
+		mc.renderEngine.bindTexture(replay_gui);
 
 		GlStateManager.resetColor();
 		this.drawModalRectWithCustomSizedTexture(r_ppButtonX, r_ppButtonY, dx, dy, 20, 20, 64, 64);
@@ -845,41 +748,6 @@ public class GuiReplayOverlay extends Gui {
 		} else {
 			mouseDwn = false;
 			return false;
-		}
-	}
-
-	@SubscribeEvent
-	public void onMouseMove(MouseEvent event) {
-		if(!ReplayHandler.isInReplay()) return;
-		boolean flag = Display.isActive();
-		flag = true;
-
-		mc.mcProfiler.startSection("mouse");
-
-		if (flag && Minecraft.isRunningOnMac && mc.inGameHasFocus && !Mouse.isInsideWindow())
-		{
-			Mouse.setGrabbed(false);
-			Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
-			Mouse.setGrabbed(true);
-		}
-
-		if (mc.inGameHasFocus && flag)
-		{
-			mc.mouseHelper.mouseXYChange();
-			float f1 = mc.gameSettings.mouseSensitivity * 0.6F + 0.2F;
-			float f2 = f1 * f1 * f1 * 8.0F;
-			float f3 = (float)mc.mouseHelper.deltaX * f2;
-			float f4 = (float)mc.mouseHelper.deltaY * f2;
-			byte b0 = 1;
-
-			if (mc.gameSettings.invertMouse)
-			{
-				b0 = -1;
-			}
-
-			if(ReplayHandler.getCameraEntity() != null) {
-				ReplayHandler.getCameraEntity().setAngles(f3, f4 * (float)b0);
-			}
 		}
 	}
 }

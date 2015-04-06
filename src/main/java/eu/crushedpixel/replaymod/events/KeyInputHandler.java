@@ -1,16 +1,22 @@
 package eu.crushedpixel.replaymod.events;
 
+import org.lwjgl.input.Keyboard;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
+import eu.crushedpixel.replaymod.gui.GuiCancelRender;
 import eu.crushedpixel.replaymod.gui.elements.GuiMouseInput;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.replay.spectate.SpectateHandler;
 import eu.crushedpixel.replaymod.video.ReplayScreenshot;
 
@@ -24,6 +30,12 @@ public class KeyInputHandler {
 		if(!ReplayHandler.isInReplay()) return;
 		if(mc.currentScreen != null) {
 			return;
+		}
+		
+		if(Keyboard.getEventKeyState() && !Keyboard.isRepeatEvent() && Keyboard.isKeyDown(Keyboard.KEY_ESCAPE) 
+				&& ReplayHandler.isInPath() && ReplayProcess.isVideoRecording() 
+				&& mc.currentScreen == null) {
+			mc.displayGuiScreen(new GuiCancelRender());
 		}
 		
 		boolean found = false;
@@ -83,7 +95,8 @@ public class KeyInputHandler {
 				//Custom registered handlers
 				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && kb.isPressed() && !found) {
 					ReplayScreenshot.prepareScreenshot();
-					GuiReplayOverlay.requestScreenshot();
+					//GuiReplayOverlay.requestScreenshot();
+					//TODO: Make this properly work
 				}
 
 				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SPECTATE) && kb.isPressed() && !found) {

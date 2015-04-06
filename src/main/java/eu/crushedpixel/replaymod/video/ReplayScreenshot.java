@@ -43,7 +43,6 @@ public class ReplayScreenshot {
 	private static GuiScreen beforeScreen;
 
 	public static void prepareScreenshot() {
-		System.out.println("thumbnail preparing");
 		before = mc.gameSettings.hideGUI;
 		beforeSpeed = ReplayHandler.getSpeed();
 		beforeScreen = mc.currentScreen;
@@ -56,7 +55,6 @@ public class ReplayScreenshot {
 		if(locked) return;
 		locked = true;
 		
-		System.out.println("thumbnail started");
 		try {
 			GuiReplaySaving.replaySaving = true;
 
@@ -78,7 +76,6 @@ public class ReplayScreenshot {
 				@Override
 				public void run() {
 					try {
-						System.out.println("thumbnail saving started");
 						float aspect = 1280f/720f;
 
 						Rectangle rect;

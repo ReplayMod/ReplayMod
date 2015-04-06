@@ -21,6 +21,7 @@ import eu.crushedpixel.replaymod.events.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.events.KeyInputHandler;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
+import eu.crushedpixel.replaymod.events.TickAndRenderListener;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
@@ -96,6 +97,10 @@ public class ReplayMod
 		overlay = new GuiReplayOverlay();
 		FMLCommonHandler.instance().bus().register(overlay);
 		MinecraftForge.EVENT_BUS.register(overlay);
+		
+		TickAndRenderListener tarl = new TickAndRenderListener();
+		FMLCommonHandler.instance().bus().register(tarl);
+		MinecraftForge.EVENT_BUS.register(tarl);
 		
 		KeybindRegistry.initialize();
 		

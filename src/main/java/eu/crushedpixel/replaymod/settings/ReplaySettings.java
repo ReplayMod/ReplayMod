@@ -1,6 +1,9 @@
 package eu.crushedpixel.replaymod.settings;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings.Options;
@@ -13,21 +16,61 @@ import eu.crushedpixel.replaymod.replay.ReplayHandler;
 
 public class ReplaySettings {
 
-	public enum Option {
-		recordServer(true), recordSingleplayer(true), notifications(true), linear(false), 
-		lighting(false), useResources(true), videoQuality(0.5f), videoFramerate(30);
-		
+	public static interface ValueEnum {
+		public Object getValue();
+		public void setValue(Object value);
+	}
+
+	public enum RecordingOptions implements ValueEnum {
+		recordServer(true), recordSingleplayer(true), notifications(true), indicator(true);
+
 		private Object value;
-		
+
 		public Object getValue() {
 			return value;
 		}
-		
+
 		public void setValue(Object value) {
 			this.value = value;
 		}
-		
-		Option(Object value) {
+
+		RecordingOptions(Object value) {
+			this.value = value;
+		}
+	}
+
+	public enum ReplayOptions implements ValueEnum {
+		linear(false), lighting(false), useResources(true);
+
+		private Object value;
+
+		public Object getValue() {
+			return value;
+		}
+
+		public void setValue(Object value) {
+			this.value = value;
+		}
+
+		ReplayOptions(Object value) {
+			this.value = value;
+		}
+	}
+
+	public enum RenderOptions implements ValueEnum {
+		videoQuality(0.5f), videoFramerate(30), waitForChunks(true);
+
+		private Object value;
+
+		public Object getValue() {
+			return value;
+		}
+
+		public void setValue(Object value) {
+			this.value = value;
+		}
+
+		RenderOptions(Object value) {
 			this.value = value;
 		}
 	}
@@ -43,74 +86,105 @@ public class ReplaySettings {
 			e.printStackTrace();
 		}
 	}
-	
+
+	public List<ValueEnum> getValueEnums() {
+		List<ValueEnum> enums = new ArrayList<ReplaySettings.ValueEnum>();
+		enums.addAll(Arrays.asList(ReplayOptions.values()));
+		enums.addAll(Arrays.asList(RenderOptions.values()));
+		return enums;
+	}
+
 	public void readValues() {
 		Configuration config = ReplayMod.config;
-		
-		for(Option o : Option.values()) {
-			Property p = getConfigSetting(config, o);
+
+		for(RecordingOptions o : RecordingOptions.values()) {
+			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "recording");
 			o.setValue(getValueObject(p));
 		}
 		
+		for(ReplayOptions o : ReplayOptions.values()) {
+			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "replay");
+			o.setValue(getValueObject(p));
+		}
+
+		for(RenderOptions o : RenderOptions.values()) {
+			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "render");
+			o.setValue(getValueObject(p));
+		}
+
 		config.save();
 	}
-	
+
 	public int getVideoFramerate() {
-		return (Integer)Option.videoFramerate.getValue();
+		return (Integer)RenderOptions.videoFramerate.getValue();
 	}
 	public void setVideoFramerate(int framerate) {
-		Option.videoFramerate.setValue(Math.min(120, Math.max(10, framerate)));
+		RenderOptions.videoFramerate.setValue(Math.min(120, Math.max(10, framerate)));
 		rewriteSettings();
 	}
 	public double getVideoQuality() {
-		return (Double)Option.videoQuality.getValue();
+		return (Double)RenderOptions.videoQuality.getValue();
+	}
+	public void setEnableIndicator(boolean enable) {
+		RecordingOptions.indicator.setValue(enable);
+		rewriteSettings();
+	}
+	public boolean showRecordingIndicator() {
+		return (Boolean)RecordingOptions.indicator.getValue();
 	}
 	public void setVideoQuality(double videoQuality) {
-		Option.videoQuality.setValue(Math.min(0.9f, Math.max(0.1f, videoQuality)));
+		RenderOptions.videoQuality.setValue(Math.min(0.9f, Math.max(0.1f, videoQuality)));
 		rewriteSettings();
 	}
 	public boolean isEnableRecordingServer() {
-		return (Boolean)Option.recordServer.getValue();
+		return (Boolean)RecordingOptions.recordServer.getValue();
 	}
 	public void setEnableRecordingServer(boolean enableRecordingServer) {
-		Option.recordServer.setValue(enableRecordingServer);
+		RecordingOptions.recordServer.setValue(enableRecordingServer);
 		rewriteSettings();
 	}
 	public boolean isEnableRecordingSingleplayer() {
-		return (Boolean)Option.recordSingleplayer.getValue();
+		return (Boolean)RecordingOptions.recordSingleplayer.getValue();
 	}
 	public void setEnableRecordingSingleplayer(boolean enableRecordingSingleplayer) {
-		Option.recordSingleplayer.setValue(enableRecordingSingleplayer);
+		RecordingOptions.recordSingleplayer.setValue(enableRecordingSingleplayer);
 		rewriteSettings();
 	}
 	public boolean isShowNotifications() {
-		return (Boolean)Option.notifications.getValue();
+		return (Boolean)RecordingOptions.notifications.getValue();
 	}
 	public void setShowNotifications(boolean showNotifications) {
-		Option.notifications.setValue(showNotifications);
+		RecordingOptions.notifications.setValue(showNotifications);
 		rewriteSettings();
 	}
 	public boolean isLinearMovement() {
-		return (Boolean)Option.linear.getValue();
+		return (Boolean)ReplayOptions.linear.getValue();
 	}
 	public void setLinearMovement(boolean linear) {
-		Option.linear.setValue(linear);
+		ReplayOptions.linear.setValue(linear);
 		rewriteSettings();
 	}
 	public boolean isLightingEnabled() {
-		return (Boolean)Option.lighting.getValue();
+		return (Boolean)ReplayOptions.lighting.getValue();
 	}
 	public void setUseResourcePacks(boolean use) {
-		Option.useResources.setValue(use);
+		ReplayOptions.useResources.setValue(use);
 		rewriteSettings();
 	}
 	public boolean getUseResourcePacks() {
-		return (Boolean)Option.useResources.getValue();
+		return (Boolean)ReplayOptions.useResources.getValue();
 	}
-	
+	public void setWaitForChunks(boolean wait) {
+		RenderOptions.waitForChunks.setValue(wait);
+		rewriteSettings();
+	}
+	public boolean getWaitForChunks() {
+		return (Boolean)RenderOptions.waitForChunks.getValue();
+	}
+
 	//TODO: FIX
 	public void setLightingEnabled(boolean enabled) {
-		Option.lighting.setValue(enabled);
+		ReplayOptions.lighting.setValue(enabled);
 		if(enabled) {
 			Minecraft.getMinecraft().gameSettings.setOptionFloatValue(Options.GAMMA, 1000);
 		} else {
@@ -130,34 +204,39 @@ public class ReplaySettings {
 
 		rewriteSettings();
 	}
-	
+
 	public void rewriteSettings() {
 		ReplayMod.instance.config.load();
-		ReplayMod.instance.config.removeCategory(ReplayMod.instance.config.getCategory("settings"));
-		
-		for(Option o : Option.values()) {
-			getConfigSetting(ReplayMod.instance.config, o);
+
+		for(String cat : ReplayMod.instance.config.getCategoryNames()) {
+			ReplayMod.instance.config.removeCategory(ReplayMod.instance.config.getCategory(cat));
 		}
-		
+
+		for(ReplayOptions o : ReplayOptions.values()) {
+			getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "replay");
+		}
+
+		for(RenderOptions o : RenderOptions.values()) {
+			getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "render");
+		}
+
 		ReplayMod.instance.config.save();
 	}
-	
-	private Property getConfigSetting(Configuration config, Option o) {
-		Object value = o.getValue();
+
+	private Property getConfigSetting(Configuration config, String name, Object value, String category) {
 		if(value instanceof Integer) {
-			return config.get("settings", o.name(), (Integer)o.getValue());
+			return config.get(category, name, (Integer)value);
 		} else if(value instanceof Boolean) {
-			return config.get("settings", o.name(), (Boolean)o.getValue());
+			return config.get(category, name, (Boolean)value);
 		} else if(value instanceof Double) {
-			return config.get("settings", o.name(), (Double)o.getValue());
+			return config.get(category, name, (Double)value);
 		} else if(value instanceof Float) {
-			return config.get("settings", o.name(), (double)(Float)o.getValue());
+			return config.get(category, name, (double)(Float)value);
 		} else if(value instanceof String) {
-			return config.get("settings", o.name(), (String)o.getValue());
+			return config.get(category, name, (String)value);
 		}
 		return null;
 	}
-	
 	private Object getValueObject(Property p) {
 		if(p.isIntValue()) {
 			return p.getInt();

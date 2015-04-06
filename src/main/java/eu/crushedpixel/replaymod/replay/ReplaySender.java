@@ -147,7 +147,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	}
 
 	public void jumpToTime(int millis) {
-		setReplaySpeed(replaySpeed);
+		if(!(ReplayHandler.isInPath() && ReplayProcess.isVideoRecording())) setReplaySpeed(replaySpeed);
 
 		if((millis < currentTimeStamp && !isHurrying())) {
 			if(ReplayHandler.isInPath()) {
@@ -494,7 +494,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 			if(p == null) return;
 
 			//If hurrying, ignore some packets, unless during Replay Path and *not* in initial hurry
-			if(hurryToTimestamp && (!ReplayHandler.isInPath() || (desiredTimeStamp-currentTimeStamp > 1000))) { 
+			if(hurryToTimestamp && (!ReplayHandler.isInPath() || (desiredTimeStamp-currentTimeStamp > 1000))) {
 				if(p instanceof S45PacketTitle ||
 						p instanceof S2APacketParticles) return;
 			}

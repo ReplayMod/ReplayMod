@@ -22,6 +22,7 @@ import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.gui.GuiCancelRender;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
@@ -59,7 +60,7 @@ public class GuiEventHandler {
 
 	@SubscribeEvent
 	public void onGui(GuiOpenEvent event) {
-		if(VideoWriter.isRecording()) {
+		if(VideoWriter.isRecording() && !(event.gui instanceof GuiCancelRender)) {
 			event.gui = null;
 			return;
 		}
