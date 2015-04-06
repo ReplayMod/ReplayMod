@@ -69,6 +69,7 @@ import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.registry.LightingHandler;
 import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
@@ -81,9 +82,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private long lastTimeStamp, lastPacketSent;
 
 	private boolean hasRestarted = false;
-
-	private long toleratedTimeStamp = Long.MAX_VALUE;
-
+	
 	private File replayFile;
 	private boolean active = true;
 	private ZipFile archive;
@@ -131,6 +130,10 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	public int replayLength() {
 		return replayLength;
 	}
+	
+	public void stopHurrying() {
+		hurryToTimestamp = false;
+	}
 
 	public void terminateReplay() {
 		terminate = true;
@@ -150,11 +153,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		if(!(ReplayHandler.isInPath() && ReplayProcess.isVideoRecording())) setReplaySpeed(replaySpeed);
 
 		if((millis < currentTimeStamp && !isHurrying())) {
-			if(ReplayHandler.isInPath()) {
-				if(millis < toleratedTimeStamp) {
-					return;
-				}
-			}
 			startFromBeginning = true;
 		}
 
@@ -206,8 +204,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		ReplayHandler.setInitialGamma(mc.gameSettings.gammaSetting);
 
 		this.replayFile = replayFile;
 		this.networkManager = nm;
@@ -293,12 +289,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							ReplaySender.this.channelRead(ctx, pd.getByteArray());
 
 							lastTimeStamp = currentTimeStamp;
-
-							if(ReplayHandler.isInPath()) {
-								toleratedTimeStamp = lastTimeStamp;
-							} else {
-								toleratedTimeStamp = -1;
-							}
 
 							if(hurryToTimestamp && currentTimeStamp >= desiredTimeStamp && !startFromBeginning) {
 								hurryToTimestamp = false;

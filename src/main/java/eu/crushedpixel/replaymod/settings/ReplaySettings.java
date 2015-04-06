@@ -12,6 +12,7 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.registry.LightingHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 
 public class ReplaySettings {
@@ -74,19 +75,7 @@ public class ReplaySettings {
 			this.value = value;
 		}
 	}
-
-	private static Field mcTimer;
-
-	static {
-		try {
-			mcTimer = Minecraft.class.getDeclaredField(MCPNames.field("field_71428_T"));
-			mcTimer.setAccessible(true);
-		} catch(Exception e) {
-			mcTimer = null;
-			e.printStackTrace();
-		}
-	}
-
+	
 	public List<ValueEnum> getValueEnums() {
 		List<ValueEnum> enums = new ArrayList<ReplaySettings.ValueEnum>();
 		enums.addAll(Arrays.asList(ReplayOptions.values()));
@@ -181,27 +170,10 @@ public class ReplaySettings {
 	public boolean getWaitForChunks() {
 		return (Boolean)RenderOptions.waitForChunks.getValue();
 	}
-
-	//TODO: FIX
+	
 	public void setLightingEnabled(boolean enabled) {
 		ReplayOptions.lighting.setValue(enabled);
-		if(enabled) {
-			Minecraft.getMinecraft().gameSettings.setOptionFloatValue(Options.GAMMA, 1000);
-		} else {
-			Minecraft.getMinecraft().gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
-		}
-		try {
-			if(ReplayHandler.isPaused()) {
-				Timer timer = (Timer)mcTimer.get(Minecraft.getMinecraft());
-				timer.elapsedPartialTicks++;
-				timer.renderPartialTicks++;
-			} else {
-				Minecraft.getMinecraft().entityRenderer.updateCameraAndRender(0);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+		LightingHandler.setLighting(enabled);
 		rewriteSettings();
 	}
 

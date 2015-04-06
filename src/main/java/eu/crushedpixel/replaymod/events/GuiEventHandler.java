@@ -32,6 +32,7 @@ import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import eu.crushedpixel.replaymod.gui.replaystudio.GuiReplayStudio;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
+import eu.crushedpixel.replaymod.registry.LightingHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
@@ -200,7 +201,7 @@ public class GuiEventHandler {
 			
 			event.button.enabled = false;
 			
-			mc.gameSettings.setOptionFloatValue(Options.GAMMA, ReplayHandler.getInitialGamma());
+			LightingHandler.setLighting(false);
 
 			ReplayHandler.lastExit = System.currentTimeMillis();
 

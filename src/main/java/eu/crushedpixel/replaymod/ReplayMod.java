@@ -1,8 +1,11 @@
 package eu.crushedpixel.replaymod;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
+
+import org.apache.commons.io.FilenameUtils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
@@ -25,6 +28,7 @@ import eu.crushedpixel.replaymod.events.TickAndRenderListener;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
+import eu.crushedpixel.replaymod.registry.LightingHandler;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 
@@ -110,6 +114,9 @@ public class ReplayMod
 			e.printStackTrace();
 		}	
 		
+		//clean up replay_recordings folder
+		removeTmcprFiles();
+		
 		/*
 		boolean auth = false;
 		try {
@@ -124,5 +131,24 @@ public class ReplayMod
 			FMLCommonHandler.instance().exitJava(0, false);
 		}
 		*/
+		
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				LightingHandler.setLighting(false);
+			}
+		}));
+	}
+	
+	private void removeTmcprFiles() {
+		File folder = new File("./replay_recordings/");
+		folder.mkdirs();
+		
+		for(File f : folder.listFiles()) {
+			if("."+FilenameUtils.getExtension(f.getAbsolutePath()) == ConnectionEventHandler.TEMP_FILE_EXTENSION) {
+				f.delete();
+			}
+		}
 	}
 }

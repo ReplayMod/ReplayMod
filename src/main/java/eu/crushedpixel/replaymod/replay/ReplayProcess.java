@@ -114,9 +114,10 @@ public class ReplayProcess {
 			}
 		}
 		ReplayHandler.setInPath(false);
+		ReplayHandler.stopHurrying();
 		MCTimerHandler.setActiveTimer();
 		ReplayHandler.setSpeed(previousReplaySpeed);
-		//ReplayHandler.setSpeed(0);
+		ReplayHandler.setSpeed(0);
 	}
 
 	private static boolean blocked = false;
@@ -297,9 +298,9 @@ public class ReplayProcess {
 			}
 		}
 
-		Integer curPos = null;
+		Integer curTimestamp = null;
 		if(timeLinear != null && timeCount > 1) {
-			curPos = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
+			curTimestamp = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
 		}
 
 		if(pos != null) {
@@ -316,7 +317,7 @@ public class ReplayProcess {
 			EnchantmentTimer.increaseRecordingTime((1000/ReplayMod.replaySettings.getVideoFramerate()));
 		}
 
-		if(curPos != null && curPos != ReplayHandler.getDesiredTimestamp()) ReplayHandler.setReplayTime(curPos);
+		if(curTimestamp != null && curTimestamp != ReplayHandler.getDesiredTimestamp()) ReplayHandler.setReplayTime(curTimestamp);
 
 		//splinePos = (index of last entry + add) / total entries
 

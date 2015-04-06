@@ -23,7 +23,9 @@ import eu.crushedpixel.replaymod.video.ReplayScreenshot;
 public class KeyInputHandler {
 
 	private Minecraft mc = Minecraft.getMinecraft();
-
+	
+	private boolean escDown = false;
+	
 	@SubscribeEvent
 	public void onKeyInput(KeyInputEvent event) {
 
@@ -34,9 +36,11 @@ public class KeyInputHandler {
 		
 		if(Keyboard.getEventKeyState() && !Keyboard.isRepeatEvent() && Keyboard.isKeyDown(Keyboard.KEY_ESCAPE) 
 				&& ReplayHandler.isInPath() && ReplayProcess.isVideoRecording() 
-				&& mc.currentScreen == null) {
+				&& mc.currentScreen == null && !escDown) {
 			mc.displayGuiScreen(new GuiCancelRender());
 		}
+		
+		escDown = Keyboard.isKeyDown(Keyboard.KEY_ESCAPE) && Keyboard.getEventKeyState();
 		
 		boolean found = false;
 		
@@ -103,7 +107,7 @@ public class KeyInputHandler {
 					SpectateHandler.openSpectateSelection();
 				}
 
-				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && kb.isPressed() && !found) {
+				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && kb.isPressed()) {
 					ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());			
 				}
 

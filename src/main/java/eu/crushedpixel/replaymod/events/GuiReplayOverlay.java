@@ -155,8 +155,6 @@ public class GuiReplayOverlay extends Gui {
 		GlStateManager.resetColor();
 		this.drawModalRectWithCustomSizedTexture(ppButtonX, ppButtonY, x, y, 20, 20, 64, 64);
 
-		//GlStateManager.resetColor();
-
 		//When hurrying, no Timeline jumping etc. is possible
 		if(Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class) && !ReplayHandler.isHurrying()) { //clicking the Button
 			speedSlider.mousePressed(mc, mouseX, mouseY);
@@ -196,6 +194,11 @@ public class GuiReplayOverlay extends Gui {
 			}
 
 		} else {
+			/*
+			if(Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class) && ReplayHandler.isHurrying()) {
+				System.out.println("HURRYIN'");
+			}
+			*/
 			try {
 				speedSlider.mouseReleased(mouseX, mouseY);
 				mouseDown = false;

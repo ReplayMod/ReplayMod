@@ -50,8 +50,6 @@ public class ReplayHandler {
 
 	public static long lastExit = 0;
 
-	private static float gamma = 0f;
-
 	private static Entity currentEntity = null;
 
 	public static void insertPacketInstantly(Packet p) {
@@ -85,16 +83,12 @@ public class ReplayHandler {
 		return currentEntity == cameraEntity;
 	}
 
-	public static void setInitialGamma(float initial) {
-		gamma = initial;
-	}
-
-	public static float getInitialGamma() {
-		return gamma;
-	}
-
 	public static void setInPath(boolean replaying) {
 		inPath = replaying;
+	}
+	
+	public static void stopHurrying() {
+		if(replaySender != null) replaySender.stopHurrying();
 	}
 
 	public static void startPath(boolean save) {
