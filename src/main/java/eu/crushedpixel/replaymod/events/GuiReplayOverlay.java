@@ -33,6 +33,7 @@ import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.video.VideoWriter;
 
@@ -82,7 +83,7 @@ public class GuiReplayOverlay extends Gui {
 
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent event) {
-		if(VideoWriter.isRecording() && !(mc.currentScreen instanceof GuiCancelRender)) {
+		if(ReplayProcess.isVideoRecording() && ReplayHandler.isInPath() && !(mc.currentScreen instanceof GuiCancelRender)) {
 			event.setCanceled(true);
 		}
 	}
@@ -112,10 +113,6 @@ public class GuiReplayOverlay extends Gui {
 		}
 
 		GL11.glEnable(GL11.GL_BLEND);
-
-		if(!ReplayHandler.isInReplay()) {
-			return;
-		}
 
 		Point mousePoint = MouseUtils.getMousePos();
 		final int mouseX = (int) mousePoint.getX();
@@ -250,7 +247,8 @@ public class GuiReplayOverlay extends Gui {
 
 		mc.renderEngine.bindTexture(extended_gui);
 
-		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
+		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class) 
+				&& !ReplayHandler.isInPath()) {
 			if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof PositionKeyframe)) {
 				addPlaceKeyframe();
 			} else {
@@ -292,7 +290,7 @@ public class GuiReplayOverlay extends Gui {
 		mc.renderEngine.bindTexture(extended_gui);
 
 		if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
-			if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof TimeKeyframe)) {
+			if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof TimeKeyframe) && !ReplayHandler.isInPath()) {
 				addTimeKeyframe();
 			} else {
 				ReplayHandler.removeKeyframe(ReplayHandler.getSelected());

@@ -217,8 +217,8 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 				this.mc.displayGuiScreen(new GuiUploadFile(file, this));
 			}
 			else if(button.id == FOLDER_BUTTON_ID) {
-				File file1 = new File("./replay_recordings/");
-				file1.mkdirs();
+				File file1 = ReplayFileIO.getReplayFolder();
+				
 				String s = file1.getAbsolutePath();
 
 				if(Util.getOSType() == Util.EnumOS.OSX) {

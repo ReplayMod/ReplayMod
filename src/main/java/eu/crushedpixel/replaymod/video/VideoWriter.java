@@ -18,6 +18,7 @@ import org.monte.media.VideoFormatKeys;
 import org.monte.media.math.Rational;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class VideoWriter {
 
@@ -49,8 +50,7 @@ public class VideoWriter {
 		toWrite = new LinkedBlockingQueue<BufferedImage>();
 
 		try {
-			File folder = new File("./replay_videos/");
-			folder.mkdirs();
+			File folder = ReplayFileIO.getRenderFolder();
 
 			String fileName = sdf.format(Calendar.getInstance().getTime());
 

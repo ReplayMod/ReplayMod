@@ -75,7 +75,25 @@ public class ReplaySettings {
 			this.value = value;
 		}
 	}
-	
+
+	public enum AdvancedOptions implements ValueEnum {
+		recordingPath("./replay_recordings/"), renderPath("./replay_videos/");
+
+		private Object value;
+
+		public Object getValue() {
+			return value;
+		}
+
+		public void setValue(Object value) {
+			this.value = value;
+		}
+
+		AdvancedOptions(Object value) {
+			this.value = value;
+		}
+	}
+
 	public List<ValueEnum> getValueEnums() {
 		List<ValueEnum> enums = new ArrayList<ReplaySettings.ValueEnum>();
 		enums.addAll(Arrays.asList(ReplayOptions.values()));
@@ -87,21 +105,33 @@ public class ReplaySettings {
 		Configuration config = ReplayMod.config;
 
 		for(RecordingOptions o : RecordingOptions.values()) {
-			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "recording");
+			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "recording", false);
 			o.setValue(getValueObject(p));
 		}
-		
+
 		for(ReplayOptions o : ReplayOptions.values()) {
-			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "replay");
+			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "replay", false);
 			o.setValue(getValueObject(p));
 		}
 
 		for(RenderOptions o : RenderOptions.values()) {
-			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "render");
+			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "render", false);
+			o.setValue(getValueObject(p));
+		}
+
+		for(AdvancedOptions o : AdvancedOptions.values()) {
+			Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "advanced", true);
 			o.setValue(getValueObject(p));
 		}
 
 		config.save();
+	}
+
+	public String getRecordingPath() {
+		return (String)AdvancedOptions.recordingPath.getValue();
+	}
+	public String getRenderPath() {
+		return (String)AdvancedOptions.renderPath.getValue();
 	}
 
 	public int getVideoFramerate() {
@@ -170,7 +200,7 @@ public class ReplaySettings {
 	public boolean getWaitForChunks() {
 		return (Boolean)RenderOptions.waitForChunks.getValue();
 	}
-	
+
 	public void setLightingEnabled(boolean enabled) {
 		ReplayOptions.lighting.setValue(enabled);
 		LightingHandler.setLighting(enabled);
@@ -183,29 +213,52 @@ public class ReplaySettings {
 		for(String cat : ReplayMod.instance.config.getCategoryNames()) {
 			ReplayMod.instance.config.removeCategory(ReplayMod.instance.config.getCategory(cat));
 		}
+		
+		for(RecordingOptions o : RecordingOptions.values()) {
+			getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "recording", false);
+		}
 
 		for(ReplayOptions o : ReplayOptions.values()) {
-			getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "replay");
+			getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "replay", false);
 		}
 
 		for(RenderOptions o : RenderOptions.values()) {
-			getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "render");
+			getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "render", false);
+		}
+		
+		for(AdvancedOptions o : AdvancedOptions.values()) {
+			getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "advanced", false);
 		}
 
 		ReplayMod.instance.config.save();
 	}
 
-	private Property getConfigSetting(Configuration config, String name, Object value, String category) {
-		if(value instanceof Integer) {
-			return config.get(category, name, (Integer)value);
-		} else if(value instanceof Boolean) {
-			return config.get(category, name, (Boolean)value);
-		} else if(value instanceof Double) {
-			return config.get(category, name, (Double)value);
-		} else if(value instanceof Float) {
-			return config.get(category, name, (double)(Float)value);
-		} else if(value instanceof String) {
-			return config.get(category, name, (String)value);
+	private Property getConfigSetting(Configuration config, String name, Object value, String category, boolean warning) {
+		if(warning) {
+			String warningMsg = "Please be careful when modifying this setting, as setting it to an invalid value might harm your computer.";
+			if(value instanceof Integer) {
+				return config.get(category, name, (Integer)value, warningMsg);
+			} else if(value instanceof Boolean) {
+				return config.get(category, name, (Boolean)value, warningMsg);
+			} else if(value instanceof Double) {
+				return config.get(category, name, (Double)value, warningMsg);
+			} else if(value instanceof Float) {
+				return config.get(category, name, (double)(Float)value, warningMsg);
+			} else if(value instanceof String) {
+				return config.get(category, name, (String)value, warningMsg);
+			}
+		} else {
+			if(value instanceof Integer) {
+				return config.get(category, name, (Integer)value);
+			} else if(value instanceof Boolean) {
+				return config.get(category, name, (Boolean)value);
+			} else if(value instanceof Double) {
+				return config.get(category, name, (Double)value);
+			} else if(value instanceof Float) {
+				return config.get(category, name, (double)(Float)value);
+			} else if(value instanceof String) {
+				return config.get(category, name, (String)value);
+			}
 		}
 		return null;
 	}
@@ -216,7 +269,8 @@ public class ReplaySettings {
 			return p.getDouble();
 		} else if(p.isBooleanValue()) {
 			return p.getBoolean();
+		} else {
+			return p.getString();
 		}
-		return null;
 	}
 }

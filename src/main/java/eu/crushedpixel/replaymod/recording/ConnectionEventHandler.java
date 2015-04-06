@@ -24,6 +24,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnection
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class ConnectionEventHandler {
 
@@ -94,8 +95,7 @@ public class ConnectionEventHandler {
 				channelHandlerKeys.add(entry.getKey());
 			}
 
-			File folder = new File("./replay_recordings/");
-			folder.mkdirs();
+			File folder = ReplayFileIO.getReplayFolder();
 
 			fileName = sdf.format(Calendar.getInstance().getTime());
 			currentFile = new File(folder, fileName+TEMP_FILE_EXTENSION);

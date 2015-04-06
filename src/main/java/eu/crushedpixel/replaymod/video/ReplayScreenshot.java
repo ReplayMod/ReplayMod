@@ -29,6 +29,7 @@ import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class ReplayScreenshot {
 
@@ -93,8 +94,7 @@ public class ReplayScreenshot {
 
 						File replayFile = ReplayHandler.getReplayFile();
 
-						File folder = new File("./replay_recordings/");
-						folder.mkdirs();
+						File folder = ReplayFileIO.getReplayFolder();
 
 						File temp = File.createTempFile("thumb", null);
 

@@ -36,6 +36,7 @@ import akka.japi.Pair;
 
 import com.google.gson.Gson;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.PacketSerializer;
@@ -45,8 +46,15 @@ import eu.crushedpixel.replaymod.replay.PacketDeserializer;
 @SuppressWarnings("resource") //Gets handled by finalizer
 public class ReplayFileIO {
 
+	public static File getRenderFolder() {
+		File folder = new File(ReplayMod.replaySettings.getRenderPath());
+		folder.mkdirs();
+		return folder;
+	}
+	
 	public static File getReplayFolder() {
-		File folder = new File("./replay_recordings/");
+		String path = ReplayMod.replaySettings.getRecordingPath();
+		File folder = new File(path);
 		folder.mkdirs();
 		return folder;
 	}

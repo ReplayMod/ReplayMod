@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.ActiveRenderInfo;
 
 import com.google.gson.Gson;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -153,8 +154,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int)lastSentPacket, startTime, pl, mcversion);
 				String json = gson.toJson(metaData);
 
-				File folder = new File("./replay_recordings/");
-				folder.mkdirs();
+				File folder = ReplayFileIO.getReplayFolder();
 
 				File archive = new File(folder, name+ConnectionEventHandler.ZIP_FILE_EXTENSION);
 				archive.createNewFile();

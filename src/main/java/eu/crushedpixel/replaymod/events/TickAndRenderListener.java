@@ -16,6 +16,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import eu.crushedpixel.replaymod.gui.GuiCancelRender;
+import eu.crushedpixel.replaymod.gui.elements.GuiMouseInput;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
@@ -70,13 +71,32 @@ public class TickAndRenderListener {
 		}
 	}
 	
+	//private boolean f1Down = false;
+	
 	@SubscribeEvent
 	public void tick(TickEvent event) {
 		if(!ReplayHandler.isInReplay()) return;
+		
+		/*
+		if(Keyboard.getEventKeyState() && Keyboard.isKeyDown(Keyboard.KEY_F1) 
+				&& ReplayHandler.isInPath() && !ReplayProcess.isVideoRecording() 
+				&& mc.currentScreen instanceof GuiMouseInput && !f1Down) {
+			mc.gameSettings.hideGUI = !mc.gameSettings.hideGUI;
+		}
+		
+		f1Down = Keyboard.isKeyDown(Keyboard.KEY_F1) && Keyboard.getEventKeyState();
+		*/
+		
 		if(ReplayHandler.getCameraEntity() != null)
 			ReplayHandler.getCameraEntity().updateMovement();
-		if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick(true);
-		if(!ReplayHandler.isInPath()) onMouseMove(new MouseEvent());
+		if(ReplayHandler.isInPath()) {
+			ReplayProcess.unblockAndTick(true);
+			if(ReplayProcess.isVideoRecording() && 
+					!(mc.currentScreen instanceof GuiMouseInput || mc.currentScreen instanceof GuiCancelRender)) {
+				mc.displayGuiScreen(new GuiMouseInput());
+			}
+		}
+		else onMouseMove(new MouseEvent());
 		FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
 	}
 	
@@ -95,7 +115,7 @@ public class TickAndRenderListener {
 			Mouse.setGrabbed(true);
 		}
 
-		if (mc.inGameHasFocus && flag)
+		if (mc.inGameHasFocus && flag && !(ReplayHandler.isInPath()))
 		{
 			mc.mouseHelper.mouseXYChange();
 			float f1 = mc.gameSettings.mouseSensitivity * 0.6F + 0.2F;

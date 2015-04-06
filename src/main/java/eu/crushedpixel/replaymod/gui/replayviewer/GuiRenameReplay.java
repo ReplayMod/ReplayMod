@@ -12,6 +12,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.input.Keyboard;
 
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class GuiRenameReplay extends GuiScreen
 {
@@ -59,8 +60,8 @@ public class GuiRenameReplay extends GuiScreen
             }
             else if (button.id == 0)
             {
-            	File folder = new File("./replay_recordings/");
-    			folder.mkdirs();
+            	File folder = ReplayFileIO.getReplayFolder();
+
     			File initRenamed = new File(folder, this.field_146583_f.getText().trim()+ConnectionEventHandler.ZIP_FILE_EXTENSION.replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
     			File renamed = initRenamed;
     			int i=1;

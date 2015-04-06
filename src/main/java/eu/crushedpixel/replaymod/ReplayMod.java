@@ -32,6 +32,7 @@ import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.LightingHandler;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 @Mod(modid = ReplayMod.MODID, version = ReplayMod.VERSION)
 public class ReplayMod
@@ -135,8 +136,7 @@ public class ReplayMod
 	}
 
 	private void removeTmcprFiles() {
-		File folder = new File("./replay_recordings/");
-		folder.mkdirs();
+		File folder = ReplayFileIO.getReplayFolder();
 
 		for(File f : folder.listFiles()) {
 			if(("."+FilenameUtils.getExtension(f.getAbsolutePath())).equals(ConnectionEventHandler.TEMP_FILE_EXTENSION)) {
