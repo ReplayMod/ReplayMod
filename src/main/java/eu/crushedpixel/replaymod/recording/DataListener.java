@@ -150,7 +150,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
 				String[] pl = players.toArray(new String[players.size()]);
 
-				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime, pl, mcversion);
+				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int)lastSentPacket, startTime, pl, mcversion);
 				String json = gson.toJson(metaData);
 
 				File folder = new File("./replay_recordings/");

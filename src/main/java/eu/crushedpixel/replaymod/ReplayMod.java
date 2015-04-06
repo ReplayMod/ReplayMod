@@ -25,6 +25,7 @@ import eu.crushedpixel.replaymod.events.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.events.KeyInputHandler;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
 import eu.crushedpixel.replaymod.events.TickAndRenderListener;
+import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
@@ -35,15 +36,15 @@ import eu.crushedpixel.replaymod.settings.ReplaySettings;
 @Mod(modid = ReplayMod.MODID, version = ReplayMod.VERSION)
 public class ReplayMod
 {
-	
+
 	//TODO: Set ReplayHandler replaying to false when replay is exited
 	//TODO: Hide Titles upon hurrying
 	//TODO: Override Enchantment Rendering for items when replaying (to adjust speed of animation)
-	
+
 	//TODO: Show the player whether he has already uploaded a replay
-	
+
 	//TODO: Hinting to the b/v key feature
-	
+
 	//XXX
 	//Known Bugs
 	//
@@ -52,23 +53,23 @@ public class ReplayMod
 	//Incompatible with Shaders Mod
 	//
 	//
-	
+
 	public static final String MODID = "replaymod";
 	public static final String VERSION = "0.0.1";
-	
+
 	private static final Minecraft mc = Minecraft.getMinecraft();
-	
+
 	public static GuiReplayOverlay overlay = new GuiReplayOverlay();
-	
+
 	public static ReplaySettings replaySettings;
 	public static Configuration config;
-	
+
 	public static boolean firstMainMenu = true;
-	
+
 	public static RecordingHandler recordingHandler;
 
 	public static int TP_DISTANCE_LIMIT = 128;
-	
+
 	public static final ApiClient apiClient = new ApiClient();
 
 	// The instance of your mod that Forge uses.
@@ -79,7 +80,7 @@ public class ReplayMod
 	public void preInit(FMLPreInitializationEvent event) {
 		config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
-		
+
 		replaySettings = new ReplaySettings();
 		replaySettings.readValues();
 	}
@@ -88,9 +89,9 @@ public class ReplayMod
 	public void init(FMLInitializationEvent event) {
 		FMLCommonHandler.instance().bus().register(new ConnectionEventHandler());
 		MinecraftForge.EVENT_BUS.register(new GuiEventHandler());
-		
+
 		FMLCommonHandler.instance().bus().register(new KeyInputHandler());
-		
+
 		recordingHandler = new RecordingHandler();
 		FMLCommonHandler.instance().bus().register(recordingHandler);
 		MinecraftForge.EVENT_BUS.register(recordingHandler);
@@ -101,22 +102,22 @@ public class ReplayMod
 		overlay = new GuiReplayOverlay();
 		FMLCommonHandler.instance().bus().register(overlay);
 		MinecraftForge.EVENT_BUS.register(overlay);
-		
+
 		TickAndRenderListener tarl = new TickAndRenderListener();
 		FMLCommonHandler.instance().bus().register(tarl);
 		MinecraftForge.EVENT_BUS.register(tarl);
-		
+
 		KeybindRegistry.initialize();
-		
+
 		try {
 			mc.entityRenderer = new SafeEntityRenderer(mc, mc.entityRenderer);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}	
-		
+
 		//clean up replay_recordings folder
 		removeTmcprFiles();
-		
+
 		/*
 		boolean auth = false;
 		try {
@@ -125,28 +126,20 @@ public class ReplayMod
 			JOptionPane.showMessageDialog(null, "Couldn't connect to the Replay Mod Server to verify whether you donated!");
 			FMLCommonHandler.instance().exitJava(0, false);
 		}
-		
+
 		if(!auth) {
 			JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
 			FMLCommonHandler.instance().exitJava(0, false);
 		}
-		*/
-		
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				LightingHandler.setLighting(false);
-			}
-		}));
+		 */
 	}
-	
+
 	private void removeTmcprFiles() {
 		File folder = new File("./replay_recordings/");
 		folder.mkdirs();
-		
+
 		for(File f : folder.listFiles()) {
-			if("."+FilenameUtils.getExtension(f.getAbsolutePath()) == ConnectionEventHandler.TEMP_FILE_EXTENSION) {
+			if(("."+FilenameUtils.getExtension(f.getAbsolutePath())).equals(ConnectionEventHandler.TEMP_FILE_EXTENSION)) {
 				f.delete();
 			}
 		}

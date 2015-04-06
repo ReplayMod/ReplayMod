@@ -88,7 +88,7 @@ public class GuiReplayOverlay extends Gui {
 	}
 	
 	@SubscribeEvent
-	public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
+	public void renderRecordingIndicator(RenderGameOverlayEvent.Text event) {
 		if(!ReplayHandler.isInReplay() && ReplayMod.replaySettings.showRecordingIndicator() && ConnectionEventHandler.isRecording()) {
 			GlStateManager.resetColor();
 			GlStateManager.enableAlpha();
