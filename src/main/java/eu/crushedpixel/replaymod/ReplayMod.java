@@ -132,7 +132,7 @@ public class ReplayMod
 			JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
 			FMLCommonHandler.instance().exitJava(0, false);
 		}
-		 */
+		*/
 	}
 
 	private void removeTmcprFiles() {

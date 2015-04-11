@@ -87,6 +87,10 @@ public class ReplayHandler {
 		inPath = replaying;
 	}
 	
+	public static void resetToleratedTimestamp() {
+		if(replaySender != null) replaySender.resetToleratedTimeStamp();
+	}
+	
 	public static void stopHurrying() {
 		if(replaySender != null) replaySender.stopHurrying();
 	}
@@ -380,9 +384,16 @@ public class ReplayHandler {
 
 		ChannelPipeline pipeline = networkManager.channel().pipeline();
 
-		try {
-			ReplayMod.overlay.resetUI();
-		} catch(Exception e) {}
+		mc.addScheduledTask(new Runnable() {			
+			@Override
+			public void run() {
+				try {
+					ReplayMod.overlay.resetUI();
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
 		inReplay = true;
 	}

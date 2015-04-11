@@ -78,11 +78,12 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
 	private long currentTimeStamp;
 	private boolean hurryToTimestamp;
-	private long desiredTimeStamp;
+	private long desiredTimeStamp = -1;
+	private long toleratedTimeStamp = -1;
 	private long lastTimeStamp, lastPacketSent;
 
 	private boolean hasRestarted = false;
-	
+
 	private File replayFile;
 	private boolean active = true;
 	private ZipFile archive;
@@ -95,6 +96,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	private boolean terminate = false;
 
 	private double replaySpeed = 1f;
+	
+	private boolean hasWorldLoaded = false;
 
 	private Field joinPacketEntityId, joinPacketWorldType,
 	joinPacketDimension, joinPacketDifficulty, joinPacketMaxPlayers;
@@ -130,7 +133,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	public int replayLength() {
 		return replayLength;
 	}
-	
+
 	public void stopHurrying() {
 		hurryToTimestamp = false;
 	}
@@ -148,15 +151,27 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 	public long getDesiredTimestamp() {
 		return desiredTimeStamp;
 	}
+	
+	public void resetToleratedTimeStamp() {
+		toleratedTimeStamp = -1;
+	}
 
 	public void jumpToTime(int millis) {
 		if(!(ReplayHandler.isInPath() && ReplayProcess.isVideoRecording())) setReplaySpeed(replaySpeed);
 
 		if((millis < currentTimeStamp && !isHurrying())) {
+			if(ReplayHandler.isInPath()) {
+				if(millis >= toleratedTimeStamp && toleratedTimeStamp >= 0) {
+					return;
+				}
+			}
 			startFromBeginning = true;
 		}
 
 		desiredTimeStamp = millis;
+		if(ReplayHandler.isInPath()) {
+			toleratedTimeStamp = millis;
+		}
 		hurryToTimestamp = true;
 
 	}
@@ -246,15 +261,16 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				while(!terminate) {
 					if(startFromBeginning) {
 						hasRestarted = true;
+						hasWorldLoaded = false;
 						currentTimeStamp = 0;
 						dis.close();
 						dis = new DataInputStream(archive.getInputStream(replayEntry));
 						startFromBeginning = false;
 						lastPacketSent = System.currentTimeMillis();
-						ReplayHandler.restartReplay();
+						ReplayHandler.restartReplay();	
 					}
 
-					while(!terminate && !startFromBeginning && (!paused() || FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class))) {
+					while(!terminate && !startFromBeginning && (!paused() || !hasWorldLoaded)) {
 						try {
 							/*
 							 * LOGIC: 
@@ -277,8 +293,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							currentTimeStamp = pd.getTimestamp();
 							//System.out.println(currentTimeStamp);
 
-							if(!ReplayHandler.isInPath() && !hurryToTimestamp && (mc.theWorld != null && mc.theWorld.getChunkProvider().getLoadedChunkCount() > 0)) {
-								//if(!hurryToTimestamp && !FMLClientHandler.instance().isGUIOpen(GuiDownloadTerrain.class)) {
+							if(!ReplayHandler.isInPath() && !hurryToTimestamp && hasWorldLoaded) {
 								int timeWait = (int)Math.round((currentTimeStamp - lastTimeStamp)/replaySpeed);
 								long timeDiff = System.currentTimeMillis() - lastPacketSent;
 								lastPacketSent = System.currentTimeMillis();
@@ -599,6 +614,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 				 */
 
 				if(p instanceof S08PacketPlayerPosLook) {
+					if(!hasWorldLoaded) hasWorldLoaded = true;
 					final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook)p;
 
 					if(ReplayHandler.isInPath() && !hurryToTimestamp) return;

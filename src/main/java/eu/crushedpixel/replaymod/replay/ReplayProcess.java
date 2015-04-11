@@ -4,10 +4,12 @@ import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.ChunkRenderContainer;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.chunk.RenderChunk;
+import net.minecraft.client.renderer.entity.RenderEntity;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
@@ -57,6 +59,8 @@ public class ReplayProcess {
 	public static void startReplayProcess(boolean record) {
 		ReplayHandler.selectKeyframe(null);
 
+		firstTime = true;
+
 		isVideoRecording = record;
 		lastPosition = null;
 		motionSpline = null;
@@ -64,6 +68,8 @@ public class ReplayProcess {
 		timeLinear = null;
 		calculated = false;
 		requestFinish = false;
+		
+		ReplayHandler.resetToleratedTimestamp();
 
 		ChatMessageRequests.initialize();
 		if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
@@ -95,8 +101,6 @@ public class ReplayProcess {
 		}
 
 		ChatMessageRequests.addChatMessage("Replay started!", ChatMessageType.INFORMATION);
-
-		mc.renderGlobal.loadRenderers();
 
 		if(isVideoRecording()) {
 			MCTimerHandler.setTimerSpeed(1f);
@@ -135,22 +139,49 @@ public class ReplayProcess {
 		pathTick(isVideoRecording(), justCheck);
 	}
 
+	private static float lastPartialTicks, lastRenderPartialTicks;
+	private static int lastTicks;
+
+	private static boolean resetTimer = false;
+
+	private static boolean firstTime = false;
+
 	private static void pathTick(boolean recording, boolean justCheck) {
 		if(ReplayHandler.isHurrying()) {
 			lastRealTime = System.currentTimeMillis();
 			return;
 		}
+		
+		if(firstTime) {
+			firstTime = false;
+			lastPartialTicks = 100;
+			lastRenderPartialTicks = 100;
+			lastTicks = 100;
+			MCTimerHandler.setRenderPartialTicks(100);
+			MCTimerHandler.setPartialTicks(100);
+			MCTimerHandler.setTicks(100);
+			System.out.println(ReplayHandler.getReplayTime());
+		}
 
 		if(recording && ((ReplayMod.replaySettings.getWaitForChunks() && RenderChunk.renderChunksUpdated != 0) || mc.currentScreen instanceof GuiCancelRender)) {
-			MCTimerHandler.setTimerSpeed(0f);
-			MCTimerHandler.setPartialTicks(0f);
-			MCTimerHandler.setRenderPartialTicks(0f);
-			MCTimerHandler.setTicks(0);
+			if(!firstTime) {
+				MCTimerHandler.setTimerSpeed(0f);
+				MCTimerHandler.setPartialTicks(0f);
+				MCTimerHandler.setRenderPartialTicks(0f);
+				MCTimerHandler.setTicks(0);
+				resetTimer = true;
+			}
 			return;
 		} else if (recording && ReplayMod.replaySettings.getWaitForChunks()) {
 			MCTimerHandler.setTimerSpeed((float)lastSpeed);
+			//MCTimerHandler.setRenderPartialTicks(lastRenderPartialTicks);
+			if(resetTimer) {
+				MCTimerHandler.setPartialTicks(lastPartialTicks);
+				MCTimerHandler.setRenderPartialTicks(lastRenderPartialTicks);
+				MCTimerHandler.setTicks(lastTicks);
+				resetTimer = false;
+			}
 		}
-
 
 		if(justCheck) return;
 
@@ -316,6 +347,10 @@ public class ReplayProcess {
 			MCTimerHandler.updateTimer((1f/ReplayMod.replaySettings.getVideoFramerate()));
 			EnchantmentTimer.increaseRecordingTime((1000/ReplayMod.replaySettings.getVideoFramerate()));
 		}
+
+		lastPartialTicks = MCTimerHandler.getPartialTicks();
+		lastRenderPartialTicks = MCTimerHandler.getRenderTicks();
+		lastTicks = MCTimerHandler.getTicks();
 
 		if(curTimestamp != null && curTimestamp != ReplayHandler.getDesiredTimestamp()) ReplayHandler.setReplayTime(curTimestamp);
 

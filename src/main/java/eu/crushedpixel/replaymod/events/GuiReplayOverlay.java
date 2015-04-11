@@ -84,18 +84,18 @@ public class GuiReplayOverlay extends Gui {
 	@SubscribeEvent
 	public void onRenderGui(RenderGameOverlayEvent event) {
 		if(ReplayProcess.isVideoRecording() && ReplayHandler.isInPath() && !(mc.currentScreen instanceof GuiCancelRender)) {
-			event.setCanceled(true);
+			if(event.isCancelable()) event.setCanceled(true);
 		}
 	}
 	
 	@SubscribeEvent
 	public void renderRecordingIndicator(RenderGameOverlayEvent.Text event) {
 		if(!ReplayHandler.isInReplay() && ReplayMod.replaySettings.showRecordingIndicator() && ConnectionEventHandler.isRecording()) {
+			this.drawString(mc.fontRendererObj, "RECORDING", 30, 18-(mc.fontRendererObj.FONT_HEIGHT/2), Color.WHITE.getRGB());
+			mc.renderEngine.bindTexture(replay_gui);
 			GlStateManager.resetColor();
 			GlStateManager.enableAlpha();
-			mc.renderEngine.bindTexture(replay_gui);
 			this.drawModalRectWithCustomSizedTexture(10, 10, 40, 21, 16, 16, 64, 64);
-			this.drawString(mc.fontRendererObj, "RECORDING", 30, 18-(mc.fontRendererObj.FONT_HEIGHT/2), Color.WHITE.getRGB());
 		}
 	}
 	
