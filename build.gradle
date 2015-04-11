@@ -33,8 +33,18 @@ minecraft {
     mappings = "snapshot_nodoc_20141130"
 }
 
+repositories {
+    maven { url "https://repo.johni0702.de/content/groups/public/" }
+}
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
 dependencies {
-    compile fileTree(dir: 'lib', includes: ['*.jar'])
+    shade 'de.johni0702:replaystudio:0.0.1-SNAPSHOT'
+    shade fileTree(dir: 'libs', includes: ['*.jar'])
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
@@ -51,7 +61,23 @@ dependencies {
 }
 
 jar {
-    //from { configurations.external.collect { it.isDirectory() ? it : zipTree(it) } }
+    dependsOn configurations.shade
+    def noticeDir = file("$buildDir/NOTICE")
+    doFirst {
+        noticeDir.deleteDir()
+        noticeDir.mkdirs()
+        configurations.shade.collect { it.isDirectory() ? fileTree(it) : zipTree(it) }.each {
+            it.matching { include '**/NOTICE*' }.each {
+                new File(noticeDir, 'NOTICE.txt') << it.getText('UTF-8') + '\n'
+            }
+        }
+    }
+    from noticeDir
+
+    from (configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }) {
+        exclude '**/NOTICE*'
+    }
+
     manifest { 
          attributes 'FMLCorePlugin': 'eu.crushedpixel.replaymod.coremod.LoadingPlugin',
                         'FMLCorePluginContainsFMLMod': 'false'
@@ -78,18 +104,4 @@ processResources
     }
 }
 
-
-def shade() {
-    exec {
-        executable "./shade.sh"
-        args "./build/libs/replaymod-0.6.jar", "./libs", "replaymod-0.6.jar"
-    }
-}
-
-task doShade {
-    doLast {
-        shade()
-    }
-}
-
-defaultTasks 'build', 'doShade'
+defaultTasks 'build'
