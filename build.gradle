@@ -33,17 +33,12 @@ minecraft {
     mappings = "snapshot_nodoc_20141130"
 }
 
-repositories {
-    maven { url "https://repo.johni0702.de/content/groups/public/" }
-}
-
 configurations {
     shade
     compile.extendsFrom shade
 }
 
 dependencies {
-    shade 'de.johni0702:replaystudio:0.0.1-SNAPSHOT'
     shade fileTree(dir: 'libs', includes: ['*.jar'])
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
