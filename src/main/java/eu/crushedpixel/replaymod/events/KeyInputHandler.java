@@ -98,8 +98,7 @@ public class KeyInputHandler {
 
 				//Custom registered handlers
 				if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && kb.isPressed() && !found) {
-					ReplayScreenshot.prepareScreenshot();
-					//GuiReplayOverlay.requestScreenshot();
+					TickAndRenderListener.requestScreenshot();
 					//TODO: Make this properly work
 				}
 

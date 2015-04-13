@@ -1,8 +1,18 @@
 package eu.crushedpixel.replaymod.recording;
 
+import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
+import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -12,19 +22,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-
-import sun.java2d.SunGraphics2D;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.Packet;
-import net.minecraft.network.play.server.S42PacketCombatEvent;
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
-import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
-import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 
 public class ConnectionEventHandler {
 

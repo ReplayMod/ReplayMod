@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
+import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -39,11 +40,30 @@ public class TickAndRenderListener {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void onRenderWorld(RenderWorldLastEvent event) throws
 			InvocationTargetException, IOException, IllegalAccessException, IllegalArgumentException {
-		if(!ReplayHandler.isInReplay()) return;
+		if(!ReplayHandler.isInReplay()) return; //If not in Replay, cancel
+
+		if(requestScreenshot == 1) {
+			mc.addScheduledTask(new Runnable() {
+				@Override
+				public void run() {
+					ChatMessageRequests.addChatMessage("Saving Thumbnail...", ChatMessageRequests.ChatMessageType.INFORMATION);
+					ReplayScreenshot.prepareScreenshot();
+					requestScreenshot = 2;
+				}
+			});
+		} else if(requestScreenshot == 2) {
+			mc.addScheduledTask(new Runnable() {
+				@Override
+				public void run() {
+					ReplayScreenshot.saveScreenshot();
+				}
+			});
+		}
+
 		if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick(false);
 		if(ReplayHandler.isCamera()) ReplayHandler.setCameraEntity(ReplayHandler.getCameraEntity());
 		if(ReplayHandler.isInReplay() && ReplayHandler.isPaused()) {
@@ -60,19 +80,24 @@ public class TickAndRenderListener {
 			lastPitch = mc.getRenderViewEntity().rotationPitch;
 			lastYaw = mc.getRenderViewEntity().rotationYaw;
 		}
-		/*
-		if(requestScreenshot) {
-			requestScreenshot = false;
-			ReplayScreenshot.saveScreenshot(mc.getFramebuffer());
-		}
-		*/
+
 		if(mc.isGamePaused() && ReplayHandler.isInPath()) {
 			isGamePaused.set(mc, false);
 		}
 	}
 	
 	//private boolean f1Down = false;
-	
+
+	private static int requestScreenshot = 0;
+
+	public static void requestScreenshot() {
+		if(requestScreenshot == 0) requestScreenshot = 1;
+	}
+
+	public static void finishScreenshot() {
+		requestScreenshot = 0;
+	}
+
 	@SubscribeEvent
 	public void tick(TickEvent event) {
 		if(!ReplayHandler.isInReplay()) return;

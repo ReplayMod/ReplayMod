@@ -1,47 +1,32 @@
 package eu.crushedpixel.replaymod.utils;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.EnumPacketDirection;
-import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.network.play.server.S08PacketPlayerPosLook;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.io.FilenameUtils;
-
 import akka.japi.Pair;
-
 import com.google.gson.Gson;
-
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.PacketSerializer;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.replay.PacketDeserializer;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.EnumConnectionState;
+import net.minecraft.network.EnumPacketDirection;
+import net.minecraft.network.Packet;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.network.play.server.S08PacketPlayerPosLook;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 @SuppressWarnings("resource") //Gets handled by finalizer
 public class ReplayFileIO {
@@ -51,7 +36,7 @@ public class ReplayFileIO {
 		folder.mkdirs();
 		return folder;
 	}
-	
+
 	public static File getReplayFolder() {
 		String path = ReplayMod.replaySettings.getRecordingPath();
 		File folder = new File(path);
@@ -237,7 +222,7 @@ public class ReplayFileIO {
 	private static boolean lastContainsJoinPacket = false;
 
 	/**
-	 * 
+	 *
 	 * @param replayFile The File to reverse
 	 * @param outputFile The File to save the reversed Packets in
 	 * @param seekJoinPacket Whether a {@link S01PacketJoinGame} should be seeked in the Replay File. If containsJoinPacket is being
@@ -318,5 +303,59 @@ public class ReplayFileIO {
 		}
 
 		return false;
+	}
+
+	private static final byte[] uniqueBytes = new byte[]{0,1,1,2,3,5,8};
+
+	public static void addThumbToZip(File zipFile, File thumb) throws IOException {
+		// get a temp file
+		File tempFile = File.createTempFile(zipFile.getName(), null);
+		// delete it, otherwise you cannot rename your existing zip to it.
+		tempFile.delete();
+
+		zipFile.renameTo(tempFile);
+
+		byte[] buf = new byte[1024];
+
+		ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
+		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile));
+
+		ZipEntry entry = zin.getNextEntry();
+		while (entry != null) {
+			String name = entry.getName();
+			boolean isThumb = name.contains("thumb");
+			if(!isThumb) {
+				// Add ZIP entry to output stream.
+				out.putNextEntry(new ZipEntry(name));
+				// Transfer bytes from the ZIP file to the output file
+				int len;
+				while ((len = zin.read(buf)) > 0) {
+					out.write(buf, 0, len);
+				}
+			}
+			entry = zin.getNextEntry();
+		}
+		// Close the streams
+		zin.close();
+		// Compress the files
+
+		InputStream in = new FileInputStream(thumb);
+		// Add ZIP entry to output stream.
+		out.putNextEntry(new ZipEntry("thumb"));
+		// Transfer bytes from the file to the ZIP file
+		int len;
+
+		out.write(uniqueBytes);
+
+		while ((len = in.read(buf)) > 0) {
+			out.write(buf, 0, len);
+		}
+		// Complete the entry
+		out.closeEntry();
+		in.close();
+
+		// Complete the ZIP file
+		out.close();
+		tempFile.delete();
 	}
 }

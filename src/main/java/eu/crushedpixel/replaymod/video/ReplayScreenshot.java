@@ -13,6 +13,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 
+import eu.crushedpixel.replaymod.events.TickAndRenderListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -35,8 +36,6 @@ public class ReplayScreenshot {
 
 	private static Minecraft mc = Minecraft.getMinecraft();
 
-	private static final byte[] uniqueBytes = new byte[]{0,1,1,2,3,5,8};
-
 	private static long last_finish = -1;
 
 	private static boolean before;
@@ -51,7 +50,7 @@ public class ReplayScreenshot {
 	
 	private static boolean locked = false;
 
-	public static void saveScreenshot(Framebuffer buffer) {
+	public static void saveScreenshot() {
 
 		if(locked) return;
 		locked = true;
@@ -94,32 +93,28 @@ public class ReplayScreenshot {
 
 						File replayFile = ReplayHandler.getReplayFile();
 
-						File folder = ReplayFileIO.getReplayFolder();
-
-						File temp = File.createTempFile("thumb", null);
+						File tempImage = File.createTempFile("thumb", null);
 
 						int h = 720;
 						int w = 1280;
 
 						BufferedImage img = ImageUtils.scaleImage(nbi, new Dimension(w, h));
 
-						ImageIO.write(img, "jpg", temp);
+						ImageIO.write(img, "jpg", tempImage);
 
-						File tempFile = File.createTempFile(replayFile.getName(), null);
-						tempFile.delete(); tempFile.deleteOnExit();
+						ReplayFileIO.addThumbToZip(replayFile, tempImage);
 
-						replayFile.renameTo(tempFile);
+						tempImage.delete();
 
-						replayFile.delete();
-						replayFile.createNewFile();
+						/*
+						File outputFile = File.createTempFile(replayFile.getName(), null);
 
 						byte[] buf = new byte[1024];
 
-						ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
-						ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(replayFile));
+						ZipInputStream zin = new ZipInputStream(new FileInputStream(replayFile));
+						ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(outputFile));
 
-						FileInputStream fis = new FileInputStream(temp);
-
+						//copying all of the old Zip Entries to the new file, unless it's a thumb
 						ZipEntry entry = zin.getNextEntry();
 						while (entry != null) {
 							String name = entry.getName();
@@ -137,6 +132,8 @@ public class ReplayScreenshot {
 							entry = zin.getNextEntry();
 						}
 
+						FileInputStream fis = new FileInputStream(tempImage);
+
 						zout.putNextEntry(new ZipEntry("thumb"));
 						int len;
 						//Add unique bytes to the end of the file
@@ -146,21 +143,26 @@ public class ReplayScreenshot {
 							zout.write(buf, 0, len);
 						}
 
-						// Close the streams
+
 						fis.close();
 						zin.close();
-						// Compress the files
-						// Complete the ZIP file
+
 						zout.close();
-						tempFile.delete();
-						temp.delete();
-						System.out.println("thumbnail saving finished");
+
+						replayFile.delete();
+						outputFile.renameTo(replayFile);
+
+						tempImage.delete();
+						*/
 
 						ChatMessageRequests.addChatMessage("Thumbnail has been successfully saved", ChatMessageType.INFORMATION);
-					} catch(Exception e) {}
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
 					finally {
 						GuiReplaySaving.replaySaving = false;
 						locked = false;
+						TickAndRenderListener.finishScreenshot();
 					}
 				}
 			});
@@ -168,6 +170,7 @@ public class ReplayScreenshot {
 			ioThread.start();
 		}
 		catch (Exception exception) {
+			exception.printStackTrace();
 			mc.gameSettings.hideGUI = before;
 			mc.currentScreen = beforeScreen;
 			ReplayHandler.setSpeed(beforeSpeed);
