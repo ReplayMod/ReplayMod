@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
+import eu.crushedpixel.replaymod.registry.FileCopyHandler;
 import org.apache.commons.io.FilenameUtils;
 
 import net.minecraft.client.Minecraft;
@@ -73,6 +74,8 @@ public class ReplayMod
 
 	public static final ApiClient apiClient = new ApiClient();
 
+	public static FileCopyHandler fileCopyHandler;
+
 	// The instance of your mod that Forge uses.
 	@Instance(value = "ReplayModID")
 	public static ReplayMod instance;
@@ -84,6 +87,9 @@ public class ReplayMod
 
 		replaySettings = new ReplaySettings();
 		replaySettings.readValues();
+
+		fileCopyHandler = new FileCopyHandler();
+		fileCopyHandler.start();
 	}
 
 	@EventHandler
@@ -119,7 +125,7 @@ public class ReplayMod
 		//clean up replay_recordings folder
 		removeTmcprFiles();
 
-		/*
+
 		boolean auth = false;
 		try {
 			auth = AuthenticationHandler.hasDonated(Minecraft.getMinecraft().getSession().getPlayerID());
@@ -132,7 +138,7 @@ public class ReplayMod
 			JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
 			FMLCommonHandler.instance().exitJava(0, false);
 		}
-		*/
+
 	}
 
 	private void removeTmcprFiles() {

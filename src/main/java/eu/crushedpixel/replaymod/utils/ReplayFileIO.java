@@ -21,6 +21,9 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -309,22 +312,19 @@ public class ReplayFileIO {
 
 	public static void addThumbToZip(File zipFile, File thumb) throws IOException {
 		// get a temp file
-		File tempFile = File.createTempFile(zipFile.getName(), null);
+		File tempFile = File.createTempFile(zipFile.getName(), null, zipFile.getParentFile());
 		// delete it, otherwise you cannot rename your existing zip to it.
-		tempFile.delete();
-
-		zipFile.renameTo(tempFile);
 
 		byte[] buf = new byte[1024];
 
-		ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
-		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile));
+		ZipInputStream zin = new ZipInputStream(new FileInputStream(zipFile));
+		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(tempFile));
 
 		ZipEntry entry = zin.getNextEntry();
 		while (entry != null) {
 			String name = entry.getName();
 			boolean isThumb = name.contains("thumb");
-			if(!isThumb) {
+			if (!isThumb) {
 				// Add ZIP entry to output stream.
 				out.putNextEntry(new ZipEntry(name));
 				// Transfer bytes from the ZIP file to the output file
@@ -356,6 +356,7 @@ public class ReplayFileIO {
 
 		// Complete the ZIP file
 		out.close();
-		tempFile.delete();
+
+		ReplayMod.fileCopyHandler.registerModifiedFile(tempFile, zipFile);
 	}
 }
