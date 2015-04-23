@@ -1,14 +1,8 @@
 package eu.crushedpixel.replaymod.gui;
 
-import java.awt.Color;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import org.lwjgl.input.Mouse;
-
+import com.mojang.realmsclient.util.Pair;
+import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
@@ -17,199 +11,200 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.input.Mouse;
 
-import com.mojang.realmsclient.util.Pair;
-
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import java.awt.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class GuiSpectateSelection extends GuiScreen {
 
-	private List<Pair<EntityPlayer, ResourceLocation>> players;
-	private int playerCount;
-	private int upperPlayer = 0;
+    private List<Pair<EntityPlayer, ResourceLocation>> players;
+    private int playerCount;
+    private int upperPlayer = 0;
 
-	private int upperBound = 30;
-	private int lowerBound;
-	
-	private double prevSpeed;
+    private int upperBound = 30;
+    private int lowerBound;
 
-	private class PlayerComparator implements Comparator<EntityPlayer> {
+    private double prevSpeed;
+    private boolean drag = false;
+    private int lastY = 0;
+    private int fitting = 0;
 
-		@Override
-		public int compare(EntityPlayer o1, EntityPlayer o2) {
-			if(isSpectator(o1) && !isSpectator(o2)) {
-				return 1;
-			} else if(isSpectator(o2) && !isSpectator(o1)) {
-				return -1;
-			} else {
-				return o1.getName().compareToIgnoreCase(o2.getName());
-			}
-		}
-		
-	}
-	
-	private boolean isSpectator(EntityPlayer e) {
-		return e.isInvisible() && e.getActivePotionEffect(Potion.invisibility) == null;
-	}
-	
-	public GuiSpectateSelection(List<EntityPlayer> players) {
-		this.prevSpeed = ReplayHandler.getSpeed();
-		
-		Collections.sort(players, new PlayerComparator());
-		
-		this.players = new ArrayList<Pair<EntityPlayer, ResourceLocation>>();
+    public GuiSpectateSelection(List<EntityPlayer> players) {
+        this.prevSpeed = ReplayMod.replaySender.getReplaySpeed();
 
-		for(EntityPlayer p : players) {
-			ResourceLocation loc = new ResourceLocation("/temp-skins/"+p.getGameProfile().getName());
-			AbstractClientPlayer.getDownloadImageSkin(loc, p.getName());
-			this.players.add(Pair.of(p, loc));
-		}
+        Collections.sort(players, new PlayerComparator());
 
-		playerCount = players.size();
-		
-		ReplayHandler.setSpeed(0);
-	}
+        this.players = new ArrayList<Pair<EntityPlayer, ResourceLocation>>();
 
-	private boolean drag = false;
+        for(EntityPlayer p : players) {
+            ResourceLocation loc = new ResourceLocation("/temp-skins/" + p.getGameProfile().getName());
+            AbstractClientPlayer.getDownloadImageSkin(loc, p.getName());
+            this.players.add(Pair.of(p, loc));
+        }
 
-	@Override
-	protected void mouseClicked(int mouseX, int mouseY, int mouseButton)
-			throws IOException {
+        playerCount = players.size();
 
-		if(fitting < playerCount) {
-			float visiblePerc = (float)fitting/(float)playerCount;
+        ReplayMod.replaySender.setReplaySpeed(0);
+    }
 
-			int h = this.height-32-32;
-			int offset = Math.round((upperPlayer/(fitting))*visiblePerc*h);
+    private boolean isSpectator(EntityPlayer e) {
+        return e.isInvisible() && e.getActivePotionEffect(Potion.invisibility) == null;
+    }
 
-			int lower = Math.round(32+offset+(h*visiblePerc))-2;
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton)
+            throws IOException {
 
-			int k2 = (int)(this.width*0.4);
+        if(fitting < playerCount) {
+            float visiblePerc = (float) fitting / (float) playerCount;
 
-			if(mouseX >= k2-16 && mouseX <= k2-12 && mouseY >= 32-2+offset && mouseY <= lower) {
-				lastY = mouseY;
-				drag = true;
-				return;
-			}
-		}
-		int k2 = (int)(this.width*0.4);
-		int l2 = 30;
-		
-		if(mouseX >= k2 && mouseX <= (this.width*0.6) && mouseY >= 30 && mouseY <= lowerBound) {
-			int off = mouseY-30;
-			int p = (off/21) + upperPlayer;
-			ReplayHandler.spectateEntity(players.get(p).first());
-			ReplayHandler.setSpeed(prevSpeed);
-			mc.displayGuiScreen(null);
-		}
-	}
+            int h = this.height - 32 - 32;
+            int offset = Math.round((upperPlayer / (fitting)) * visiblePerc * h);
 
-	private int lastY = 0;
+            int lower = Math.round(32 + offset + (h * visiblePerc)) - 2;
 
-	@Override
-	protected void mouseClickMove(int mouseX, int mouseY,
-			int clickedMouseButton, long timeSinceLastClick) {
+            int k2 = (int) (this.width * 0.4);
 
-		if(drag) {
-			float step = 1f/(float)playerCount;
+            if(mouseX >= k2 - 16 && mouseX <= k2 - 12 && mouseY >= 32 - 2 + offset && mouseY <= lower) {
+                lastY = mouseY;
+                drag = true;
+                return;
+            }
+        }
+        int k2 = (int) (this.width * 0.4);
+        int l2 = 30;
 
-			int diff = mouseY-lastY;
-			int h = this.height-32-32;
+        if(mouseX >= k2 && mouseX <= (this.width * 0.6) && mouseY >= 30 && mouseY <= lowerBound) {
+            int off = mouseY - 30;
+            int p = (off / 21) + upperPlayer;
+            ReplayHandler.spectateEntity(players.get(p).first());
+            ReplayMod.replaySender.setReplaySpeed(prevSpeed);
+            mc.displayGuiScreen(null);
+        }
+    }
 
-			float percDiff = (float)diff/(float)h;
-			if(Math.abs(percDiff) > Math.abs(step)) {
-				int s = (int)(percDiff/step);
-				lastY = mouseY;
-				upperPlayer += s;
-				if(upperPlayer > playerCount-fitting) {
-					upperPlayer = playerCount-fitting;
-				} else if(upperPlayer < 0) {
-					upperPlayer = 0;
-				}
-			}
-		}
+    @Override
+    protected void mouseClickMove(int mouseX, int mouseY,
+                                  int clickedMouseButton, long timeSinceLastClick) {
 
-		super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
-	}
-	
-	@Override
-	public void onGuiClosed() {
-		ReplayHandler.setSpeed(prevSpeed);
-	}
+        if(drag) {
+            float step = 1f / (float) playerCount;
 
-	@Override
-	protected void mouseReleased(int mouseX, int mouseY, int state) {
-		drag = false;
+            int diff = mouseY - lastY;
+            int h = this.height - 32 - 32;
 
-		super.mouseReleased(mouseX, mouseY, state);
-	}
+            float percDiff = (float) diff / (float) h;
+            if(Math.abs(percDiff) > Math.abs(step)) {
+                int s = (int) (percDiff / step);
+                lastY = mouseY;
+                upperPlayer += s;
+                if(upperPlayer > playerCount - fitting) {
+                    upperPlayer = playerCount - fitting;
+                } else if(upperPlayer < 0) {
+                    upperPlayer = 0;
+                }
+            }
+        }
 
-	@Override
-	public void initGui() {
-		upperPlayer = 0;
-		lowerBound = this.height-10;
-	}
+        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+    }
 
-	private int fitting = 0;
+    @Override
+    public void onGuiClosed() {
+        ReplayMod.replaySender.setReplaySpeed(prevSpeed);
+    }
 
-	@Override
-	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-		this.drawCenteredString(fontRendererObj, "Spectate Player", this.width/2, 5, Color.WHITE.getRGB());
-		int k2 = (int)(this.width*0.4);
-		int l2 = 30;
+    @Override
+    protected void mouseReleased(int mouseX, int mouseY, int state) {
+        drag = false;
 
-		drawGradientRect(k2-10, l2-10, (int)(this.width*0.6)+20, this.height-30-2+10, -1072689136, -804253680);
+        super.mouseReleased(mouseX, mouseY, state);
+    }
 
-		fitting = 0;
+    @Override
+    public void initGui() {
+        upperPlayer = 0;
+        lowerBound = this.height - 10;
+    }
 
-		int sk = 0;
-		for(Pair<EntityPlayer, ResourceLocation> p : players) {
-			if(sk < upperPlayer) {
-				sk++;
-				continue;
-			}
-			boolean spec = isSpectator(p.first());
-			
-			this.drawString(fontRendererObj, p.first().getName(), k2+16+5, l2+8-(fontRendererObj.FONT_HEIGHT/2), 
-					spec ? Color.DARK_GRAY.getRGB() : Color.WHITE.getRGB());
-			
-			mc.getTextureManager().bindTexture(p.second());
-			
-			this.drawScaledCustomSizeModalRect(k2, l2, 8.0F, 8.0F, 8, 8, 16, 16, 64.0F, 64.0F);
-			if(p.first().func_175148_a(EnumPlayerModelParts.HAT))
-				Gui.drawScaledCustomSizeModalRect(k2, l2, 40.0F, 8.0F, 8, 8, 16, 16, 64.0F, 64.0F);
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        this.drawCenteredString(fontRendererObj, "Spectate Player", this.width / 2, 5, Color.WHITE.getRGB());
+        int k2 = (int) (this.width * 0.4);
+        int l2 = 30;
 
-			GlStateManager.resetColor();
-			
-			l2 += 16+5;
-			fitting++;
-			if(l2+32 > lowerBound) {
-				break;
-			}
-		}
-		
-		int dw = Mouse.getDWheel();
-		if(dw > 0) {
-			dw = -1;
-		} else if(dw < 0) {
-			dw = 1;
-		}
-		
-		upperPlayer = Math.max(Math.min(upperPlayer+dw, playerCount-fitting), 0);
+        drawGradientRect(k2 - 10, l2 - 10, (int) (this.width * 0.6) + 20, this.height - 30 - 2 + 10, -1072689136, -804253680);
 
-		if(fitting < playerCount) {
-			float visiblePerc = ((float)fitting)/playerCount;
-			int barHeight = (int)(visiblePerc*(height-32-32));
+        fitting = 0;
 
-			float posPerc = ((float)upperPlayer)/playerCount;
-			int barY = (int)(posPerc*(height-32-32));
+        int sk = 0;
+        for(Pair<EntityPlayer, ResourceLocation> p : players) {
+            if(sk < upperPlayer) {
+                sk++;
+                continue;
+            }
+            boolean spec = isSpectator(p.first());
 
-			this.drawRect(k2-18, 30-2, k2-10, this.height-30-2, Color.BLACK.getRGB());
-			this.drawRect(k2-16, 32-2+barY, k2-12, 32-1+barY+barHeight, Color.LIGHT_GRAY.getRGB());
-		} else {
+            this.drawString(fontRendererObj, p.first().getName(), k2 + 16 + 5, l2 + 8 - (fontRendererObj.FONT_HEIGHT / 2),
+                    spec ? Color.DARK_GRAY.getRGB() : Color.WHITE.getRGB());
 
-		}
+            mc.getTextureManager().bindTexture(p.second());
 
-		super.drawScreen(mouseX, mouseY, partialTicks);
-	}
+            this.drawScaledCustomSizeModalRect(k2, l2, 8.0F, 8.0F, 8, 8, 16, 16, 64.0F, 64.0F);
+            if(p.first().func_175148_a(EnumPlayerModelParts.HAT))
+                Gui.drawScaledCustomSizeModalRect(k2, l2, 40.0F, 8.0F, 8, 8, 16, 16, 64.0F, 64.0F);
+
+            GlStateManager.resetColor();
+
+            l2 += 16 + 5;
+            fitting++;
+            if(l2 + 32 > lowerBound) {
+                break;
+            }
+        }
+
+        int dw = Mouse.getDWheel();
+        if(dw > 0) {
+            dw = -1;
+        } else if(dw < 0) {
+            dw = 1;
+        }
+
+        upperPlayer = Math.max(Math.min(upperPlayer + dw, playerCount - fitting), 0);
+
+        if(fitting < playerCount) {
+            float visiblePerc = ((float) fitting) / playerCount;
+            int barHeight = (int) (visiblePerc * (height - 32 - 32));
+
+            float posPerc = ((float) upperPlayer) / playerCount;
+            int barY = (int) (posPerc * (height - 32 - 32));
+
+            this.drawRect(k2 - 18, 30 - 2, k2 - 10, this.height - 30 - 2, Color.BLACK.getRGB());
+            this.drawRect(k2 - 16, 32 - 2 + barY, k2 - 12, 32 - 1 + barY + barHeight, Color.LIGHT_GRAY.getRGB());
+        } else {
+
+        }
+
+        super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    private class PlayerComparator implements Comparator<EntityPlayer> {
+
+        @Override
+        public int compare(EntityPlayer o1, EntityPlayer o2) {
+            if(isSpectator(o1) && !isSpectator(o2)) {
+                return 1;
+            } else if(isSpectator(o2) && !isSpectator(o1)) {
+                return -1;
+            } else {
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            }
+        }
+
+    }
 }

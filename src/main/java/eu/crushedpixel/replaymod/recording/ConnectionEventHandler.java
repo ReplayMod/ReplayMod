@@ -1,8 +1,7 @@
 package eu.crushedpixel.replaymod.recording;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.chat.ChatMessageRequests;
-import eu.crushedpixel.replaymod.chat.ChatMessageRequests.ChatMessageType;
+import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -25,127 +24,123 @@ import java.util.Map.Entry;
 
 public class ConnectionEventHandler {
 
-	private static final String decoderKey = "decoder";
-	private static final String packetHandlerKey = "packet_handler";
-	private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
-	private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-	public static final String TEMP_FILE_EXTENSION = ".tmcpr";
-	public static final String JSON_FILE_EXTENSION = ".json";
-	public static final String ZIP_FILE_EXTENSION = ".mcpr";
+    public static final String TEMP_FILE_EXTENSION = ".tmcpr";
+    public static final String JSON_FILE_EXTENSION = ".json";
+    public static final String ZIP_FILE_EXTENSION = ".mcpr";
+    private static final String decoderKey = "decoder";
+    private static final String packetHandlerKey = "packet_handler";
+    private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
+    private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+    private static PacketListener packetListener = null;
+    private static boolean isRecording = false;
+    private File currentFile;
+    private String fileName;
 
-	private File currentFile;
-	private String fileName;
+    public static boolean isRecording() {
+        return isRecording;
+    }
 
-	private static PacketListener packetListener = null;
+    public static void insertPacket(Packet packet) {
+        if(!isRecording || packetListener == null) {
+            String reason = isRecording ? " (recording)" : " (null)";
+            System.out.println("Invalid attempt to insert Packet!" + reason);
+            return;
+        }
+        try {
+            packetListener.saveOnly(packet);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	private static boolean isRecording = false;
+    @SubscribeEvent
+    public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
+        System.out.println("Connected to server");
 
-	public static boolean isRecording() {
-		return isRecording;
-	}
+        ReplayMod.chatMessageHandler.initialize();
+        ReplayMod.recordingHandler.resetVars();
 
-	public static void insertPacket(Packet packet) {
-		if(!isRecording || packetListener == null) {
-			String reason = isRecording ? " (recording)":" (null)";
-			System.out.println("Invalid attempt to insert Packet!"+reason);
-			return;
-		}
-		try {
-			packetListener.saveOnly(packet);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+        try {
+            if(event.isLocal) {
+                if(!ReplayMod.replaySettings.isEnableRecordingSingleplayer()) {
+                    System.out.println("Singleplayer Recording is disabled");
+                    return;
+                }
+            } else {
+                if(!ReplayMod.replaySettings.isEnableRecordingServer()) {
+                    System.out.println("Multiplayer Recording is disabled");
+                    return;
+                }
+            }
+            NetworkManager nm = event.manager;
+            String worldName = "";
+            if(!event.isLocal) {
+                worldName = ((InetSocketAddress) nm.getRemoteAddress()).getHostName();
+            }
+            Channel channel = nm.channel();
+            ChannelPipeline pipeline = channel.pipeline();
 
-	@SubscribeEvent
-	public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
-		System.out.println("Connected to server");
+            List<String> channelHandlerKeys = new ArrayList<String>();
+            Iterator<Entry<String, ChannelHandler>> it = pipeline.iterator();
+            while(it.hasNext()) {
+                Entry<String, ChannelHandler> entry = it.next();
+                channelHandlerKeys.add(entry.getKey());
+            }
 
-		ChatMessageRequests.initialize();
-		
-		ReplayMod.recordingHandler.resetVars();
+            File folder = ReplayFileIO.getReplayFolder();
 
-		try {
-			if(event.isLocal) {
-				if(!ReplayMod.replaySettings.isEnableRecordingSingleplayer()) {
-					System.out.println("Singleplayer Recording is disabled");
-					return;
-				}
-			} else {
-				if(!ReplayMod.replaySettings.isEnableRecordingServer()) {
-					System.out.println("Multiplayer Recording is disabled");
-					return;
-				}
-			}
-			NetworkManager nm = event.manager;
-			String worldName = "";
-			if(!event.isLocal) {
-				worldName = ((InetSocketAddress)nm.getRemoteAddress()).getHostName();
-			}
-			Channel channel = nm.channel();
-			ChannelPipeline pipeline = channel.pipeline();
+            fileName = sdf.format(Calendar.getInstance().getTime());
+            currentFile = new File(folder, fileName + TEMP_FILE_EXTENSION);
 
-			List<String> channelHandlerKeys = new ArrayList<String>();
-			Iterator<Entry<String, ChannelHandler>> it = pipeline.iterator();
-			while(it.hasNext()) {
-				Entry<String, ChannelHandler> entry = it.next();
-				channelHandlerKeys.add(entry.getKey());
-			}
+            currentFile.createNewFile();
 
-			File folder = ReplayFileIO.getReplayFolder();
+            PacketListener insert = null;
 
-			fileName = sdf.format(Calendar.getInstance().getTime());
-			currentFile = new File(folder, fileName+TEMP_FILE_EXTENSION);
+            pipeline.addBefore(packetHandlerKey, "replay_recorder", insert = new PacketListener
+                    (currentFile, fileName, worldName, System.currentTimeMillis(), event.isLocal));
+            ReplayMod.chatMessageHandler.addChatMessage("Recording started!", ChatMessageType.INFORMATION);
+            isRecording = true;
 
-			currentFile.createNewFile();
+            final PacketListener listener = insert;
 
-			PacketListener insert = null;
+            if(insert != null && event.isLocal) {
+                new Thread(new Runnable() {
 
-			pipeline.addBefore(packetHandlerKey, "replay_recorder", insert = new PacketListener
-					(currentFile, fileName, worldName, System.currentTimeMillis(), event.isLocal));
-			ChatMessageRequests.addChatMessage("Recording started!", ChatMessageType.INFORMATION);
-			isRecording = true;
+                    @Override
+                    public void run() {
+                        String worldName = null;
+                        while(worldName == null) {
+                            try {
+                                worldName = MinecraftServer.getServer().getWorldName();
+                                listener.setWorldName(worldName);
+                                return;
 
-			final PacketListener listener = insert;
+                            } catch(Exception e) {
+                                try {
+                                    Thread.sleep(100);
+                                } catch(InterruptedException e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+                        }
 
-			if(insert != null && event.isLocal) {
-				new Thread(new Runnable() {
+                    }
+                }).start();
+            }
 
-					@Override
-					public void run() {
-						String worldName = null;
-						while(worldName == null) {
-							try {
-								worldName = MinecraftServer.getServer().getWorldName();
-								listener.setWorldName(worldName);
-								return;
+            packetListener = listener;
 
-							} catch(Exception e) {
-								try {
-									Thread.sleep(100);
-								} catch (InterruptedException e1) {
-									e1.printStackTrace();
-								}
-							}
-						}
+        } catch(Exception e) {
+            ReplayMod.chatMessageHandler.addChatMessage("Failed to start recording!", ChatMessageType.WARNING);
+            e.printStackTrace();
+        }
+    }
 
-					}
-				}).start();
-			}
-
-			packetListener = listener;
-
-		} catch(Exception e) {
-			ChatMessageRequests.addChatMessage("Failed to start recording!", ChatMessageType.WARNING);
-			e.printStackTrace();
-		}
-	}
-
-	@SubscribeEvent
-	public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-		System.out.println("Disconnected from server");
-		isRecording = false;
-		packetListener = null;
-		ChatMessageRequests.stop();
-	}
+    @SubscribeEvent
+    public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
+        System.out.println("Disconnected from server");
+        isRecording = false;
+        packetListener = null;
+        ReplayMod.chatMessageHandler.stop();
+    }
 }

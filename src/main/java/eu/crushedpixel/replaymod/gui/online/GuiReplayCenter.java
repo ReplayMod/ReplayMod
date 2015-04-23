@@ -1,22 +1,6 @@
 package eu.crushedpixel.replaymod.gui.online;
 
-import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiYesNo;
-import net.minecraft.client.gui.GuiYesNoCallback;
-import net.minecraft.client.resources.I18n;
-
-import org.lwjgl.input.Keyboard;
-
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.api.client.ApiException;
 import eu.crushedpixel.replaymod.api.client.SearchPagination;
 import eu.crushedpixel.replaymod.api.client.SearchQuery;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
@@ -24,247 +8,251 @@ import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.resources.I18n;
+import org.lwjgl.input.Keyboard;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
-	private enum Tab {
-		RECENT_FILES, BEST_FILES, MY_FILES, SEARCH;
-	}
+    private static final SearchQuery recentFileSearchQuery = new SearchQuery(false, null, null, null, null, null,
+            null, null, null, null);
+    private static final SearchQuery bestFileSearchQuery = new SearchQuery(true, null, null, null, null, null,
+            null, null, null, null);
+    private static final int LOGOUT_CALLBACK_ID = 1;
+    private final SearchPagination recentFilePagination = new SearchPagination(recentFileSearchQuery);
+    private final SearchPagination bestFilePagination = new SearchPagination(bestFileSearchQuery);
+    private GuiReplayListExtended currentList;
+    private ReplayFileList recentFileList, bestFileList, myFileList, searchFileList;
+    private Tab currentTab = Tab.RECENT_FILES;
+    private SearchPagination myFilePagination;
 
-	private GuiReplayListExtended currentList;
+    public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, int p_152129_2_) {
+        String s1 = I18n.format("Do you really want to log out?", new Object[0]);
+        GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, "", "Logout", "Cancel", p_152129_2_);
+        return guiyesno;
+    }
 
-	private ReplayFileList recentFileList, bestFileList, myFileList, searchFileList;
+    @Override
+    public void initGui() {
+        Keyboard.enableRepeatEvents(true);
 
-	private Tab currentTab = Tab.RECENT_FILES;
+        if(AuthenticationHandler.isAuthenticated()) {
+            SearchQuery query = new SearchQuery();
+            query.auth = AuthenticationHandler.getKey();
+            query.order = false;
+            myFilePagination = new SearchPagination(query);
+        }
 
-	private static final SearchQuery recentFileSearchQuery = new SearchQuery(false, null, null, null, null, null,
-			null, null, null, null);
+        //Top Button Bar
+        List<GuiButton> buttonBar = new ArrayList<GuiButton>();
 
-	private static final SearchQuery bestFileSearchQuery = new SearchQuery(true, null, null, null, null, null,
-			null, null, null, null);
+        GuiButton recentButton = new GuiButton(GuiConstants.CENTER_RECENT_BUTTON, 20, 30, "Newest Replays");
+        buttonBar.add(recentButton);
 
-	private final SearchPagination recentFilePagination = new SearchPagination(recentFileSearchQuery);
-	private final SearchPagination bestFilePagination = new SearchPagination(bestFileSearchQuery);
-	private SearchPagination myFilePagination;
+        GuiButton bestButton = new GuiButton(GuiConstants.CENTER_BEST_BUTTON, 20, 30, "Best Replays");
+        buttonBar.add(bestButton);
 
-	@Override
-	public void initGui() {
-		Keyboard.enableRepeatEvents(true);
+        GuiButton ownReplayButton = new GuiButton(GuiConstants.CENTER_MY_REPLAYS_BUTTON, 20, 30, "My Replays");
+        ownReplayButton.enabled = AuthenticationHandler.isAuthenticated();
+        buttonBar.add(ownReplayButton);
 
-		if(AuthenticationHandler.isAuthenticated()) {
-			SearchQuery query = new SearchQuery();
-			query.auth = AuthenticationHandler.getKey();
-			query.order = false;
-			myFilePagination = new SearchPagination(query);
-		}
+        GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, "Search");
+        buttonBar.add(searchButton);
 
-		//Top Button Bar
-		List<GuiButton> buttonBar = new ArrayList<GuiButton>();
+        int i = 0;
+        for(GuiButton b : buttonBar) {
+            int w = this.width - 30;
+            int w2 = w / buttonBar.size();
 
-		GuiButton recentButton = new GuiButton(GuiConstants.CENTER_RECENT_BUTTON, 20, 30, "Newest Replays");
-		buttonBar.add(recentButton);
+            int x = 15 + (w2 * i);
+            b.xPosition = x + 2;
+            b.yPosition = 20;
+            b.width = w2 - 4;
 
-		GuiButton bestButton = new GuiButton(GuiConstants.CENTER_BEST_BUTTON, 20, 30, "Best Replays");
-		buttonBar.add(bestButton);
+            buttonList.add(b);
 
-		GuiButton ownReplayButton = new GuiButton(GuiConstants.CENTER_MY_REPLAYS_BUTTON, 20, 30, "My Replays");
-		ownReplayButton.enabled = AuthenticationHandler.isAuthenticated();
-		buttonBar.add(ownReplayButton);
+            i++;
+        }
 
-		GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, "Search");
-		buttonBar.add(searchButton);
+        //Bottom Button Bar (dat alliteration)
+        List<GuiButton> bottomBar = new ArrayList<GuiButton>();
 
-		int i = 0;
-		for(GuiButton b : buttonBar) {
-			int w = this.width - 30;
-			int w2 = w/buttonBar.size();
+        GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, "Main Menu");
+        bottomBar.add(exitButton);
 
-			int x = 15+(w2*i);
-			b.xPosition = x+2;
-			b.yPosition = 20;
-			b.width = w2-4;
+        GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, "Replay Viewer");
+        bottomBar.add(managerButton);
 
-			buttonList.add(b);
+        GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, "Logout");
+        bottomBar.add(logoutButton);
 
-			i++;
-		}
+        i = 0;
+        for(GuiButton b : bottomBar) {
+            int w = this.width - 30;
+            int w2 = w / bottomBar.size();
 
-		//Bottom Button Bar (dat alliteration)
-		List<GuiButton> bottomBar = new ArrayList<GuiButton>();
+            int x = 15 + (w2 * i);
+            b.xPosition = x + 2;
+            b.yPosition = height - 30;
+            b.width = w2 - 4;
 
-		GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, "Main Menu");
-		bottomBar.add(exitButton);
+            buttonList.add(b);
 
-		GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, "Replay Viewer");
-		bottomBar.add(managerButton);
+            i++;
+        }
 
-		GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, "Logout");
-		bottomBar.add(logoutButton);
+        showOnlineRecent();
+    }
 
-		i = 0;
-		for(GuiButton b : bottomBar) {
-			int w = this.width - 30;
-			int w2 = w/bottomBar.size();
+    @Override
+    protected void actionPerformed(GuiButton button) throws java.io.IOException {
+        if(!button.enabled) return;
+        if(button.id == GuiConstants.CENTER_BACK_BUTTON) {
+            mc.displayGuiScreen(new GuiMainMenu());
+        } else if(button.id == GuiConstants.CENTER_LOGOUT_BUTTON) {
+            mc.displayGuiScreen(getYesNoGui(this, LOGOUT_CALLBACK_ID));
+        } else if(button.id == GuiConstants.CENTER_MANAGER_BUTTON) {
+            mc.displayGuiScreen(new GuiReplayViewer());
+        } else if(button.id == GuiConstants.CENTER_RECENT_BUTTON) {
+            showOnlineRecent();
+        } else if(button.id == GuiConstants.CENTER_BEST_BUTTON) {
+            showOnlineBest();
+        } else if(button.id == GuiConstants.CENTER_MY_REPLAYS_BUTTON) {
+            showOnlineOwnFiles();
+        } else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
 
-			int x = 15+(w2*i);
-			b.xPosition = x+2;
-			b.yPosition = height-30;
-			b.width = w2-4;
+        }
+    }
 
-			buttonList.add(b);
+    @Override
+    public void confirmClicked(boolean result, int id) {
+        if(id == LOGOUT_CALLBACK_ID) {
+            if(result) {
+                mc.addScheduledTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        AuthenticationHandler.logout();
+                        mc.displayGuiScreen(new GuiMainMenu());
+                    }
+                });
+            } else {
+                mc.displayGuiScreen(this);
+            }
+        }
+    }
 
-			i++;
-		}
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        this.drawDefaultBackground();
+        this.drawCenteredString(fontRendererObj, "Replay Center", this.width / 2, 8, Color.WHITE.getRGB());
 
-		showOnlineRecent();
-	}
+        if(currentList != null) {
+            currentList.drawScreen(mouseX, mouseY, partialTicks);
+        }
 
-	@Override
-	protected void actionPerformed(GuiButton button) throws java.io.IOException {
-		if(!button.enabled) return;
-		if(button.id == GuiConstants.CENTER_BACK_BUTTON) {
-			mc.displayGuiScreen(new GuiMainMenu());
-		} else if(button.id == GuiConstants.CENTER_LOGOUT_BUTTON) {
-			mc.displayGuiScreen(getYesNoGui(this, LOGOUT_CALLBACK_ID));
-		} else if(button.id == GuiConstants.CENTER_MANAGER_BUTTON) {
-			mc.displayGuiScreen(new GuiReplayViewer());
-		} else if(button.id == GuiConstants.CENTER_RECENT_BUTTON) {
-			showOnlineRecent();
-		} else if(button.id == GuiConstants.CENTER_BEST_BUTTON) {
-			showOnlineBest();
-		} else if(button.id == GuiConstants.CENTER_MY_REPLAYS_BUTTON) {
-			showOnlineOwnFiles();
-		} else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
+        super.drawScreen(mouseX, mouseY, partialTicks);
+    }
 
-		}
-	}
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        if(currentList != null) {
+            this.currentList.handleMouseInput();
+        }
+    }
 
-	private static final int LOGOUT_CALLBACK_ID = 1;
-	@Override
-	public void confirmClicked(boolean result, int id) {
-		if(id == LOGOUT_CALLBACK_ID) {
-			if(result) {
-				mc.addScheduledTask(new Runnable() {
-					@Override
-					public void run() {
-						AuthenticationHandler.logout();
-						mc.displayGuiScreen(new GuiMainMenu());
-					}
-				});
-			} else {
-				mc.displayGuiScreen(this);
-			}
-		}
-	}
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+        if(currentList != null) {
+            this.currentList.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+    }
 
-	public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, int p_152129_2_) {
-		String s1 = I18n.format("Do you really want to log out?", new Object[0]);
-		GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, "", "Logout", "Cancel", p_152129_2_);
-		return guiyesno;
-	}
+    @Override
+    protected void mouseReleased(int mouseX, int mouseY, int state) {
+        super.mouseReleased(mouseX, mouseY, state);
+        if(currentList != null) {
+            this.currentList.mouseReleased(mouseX, mouseY, state);
+        }
+    }
 
-	@Override
-	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-		this.drawDefaultBackground();
-		this.drawCenteredString(fontRendererObj, "Replay Center", this.width/2, 8, Color.WHITE.getRGB());
+    @Override
+    public void onGuiClosed() {
+        Keyboard.enableRepeatEvents(false);
+    }
 
-		if(currentList != null) {
-			currentList.drawScreen(mouseX, mouseY, partialTicks);
-		}
+    private void updateCurrentList(ReplayFileList list, SearchPagination pagination) {
+        currentList = list;
+        if(currentList == null) {
+            currentList = new ReplayFileList(mc, width, height, 50, height - 40, 36);
+        } else {
+            currentList.clearEntries();
+            currentList.width = width;
+            currentList.height = height;
+            currentList.top = 50;
+            currentList.bottom = height - 40;
+        }
 
-		super.drawScreen(mouseX, mouseY, partialTicks);
-	}
+        if(pagination.getLoadedPages() < 0) {
+            pagination.fetchPage();
+        }
 
-	@Override
-	public void handleMouseInput() throws IOException {
-		super.handleMouseInput();
-		if(currentList != null) {
-			this.currentList.handleMouseInput();
-		}
-	}
+        for(FileInfo i : pagination.getFiles()) {
+            try {
+                File tmp = null;
+                if(i.hasThumbnail()) {
+                    tmp = File.createTempFile("thumb_online_" + i.getId(), "jpg");
+                    ReplayMod.apiClient.downloadThumbnail(i.getId(), tmp);
+                }
+                currentList.addEntry(i, tmp);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-	@Override
-	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-		if(currentList != null) {
-			this.currentList.mouseClicked(mouseX, mouseY, mouseButton);
-		}
-	}
+    public void showOnlineRecent() {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                updateCurrentList(recentFileList, recentFilePagination);
+                currentTab = Tab.RECENT_FILES;
+            }
+        });
+        t.start();
+    }
 
-	@Override
-	protected void mouseReleased(int mouseX, int mouseY, int state) {
-		super.mouseReleased(mouseX, mouseY, state);
-		if(currentList != null) {
-			this.currentList.mouseReleased(mouseX, mouseY, state);
-		}
-	}
+    public void showOnlineBest() {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                updateCurrentList(bestFileList, bestFilePagination);
+                currentTab = Tab.BEST_FILES;
+            }
+        });
+        t.start();
+    }
 
-	@Override
-	public void onGuiClosed() {
-		Keyboard.enableRepeatEvents(false);
-	}
+    public void showOnlineOwnFiles() {
+        if(!AuthenticationHandler.isAuthenticated() || myFilePagination == null) return;
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                updateCurrentList(myFileList, myFilePagination);
+                currentTab = Tab.MY_FILES;
+            }
+        });
+        t.start();
+    }
 
-	private void updateCurrentList(ReplayFileList list, SearchPagination pagination) {
-		currentList = list;
-		if(currentList == null) {
-			currentList = new ReplayFileList(mc, width, height, 50, height-40, 36);
-		} else {
-			currentList.clearEntries();
-			currentList.width = width;
-			currentList.height = height;
-			currentList.top = 50;
-			currentList.bottom = height-40;
-		}
-
-		if(pagination.getLoadedPages() < 0) {
-			pagination.fetchPage();
-		}
-
-		for(FileInfo i : pagination.getFiles()) {
-			try {
-				File tmp = null;
-				if(i.hasThumbnail()) {
-					tmp = File.createTempFile("thumb_online_"+i.getId(), "jpg");
-					ReplayMod.apiClient.downloadThumbnail(i.getId(), tmp);
-				}
-				currentList.addEntry(i, tmp);
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public void showOnlineRecent() {
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				updateCurrentList(recentFileList, recentFilePagination);
-				currentTab = Tab.RECENT_FILES;
-			}
-		});
-		t.start();
-	}
-
-	public void showOnlineBest() {
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				updateCurrentList(bestFileList, bestFilePagination);
-				currentTab = Tab.BEST_FILES;
-			}
-		});
-		t.start();
-	}
-
-	public void showOnlineOwnFiles() {
-		if(!AuthenticationHandler.isAuthenticated() || myFilePagination == null) return;
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				updateCurrentList(myFileList, myFilePagination);
-				currentTab = Tab.MY_FILES;
-			}
-		});
-		t.start();
-	}
+    private enum Tab {
+        RECENT_FILES, BEST_FILES, MY_FILES, SEARCH;
+    }
 }

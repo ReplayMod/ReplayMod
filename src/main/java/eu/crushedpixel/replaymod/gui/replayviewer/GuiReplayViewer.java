@@ -1,37 +1,7 @@
 package eu.crushedpixel.replaymod.gui.replayviewer;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiYesNo;
-import net.minecraft.client.gui.GuiYesNoCallback;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.Util;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.io.FilenameUtils;
-import org.lwjgl.Sys;
-import org.lwjgl.input.Keyboard;
-
 import com.google.gson.Gson;
 import com.mojang.realmsclient.util.Pair;
-
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
@@ -42,265 +12,271 @@ import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiYesNo;
+import net.minecraft.client.gui.GuiYesNoCallback;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.Util;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.io.FilenameUtils;
+import org.lwjgl.Sys;
+import org.lwjgl.input.Keyboard;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URI;
+import java.util.*;
+import java.util.List;
 
 public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
-	private GuiScreen parentScreen;
-	private GuiButton btnEditServer;
-	private GuiButton btnSelectServer;
-	private GuiButton btnDeleteServer;
-	private String hoveringText;
-	private boolean initialized;
-	private GuiReplayListExtended replayGuiList;
-	private List<Pair<Pair<File, ReplayMetaData>, File>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
-	private GuiButton loadButton, uploadButton, folderButton, renameButton, deleteButton, cancelButton, settingsButton;
+    private static final int LOAD_BUTTON_ID = 9001;
+    private static final int UPLOAD_BUTTON_ID = 9002;
+    private static final int FOLDER_BUTTON_ID = 9003;
+    private static final int RENAME_BUTTON_ID = 9004;
+    private static final int DELETE_BUTTON_ID = 9005;
+    private static final int SETTINGS_BUTTON_ID = 9006;
+    private static final int CANCEL_BUTTON_ID = 9007;
+    private static Gson gson = new Gson();
+    private GuiScreen parentScreen;
+    private GuiButton btnEditServer;
+    private GuiButton btnSelectServer;
+    private GuiButton btnDeleteServer;
+    private String hoveringText;
+    private boolean initialized;
+    private GuiReplayListExtended replayGuiList;
+    private List<Pair<Pair<File, ReplayMetaData>, File>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
+    private GuiButton loadButton, uploadButton, folderButton, renameButton, deleteButton, cancelButton, settingsButton;
+    private boolean replaying = false;
+    private boolean delete_file = false;
 
-	private static Gson gson = new Gson();
-	private boolean replaying = false;
+    public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, String file, int p_152129_2_) {
+        String s1 = I18n.format("Are you sure you want to delete this replay?", new Object[0]);
+        String s2 = "\'" + file + "\' " + I18n.format("will be lost forever! (A long time!)", new Object[0]);
+        String s3 = I18n.format("Delete", new Object[0]);
+        String s4 = I18n.format("Cancel", new Object[0]);
+        GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, s2, s3, s4, p_152129_2_);
+        return guiyesno;
+    }
 
-	private static final int LOAD_BUTTON_ID = 9001;
-	private static final int UPLOAD_BUTTON_ID = 9002;
-	private static final int FOLDER_BUTTON_ID = 9003;
-	private static final int RENAME_BUTTON_ID = 9004;
-	private static final int DELETE_BUTTON_ID = 9005;
-	private static final int SETTINGS_BUTTON_ID = 9006;
-	private static final int CANCEL_BUTTON_ID = 9007;
+    private void reloadFiles() {
+        replayGuiList.clearEntries();
+        replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
 
-	private boolean delete_file = false;
+        for(File file : ReplayFileIO.getAllReplayFiles()) {
+            try {
+                ZipFile archive = new ZipFile(file);
+                ZipArchiveEntry recfile = archive.getEntry("recording" + ConnectionEventHandler.TEMP_FILE_EXTENSION);
+                ZipArchiveEntry metadata = archive.getEntry("metaData" + ConnectionEventHandler.JSON_FILE_EXTENSION);
 
-	private void reloadFiles() {
-		replayGuiList.clearEntries();
-		replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
+                ZipArchiveEntry image = archive.getEntry("thumb");
+                BufferedImage img = null;
+                if(image != null) {
+                    InputStream is = archive.getInputStream(image);
+                    is.skip(7);
+                    BufferedImage bimg = ImageIO.read(is);
+                    if(bimg != null) {
+                        img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
+                    }
+                }
 
-		for(File file : ReplayFileIO.getAllReplayFiles()) {
-			try {
-				ZipFile archive = new ZipFile(file);
-				ZipArchiveEntry recfile = archive.getEntry("recording"+ConnectionEventHandler.TEMP_FILE_EXTENSION);
-				ZipArchiveEntry metadata = archive.getEntry("metaData"+ConnectionEventHandler.JSON_FILE_EXTENSION);
+                File tmp = null;
+                if(img != null) {
+                    tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
+                    tmp.deleteOnExit();
 
-				ZipArchiveEntry image = archive.getEntry("thumb");
-				BufferedImage img = null;
-				if(image != null) {
-					InputStream is = archive.getInputStream(image);
-					is.skip(7);
-					BufferedImage bimg = ImageIO.read(is);
-					if(bimg != null) {
-						img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
-					}
-				}
+                    ImageIO.write(img, "jpg", tmp);
+                }
 
-				File tmp = null;
-				if(img != null) {
-					tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
-					tmp.deleteOnExit();
+                InputStream is = archive.getInputStream(metadata);
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
-					ImageIO.write(img, "jpg", tmp);
-				}
+                String json = br.readLine();
 
-				InputStream is = archive.getInputStream(metadata);
-				BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
 
-				String json = br.readLine();
+                replayFileList.add(Pair.of(Pair.of(file, metaData), tmp));
 
-				ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
+                archive.close();
+            } catch(Exception e) {
+            }
+        }
 
-				replayFileList.add(Pair.of(Pair.of(file, metaData), tmp));
+        Collections.sort(replayFileList, new FileAgeComparator());
 
-				archive.close();
-			} catch(Exception e) {}
-		}
+        for(Pair<Pair<File, ReplayMetaData>, File> p : replayFileList) {
+            FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null,
+                    -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true);
+            replayGuiList.addEntry(fileInfo, p.second());
+        }
+    }
 
-		Collections.sort(replayFileList, new FileAgeComparator());
+    @Override
+    public void initGui() {
+        replayGuiList = new ReplayList(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
+        Keyboard.enableRepeatEvents(true);
+        this.buttonList.clear();
 
-		for(Pair<Pair<File, ReplayMetaData>, File> p : replayFileList) {
-			FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null, 
-					-1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true);
-			replayGuiList.addEntry(fileInfo, p.second());
-		}
-	}
+        if(!this.initialized) {
+            this.initialized = true;
+        } else {
+            this.replayGuiList.setDimensions(this.width, this.height, 32, this.height - 64);
+        }
 
-	public class FileAgeComparator implements Comparator<Pair<Pair<File, ReplayMetaData>, File>> {
+        reloadFiles();
+        this.createButtons();
+    }
 
-		@Override
-		public int compare(Pair<Pair<File, ReplayMetaData>, File> o1, Pair<Pair<File, ReplayMetaData>, File> o2) {
-			try {
-				return (int)(new Date(o2.first().second().getDate()).compareTo(new Date(o1.first().second().getDate())));
-			} catch(Exception e) {
-				return 0;
-			}
-		}
+    private void createButtons() {
+        this.buttonList.add(loadButton = new GuiButton(LOAD_BUTTON_ID, this.width / 2 - 154, this.height - 52, 73, 20, I18n.format("Load", new Object[0])));
+        this.buttonList.add(uploadButton = new GuiButton(UPLOAD_BUTTON_ID, this.width / 2 - 154 + 78, this.height - 52, 73, 20, I18n.format("Upload", new Object[0])));
+        this.buttonList.add(folderButton = new GuiButton(FOLDER_BUTTON_ID, this.width / 2 + 4, this.height - 52, 150, 20, I18n.format("Open Replay Folder...", new Object[0])));
+        this.buttonList.add(renameButton = new GuiButton(RENAME_BUTTON_ID, this.width / 2 - 154, this.height - 28, 72, 20, I18n.format("Rename", new Object[0])));
+        this.buttonList.add(deleteButton = new GuiButton(DELETE_BUTTON_ID, this.width / 2 - 76, this.height - 28, 72, 20, I18n.format("Delete", new Object[0])));
+        this.buttonList.add(settingsButton = new GuiButton(SETTINGS_BUTTON_ID, this.width / 2 + 4, this.height - 28, 72, 20, I18n.format("Settings", new Object[0])));
+        this.buttonList.add(cancelButton = new GuiButton(CANCEL_BUTTON_ID, this.width / 2 + 4 + 78, this.height - 28, 72, 20, I18n.format("Cancel", new Object[0])));
+        setButtonsEnabled(false);
+    }
 
-	}
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        this.replayGuiList.handleMouseInput();
+    }
 
-	@Override
-	public void initGui() {
-		replayGuiList = new ReplayList(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
-		Keyboard.enableRepeatEvents(true);
-		this.buttonList.clear();
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+        this.replayGuiList.mouseClicked(mouseX, mouseY, mouseButton);
+    }
 
-		if (!this.initialized) {
-			this.initialized = true;
-		}
-		else {
-			this.replayGuiList.setDimensions(this.width, this.height, 32, this.height - 64);
-		}
+    @Override
+    protected void mouseReleased(int mouseX, int mouseY, int state) {
+        super.mouseReleased(mouseX, mouseY, state);
+        this.replayGuiList.mouseReleased(mouseX, mouseY, state);
+    }
 
-		reloadFiles();
-		this.createButtons();
-	}
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        this.hoveringText = null;
+        this.drawDefaultBackground();
+        this.replayGuiList.drawScreen(mouseX, mouseY, partialTicks);
+        this.drawCenteredString(this.fontRendererObj, "Replay Viewer", this.width / 2, 20, 16777215);
+        super.drawScreen(mouseX, mouseY, partialTicks);
+    }
 
-	private void createButtons() {
-		this.buttonList.add(loadButton = new GuiButton(LOAD_BUTTON_ID, this.width / 2 - 154, this.height - 52, 73, 20, I18n.format("Load", new Object[0])));
-		this.buttonList.add(uploadButton = new GuiButton(UPLOAD_BUTTON_ID, this.width / 2 - 154 + 78, this.height - 52, 73, 20, I18n.format("Upload", new Object[0])));
-		this.buttonList.add(folderButton =  new GuiButton(FOLDER_BUTTON_ID, this.width / 2 + 4, this.height - 52, 150, 20, I18n.format("Open Replay Folder...", new Object[0])));
-		this.buttonList.add(renameButton = new GuiButton(RENAME_BUTTON_ID, this.width / 2 - 154, this.height - 28, 72, 20, I18n.format("Rename", new Object[0])));
-		this.buttonList.add(deleteButton = new GuiButton(DELETE_BUTTON_ID, this.width / 2 - 76, this.height - 28, 72, 20, I18n.format("Delete", new Object[0])));
-		this.buttonList.add(settingsButton = new GuiButton(SETTINGS_BUTTON_ID, this.width / 2 + 4, this.height - 28, 72, 20, I18n.format("Settings", new Object[0])));
-		this.buttonList.add(cancelButton = new GuiButton(CANCEL_BUTTON_ID, this.width / 2 + 4 + 78, this.height - 28, 72, 20, I18n.format("Cancel", new Object[0])));
-		setButtonsEnabled(false);
-	}
+    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        if(button.enabled) {
+            if(button.id == LOAD_BUTTON_ID) {
+                loadReplay(replayGuiList.selected);
+            } else if(button.id == CANCEL_BUTTON_ID) {
+                mc.displayGuiScreen(parentScreen);
+            } else if(button.id == DELETE_BUTTON_ID) {
+                String s = replayGuiList.getListEntry(replayGuiList.selected).getFileInfo().getName();
 
-	@Override
-	public void handleMouseInput() throws IOException {
-		super.handleMouseInput();
-		this.replayGuiList.handleMouseInput();
-	}
+                if(s != null) {
+                    delete_file = true;
+                    GuiYesNo guiyesno = getYesNoGui(this, s, 1);
+                    this.mc.displayGuiScreen(guiyesno);
+                }
+            } else if(button.id == SETTINGS_BUTTON_ID) {
+                this.mc.displayGuiScreen(new GuiReplaySettings(this));
+            } else if(button.id == RENAME_BUTTON_ID) {
+                File file = replayFileList.get(replayGuiList.selected).first().first();
+                this.mc.displayGuiScreen(new GuiRenameReplay(this, file));
+            } else if(button.id == UPLOAD_BUTTON_ID) {
+                File file = replayFileList.get(replayGuiList.selected).first().first();
+                this.mc.displayGuiScreen(new GuiUploadFile(file, this));
+            } else if(button.id == FOLDER_BUTTON_ID) {
+                File file1 = ReplayFileIO.getReplayFolder();
 
-	@Override
-	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-		this.replayGuiList.mouseClicked(mouseX, mouseY, mouseButton);
-	}
+                String s = file1.getAbsolutePath();
 
-	@Override
-	protected void mouseReleased(int mouseX, int mouseY, int state) {
-		super.mouseReleased(mouseX, mouseY, state);
-		this.replayGuiList.mouseReleased(mouseX, mouseY, state);
-	}
+                if(Util.getOSType() == Util.EnumOS.OSX) {
+                    try {
+                        Runtime.getRuntime().exec(new String[]{"/usr/bin/open", s});
+                        return;
+                    } catch(IOException ioexception1) {
+                    }
+                } else if(Util.getOSType() == Util.EnumOS.WINDOWS) {
+                    String s1 = String.format("cmd.exe /C start \"Open file\" \"%s\"", new Object[]{s});
 
-	@Override
-	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-		this.hoveringText = null;
-		this.drawDefaultBackground();
-		this.replayGuiList.drawScreen(mouseX, mouseY, partialTicks);
-		this.drawCenteredString(this.fontRendererObj, "Replay Viewer", this.width / 2, 20, 16777215);
-		super.drawScreen(mouseX, mouseY, partialTicks);
-	}
+                    try {
+                        Runtime.getRuntime().exec(s1);
+                        return;
+                    } catch(IOException ioexception) {
+                    }
+                }
 
-	@Override
-	protected void actionPerformed(GuiButton button) throws IOException {
-		if(button.enabled) {
-			if(button.id == LOAD_BUTTON_ID) {
-				loadReplay(replayGuiList.selected);
-			}
-			else if(button.id == CANCEL_BUTTON_ID) {
-				mc.displayGuiScreen(parentScreen);
-			}
-			else if(button.id == DELETE_BUTTON_ID) {
-				String s = replayGuiList.getListEntry(replayGuiList.selected).getFileInfo().getName();
+                boolean flag = false;
 
-				if (s != null) {
-					delete_file = true;
-					GuiYesNo guiyesno = getYesNoGui(this, s, 1);
-					this.mc.displayGuiScreen(guiyesno);
-				}
-			}
-			else if(button.id == SETTINGS_BUTTON_ID) {
-				this.mc.displayGuiScreen(new GuiReplaySettings(this));
-			}
-			else if(button.id == RENAME_BUTTON_ID) {
-				File file = replayFileList.get(replayGuiList.selected).first().first();
-				this.mc.displayGuiScreen(new GuiRenameReplay(this, file));
-			}
-			else if(button.id == UPLOAD_BUTTON_ID) {
-				File file = replayFileList.get(replayGuiList.selected).first().first();
-				this.mc.displayGuiScreen(new GuiUploadFile(file, this));
-			}
-			else if(button.id == FOLDER_BUTTON_ID) {
-				File file1 = ReplayFileIO.getReplayFolder();
-				
-				String s = file1.getAbsolutePath();
+                try {
+                    Class oclass = Class.forName("java.awt.Desktop");
+                    Object object = oclass.getMethod("getDesktop", new Class[0]).invoke((Object) null, new Object[0]);
+                    oclass.getMethod("browse", new Class[]{URI.class}).invoke(object, new Object[]{file1.toURI()});
+                } catch(Throwable throwable) {
+                    flag = true;
+                }
 
-				if(Util.getOSType() == Util.EnumOS.OSX) {
-					try {
-						Runtime.getRuntime().exec(new String[] {"/usr/bin/open", s});
-						return;
-					}
-					catch(IOException ioexception1) {}
-				}
-				else if(Util.getOSType() == Util.EnumOS.WINDOWS) {
-					String s1 = String.format("cmd.exe /C start \"Open file\" \"%s\"", new Object[] {s});
+                if(flag) {
+                    Sys.openURL("file://" + s);
+                }
+            }
+        }
+    }
 
-					try{
-						Runtime.getRuntime().exec(s1);
-						return;
-					}
-					catch(IOException ioexception) {}
-				}
+    public void confirmClicked(boolean result, int id) {
+        if(this.delete_file) {
+            this.delete_file = false;
 
-				boolean flag = false;
+            if(result) {
+                replayFileList.get(replayGuiList.selected).first().first().delete();
+                replayFileList.remove(replayGuiList.selected);
+            }
 
-				try {
-					Class oclass = Class.forName("java.awt.Desktop");
-					Object object = oclass.getMethod("getDesktop", new Class[0]).invoke((Object)null, new Object[0]);
-					oclass.getMethod("browse", new Class[] {URI.class}).invoke(object, new Object[] {file1.toURI()});
-				}
-				catch(Throwable throwable) {
-					flag = true;
-				}
+            this.mc.displayGuiScreen(this);
+        }
+    }
 
-				if(flag) {
-					Sys.openURL("file://" + s);
-				}
-			}
-		}
-	}
+    public void setButtonsEnabled(boolean b) {
+        loadButton.enabled = b;
+        if(!b || !AuthenticationHandler.isAuthenticated()) {
+            uploadButton.enabled = false;
+        } else {
+            uploadButton.enabled = true;
+        }
 
-	public void confirmClicked(boolean result, int id) {
-		if (this.delete_file)
-		{
-			this.delete_file = false;
+        renameButton.enabled = b;
+        deleteButton.enabled = b;
+    }
 
-			if (result)
-			{
-				replayFileList.get(replayGuiList.selected).first().first().delete();
-				replayFileList.remove(replayGuiList.selected);
-			}
+    public void loadReplay(int id) {
+        mc.displayGuiScreen((GuiScreen) null);
 
-			this.mc.displayGuiScreen(this);
-		}
-	}
+        try {
+            ReplayHandler.startReplay(replayFileList.get(id).first().first());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
-	public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, String file, int p_152129_2_) {
-		String s1 = I18n.format("Are you sure you want to delete this replay?", new Object[0]);
-		String s2 = "\'" + file + "\' " + I18n.format("will be lost forever! (A long time!)", new Object[0]);
-		String s3 = I18n.format("Delete", new Object[0]);
-		String s4 = I18n.format("Cancel", new Object[0]);
-		GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, s2, s3, s4, p_152129_2_);
-		return guiyesno;
-	}
+    }
 
-	public void setButtonsEnabled(boolean b) {
-		loadButton.enabled = b;
-		if(!b || !AuthenticationHandler.isAuthenticated()) {
-			uploadButton.enabled = false;
-		} else {
-			uploadButton.enabled = true;
-		}
+    public class FileAgeComparator implements Comparator<Pair<Pair<File, ReplayMetaData>, File>> {
 
-		renameButton.enabled = b;
-		deleteButton.enabled = b;
-	}
+        @Override
+        public int compare(Pair<Pair<File, ReplayMetaData>, File> o1, Pair<Pair<File, ReplayMetaData>, File> o2) {
+            try {
+                return (int) (new Date(o2.first().second().getDate()).compareTo(new Date(o1.first().second().getDate())));
+            } catch(Exception e) {
+                return 0;
+            }
+        }
 
-	public void loadReplay(int id) {
-		mc.displayGuiScreen((GuiScreen)null);
-
-		try {
-			ReplayHandler.startReplay(replayFileList.get(id).first().first());
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-
-	}
+    }
 
 }

@@ -1,175 +1,153 @@
 package eu.crushedpixel.replaymod.recording;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-
 import com.google.gson.Gson;
-
-import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import net.minecraft.client.Minecraft;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
-	protected File file;
-	protected Long startTime = null;
-	protected String name;
-	protected String worldName;
+    protected File file;
+    protected Long startTime = null;
+    protected String name;
+    protected String worldName;
+    protected long lastSentPacket = 0;
+    protected boolean alive = true;
+    protected DataWriter dataWriter;
+    protected Set<String> players = new HashSet<String>();
+    private boolean singleplayer;
+    private Gson gson = new Gson();
 
-	private boolean singleplayer;
+    public DataListener(File file, String name, String worldName, long startTime, boolean singleplayer) throws FileNotFoundException {
+        this.file = file;
+        this.startTime = startTime;
+        this.name = name;
+        this.worldName = worldName;
+        this.singleplayer = singleplayer;
 
-	protected long lastSentPacket = 0;
+        System.out.println(worldName);
 
-	protected boolean alive = true;
+        FileOutputStream fos = new FileOutputStream(file);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        DataOutputStream out = new DataOutputStream(bos);
+        dataWriter = new DataWriter(out);
+    }
 
-	protected DataWriter dataWriter;
+    public void setWorldName(String worldName) {
+        this.worldName = worldName;
+        System.out.println(worldName);
+    }
 
-	private Gson gson = new Gson();
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        dataWriter.requestFinish(players);
+    }
 
-	protected Set<String> players = new HashSet<String>();
+    public class DataWriter {
 
-	public void setWorldName(String worldName) {
-		this.worldName = worldName;
-		System.out.println(worldName);
-	}
+        private boolean active = true;
 
-	public DataListener(File file, String name, String worldName, long startTime, boolean singleplayer) throws FileNotFoundException {
-		this.file = file;
-		this.startTime = startTime;
-		this.name = name;
-		this.worldName = worldName;
-		this.singleplayer = singleplayer;
+        private ConcurrentLinkedQueue<PacketData> queue = new ConcurrentLinkedQueue<PacketData>();
+        private DataOutputStream stream;
+        Thread outputThread = new Thread(new Runnable() {
 
-		System.out.println(worldName);
+            @Override
+            public void run() {
 
-		FileOutputStream fos = new FileOutputStream(file);
-		BufferedOutputStream bos = new BufferedOutputStream(fos);
-		DataOutputStream out = new DataOutputStream(bos);
-		dataWriter = new DataWriter(out);
-	}
+                HashMap<Class, Integer> counts = new HashMap<Class, Integer>();
 
-	@Override
-	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-		dataWriter.requestFinish(players);
-	}
+                while(active) {
+                    PacketData dataReciever = queue.poll();
+                    if(dataReciever != null) {
+                        //write the ByteBuf to the given OutputStream
 
-	public class DataWriter {
+                        byte[] array = dataReciever.getByteArray();
 
-		private boolean active = true;
+                        if(array != null) {
+                            try {
+                                ReplayFileIO.writePacket(dataReciever, stream);
+                                stream.flush();
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
 
-		private ConcurrentLinkedQueue<PacketData> queue = new ConcurrentLinkedQueue<PacketData>();
+                    } else {
+                        try {
+                            //let the Thread sleep for 1/4 second and queue up new Packets
+                            Thread.sleep(250L);
+                        } catch(InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
 
-		public void writeData(PacketData data) {
-			queue.add(data);
-		}
+                try {
+                    stream.flush();
+                    stream.close();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
 
-		Thread outputThread = new Thread(new Runnable() {
+                for(Entry<Class, Integer> entries : counts.entrySet()) {
+                    System.out.println(entries.getKey() + "| " + entries.getValue());
+                }
 
-			@Override
-			public void run() {
+            }
+        });
 
-				HashMap<Class, Integer> counts = new HashMap<Class, Integer>();
+        public DataWriter(DataOutputStream stream) {
+            this.stream = stream;
+            outputThread.start();
+        }
 
-				while(active) {
-					PacketData dataReciever = queue.poll();
-					if(dataReciever != null) {
-						//write the ByteBuf to the given OutputStream
+        public void writeData(PacketData data) {
+            queue.add(data);
+        }
 
-						byte[] array = dataReciever.getByteArray();
+        public void requestFinish(Set<String> players) {
+            active = false;
 
-						if(array != null) {
-							try {
-								ReplayFileIO.writePacket(dataReciever, stream);
-								stream.flush();
-							} catch(Exception e) {
-								e.printStackTrace();
-							}
-						}
+            try {
+                GuiReplaySaving.replaySaving = true;
 
-					} else {
-						try {
-							//let the Thread sleep for 1/4 second and queue up new Packets
-							Thread.sleep(250L);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				}
+                String mcversion = Minecraft.getMinecraft().getVersion();
+                String[] split = mcversion.split("-");
+                if(split.length > 0) {
+                    mcversion = split[0];
+                }
 
-				try {
-					stream.flush();
-					stream.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+                String[] pl = players.toArray(new String[players.size()]);
 
-				for(Entry<Class, Integer> entries : counts.entrySet()) {
-					System.out.println(entries.getKey()+ "| "+entries.getValue());
-				}
+                ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime, pl, mcversion);
+                String json = gson.toJson(metaData);
 
-			}
-		});
+                File folder = ReplayFileIO.getReplayFolder();
 
-		private DataOutputStream stream;
+                File archive = new File(folder, name + ConnectionEventHandler.ZIP_FILE_EXTENSION);
+                archive.createNewFile();
 
-		public DataWriter(DataOutputStream stream) {
-			this.stream = stream;
-			outputThread.start();
-		}
+                ReplayFileIO.writeReplayFile(archive, file, metaData);
 
-		public void requestFinish(Set<String> players) {
-			active = false;
+                file.delete();
 
-			try {
-				GuiReplaySaving.replaySaving = true;
+                GuiReplaySaving.replaySaving = false;
+            } catch(Exception e) {
+                e.printStackTrace();
+                GuiReplaySaving.replaySaving = false;
+            }
+        }
 
-				String mcversion = Minecraft.getMinecraft().getVersion();
-				String[] split = mcversion.split("-");
-				if(split.length > 0) {
-					mcversion = split[0];
-				}
-
-				String[] pl = players.toArray(new String[players.size()]);
-
-				ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int)lastSentPacket, startTime, pl, mcversion);
-				String json = gson.toJson(metaData);
-
-				File folder = ReplayFileIO.getReplayFolder();
-
-				File archive = new File(folder, name+ConnectionEventHandler.ZIP_FILE_EXTENSION);
-				archive.createNewFile();
-
-				ReplayFileIO.writeReplayFile(archive, file, metaData);
-				
-				file.delete();
-
-				GuiReplaySaving.replaySaving = false;
-			} catch(Exception e) {
-				e.printStackTrace();
-				GuiReplaySaving.replaySaving = false;
-			}
-		}
-
-	}
+    }
 
 }

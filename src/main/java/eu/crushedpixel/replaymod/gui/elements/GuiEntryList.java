@@ -1,150 +1,146 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.lwjgl.input.Mouse;
-
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiTextField;
+import org.lwjgl.input.Mouse;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiEntryList<T> extends GuiTextField {
 
-	private int selectionIndex = -1;
+    public final static int elementHeight = 14;
+    private int selectionIndex = -1;
+    private Minecraft mc = Minecraft.getMinecraft();
+    private int visibleElements;
+    private int upperIndex = 0;
 
-	private Minecraft mc = Minecraft.getMinecraft();
+    private List<SelectionListener> selectionListeners = new ArrayList<SelectionListener>();
+    private List<T> elements = new ArrayList<T>();
 
-	private int visibleElements;
-	public final static int elementHeight = 14;
+    public GuiEntryList(int id, FontRenderer fontRenderer,
+                        int xPos, int yPos, int width, int visibleEntries) {
+        super(id, fontRenderer, xPos, yPos, width, elementHeight * visibleEntries - 1);
+        this.visibleElements = visibleEntries;
+    }
 
-	private int upperIndex = 0;
+    public void setVisibleElements(int rows) {
+        this.visibleElements = rows;
+        this.height = elementHeight * visibleElements - 1;
+    }
 
-	private List<SelectionListener> selectionListeners = new ArrayList<SelectionListener>();
+    @Override
+    public void drawTextBox() {
+        try {
+            super.drawTextBox();
+            //drawing the entries
+            for(int i = 0; i - upperIndex < visibleElements; i++) {
+                if(i < upperIndex) continue;
 
-	public GuiEntryList(int id, FontRenderer fontRenderer,
-			int xPos, int yPos, int width, int visibleEntries) {
-		super(id, fontRenderer, xPos, yPos, width, elementHeight*visibleEntries-1);
-		this.visibleElements = visibleEntries;
-	}
+                if(i >= elements.size()) break;
 
-	public void setVisibleElements(int rows) {
-		this.visibleElements = rows;
-		this.height = elementHeight*visibleElements-1;
-	}
+                if(i == selectionIndex) {
+                    drawRect(xPosition, yPosition + (i - upperIndex) * elementHeight, xPosition + width,
+                            yPosition + (i + 1 - upperIndex) * elementHeight - 1, Color.GRAY.getRGB());
+                }
 
-	@Override
-	public void drawTextBox() {
-		try {
-			super.drawTextBox();
-			//drawing the entries
-			for(int i=0; i-upperIndex<visibleElements; i++) {
-				if(i<upperIndex) continue;
+                drawRect(xPosition, yPosition + (i + 1 - upperIndex) * elementHeight - 1, xPosition + width,
+                        yPosition + (i + 1 - upperIndex) * elementHeight, -6250336);
+                drawString(mc.fontRendererObj, mc.fontRendererObj.trimStringToWidth(elements.get(i).toString(), width - 4),
+                        xPosition + 2, yPosition + (i - upperIndex) * elementHeight + 3, Color.WHITE.getRGB());
+            }
 
-				if(i >= elements.size()) break;
+            //drawing the scroll bar
+            if(elements.size() > visibleElements) {
+                //handle scroll events
+                int dw = Mouse.getDWheel();
+                if(dw > 0) {
+                    dw = -1;
+                } else if(dw < 0) {
+                    dw = 1;
+                }
 
-				if(i == selectionIndex) {
-					drawRect(xPosition, yPosition+(i-upperIndex)*elementHeight, xPosition+width, 
-							yPosition+(i+1-upperIndex)*elementHeight-1, Color.GRAY.getRGB());
-				}
+                upperIndex = Math.max(Math.min(upperIndex + dw, elements.size() - visibleElements), 0);
 
-				drawRect(xPosition, yPosition+(i+1-upperIndex)*elementHeight-1, xPosition+width, 
-						yPosition+(i+1-upperIndex)*elementHeight, -6250336);
-				drawString(mc.fontRendererObj, mc.fontRendererObj.trimStringToWidth(elements.get(i).toString(), width-4), 
-						xPosition+2, yPosition+(i-upperIndex)*elementHeight+3, Color.WHITE.getRGB());
-			}
+                float visiblePerc = ((float) visibleElements) / elements.size();
+                int barHeight = (int) (visiblePerc * (height - 1));
 
-			//drawing the scroll bar
-			if(elements.size() > visibleElements) {
-				//handle scroll events
-				int dw = Mouse.getDWheel();
-				if(dw > 0) {
-					dw = -1;
-				} else if(dw < 0) {
-					dw = 1;
-				}
+                float posPerc = ((float) upperIndex) / elements.size();
+                int barY = (int) (posPerc * (height - 1));
 
-				upperIndex = Math.max(Math.min(upperIndex+dw, elements.size()-visibleElements), 0);
+                drawRect(xPosition + width - 3, yPosition, xPosition + width, yPosition + height, Color.DARK_GRAY.getRGB());
+                drawRect(xPosition + width - 3, yPosition + barY, xPosition + width, yPosition + 1 + barY + barHeight, -6250336);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-				float visiblePerc = ((float)visibleElements)/elements.size();
-				int barHeight = (int)(visiblePerc*(height-1));
+    @Override
+    public void mouseClicked(int xPos, int yPos, int mouseButton) {
+        if(!(xPos >= xPosition && xPos <= xPosition + width && yPos >= yPosition && yPos <= yPosition + height)) return;
+        int clickedIndex = (int) Math.floor((yPos - yPosition) / elementHeight) + upperIndex;
+        if(clickedIndex < elements.size() && clickedIndex >= 0) {
+            selectionIndex = clickedIndex;
+            fireSelectionChangeEvent();
+        }
+    }
 
-				float posPerc = ((float)upperIndex)/elements.size();
-				int barY = (int)(posPerc*(height-1));
+    private void fireSelectionChangeEvent() {
+        for(SelectionListener listener : selectionListeners) {
+            listener.onSelectionChanged(selectionIndex);
+        }
+    }
 
-				drawRect(xPosition+width-3, yPosition, xPosition+width, yPosition+height, Color.DARK_GRAY.getRGB());
-				drawRect(xPosition+width-3, yPosition+barY, xPosition+width, yPosition+1+barY+barHeight, -6250336);
-			}
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
+    @Override
+    public void setText(String text) {
+    }
 
-	@Override
-	public void mouseClicked(int xPos, int yPos, int mouseButton) {
-		if(!(xPos >= xPosition && xPos <= xPosition+width && yPos >= yPosition && yPos <= yPosition+height)) return;
-		int clickedIndex = (int)Math.floor((yPos-yPosition) / elementHeight) + upperIndex;
-		if(clickedIndex < elements.size() && clickedIndex >= 0) {
-			selectionIndex = clickedIndex;
-			fireSelectionChangeEvent();
-		}
-	}
+    public void setElements(List<T> elements) {
+        this.elements = elements;
+        if(selectionIndex == -1 && elements.size() > 0) {
+            selectionIndex = 0;
+        }
+    }
 
-	private void fireSelectionChangeEvent() {
-		for(SelectionListener listener : selectionListeners) {
-			listener.onSelectionChanged(selectionIndex);
-		}
-	}
+    public void clearElements() {
+        this.elements = new ArrayList<T>();
+        selectionIndex = -1;
+    }
 
-	@Override
-	public void setText(String text) {}
+    public void addElement(T element) {
+        this.elements.add(element);
+        if(selectionIndex == -1) {
+            selectionIndex = 0;
+        }
+    }
 
-	private List<T> elements = new ArrayList<T>();
+    public T getElement(int index) {
+        if(index >= 0) {
+            return elements.get(index);
+        }
+        return null;
+    }
 
-	public void setElements(List<T> elements) {
-		this.elements = elements;
-		if(selectionIndex == -1 && elements.size() > 0) {
-			selectionIndex = 0;
-		}
-	}
+    public int getSelectionIndex() {
+        return selectionIndex;
+    }
 
-	public void clearElements() {
-		this.elements = new ArrayList<T>();
-		selectionIndex = -1;
-	}
+    public void setSelectionIndex(int index) {
+        this.selectionIndex = index;
+        if(selectionIndex < 0) selectionIndex = -1;
+        fireSelectionChangeEvent();
+    }
 
-	public void addElement(T element) {
-		this.elements.add(element);
-		if(selectionIndex == -1) {
-			selectionIndex = 0;
-		}
-	}
+    public void addSelectionListener(SelectionListener listener) {
+        this.selectionListeners.add(listener);
+    }
 
-	public T getElement(int index) {
-		if(index >= 0) {
-			return elements.get(index);
-		}
-		return null;
-	}
-
-	public int getSelectionIndex() {
-		return selectionIndex;
-	}
-
-	public void setSelectionIndex(int index) {
-		this.selectionIndex = index;
-		if(selectionIndex < 0) selectionIndex = -1;
-		fireSelectionChangeEvent();
-	}
-
-	public void addSelectionListener(SelectionListener listener) {
-		this.selectionListeners.add(listener);
-	}
-
-	public void removeSelectionListener(SelectionListener listener) {
-		this.selectionListeners.remove(listener);
-	}
+    public void removeSelectionListener(SelectionListener listener) {
+        this.selectionListeners.remove(listener);
+    }
 
 }

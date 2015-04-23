@@ -4,67 +4,67 @@ import net.minecraft.entity.Entity;
 
 public class Position {
 
-	private double x, y, z;
-	private float pitch, yaw;
-	
-	public Position(Entity e) {
-		this.x = e.posX;
-		this.y = e.posY;
-		this.z = e.posZ;
-		this.pitch = e.rotationPitch;
-		this.yaw = e.rotationYaw;
-	}
-	
-	public Position(double x, double y, double z, float pitch, float yaw) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.pitch = pitch;
-		this.yaw = yaw;
-	}
+    private double x, y, z;
+    private float pitch, yaw;
 
-	public double getX() {
-		return x;
-	}
+    public Position(Entity e) {
+        this.x = e.posX;
+        this.y = e.posY;
+        this.z = e.posZ;
+        this.pitch = e.rotationPitch;
+        this.yaw = e.rotationYaw;
+    }
 
-	public void setX(double x) {
-		this.x = x;
-	}
+    public Position(double x, double y, double z, float pitch, float yaw) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.pitch = pitch;
+        this.yaw = yaw;
+    }
 
-	public double getY() {
-		return y;
-	}
+    public double getX() {
+        return x;
+    }
 
-	public void setY(double y) {
-		this.y = y;
-	}
+    public void setX(double x) {
+        this.x = x;
+    }
 
-	public double getZ() {
-		return z;
-	}
+    public double getY() {
+        return y;
+    }
 
-	public void setZ(double z) {
-		this.z = z;
-	}
+    public void setY(double y) {
+        this.y = y;
+    }
 
-	public float getPitch() {
-		return pitch;
-	}
+    public double getZ() {
+        return z;
+    }
 
-	public void setPitch(float pitch) {
-		this.pitch = pitch;
-	}
+    public void setZ(double z) {
+        this.z = z;
+    }
 
-	public float getYaw() {
-		return yaw;
-	}
+    public float getPitch() {
+        return pitch;
+    }
 
-	public void setYaw(float yaw) {
-		this.yaw = yaw;
-	}
-	
-	@Override
-	public String toString() {
-		return "X="+x+", Y="+y+", Z="+z+", Yaw="+yaw+", Pitch="+pitch;
-	}
+    public void setPitch(float pitch) {
+        this.pitch = pitch;
+    }
+
+    public float getYaw() {
+        return yaw;
+    }
+
+    public void setYaw(float yaw) {
+        this.yaw = yaw;
+    }
+
+    @Override
+    public String toString() {
+        return "X=" + x + ", Y=" + y + ", Z=" + z + ", Yaw=" + yaw + ", Pitch=" + pitch;
+    }
 }

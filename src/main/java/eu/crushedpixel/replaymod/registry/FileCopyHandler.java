@@ -12,6 +12,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class FileCopyHandler extends Thread {
 
+    private Queue<Pair<File, File>> filesToMove = new ConcurrentLinkedQueue<Pair<File, File>>();
+    private boolean shutdown = false;
+
     public FileCopyHandler() {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -20,8 +23,6 @@ public class FileCopyHandler extends Thread {
             }
         }));
     }
-
-    private Queue<Pair<File, File>> filesToMove = new ConcurrentLinkedQueue<Pair<File, File>>();
 
     public void registerModifiedFile(File tempFile, File destination) {
         filesToMove.add(Pair.of(tempFile, destination));
@@ -37,8 +38,6 @@ public class FileCopyHandler extends Thread {
         shutdown = true;
     }
 
-    private boolean shutdown = false;
-
     @Override
     public void run() {
         while(!shutdown || !filesToMove.isEmpty()) {
@@ -52,7 +51,8 @@ public class FileCopyHandler extends Thread {
             }
             try {
                 Thread.sleep(1000);
-            } catch(Exception e) {}
+            } catch(Exception e) {
+            }
         }
     }
 
