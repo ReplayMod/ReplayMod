@@ -86,7 +86,7 @@ public class TickAndRenderListener {
             isGamePaused.set(mc, false);
         }
     }
-    
+
     @SubscribeEvent
     public void tick(TickEvent event) {
         if(!ReplayHandler.isInReplay()) return;
