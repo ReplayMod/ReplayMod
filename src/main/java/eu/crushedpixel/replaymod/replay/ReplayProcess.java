@@ -72,7 +72,7 @@ public class ReplayProcess {
 
         ReplayMod.chatMessageHandler.initialize();
         if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
-            ReplayMod.chatMessageHandler.addChatMessage("At least 2 position or time keyframes required!", ChatMessageType.WARNING);
+            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.notenoughkeyframes", ChatMessageType.WARNING);
             return;
         }
 
@@ -99,7 +99,7 @@ public class ReplayProcess {
             ReplayMod.replaySender.jumpToTime(ts);
         }
 
-        ReplayMod.chatMessageHandler.addChatMessage("Replay started!", ChatMessageType.INFORMATION);
+        ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
 
         if(isVideoRecording()) {
             MCTimerHandler.setTimerSpeed(1f);
@@ -109,9 +109,9 @@ public class ReplayProcess {
 
     public static void stopReplayProcess(boolean finished) {
         if(!ReplayHandler.isInPath()) return;
-        if(finished) ReplayMod.chatMessageHandler.addChatMessage("Replay finished!", ChatMessageType.INFORMATION);
+        if(finished) ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathfinished", ChatMessageType.INFORMATION);
         else {
-            ReplayMod.chatMessageHandler.addChatMessage("Replay stopped!", ChatMessageType.INFORMATION);
+            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathinterrupted", ChatMessageType.INFORMATION);
             if(isVideoRecording()) {
                 VideoWriter.abortRecording();
             }

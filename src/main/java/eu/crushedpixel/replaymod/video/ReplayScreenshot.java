@@ -88,56 +88,7 @@ public class ReplayScreenshot {
 
                         tempImage.delete();
 
-						/*
-                        File outputFile = File.createTempFile(replayFile.getName(), null);
-
-						byte[] buf = new byte[1024];
-
-						ZipInputStream zin = new ZipInputStream(new FileInputStream(replayFile));
-						ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(outputFile));
-
-						//copying all of the old Zip Entries to the new file, unless it's a thumb
-						ZipEntry entry = zin.getNextEntry();
-						while (entry != null) {
-							String name = entry.getName();
-
-							if(!name.contains("thumb")) {
-								// Add ZIP entry to output stream.
-								zout.putNextEntry(new ZipEntry(name));
-								// Transfer bytes from the ZIP file to the output file
-								int len;
-								while ((len = zin.read(buf)) > 0) {
-									zout.write(buf, 0, len);
-								}
-							} 
-
-							entry = zin.getNextEntry();
-						}
-
-						FileInputStream fis = new FileInputStream(tempImage);
-
-						zout.putNextEntry(new ZipEntry("thumb"));
-						int len;
-						//Add unique bytes to the end of the file
-						zout.write(uniqueBytes);
-
-						while ((len = fis.read(buf)) > 0) {
-							zout.write(buf, 0, len);
-						}
-
-
-						fis.close();
-						zin.close();
-
-						zout.close();
-
-						replayFile.delete();
-						outputFile.renameTo(replayFile);
-
-						tempImage.delete();
-						*/
-
-                        ReplayMod.chatMessageHandler.addChatMessage("Thumbnail has been successfully saved", ChatMessageType.INFORMATION);
+                        ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.savedthumb", ChatMessageType.INFORMATION);
                     } catch(Exception e) {
                         e.printStackTrace();
                     } finally {
@@ -155,7 +106,7 @@ public class ReplayScreenshot {
             mc.currentScreen = beforeScreen;
             ReplayMod.replaySender.setReplaySpeed(beforeSpeed);
             exception.printStackTrace();
-            ReplayMod.chatMessageHandler.addChatMessage("Thumbnail could not be saved", ChatMessageType.WARNING);
+            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.failedthumb", ChatMessageType.WARNING);
         }
 
         last_finish = System.currentTimeMillis();

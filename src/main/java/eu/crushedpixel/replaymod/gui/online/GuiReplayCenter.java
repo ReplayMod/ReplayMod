@@ -33,8 +33,9 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private SearchPagination myFilePagination;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, int p_152129_2_) {
-        String s1 = I18n.format("Do you really want to log out?", new Object[0]);
-        GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, "", "Logout", "Cancel", p_152129_2_);
+        String s1 = I18n.format("replaymod.gui.center.logoutcallback");
+        GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, "", I18n.format("replaymod.gui.logout"),
+                I18n.format("replaymod.gui.cancel"), p_152129_2_);
         return guiyesno;
     }
 
@@ -52,17 +53,17 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         //Top Button Bar
         List<GuiButton> buttonBar = new ArrayList<GuiButton>();
 
-        GuiButton recentButton = new GuiButton(GuiConstants.CENTER_RECENT_BUTTON, 20, 30, "Newest Replays");
+        GuiButton recentButton = new GuiButton(GuiConstants.CENTER_RECENT_BUTTON, 20, 30, I18n.format("replaymod.gui.center.newest"));
         buttonBar.add(recentButton);
 
-        GuiButton bestButton = new GuiButton(GuiConstants.CENTER_BEST_BUTTON, 20, 30, "Best Replays");
+        GuiButton bestButton = new GuiButton(GuiConstants.CENTER_BEST_BUTTON, 20, 30, I18n.format("replaymod.gui.center.best"));
         buttonBar.add(bestButton);
 
-        GuiButton ownReplayButton = new GuiButton(GuiConstants.CENTER_MY_REPLAYS_BUTTON, 20, 30, "My Replays");
+        GuiButton ownReplayButton = new GuiButton(GuiConstants.CENTER_MY_REPLAYS_BUTTON, 20, 30, I18n.format("replaymod.gui.center.my"));
         ownReplayButton.enabled = AuthenticationHandler.isAuthenticated();
         buttonBar.add(ownReplayButton);
 
-        GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, "Search");
+        GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, I18n.format("replaymod.gui.center.search"));
         buttonBar.add(searchButton);
 
         int i = 0;
@@ -83,13 +84,13 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         //Bottom Button Bar (dat alliteration)
         List<GuiButton> bottomBar = new ArrayList<GuiButton>();
 
-        GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, "Main Menu");
+        GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, I18n.format("replaymod.gui.mainmenu"));
         bottomBar.add(exitButton);
 
-        GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, "Replay Viewer");
+        GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, I18n.format("replaymod.gui.replayviewer"));
         bottomBar.add(managerButton);
 
-        GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, "Logout");
+        GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, I18n.format("replaymod.gui.logout"));
         bottomBar.add(logoutButton);
 
         i = 0;
@@ -150,7 +151,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
-        this.drawCenteredString(fontRendererObj, "Replay Center", this.width / 2, 8, Color.WHITE.getRGB());
+        this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.replaycenter"), this.width / 2, 8, Color.WHITE.getRGB());
 
         if(currentList != null) {
             currentList.drawScreen(mouseX, mouseY, partialTicks);

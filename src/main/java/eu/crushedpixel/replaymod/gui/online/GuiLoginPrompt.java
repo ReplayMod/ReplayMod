@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
@@ -25,8 +26,6 @@ public class GuiLoginPrompt extends GuiScreen {
     private PasswordTextField password;
     private GuiButton loginButton;
     private GuiButton cancelButton;
-    private int lastMouseX, lastMouseY;
-    private float lastPartialTicks;
 
     public GuiLoginPrompt(GuiScreen parent, GuiScreen successScreen) {
         this.parent = parent;
@@ -45,12 +44,12 @@ public class GuiLoginPrompt extends GuiScreen {
         password.setEnabled(true);
         password.setFocused(false);
 
-        loginButton = new GuiButton(GuiConstants.LOGIN_OKAY_BUTTON, this.width / 2 - 150 - 2, 110, "Login");
+        loginButton = new GuiButton(GuiConstants.LOGIN_OKAY_BUTTON, this.width / 2 - 150 - 2, 110, I18n.format("replaymod.gui.login"));
         loginButton.width = 150;
         loginButton.enabled = false;
         buttonList.add(loginButton);
 
-        cancelButton = new GuiButton(GuiConstants.LOGIN_CANCEL_BUTTON, this.width / 2 + 2, 110, "Cancel");
+        cancelButton = new GuiButton(GuiConstants.LOGIN_CANCEL_BUTTON, this.width / 2 + 2, 110, I18n.format("replaymod.gui.cancel"));
         cancelButton.width = 150;
         buttonList.add(cancelButton);
     }
@@ -92,28 +91,24 @@ public class GuiLoginPrompt extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
-        lastPartialTicks = partialTicks;
-
         this.drawDefaultBackground();
-        drawCenteredString(fontRendererObj, "Login to ReplayMod.com", this.width / 2, 10, Color.WHITE.getRGB());
+        drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.login.title"), this.width / 2, 10, Color.WHITE.getRGB());
 
-        drawString(fontRendererObj, "Username", this.width / 2 - 100, 37, Color.WHITE.getRGB());
+        drawString(fontRendererObj, I18n.format("replaymod.gui.username"), this.width / 2 - 100, 37, Color.WHITE.getRGB());
         username.drawTextBox();
 
-        drawString(fontRendererObj, "Password", this.width / 2 - 100, 67, Color.WHITE.getRGB());
+        drawString(fontRendererObj, I18n.format("replaymod.gui.password"), this.width / 2 - 100, 67, Color.WHITE.getRGB());
         password.drawTextBox();
 
         switch(textState) {
             case INVALID_LOGIN:
-                drawCenteredString(fontRendererObj, "Incorrect username or password.", this.width / 2, 92, Color.RED.getRGB());
+                drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.login.incorrect"), this.width / 2, 92, Color.RED.getRGB());
                 break;
             case LOGGING_IN:
-                drawCenteredString(fontRendererObj, "Logging in...", this.width / 2, 92, Color.WHITE.getRGB());
+                drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.login.logging"), this.width / 2, 92, Color.WHITE.getRGB());
                 break;
             case NO_CONNECTION:
-                drawCenteredString(fontRendererObj, "Could not connect to ReplayMod.com", this.width / 2, 92, Color.RED.getRGB());
+                drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.login.connectionerror"), this.width / 2, 92, Color.RED.getRGB());
                 break;
         }
         super.drawScreen(mouseX, mouseY, partialTicks);

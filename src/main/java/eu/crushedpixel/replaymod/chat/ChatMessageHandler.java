@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.chat;
 import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -56,7 +57,8 @@ public class ChatMessageHandler {
         t.start();
     }
 
-    public void addChatMessage(String message, ChatMessageType type) {
+    public void addLocalizedChatMessage(String message, ChatMessageType type, Object... options) {
+        message = I18n.format(message, options);
         if(ReplayMod.replaySettings.isShowNotifications()) {
             message = prefix + toColor(message, type);
             ChatComponentText cct = new ChatComponentText(message);

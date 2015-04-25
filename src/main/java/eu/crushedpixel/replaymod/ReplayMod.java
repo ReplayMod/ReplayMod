@@ -29,11 +29,12 @@ public class ReplayMod {
 
     //TODO: Set ReplayHandler replaying to false when replay is exited
     //TODO: Hide Titles upon hurrying
-    //TODO: Override Enchantment Rendering for items when replaying (to adjust speed of animation)
 
     //TODO: Show the player whether he has already uploaded a replay
 
-    //TODO: Hinting to the b/v key feature
+    //TODO: Hinting to the b/v key feature (help page)
+
+    //TODO: Add "Miscellaneous" Replay Category
 
     //XXX
     //Known Bugs
@@ -108,7 +109,7 @@ public class ReplayMod {
         //clean up replay_recordings folder
         removeTmcprFiles();
 
-		/*
+        /*
         boolean auth = false;
 		try {
 			auth = AuthenticationHandler.hasDonated(Minecraft.getMinecraft().getSession().getPlayerID());
@@ -121,7 +122,7 @@ public class ReplayMod {
 			JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
 			FMLCommonHandler.instance().exitJava(0, false);
 		}
-		*/
+        */
     }
 
     private void removeTmcprFiles() {

@@ -57,7 +57,7 @@ public class TickAndRenderListener {
             mc.addScheduledTask(new Runnable() {
                 @Override
                 public void run() {
-                    ReplayMod.chatMessageHandler.addChatMessage("Saving Thumbnail...", ChatMessageHandler.ChatMessageType.INFORMATION);
+                    ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.savingthumb", ChatMessageHandler.ChatMessageType.INFORMATION);
                     ReplayScreenshot.prepareScreenshot();
                     requestScreenshot = 2;
                 }

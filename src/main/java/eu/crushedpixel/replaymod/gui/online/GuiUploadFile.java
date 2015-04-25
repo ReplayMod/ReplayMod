@@ -18,10 +18,13 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
 import javax.imageio.ImageIO;
@@ -49,6 +52,8 @@ public class GuiUploadFile extends GuiScreen {
     private DynamicTexture dynTex = null;
     private Minecraft mc = Minecraft.getMinecraft();
     private GuiReplayViewer parent;
+
+    private final Logger logger = LogManager.getLogger();
 
     public GuiUploadFile(File file, GuiReplayViewer parent) {
         this.parent = parent;
@@ -98,7 +103,7 @@ public class GuiUploadFile extends GuiScreen {
         }
 
         if(!correctFile) {
-            System.out.println("Invalid file provided to upload");
+            logger.error("Invalid file provided to upload");
             mc.displayGuiScreen(parent); //TODO: Error message
             replayFile = null;
             return;
@@ -131,7 +136,7 @@ public class GuiUploadFile extends GuiScreen {
         }
 
         if(categoryButton == null) {
-            categoryButton = new GuiButton(GuiConstants.UPLOAD_CATEGORY_BUTTON, (this.width / 2) + 20 + 10 - 1, 80, "Category: " + category.toNiceString());
+            categoryButton = new GuiButton(GuiConstants.UPLOAD_CATEGORY_BUTTON, (this.width / 2) + 20 + 10 - 1, 80, I18n.format("replaymod.category")+": " + category.toNiceString());
             categoryButton.width = Math.min(202, this.width - 20 - 260 + 2);
             buttonList.add(categoryButton);
         } else {
@@ -140,14 +145,14 @@ public class GuiUploadFile extends GuiScreen {
 
         if(startUploadButton == null) {
             List<GuiButton> bottomBar = new ArrayList<GuiButton>();
-            startUploadButton = new GuiButton(GuiConstants.UPLOAD_START_BUTTON, 0, 0, "Start Upload");
+            startUploadButton = new GuiButton(GuiConstants.UPLOAD_START_BUTTON, 0, 0, I18n.format("replaymod.gui.upload.start"));
             bottomBar.add(startUploadButton);
 
-            cancelUploadButton = new GuiButton(GuiConstants.UPLOAD_CANCEL_BUTTON, 0, 0, "Cancel Upload");
+            cancelUploadButton = new GuiButton(GuiConstants.UPLOAD_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.upload.cancel"));
             cancelUploadButton.enabled = false;
             bottomBar.add(cancelUploadButton);
 
-            backButton = new GuiButton(GuiConstants.UPLOAD_BACK_BUTTON, 0, 0, "Back");
+            backButton = new GuiButton(GuiConstants.UPLOAD_BACK_BUTTON, 0, 0, I18n.format("replaymod.gui.back"));
             bottomBar.add(backButton);
 
             int i = 0;
@@ -208,7 +213,7 @@ public class GuiUploadFile extends GuiScreen {
         if(tagPlaceholder == null) {
             tagPlaceholder = new GuiTextField(GuiConstants.UPLOAD_TAG_PLACEHOLDER, fontRendererObj, (this.width / 2) + 20 + 10, 110, Math.min(200, this.width - 20 - 260), 20);
             tagPlaceholder.setTextColor(Color.DARK_GRAY.getRGB());
-            tagPlaceholder.setText("Tags separated by comma");
+            tagPlaceholder.setText(I18n.format("replaymod.gui.upload.tagshint"));
         } else {
             tagPlaceholder.xPosition = (this.width / 2) + 20 + 10;
             tagPlaceholder.width = Math.min(200, this.width - 20 - 260);
@@ -222,7 +227,7 @@ public class GuiUploadFile extends GuiScreen {
         if(!button.enabled) return;
         if(button.id == GuiConstants.UPLOAD_CATEGORY_BUTTON) {
             category = category.next();
-            categoryButton.displayString = "Category: " + category.toNiceString();
+            categoryButton.displayString = I18n.format("replaymod.category")+": " + category.toNiceString();
         } else if(button.id == GuiConstants.UPLOAD_BACK_BUTTON) {
             mc.displayGuiScreen(parent);
         } else if(button.id == GuiConstants.UPLOAD_START_BUTTON) {
@@ -261,13 +266,13 @@ public class GuiUploadFile extends GuiScreen {
         this.drawDefaultBackground();
 
         drawString(fontRendererObj, metaData.getServerName(), (this.width / 2) + 20 + 10, 50, Color.GRAY.getRGB());
-        drawString(fontRendererObj, "Duration: " + String.format("%02dm%02ds",
+        drawString(fontRendererObj, I18n.format("replaymod.gui.duration")+": " + String.format("%02dm%02ds",
                 TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()),
                 TimeUnit.MILLISECONDS.toSeconds(metaData.getDuration()) -
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()))
         ), (this.width / 2) + 20 + 10, 65, Color.GRAY.getRGB());
 
-        drawCenteredString(fontRendererObj, "Upload File", this.width / 2, 5, Color.WHITE.getRGB());
+        drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.upload.title"), this.width / 2, 5, Color.WHITE.getRGB());
 
         //Draw thumbnail
         if(thumb != null) {
@@ -364,7 +369,7 @@ public class GuiUploadFile extends GuiScreen {
         backButton.enabled = false;
         categoryButton.enabled = false;
         fileTitleInput.setEnabled(false);
-        messageTextField.setText("Uploading...");
+        messageTextField.setText(I18n.format("replaymod.gui.upload.uploading"));
         messageTextField.setTextColor(Color.WHITE.getRGB());
     }
 
@@ -375,7 +380,7 @@ public class GuiUploadFile extends GuiScreen {
         categoryButton.enabled = true;
         fileTitleInput.setEnabled(true);
         if(success) {
-            messageTextField.setText("File has been successfully uploaded");
+            messageTextField.setText(I18n.format("replaymod.gui.upload.success"));
             messageTextField.setTextColor(Color.GREEN.getRGB());
         } else {
             messageTextField.setText(info);

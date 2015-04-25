@@ -12,6 +12,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -36,6 +38,8 @@ public class ConnectionEventHandler {
     private File currentFile;
     private String fileName;
 
+    private static final Logger logger = LogManager.getLogger();
+
     public static boolean isRecording() {
         return isRecording;
     }
@@ -43,7 +47,7 @@ public class ConnectionEventHandler {
     public static void insertPacket(Packet packet) {
         if(!isRecording || packetListener == null) {
             String reason = isRecording ? " (recording)" : " (null)";
-            System.out.println("Invalid attempt to insert Packet!" + reason);
+            logger.error("Invalid attempt to insert Packet!" + reason);
             return;
         }
         try {
@@ -55,20 +59,18 @@ public class ConnectionEventHandler {
 
     @SubscribeEvent
     public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
-        System.out.println("Connected to server");
-
         ReplayMod.chatMessageHandler.initialize();
         ReplayMod.recordingHandler.resetVars();
 
         try {
             if(event.isLocal) {
                 if(!ReplayMod.replaySettings.isEnableRecordingSingleplayer()) {
-                    System.out.println("Singleplayer Recording is disabled");
+                    logger.info("Singleplayer Recording is disabled");
                     return;
                 }
             } else {
                 if(!ReplayMod.replaySettings.isEnableRecordingServer()) {
-                    System.out.println("Multiplayer Recording is disabled");
+                    logger.info("Multiplayer Recording is disabled");
                     return;
                 }
             }
@@ -98,7 +100,7 @@ public class ConnectionEventHandler {
 
             pipeline.addBefore(packetHandlerKey, "replay_recorder", insert = new PacketListener
                     (currentFile, fileName, worldName, System.currentTimeMillis(), event.isLocal));
-            ReplayMod.chatMessageHandler.addChatMessage("Recording started!", ChatMessageType.INFORMATION);
+            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.recordingstarted", ChatMessageType.INFORMATION);
             isRecording = true;
 
             final PacketListener listener = insert;
@@ -131,14 +133,13 @@ public class ConnectionEventHandler {
             packetListener = listener;
 
         } catch(Exception e) {
-            ReplayMod.chatMessageHandler.addChatMessage("Failed to start recording!", ChatMessageType.WARNING);
+            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.recordingfailed", ChatMessageType.WARNING);
             e.printStackTrace();
         }
     }
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-        System.out.println("Disconnected from server");
         isRecording = false;
         packetListener = null;
         ReplayMod.chatMessageHandler.stop();

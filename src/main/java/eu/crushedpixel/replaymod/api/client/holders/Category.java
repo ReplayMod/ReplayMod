@@ -1,13 +1,17 @@
 package eu.crushedpixel.replaymod.api.client.holders;
 
+import net.minecraft.client.resources.I18n;
+
 public enum Category {
 
-    SURVIVAL(0), MINIGAME(1), BUILD(2);
+    SURVIVAL(0, "replaymod.category.survival"), MINIGAME(1, "replaymod.category.minigame"), BUILD(2, "replaymod.category.build");
 
     private int id;
+    private String name;
 
-    Category(int id) {
+    Category(int id, String name) {
         this.id = id;
+        this.name = name;
     }
 
     public int getId() {
@@ -22,7 +26,7 @@ public enum Category {
     }
 
     public String toNiceString() {
-        return ("" + this).charAt(0) + ("" + this).substring(1).toLowerCase();
+        return I18n.format(this.name);
     }
 
     public Category next() {
