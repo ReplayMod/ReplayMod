@@ -6,7 +6,6 @@ import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.holders.*;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumPacketDirection;
@@ -250,14 +249,16 @@ public class ReplayHandler {
         mc.ingameGUI.getChatGUI().clearChatMessages();
         resetKeyframes();
 
-        ReplayMod.replaySender.terminateReplay();
+        if(ReplayMod.replaySender != null) {
+            ReplayMod.replaySender.terminateReplay();
+        }
 
         if(channel != null) {
             channel.close();
         }
 
         networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND);
-        INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, (GuiScreen) null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
+        INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
         networkManager.setNetHandler(pc);
 
         channel = new OpenEmbeddedChannel(networkManager);
@@ -284,7 +285,7 @@ public class ReplayHandler {
         }
 
         networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND);
-        INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, (GuiScreen) null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
+        INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
         networkManager.setNetHandler(pc);
 
         EmbeddedChannel channel = new OpenEmbeddedChannel(networkManager);

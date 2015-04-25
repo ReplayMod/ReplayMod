@@ -99,6 +99,14 @@ public class GuiReplayOverlay extends Gui {
         }
     }
 
+
+    @SubscribeEvent
+    public void onRenderTabList(RenderGameOverlayEvent.Pre event) { //cancelling tab list rendering and rendering help instead
+        if(ReplayHandler.isInReplay() && event.type == RenderGameOverlayEvent.ElementType.PLAYER_LIST) {
+            event.setCanceled(true);
+        }
+    }
+
     @SubscribeEvent
     public void renderRecordingIndicator(RenderGameOverlayEvent.Text event) {
         if(!ReplayHandler.isInReplay() && ReplayMod.replaySettings.showRecordingIndicator() && ConnectionEventHandler.isRecording()) {

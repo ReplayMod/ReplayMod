@@ -86,18 +86,18 @@ public class TickAndRenderListener {
             isGamePaused.set(mc, false);
         }
     }
-
+    
     @SubscribeEvent
     public void tick(TickEvent event) {
         if(!ReplayHandler.isInReplay()) return;
 
 		/*
-		if(Keyboard.getEventKeyState() && Keyboard.isKeyDown(Keyboard.KEY_F1) 
-				&& ReplayHandler.isInPath() && !ReplayProcess.isVideoRecording() 
+		if(Keyboard.getEventKeyState() && Keyboard.isKeyDown(Keyboard.KEY_F1)
+				&& ReplayHandler.isInPath() && !ReplayProcess.isVideoRecording()
 				&& mc.currentScreen instanceof GuiMouseInput && !f1Down) {
 			mc.gameSettings.hideGUI = !mc.gameSettings.hideGUI;
 		}
-		
+
 		f1Down = Keyboard.isKeyDown(Keyboard.KEY_F1) && Keyboard.getEventKeyState();
 		*/
 

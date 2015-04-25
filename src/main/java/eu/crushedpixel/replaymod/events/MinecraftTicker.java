@@ -307,39 +307,6 @@ public class MinecraftTicker {
                         }
                     }
                 }
-            } else {
-                while(mc.gameSettings.keyBindAttack.isPressed()) {
-                    if(mc != null)
-                        try {
-                            clickMouse.invoke(mc);
-                        } catch(Exception e) {
-                        }
-
-                }
-
-                while(mc.gameSettings.keyBindUseItem.isPressed()) {
-                    if(mc != null)
-                        try {
-                            rightClickMouse.invoke(mc);
-                        } catch(Exception e) {
-                        }
-                }
-
-                while(mc.gameSettings.keyBindPickBlock.isPressed()) {
-                    if(mc != null)
-                        try {
-                            middleClickMouse.invoke(mc);
-                        } catch(Exception e) {
-                        }
-                }
-            }
-
-            if(mc.gameSettings.keyBindUseItem.isKeyDown() && (Integer) rightClickDelayTimer.get(mc) == 0 && !mc.thePlayer.isUsingItem()) {
-                if(mc != null)
-                    try {
-                        rightClickMouse.invoke(mc);
-                    } catch(Exception e) {
-                    }
             }
 
             if(mc != null)
