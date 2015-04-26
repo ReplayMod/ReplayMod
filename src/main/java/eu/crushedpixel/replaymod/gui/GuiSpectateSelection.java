@@ -7,6 +7,7 @@ import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.potion.Potion;
@@ -26,13 +27,14 @@ public class GuiSpectateSelection extends GuiScreen {
     private int playerCount;
     private int upperPlayer = 0;
 
-    private int upperBound = 30;
     private int lowerBound;
 
     private double prevSpeed;
     private boolean drag = false;
     private int lastY = 0;
     private int fitting = 0;
+
+    private final String screenTitle = I18n.format("replaymod.gui.spectate.title");
 
     public GuiSpectateSelection(List<EntityPlayer> players) {
         this.prevSpeed = ReplayMod.replaySender.getReplaySpeed();
@@ -77,7 +79,6 @@ public class GuiSpectateSelection extends GuiScreen {
             }
         }
         int k2 = (int) (this.width * 0.4);
-        int l2 = 30;
 
         if(mouseX >= k2 && mouseX <= (this.width * 0.6) && mouseY >= 30 && mouseY <= lowerBound) {
             int off = mouseY - 30;
@@ -134,7 +135,7 @@ public class GuiSpectateSelection extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        this.drawCenteredString(fontRendererObj, "Spectate Player", this.width / 2, 5, Color.WHITE.getRGB());
+        this.drawCenteredString(fontRendererObj, screenTitle, this.width / 2, 5, Color.WHITE.getRGB());
         int k2 = (int) (this.width * 0.4);
         int l2 = 30;
 
@@ -155,7 +156,7 @@ public class GuiSpectateSelection extends GuiScreen {
 
             mc.getTextureManager().bindTexture(p.second());
 
-            this.drawScaledCustomSizeModalRect(k2, l2, 8.0F, 8.0F, 8, 8, 16, 16, 64.0F, 64.0F);
+            drawScaledCustomSizeModalRect(k2, l2, 8.0F, 8.0F, 8, 8, 16, 16, 64.0F, 64.0F);
             if(p.first().func_175148_a(EnumPlayerModelParts.HAT))
                 Gui.drawScaledCustomSizeModalRect(k2, l2, 40.0F, 8.0F, 8, 8, 16, 16, 64.0F, 64.0F);
 
@@ -184,12 +185,9 @@ public class GuiSpectateSelection extends GuiScreen {
             float posPerc = ((float) upperPlayer) / playerCount;
             int barY = (int) (posPerc * (height - 32 - 32));
 
-            this.drawRect(k2 - 18, 30 - 2, k2 - 10, this.height - 30 - 2, Color.BLACK.getRGB());
-            this.drawRect(k2 - 16, 32 - 2 + barY, k2 - 12, 32 - 1 + barY + barHeight, Color.LIGHT_GRAY.getRGB());
-        } else {
-
+            drawRect(k2 - 18, 30 - 2, k2 - 10, this.height - 30 - 2, Color.BLACK.getRGB());
+            drawRect(k2 - 16, 32 - 2 + barY, k2 - 12, 32 - 1 + barY + barHeight, Color.LIGHT_GRAY.getRGB());
         }
-
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 

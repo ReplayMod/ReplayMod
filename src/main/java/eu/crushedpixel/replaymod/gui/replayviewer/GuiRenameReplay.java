@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 
 public class GuiRenameReplay extends GuiScreen {
-    private static final String __OBFID = "CL_00000709";
     private GuiScreen field_146585_a;
     private GuiTextField field_146583_f;
     private File file;
@@ -30,8 +29,8 @@ public class GuiRenameReplay extends GuiScreen {
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
         this.buttonList.clear();
-        this.buttonList.add(new GuiButton(0, this.width / 2 - 100, this.height / 4 + 96 + 12, I18n.format("Rename", new Object[0])));
-        this.buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 120 + 12, I18n.format("Cancel", new Object[0])));
+        this.buttonList.add(new GuiButton(0, this.width / 2 - 100, this.height / 4 + 96 + 12, I18n.format("replaymod.gui.rename")));
+        this.buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 120 + 12, I18n.format("replaymod.gui.cancel")));
         String s = FilenameUtils.getBaseName(file.getAbsolutePath());
         this.field_146583_f = new GuiTextField(2, this.fontRendererObj, this.width / 2 - 100, 60, 200, 20);
         this.field_146583_f.setFocused(true);
@@ -78,8 +77,8 @@ public class GuiRenameReplay extends GuiScreen {
 
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
-        this.drawCenteredString(this.fontRendererObj, I18n.format("Rename World", new Object[0]), this.width / 2, 20, 16777215);
-        this.drawString(this.fontRendererObj, I18n.format("Replay Name", new Object[0]), this.width / 2 - 100, 47, 10526880);
+        this.drawCenteredString(this.fontRendererObj, I18n.format("replaymod.gui.viewer.rename.title"), this.width / 2, 20, 16777215);
+        this.drawString(this.fontRendererObj, I18n.format("replaymod.gui.viewer.rename.name"), this.width / 2 - 100, 47, 10526880);
         this.field_146583_f.drawTextBox();
         super.drawScreen(mouseX, mouseY, partialTicks);
     }

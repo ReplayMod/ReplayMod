@@ -8,6 +8,7 @@ import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.resources.I18n;
 import org.apache.commons.io.FilenameUtils;
 
 import java.awt.*;
@@ -18,8 +19,8 @@ import java.util.List;
 
 public class GuiConnectPart extends GuiStudioPart {
 
-    private static final String DESCRIPTION = "Connects multiple Replays in the same order as the list.";
-    private static final String TITLE = "Connect Replays";
+    private final String DESCRIPTION = I18n.format("replaymod.gui.editor.connect.description");
+    private final String TITLE = I18n.format("replaymod.gui.editor.connect.title");
 
     private boolean initialized = false;
 
@@ -60,7 +61,7 @@ public class GuiConnectPart extends GuiStudioPart {
         if(!initialized) {
             concatList = new GuiEntryList(1, fontRendererObj, 30, yPos, 150, 0);
             filesToConcat = new ArrayList<String>();
-            String selectedName = FilenameUtils.getBaseName(GuiReplayStudio.instance.getSelectedFile().getAbsolutePath());
+            String selectedName = FilenameUtils.getBaseName(GuiReplayEditor.instance.getSelectedFile().getAbsolutePath());
             filesToConcat.add(selectedName);
             concatList.setElements(filesToConcat);
 
@@ -88,7 +89,7 @@ public class GuiConnectPart extends GuiStudioPart {
                 @Override
                 public void onSelectionChanged(int selectionIndex) {
                     try {
-                        filesToConcat.set(concatList.getSelectionIndex(), (String) replayDropdown.getElement(selectionIndex));
+                        filesToConcat.set(concatList.getSelectionIndex(), replayDropdown.getElement(selectionIndex));
                         concatList.setElements(filesToConcat);
                     } catch(Exception e) {
                     } //Sorry, too lazy to properly avoid this Exception here
@@ -120,26 +121,26 @@ public class GuiConnectPart extends GuiStudioPart {
             downButton = new GuiArrowButton(GuiConstants.REPLAY_EDITOR_DOWN_BUTTON, 219, yPos + 40, "", false);
             buttonList.add(downButton);
 
-            int w = GuiReplayStudio.instance.width - 243 - 20 - 4;
+            int w = GuiReplayEditor.instance.width - 243 - 20 - 4;
 
-            removeButton = new GuiButton(GuiConstants.REPLAY_EDITOR_REMOVE_BUTTON, 249, yPos + 40, "Remove");
+            removeButton = new GuiButton(GuiConstants.REPLAY_EDITOR_REMOVE_BUTTON, 249, yPos + 40, I18n.format("replaymod.gui.remove"));
             buttonList.add(removeButton);
 
-            addButton = new GuiButton(GuiConstants.REPLAY_EDITOR_ADD_BUTTON, 0, yPos + 40, "Add");
+            addButton = new GuiButton(GuiConstants.REPLAY_EDITOR_ADD_BUTTON, 0, yPos + 40, I18n.format("replaymod.gui.add"));
             buttonList.add(addButton);
 
             concatList.setSelectionIndex(0);
         }
 
-        int w = GuiReplayStudio.instance.width - 249 - 20 - 4;
+        int w = GuiReplayEditor.instance.width - 249 - 20 - 4;
         addButton.xPosition = 249 + 6 + (w / 2);
 
         addButton.width = w / 2 + 2;
         removeButton.width = w / 2 + 2;
 
-        replayDropdown.width = GuiReplayStudio.instance.width - 250 - 18;
+        replayDropdown.width = GuiReplayEditor.instance.width - 250 - 18;
 
-        int h = GuiReplayStudio.instance.height - yPos - 20;
+        int h = GuiReplayEditor.instance.height - yPos - 20;
         int rows = (int) (h / (float) GuiEntryList.elementHeight);
         concatList.setVisibleElements(rows);
 
@@ -159,7 +160,7 @@ public class GuiConnectPart extends GuiStudioPart {
         concatList.drawTextBox();
         replayDropdown.drawTextBox();
 
-        drawString(fontRendererObj, "Replay:", 200, yPos + 5 + 7, Color.WHITE.getRGB());
+        drawString(fontRendererObj, I18n.format("replaymod.gui.replay")+":", 200, yPos + 5 + 7, Color.WHITE.getRGB());
     }
 
     @Override

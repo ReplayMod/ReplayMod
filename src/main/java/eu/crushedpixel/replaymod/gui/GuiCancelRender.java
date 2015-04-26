@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
+import net.minecraft.client.resources.I18n;
 
 public class GuiCancelRender extends GuiYesNo {
 
@@ -21,7 +22,8 @@ public class GuiCancelRender extends GuiYesNo {
     };
 
     public GuiCancelRender() {
-        super(callback, "Cancel Rendering", "Are you sure that you want to cancel the current rendering process?", 0);
+        super(callback, I18n.format("replaymod.gui.cancelrender.title"),
+                I18n.format("replaymod.gui.cancelrender.message"), 0);
     }
 
 }

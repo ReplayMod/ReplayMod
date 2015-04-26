@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui.replaystudio;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
 import eu.crushedpixel.replaymod.studio.StudioImplementation;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
@@ -12,8 +13,8 @@ import java.util.List;
 
 public class GuiTrimPart extends GuiStudioPart {
 
-    private static final String DESCRIPTION = "Removes the beginning and end of a Replay File and only keeps the Replay between the given timestamps.";
-    private static final String TITLE = "Trim Replay";
+    private static final String DESCRIPTION = I18n.format("replaymod.gui.editor.trim.description");
+    private final String TITLE = I18n.format("replaymod.gui.editor.trim.title");
     private Minecraft mc = Minecraft.getMinecraft();
     private boolean initialized = false;
 
@@ -103,8 +104,8 @@ public class GuiTrimPart extends GuiStudioPart {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawString(mc.fontRendererObj, "Start:", 30, yPos + 7, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, "End:", 30, yPos + 7 + 30, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.start")+":", 30, yPos + 7, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.end")+":", 30, yPos + 7 + 30, Color.WHITE.getRGB());
         drawString(mc.fontRendererObj, "m", 105, yPos + 7, Color.WHITE.getRGB());
         drawString(mc.fontRendererObj, "m", 105, yPos + 7 + 30, Color.WHITE.getRGB());
         drawString(mc.fontRendererObj, "s", 150, yPos + 7, Color.WHITE.getRGB());

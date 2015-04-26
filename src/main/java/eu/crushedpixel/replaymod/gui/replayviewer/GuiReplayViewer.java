@@ -55,10 +55,10 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     private boolean delete_file = false;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, String file, int p_152129_2_) {
-        String s1 = I18n.format("Are you sure you want to delete this replay?", new Object[0]);
-        String s2 = "\'" + file + "\' " + I18n.format("will be lost forever! (A long time!)", new Object[0]);
-        String s3 = I18n.format("Delete", new Object[0]);
-        String s4 = I18n.format("Cancel", new Object[0]);
+        String s1 = I18n.format("replaymod.gui.viewer.delete.linea");
+        String s2 = "\'" + file + "\' " + I18n.format("replaymod.gui.viewer.delete.lineb");
+        String s3 = I18n.format("replaymod.gui.delete");
+        String s4 = I18n.format("replaymod.gui.cancel");
         GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, s2, s3, s4, p_152129_2_);
         return guiyesno;
     }
@@ -132,13 +132,13 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     }
 
     private void createButtons() {
-        this.buttonList.add(loadButton = new GuiButton(LOAD_BUTTON_ID, this.width / 2 - 154, this.height - 52, 73, 20, I18n.format("Load", new Object[0])));
-        this.buttonList.add(uploadButton = new GuiButton(UPLOAD_BUTTON_ID, this.width / 2 - 154 + 78, this.height - 52, 73, 20, I18n.format("Upload", new Object[0])));
-        this.buttonList.add(folderButton = new GuiButton(FOLDER_BUTTON_ID, this.width / 2 + 4, this.height - 52, 150, 20, I18n.format("Open Replay Folder...", new Object[0])));
-        this.buttonList.add(renameButton = new GuiButton(RENAME_BUTTON_ID, this.width / 2 - 154, this.height - 28, 72, 20, I18n.format("Rename", new Object[0])));
-        this.buttonList.add(deleteButton = new GuiButton(DELETE_BUTTON_ID, this.width / 2 - 76, this.height - 28, 72, 20, I18n.format("Delete", new Object[0])));
-        this.buttonList.add(settingsButton = new GuiButton(SETTINGS_BUTTON_ID, this.width / 2 + 4, this.height - 28, 72, 20, I18n.format("Settings", new Object[0])));
-        this.buttonList.add(cancelButton = new GuiButton(CANCEL_BUTTON_ID, this.width / 2 + 4 + 78, this.height - 28, 72, 20, I18n.format("Cancel", new Object[0])));
+        this.buttonList.add(loadButton = new GuiButton(LOAD_BUTTON_ID, this.width / 2 - 154, this.height - 52, 73, 20, I18n.format("replaymod.gui.load")));
+        this.buttonList.add(uploadButton = new GuiButton(UPLOAD_BUTTON_ID, this.width / 2 - 154 + 78, this.height - 52, 73, 20, I18n.format("replaymod.gui.upload")));
+        this.buttonList.add(folderButton = new GuiButton(FOLDER_BUTTON_ID, this.width / 2 + 4, this.height - 52, 150, 20, I18n.format("replaymod.gui.viewer.replayfolder")));
+        this.buttonList.add(renameButton = new GuiButton(RENAME_BUTTON_ID, this.width / 2 - 154, this.height - 28, 72, 20, I18n.format("replaymod.gui.rename")));
+        this.buttonList.add(deleteButton = new GuiButton(DELETE_BUTTON_ID, this.width / 2 - 76, this.height - 28, 72, 20, I18n.format("replaymod.gui.delete")));
+        this.buttonList.add(settingsButton = new GuiButton(SETTINGS_BUTTON_ID, this.width / 2 + 4, this.height - 28, 72, 20, I18n.format("replaymod.gui.settings")));
+        this.buttonList.add(cancelButton = new GuiButton(CANCEL_BUTTON_ID, this.width / 2 + 4 + 78, this.height - 28, 72, 20, I18n.format("replaymod.gui.cancel")));
         setButtonsEnabled(false);
     }
 
@@ -165,7 +165,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         this.hoveringText = null;
         this.drawDefaultBackground();
         this.replayGuiList.drawScreen(mouseX, mouseY, partialTicks);
-        this.drawCenteredString(this.fontRendererObj, "Replay Viewer", this.width / 2, 20, 16777215);
+        this.drawCenteredString(this.fontRendererObj, I18n.format("replaymod.gui.replayviewer"), this.width / 2, 20, 16777215);
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 
@@ -256,7 +256,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     }
 
     public void loadReplay(int id) {
-        mc.displayGuiScreen((GuiScreen) null);
+        mc.displayGuiScreen(null);
 
         try {
             ReplayHandler.startReplay(replayFileList.get(id).first().first());

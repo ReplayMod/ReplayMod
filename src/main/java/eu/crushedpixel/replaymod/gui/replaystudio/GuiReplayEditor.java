@@ -6,6 +6,7 @@ import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
 import org.apache.commons.io.FilenameUtils;
 
 import java.awt.*;
@@ -14,10 +15,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiReplayStudio extends GuiScreen {
+public class GuiReplayEditor extends GuiScreen {
 
     private static final int tabYPos = 110;
-    public static GuiReplayStudio instance = null;
+    public static GuiReplayEditor instance = null;
     private StudioTab currentTab = StudioTab.TRIM;
     private GuiDropdown replayDropdown;
     private GuiButton saveModeButton, saveButton;
@@ -25,7 +26,7 @@ public class GuiReplayStudio extends GuiScreen {
     private boolean initialized = false;
     private List<File> replayFiles = new ArrayList<File>();
 
-    public GuiReplayStudio() {
+    public GuiReplayEditor() {
         instance = this;
     }
 
@@ -50,9 +51,9 @@ public class GuiReplayStudio extends GuiScreen {
     public void initGui() {
         List<GuiButton> tabButtons = new ArrayList<GuiButton>();
 
-        tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_TRIM_TAB, 0, 0, "Trim Replay"));
-        tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_CONNECT_TAB, 0, 0, "Connect Replays"));
-        tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_MODIFY_TAB, 0, 0, "Modify Replay"));
+        tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_TRIM_TAB, 0, 0, I18n.format("replaymod.gui.editor.trim.title")));
+        tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_CONNECT_TAB, 0, 0, I18n.format("replaymod.gui.editor.connect.title")));
+        tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_MODIFY_TAB, 0, 0, I18n.format("replaymod.gui.editor.modify.title")));
 
         int w = this.width - 30;
         int w2 = w / tabButtons.size();
@@ -86,11 +87,11 @@ public class GuiReplayStudio extends GuiScreen {
         buttonList.add(saveModeButton);
 
 
-        GuiButton backButton = new GuiButton(GuiConstants.REPLAY_EDITOR_BACK_BUTTON, width - 70 - 18, height - 20 - 5, "Back");
+        GuiButton backButton = new GuiButton(GuiConstants.REPLAY_EDITOR_BACK_BUTTON, width - 70 - 18, height - 20 - 5, I18n.format("replaymod.gui.back"));
         backButton.width = 70;
         buttonList.add(backButton);
 
-        saveButton = new GuiButton(GuiConstants.REPLAY_EDITOR_SAVE_BUTTON, width - 70 - 18, height - (2 * 20) - 5 - 3, "Save");
+        saveButton = new GuiButton(GuiConstants.REPLAY_EDITOR_SAVE_BUTTON, width - 70 - 18, height - (2 * 20) - 5 - 3, I18n.format("replaymod.gui.save"));
         saveButton.width = 70;
         buttonList.add(saveButton);
 
@@ -102,7 +103,7 @@ public class GuiReplayStudio extends GuiScreen {
     }
 
     private String getSaveModeLabel() {
-        return overrideSave ? "Replace Source File" : "Save to new File";
+        return overrideSave ? I18n.format("replaymod.gui.editor.savemode.override") : I18n.format("replaymod.gui.editor.savemode.newfile");
     }
 
     ;
@@ -182,8 +183,8 @@ public class GuiReplayStudio extends GuiScreen {
             i++;
         }
 
-        drawCenteredString(fontRendererObj, "Replay Studio", this.width / 2, 10, 16777215);
-        drawString(fontRendererObj, "Replay File:", 30, 67, Color.WHITE.getRGB());
+        drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.replayeditor"), this.width / 2, 10, 16777215);
+        drawString(fontRendererObj,  I18n.format("replaymod.gui.editor.replayfile"), 30, 67, Color.WHITE.getRGB());
 
         replayDropdown.drawTextBox();
     }

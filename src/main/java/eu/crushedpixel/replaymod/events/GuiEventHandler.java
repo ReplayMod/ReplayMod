@@ -8,7 +8,7 @@ import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
 import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
-import eu.crushedpixel.replaymod.gui.replaystudio.GuiReplayStudio;
+import eu.crushedpixel.replaymod.gui.replaystudio.GuiReplayEditor;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.registry.LightingHandler;
@@ -176,7 +176,7 @@ public class GuiEventHandler {
                     mc.displayGuiScreen(new GuiLoginPrompt(event.gui, new GuiReplayCenter()));
                 }
             } else if(event.button.id == GuiConstants.REPLAY_EDITOR_BUTTON_ID) {
-                mc.displayGuiScreen(new GuiReplayStudio());
+                mc.displayGuiScreen(new GuiReplayEditor());
             }
         } else if(event.gui instanceof GuiOptions && event.button.id == GuiConstants.REPLAY_OPTIONS_BUTTON_ID) {
             mc.displayGuiScreen(new GuiReplaySettings(event.gui));

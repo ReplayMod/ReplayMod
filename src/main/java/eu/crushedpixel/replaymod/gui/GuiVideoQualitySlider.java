@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.MathHelper;
 
 public class GuiVideoQualitySlider extends GuiButton {
@@ -18,15 +19,20 @@ public class GuiVideoQualitySlider extends GuiButton {
         this.displayKey = displayKey;
     }
 
+    private final String DRAFT = I18n.format("replaymod.gui.settings.videoquality.draft");
+    private final String NORMAL = I18n.format("replaymod.gui.settings.videoquality.normal");
+    private final String GOOD= I18n.format("replaymod.gui.settings.videoquality.good");
+    private final String BEST = I18n.format("replaymod.gui.settings.videoquality.best");
+
     private String translate(float value) {
         if(value <= 0.3) {
-            return "Draft";
+            return DRAFT;
         } else if(value <= 0.5) {
-            return "Normal";
+            return NORMAL;
         } else if(value <= 0.7) {
-            return "Good";
+            return GOOD;
         }
-        return "Best";
+        return BEST;
     }
 
     protected int getHoverState(boolean mouseOver) {
