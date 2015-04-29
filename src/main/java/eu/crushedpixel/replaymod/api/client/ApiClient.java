@@ -71,6 +71,13 @@ public class ApiClient {
         return info;
     }
 
+    public String getTranslation(String languageCode) throws IOException, ApiException {
+        QueryBuilder builder = new QueryBuilder(ApiMethods.get_language);
+        builder.put("language", languageCode);
+        String properties = SimpleApiClient.invokeUrl(builder.toString());
+        return properties;
+    }
+
     public void downloadThumbnail(int file, File target) throws IOException {
         QueryBuilder builder = new QueryBuilder(ApiMethods.get_thumbnail);
         builder.put("id", file);

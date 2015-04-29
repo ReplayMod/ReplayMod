@@ -24,7 +24,7 @@ import eu.crushedpixel.replaymod.video.VideoWriter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.inventory.GuiInventory;
-import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
@@ -95,22 +95,22 @@ public class GuiEventHandler {
     @SubscribeEvent
     public void onDraw(DrawScreenEvent e) {
         if(e.gui instanceof GuiMainMenu) {
-            e.gui.drawString(mc.fontRendererObj, "Replay Mod:", 5, 5, Color.WHITE.getRGB());
+            e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.title")+":", 5, 5, Color.WHITE.getRGB());
             if(AuthenticationHandler.isAuthenticated()) {
-                e.gui.drawString(mc.fontRendererObj, "LOGGED IN", 5, 15, DARK_GREEN.getRGB());
+                e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedin").toUpperCase(), 5, 15, DARK_GREEN.getRGB());
             } else {
-                e.gui.drawString(mc.fontRendererObj, "LOGGED OUT", 5, 15, DARK_RED.getRGB());
+                e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedout").toUpperCase(), 5, 15, DARK_RED.getRGB());
             }
 
             if(replayCount == 0) {
                 if(editorButton.isMouseOver()) {
                     Point mouse = MouseUtils.getMousePos();
-                    e.gui.drawCenteredString(mc.fontRendererObj, "At least one Replay required", (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
+                    e.gui.drawCenteredString(mc.fontRendererObj, I18n.format("replaymod.gui.morereplays"), (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
                 }
             } else if(!VersionValidator.isValid) {
                 if(editorButton.isMouseOver()) {
                     Point mouse = MouseUtils.getMousePos();
-                    e.gui.drawCenteredString(mc.fontRendererObj, "Java 1.7 or newer required", (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
+                    e.gui.drawCenteredString(mc.fontRendererObj, I18n.format("replaymod.gui.java"), (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
                 }
             }
         }
@@ -121,7 +121,7 @@ public class GuiEventHandler {
         if(event.gui instanceof GuiIngameMenu && ReplayHandler.isInReplay()) {
             for(GuiButton b : new ArrayList<GuiButton>(event.buttonList)) {
                 if(b.id == 1) {
-                    b.displayString = "Exit Replay";
+                    b.displayString = I18n.format("replaymod.gui.exit");
                     b.yPosition -= 24 * 2;
                     b.id = GuiConstants.EXIT_REPLAY_BUTTON;
                 } else if(b.id >= 5 && b.id <= 7) {
@@ -139,27 +139,27 @@ public class GuiEventHandler {
                 }
             }
 
-            GuiButton rm = new GuiButton(GuiConstants.REPLAY_MANAGER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 2 * 24, "Replay Viewer");
+            GuiButton rm = new GuiButton(GuiConstants.REPLAY_MANAGER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 2 * 24, I18n.format("replaymod.gui.replayviewer"));
             rm.width = rm.width / 2 - 2;
             //rm.enabled = AuthenticationHandler.isAuthenticated();
             event.buttonList.add(rm);
 
             replayCount = ReplayFileIO.getAllReplayFiles().size();
 
-            GuiButton re = new GuiButton(GuiConstants.REPLAY_EDITOR_BUTTON_ID, event.gui.width / 2 + 2, i1 + 2 * 24, "Replay Editor");
+            GuiButton re = new GuiButton(GuiConstants.REPLAY_EDITOR_BUTTON_ID, event.gui.width / 2 + 2, i1 + 2 * 24, I18n.format("replaymod.gui.replayeditor"));
             re.width = re.width / 2 - 2;
             re.enabled = VersionValidator.isValid && replayCount > 0;
             event.buttonList.add(re);
 
             editorButton = re;
 
-            GuiButton rc = new GuiButton(GuiConstants.REPLAY_CENTER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 3 * 24, "Replay Center");
+            GuiButton rc = new GuiButton(GuiConstants.REPLAY_CENTER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 3 * 24, I18n.format("replaymod.gui.replaycenter"));
             rc.enabled = true;
             event.buttonList.add(rc);
 
         } else if(event.gui instanceof GuiOptions) {
             event.buttonList.add(new GuiButton(GuiConstants.REPLAY_OPTIONS_BUTTON_ID,
-                    event.gui.width / 2 - 155, event.gui.height / 6 + 48 - 6 - 24, 310, 20, "Replay Mod Settings..."));
+                    event.gui.width / 2 - 155, event.gui.height / 6 + 48 - 6 - 24, 310, 20, I18n.format("replaymod.gui.settings.title")));
         }
     }
 
@@ -193,7 +193,7 @@ public class GuiEventHandler {
             ReplayHandler.lastExit = System.currentTimeMillis();
 
             mc.theWorld.sendQuittingDisconnectingPacket();
-            mc.loadWorld((WorldClient) null);
+            mc.loadWorld(null);
             mc.displayGuiScreen(new GuiMainMenu());
 
             ReplayGuiRegistry.show();

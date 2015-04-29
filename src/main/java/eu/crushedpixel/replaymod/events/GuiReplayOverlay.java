@@ -22,6 +22,7 @@ import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -89,7 +90,7 @@ public class GuiReplayOverlay extends Gui {
             mc.displayGuiScreen(null);
         }
         ReplayHandler.setRealTimelineCursor(0);
-        speedSlider = new GuiReplaySpeedSlider(1, sliderX, sliderY, "Speed");
+        speedSlider = new GuiReplaySpeedSlider(1, sliderX, sliderY, I18n.format("replaymod.gui.speed"));
     }
 
     @SubscribeEvent
@@ -110,7 +111,7 @@ public class GuiReplayOverlay extends Gui {
     @SubscribeEvent
     public void renderRecordingIndicator(RenderGameOverlayEvent.Text event) {
         if(!ReplayHandler.isInReplay() && ReplayMod.replaySettings.showRecordingIndicator() && ConnectionEventHandler.isRecording()) {
-            this.drawString(mc.fontRendererObj, "RECORDING", 30, 18 - (mc.fontRendererObj.FONT_HEIGHT / 2), Color.WHITE.getRGB());
+            this.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.recording").toUpperCase(), 30, 18 - (mc.fontRendererObj.FONT_HEIGHT / 2), Color.WHITE.getRGB());
             mc.renderEngine.bindTexture(replay_gui);
             GlStateManager.resetColor();
             GlStateManager.enableAlpha();

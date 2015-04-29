@@ -3,7 +3,9 @@ package eu.crushedpixel.replaymod;
 import eu.crushedpixel.replaymod.api.client.ApiClient;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.*;
+import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
+import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.registry.FileCopyHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
@@ -23,6 +25,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.List;
 
 @Mod(modid = ReplayMod.MODID, version = ReplayMod.VERSION)
 public class ReplayMod {
@@ -58,6 +62,16 @@ public class ReplayMod {
     public static ReplaySender replaySender;
     public static int TP_DISTANCE_LIMIT = 128;
     public static FileCopyHandler fileCopyHandler;
+
+    private static Field defaultResourcePacksField;
+    static {
+        try {
+            defaultResourcePacksField = Minecraft.class.getDeclaredField(MCPNames.field("field_110449_ao"));
+            defaultResourcePacksField.setAccessible(true);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // The instance of your mod that Forge uses.
     @Instance(value = "ReplayModID")
@@ -108,6 +122,15 @@ public class ReplayMod {
 
         //clean up replay_recordings folder
         removeTmcprFiles();
+
+        try {
+            List rps = (List) defaultResourcePacksField.get(mc);
+            rps.add(new LocalizedResourcePack());
+            defaultResourcePacksField.set(mc, rps);
+            mc.refreshResources();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         /*
         boolean auth = false;

@@ -1,3 +1,5 @@
+replaymod.title=Replay Mod
+
 #All of the chat messages
 replaymod.chat.recordingstarted=Recording started
 replaymod.chat.recordingfailed=Failed to start recording
@@ -37,6 +39,15 @@ replaymod.gui.add=Add
 replaymod.gui.start=Start
 replaymod.gui.end=End
 replaymod.gui.delete=Delete
+replaymod.gui.recording=Recording
+replaymod.gui.speed=Speed
+
+replaymod.gui.exit=Exit Replay
+replaymod.gui.java=Java 1.7 or newer required
+replaymod.gui.morereplays=At least one Replay required
+
+replaymod.gui.loggedin=LOGGED IN
+replaymod.gui.loggedout=LOGGED OUT
 
 replaymod.gui.mainmenu=Main Menu
 replaymod.gui.settings=Settings
@@ -90,7 +101,7 @@ replaymod.gui.editor.modify.title=Modify Replay
 
 replaymod.gui.editor.trim.description=Removes the beginning and end of a Replay File, only keeping the Replay between the given timestamps
 replaymod.gui.editor.connect.description=Connects multiple Replays in the specified order
-replaymod.gui.editor.modify.description
+replaymod.gui.editor.modify.description=Provides several filters to modify Replay Files
 
 #Spectate Player GUI
 replaymod.gui.spectate.title=Spectate Player
