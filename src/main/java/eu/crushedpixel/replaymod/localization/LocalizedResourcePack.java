@@ -7,6 +7,7 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -35,7 +36,7 @@ public class LocalizedResourcePack implements IResourcePack {
         boolean downloaded = true;
         try {
             String lang = ReplayMod.apiClient.getTranslation(langcode);
-            availableLanguages.put(langcode, lang);
+            availableLanguages.put(langcode, StringEscapeUtils.unescapeHtml4(lang));
         } catch(Exception e) {
             e.printStackTrace();
             downloaded = false;
