@@ -120,6 +120,8 @@ replaymod.gui.settings.title=Replay Mod Settings
 replaymod.gui.settings.interpolation.linear=Linear
 replaymod.gui.settings.interpolation.cubic=Cubic
 
+replaymod.gui.settings.quality=Video Quality
+replaymod.gui.settings.framerate=Video Framerate
 replaymod.gui.settings.notifications=Enable Notifications
 replaymod.gui.settings.recordserver=Record Server
 replaymod.gui.settings.recordsingleplayer=Record Singleplayer

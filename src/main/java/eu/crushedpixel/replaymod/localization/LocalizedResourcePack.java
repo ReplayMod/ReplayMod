@@ -36,7 +36,8 @@ public class LocalizedResourcePack implements IResourcePack {
         boolean downloaded = true;
         try {
             String lang = ReplayMod.apiClient.getTranslation(langcode);
-            availableLanguages.put(langcode, StringEscapeUtils.unescapeHtml4(lang));
+            String prop = StringEscapeUtils.unescapeHtml4(lang);
+            availableLanguages.put(langcode, prop);
         } catch(Exception e) {
             e.printStackTrace();
             downloaded = false;

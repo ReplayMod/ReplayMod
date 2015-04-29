@@ -96,12 +96,12 @@ public class GuiReplaySettings extends GuiScreen {
         for(RenderOptions o : RenderOptions.values()) {
             if(o == RenderOptions.videoFramerate) {
                 this.buttonList.add(new GuiVideoFramerateSlider(FRAMERATE_SLIDER_ID,
-                        this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), settings.getVideoFramerate(), "Video Framerate"));
+                        this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), settings.getVideoFramerate(), I18n.format("replaymod.gui.settings.framerate")));
             } else if(o == RenderOptions.videoQuality) {
                 this.buttonList.add(new GuiVideoQualitySlider(QUALITY_SLIDER_ID,
-                        this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (float) settings.getVideoQuality(), "Video Quality"));
+                        this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), (float) settings.getVideoQuality(), I18n.format("replaymod.gui.settings.quality")));
             } else if(o == RenderOptions.waitForChunks) {
-                this.buttonList.add(resourcePackButton = new GuiButton(WAITFORCHUNKS_ID, this.width / 2 - 155 + i % 2 * 160,
+                this.buttonList.add(waitForChunksButton = new GuiButton(WAITFORCHUNKS_ID, this.width / 2 - 155 + i % 2 * 160,
                         this.height / 6 + 24 * (i >> 1), 150, 20, I18n.format("replaymod.gui.settings.forcechunks")+": " + onOff(settings.getWaitForChunks())));
             }
 
@@ -175,7 +175,7 @@ public class GuiReplaySettings extends GuiScreen {
                 case WAITFORCHUNKS_ID:
                     enabled = ReplayMod.replaySettings.getWaitForChunks();
                     enabled = !enabled;
-                    resourcePackButton.displayString = I18n.format("replaymod.gui.settings.forcechunks")+": " + onOff(enabled);
+                    waitForChunksButton.displayString = I18n.format("replaymod.gui.settings.forcechunks")+": " + onOff(enabled);
                     ReplayMod.replaySettings.setWaitForChunks(enabled);
                     break;
                 case INDICATOR_ID:
