@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
+import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 
 public class KeyInputHandler {
@@ -21,10 +22,10 @@ public class KeyInputHandler {
     private boolean escDown = false;
 
     @SubscribeEvent
-    public void onKeyInput(KeyInputEvent event) {
+    public void onKeyInput(KeyInputEvent event) throws LWJGLException {
 
         if(!ReplayHandler.isInReplay()) return;
-        if(mc.currentScreen != null) {
+        if(mc.currentScreen != null && !(mc.currentScreen instanceof GuiMouseInput)) {
             return;
         }
 
@@ -34,6 +35,7 @@ public class KeyInputHandler {
             mc.displayGuiScreen(new GuiCancelRender());
         }
 
+        if(!Keyboard.isCreated()) Keyboard.create();
         escDown = Keyboard.isKeyDown(Keyboard.KEY_ESCAPE) && Keyboard.getEventKeyState();
 
         boolean found = false;
@@ -90,24 +92,36 @@ public class KeyInputHandler {
                     break;
                 }
 
-                //Custom registered handlers
-                if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && kb.isPressed() && !found) {
-                    TickAndRenderListener.requestScreenshot();
-                    //TODO: Make this properly work
-                }
-
-                if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SPECTATE) && kb.isPressed() && !found) {
-                    SpectateHandler.openSpectateSelection();
-                }
-
-                if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && kb.isPressed()) {
-                    ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());
-                }
+                handleCustomKeybindings(kb, found, null);
 
             } catch(Exception e) {
                 e.printStackTrace();
             }
             found = true;
+        }
+    }
+
+    public void handleCustomKeybindings(KeyBinding kb, boolean found, Integer keyCode) {
+        //Custom registered handlers
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {
+            TickAndRenderListener.requestScreenshot();
+            //TODO: Make this properly work
+        }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SPECTATE) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {
+            SpectateHandler.openSpectateSelection();
+        }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());
+        }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_CLEAR_KEYFRAMES) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            ReplayHandler.resetKeyframes();
+        }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SYNC_TIMELINE) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            ReplayHandler.syncTimeCursor(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
         }
     }
 }

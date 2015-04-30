@@ -59,6 +59,7 @@ public class ReplayMod {
     public static boolean firstMainMenu = true;
     public static RecordingHandler recordingHandler;
     public static ChatMessageHandler chatMessageHandler = new ChatMessageHandler();
+    public static KeyInputHandler keyInputHandler = new KeyInputHandler();
     public static ReplaySender replaySender;
     public static int TP_DISTANCE_LIMIT = 128;
     public static FileCopyHandler fileCopyHandler;
@@ -94,7 +95,7 @@ public class ReplayMod {
         FMLCommonHandler.instance().bus().register(new ConnectionEventHandler());
         MinecraftForge.EVENT_BUS.register(new GuiEventHandler());
 
-        FMLCommonHandler.instance().bus().register(new KeyInputHandler());
+        FMLCommonHandler.instance().bus().register(keyInputHandler);
         MinecraftForge.EVENT_BUS.register(new MouseInputHandler());
 
         recordingHandler = new RecordingHandler();
