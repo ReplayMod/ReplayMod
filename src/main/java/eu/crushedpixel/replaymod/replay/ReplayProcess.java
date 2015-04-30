@@ -114,6 +114,8 @@ public class ReplayProcess {
         if(isVideoRecording()) {
             MCTimerHandler.setTimerSpeed(1f);
             MCTimerHandler.setPassiveTimer();
+        } else {
+            MCTimerHandler.setTimerSpeed(1f);
         }
     }
 
@@ -340,10 +342,9 @@ public class ReplayProcess {
             ReplayHandler.getCameraEntity().movePath(pos);
         }
 
-        if(curSpeed > 0) {
-            ReplayMod.replaySender.setReplaySpeed(curSpeed);
-            lastSpeed = curSpeed;
-        }
+        if(!isVideoRecording()) ReplayMod.replaySender.setReplaySpeed(curSpeed);
+        //if(curSpeed > 0)
+        lastSpeed = curSpeed;
 
         if(recording) {
             MCTimerHandler.updateTimer((1f / ReplayMod.replaySettings.getVideoFramerate()));
