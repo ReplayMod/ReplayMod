@@ -55,12 +55,9 @@ public class ReplayProcess {
         return isVideoRecording;
     }
 
-    public static void startReplayProcess(boolean record) {
-        ReplayHandler.selectKeyframe(null);
-
+    private static void resetProcess() {
         firstTime = true;
 
-        isVideoRecording = record;
         lastPosition = null;
         motionSpline = null;
         motionLinear = null;
@@ -70,12 +67,6 @@ public class ReplayProcess {
 
         ReplayMod.replaySender.resetToleratedTimeStamp();
 
-        ReplayMod.chatMessageHandler.initialize();
-        if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
-            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.notenoughkeyframes", ChatMessageType.WARNING);
-            return;
-        }
-
         blocked = deepBlock = false;
 
         startRealTime = System.currentTimeMillis();
@@ -84,13 +75,31 @@ public class ReplayProcess {
         lastTimestamp = -1;
         lastSpeed = 1f;
         linear = ReplayMod.replaySettings.isLinearMovement();
-        ReplayHandler.sortKeyframes();
-        ReplayHandler.setInPath(true);
+
         previousReplaySpeed = ReplayMod.replaySender.getReplaySpeed();
 
         EnchantmentTimer.resetRecordingTime();
+    }
 
-        TimeKeyframe tf = ReplayHandler.getNextTimeKeyframe(-1);
+    public static void startReplayProcess(boolean record) {
+        ReplayHandler.selectKeyframe(null);
+        resetProcess();
+
+        isVideoRecording = record;
+
+        ReplayMod.chatMessageHandler.initialize();
+
+        //if not enough keyframes, abort and leave chat message
+        if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
+            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.notenoughkeyframes", ChatMessageType.WARNING);
+            return;
+        }
+
+        ReplayHandler.sortKeyframes();
+        ReplayHandler.setInPath(true);
+
+        //gets first Timestamp and sets Replay Time to it
+        TimeKeyframe tf = ReplayHandler.getFirstTimeKeyframe();
         if(tf != null) {
             int ts = tf.getTimestamp();
             if(ts < ReplayMod.replaySender.currentTimeStamp()) {
@@ -101,6 +110,7 @@ public class ReplayProcess {
 
         ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
 
+        //if video is recording, the Replay Process takes control over the Minecraft Timer
         if(isVideoRecording()) {
             MCTimerHandler.setTimerSpeed(1f);
             MCTimerHandler.setPassiveTimer();
@@ -109,6 +119,8 @@ public class ReplayProcess {
 
     public static void stopReplayProcess(boolean finished) {
         if(!ReplayHandler.isInPath()) return;
+
+        //if canceled, display a different chat message
         if(finished) ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathfinished", ChatMessageType.INFORMATION);
         else {
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathinterrupted", ChatMessageType.INFORMATION);
@@ -116,8 +128,11 @@ public class ReplayProcess {
                 VideoWriter.abortRecording();
             }
         }
+
         ReplayHandler.setInPath(false);
+
         ReplayMod.replaySender.stopHurrying();
+
         MCTimerHandler.setActiveTimer();
         ReplayMod.replaySender.setReplaySpeed(previousReplaySpeed);
         ReplayMod.replaySender.setReplaySpeed(0);
@@ -126,13 +141,13 @@ public class ReplayProcess {
     public static void unblockAndTick(boolean justCheck) {
         if(!deepBlock) blocked = false;
         if(!blocked || !isVideoRecording())
-            ReplayProcess.tickReplay(justCheck);
+            pathTick(isVideoRecording(), justCheck);
     }
 
-    public static void tickReplay(boolean justCheck) {
-        pathTick(isVideoRecording(), justCheck);
-    }
-
+    //if justCheck is true, no Screenshot will be taken, it will only be checked
+    //whether all chunks have been rendered. This is necessary because no Render ticks
+    //are called if the Timer speed is set to 0, leading to this method never being
+    //called from the RenderWorldLastEvent handlers.
     private static void pathTick(boolean recording, boolean justCheck) {
         if(ReplayMod.replaySender.isHurrying()) {
             lastRealTime = System.currentTimeMillis();
@@ -312,7 +327,7 @@ public class ReplayProcess {
             }
         } else {
             if(posCount == 1) {
-                pos = ReplayHandler.getNextPositionKeyframe(-1).getPosition();
+                pos = ReplayHandler.getFirstPositionKeyframe().getPosition();
             }
         }
 

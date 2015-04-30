@@ -65,7 +65,6 @@ public class GuiReplayOverlay extends Gui {
     private int place_ButtonY = realTimelineY + 1;
     private int time_ButtonX = 85;
     private int time_ButtonY = realTimelineY + 1;
-    private long lastSystemTime = System.currentTimeMillis();
     private ResourceLocation replay_gui = new ResourceLocation("replaymod", "replay_gui.png");
     private ResourceLocation extended_gui = new ResourceLocation("replaymod", "extended_gui.png");
     private ResourceLocation timeline_icons = new ResourceLocation("replaymod", "timeline_icons.png");
@@ -79,7 +78,6 @@ public class GuiReplayOverlay extends Gui {
     private int tl_y = 40;
     private float zoom_scale = 0.1f; //can see 1/10th of the timeline
     private float pos_left = 0f; //left border of timeline is at 0%
-    private float cursor_pos = 0f; //cursor is at 0%
     private long timelineLength = 10 * 60 * 1000; //10 min of timeline
     private float zoom_steps = 0.05f;
     private boolean wasSliding = false;
@@ -218,7 +216,6 @@ public class GuiReplayOverlay extends Gui {
             }
         }
 
-        //TODO: Save Video Button
         hover = false;
         x = 0;
         y = 18;

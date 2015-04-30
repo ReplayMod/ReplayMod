@@ -91,16 +91,6 @@ public class TickAndRenderListener {
     public void tick(TickEvent event) {
         if(!ReplayHandler.isInReplay()) return;
 
-		/*
-		if(Keyboard.getEventKeyState() && Keyboard.isKeyDown(Keyboard.KEY_F1)
-				&& ReplayHandler.isInPath() && !ReplayProcess.isVideoRecording()
-				&& mc.currentScreen instanceof GuiMouseInput && !f1Down) {
-			mc.gameSettings.hideGUI = !mc.gameSettings.hideGUI;
-		}
-
-		f1Down = Keyboard.isKeyDown(Keyboard.KEY_F1) && Keyboard.getEventKeyState();
-		*/
-
         if(ReplayHandler.getCameraEntity() != null)
             ReplayHandler.getCameraEntity().updateMovement();
         if(ReplayHandler.isInPath()) {
@@ -110,14 +100,14 @@ public class TickAndRenderListener {
                 mc.displayGuiScreen(new GuiMouseInput());
             }
         } else onMouseMove(new MouseEvent());
+
         FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
     }
 
     @SubscribeEvent
     public void onMouseMove(MouseEvent event) {
         if(!ReplayHandler.isInReplay()) return;
-        boolean flag = Display.isActive();
-        flag = true;
+        boolean flag = true;
 
         mc.mcProfiler.startSection("mouse");
 

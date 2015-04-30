@@ -141,7 +141,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 							 * If hurrying, don't wait for correct timing.
 							 */
 
-
                             if(!hurryToTimestamp && ReplayHandler.isInPath()) {
                                 continue;
                             }
@@ -149,7 +148,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                             PacketData pd = ReplayFileIO.readPacketData(dis);
 
                             currentTimeStamp = pd.getTimestamp();
-                            //System.out.println(currentTimeStamp);
 
                             if(!ReplayHandler.isInPath() && !hurryToTimestamp && hasWorldLoaded) {
                                 int timeWait = (int) Math.round((currentTimeStamp - lastTimeStamp) / replaySpeed);

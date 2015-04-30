@@ -343,4 +343,84 @@ public class ReplayHandler {
         }
         return null;
     }
+
+    public static TimeKeyframe getFirstTimeKeyframe() {
+        Keyframe sel = getSelected();
+        sortKeyframes();
+        for(Keyframe k : getKeyframes()) {
+            if(k instanceof TimeKeyframe) {
+                selectKeyframe(sel);
+                return (TimeKeyframe)k;
+            }
+        }
+        selectKeyframe(sel);
+        return null;
+    }
+
+    public static PositionKeyframe getFirstPositionKeyframe() {
+        Keyframe sel = getSelected();
+        sortKeyframes();
+        for(Keyframe k : getKeyframes()) {
+            if(k instanceof PositionKeyframe) {
+                selectKeyframe(sel);
+                return (PositionKeyframe)k;
+            }
+        }
+        selectKeyframe(sel);
+        return null;
+    }
+
+    public static TimeKeyframe getLastTimeKeyframe() {
+        ArrayList<Keyframe> rev = new ArrayList<Keyframe>(getKeyframes());
+        Collections.reverse(rev);
+
+        for(Keyframe k : rev) {
+            if(k instanceof TimeKeyframe) {
+                return (TimeKeyframe)k;
+            }
+        }
+        return null;
+    }
+
+    public static PositionKeyframe getLastPositionKeyframe() {
+        ArrayList<Keyframe> rev = new ArrayList<Keyframe>(getKeyframes());
+        Collections.reverse(rev);
+
+        for(Keyframe k : rev) {
+            if(k instanceof PositionKeyframe) {
+                return (PositionKeyframe)k;
+            }
+        }
+        return null;
+    }
+
+    public static void syncTimeCursor(boolean shiftMode) {
+        selectKeyframe(null);
+
+        int curTime = ReplayMod.replaySender.currentTimeStamp();
+
+        int prevTime, prevRealTime;
+
+        TimeKeyframe keyframe;
+
+        //if shift is down, it will refer to the previous Time Keyframe instead of the last one
+        if(shiftMode) {
+            int realTime = getRealTimelineCursor();
+            keyframe = getPreviousTimeKeyframe(realTime);
+        } else {
+            keyframe = getLastTimeKeyframe();
+        }
+
+        if(keyframe == null) {
+            prevTime = 0;
+            prevRealTime = 0;
+        } else {
+            prevTime = keyframe.getTimestamp();
+            prevRealTime = keyframe.getRealTimestamp();
+        }
+
+        int newCursorPos = prevRealTime+(curTime-prevTime);
+
+        setRealTimelineCursor(newCursorPos);
+    }
 }

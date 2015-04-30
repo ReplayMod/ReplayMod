@@ -138,3 +138,10 @@ replaymod.gui.settings.videoquality.best=Best
 
 replaymod.gui.settings.warning.linea=WARNING: Recording settings will be
 replaymod.gui.settings.warning.lineb=applied the next time you join a world.
+
+#Replay Mod Keybindings
+replaymod.input.lighting=Toggle Lighting
+replaymod.input.thumbnail=Capture Thumbnail
+replaymod.input.spectate=Spectate Players
+replaymod.input.clearkeyframes=Clear Keyframes
+replaymod.input.synctimeline=Synchronize Timeline
