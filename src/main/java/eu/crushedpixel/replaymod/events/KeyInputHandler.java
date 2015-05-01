@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.events;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
 import eu.crushedpixel.replaymod.gui.GuiCancelRender;
+import eu.crushedpixel.replaymod.gui.GuiKeyframeRepository;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -87,12 +88,12 @@ public class KeyInputHandler {
                     ReplayHandler.getCameraEntity().speedUp();
                 }
 
-                if(kb.getKeyDescription().equals("key.chat")) {
+                if(kb.getKeyDescription().equals("key.chat") && kb.isPressed()) {
                     mc.displayGuiScreen(new GuiMouseInput());
                     break;
                 }
 
-                handleCustomKeybindings(kb, found, null);
+                handleCustomKeybindings(kb, found, -1);
 
             } catch(Exception e) {
                 e.printStackTrace();
@@ -101,11 +102,10 @@ public class KeyInputHandler {
         }
     }
 
-    public void handleCustomKeybindings(KeyBinding kb, boolean found, Integer keyCode) {
+    public void handleCustomKeybindings(KeyBinding kb, boolean found, int keyCode) {
         //Custom registered handlers
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {
             TickAndRenderListener.requestScreenshot();
-            //TODO: Make this properly work
         }
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SPECTATE) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {
@@ -122,6 +122,10 @@ public class KeyInputHandler {
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SYNC_TIMELINE) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
             ReplayHandler.syncTimeCursor(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
+        }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_KEYFRAME_PRESETS) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            mc.displayGuiScreen(new GuiKeyframeRepository(ReplayHandler.getKeyframeRepository()));
         }
     }
 }

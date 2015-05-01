@@ -18,6 +18,8 @@ public class GuiEntryList<T> extends GuiTextField {
     private int visibleElements;
     private int upperIndex = 0;
 
+    private String emptyMessage = null;
+
     private List<SelectionListener> selectionListeners = new ArrayList<SelectionListener>();
     private List<T> elements = new ArrayList<T>();
 
@@ -32,10 +34,20 @@ public class GuiEntryList<T> extends GuiTextField {
         this.height = elementHeight * visibleElements - 1;
     }
 
+    public void setEmptyMessage(String emptyMessage) {
+        this.emptyMessage = emptyMessage;
+    }
+
     @Override
     public void drawTextBox() {
         try {
             super.drawTextBox();
+
+            if(elements.size() == 0 && emptyMessage != null) {
+                drawCenteredString(mc.fontRendererObj, emptyMessage,
+                        xPosition+(width/2), yPosition+(height/2)-(mc.fontRendererObj.FONT_HEIGHT/2), Color.RED.getRGB());
+            }
+
             //drawing the entries
             for(int i = 0; i - upperIndex < visibleElements; i++) {
                 if(i < upperIndex) continue;
@@ -125,6 +137,14 @@ public class GuiEntryList<T> extends GuiTextField {
         return null;
     }
 
+    public void removeElement(int index) {
+        elements.remove(index);
+        if(selectionIndex >= elements.size()) {
+            selectionIndex = elements.size()-1;
+        }
+        fireSelectionChangeEvent();
+    }
+
     public int getSelectionIndex() {
         return selectionIndex;
     }
@@ -133,6 +153,19 @@ public class GuiEntryList<T> extends GuiTextField {
         this.selectionIndex = index;
         if(selectionIndex < 0) selectionIndex = -1;
         fireSelectionChangeEvent();
+    }
+
+    public List<T> getCopyOfElements() {
+        return new ArrayList<T>(elements);
+    }
+
+    public void replaceElement(int index, T replace) {
+        elements.set(index, replace);
+        fireSelectionChangeEvent();
+    }
+
+    public int getEntryCount() {
+        return elements.size();
     }
 
     public void addSelectionListener(SelectionListener listener) {

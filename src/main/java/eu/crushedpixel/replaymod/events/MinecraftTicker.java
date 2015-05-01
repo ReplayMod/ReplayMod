@@ -2,15 +2,11 @@ package eu.crushedpixel.replaymod.events;
 
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.play.client.C16PacketClientStatus;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
 import org.lwjgl.input.Keyboard;
@@ -258,31 +254,6 @@ public class MinecraftTicker {
                         mc.thePlayer.inventory.currentItem = i;
                     }
                 }
-            }
-
-            boolean flag = mc.gameSettings.chatVisibility != EntityPlayer.EnumChatVisibility.HIDDEN;
-
-            while(mc.gameSettings.keyBindInventory.isPressed()) {
-                if(mc.playerController.isRidingHorse()) {
-                    mc.thePlayer.sendHorseInventory();
-                } else {
-                    mc.getNetHandler().addToSendQueue(new C16PacketClientStatus(C16PacketClientStatus.EnumState.OPEN_INVENTORY_ACHIEVEMENT));
-                    mc.displayGuiScreen(new GuiInventory(mc.thePlayer));
-                }
-            }
-
-            while(mc.gameSettings.keyBindDrop.isPressed()) {
-                if(!mc.thePlayer.isSpectator()) {
-                    mc.thePlayer.dropOneItem(GuiScreen.isCtrlKeyDown());
-                }
-            }
-
-            while(mc.gameSettings.keyBindChat.isPressed() && flag) {
-                mc.displayGuiScreen(new GuiChat());
-            }
-
-            if(mc.currentScreen == null && mc.gameSettings.keyBindCommand.isPressed() && flag) {
-                mc.displayGuiScreen(new GuiChat("/"));
             }
 
             if(mc.thePlayer != null && mc.thePlayer.isUsingItem()) {

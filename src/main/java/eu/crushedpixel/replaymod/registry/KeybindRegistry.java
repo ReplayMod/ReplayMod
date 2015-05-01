@@ -15,6 +15,7 @@ public class KeybindRegistry {
     public static final String KEY_SPECTATE = "replaymod.input.spectate";
     public static final String KEY_CLEAR_KEYFRAMES = "replaymod.input.clearkeyframes";
     public static final String KEY_SYNC_TIMELINE = "replaymod.input.synctimeline";
+    public static final String KEY_KEYFRAME_PRESETS = "replaymod.input.keyframerepository";
     private static Minecraft mc = Minecraft.getMinecraft();
 
     public static void initialize() {
@@ -25,6 +26,7 @@ public class KeybindRegistry {
         bindings.add(new KeyBinding(KEY_SPECTATE, Keyboard.KEY_B, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_SYNC_TIMELINE, Keyboard.KEY_V, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_CLEAR_KEYFRAMES, Keyboard.KEY_C, "replaymod.title"));
+        bindings.add(new KeyBinding(KEY_KEYFRAME_PRESETS, Keyboard.KEY_X, "replaymod.title"));
 
         mc.gameSettings.keyBindings = bindings.toArray(new KeyBinding[bindings.size()]);
     }

@@ -2,10 +2,7 @@ package eu.crushedpixel.replaymod.events;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
-import eu.crushedpixel.replaymod.gui.GuiCancelRender;
-import eu.crushedpixel.replaymod.gui.GuiMouseInput;
-import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
-import eu.crushedpixel.replaymod.gui.GuiSpectateSelection;
+import eu.crushedpixel.replaymod.gui.*;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
@@ -120,7 +117,8 @@ public class GuiReplayOverlay extends Gui {
     @SubscribeEvent
     public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
 
-        if(!ReplayHandler.isInReplay() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class) || VideoWriter.isRecording()) {
+        if(!ReplayHandler.isInReplay() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class)
+                || VideoWriter.isRecording() || FMLClientHandler.instance().isGUIOpen(GuiKeyframeRepository.class)) {
             return;
         }
 

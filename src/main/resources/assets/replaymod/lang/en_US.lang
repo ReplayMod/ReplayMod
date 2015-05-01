@@ -145,3 +145,17 @@ replaymod.input.thumbnail=Capture Thumbnail
 replaymod.input.spectate=Spectate Players
 replaymod.input.clearkeyframes=Clear Keyframes
 replaymod.input.synctimeline=Synchronize Timeline
+replaymod.input.keyframerepository=Open Keyframe Presets
+
+#Keyframe Presets GUI
+replaymod.gui.keyframerepository.title=Keyframe Repository
+replaymod.gui.keyframerepository.presets=Keyframe Presets
+replaymod.gui.keyframerepository.positionkeyframes=Position Keyframes
+replaymod.gui.keyframerepository.timekeyframes=Time Keyframes
+
+replaymod.gui.keyframerepository.savecurrent=Save current Path
+
+replaymod.gui.keyframerepository.noentries=No Presets available
+
+replaymod.gui.keyframerepository.preset.defaultname=New Keyframe Preset
+replaymod.gui.keyframerepository.duplicate=This Preset already exists

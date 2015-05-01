@@ -6,7 +6,7 @@ import eu.crushedpixel.replaymod.events.*;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
-import eu.crushedpixel.replaymod.registry.FileCopyHandler;
+import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
@@ -62,7 +62,7 @@ public class ReplayMod {
     public static KeyInputHandler keyInputHandler = new KeyInputHandler();
     public static ReplaySender replaySender;
     public static int TP_DISTANCE_LIMIT = 128;
-    public static FileCopyHandler fileCopyHandler;
+    public static ReplayFileAppender replayFileAppender;
 
     private static Field defaultResourcePacksField;
     static {
@@ -86,8 +86,8 @@ public class ReplayMod {
         replaySettings = new ReplaySettings();
         replaySettings.readValues();
 
-        fileCopyHandler = new FileCopyHandler();
-        fileCopyHandler.start();
+        replayFileAppender = new ReplayFileAppender();
+        replayFileAppender.start();
     }
 
     @EventHandler

@@ -42,8 +42,7 @@ public class GuiConnectPart extends GuiStudioPart {
 
     @Override
     public void applyFilters(File replayFile, File outputFile) {
-        // TODO Auto-generated method stub
-
+        //TODO
     }
 
     @Override

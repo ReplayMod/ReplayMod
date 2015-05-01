@@ -45,4 +45,10 @@ public class GuiConstants {
 
     public static final int REPLAY_EDITOR_REMOVE_BUTTON = 5008;
     public static final int REPLAY_EDITOR_ADD_BUTTON = 5009;
+
+    public static final int KEYFRAME_REPOSITORY_LIST = 1234;
+    public static final int KEYFRAME_REPOSTORY_NAME_INPUT = 2345;
+    public static final int KEYFRAME_REPOSITORY_ADD_BUTTON = 3456;
+    public static final int KEYFRAME_REPOSITORY_REMOVE_BUTTON = 4567;
+    public static final int KEYFRAME_REPOSITORY_LOAD_BUTTON = 5678;
 }

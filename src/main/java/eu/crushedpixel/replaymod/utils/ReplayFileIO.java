@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.utils;
 import akka.japi.Pair;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.PacketSerializer;
@@ -20,6 +21,7 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -305,7 +307,21 @@ public class ReplayFileIO {
         return false;
     }
 
-    public static void addThumbToZip(File zipFile, File thumb) throws IOException {
+    private static final Gson gson = new Gson();
+
+    public static void writeKeyframeRegistryToFile(KeyframeSet[] keyframeRegistry, File file) throws IOException {
+        file.mkdirs();
+        file.createNewFile();
+
+        String json = gson.toJson(keyframeRegistry);
+        Files.write(file.toPath(), json.getBytes());
+    }
+
+    public static KeyframeSet[] getKeyframeRegistryFromFile(File file) throws Exception {
+        return gson.fromJson(Files.readAllLines(file.toPath()).get(0), KeyframeSet[].class);
+    }
+
+    public static void addFileToZip(File zipFile, File toAdd, String fileName) throws IOException {
         // get a temp file
         File tempFile = File.createTempFile(zipFile.getName(), null, zipFile.getParentFile());
         // delete it, otherwise you cannot rename your existing zip to it.
@@ -318,8 +334,8 @@ public class ReplayFileIO {
         ZipEntry entry = zin.getNextEntry();
         while(entry != null) {
             String name = entry.getName();
-            boolean isThumb = name.contains("thumb");
-            if(!isThumb) {
+            boolean isFile = name.equalsIgnoreCase(fileName);
+            if(!isFile) {
                 // Add ZIP entry to output stream.
                 out.putNextEntry(new ZipEntry(name));
                 // Transfer bytes from the ZIP file to the output file
@@ -334,13 +350,13 @@ public class ReplayFileIO {
         zin.close();
         // Compress the files
 
-        InputStream in = new FileInputStream(thumb);
+        InputStream in = new FileInputStream(toAdd);
         // Add ZIP entry to output stream.
-        out.putNextEntry(new ZipEntry("thumb"));
+        out.putNextEntry(new ZipEntry(fileName));
         // Transfer bytes from the file to the ZIP file
-        int len;
 
-        out.write(uniqueBytes);
+        int len;
+        if(fileName.equals("thumb")) out.write(uniqueBytes);
 
         while((len = in.read(buf)) > 0) {
             out.write(buf, 0, len);
@@ -352,6 +368,9 @@ public class ReplayFileIO {
         // Complete the ZIP file
         out.close();
 
-        ReplayMod.fileCopyHandler.registerModifiedFile(tempFile, zipFile);
+        zipFile.delete();
+        tempFile.renameTo(zipFile);
+
+        toAdd.delete();
     }
 }

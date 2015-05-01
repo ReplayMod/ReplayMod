@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
+import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
@@ -15,7 +16,6 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
@@ -76,14 +76,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             joinPacketDimension, joinPacketDifficulty, joinPacketMaxPlayers;
     private Field effectPacketEntityId;
     private Field metadataPacketEntityId, metadataPacketList;
-    private Field animationPacketEntityId;
-    private Field entityDataWatcher;
-    private Field chatPacketPosition;
     private Minecraft mc = Minecraft.getMinecraft();
-    private long now = System.currentTimeMillis();
     private int replayLength = 0;
     private int actualID = -1;
-    private EffectRenderer old = mc.effectRenderer;
     private ZipArchiveEntry replayEntry;
     private ArrayList<Class> badPackets = new ArrayList<Class>() {
         {
@@ -187,7 +182,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                             }
 
                         } catch(EOFException eof) {
-                            System.out.println("End of File encountered!");
                             dis = new DataInputStream(archive.getInputStream(replayEntry));
                             setReplaySpeed(0);
                         } catch(IOException e) {
@@ -226,16 +220,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
             metadataPacketList = S1CPacketEntityMetadata.class.getDeclaredField(MCPNames.field("field_149378_b"));
             metadataPacketList.setAccessible(true);
-
-            animationPacketEntityId = S0BPacketAnimation.class.getDeclaredField(MCPNames.field("field_148981_a"));
-            animationPacketEntityId.setAccessible(true);
-
-            entityDataWatcher = Entity.class.getDeclaredField(MCPNames.field("field_70180_af"));
-            entityDataWatcher.setAccessible(true);
-
-            chatPacketPosition = S02PacketChat.class.getDeclaredField(MCPNames.field("field_179842_b"));
-            chatPacketPosition.setAccessible(true);
-
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -253,9 +237,23 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
                 String json = br.readLine();
 
-                ReplayMetaData metaData = new Gson().fromJson(json, ReplayMetaData.class);
+                Gson gson = new Gson();
+                ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
 
                 this.replayLength = metaData.getDuration();
+
+                ZipArchiveEntry paths = archive.getEntry("paths");
+                if(paths != null) {
+                    InputStream is2 = archive.getInputStream(paths);
+                    BufferedReader br2 = new BufferedReader(new InputStreamReader(is2));
+
+                    String json2 = br2.readLine();
+                    KeyframeSet[] repo = gson.fromJson(json2, KeyframeSet[].class);
+
+                    ReplayHandler.setKeyframeRepository(repo, false);
+                } else {
+                    ReplayHandler.setKeyframeRepository(new KeyframeSet[]{}, false);
+                }
 
                 sender.start();
             } catch(Exception e) {
@@ -362,13 +360,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                 t.start();
 
                 return;
-            }
-
-            if(p instanceof S02PacketChat) {
-                byte pos = (Byte) chatPacketPosition.get(p);
-                if(pos == 1) { //Ignores command block output sent
-                    return;
-                }
             }
 
             if(badPackets.contains(p.getClass())) return;

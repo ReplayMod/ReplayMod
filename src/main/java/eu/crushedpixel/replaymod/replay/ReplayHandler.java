@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.holders.*;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -13,10 +14,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class ReplayHandler {
 
@@ -33,6 +31,32 @@ public class ReplayHandler {
     private static boolean inReplay = false;
     private static Entity currentEntity = null;
     private static Position lastPosition = null;
+
+    private static KeyframeSet[] keyframeRepository = new KeyframeSet[]{};
+
+    public static KeyframeSet[] getKeyframeRepository() {
+        return keyframeRepository;
+    }
+
+    public static void setKeyframeRepository(KeyframeSet[] repo, boolean write) {
+        keyframeRepository = repo;
+        if(write) {
+            try {
+                File tempFile = File.createTempFile("paths", "json");
+                tempFile.deleteOnExit();
+
+                ReplayFileIO.writeKeyframeRegistryToFile(repo, tempFile);
+
+                ReplayMod.replayFileAppender.registerModifiedFile(tempFile, "paths", ReplayMod.replaySender.getReplayFile());
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void useKeyframePresetFromRepository(int index) {
+        keyframes = Arrays.asList(keyframeRepository[index].getKeyframes());
+    }
 
     public static void spectateEntity(Entity e) {
         currentEntity = e;

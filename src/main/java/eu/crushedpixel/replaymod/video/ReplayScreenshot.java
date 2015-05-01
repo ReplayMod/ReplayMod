@@ -6,7 +6,6 @@ import eu.crushedpixel.replaymod.events.TickAndRenderListener;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 
@@ -84,9 +83,9 @@ public class ReplayScreenshot {
 
                         ImageIO.write(img, "jpg", tempImage);
 
-                        ReplayFileIO.addThumbToZip(replayFile, tempImage);
+                        ReplayMod.replayFileAppender.registerModifiedFile(tempImage, "thumb", replayFile);
 
-                        tempImage.delete();
+                        tempImage.deleteOnExit();
 
                         ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.savedthumb", ChatMessageType.INFORMATION);
                     } catch(Exception e) {
