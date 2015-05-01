@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.holders;
 
 import net.minecraft.entity.Entity;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class Position {
 
@@ -66,5 +67,24 @@ public class Position {
     @Override
     public String toString() {
         return "X=" + x + ", Y=" + y + ", Z=" + z + ", Yaw=" + yaw + ", Pitch=" + pitch;
+    }
+
+    @Override
+    public boolean equals(Object o2) {
+        if(o2 == null) return false;
+        if(!(o2 instanceof Position)) return false;
+        Position pos2 = (Position)o2;
+        return hashCode() == pos2.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(x)
+                .append(y)
+                .append(z)
+                .append(pitch)
+                .append(yaw)
+                .toHashCode();
     }
 }
