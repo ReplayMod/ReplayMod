@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.events;
 
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
@@ -17,6 +18,7 @@ public class MouseInputHandler {
 
     @SubscribeEvent
     public void mouseEvent(MouseEvent event) {
+        if(!ReplayHandler.isInReplay() || mc.objectMouseOver != null) return;
         if(Mouse.isButtonDown(0)) {
             if(!leftDown) {
                 leftDown = true;
