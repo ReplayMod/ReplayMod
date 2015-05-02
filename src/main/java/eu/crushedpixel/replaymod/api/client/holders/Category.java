@@ -4,7 +4,8 @@ import net.minecraft.client.resources.I18n;
 
 public enum Category {
 
-    SURVIVAL(0, "replaymod.category.survival"), MINIGAME(1, "replaymod.category.minigame"), BUILD(2, "replaymod.category.build");
+    SURVIVAL(0, "replaymod.category.survival"), MINIGAME(1, "replaymod.category.minigame"),
+    BUILD(2, "replaymod.category.build"), MISCELLANEOUS(3, "replaymod.category.misc");
 
     private int id;
     private String name;
