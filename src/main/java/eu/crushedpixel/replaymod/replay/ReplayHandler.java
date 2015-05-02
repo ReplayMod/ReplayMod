@@ -55,7 +55,7 @@ public class ReplayHandler {
     }
 
     public static void useKeyframePresetFromRepository(int index) {
-        keyframes = Arrays.asList(keyframeRepository[index].getKeyframes());
+        keyframes = new ArrayList<Keyframe>(Arrays.asList(keyframeRepository[index].getKeyframes()));
     }
 
     public static void spectateEntity(Entity e) {
