@@ -29,6 +29,15 @@ public class ApiClient {
         return auth;
     }
 
+    public AuthKey register(String username, String mail, String password) throws IOException, ApiException {
+        QueryBuilder builder = new QueryBuilder(ApiMethods.register);
+        builder.put("username", username);
+        builder.put("email", mail);
+        builder.put("password", password);
+        AuthKey auth = invokeAndReturn(builder, AuthKey.class);
+        return auth;
+    }
+
     public boolean logout(String auth) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ApiMethods.logout);
         builder.put("auth", auth);

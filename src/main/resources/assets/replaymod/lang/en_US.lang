@@ -64,6 +64,8 @@ replaymod.gui.end=End
 replaymod.gui.delete=Delete
 replaymod.gui.recording=Recording
 replaymod.gui.speed=Speed
+replaymod.gui.register=Register
+replaymod.gui.mail=e-Mail Address
 
 replaymod.gui.unknownerror=An unknown error occured
 
@@ -89,6 +91,15 @@ replaymod.gui.login.logging=Logging in...
 replaymod.gui.login.incorrect=Incorrect username or password
 replaymod.gui.login.connectionerror=Could not connect to ReplayMod.com
 
+replaymod.gui.register.title=Register on ReplayMod.com
+replaymod.gui.register.confirmpw=Confirm Password
+
+replaymod.gui.register.error.nomatch=Passwords don't match
+replaymod.gui.register.error.shortusername=Username has to be at least 5 characters long
+replaymod.gui.register.error.shortpw=Password has to be at least 5 characters long
+replaymod.gui.register.error.invalidmail=Invalid eMail Address
+
+
 #Replay Viewer GUI
 replaymod.gui.viewer.rename.title=Rename Replay
 replaymod.gui.viewer.rename.name=Replay Name
@@ -100,6 +111,8 @@ replaymod.gui.viewer.delete.linea=Are you sure you want to delete this replay?
 
 #The Replay file name is inserted before the following string, e.g. "Some Replay will be lost forever!..."
 replaymod.gui.viewer.delete.lineb=will be lost forever! (a long time!)
+
+replaymod.gui.login.noacc=Don't have an account yet?
 
 #Replay Center GUI
 replaymod.gui.center.logoutcallback=Do you really want to log out?

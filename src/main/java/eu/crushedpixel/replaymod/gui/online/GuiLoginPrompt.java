@@ -26,6 +26,16 @@ public class GuiLoginPrompt extends GuiScreen {
     private PasswordTextField password;
     private GuiButton loginButton;
     private GuiButton cancelButton;
+    private GuiButton registerButton;
+
+    private String noacc;
+    private int strwidth;
+
+    private boolean initialized = false;
+
+    public GuiScreen getSuccessScreen() {
+        return successScreen;
+    }
 
     public GuiLoginPrompt(GuiScreen parent, GuiScreen successScreen) {
         this.parent = parent;
@@ -36,22 +46,44 @@ public class GuiLoginPrompt extends GuiScreen {
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
 
-        username = new GuiTextField(GuiConstants.REPLAY_CENTER_LOGIN_TEXT_ID, fontRendererObj, this.width / 2 - 45, 30, 145, 20);
-        username.setEnabled(true);
-        username.setFocused(true);
+        if(!initialized) {
+            username = new GuiTextField(GuiConstants.LOGIN_USERNAME_FIELD, fontRendererObj, this.width / 2 - 45, 30, 145, 20);
+            username.setEnabled(true);
+            username.setFocused(true);
 
-        password = new PasswordTextField(GuiConstants.REPLAY_CENTER_PASSWORD_TEXT_ID, fontRendererObj, this.width / 2 - 45, 60, 145, 20);
-        password.setEnabled(true);
-        password.setFocused(false);
+            password = new PasswordTextField(GuiConstants.LOGIN_PASSWORD_FIELD, fontRendererObj, this.width / 2 - 45, 60, 145, 20);
+            password.setEnabled(true);
+            password.setFocused(false);
 
-        loginButton = new GuiButton(GuiConstants.LOGIN_OKAY_BUTTON, this.width / 2 - 150 - 2, 110, I18n.format("replaymod.gui.login"));
-        loginButton.width = 150;
-        loginButton.enabled = false;
+            loginButton = new GuiButton(GuiConstants.LOGIN_OKAY_BUTTON, this.width / 2 - 150 - 2, 110, I18n.format("replaymod.gui.login"));
+            loginButton.enabled = false;
+            loginButton.width = 150;
+
+            cancelButton = new GuiButton(GuiConstants.LOGIN_CANCEL_BUTTON, this.width / 2 + 2, 110, I18n.format("replaymod.gui.cancel"));
+            cancelButton.width = 150;
+
+            registerButton = new GuiButton(GuiConstants.LOGIN_REGISTER_BUTTON, 0, this.height-30, I18n.format("replaymod.gui.register"));
+            registerButton.width = 150;
+        } else {
+            username.xPosition = password.xPosition = this.width / 2 - 45;
+            loginButton.xPosition = this.width / 2 - 150 - 2;
+            cancelButton.xPosition = this.width / 2 + 2;
+            registerButton.yPosition = this.height-30;
+        }
+
+        noacc = I18n.format("replaymod.gui.login.noacc");
+        strwidth = fontRendererObj.getStringWidth(noacc);
+
+        int tw = 150+5+strwidth;
+        registerButton.xPosition = (width/2) - (tw/2) + strwidth+5;
+
         buttonList.add(loginButton);
-
-        cancelButton = new GuiButton(GuiConstants.LOGIN_CANCEL_BUTTON, this.width / 2 + 2, 110, I18n.format("replaymod.gui.cancel"));
-        cancelButton.width = 150;
         buttonList.add(cancelButton);
+        buttonList.add(registerButton);
+
+        strwidth2 = Math.max(fontRendererObj.getStringWidth(usernameLabel), fontRendererObj.getStringWidth(passwordLabel));
+
+        initialized = true;
     }
 
     @Override
@@ -86,18 +118,24 @@ public class GuiLoginPrompt extends GuiScreen {
             }
         } else if(button.id == GuiConstants.LOGIN_CANCEL_BUTTON) {
             mc.displayGuiScreen(parent);
+        } else if(button.id == GuiConstants.LOGIN_REGISTER_BUTTON) {
+            mc.displayGuiScreen(new GuiRegister(this));
         }
     }
+
+    private String usernameLabel = I18n.format("replaymod.gui.username");
+    private String passwordLabel = I18n.format("replaymod.gui.password");
+    private int strwidth2 = 100;
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
         drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.login.title"), this.width / 2, 10, Color.WHITE.getRGB());
 
-        drawString(fontRendererObj, I18n.format("replaymod.gui.username"), this.width / 2 - 100, 37, Color.WHITE.getRGB());
+        drawString(fontRendererObj, usernameLabel, this.width / 2 - (45+10+strwidth2), 37, Color.WHITE.getRGB());
         username.drawTextBox();
 
-        drawString(fontRendererObj, I18n.format("replaymod.gui.password"), this.width / 2 - 100, 67, Color.WHITE.getRGB());
+        drawString(fontRendererObj, passwordLabel, this.width / 2 - (45+10+strwidth2), 67, Color.WHITE.getRGB());
         password.drawTextBox();
 
         switch(textState) {
@@ -111,6 +149,10 @@ public class GuiLoginPrompt extends GuiScreen {
                 drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.login.connectionerror"), this.width / 2, 92, Color.RED.getRGB());
                 break;
         }
+
+        int tw = 150+5+strwidth;
+        drawString(fontRendererObj, noacc, this.width / 2 - (tw/2), this.height-22, Color.WHITE.getRGB());
+
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 
@@ -143,8 +185,7 @@ public class GuiLoginPrompt extends GuiScreen {
                 password.setFocused(true);
             }
             return;
-        }
-        if(keyCode == 28) { //Enter key
+        } else if(keyCode == Keyboard.KEY_RETURN) {
             actionPerformed(loginButton);
             return;
         }
@@ -154,5 +195,7 @@ public class GuiLoginPrompt extends GuiScreen {
             password.textboxKeyTyped(typedChar, keyCode);
         }
         loginButton.enabled = username.getText().length() > 0 && password.getText().length() > 0;
+
+        super.keyTyped(typedChar, keyCode);
     }
 }

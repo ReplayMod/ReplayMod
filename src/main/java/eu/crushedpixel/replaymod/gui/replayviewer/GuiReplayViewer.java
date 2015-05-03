@@ -44,16 +44,10 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     private static final int SETTINGS_BUTTON_ID = 9006;
     private static final int CANCEL_BUTTON_ID = 9007;
     private static Gson gson = new Gson();
-    private GuiScreen parentScreen;
-    private GuiButton btnEditServer;
-    private GuiButton btnSelectServer;
-    private GuiButton btnDeleteServer;
-    private String hoveringText;
     private boolean initialized;
     private GuiReplayListExtended replayGuiList;
     private List<Pair<Pair<File, ReplayMetaData>, File>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
     private GuiButton loadButton, uploadButton, folderButton, renameButton, deleteButton, cancelButton, settingsButton;
-    private boolean replaying = false;
     private boolean delete_file = false;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, String file, int p_152129_2_) {
@@ -72,7 +66,6 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         for(File file : ReplayFileIO.getAllReplayFiles()) {
             try {
                 ZipFile archive = new ZipFile(file);
-                ZipArchiveEntry recfile = archive.getEntry("recording" + ConnectionEventHandler.TEMP_FILE_EXTENSION);
                 ZipArchiveEntry metadata = archive.getEntry("metaData" + ConnectionEventHandler.JSON_FILE_EXTENSION);
 
                 ZipArchiveEntry image = archive.getEntry("thumb");
@@ -164,7 +157,6 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        this.hoveringText = null;
         this.drawDefaultBackground();
         this.replayGuiList.drawScreen(mouseX, mouseY, partialTicks);
         this.drawCenteredString(this.fontRendererObj, I18n.format("replaymod.gui.replayviewer"), this.width / 2, 20, 16777215);
@@ -188,7 +180,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
             if(button.id == LOAD_BUTTON_ID) {
                 loadReplay(replayGuiList.selected);
             } else if(button.id == CANCEL_BUTTON_ID) {
-                mc.displayGuiScreen(parentScreen);
+                mc.displayGuiScreen(null);
             } else if(button.id == DELETE_BUTTON_ID) {
                 String s = replayGuiList.getListEntry(replayGuiList.selected).getFileInfo().getName();
 

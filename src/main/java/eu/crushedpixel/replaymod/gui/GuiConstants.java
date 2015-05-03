@@ -31,6 +31,16 @@ public class GuiConstants {
 
     public static final int LOGIN_OKAY_BUTTON = 1100;
     public static final int LOGIN_CANCEL_BUTTON = 1101;
+    public static final int LOGIN_REGISTER_BUTTON = 1102;
+    public static final int LOGIN_USERNAME_FIELD = 1103;
+    public static final int LOGIN_PASSWORD_FIELD = 1104;
+
+    public static final int REGISTER_USERNAME_FIELD = 2000;
+    public static final int REGISTER_PASSWORD_FIELD = 2001;
+    public static final int REGISTER_PASSWORD_CONFIRM_FIELD = 2002;
+    public static final int REGISTER_CANCEL_BUTTON = 2003;
+    public static final int REGISTER_OKAY_BUTTON = 2004;
+    public static final int REGISTER_MAIL_FIELD = 2005;
 
     public static final int REPLAY_EDITOR_TRIM_TAB = 5000;
     public static final int REPLAY_EDITOR_CONNECT_TAB = 5001;

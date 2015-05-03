@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.online.authentication;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.client.ApiClient;
 import eu.crushedpixel.replaymod.api.client.ApiException;
+import eu.crushedpixel.replaymod.api.client.holders.AuthKey;
 
 import java.io.IOException;
 
@@ -27,6 +28,12 @@ public class AuthenticationHandler {
     public static boolean hasDonated(String uuid) throws IOException, ApiException {
         return apiClient.hasDonated(uuid);
     }
+
+    public static void register(String username, String mail, String password) throws IOException, ApiException {
+        AuthKey auth = apiClient.register(username, mail, password);
+        authkey = auth.getAuthkey();
+    }
+
 
     public static int authenticate(String username, String password) {
         try {

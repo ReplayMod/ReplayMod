@@ -47,6 +47,8 @@ public class GuiKeyframeRepository extends GuiScreen {
 
     @Override
     public void initGui() {
+        Keyboard.enableRepeatEvents(true);
+
         int h = (int)Math.floor(((double)this.height-(45+20+15))/14);
 
         if(!initialized) {
@@ -225,5 +227,10 @@ public class GuiKeyframeRepository extends GuiScreen {
         this.keyframeRepository = copy.toArray(new KeyframeSet[copy.size()]);
         ReplayHandler.setKeyframeRepository(keyframeRepository, true);
         ReplayMod.replaySender.setReplaySpeed(prevSpeed);
+    }
+
+    @Override
+    public void onGuiClosed() {
+        Keyboard.enableRepeatEvents(false);
     }
 }

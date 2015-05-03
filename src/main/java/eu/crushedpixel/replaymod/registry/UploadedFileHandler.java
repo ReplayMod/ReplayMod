@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.registry;
 
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -21,7 +20,7 @@ public class UploadedFileHandler {
             configuration = new Configuration(confFile);
             configuration.load();
 
-            Property uploaded = configuration.get("uploaded", "hashes", new String[0]);
+            configuration.get("uploaded", "hashes", new String[0]);
 
             configuration.save();
         } catch(Exception e) {

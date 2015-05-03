@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.api.client;
 
 public class ApiMethods {
 
+    public static final String register = "register";
     public static final String login = "login";
     public static final String logout = "logout";
     public static final String replay_files = "replay_files";
