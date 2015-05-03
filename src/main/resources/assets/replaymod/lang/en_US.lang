@@ -97,7 +97,7 @@ replaymod.gui.register.confirmpw=Confirm Password
 replaymod.gui.register.error.nomatch=Passwords don't match
 replaymod.gui.register.error.shortusername=Username has to be at least 5 characters long
 replaymod.gui.register.error.shortpw=Password has to be at least 5 characters long
-replaymod.gui.register.error.invalidmail=Invalid eMail Address
+replaymod.gui.register.error.invalidmail=Invalid e-Mail Address
 
 
 #Replay Viewer GUI

@@ -26,6 +26,7 @@ public class GuiRegister extends GuiScreen {
     private boolean initialized = false;
 
     private int strwidth = 0;
+    private int totalwidth = 0;
 
     private String[] labels = new String[]{I18n.format("replaymod.gui.username"), I18n.format("replaymod.gui.mail"), I18n.format("replaymod.gui.password"),
             I18n.format("replaymod.gui.register.confirmpw")};
@@ -56,9 +57,6 @@ public class GuiRegister extends GuiScreen {
             cancelButton.width = 150;
         } else {
             usernameInput.xPosition = mailInput.xPosition = passwordInput.xPosition = passwordConfirmation.xPosition = this.width / 2 - 45;
-
-            registerButton.xPosition = this.width / 2 - 150 - 2;
-            cancelButton.xPosition = this.width / 2 + 2;
         }
 
         inputFields = new ArrayList<GuiTextField>();
@@ -67,11 +65,16 @@ public class GuiRegister extends GuiScreen {
         inputFields.add(passwordInput);
         inputFields.add(passwordConfirmation);
 
-        buttonList.add(registerButton);
-        buttonList.add(cancelButton);
-
         strwidth = Math.max(Math.max(fontRendererObj.getStringWidth(labels[0]), fontRendererObj.getStringWidth(labels[1])),
                 Math.max(fontRendererObj.getStringWidth(labels[2]), fontRendererObj.getStringWidth(labels[3])));
+
+        totalwidth = 145+10+strwidth;
+
+        for(GuiTextField f : inputFields)
+            f.xPosition = (width/2) - (totalwidth/2) + strwidth+5;
+
+        buttonList.add(registerButton);
+        buttonList.add(cancelButton);
 
         initialized = true;
     }
@@ -79,6 +82,7 @@ public class GuiRegister extends GuiScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
+        drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.register.title"), this.width / 2, 10, Color.WHITE.getRGB());
 
         for(GuiTextField f : inputFields) {
             f.drawTextBox();
@@ -86,7 +90,8 @@ public class GuiRegister extends GuiScreen {
 
         int i = 0;
         for(String label : labels) {
-            drawString(fontRendererObj, label, this.width / 2 - (45 + 10 + strwidth), 37+(i*30), Color.WHITE.getRGB());
+            drawString(fontRendererObj, label, inputFields.get(i).xPosition-10-fontRendererObj.getStringWidth(label),
+                    37+(i*30), Color.WHITE.getRGB());
             i++;
         }
 

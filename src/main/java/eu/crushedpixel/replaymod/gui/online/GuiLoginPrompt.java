@@ -132,10 +132,12 @@ public class GuiLoginPrompt extends GuiScreen {
         this.drawDefaultBackground();
         drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.login.title"), this.width / 2, 10, Color.WHITE.getRGB());
 
-        drawString(fontRendererObj, usernameLabel, this.width / 2 - (45+10+strwidth2), 37, Color.WHITE.getRGB());
+        drawString(fontRendererObj, usernameLabel, username.xPosition-10-fontRendererObj.getStringWidth(usernameLabel),
+                37, Color.WHITE.getRGB());
         username.drawTextBox();
 
-        drawString(fontRendererObj, passwordLabel, this.width / 2 - (45+10+strwidth2), 67, Color.WHITE.getRGB());
+        drawString(fontRendererObj, passwordLabel, password.xPosition-10-fontRendererObj.getStringWidth(passwordLabel),
+                67, Color.WHITE.getRGB());
         password.drawTextBox();
 
         switch(textState) {
