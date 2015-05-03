@@ -93,6 +93,8 @@ replaymod.gui.login.connectionerror=Could not connect to ReplayMod.com
 replaymod.gui.viewer.rename.title=Rename Replay
 replaymod.gui.viewer.rename.name=Replay Name
 replaymod.gui.viewer.replayfolder=Open Replay Folder...
+replaymod.gui.viewer.noauth=Log in to upload a Replay
+replaymod.gui.viewer.alreadyuploaded=This Replay has already been uploaded
 
 replaymod.gui.viewer.delete.linea=Are you sure you want to delete this replay?
 

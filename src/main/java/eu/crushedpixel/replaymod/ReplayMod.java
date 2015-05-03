@@ -6,8 +6,9 @@ import eu.crushedpixel.replaymod.events.*;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
-import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
+import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
+import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
@@ -36,7 +37,7 @@ public class ReplayMod {
 
     //TODO: Show the player whether he has already uploaded a replay
 
-    //TODO: Hinting to the b/v key feature (help page)
+    //TODO: help page
 
     //TODO: Add "Miscellaneous" Replay Category
 
@@ -46,7 +47,6 @@ public class ReplayMod {
     //Keyframes have problems with Linear Paths
     //Rain isn't working
     //Incompatible with Shaders Mod
-    //
     //
 
     public static final String MODID = "replaymod";
@@ -63,6 +63,7 @@ public class ReplayMod {
     public static ReplaySender replaySender;
     public static int TP_DISTANCE_LIMIT = 128;
     public static ReplayFileAppender replayFileAppender;
+    public static UploadedFileHandler uploadedFileHandler;
 
     private static Field defaultResourcePacksField;
     static {
@@ -82,6 +83,8 @@ public class ReplayMod {
     public void preInit(FMLPreInitializationEvent event) {
         config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
+
+        uploadedFileHandler = new UploadedFileHandler(event.getModConfigurationDirectory());
 
         replaySettings = new ReplaySettings();
         replaySettings.readValues();
@@ -146,7 +149,7 @@ public class ReplayMod {
 			JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
 			FMLCommonHandler.instance().exitJava(0, false);
 		}
-        */
+		*/
     }
 
     private void removeTmcprFiles() {

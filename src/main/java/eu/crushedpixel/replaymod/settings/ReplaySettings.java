@@ -22,22 +22,22 @@ public class ReplaySettings {
         Configuration config = ReplayMod.config;
 
         for(RecordingOptions o : RecordingOptions.values()) {
-            Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "recording", false);
+            Property p = getConfigSetting(config, o.name(), o.getValue(), "recording", false);
             o.setValue(getValueObject(p));
         }
 
         for(ReplayOptions o : ReplayOptions.values()) {
-            Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "replay", false);
+            Property p = getConfigSetting(config, o.name(), o.getValue(), "replay", false);
             o.setValue(getValueObject(p));
         }
 
         for(RenderOptions o : RenderOptions.values()) {
-            Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "render", false);
+            Property p = getConfigSetting(config, o.name(), o.getValue(), "render", false);
             o.setValue(getValueObject(p));
         }
 
         for(AdvancedOptions o : AdvancedOptions.values()) {
-            Property p = getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "advanced", true);
+            Property p = getConfigSetting(config, o.name(), o.getValue(), "advanced", true);
             o.setValue(getValueObject(p));
         }
 

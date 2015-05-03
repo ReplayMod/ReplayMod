@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.gui.replayviewer;
 
 import com.google.gson.Gson;
 import com.mojang.realmsclient.util.Pair;
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
@@ -11,6 +12,7 @@ import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
+import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -166,7 +168,18 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         this.drawDefaultBackground();
         this.replayGuiList.drawScreen(mouseX, mouseY, partialTicks);
         this.drawCenteredString(this.fontRendererObj, I18n.format("replaymod.gui.replayviewer"), this.width / 2, 20, 16777215);
+
         super.drawScreen(mouseX, mouseY, partialTicks);
+
+        if(uploadButton.isMouseOver() && !uploadButton.enabled && loadButton.enabled) {
+            if(!AuthenticationHandler.isAuthenticated()) {
+                Point mouse = MouseUtils.getMousePos();
+                drawCenteredString(mc.fontRendererObj, I18n.format("replaymod.gui.viewer.noauth"), (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
+            } else if(currentFileUploaded) {
+                Point mouse = MouseUtils.getMousePos();
+                drawCenteredString(mc.fontRendererObj, I18n.format("replaymod.gui.viewer.alreadyuploaded"), (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
+            }
+        }
     }
 
     @Override
@@ -243,12 +256,15 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         }
     }
 
+    private boolean currentFileUploaded = false;
+
     public void setButtonsEnabled(boolean b) {
         loadButton.enabled = b;
         if(!b || !AuthenticationHandler.isAuthenticated()) {
             uploadButton.enabled = false;
         } else {
-            uploadButton.enabled = true;
+            currentFileUploaded = ReplayMod.uploadedFileHandler.isUploaded(replayFileList.get(replayGuiList.selected).first().first());
+            uploadButton.enabled = !currentFileUploaded;
         }
 
         renameButton.enabled = b;
