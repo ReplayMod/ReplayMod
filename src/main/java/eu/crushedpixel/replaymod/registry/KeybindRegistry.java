@@ -29,5 +29,7 @@ public class KeybindRegistry {
         bindings.add(new KeyBinding(KEY_KEYFRAME_PRESETS, Keyboard.KEY_X, "replaymod.title"));
 
         mc.gameSettings.keyBindings = bindings.toArray(new KeyBinding[bindings.size()]);
+
+        mc.gameSettings.loadOptions();
     }
 }
