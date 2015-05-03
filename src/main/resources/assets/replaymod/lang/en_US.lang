@@ -1,5 +1,28 @@
 replaymod.title=Replay Mod
 
+#Website API translations
+replaymod.api.parammissing=Required parameter missing: %1$s
+replaymod.api.invalidvalue=Invalid value passed for parameter %1$s - Possible values: %2$s
+replaymod.api.invalidlogin=Invalid login data provided
+replaymod.api.invalidauthkey=Invalid authentication key provided
+replaymod.api.notenoughspace=Not enough space left to upload this file. Consider purchasing Premium on ReplayMod.com
+replaymod.api.invalidfile=This file is invalid
+replaymod.api.fileduplicate=This file has already been uploaded
+replaymod.api.filenoexist=This file does not exist
+replaymod.api.nopermissions=You don't have permission to access this file
+replaymod.api.alreadyrated=You already rated this file
+replaymod.api.usernoexist=This user does not exist
+replaymod.api.invalidcategory=Invalid file category
+replaymod.api.nofilesuploaded=No files uploaded
+replaymod.api.toomanyvalues=Too many values passed for %1$s
+replaymod.api.noparameters=At least one parameter required. Parameters: %1$s
+replaymod.api.invalidfilename=File name must be between 5 and 30 characters long
+replaymod.api.unknownlang=This language has not been translated
+replaymod.api.zippingerror=An error occured while zipping the language files
+replaymod.api.usernameexists=This username is already taken
+replaymod.api.mailexists=This email address is already linked to an account
+
+
 #All of the chat messages
 replaymod.chat.recordingstarted=Recording started
 replaymod.chat.recordingfailed=Failed to start recording
@@ -41,6 +64,8 @@ replaymod.gui.end=End
 replaymod.gui.delete=Delete
 replaymod.gui.recording=Recording
 replaymod.gui.speed=Speed
+
+replaymod.gui.unknownerror=An unknown error occured
 
 replaymod.gui.exit=Exit Replay
 replaymod.gui.java=Java 1.7 or newer required
@@ -88,6 +113,7 @@ replaymod.gui.upload.cancel=Cancel Upload
 replaymod.gui.upload.tagshint=Tags separated by comma
 replaymod.gui.upload.uploading=Uploading...
 replaymod.gui.upload.success=File has been successfully uploaded
+replaymod.gui.upload.canceled=Upload has been canceled
 
 #Replay Editor
 replaymod.gui.editor.replayfile=Replay File

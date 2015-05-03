@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.api.client.holders.ApiError;
 import eu.crushedpixel.replaymod.api.client.holders.Category;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
+import net.minecraft.client.resources.I18n;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -85,7 +86,7 @@ public class FileUploader {
                 uploading = false;
                 current = 0;
                 cancel = false;
-                parent.onFinishUploading(false, "Upload has been canceled");
+                parent.onFinishUploading(false, I18n.format("replaymod.gui.upload.canceled"));
                 fis.close();
                 return;
             }
@@ -100,7 +101,7 @@ public class FileUploader {
 
         boolean success = false;
         int responseCode = con.getResponseCode();
-        InputStream is = null;
+        InputStream is;
         if(responseCode == 200) {
             success = true;
             is = con.getInputStream();
@@ -119,15 +120,13 @@ public class FileUploader {
                     json += r.readLine();
                 }
                 ApiError error = gson.fromJson(json, ApiError.class);
-                info = error.getDesc();
+                info = error.getTranslatedDesc();
                 System.out.println(info);
             }
         }
-
-
         con.disconnect();
 
-        if(info == null) info = "An unknown error occured";
+        if(info == null) info = I18n.format("replaymod.gui.unknownerror");
 
         parent.onFinishUploading(success, info);
 
