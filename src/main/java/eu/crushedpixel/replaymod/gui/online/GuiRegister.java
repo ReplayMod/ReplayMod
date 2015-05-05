@@ -153,7 +153,7 @@ public class GuiRegister extends GuiScreen {
             if(usernameInput.getText().length() < 5) {
                 message = I18n.format("replaymod.gui.register.error.shortusername");
             } else if(!EmailAddressUtils.isValidEmailAddress(mailInput.getText())) {
-                message = I18n.format("replaymod.gui.register.error.invalidmail");
+                message = I18n.format("replaymod.api.invalidmail");
             } else if(!(passwordInput.getText().length() >= 5)) {
                 message = I18n.format("replaymod.gui.register.error.shortpw");
             } else if(!passwordConfirmation.getText().equals(passwordInput.getText())) {

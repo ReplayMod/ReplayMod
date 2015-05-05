@@ -76,6 +76,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             joinPacketDimension, joinPacketDifficulty, joinPacketMaxPlayers;
     private Field effectPacketEntityId;
     private Field metadataPacketEntityId, metadataPacketList;
+    private Field objectTypeField;
     private Minecraft mc = Minecraft.getMinecraft();
     private int replayLength = 0;
     private int actualID = -1;
@@ -344,6 +345,14 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             if(hurryToTimestamp && (!ReplayHandler.isInPath() || (desiredTimeStamp - currentTimeStamp > 1000))) {
                 if(p instanceof S45PacketTitle ||
                         p instanceof S2APacketParticles) return;
+
+                if(p instanceof S0EPacketSpawnObject) {
+                    S0EPacketSpawnObject pso = (S0EPacketSpawnObject)p;
+                    int type = pso.func_148993_l();
+                    if(type == 76) {
+                        return;
+                    }
+                }
             }
 
             if(p instanceof S29PacketSoundEffect && ReplayHandler.isInPath() && ReplayProcess.isVideoRecording()) {

@@ -145,7 +145,7 @@ public class GuiReplaySettings extends GuiScreen {
                 case RECORDSP_ID:
                     enabled = ReplayMod.replaySettings.isEnableRecordingSingleplayer();
                     enabled = !enabled;
-                    recordSPButton.displayString = I18n.format("replaymod.gui.settings.singleplayer")+": " + onOff(enabled);
+                    recordSPButton.displayString = I18n.format("replaymod.gui.settings.recordsingleplayer")+": " + onOff(enabled);
                     ReplayMod.replaySettings.setEnableRecordingSingleplayer(enabled);
                     break;
                 case SEND_CHAT:
