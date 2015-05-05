@@ -32,6 +32,8 @@ public class ReplayHandler {
     private static Entity currentEntity = null;
     private static Position lastPosition = null;
 
+    private static float cameraTilt = 0;
+
     private static KeyframeSet[] keyframeRepository = new KeyframeSet[]{};
 
     public static KeyframeSet[] getKeyframeRepository() {
@@ -100,6 +102,18 @@ public class ReplayHandler {
         if(entity == null) return;
         cameraEntity = entity;
         spectateCamera();
+    }
+
+    public static float getCameraTilt() {
+        return cameraTilt;
+    }
+
+    public static void setCameraTilt(float tilt) {
+        cameraTilt = tilt;
+    }
+
+    public static void addCameraTilt(float tilt) {
+        cameraTilt += tilt;
     }
 
     public static void sortKeyframes() {
@@ -280,6 +294,8 @@ public class ReplayHandler {
         if(channel != null) {
             channel.close();
         }
+
+        setCameraTilt(0);
 
         networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND);
         INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));

@@ -7,6 +7,7 @@ public class Position {
 
     private double x, y, z;
     private float pitch, yaw;
+    private float rotation = 0;
 
     public Position(Entity e) {
         this.x = e.posX;
@@ -14,6 +15,15 @@ public class Position {
         this.z = e.posZ;
         this.pitch = e.rotationPitch;
         this.yaw = e.rotationYaw;
+    }
+
+    public Position(double x, double y, double z, float pitch, float yaw, float rotation) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.pitch = pitch;
+        this.yaw = yaw;
+        this.rotation = rotation;
     }
 
     public Position(double x, double y, double z, float pitch, float yaw) {
@@ -64,6 +74,10 @@ public class Position {
         this.yaw = yaw;
     }
 
+    public float getRotation() { return rotation; }
+
+    public void setRotation(float rotation) { this.rotation = rotation; }
+
     @Override
     public String toString() {
         return "X=" + x + ", Y=" + y + ", Z=" + z + ", Yaw=" + yaw + ", Pitch=" + pitch;
@@ -85,6 +99,7 @@ public class Position {
                 .append(z)
                 .append(pitch)
                 .append(yaw)
+                .append(rotation)
                 .toHashCode();
     }
 }

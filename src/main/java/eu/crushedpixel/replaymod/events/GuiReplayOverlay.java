@@ -657,7 +657,7 @@ public class GuiReplayOverlay extends Gui {
     private void addPlaceKeyframe() {
         Entity cam = mc.getRenderViewEntity();
         if(cam == null) return;
-        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw)));
+        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw, ReplayHandler.getCameraTilt())));
     }
 
     private void addTimeKeyframe() {
@@ -677,7 +677,7 @@ public class GuiReplayOverlay extends Gui {
 
     private boolean isClick() {
         if(Mouse.isButtonDown(0)) {
-            boolean bef = new Boolean(mouseDwn);
+            boolean bef = mouseDwn;
             mouseDwn = true;
             return !bef;
         } else {

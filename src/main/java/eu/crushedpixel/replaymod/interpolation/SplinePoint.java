@@ -14,11 +14,13 @@ public class SplinePoint extends BasicSpline {
     private Vector<Cubic> zCubics;
     private Vector<Cubic> pitchCubics;
     private Vector<Cubic> yawCubics;
+    private Vector<Cubic> rotCubics;
     private Field vectorX;
     private Field vectorY;
     private Field vectorZ;
     private Field vectorPitch;
     private Field vectorYaw;
+    private Field vectorRot;
 
     public SplinePoint() {
         this.points = new Vector<Position>();
@@ -28,6 +30,7 @@ public class SplinePoint extends BasicSpline {
         this.zCubics = new Vector<Cubic>();
         this.pitchCubics = new Vector<Cubic>();
         this.yawCubics = new Vector<Cubic>();
+        this.rotCubics = new Vector<Cubic>();
 
         try {
             vectorX = Position.class.getDeclaredField("x");
@@ -35,11 +38,13 @@ public class SplinePoint extends BasicSpline {
             vectorZ = Position.class.getDeclaredField("z");
             vectorPitch = Position.class.getDeclaredField("pitch");
             vectorYaw = Position.class.getDeclaredField("yaw");
+            vectorRot = Position.class.getDeclaredField("rotation");
             vectorX.setAccessible(true);
             vectorY.setAccessible(true);
             vectorZ.setAccessible(true);
             vectorPitch.setAccessible(true);
             vectorYaw.setAccessible(true);
+            vectorRot.setAccessible(true);
         } catch(SecurityException e) {
             e.printStackTrace();
         } catch(NoSuchFieldException e) {
@@ -62,6 +67,7 @@ public class SplinePoint extends BasicSpline {
             calcNaturalCubic(points, vectorZ, zCubics);
             calcNaturalCubic(points, vectorPitch, pitchCubics);
             calcNaturalCubic(points, vectorYaw, yawCubics);
+            calcNaturalCubic(points, vectorRot, rotCubics);
         } catch(IllegalArgumentException e) {
             e.printStackTrace();
         } catch(IllegalAccessException e) {
@@ -80,7 +86,8 @@ public class SplinePoint extends BasicSpline {
                 yCubics.get(cubicNum).eval(cubicPos),
                 zCubics.get(cubicNum).eval(cubicPos),
                 (float) pitchCubics.get(cubicNum).eval(cubicPos),
-                (float) yawCubics.get(cubicNum).eval(cubicPos));
+                (float) yawCubics.get(cubicNum).eval(cubicPos),
+                (float) rotCubics.get(cubicNum).eval(cubicPos));
     }
 
 }

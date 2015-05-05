@@ -21,6 +21,7 @@ replaymod.api.unknownlang=This language has not been translated
 replaymod.api.zippingerror=An error occured while zipping the language files
 replaymod.api.usernameexists=This username is already taken
 replaymod.api.mailexists=This email address is already linked to an account
+replaymod.api.invalidmail=Invalid e-Mail Address
 
 
 #All of the chat messages
@@ -97,7 +98,6 @@ replaymod.gui.register.confirmpw=Confirm Password
 replaymod.gui.register.error.nomatch=Passwords don't match
 replaymod.gui.register.error.shortusername=Username has to be at least 5 characters long
 replaymod.gui.register.error.shortpw=Password has to be at least 5 characters long
-replaymod.gui.register.error.invalidmail=Invalid e-Mail Address
 
 
 #Replay Viewer GUI
@@ -187,6 +187,8 @@ replaymod.input.spectate=Spectate Players
 replaymod.input.clearkeyframes=Clear Keyframes
 replaymod.input.synctimeline=Synchronize Timeline
 replaymod.input.keyframerepository=Open Keyframe Presets
+replaymod.input.rotateclockwise=Rotate Clockwise
+replaymod.input.rotatecounterclockwise=Rotate Counterclockwise
 
 #Keyframe Presets GUI
 replaymod.gui.keyframerepository.title=Keyframe Repository
