@@ -31,6 +31,6 @@ public class ApiError {
     }
 
     public String getTranslatedDesc() {
-        return I18n.format(key, objects);
+        return I18n.format(key, (Object[])objects);
     }
 }

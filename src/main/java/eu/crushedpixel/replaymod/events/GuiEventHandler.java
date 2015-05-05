@@ -65,8 +65,10 @@ public class GuiEventHandler {
         if(event.gui instanceof GuiMainMenu) {
             if(ReplayMod.firstMainMenu) {
                 ReplayMod.firstMainMenu = false;
-                event.gui = new GuiLoginPrompt(event.gui, event.gui);
-                return;
+                if(!AuthenticationHandler.isAuthenticated()) {
+                    event.gui = new GuiLoginPrompt(event.gui, event.gui);
+                    return;
+                }
             } else {
                 try {
                     MCTimerHandler.setTimerSpeed(1);

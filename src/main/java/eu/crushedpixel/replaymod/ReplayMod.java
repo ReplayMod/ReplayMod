@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.api.client.ApiClient;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.*;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
+import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
@@ -83,6 +84,7 @@ public class ReplayMod {
     public void preInit(FMLPreInitializationEvent event) {
         config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
+        AuthenticationHandler.loadAuthkeyFromConfig();
 
         uploadedFileHandler = new UploadedFileHandler(event.getModConfigurationDirectory());
 

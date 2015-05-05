@@ -18,8 +18,12 @@ public class ReplaySettings {
         return enums;
     }
 
+    private static final String[] CATEGORIES = new String[]{"recording", "replay", "render", "advanced"};
+
     public void readValues() {
-        Configuration config = ReplayMod.config;
+        Configuration config = ReplayMod.instance.config;
+
+        config.load();
 
         for(RecordingOptions o : RecordingOptions.values()) {
             Property p = getConfigSetting(config, o.name(), o.getValue(), "recording", false);
@@ -146,7 +150,7 @@ public class ReplaySettings {
     public void rewriteSettings() {
         ReplayMod.instance.config.load();
 
-        for(String cat : ReplayMod.instance.config.getCategoryNames()) {
+        for(String cat : CATEGORIES) {
             ReplayMod.instance.config.removeCategory(ReplayMod.instance.config.getCategory(cat));
         }
 

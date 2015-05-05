@@ -25,6 +25,7 @@ public class ApiClient {
         QueryBuilder builder = new QueryBuilder(ApiMethods.login);
         builder.put("user", username);
         builder.put("pw", password);
+        builder.put("mod", true);
         AuthKey auth = invokeAndReturn(builder, AuthKey.class);
         return auth;
     }
@@ -38,9 +39,21 @@ public class ApiClient {
         return auth;
     }
 
+    public boolean checkAuthkey(String auth) {
+        try {
+            QueryBuilder builder = new QueryBuilder(ApiMethods.check_authkey);
+            builder.put("auth", auth);
+            Success succ = invokeAndReturn(builder, Success.class);
+            return succ.isSuccess();
+        } catch(Exception e) {
+            return false;
+        }
+    }
+
     public boolean logout(String auth) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ApiMethods.logout);
         builder.put("auth", auth);
+        builder.put("mod", true);
         Success succ = invokeAndReturn(builder, Success.class);
         return succ.isSuccess();
     }
