@@ -1,27 +1,12 @@
 package eu.crushedpixel.replaymod.renderer;
 
-import eu.crushedpixel.replaymod.reflection.MCPNames;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
-import net.minecraft.client.resources.IResourceManager;
-
-import java.lang.reflect.Field;
 
 public class SafeEntityRenderer extends EntityRenderer {
 
-    private static Field resourceManager;
-
-    static {
-        try {
-            resourceManager = EntityRenderer.class.getDeclaredField(MCPNames.field("field_147711_ac"));
-            resourceManager.setAccessible(true);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public SafeEntityRenderer(Minecraft mcIn, EntityRenderer renderer) throws IllegalArgumentException, IllegalAccessException {
-        super(mcIn, (IResourceManager) resourceManager.get(renderer));
+        super(mcIn, renderer.resourceManager);
     }
 
     @Override

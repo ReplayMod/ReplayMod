@@ -9,7 +9,6 @@ import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
-import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -31,30 +30,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 
 @Sharable
 public class ReplaySender extends ChannelInboundHandlerAdapter {
-
-    private static Field playerUUIDField;
-    private static Field gameProfileField;
-
-    static {
-        try {
-            playerUUIDField = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_179820_b"));
-            playerUUIDField.setAccessible(true);
-
-            gameProfileField = S38PacketPlayerListItem.AddPlayerData.class.getDeclaredField("field_179964_d");
-            gameProfileField.setAccessible(true);
-
-            //dataWatcherField = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_148960_i"));
-            //dataWatcherField.setAccessible(true);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private int currentTimeStamp;
     private boolean hurryToTimestamp;
@@ -72,11 +52,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     private boolean terminate = false;
     private double replaySpeed = 1f;
     private boolean hasWorldLoaded = false;
-    private Field joinPacketEntityId, joinPacketWorldType,
-            joinPacketDimension, joinPacketDifficulty, joinPacketMaxPlayers;
-    private Field effectPacketEntityId;
-    private Field metadataPacketEntityId, metadataPacketList;
-    private Field objectTypeField;
     private Minecraft mc = Minecraft.getMinecraft();
     private int replayLength = 0;
     private int actualID = -1;
@@ -197,34 +172,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     });
 
     public ReplaySender(final File replayFile, NetworkManager nm) {
-        try {
-            joinPacketEntityId = S01PacketJoinGame.class.getDeclaredField(MCPNames.field("field_149206_a"));
-            joinPacketEntityId.setAccessible(true);
-
-            joinPacketDifficulty = S01PacketJoinGame.class.getDeclaredField(MCPNames.field("field_149203_e"));
-            joinPacketDifficulty.setAccessible(true);
-
-            joinPacketDimension = S01PacketJoinGame.class.getDeclaredField(MCPNames.field("field_149202_d"));
-            joinPacketDimension.setAccessible(true);
-
-            joinPacketMaxPlayers = S01PacketJoinGame.class.getDeclaredField(MCPNames.field("field_149200_f"));
-            joinPacketMaxPlayers.setAccessible(true);
-
-            joinPacketWorldType = S01PacketJoinGame.class.getDeclaredField(MCPNames.field("field_149201_g"));
-            joinPacketWorldType.setAccessible(true);
-
-            effectPacketEntityId = S1DPacketEntityEffect.class.getDeclaredField(MCPNames.field("field_149434_a"));
-            effectPacketEntityId.setAccessible(true);
-
-            metadataPacketEntityId = S1CPacketEntityMetadata.class.getDeclaredField(MCPNames.field("field_149379_a"));
-            metadataPacketEntityId.setAccessible(true);
-
-            metadataPacketList = S1CPacketEntityMetadata.class.getDeclaredField(MCPNames.field("field_149378_b"));
-            metadataPacketList.setAccessible(true);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
         this.replayFile = replayFile;
         this.networkManager = nm;
         if(("." + FilenameUtils.getExtension(replayFile.getAbsolutePath())).equals(ConnectionEventHandler.ZIP_FILE_EXTENSION)) {
@@ -391,21 +338,22 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
             try {
                 if(p instanceof S1CPacketEntityMetadata) {
-                    if((Integer) metadataPacketEntityId.get(p) == actualID) {
-                        metadataPacketEntityId.set(p, RecordingHandler.entityID);
+                    S1CPacketEntityMetadata packet = (S1CPacketEntityMetadata) p;
+                    if(packet.field_149379_a == actualID) {
+                        packet.field_149379_a = RecordingHandler.entityID;
                     }
                 }
 
                 if(p instanceof S01PacketJoinGame) {
-                    //System.out.println("FOUND JOIN PACKET");
+                    S01PacketJoinGame packet = (S01PacketJoinGame) p;
                     allowMovement = true;
-                    int entId = (Integer) joinPacketEntityId.get(p);
+                    int entId = packet.getEntityId();
                     actualID = entId;
                     entId = Integer.MIN_VALUE + 9002;
-                    int dimension = (Integer) joinPacketDimension.get(p);
-                    EnumDifficulty difficulty = (EnumDifficulty) joinPacketDifficulty.get(p);
-                    int maxPlayers = (Integer) joinPacketMaxPlayers.get(p);
-                    WorldType worldType = (WorldType) joinPacketWorldType.get(p);
+                    int dimension = packet.getDimension();
+                    EnumDifficulty difficulty = packet.getDifficulty();
+                    int maxPlayers = packet.getMaxPlayers();
+                    WorldType worldType = packet.getWorldType();
 
                     p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension,
                             difficulty, maxPlayers, worldType, false);
@@ -529,11 +477,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     }
 
     public boolean paused() {
-        try {
-            return MCTimerHandler.getTimerSpeed() == 0;
-        } catch(Exception e) {
-        }
-        return true;
+        return MCTimerHandler.getTimerSpeed() == 0;
     }
 
     public double getReplaySpeed() {
@@ -552,18 +496,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
     private static class ResourcePackCheck extends Thread {
 
-        private static Field serverResourcePackDirectory;
         private static Minecraft mc = Minecraft.getMinecraft();
         private static ResourcePackRepository repo = mc.getResourcePackRepository();
-
-        static {
-            try {
-                serverResourcePackDirectory = ResourcePackRepository.class.getDeclaredField(MCPNames.field("field_148534_e"));
-                serverResourcePackDirectory.setAccessible(true);
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
 
         private String url, hash;
 
@@ -592,10 +526,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                 filename = "legacy_" + filename.replaceAll("\\W", "");
             }
 
-            File folder = (File) serverResourcePackDirectory.get(repo);
-            File rp = new File(folder, filename);
-
-            return rp;
+            return new File(repo.dirServerResourcepacks, filename);
         }
 
         private boolean downloadServerResourcePack(String url, File file) {

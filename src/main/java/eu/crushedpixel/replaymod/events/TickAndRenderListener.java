@@ -4,7 +4,6 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.gui.GuiCancelRender;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
-import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.video.ReplayScreenshot;
@@ -19,24 +18,13 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 public class TickAndRenderListener {
 
     private static Minecraft mc = Minecraft.getMinecraft();
 
-    private static Field isGamePaused;
     private static int requestScreenshot = 0;
-
-    static {
-        try {
-            isGamePaused = Minecraft.class.getDeclaredField(MCPNames.field("field_71445_n"));
-            isGamePaused.setAccessible(true);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     //private boolean f1Down = false;
 
@@ -83,7 +71,7 @@ public class TickAndRenderListener {
         }
 
         if(mc.isGamePaused() && ReplayHandler.isInPath()) {
-            isGamePaused.set(mc, false);
+            mc.isGamePaused = false;
         }
     }
 

@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.events;
 
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
-import eu.crushedpixel.replaymod.reflection.MCPNames;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
@@ -25,23 +24,12 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecordingHandler {
 
     public static final int entityID = Integer.MIN_VALUE + 9001;
-    private static Field dataWatcherField;
-
-    static {
-        try {
-            dataWatcherField = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_148960_i"));
-            dataWatcherField.setAccessible(true);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private Double lastX = null, lastY = null, lastZ = null;
@@ -107,7 +95,7 @@ public class RecordingHandler {
 
             packet.readPacketData(pb);
 
-            dataWatcherField.set(packet, player.getDataWatcher());
+            packet.field_148960_i = player.getDataWatcher();
 
             return packet;
         } catch(Exception e) {

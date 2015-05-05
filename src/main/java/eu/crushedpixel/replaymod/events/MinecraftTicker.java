@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.events;
 
-import eu.crushedpixel.replaymod.reflection.MCPNames;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
@@ -13,52 +12,9 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class MinecraftTicker {
-
-    private static Field debugCrashKeyPressTime, rightClickDelayTimer, systemTime, leftClickCounter;
-    private static Method getSystemTime, updateDebugProfilerName,
-            clickMouse, middleClickMouse, rightClickMouse, sendClickBlockToController;
-
-    static {
-        try {
-            debugCrashKeyPressTime = Minecraft.class.getDeclaredField(MCPNames.field("field_83002_am"));
-            debugCrashKeyPressTime.setAccessible(true);
-
-            rightClickDelayTimer = Minecraft.class.getDeclaredField(MCPNames.field("field_71467_ac"));
-            rightClickDelayTimer.setAccessible(true);
-
-            systemTime = Minecraft.class.getDeclaredField(MCPNames.field("field_71423_H"));
-            systemTime.setAccessible(true);
-
-            leftClickCounter = Minecraft.class.getDeclaredField(MCPNames.field("field_71429_W"));
-            leftClickCounter.setAccessible(true);
-
-            getSystemTime = Minecraft.class.getDeclaredMethod(MCPNames.method("func_71386_F"));
-            getSystemTime.setAccessible(true);
-
-            updateDebugProfilerName = Minecraft.class.getDeclaredMethod(MCPNames.method("func_71383_b"), int.class);
-            updateDebugProfilerName.setAccessible(true);
-
-            clickMouse = Minecraft.class.getDeclaredMethod(MCPNames.method("func_147116_af"));
-            clickMouse.setAccessible(true);
-
-            rightClickMouse = Minecraft.class.getDeclaredMethod(MCPNames.method("func_147121_ag"));
-            rightClickMouse.setAccessible(true);
-
-            middleClickMouse = Minecraft.class.getDeclaredMethod(MCPNames.method("func_147112_ai"));
-            middleClickMouse.setAccessible(true);
-
-            sendClickBlockToController = Minecraft.class.getDeclaredMethod(MCPNames.method("func_147115_a"), boolean.class);
-            sendClickBlockToController.setAccessible(true);
-
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public static void runMouseKeyboardTick(Minecraft mc) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
 
@@ -78,7 +34,7 @@ public class MinecraftTicker {
                     }
                 }
 
-                long k = (Long) getSystemTime.invoke(mc) - (Long) systemTime.get(mc);
+                long k = Minecraft.getSystemTime() - mc.systemTime;
 
                 if(k <= 200L) {
                     int j = Mouse.getEventDWheel();
@@ -109,8 +65,8 @@ public class MinecraftTicker {
                 net.minecraftforge.fml.common.FMLCommonHandler.instance().fireMouseInput();
             }
 
-            if((Integer) leftClickCounter.get(mc) > 0) {
-                leftClickCounter.set(mc, (Integer) leftClickCounter.get(mc) - 1);
+            if(mc.leftClickCounter > 0) {
+                mc.leftClickCounter--;
             }
             mc.mcProfiler.endStartSection("keyboard");
 
@@ -122,16 +78,16 @@ public class MinecraftTicker {
                     KeyBinding.onTick(i);
                 }
 
-                if((Long) debugCrashKeyPressTime.get(mc) > 0L) {
-                    if((Long) getSystemTime.invoke(mc) - (Long) debugCrashKeyPressTime.get(mc) >= 6000L) {
+                if(mc.debugCrashKeyPressTime > 0L) {
+                    if(Minecraft.getSystemTime() - mc.debugCrashKeyPressTime >= 6000L) {
                         throw new ReportedException(new CrashReport("Manually triggered debug crash", new Throwable()));
                     }
 
                     if(!Keyboard.isKeyDown(46) || !Keyboard.isKeyDown(61)) {
-                        debugCrashKeyPressTime.set(mc, -1);
+                        mc.debugCrashKeyPressTime = -1;
                     }
                 } else if(Keyboard.isKeyDown(46) && Keyboard.isKeyDown(61)) {
-                    debugCrashKeyPressTime.set(mc, getSystemTime.invoke(mc));
+                    mc.debugCrashKeyPressTime = Minecraft.getSystemTime();
                 }
 
                 mc.dispatchKeypresses();
@@ -233,12 +189,12 @@ public class MinecraftTicker {
 
                     if(mc.gameSettings.showDebugInfo && mc.gameSettings.showDebugProfilerChart) {
                         if(i == 11) {
-                            updateDebugProfilerName.invoke(mc, 0);
+                            mc.updateDebugProfilerName(0);
                         }
 
                         for(int l = 0; l < 9; ++l) {
                             if(i == 2 + l) {
-                                updateDebugProfilerName.invoke(mc, l + 1);
+                                mc.updateDebugProfilerName(l + 1);
                             }
                         }
                     }
@@ -281,13 +237,10 @@ public class MinecraftTicker {
             }
 
             if(mc != null)
-                try {
-                    sendClickBlockToController.invoke(mc, mc.currentScreen == null && mc.gameSettings.keyBindAttack.isKeyDown() && mc.inGameHasFocus);
-                } catch(Exception e) {
-                }
+                mc.sendClickBlockToController(mc.currentScreen == null && mc.gameSettings.keyBindAttack.isKeyDown() && mc.inGameHasFocus);
 
             if(mc != null)
-                systemTime.set(mc, getSystemTime.invoke(mc));
+                mc.systemTime = Minecraft.getSystemTime();
         } catch(Exception e) {
         }
     }

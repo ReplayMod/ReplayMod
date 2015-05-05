@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.recording;
 
 import eu.crushedpixel.replaymod.holders.PacketData;
-import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
@@ -14,25 +13,11 @@ import net.minecraft.network.play.server.S0FPacketSpawnMob;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.UUID;
 
 public class PacketListener extends DataListener {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
-    private static Field spawnMobDataWatcher, spawnPlayerDataWatcher;
-
-    static {
-        try {
-            spawnMobDataWatcher = S0FPacketSpawnMob.class.getDeclaredField(MCPNames.field("field_149043_l"));
-            spawnMobDataWatcher.setAccessible(true);
-
-            spawnPlayerDataWatcher = S0CPacketSpawnPlayer.class.getDeclaredField(MCPNames.field("field_148960_i"));
-            spawnPlayerDataWatcher.setAccessible(true);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private ChannelHandlerContext context = null;
 
@@ -109,18 +94,16 @@ public class PacketListener extends DataListener {
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
         if(packet instanceof S0FPacketSpawnMob) {
-            DataWatcher l = (DataWatcher) spawnMobDataWatcher.get(packet);
-            DataWatcher dw = new DataWatcher(null);
-            if(l == null) {
-                spawnMobDataWatcher.set(packet, dw);
+            S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
+            if(p.field_149043_l == null) {
+                p.field_149043_l = new DataWatcher(null);
             }
         }
 
         if(packet instanceof S0CPacketSpawnPlayer) {
-            DataWatcher l = (DataWatcher) spawnPlayerDataWatcher.get(packet);
-            DataWatcher dw = new DataWatcher(null);
-            if(l == null) {
-                spawnPlayerDataWatcher.set(packet, dw);
+            S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
+            if(p.field_148960_i == null) {
+                p.field_148960_i = new DataWatcher(null);
             }
         }
 
