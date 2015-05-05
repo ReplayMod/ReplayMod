@@ -20,8 +20,8 @@ replaymod.api.invalidfilename=File name must be between 5 and 30 characters long
 replaymod.api.unknownlang=This language has not been translated
 replaymod.api.zippingerror=An error occured while zipping the language files
 replaymod.api.usernameexists=This username is already taken
-replaymod.api.mailexists=This email address is already linked to an account
-replaymod.api.invalidmail=Invalid e-Mail Address
+replaymod.api.mailexists=This Email address is already linked to an account
+replaymod.api.invalidmail=Invalid Email Address
 
 
 #All of the chat messages
@@ -66,7 +66,7 @@ replaymod.gui.delete=Delete
 replaymod.gui.recording=Recording
 replaymod.gui.speed=Speed
 replaymod.gui.register=Register
-replaymod.gui.mail=e-Mail Address
+replaymod.gui.mail=Email Address
 
 replaymod.gui.unknownerror=An unknown error occured
 
