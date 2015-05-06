@@ -104,12 +104,16 @@ public class KeyInputHandler {
 
     public void handleCustomKeybindings(KeyBinding kb, boolean found, int keyCode) {
         //Custom registered handlers
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ROTATE_CLOCKWISE) && (kb.isKeyDown() || kb.getKeyCode() == keyCode) && !found) {
-            ReplayHandler.addCameraTilt(1);
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ROTATE_CLOCKWISE) && (kb.isKeyDown() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
+            ReplayHandler.addCameraTilt(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) ? 1 : 5);
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ROTATE_COUNTERCLOCKWISE) && (kb.isKeyDown() || kb.getKeyCode() == keyCode) && !found) {
-            ReplayHandler.addCameraTilt(-1);
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ROTATE_COUNTERCLOCKWISE) && (kb.isKeyDown() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
+            ReplayHandler.addCameraTilt(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) ? -1 : -5);
+        }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_RESET_TILT) && (kb.isKeyDown() || kb.getKeyCode() == keyCode) && !found && !ReplayHandler.isInPath()) {
+            ReplayHandler.setCameraTilt(0);
         }
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {

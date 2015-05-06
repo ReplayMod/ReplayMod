@@ -189,6 +189,7 @@ replaymod.input.synctimeline=Synchronize Timeline
 replaymod.input.keyframerepository=Open Keyframe Presets
 replaymod.input.rotateclockwise=Rotate Clockwise
 replaymod.input.rotatecounterclockwise=Rotate Counterclockwise
+replaymod.input.resettilt=Reset Camera Tilt
 
 #Keyframe Presets GUI
 replaymod.gui.keyframerepository.title=Keyframe Repository
