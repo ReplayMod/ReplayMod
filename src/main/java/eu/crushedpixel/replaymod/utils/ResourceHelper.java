@@ -33,11 +33,16 @@ public class ResourceHelper {
     }
 
     public static void freeAllResources() {
-        for(ResourceLocation loc : openResources) {
-            Minecraft.getMinecraft().getTextureManager().deleteTexture(loc);
-        }
+        Minecraft.getMinecraft().addScheduledTask(new Runnable() {
+            @Override
+            public void run() {
+                for(ResourceLocation loc : openResources) {
+                    Minecraft.getMinecraft().getTextureManager().deleteTexture(loc);
+                }
 
-        openResources = new ArrayList<ResourceLocation>();
+                openResources = new ArrayList<ResourceLocation>();
+            }
+        });
     }
 
     public static BufferedImage getDefaultThumbnail() {

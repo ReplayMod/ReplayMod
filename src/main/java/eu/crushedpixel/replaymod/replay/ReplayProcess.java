@@ -333,6 +333,8 @@ public class ReplayProcess {
             }
         }
 
+        ReplayHandler.setCameraTilt(pos.getRotation());
+
         Integer curTimestamp = null;
         if(timeLinear != null && timeCount > 1) {
             curTimestamp = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
