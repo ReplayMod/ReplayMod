@@ -308,7 +308,7 @@ public class ReplayHandler {
         channel.pipeline().fireChannelActive();
 
         try {
-            ReplayMod.overlay.resetUI();
+            ReplayMod.overlay.resetUI(true);
         } catch(Exception e) {}
 
         //Load lighting and trigger update
@@ -337,7 +337,7 @@ public class ReplayHandler {
             @Override
             public void run() {
                 try {
-                    ReplayMod.overlay.resetUI();
+                    ReplayMod.overlay.resetUI(false);
                 } catch(Exception e) {
                     e.printStackTrace();
                 }

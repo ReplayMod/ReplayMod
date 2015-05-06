@@ -80,12 +80,13 @@ public class GuiReplayOverlay extends Gui {
     private boolean wasSliding = false;
     private boolean mouseDwn = false;
 
-    public void resetUI() throws Exception {
+    public void resetUI(boolean slider) throws Exception {
         if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
             mc.displayGuiScreen(null);
         }
         ReplayHandler.setRealTimelineCursor(0);
-        speedSlider = new GuiReplaySpeedSlider(1, sliderX, sliderY, I18n.format("replaymod.gui.speed"));
+        if(slider)
+            speedSlider = new GuiReplaySpeedSlider(1, sliderX, sliderY, I18n.format("replaymod.gui.speed"));
     }
 
     @SubscribeEvent
