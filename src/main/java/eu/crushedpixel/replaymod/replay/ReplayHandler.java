@@ -123,6 +123,30 @@ public class ReplayHandler {
     public static void addKeyframe(Keyframe keyframe) {
         keyframes.add(keyframe);
         selectKeyframe(keyframe);
+
+
+        if(keyframe instanceof PositionKeyframe) {
+            Float a = null;
+            Float b;
+
+            for(Keyframe kf : keyframes) {
+                if(!(kf instanceof PositionKeyframe)) continue;
+                PositionKeyframe pkf = (PositionKeyframe)kf;
+                Position pos = pkf.getPosition();
+                b = pos.getYaw() % 360;
+                System.out.println(a+" "+b);
+                if(a != null) {
+                    float diff = b-a;
+                    if(Math.abs(diff) > 180) {
+                        b = a - (360 - diff) % 360;
+                        System.out.println(b);
+                        pos.setYaw(b);
+                        pkf.setPosition(pos);
+                    }
+                }
+                a = b;
+            }
+        }
     }
 
     public static void removeKeyframe(Keyframe keyframe) {

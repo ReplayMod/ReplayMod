@@ -170,40 +170,42 @@ public class GuiReplayOverlay extends Gui {
         this.drawModalRectWithCustomSizedTexture(ppButtonX, ppButtonY, x, y, 20, 20, 64, 64);
 
         //When hurrying, no Timeline jumping etc. is possible
-        if(Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class) && !ReplayMod.replaySender.isHurrying()) { //clicking the Button
-            speedSlider.mousePressed(mc, mouseX, mouseY);
-            if(!mouseDown) {
-                mouseDown = true;
-                if(hover) {
-                    boolean paused = !ReplayMod.replaySender.paused();
-                    if(paused) {
-                        ReplayMod.replaySender.setReplaySpeed(0);
-                    } else {
-                        ReplayMod.replaySender.setReplaySpeed(speedSlider.getSliderValue());
+        if(Mouse.isButtonDown(0) && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) { //clicking the Button
+            if(!ReplayMod.replaySender.isHurrying()) {
+                speedSlider.mousePressed(mc, mouseX, mouseY);
+                if(!mouseDown) {
+                    mouseDown = true;
+                    if(hover) {
+                        boolean paused = !ReplayMod.replaySender.paused();
+                        if(paused) {
+                            ReplayMod.replaySender.setReplaySpeed(0);
+                        } else {
+                            ReplayMod.replaySender.setReplaySpeed(speedSlider.getSliderValue());
+                        }
+
+                    } else if(mouseX >= exportButtonX && mouseX <= exportButtonX + 20 && mouseY >= exportButtonY && exportButtonY <= exportButtonY + 20) {
+                        ReplayHandler.startPath(true);
                     }
 
-                } else if(mouseX >= exportButtonX && mouseX <= exportButtonX + 20 && mouseY >= exportButtonY && exportButtonY <= exportButtonY + 20) {
-                    ReplayHandler.startPath(true);
-                }
+                    if(mouseX >= timelineX + 4 && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29) {
+                        double tot = (width - 18) - (timelineX + 4);
+                        double perc = (mouseX - (timelineX + 4)) / tot;
+                        double time = perc * (double) ReplayMod.replaySender.replayLength();
 
-                if(mouseX >= timelineX + 4 && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29) {
-                    double tot = (width - 18) - (timelineX + 4);
-                    double perc = (mouseX - (timelineX + 4)) / tot;
-                    double time = perc * (double) ReplayMod.replaySender.replayLength();
+                        if(time < ReplayMod.replaySender.currentTimeStamp()) {
+                            mc.displayGuiScreen(null);
+                        }
 
-                    if(time < ReplayMod.replaySender.currentTimeStamp()) {
-                        mc.displayGuiScreen(null);
+                        CameraEntity cam = ReplayHandler.getCameraEntity();
+                        if(cam != null) {
+                            ReplayHandler.setLastPosition(new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
+                        } else {
+                            ReplayHandler.setLastPosition(null);
+                        }
+
+                        if((int) time != ReplayMod.replaySender.getDesiredTimestamp())
+                            ReplayMod.replaySender.jumpToTime((int) time);
                     }
-
-                    CameraEntity cam = ReplayHandler.getCameraEntity();
-                    if(cam != null) {
-                        ReplayHandler.setLastPosition(new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
-                    } else {
-                        ReplayHandler.setLastPosition(null);
-                    }
-
-                    if((int) time != ReplayMod.replaySender.getDesiredTimestamp())
-                        ReplayMod.replaySender.jumpToTime((int) time);
                 }
             }
 
@@ -658,7 +660,7 @@ public class GuiReplayOverlay extends Gui {
     private void addPlaceKeyframe() {
         Entity cam = mc.getRenderViewEntity();
         if(cam == null) return;
-        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw, ReplayHandler.getCameraTilt())));
+        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw % 360, ReplayHandler.getCameraTilt())));
     }
 
     private void addTimeKeyframe() {

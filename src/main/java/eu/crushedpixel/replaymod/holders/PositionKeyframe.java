@@ -4,7 +4,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class PositionKeyframe extends Keyframe {
 
-    private final Position position;
+    private Position position;
 
     public PositionKeyframe(int realTime, Position position) {
         super(realTime);
@@ -14,6 +14,8 @@ public class PositionKeyframe extends Keyframe {
     public Position getPosition() {
         return position;
     }
+
+    public void setPosition(Position position) { this.position = position; }
 
     @Override
     public boolean equals(Object o2) {
