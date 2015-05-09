@@ -37,11 +37,8 @@ public class GuiKeyframeRepository extends GuiScreen {
 
     private int currentSetTimeKeyframeCount, currentSetPositionKeyframeCount, currentSetDuration;
 
-    private double prevSpeed;
-
     public GuiKeyframeRepository(KeyframeSet[] keyframeRepository) {
         this.keyframeRepository = keyframeRepository;
-        prevSpeed = ReplayMod.replaySender.getReplaySpeed();
         ReplayMod.replaySender.setReplaySpeed(0);
     }
 
@@ -226,7 +223,6 @@ public class GuiKeyframeRepository extends GuiScreen {
         ArrayList<KeyframeSet> copy = new ArrayList<KeyframeSet>(keyframeSetList.getCopyOfElements());
         this.keyframeRepository = copy.toArray(new KeyframeSet[copy.size()]);
         ReplayHandler.setKeyframeRepository(keyframeRepository, true);
-        ReplayMod.replaySender.setReplaySpeed(prevSpeed);
     }
 
     @Override

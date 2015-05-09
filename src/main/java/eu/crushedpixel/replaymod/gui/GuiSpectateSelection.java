@@ -29,7 +29,6 @@ public class GuiSpectateSelection extends GuiScreen {
 
     private int lowerBound;
 
-    private double prevSpeed;
     private boolean drag = false;
     private int lastY = 0;
     private int fitting = 0;
@@ -37,8 +36,6 @@ public class GuiSpectateSelection extends GuiScreen {
     private final String screenTitle = I18n.format("replaymod.gui.spectate.title");
 
     public GuiSpectateSelection(List<EntityPlayer> players) {
-        this.prevSpeed = ReplayMod.replaySender.getReplaySpeed();
-
         Collections.sort(players, new PlayerComparator());
 
         this.players = new ArrayList<Pair<EntityPlayer, ResourceLocation>>();
@@ -84,7 +81,6 @@ public class GuiSpectateSelection extends GuiScreen {
             int off = mouseY - 30;
             int p = (off / 21) + upperPlayer;
             ReplayHandler.spectateEntity(players.get(p).first());
-            ReplayMod.replaySender.setReplaySpeed(prevSpeed);
             mc.displayGuiScreen(null);
         }
     }
@@ -113,11 +109,6 @@ public class GuiSpectateSelection extends GuiScreen {
         }
 
         super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
-    }
-
-    @Override
-    public void onGuiClosed() {
-        ReplayMod.replaySender.setReplaySpeed(prevSpeed);
     }
 
     @Override

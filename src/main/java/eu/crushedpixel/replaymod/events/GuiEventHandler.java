@@ -121,6 +121,7 @@ public class GuiEventHandler {
     @SubscribeEvent
     public void onInit(InitGuiEvent event) {
         if(event.gui instanceof GuiIngameMenu && ReplayHandler.isInReplay()) {
+            ReplayMod.replaySender.setReplaySpeed(0);
             for(GuiButton b : new ArrayList<GuiButton>(event.buttonList)) {
                 if(b.id == 1) {
                     b.displayString = I18n.format("replaymod.gui.exit");
