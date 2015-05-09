@@ -134,12 +134,10 @@ public class ReplayHandler {
                 PositionKeyframe pkf = (PositionKeyframe)kf;
                 Position pos = pkf.getPosition();
                 b = pos.getYaw() % 360;
-                System.out.println(a+" "+b);
                 if(a != null) {
                     float diff = b-a;
                     if(Math.abs(diff) > 180) {
                         b = a - (360 - diff) % 360;
-                        System.out.println(b);
                         pos.setYaw(b);
                         pkf.setPosition(pos);
                     }
