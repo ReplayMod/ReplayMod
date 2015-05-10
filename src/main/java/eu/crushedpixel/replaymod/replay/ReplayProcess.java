@@ -65,8 +65,6 @@ public class ReplayProcess {
         calculated = false;
         requestFinish = false;
 
-        ReplayMod.replaySender.resetToleratedTimeStamp();
-
         blocked = deepBlock = false;
 
         startRealTime = System.currentTimeMillis();
@@ -97,6 +95,7 @@ public class ReplayProcess {
 
         ReplayHandler.sortKeyframes();
         ReplayHandler.setInPath(true);
+        ReplayMod.replaySender.setAsyncMode(false);
 
         //gets first Timestamp and sets Replay Time to it
         TimeKeyframe tf = ReplayHandler.getFirstTimeKeyframe();
@@ -105,7 +104,7 @@ public class ReplayProcess {
             if(ts < ReplayMod.replaySender.currentTimeStamp()) {
                 mc.displayGuiScreen(null);
             }
-            ReplayMod.replaySender.jumpToTime(ts);
+            ReplayMod.replaySender.sendPacketsTill(ts);
         }
 
         ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
@@ -132,6 +131,7 @@ public class ReplayProcess {
         }
 
         ReplayHandler.setInPath(false);
+        ReplayMod.replaySender.setAsyncMode(true);
 
         ReplayMod.replaySender.stopHurrying();
 
@@ -357,8 +357,8 @@ public class ReplayProcess {
         lastRenderPartialTicks = MCTimerHandler.getRenderTicks();
         lastTicks = MCTimerHandler.getTicks();
 
-        if(curTimestamp != null && curTimestamp != ReplayMod.replaySender.getDesiredTimestamp())
-            ReplayMod.replaySender.jumpToTime(curTimestamp);
+        if(curTimestamp != null)
+            ReplayMod.replaySender.sendPacketsTill(curTimestamp);
 
         //splinePos = (index of last entry + add) / total entries
 

@@ -13,6 +13,7 @@ import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
@@ -158,7 +159,7 @@ public class ReplayMod {
         File folder = ReplayFileIO.getReplayFolder();
 
         for(File f : folder.listFiles()) {
-            if(("." + FilenameUtils.getExtension(f.getAbsolutePath())).equals(ConnectionEventHandler.TEMP_FILE_EXTENSION)) {
+            if(("." + FilenameUtils.getExtension(f.getAbsolutePath())).equals(ReplayFile.TEMP_FILE_EXTENSION)) {
                 f.delete();
             }
         }

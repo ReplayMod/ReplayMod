@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.recording;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -26,9 +27,6 @@ import java.util.Map.Entry;
 
 public class ConnectionEventHandler {
 
-    public static final String TEMP_FILE_EXTENSION = ".tmcpr";
-    public static final String JSON_FILE_EXTENSION = ".json";
-    public static final String ZIP_FILE_EXTENSION = ".mcpr";
     private static final String decoderKey = "decoder";
     private static final String packetHandlerKey = "packet_handler";
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
@@ -92,7 +90,7 @@ public class ConnectionEventHandler {
             File folder = ReplayFileIO.getReplayFolder();
 
             fileName = sdf.format(Calendar.getInstance().getTime());
-            currentFile = new File(folder, fileName + TEMP_FILE_EXTENSION);
+            currentFile = new File(folder, fileName + ReplayFile.TEMP_FILE_EXTENSION);
 
             currentFile.createNewFile();
 

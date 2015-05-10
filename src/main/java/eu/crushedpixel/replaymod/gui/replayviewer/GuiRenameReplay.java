@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.replayviewer;
 
-import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -48,7 +48,7 @@ public class GuiRenameReplay extends GuiScreen {
             } else if(button.id == 0) {
                 File folder = ReplayFileIO.getReplayFolder();
 
-                File initRenamed = new File(folder, this.field_146583_f.getText().trim() + ConnectionEventHandler.ZIP_FILE_EXTENSION.replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
+                File initRenamed = new File(folder, (this.field_146583_f.getText().trim() + ReplayFile.ZIP_FILE_EXTENSION).replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
                 File renamed = initRenamed;
                 int i = 1;
                 while(renamed.isFile()) {

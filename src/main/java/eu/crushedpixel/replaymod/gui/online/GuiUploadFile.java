@@ -7,10 +7,10 @@ import eu.crushedpixel.replaymod.api.client.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
-import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ResourceHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -20,8 +20,6 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +28,8 @@ import org.lwjgl.input.Keyboard;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -64,29 +63,16 @@ public class GuiUploadFile extends GuiScreen {
         boolean correctFile = false;
         this.replayFile = file;
 
-        if(("." + FilenameUtils.getExtension(file.getAbsolutePath())).equals(ConnectionEventHandler.ZIP_FILE_EXTENSION)) {
-            ZipFile archive = null;
+        if(("." + FilenameUtils.getExtension(file.getAbsolutePath())).equals(ReplayFile.ZIP_FILE_EXTENSION)) {
+            ReplayFile archive = null;
             try {
-                archive = new ZipFile(file);
-                ZipArchiveEntry recfile = archive.getEntry("recording" + ConnectionEventHandler.TEMP_FILE_EXTENSION);
-                ZipArchiveEntry metadata = archive.getEntry("metaData" + ConnectionEventHandler.JSON_FILE_EXTENSION);
+                archive = new ReplayFile(file);
 
-                ZipArchiveEntry image = archive.getEntry("thumb");
-                BufferedImage img = null;
-                if(image != null) {
-                    InputStream is = archive.getInputStream(image);
-                    is.skip(7);
-                    BufferedImage bimg = ImageIO.read(is);
-                    if(bimg != null) {
-                        thumb = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
-                    }
+                metaData = archive.metadata().get();
+                BufferedImage img = archive.thumb().get();
+                if(img != null) {
+                    thumb = ImageUtils.scaleImage(img, new Dimension(1280, 720));
                 }
-
-                InputStream is = archive.getInputStream(metadata);
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                String json = br.readLine();
-
-                metaData = gson.fromJson(json, ReplayMetaData.class);
 
                 archive.close();
                 correctFile = true;
