@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.recording;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.holders.PacketData;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -134,7 +135,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
                 File folder = ReplayFileIO.getReplayFolder();
 
-                File archive = new File(folder, name + ConnectionEventHandler.ZIP_FILE_EXTENSION);
+                File archive = new File(folder, name + ReplayFile.ZIP_FILE_EXTENSION);
                 archive.createNewFile();
 
                 ReplayFileIO.writeReplayFile(archive, file, metaData);

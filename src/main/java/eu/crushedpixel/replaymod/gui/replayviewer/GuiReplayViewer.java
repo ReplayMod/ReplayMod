@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.gui.replayviewer;
 
-import com.google.gson.Gson;
 import com.mojang.realmsclient.util.Pair;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
@@ -8,11 +7,11 @@ import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
-import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -20,8 +19,6 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -29,7 +26,8 @@ import org.lwjgl.input.Keyboard;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.List;
@@ -43,7 +41,6 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     private static final int DELETE_BUTTON_ID = 9005;
     private static final int SETTINGS_BUTTON_ID = 9006;
     private static final int CANCEL_BUTTON_ID = 9007;
-    private static Gson gson = new Gson();
     private boolean initialized;
     private GuiReplayListExtended replayGuiList;
     private List<Pair<Pair<File, ReplayMetaData>, File>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
@@ -65,39 +62,21 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
         for(File file : ReplayFileIO.getAllReplayFiles()) {
             try {
-                ZipFile archive = new ZipFile(file);
-                ZipArchiveEntry metadata = archive.getEntry("metaData" + ConnectionEventHandler.JSON_FILE_EXTENSION);
-
-                ZipArchiveEntry image = archive.getEntry("thumb");
-                BufferedImage img = null;
-                if(image != null) {
-                    InputStream is = archive.getInputStream(image);
-                    is.skip(7);
-                    BufferedImage bimg = ImageIO.read(is);
-                    if(bimg != null) {
-                        img = ImageUtils.scaleImage(bimg, new Dimension(1280, 720));
-                    }
-                }
-
+                ReplayFile replayFile = new ReplayFile(file);
+                ReplayMetaData metaData = replayFile.metadata().get();
+                BufferedImage img = replayFile.thumb().get();
                 File tmp = null;
                 if(img != null) {
+                    img = ImageUtils.scaleImage(img, new Dimension(1280, 720));
                     tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
                     tmp.deleteOnExit();
 
                     ImageIO.write(img, "jpg", tmp);
                 }
-
-                InputStream is = archive.getInputStream(metadata);
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-                String json = br.readLine();
-
-                ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
-
                 replayFileList.add(Pair.of(Pair.of(file, metaData), tmp));
-
-                archive.close();
+                replayFile.close();
             } catch(Exception e) {
+                e.printStackTrace();
             }
         }
 

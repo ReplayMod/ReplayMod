@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.holders.*;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class ReplayHandler {
@@ -36,6 +38,11 @@ public class ReplayHandler {
 
     private static KeyframeSet[] keyframeRepository = new KeyframeSet[]{};
 
+    /**
+     * The file currently being played.
+     */
+    private static ReplayFile currentReplayFile;
+
     public static KeyframeSet[] getKeyframeRepository() {
         return keyframeRepository;
     }
@@ -49,7 +56,7 @@ public class ReplayHandler {
 
                 ReplayFileIO.writeKeyframeRegistryToFile(repo, tempFile);
 
-                ReplayMod.replayFileAppender.registerModifiedFile(tempFile, "paths", ReplayMod.replaySender.getReplayFile());
+                ReplayMod.replayFileAppender.registerModifiedFile(tempFile, "paths", getReplayFile());
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -325,13 +332,23 @@ public class ReplayHandler {
 
         channel = new OpenEmbeddedChannel(networkManager);
 
-        ReplayMod.replaySender = new ReplaySender(file, networkManager);
+        // Open replay
+        try {
+            currentReplayFile = new ReplayFile(file);
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        KeyframeSet[] paths = currentReplayFile.paths().get();
+        ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
+
+        ReplayMod.replaySender = new ReplaySender(currentReplayFile, true);
         channel.pipeline().addFirst(ReplayMod.replaySender);
         channel.pipeline().fireChannelActive();
 
         try {
             ReplayMod.overlay.resetUI(true);
-        } catch(Exception e) {}
+        } catch(Exception e) {} // TODO proper handling
 
         //Load lighting and trigger update
         ReplayMod.replaySettings.setLightingEnabled(ReplayMod.replaySettings.isLightingEnabled());
@@ -374,6 +391,15 @@ public class ReplayHandler {
             ReplayMod.replaySender.terminateReplay();
         }
 
+        if (currentReplayFile != null) {
+            try {
+                currentReplayFile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            currentReplayFile = null;
+        }
+
         resetKeyframes();
 
         inReplay = false;
@@ -400,10 +426,7 @@ public class ReplayHandler {
     }
 
     public static File getReplayFile() {
-        if(ReplayMod.replaySender != null) {
-            return ReplayMod.replaySender.getReplayFile();
-        }
-        return null;
+        return currentReplayFile == null ? null : currentReplayFile.getFile();
     }
 
     public static TimeKeyframe getFirstTimeKeyframe() {

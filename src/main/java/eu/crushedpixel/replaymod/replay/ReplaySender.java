@@ -1,22 +1,19 @@
 package eu.crushedpixel.replaymod.replay;
 
-import com.google.gson.Gson;
+import com.google.common.base.Preconditions;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
-import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.Position;
-import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
-import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.timer.MCTimerHandler;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.ResourcePackRepository;
-import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
@@ -24,215 +21,177 @@ import net.minecraft.network.play.server.*;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+/**
+ * Sends replay packets to netty channels.
+ * Even though {@link Sharable}, this should never be added to multiple pipes at once, it may however be re-added when
+ * the replay restart from the beginning.
+ */
 @Sharable
 public class ReplaySender extends ChannelInboundHandlerAdapter {
 
-    private int currentTimeStamp;
-    private boolean hurryToTimestamp;
-    private long desiredTimeStamp = -1;
-    private long toleratedTimeStamp = -1;
-    private long lastTimeStamp, lastPacketSent;
-    private boolean hasRestarted = false;
-    private File replayFile;
-    private boolean active = true;
-    private ZipFile archive;
-    private DataInputStream dis;
-    private ChannelHandlerContext ctx = null;
-    private boolean startFromBeginning = true;
-    private NetworkManager networkManager;
-    private boolean terminate = false;
-    private double replaySpeed = 1f;
-    private boolean hasWorldLoaded = false;
-    private Minecraft mc = Minecraft.getMinecraft();
-    private int replayLength = 0;
-    private int actualID = -1;
-    private ZipArchiveEntry replayEntry;
-    private ArrayList<Class> badPackets = new ArrayList<Class>() {
-        {
-            add(S28PacketEffect.class);
-            add(S2BPacketChangeGameState.class);
-            add(S06PacketUpdateHealth.class);
-            add(S2DPacketOpenWindow.class);
-            add(S2EPacketCloseWindow.class);
-            add(S2FPacketSetSlot.class);
-            add(S30PacketWindowItems.class);
-            add(S36PacketSignEditorOpen.class);
-            add(S37PacketStatistics.class);
-            add(S1FPacketSetExperience.class);
-            add(S43PacketCamera.class);
-            add(S39PacketPlayerAbilities.class);
-        }
-    };
-    private boolean allowMovement = false;
-    private Thread sender = new Thread(new Runnable() {
+    /**
+     * These packets are ignored completely during replay.
+     */
+    private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
+            S28PacketEffect.class,
+            S2BPacketChangeGameState.class,
+            S06PacketUpdateHealth.class,
+            S2DPacketOpenWindow.class,
+            S2EPacketCloseWindow.class,
+            S2FPacketSetSlot.class,
+            S30PacketWindowItems.class,
+            S36PacketSignEditorOpen.class,
+            S37PacketStatistics.class,
+            S1FPacketSetExperience.class,
+            S43PacketCamera.class,
+            S39PacketPlayerAbilities.class);
 
-        @Override
-        public void run() {
-            try {
-                dis = new DataInputStream(archive.getInputStream(replayEntry));
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
+    /**
+     * Whether to work in async mode.
+     *
+     * When in async mode, a separate thread send packets and waits according to their delays.
+     * This is default in normal playback mode.
+     *
+     * When in sync mode, no packets will be sent until {@link #sendPacketsTill(int)} is called.
+     * This is used during path playback and video rendering.
+     */
+    protected boolean asyncMode;
 
-            int i=0;
+    /**
+     * Timestamp of the last packet sent in milliseconds since the start.
+     */
+    protected int lastTimeStamp;
 
-            try {
-                while(ctx == null && !terminate) {
-                    Thread.sleep(10);
-                }
-                while(!terminate) {
-                    if(startFromBeginning) {
-                        System.out.println("start from beginning");
-                        hasRestarted = true;
-                        hasWorldLoaded = false;
-                        currentTimeStamp = 0;
-                        dis.close();
-                        dis = new DataInputStream(archive.getInputStream(replayEntry));
-                        startFromBeginning = false;
-                        lastPacketSent = System.currentTimeMillis();
-                        ReplayHandler.restartReplay();
-                    }
+    /**
+     * Whether the replay has been restarted.
+     * It might be required to advance some ticks in order for rendering to keep up.
+     */
+    protected boolean hasRestarted;
 
-                    while(!terminate && !startFromBeginning && (!paused() || !hasWorldLoaded)) {
-                        //System.out.println("read");
-                        try {
-                            /*
-							 * LOGIC:
-							 * While behind desired timestamp, only send packets
-							 * until desired timestamp is reached,
-							 * then increase desired timestamp by 1/20th of a second
-							 *
-							 * Desired timestamp is divided through stretch factor.
-							 *
-							 * If hurrying, don't wait for correct timing.
-							 */
+    /**
+     * The replay file.
+     */
+    protected ReplayFile replayFile;
 
-                            if(!hurryToTimestamp && ReplayHandler.isInPath()) {
-                                continue;
-                            }
+    /**
+     * The channel handler context used to send packets to minecraft.
+     */
+    protected ChannelHandlerContext ctx;
 
-                            PacketData pd = ReplayFileIO.readPacketData(dis);
+    /**
+     * The data input stream from which new packets are read.
+     * When accessing this stream make sure to synchronize on {@code this} as it's used from multiple threads.
+     */
+    protected DataInputStream dis;
 
-                            currentTimeStamp = pd.getTimestamp();
+    /**
+     * The next packet that should be sent.
+     * This is required as some actions such as jumping to a specified timestamp have to peek at the next packet.
+     */
+    protected PacketData nextPacket;
 
-                            if(!ReplayHandler.isInPath() && !hurryToTimestamp && hasWorldLoaded) {
-                                int timeWait = (int) Math.round((currentTimeStamp - lastTimeStamp) / replaySpeed);
-                                long timeDiff = System.currentTimeMillis() - lastPacketSent;
-                                lastPacketSent = System.currentTimeMillis();
-                                long timeToSleep = Math.max(0, timeWait - timeDiff);
-                                Thread.sleep(timeToSleep);
-                            }
+    /**
+     * Whether we need to restart the current replay. E.g. when jumping backwards in time
+     */
+    protected boolean startFromBeginning = true;
 
-                            ReplaySender.this.channelRead(ctx, pd.getByteArray());
+    /**
+     * Whether to terminate the replay. This only has an effect on the async mode and is {@code true} during sync mode.
+     */
+    protected boolean terminate;
 
-                            lastTimeStamp = currentTimeStamp;
+    /**
+     * The speed of the replay. 1 is normal, 2 is twice as fast, 0.5 is half speed and 0 is frozen
+     */
+    protected double replaySpeed = 1f;
 
-                            if(hurryToTimestamp && currentTimeStamp >= desiredTimeStamp && !startFromBeginning) {
-                                System.out.println("STOPPED HURRYING");
-                                stopHurrying();
-                                if(!ReplayHandler.isInPath() || hasRestarted) {
-                                    MCTimerHandler.advanceRenderPartialTicks(5);
-                                    MCTimerHandler.advancePartialTicks(5);
-                                    MCTimerHandler.advanceTicks(5);
-                                }
-                                if(!ReplayHandler.isInPath()) {
-                                    Position pos = ReplayHandler.getLastPosition();
-                                    CameraEntity cam = ReplayHandler.getCameraEntity();
-                                    if(cam != null) {
-                                        if(Math.abs(pos.getX() - cam.posX) < ReplayMod.TP_DISTANCE_LIMIT && Math.abs(pos.getZ() - cam.posZ) < ReplayMod.TP_DISTANCE_LIMIT)
-                                            if(pos != null) {
-                                                cam.moveAbsolute(pos.getX(), pos.getY(), pos.getZ());
-                                                cam.rotationPitch = pos.getPitch();
-                                                cam.rotationYaw = pos.getYaw();
-                                            }
-                                    }
-                                }
-                                if(!ReplayHandler.isInPath()) {
-                                    setReplaySpeed(0);
-                                }
-                                hasRestarted = false;
-                            }
+    /**
+     * Whether the world has been loaded and the dirt-screen should go away.
+     */
+    protected boolean hasWorldLoaded;
 
-                        } catch(EOFException eof) {
-                            dis = new DataInputStream(archive.getInputStream(replayEntry));
-                            setReplaySpeed(0);
-                        } catch(IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+    /**
+     * The minecraft instance.
+     */
+    protected Minecraft mc = Minecraft.getMinecraft();
 
-                }
-                System.out.println("STOPPED FOREVER");
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-    });
+    /**
+     * The total length of this replay in milliseconds.
+     */
+    protected final int replayLength;
 
-    public ReplaySender(final File replayFile, NetworkManager nm) {
-        this.replayFile = replayFile;
-        this.networkManager = nm;
-        if(("." + FilenameUtils.getExtension(replayFile.getAbsolutePath())).equals(ConnectionEventHandler.ZIP_FILE_EXTENSION)) {
-            try {
-                archive = new ZipFile(replayFile);
-                replayEntry = archive.getEntry("recording" + ConnectionEventHandler.TEMP_FILE_EXTENSION);
+    /**
+     * Our actual entity id that the server gave to us.
+     */
+    protected int actualID = -1;
 
-                ZipArchiveEntry metadata = archive.getEntry("metaData" + ConnectionEventHandler.JSON_FILE_EXTENSION);
-                InputStream is = archive.getInputStream(metadata);
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+    /**
+     * Whether to allow (process) the next player movement packet.
+     */
+    protected boolean allowMovement;
 
-                String json = br.readLine();
+    /**
+     * Create a new replay sender.
+     * @param file The replay file
+     * @param asyncMode {@code true} for async mode, {@code false} otherwise
+     * @see #asyncMode
+     */
+    public ReplaySender(ReplayFile file, boolean asyncMode) {
+        this.replayFile = file;
+        this.asyncMode = asyncMode;
+        this.replayLength = file.metadata().get().getDuration();
 
-                Gson gson = new Gson();
-                ReplayMetaData metaData = gson.fromJson(json, ReplayMetaData.class);
-
-                this.replayLength = metaData.getDuration();
-
-                ZipArchiveEntry paths = archive.getEntry("paths");
-                if(paths != null) {
-                    InputStream is2 = archive.getInputStream(paths);
-                    BufferedReader br2 = new BufferedReader(new InputStreamReader(is2));
-
-                    String json2 = br2.readLine();
-                    KeyframeSet[] repo = gson.fromJson(json2, KeyframeSet[].class);
-
-                    ReplayHandler.setKeyframeRepository(repo, false);
-                } else {
-                    ReplayHandler.setKeyframeRepository(new KeyframeSet[]{}, false);
-                }
-
-                sender.start();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
+        if (asyncMode) {
+            new Thread(asyncSender).start();
         }
     }
 
-    public boolean isHurrying() {
-        return hurryToTimestamp;
+    /**
+     * Set whether this replay sender operates in async mode.
+     * When in async mode, it will send packets timed from a separate thread.
+     * When not in async mode, it will send packets when {@link #sendPacketsTill(int)} is called.
+     * @param asyncMode {@code true} to enable async mode
+     */
+    public void setAsyncMode(boolean asyncMode) {
+        if (this.asyncMode == asyncMode) return;
+        this.asyncMode = asyncMode;
+        if (asyncMode) {
+            this.terminate = false;
+            new Thread(asyncSender).start();
+        } else {
+            this.terminate = true;
+        }
     }
 
+    /**
+     * Return the timestamp of the last packet sent.
+     * @return The timestamp in milliseconds since the start of the replay
+     */
     public int currentTimeStamp() {
-        return currentTimeStamp;
+        return lastTimeStamp;
     }
 
+    /**
+     * Return the total length of the replay played.
+     * @return Total length in milliseconds
+     */
     public int replayLength() {
         return replayLength;
     }
 
-    public void stopHurrying() {
-        hurryToTimestamp = false;
-    }
-
+    /**
+     * Terminate this replay sender.
+     */
     public void terminateReplay() {
         terminate = true;
         try {
@@ -243,267 +202,174 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         }
     }
 
-    public long getDesiredTimestamp() {
-        return desiredTimeStamp;
-    }
-
-    public void resetToleratedTimeStamp() {
-        toleratedTimeStamp = -1;
-    }
-
-    public void jumpToTime(int millis) {
-        System.out.println("Jumped to "+millis);
-        if(!(ReplayHandler.isInPath() && ReplayProcess.isVideoRecording())) setReplaySpeed(replaySpeed);
-
-        if((millis < currentTimeStamp && !isHurrying())) {
-            if(ReplayHandler.isInPath()) {
-                if(millis >= toleratedTimeStamp && toleratedTimeStamp >= 0) {
-                    System.out.println("tolerated: "+toleratedTimeStamp);
-                    return;
-                }
-            }
-            startFromBeginning = true;
-            System.out.println("has to start from beginning");
-        }
-
-        desiredTimeStamp = millis;
-        System.out.println("Set desired Timestamp");
-        if(ReplayHandler.isInPath()) {
-            toleratedTimeStamp = millis;
-        }
-        hurryToTimestamp = true;
-    }
-
-    //private static Field dataWatcherField;
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)
             throws Exception {
-        if(terminate) {
+        // When in async mode and the replay sender shut down, then don't send packets
+        if(terminate && asyncMode) {
             return;
         }
 
-        if(ctx == null) {
-            ctx = this.ctx;
-        }
-
+        // When a packet is sent directly, perform no filtering
         if(msg instanceof Packet) {
             super.channelRead(ctx, msg);
-            return;
         }
-        byte[] ba = (byte[]) msg;
 
-        try {
-            Packet p = ReplayFileIO.deserializePacket(ba);
-
-            if(p == null) return;
-
-            //If hurrying, ignore some packets, unless during Replay Path and *not* in initial hurry
-            if(hurryToTimestamp && (!ReplayHandler.isInPath() || (desiredTimeStamp - currentTimeStamp > 1000))) {
-                if(p instanceof S45PacketTitle ||
-                        p instanceof S2APacketParticles) return;
-
-                if(p instanceof S0EPacketSpawnObject) {
-                    S0EPacketSpawnObject pso = (S0EPacketSpawnObject)p;
-                    int type = pso.func_148993_l();
-                    if(type == 76) {
-                        return;
-                    }
-                }
-            }
-
-            if(p instanceof S29PacketSoundEffect && ReplayHandler.isInPath() && ReplayProcess.isVideoRecording()) {
-                return;
-            }
-
-            if(p instanceof S03PacketTimeUpdate) {
-                p = TimeHandler.getTimePacket((S03PacketTimeUpdate) p);
-            }
-
-            if(p instanceof S48PacketResourcePackSend) {
-                S48PacketResourcePackSend pa = (S48PacketResourcePackSend) p;
-                Thread t = new ResourcePackCheck(pa.func_179783_a(), pa.func_179784_b());
-                t.start();
-
-                return;
-            }
-
-            if(badPackets.contains(p.getClass())) return;
-
-			/*
-			if(p instanceof S0EPacketSpawnObject) {
-				if(mc.theWorld != null) {
-					List<EntityArrow> arrows = mc.theWorld.getEntities(EntityArrow.class, new Predicate<EntityArrow>() {
-						@Override
-						public boolean apply(EntityArrow input) {
-							return true;
-						}
-					});
- 					if(arrows.size() > 20) {
-						System.out.println(currentTimeStamp);
-					}
-				}
-			}
-			 */
-
+        if (msg instanceof byte[]) {
             try {
-                if(p instanceof S1CPacketEntityMetadata) {
-                    S1CPacketEntityMetadata packet = (S1CPacketEntityMetadata) p;
-                    if(packet.field_149379_a == actualID) {
-                        packet.field_149379_a = RecordingHandler.entityID;
+                Packet p = ReplayFileIO.deserializePacket((byte[]) msg);
+
+                if (p != null) {
+                    p = processPacket(p);
+                    if (p != null) {
+                        super.channelRead(ctx, p);
                     }
                 }
-
-                if(p instanceof S01PacketJoinGame) {
-                    S01PacketJoinGame packet = (S01PacketJoinGame) p;
-                    allowMovement = true;
-                    int entId = packet.getEntityId();
-                    actualID = entId;
-                    entId = Integer.MIN_VALUE + 9002;
-                    int dimension = packet.getDimension();
-                    EnumDifficulty difficulty = packet.getDifficulty();
-                    int maxPlayers = packet.getMaxPlayers();
-                    WorldType worldType = packet.getWorldType();
-
-                    p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension,
-                            difficulty, maxPlayers, worldType, false);
-                }
-
-                if(p instanceof S07PacketRespawn) {
-                    S07PacketRespawn respawn = (S07PacketRespawn) p;
-                    p = new S07PacketRespawn(respawn.func_149082_c(),
-                            respawn.func_149081_d(), respawn.func_149080_f(), GameType.SPECTATOR);
-
-                    allowMovement = true;
-                }
-
-				/*
-				 * Proof of concept for some nasty player manipulation ;)
-				String crPxl = "2cb08a5951f34e98bd0985d9747e80df";
-				String johni = "cd3d4be14ffc2f9db432db09e0cd254b";
-
-				if(p instanceof S38PacketPlayerListItem) {
-					S38PacketPlayerListItem pp = (S38PacketPlayerListItem)p;
-					if(((AddPlayerData)pp.func_179767_a().get(0)).func_179962_a().getId().toString().replace("-", "").equals(crPxl)) {
-						GameProfile johniGP = new GameProfile(UUID.fromString(johni.replaceAll(
-								"(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
-								"$1-$2-$3-$4-$5")), "Johni0702");
-						gameProfileField.set(pp.func_179767_a().get(0), johniGP);
-						//pp.func_179767_a().set(0, johniGP);
-						p = pp;
-					}
-
-				}
-
-				if(p instanceof S0CPacketSpawnPlayer) {
-					S0CPacketSpawnPlayer sp = (S0CPacketSpawnPlayer)p;
-
-					if(sp.func_179819_c().toString().replace("-", "").equals(crPxl)) {
-						playerUUIDField.set(sp, UUID.fromString(johni.replaceAll(
-								"(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
-								"$1-$2-$3-$4-$5")));
-					}
-
-					p = sp;
-				}
-				 */
-
-				/*
-				if(p instanceof S0CPacketSpawnPlayer) {
-					System.out.println(dataWatcherField.get(p));
-					System.out.println(((S0CPacketSpawnPlayer) p).func_148944_c());
-				}
-				 */
-
-                if(p instanceof S08PacketPlayerPosLook) {
-                    if(!hasWorldLoaded) hasWorldLoaded = true;
-                    final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook) p;
-
-                    if(ReplayHandler.isInPath() && !hurryToTimestamp) return;
-
-                    CameraEntity cent = ReplayHandler.getCameraEntity();
-
-                    if(cent != null) {
-                        if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > ReplayMod.TP_DISTANCE_LIMIT) ||
-                                (Math.abs(cent.posZ - ppl.func_148933_e()) > ReplayMod.TP_DISTANCE_LIMIT))) {
-                            return;
-                        } else {
-                            allowMovement = false;
-                        }
-                    }
-
-                    Thread t = new Thread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            while(mc.theWorld == null) {
-                                try {
-                                    Thread.sleep(10);
-                                } catch(InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            Entity ent = ReplayHandler.getCameraEntity();
-
-                            if(ent == null || !(ent instanceof CameraEntity)) ent = new CameraEntity(mc.theWorld);
-                            CameraEntity cent = (CameraEntity) ent;
-                            cent.moveAbsolute(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
-
-                            ReplayHandler.setCameraEntity(cent);
-                        }
-                    });
-
-                    t.start();
-                }
-
-                if(p instanceof S43PacketCamera) {
-                    return;
-                }
-
-                super.channelRead(ctx, p);
-            } catch(Exception e) {
-                System.out.println(p.getClass());
+            } catch (Exception e) {
+                // We'd rather not have a failure parsing one packet screw up the whole replay process
                 e.printStackTrace();
             }
-
-        } catch(Exception e) {
-            e.printStackTrace();
         }
 
     }
 
+    /**
+     * Process a packet and return the result.
+     * @param p The packet to process
+     * @return The processed packet or {@code null} if no packet shall be sent
+     */
+    protected Packet processPacket(Packet p) {
+        if(BAD_PACKETS.contains(p.getClass())) return null;
+
+        if(p instanceof S29PacketSoundEffect && ReplayProcess.isVideoRecording()) {
+            return null;
+        }
+
+        if(p instanceof S03PacketTimeUpdate) {
+            p = TimeHandler.getTimePacket((S03PacketTimeUpdate) p);
+        }
+
+        if(p instanceof S48PacketResourcePackSend) {
+            S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
+            new ResourcePackCheck(packet.func_179783_a(), packet.func_179784_b()).start();
+            return null;
+        }
+
+        if(p instanceof S1CPacketEntityMetadata) {
+            S1CPacketEntityMetadata packet = (S1CPacketEntityMetadata) p;
+            if(packet.field_149379_a == actualID) {
+                packet.field_149379_a = RecordingHandler.entityID;
+            }
+        }
+
+        if(p instanceof S01PacketJoinGame) {
+            S01PacketJoinGame packet = (S01PacketJoinGame) p;
+            allowMovement = true;
+            int entId = packet.getEntityId();
+            actualID = entId;
+            entId = Integer.MIN_VALUE + 9002;
+            int dimension = packet.getDimension();
+            EnumDifficulty difficulty = packet.getDifficulty();
+            int maxPlayers = packet.getMaxPlayers();
+            WorldType worldType = packet.getWorldType();
+
+            p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension,
+                    difficulty, maxPlayers, worldType, false);
+        }
+
+        if(p instanceof S07PacketRespawn) {
+            S07PacketRespawn respawn = (S07PacketRespawn) p;
+            p = new S07PacketRespawn(respawn.func_149082_c(),
+                    respawn.func_149081_d(), respawn.func_149080_f(), GameType.SPECTATOR);
+
+            allowMovement = true;
+        }
+
+        if(p instanceof S08PacketPlayerPosLook) {
+            if(!hasWorldLoaded) hasWorldLoaded = true;
+            final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook) p;
+
+            if(ReplayHandler.isInPath()) return null;
+
+            CameraEntity cent = ReplayHandler.getCameraEntity();
+
+            if(cent != null) {
+                if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > ReplayMod.TP_DISTANCE_LIMIT) ||
+                        (Math.abs(cent.posZ - ppl.func_148933_e()) > ReplayMod.TP_DISTANCE_LIMIT))) {
+                    return null;
+                } else {
+                    allowMovement = false;
+                }
+            }
+
+            mc.addScheduledTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (mc.theWorld == null) {
+                        mc.addScheduledTask(this);
+                        return;
+                    }
+
+                    CameraEntity cent = ReplayHandler.getCameraEntity();
+
+                    if (cent == null){
+                        cent = new CameraEntity(mc.theWorld);
+                    }
+                    cent.moveAbsolute(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
+                    ReplayHandler.setCameraEntity(cent);
+                }
+            });
+        }
+
+        return asyncMode ? processPacketAsync(p) : processPacketSync(p);
+    }
+
     @Override
+    @SuppressWarnings("unchecked")
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
-        networkManager.channel().attr(networkManager.attrKeyConnectionState).set(EnumConnectionState.PLAY);
+        ctx.attr(NetworkManager.attrKeyConnectionState).set(EnumConnectionState.PLAY);
         super.channelActive(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        archive.close();
+        replayFile.close();
         super.channelInactive(ctx);
     }
 
+    /**
+     * Whether the replay is currently paused.
+     * @return {@code true} if it is paused, {@code false} otherwise
+     */
     public boolean paused() {
         return MCTimerHandler.getTimerSpeed() == 0;
     }
 
+    /**
+     * Returns the speed of the replay. 1 being normal speed, 0.5 half and 2 twice as fast.
+     * If 0 is returned, the replay is paused.
+     * @return speed multiplier
+     */
     public double getReplaySpeed() {
         if(!paused()) return replaySpeed;
         else return 0;
     }
 
+    /**
+     * Set the speed of the replay. 1 being normal speed, 0.5 half and 2 twice as fast.
+     * The speed may not be set to 0 nor to negative values.
+     * @param d Speed multiplier
+     */
     public void setReplaySpeed(final double d) {
         if(d != 0) this.replaySpeed = d;
         MCTimerHandler.setTimerSpeed((float) d);
     }
 
-    public File getReplayFile() {
-        return replayFile;
-    }
-
+    /**
+     * Checks for stored resource packs and loads them or downloads a new one.
+     */
     private static class ResourcePackCheck extends Thread {
 
         private static Minecraft mc = Minecraft.getMinecraft();
@@ -516,7 +382,13 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             this.hash = hash;
         }
 
-        private File getServerResourcePackLocation(String url, String hash) throws IOException, IllegalArgumentException, IllegalAccessException {
+        /**
+         * Return the location of the stored resource pack.
+         * @param url The original url of the resource pack
+         * @param hash The hash code of the resource pack
+         * @return File location of the resource pack
+         */
+        private File getServerResourcePackLocation(String url, String hash) {
 
             String filename;
 
@@ -539,6 +411,12 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             return new File(repo.dirServerResourcepacks, filename);
         }
 
+        /**
+         * Download a resource pack from a specified URL.
+         * @param url The URL to download from
+         * @param file The target file location
+         * @return {@code true} if the download was successful, {@code false} if an I/O-error occured
+         */
         private boolean downloadServerResourcePack(String url, File file) {
             try {
                 FileUtils.copyURLToFile(new URL(url), file);
@@ -549,10 +427,14 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             return false;
         }
 
+        /**
+         * Add the resource pack to the loaded resource packs if resource packs are enabled in the config.
+         * If there is no local copy of the resource pack, this loads the resource pack from the specified url.
+         */
         @Override
         public void run() {
             try {
-                boolean use = ReplayMod.instance.replaySettings.getUseResourcePacks();
+                boolean use = ReplayMod.replaySettings.getUseResourcePacks();
                 if(!use) return;
 
                 System.out.println("Looking for downloaded Resource Pack...");
@@ -579,6 +461,288 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                 e.printStackTrace();
             }
         }
+    }
+
+    /////////////////////////////////////////////////////////
+    //       Asynchronous packet processing                //
+    /////////////////////////////////////////////////////////
+
+    /**
+     * The real time at which the last packet was sent in milliseconds.
+     */
+    private long lastPacketSent;
+
+    /**
+     * There is no waiting performed until a packet with at least this timestamp is reached (but not yet sent).
+     * If this is -1, then timing is normal.
+     */
+    private long desiredTimeStamp = -1;
+
+    /**
+     * Runnable which performs timed dispatching of packets from the input stream.
+     */
+    private Runnable asyncSender = new Runnable() {
+        public void run() {
+            try {
+                while (ctx == null && !terminate) {
+                    Thread.sleep(10);
+                }
+                REPLAY_LOOP:
+                while (true) {
+                    synchronized (ReplaySender.this) {
+                        if (dis == null) {
+                            dis = new DataInputStream(replayFile.recording().get());
+                        }
+                        // Packet loop
+                        while (true) {
+                            try {
+                                // When playback is paused and the world has loaded (we don't want any dirt-screens) we sleep
+                                while (paused() && hasWorldLoaded) {
+                                    // Unless we are going to terminate, restart or jump
+                                    if (terminate || startFromBeginning || desiredTimeStamp != -1) {
+                                        break;
+                                    }
+                                    Thread.sleep(10);
+                                }
+
+                                if (terminate) {
+                                    break REPLAY_LOOP;
+                                }
+
+                                if (startFromBeginning) {
+                                    // In case we need to restart from the beginning
+                                    // break out of the loop sending all packets which will
+                                    // cause the replay to be restarted by the outer loop
+                                    break;
+                                }
+
+                                // Read the next packet if we don't already have one
+                                if (nextPacket == null) {
+                                    nextPacket = ReplayFileIO.readPacketData(dis);
+                                }
+
+                                int nextTimeStamp = nextPacket.getTimestamp();
+
+                                // If we aren't jumping and the world has already been loaded (no dirt-screens) then wait
+                                // the required amount to get proper packet timing
+                                if (!isHurrying() && hasWorldLoaded) {
+                                    // How much time should have passed
+                                    int timeWait = (int) Math.round((nextTimeStamp - lastTimeStamp) / replaySpeed);
+                                    // How much time did pass
+                                    long timeDiff = System.currentTimeMillis() - lastPacketSent;
+                                    // How much time we need to wait to make up for the difference
+                                    long timeToSleep = Math.max(0, timeWait - timeDiff);
+
+                                    Thread.sleep(timeToSleep);
+                                    lastPacketSent = System.currentTimeMillis();
+                                }
+
+                                // Process packet
+                                channelRead(ctx, nextPacket.getByteArray());
+                                nextPacket = null;
+
+                                lastTimeStamp = nextTimeStamp;
+
+                                // In case we finished jumping
+                                // We need to check that we aren't planing to restart so we don't accidentally run this
+                                // code before we actually restarted
+                                if (isHurrying() && lastTimeStamp > desiredTimeStamp && !startFromBeginning) {
+                                    desiredTimeStamp = -1;
+
+                                    // Give the render engine a reason to get going
+                                    MCTimerHandler.advanceRenderPartialTicks(5);
+                                    MCTimerHandler.advancePartialTicks(5);
+                                    MCTimerHandler.advanceTicks(5);
+
+                                    Position pos = ReplayHandler.getLastPosition();
+                                    CameraEntity cam = ReplayHandler.getCameraEntity();
+                                    if (cam != null && pos != null) {
+                                        // Move camera back in case we have been respawned
+                                        if (Math.abs(pos.getX() - cam.posX) < ReplayMod.TP_DISTANCE_LIMIT && Math.abs(pos.getZ() - cam.posZ) < ReplayMod.TP_DISTANCE_LIMIT) {
+                                            cam.moveAbsolute(pos.getX(), pos.getY(), pos.getZ());
+                                            cam.rotationPitch = pos.getPitch();
+                                            cam.rotationYaw = pos.getYaw();
+                                        }
+                                    }
+
+                                    // Pause after jumping
+                                    setReplaySpeed(0);
+                                }
+                            } catch (EOFException eof) {
+                                // Reached end of file
+                                // Pause the replay which will cause it to freeze before getting restarted
+                                setReplaySpeed(0);
+                                // Then wait until the user tells us to continue
+                                while (paused() && hasWorldLoaded && desiredTimeStamp == -1) {
+                                    Thread.sleep(10);
+                                }
+                                break;
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        // Restart the replay.
+                        hasRestarted = true;
+                        hasWorldLoaded = false;
+                        lastTimeStamp = 0;
+                        startFromBeginning = false;
+                        nextPacket = null;
+                        lastPacketSent = System.currentTimeMillis();
+                        ReplayHandler.restartReplay();
+                        if (dis != null) {
+                            dis.close();
+                            dis = null;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    /**
+     * Return whether this replay sender is currently rushing. When rushing, all packets are sent without waiting until
+     * a specified timestamp is passed.
+     * @return {@code true} if currently rushing, {@code false} otherwise
+     */
+    public boolean isHurrying() {
+        return desiredTimeStamp != -1;
+    }
+
+    /**
+     * Cancels the hurrying.
+     */
+    public void stopHurrying() {
+        desiredTimeStamp = -1;
+    }
+
+    /**
+     * Return the timestamp to which this replay sender is currently rushing. All packets with an lower or equal
+     * timestamp will be sent out without any sleeping.
+     * @return The timestamp in milliseconds since the start of the replay
+     */
+    public long getDesiredTimestamp() {
+        return desiredTimeStamp;
+    }
+
+    /**
+     * Jumps to the specified timestamp when in async mode by rushing all packets until one with a timestamp greater
+     * than the specified timestamp is found.
+     * If the timestamp has already passed, this causes the replay to restart and then rush all packets.
+     * @param millis Timestamp in milliseconds since the start of the replay
+     */
+    public void jumpToTime(int millis) {
+        Preconditions.checkState(asyncMode, "Can only jump in async mode. Use sendPacketsTill(int) instead.");
+        if(millis < lastTimeStamp && !isHurrying()) {
+            startFromBeginning = true;
+        }
+
+        desiredTimeStamp = millis;
+    }
+
+    protected Packet processPacketAsync(Packet p) {
+        //If hurrying, ignore some packets, unless during Replay Path and *not* in short hurries
+        if(!ReplayHandler.isInPath() && desiredTimeStamp - lastTimeStamp > 1000) {
+            if(p instanceof S2APacketParticles) return null;
+
+            if(p instanceof S0EPacketSpawnObject) {
+                S0EPacketSpawnObject pso = (S0EPacketSpawnObject)p;
+                int type = pso.func_148993_l();
+                if(type == 76) { // Firework rocket
+                    return null;
+                }
+            }
+        }
+        return p;
+    }
+
+    /////////////////////////////////////////////////////////
+    //        Synchronous packet processing                //
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Sends all packets until the specified timestamp is reached (inclusive).
+     * If the timestamp is smaller than the last packet sent, the replay is restarted from the beginning.
+     * @param timestamp The timestamp in milliseconds since the beginning of this replay
+     */
+    public void sendPacketsTill(int timestamp) {
+        Preconditions.checkState(!asyncMode, "This method cannot be used in async mode. Use jumpToTime(int) instead.");
+        try {
+            while (ctx == null && !terminate) { // Make sure channel is ready
+                Thread.sleep(10);
+            }
+
+            synchronized (this) {
+                if (timestamp < lastTimeStamp) { // Restart the replay if we need to go backwards in time
+                    hasRestarted = true;
+                    hasWorldLoaded = false;
+                    lastTimeStamp = 0;
+                    if (dis != null) {
+                        dis.close();
+                        dis = null;
+                    }
+                    startFromBeginning = false;
+                    nextPacket = null;
+                    ReplayHandler.restartReplay();
+                }
+
+                if (dis == null) {
+                    dis = new DataInputStream(replayFile.recording().get());
+                }
+
+                while (true) { // Send packets
+                    try {
+                        PacketData pd;
+                        if (nextPacket != null) {
+                            // If there is still a packet left from before, use it first
+                            pd = nextPacket;
+                            nextPacket = null;
+                        } else {
+                            // Otherwise read one from the input stream
+                            pd = ReplayFileIO.readPacketData(dis);
+                        }
+
+                        int nextTimeStamp = pd.getTimestamp();
+                        if (nextTimeStamp > timestamp) {
+                            // We are done sending all packets
+                            nextPacket = pd;
+                            break;
+                        }
+
+                        // Process packet
+                        channelRead(ctx, pd.getByteArray());
+
+                        // Store last timestamp
+                        lastTimeStamp = nextTimeStamp;
+                    } catch (EOFException eof) {
+                        // Shit! We hit the end before finishing our job! What shall we do now?
+                        // well, let's just pretend we're done...
+                        dis = null;
+                        break;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // This might be required if we change to async mode anytime soon
+                lastPacketSent = System.currentTimeMillis();
+
+                // In case we have restarted the replay we have to give the render engine a reason to get going
+                if (hasRestarted) {
+                    MCTimerHandler.advanceRenderPartialTicks(5);
+                    MCTimerHandler.advancePartialTicks(5);
+                    MCTimerHandler.advanceTicks(5);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected Packet processPacketSync(Packet p) {
+        return p; // During synchronous playback everything is sent normally
     }
 
 }

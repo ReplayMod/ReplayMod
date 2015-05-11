@@ -1,11 +1,9 @@
 package eu.crushedpixel.replaymod.utils;
 
-import akka.japi.Pair;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.PacketData;
-import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.recording.PacketSerializer;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import io.netty.buffer.ByteBuf;
@@ -16,8 +14,6 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
@@ -54,26 +50,11 @@ public class ReplayFileIO {
         List<File> files = new ArrayList<File>();
         File folder = getReplayFolder();
         for(File file : folder.listFiles()) {
-            if(("." + FilenameUtils.getExtension(file.getAbsolutePath())).equals(
-                    ConnectionEventHandler.ZIP_FILE_EXTENSION)) {
+            if(("." + FilenameUtils.getExtension(file.getAbsolutePath())).equals(ReplayFile.ZIP_FILE_EXTENSION)) {
                 files.add(file);
             }
         }
         return files;
-    }
-
-    private static DataInputStream getMetaDataInputStream(File replayFile) throws IOException {
-        ZipFile archive = null;
-
-        try {
-            archive = new ZipFile(replayFile);
-            ZipArchiveEntry tmcpr = archive.getEntry("metaData" +
-                    ConnectionEventHandler.JSON_FILE_EXTENSION);
-
-            return new DataInputStream(archive.getInputStream(tmcpr));
-        } catch(IOException e) {
-            throw e;
-        }
     }
 
     public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData) throws IOException {
@@ -88,13 +69,13 @@ public class ReplayFileIO {
 
         String json = new Gson().toJson(metaData);
 
-        zos.putNextEntry(new ZipEntry("metaData.json"));
+        zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_METADATA));
         PrintWriter pw = new PrintWriter(zos);
         pw.write(json);
         pw.flush();
         zos.closeEntry();
 
-        zos.putNextEntry(new ZipEntry("recording" + ConnectionEventHandler.TEMP_FILE_EXTENSION));
+        zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_RECORDING));
         FileInputStream fis = new FileInputStream(tempFile);
         int len;
         while((len = fis.read(buffer)) > 0) {
@@ -107,26 +88,13 @@ public class ReplayFileIO {
         zos.close();
     }
 
-    private static Pair<Long, DataInputStream> getTempFileInputStream(File replayFile) throws Exception {
-        ZipFile archive = null;
-
-        try {
-            archive = new ZipFile(replayFile);
-            ZipArchiveEntry tmcpr = archive.getEntry("recording" +
-                    ConnectionEventHandler.TEMP_FILE_EXTENSION);
-            long size = tmcpr.getSize();
-
-            return new Pair<Long, DataInputStream>(size, new DataInputStream(archive.getInputStream(tmcpr)));
-        } catch(Exception e) {
-            throw e;
-        }
-    }
-
     public static ReplayMetaData getMetaData(File replayFile) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(getMetaDataInputStream(replayFile)));
-        String json = br.readLine();
-
-        return new Gson().fromJson(json, ReplayMetaData.class);
+        ReplayFile file = new ReplayFile(replayFile);
+        try {
+            return file.metadata().get();
+        } finally {
+            file.close();
+        }
     }
 
     /**
@@ -138,12 +106,13 @@ public class ReplayFileIO {
         if(replayFile == lastReplayFile) {
             return lastContainsJoinPacket;
         }
+        ReplayFile file = null;
 
         lastReplayFile = replayFile;
         lastContainsJoinPacket = false;
         try {
-            Pair<Long, DataInputStream> pair = getTempFileInputStream(replayFile);
-            dis = pair.second();
+            file = new ReplayFile(replayFile);
+            dis = new DataInputStream(file.recording().get());
             PacketData pd = readPacketData(dis);
             while(dis.available() > 0) {
                 Packet p = deserializePacket(pd.getByteArray());
@@ -163,8 +132,10 @@ public class ReplayFileIO {
                 if(dis != null) {
                     dis.close();
                 }
-            } catch(Exception e) {
-            }
+                if (file != null) {
+                    file.close();
+                }
+            } catch(Exception ignored) {}
         }
 
         return false;
@@ -238,6 +209,7 @@ public class ReplayFileIO {
 
         RandomAccessFile raf = null;
         DataInputStream dis = null;
+        ReplayFile file = null;
 
         boolean bounds = false;
         int lower = 0, upper = 0;
@@ -255,10 +227,10 @@ public class ReplayFileIO {
                 outputFile.createNewFile();
             }
             raf = new RandomAccessFile(outputFile, "rw");
+            file = new ReplayFile(replayFile);
 
-            Pair<Long, DataInputStream> pair = getTempFileInputStream(replayFile);
-            dis = pair.second();
-            long fileLength = pair.first();
+            dis = new DataInputStream(file.recording().get());
+            long fileLength = file.recordingEntry().getSize();
 
             raf.setLength(fileLength);
 
@@ -300,8 +272,10 @@ public class ReplayFileIO {
                 if(dis != null) {
                     dis.close();
                 }
-            } catch(Exception e) {
-            }
+                if(file != null) {
+                    file.close();
+                }
+            } catch(Exception ignored) {}
         }
 
         return false;
