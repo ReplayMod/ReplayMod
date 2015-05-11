@@ -140,18 +140,18 @@ public class ReplayMod {
 
         /*
         boolean auth = false;
-		try {
-			auth = AuthenticationHandler.hasDonated(Minecraft.getMinecraft().getSession().getPlayerID());
-		} catch(Exception e) {
-			JOptionPane.showMessageDialog(null, "Couldn't connect to the Replay Mod Server to verify whether you donated!");
-			FMLCommonHandler.instance().exitJava(0, false);
-		}
+        try {
+            auth = AuthenticationHandler.hasDonated(Minecraft.getMinecraft().getSession().getPlayerID());
+        } catch(Exception e) {
+            JOptionPane.showMessageDialog(null, "Couldn't connect to the Replay Mod Server to verify whether you donated!");
+            FMLCommonHandler.instance().exitJava(0, false);
+        }
 
-		if(!auth) {
-			JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
-			FMLCommonHandler.instance().exitJava(0, false);
-		}
-		*/
+        if(!auth) {
+            JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
+            FMLCommonHandler.instance().exitJava(0, false);
+        }
+        */
     }
 
     private void removeTmcprFiles() {

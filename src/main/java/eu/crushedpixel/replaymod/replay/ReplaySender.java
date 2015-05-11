@@ -83,12 +83,15 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                 e.printStackTrace();
             }
 
+            int i=0;
+
             try {
                 while(ctx == null && !terminate) {
                     Thread.sleep(10);
                 }
                 while(!terminate) {
                     if(startFromBeginning) {
+                        System.out.println("start from beginning");
                         hasRestarted = true;
                         hasWorldLoaded = false;
                         currentTimeStamp = 0;
@@ -100,6 +103,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                     }
 
                     while(!terminate && !startFromBeginning && (!paused() || !hasWorldLoaded)) {
+                        //System.out.println("read");
                         try {
                             /*
 							 * LOGIC:
@@ -133,7 +137,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                             lastTimeStamp = currentTimeStamp;
 
                             if(hurryToTimestamp && currentTimeStamp >= desiredTimeStamp && !startFromBeginning) {
-                                hurryToTimestamp = false;
+                                System.out.println("STOPPED HURRYING");
+                                stopHurrying();
                                 if(!ReplayHandler.isInPath() || hasRestarted) {
                                     MCTimerHandler.advanceRenderPartialTicks(5);
                                     MCTimerHandler.advancePartialTicks(5);
@@ -164,7 +169,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                             e.printStackTrace();
                         }
                     }
+
                 }
+                System.out.println("STOPPED FOREVER");
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -245,23 +252,26 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     }
 
     public void jumpToTime(int millis) {
+        System.out.println("Jumped to "+millis);
         if(!(ReplayHandler.isInPath() && ReplayProcess.isVideoRecording())) setReplaySpeed(replaySpeed);
 
         if((millis < currentTimeStamp && !isHurrying())) {
             if(ReplayHandler.isInPath()) {
                 if(millis >= toleratedTimeStamp && toleratedTimeStamp >= 0) {
+                    System.out.println("tolerated: "+toleratedTimeStamp);
                     return;
                 }
             }
             startFromBeginning = true;
+            System.out.println("has to start from beginning");
         }
 
         desiredTimeStamp = millis;
+        System.out.println("Set desired Timestamp");
         if(ReplayHandler.isInPath()) {
             toleratedTimeStamp = millis;
         }
         hurryToTimestamp = true;
-
     }
 
     //private static Field dataWatcherField;

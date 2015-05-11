@@ -24,7 +24,7 @@ group= "eu.crushedpixel.replaymod"
 archivesBaseName = "replaymod"
 
 minecraft {
-    version = "1.8-11.14.0.1255-1.8"
+    version = "1.8-11.14.1.1402"
     runDir = "eclipse"
     
     // the mappings can be changed at any time, and must be in the following format.

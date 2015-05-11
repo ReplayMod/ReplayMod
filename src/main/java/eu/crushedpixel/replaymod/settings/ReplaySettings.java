@@ -56,6 +56,8 @@ public class ReplaySettings {
         return (String) AdvancedOptions.renderPath.getValue();
     }
 
+    public String getDownloadPath() { return (String) AdvancedOptions.downloadPath.getValue(); }
+
     public int getVideoFramerate() {
         return (Integer) RenderOptions.videoFramerate.getValue();
     }
@@ -270,7 +272,7 @@ public class ReplaySettings {
     }
 
     public enum AdvancedOptions implements ValueEnum {
-        recordingPath("./replay_recordings/"), renderPath("./replay_videos/");
+        recordingPath("./replay_recordings/"), renderPath("./replay_videos/"), downloadPath("./replay_downloads");
 
         private Object value;
 
@@ -287,9 +289,9 @@ public class ReplaySettings {
         }
     }
 
-    public static interface ValueEnum {
-        public Object getValue();
+    public interface ValueEnum {
+        Object getValue();
 
-        public void setValue(Object value);
+        void setValue(Object value);
     }
 }

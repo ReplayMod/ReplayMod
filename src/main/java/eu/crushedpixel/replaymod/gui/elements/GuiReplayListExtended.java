@@ -82,6 +82,10 @@ public abstract class GuiReplayListExtended extends GuiListExtended {
         return entries.get(index);
     }
 
+    public List<GuiReplayListEntry> getEntries() {
+        return entries;
+    }
+
     @Override
     protected int getSize() {
         return entries.size();

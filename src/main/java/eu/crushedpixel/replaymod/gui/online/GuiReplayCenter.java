@@ -5,7 +5,7 @@ import eu.crushedpixel.replaymod.api.client.SearchPagination;
 import eu.crushedpixel.replaymod.api.client.SearchQuery;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
+import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import net.minecraft.client.gui.*;
@@ -27,10 +27,12 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private static final int LOGOUT_CALLBACK_ID = 1;
     private final SearchPagination recentFilePagination = new SearchPagination(recentFileSearchQuery);
     private final SearchPagination bestFilePagination = new SearchPagination(bestFileSearchQuery);
-    private GuiReplayListExtended currentList;
+    private ReplayFileList currentList;
     private ReplayFileList recentFileList, bestFileList, myFileList, searchFileList;
     private Tab currentTab = Tab.RECENT_FILES;
     private SearchPagination myFilePagination;
+    private GuiButton loadButton, favButton, likeButton, dislikeButton;
+    private List<GuiButton> replayButtonBar;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, int p_152129_2_) {
         String s1 = I18n.format("replaymod.gui.center.logoutcallback");
@@ -81,6 +83,38 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             i++;
         }
 
+        //Replay specific actions (load, rate, etc)
+        replayButtonBar = new ArrayList<GuiButton>();
+
+        loadButton = new GuiButton(GuiConstants.CENTER_LOAD_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.download"));
+        replayButtonBar.add(loadButton);
+
+        favButton = new GuiButton(GuiConstants.CENTER_FAV_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.center.favorite"));
+        replayButtonBar.add(favButton);
+
+        likeButton = new GuiButton(GuiConstants.CENTER_LIKE_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.like"));
+        replayButtonBar.add(likeButton);
+
+        dislikeButton = new GuiButton(GuiConstants.CENTER_DISLIKE_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.dislike"));
+        replayButtonBar.add(dislikeButton);
+
+        i = 0;
+        for(GuiButton b : replayButtonBar) {
+            int w = this.width - 30;
+            int w2 = w / replayButtonBar.size();
+
+            int x = 15 + (w2 * i);
+            b.xPosition = x + 2;
+            b.yPosition = height - 55;
+            b.width = w2 - 4;
+
+            b.enabled = false;
+
+            buttonList.add(b);
+
+            i++;
+        }
+
         //Bottom Button Bar (dat alliteration)
         List<GuiButton> bottomBar = new ArrayList<GuiButton>();
 
@@ -111,6 +145,20 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         showOnlineRecent();
     }
 
+    public void elementSelected(int index) {
+        GuiReplayListEntry entry = currentList.getListEntry(index);
+        FileInfo info = entry.getFileInfo();
+        if(info != null) {
+            boolean downloaded = false;
+            loadButton.displayString = downloaded ? I18n.format("replaymod.gui.load") : I18n.format("replaymod.gui.download");
+            loadButton.enabled = true;
+        } else {
+            for(GuiButton b : replayButtonBar) {
+                b.enabled = false;
+            }
+        }
+    }
+
     @Override
     protected void actionPerformed(GuiButton button) throws java.io.IOException {
         if(!button.enabled) return;
@@ -127,6 +175,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         } else if(button.id == GuiConstants.CENTER_MY_REPLAYS_BUTTON) {
             showOnlineOwnFiles();
         } else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
+
+        } else if(button.id == GuiConstants.CENTER_LOAD_REPLAY_BUTTON) {
 
         }
     }
@@ -192,13 +242,13 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private void updateCurrentList(ReplayFileList list, SearchPagination pagination) {
         currentList = list;
         if(currentList == null) {
-            currentList = new ReplayFileList(mc, width, height, 50, height - 40, 36);
+            currentList = new ReplayFileList(mc, width, height, 50, height - 70, 36, this);
         } else {
             currentList.clearEntries();
             currentList.width = width;
             currentList.height = height;
             currentList.top = 50;
-            currentList.bottom = height - 40;
+            currentList.bottom = height - 70;
         }
 
         if(pagination.getLoadedPages() < 0) {

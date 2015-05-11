@@ -55,6 +55,9 @@ replaymod.gui.password=Password
 replaymod.gui.back=Back
 replaymod.gui.duration=Duration
 replaymod.gui.load=Load
+replaymod.gui.download=Download
+replaymod.gui.like=Like
+replaymod.gui.dislike=Dislike
 replaymod.gui.save=Save
 replaymod.gui.upload=Upload
 replaymod.gui.rename=Rename
@@ -120,6 +123,9 @@ replaymod.gui.center.newest=Newest Replays
 replaymod.gui.center.best=Best Replays
 replaymod.gui.center.my=My Replays
 replaymod.gui.center.search=Search Replays
+
+replaymod.gui.center.favorite=Favorite
+replaymod.gui.center.favorites=Favorites
 
 #Upload GUI
 replaymod.gui.upload.title=Upload File

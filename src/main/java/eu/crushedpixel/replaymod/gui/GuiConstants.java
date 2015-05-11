@@ -9,6 +9,10 @@ public class GuiConstants {
     public static final int CENTER_RECENT_BUTTON = 2005;
     public static final int CENTER_BEST_BUTTON = 2006;
     public static final int CENTER_MANAGER_BUTTON = 2007;
+    public static final int CENTER_LOAD_REPLAY_BUTTON = 2008;
+    public static final int CENTER_FAV_REPLAY_BUTTON = 2009;
+    public static final int CENTER_LIKE_REPLAY_BUTTON = 2010;
+    public static final int CENTER_DISLIKE_REPLAY_BUTTON = 2011;
 
     public static final int UPLOAD_NAME_INPUT = 3001;
     public static final int UPLOAD_CATEGORY_BUTTON = 3002;
