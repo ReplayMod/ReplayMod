@@ -1,7 +1,8 @@
 package eu.crushedpixel.replaymod.registry;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
+import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -29,9 +30,14 @@ public class DownloadedFileHandler {
         }
     }
 
+    private File generateFileForID(int id) {
+        return new File(downloadFolder, id+"."+ ReplayFile.ZIP_FILE_EXTENSION);
+    }
+
     public void addToIndex(int id) {
         try {
-            File f = new File(downloadFolder, id+"."+ConnectionEventHandler.ZIP_FILE_EXTENSION);
+            File f = generateFileForID(id);
+            if(f.exists()) downloadedFiles.put(id, f);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -39,5 +45,21 @@ public class DownloadedFileHandler {
 
     public File getFileForID(int id) {
         return downloadedFiles.get(id);
+    }
+
+    public File downloadFileForID(int id) {
+        File f = getFileForID(id);
+        if(f != null) return f;
+
+        f = generateFileForID(id);
+
+        try {
+            ReplayMod.apiClient.downloadFile(AuthenticationHandler.getKey(), id, f);
+            addToIndex(id);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        return f;
     }
 }

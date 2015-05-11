@@ -7,6 +7,7 @@ import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.registry.DownloadedFileHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
 import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
@@ -66,6 +67,7 @@ public class ReplayMod {
     public static int TP_DISTANCE_LIMIT = 128;
     public static ReplayFileAppender replayFileAppender;
     public static UploadedFileHandler uploadedFileHandler;
+    public static DownloadedFileHandler downloadedFileHandler;
 
     private static Field defaultResourcePacksField;
     static {
@@ -91,6 +93,8 @@ public class ReplayMod {
 
         replaySettings = new ReplaySettings();
         replaySettings.readValues();
+
+        downloadedFileHandler = new DownloadedFileHandler();
 
         replayFileAppender = new ReplayFileAppender();
         replayFileAppender.start();

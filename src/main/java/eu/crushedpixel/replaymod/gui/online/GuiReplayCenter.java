@@ -8,6 +8,7 @@ import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
@@ -149,7 +150,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         GuiReplayListEntry entry = currentList.getListEntry(index);
         FileInfo info = entry.getFileInfo();
         if(info != null) {
-            boolean downloaded = false;
+            boolean downloaded = ReplayMod.downloadedFileHandler.getFileForID(info.getId()) != null;
             loadButton.displayString = downloaded ? I18n.format("replaymod.gui.load") : I18n.format("replaymod.gui.download");
             loadButton.enabled = true;
         } else {
@@ -177,7 +178,19 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         } else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
 
         } else if(button.id == GuiConstants.CENTER_LOAD_REPLAY_BUTTON) {
-
+            GuiReplayListEntry entry = currentList.getListEntry(currentList.selected);
+            FileInfo info = entry.getFileInfo();
+            if(info != null) {
+                File f = ReplayMod.downloadedFileHandler.getFileForID(info.getId());
+                if(f == null) {
+                    f = ReplayMod.downloadedFileHandler.downloadFileForID(info.getId());
+                }
+                try {
+                    ReplayHandler.startReplay(f);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
