@@ -31,7 +31,7 @@ public class DownloadedFileHandler {
     }
 
     private File generateFileForID(int id) {
-        return new File(downloadFolder, id+"."+ ReplayFile.ZIP_FILE_EXTENSION);
+        return new File(downloadFolder, id+ReplayFile.ZIP_FILE_EXTENSION);
     }
 
     public void addToIndex(int id) {
