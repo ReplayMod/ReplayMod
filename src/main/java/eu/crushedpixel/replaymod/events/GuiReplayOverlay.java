@@ -176,13 +176,7 @@ public class GuiReplayOverlay extends Gui {
                 if(!mouseDown) {
                     mouseDown = true;
                     if(hover) {
-                        boolean paused = !ReplayMod.replaySender.paused();
-                        if(paused) {
-                            ReplayMod.replaySender.setReplaySpeed(0);
-                        } else {
-                            ReplayMod.replaySender.setReplaySpeed(speedSlider.getSliderValue());
-                        }
-
+                        playOrPause();
                     } else if(mouseX >= exportButtonX && mouseX <= exportButtonX + 20 && mouseY >= exportButtonY && exportButtonY <= exportButtonY + 20) {
                         ReplayHandler.startPath(true);
                     }
@@ -726,6 +720,15 @@ public class GuiReplayOverlay extends Gui {
 
         int getSmallDistance() {
             return small_min;
+        }
+    }
+
+    public void playOrPause() {
+        boolean paused = !ReplayMod.replaySender.paused();
+        if(paused) {
+            ReplayMod.replaySender.setReplaySpeed(0);
+        } else {
+            ReplayMod.replaySender.setReplaySpeed(speedSlider.getSliderValue());
         }
     }
 }

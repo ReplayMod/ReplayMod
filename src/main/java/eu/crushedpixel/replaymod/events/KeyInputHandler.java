@@ -104,6 +104,10 @@ public class KeyInputHandler {
 
     public void handleCustomKeybindings(KeyBinding kb, boolean found, int keyCode) {
         //Custom registered handlers
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PLAY_PAUSE) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
+            ReplayMod.overlay.playOrPause();
+        }
+
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ROTATE_CLOCKWISE) && (kb.isKeyDown() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             ReplayHandler.addCameraTilt(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) ? 1 : 5);
         }

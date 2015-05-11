@@ -196,6 +196,7 @@ replaymod.input.keyframerepository=Open Keyframe Presets
 replaymod.input.rotateclockwise=Rotate Clockwise
 replaymod.input.rotatecounterclockwise=Rotate Counterclockwise
 replaymod.input.resettilt=Reset Camera Tilt
+replaymod.input.playpause=Play/Pause Replay
 
 #Keyframe Presets GUI
 replaymod.gui.keyframerepository.title=Keyframe Repository
