@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.replay;
 
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.ListenableFutureTask;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.RecordingHandler;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Sends replay packets to netty channels.
@@ -302,13 +304,15 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                 }
             }
 
-            mc.addScheduledTask(new Runnable() {
-
+            new Callable<Void>() {
                 @Override
-                public void run() {
-                    if (mc.theWorld == null) {
-                        mc.addScheduledTask(this);
-                        return;
+                @SuppressWarnings("unchecked")
+                public Void call() {
+                    if (mc.theWorld == null || !mc.isCallingFromMinecraftThread()) {
+                        synchronized(mc.scheduledTasks) {
+                            mc.scheduledTasks.add(ListenableFutureTask.create(this));
+                        }
+                        return null;
                     }
 
                     CameraEntity cent = ReplayHandler.getCameraEntity();
@@ -318,8 +322,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                     }
                     cent.moveAbsolute(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
                     ReplayHandler.setCameraEntity(cent);
+                    return null;
                 }
-            });
+            }.call();
         }
 
         return asyncMode ? processPacketAsync(p) : processPacketSync(p);
