@@ -6,13 +6,13 @@ import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
-import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
+import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 
 import java.io.File;
 import java.io.IOException;
@@ -331,6 +331,7 @@ public class ReplayHandler {
         networkManager.setNetHandler(pc);
 
         channel = new OpenEmbeddedChannel(networkManager);
+        channel.attr(NetworkDispatcher.FML_DISPATCHER).set(new NetworkDispatcher(networkManager));
 
         // Open replay
         try {
@@ -367,7 +368,8 @@ public class ReplayHandler {
         INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
         networkManager.setNetHandler(pc);
 
-        EmbeddedChannel channel = new OpenEmbeddedChannel(networkManager);
+        channel = new OpenEmbeddedChannel(networkManager);
+        channel.attr(NetworkDispatcher.FML_DISPATCHER).set(new NetworkDispatcher(networkManager));
 
         channel.pipeline().addFirst(ReplayMod.replaySender);
         channel.pipeline().fireChannelActive();
