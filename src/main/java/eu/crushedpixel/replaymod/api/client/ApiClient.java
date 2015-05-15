@@ -39,14 +39,14 @@ public class ApiClient {
         return auth;
     }
 
-    public boolean checkAuthkey(String auth) {
+    public AuthConfirmation checkAuthkey(String auth) {
         try {
             QueryBuilder builder = new QueryBuilder(ApiMethods.check_authkey);
             builder.put("auth", auth);
-            Success succ = invokeAndReturn(builder, Success.class);
-            return succ.isSuccess();
+            AuthConfirmation conf = invokeAndReturn(builder, AuthConfirmation.class);
+            return conf;
         } catch(Exception e) {
-            return false;
+            return null;
         }
     }
 

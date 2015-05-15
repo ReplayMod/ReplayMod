@@ -22,6 +22,7 @@ replaymod.api.zippingerror=An error occured while zipping the language files
 replaymod.api.usernameexists=This username is already taken
 replaymod.api.mailexists=This Email address is already linked to an account
 replaymod.api.invalidmail=Invalid Email Address
+replaymod.api.nopermissions=You don't have permission to do this
 
 
 #All of the chat messages

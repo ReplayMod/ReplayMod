@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.online.authentication;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.client.ApiClient;
 import eu.crushedpixel.replaymod.api.client.ApiException;
+import eu.crushedpixel.replaymod.api.client.holders.AuthConfirmation;
 import eu.crushedpixel.replaymod.api.client.holders.AuthKey;
 import net.minecraftforge.common.config.Property;
 
@@ -17,6 +18,7 @@ public class AuthenticationHandler {
     private static final ApiClient apiClient = new ApiClient();
 
     private static String authkey = null;
+    private static String username = null;
 
     public static boolean isAuthenticated() {
         return authkey != null;
@@ -25,18 +27,20 @@ public class AuthenticationHandler {
     public static String getKey() {
         return authkey;
     }
+    public static String getUsername() { return username; }
 
     public static boolean hasDonated(String uuid) throws IOException, ApiException {
         return apiClient.hasDonated(uuid);
     }
 
-    public static void register(String username, String mail, String password) throws IOException, ApiException {
-        AuthKey auth = apiClient.register(username, mail, password);
+    public static void register(String usrname, String mail, String password) throws IOException, ApiException {
+        AuthKey auth = apiClient.register(usrname, mail, password);
+        username = usrname;
         authkey = auth.getAuthkey();
         saveAuthkey(authkey);
     }
 
-    public static boolean loadAuthkeyFromConfig() {
+    public static void loadAuthkeyFromConfig() {
         Property p = ReplayMod.instance.config.get("authkey", "authkey", "null");
 
         String key = null;
@@ -45,20 +49,21 @@ public class AuthenticationHandler {
         }
 
         if(key != null) {
-            boolean succ = apiClient.checkAuthkey(key);
-            if(succ) {
+            AuthConfirmation conf = apiClient.checkAuthkey(key);
+            if(conf != null) {
                 authkey = key;
+                username = conf.getUsername();
             } else {
                 saveAuthkey("null");
+                username = null;
             }
-            return succ;
         }
-        return false;
     }
 
-    public static int authenticate(String username, String password) {
+    public static int authenticate(String usrname, String password) {
         try {
-            authkey = ReplayMod.apiClient.getLogin(username, password).getAuthkey();
+            authkey = ReplayMod.apiClient.getLogin(usrname, password).getAuthkey();
+            username = usrname;
             saveAuthkey(authkey);
             return SUCCESS;
         } catch(ApiException e) {
@@ -72,6 +77,7 @@ public class AuthenticationHandler {
         try {
             ReplayMod.apiClient.logout(authkey);
             authkey = null;
+            username = null;
             saveAuthkey("null");
             return SUCCESS;
         } catch(ApiException e) {
