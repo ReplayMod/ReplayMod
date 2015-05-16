@@ -102,6 +102,11 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             bottomBar.add(logoutButton);
 
             showOnlineRecent();
+            disableTopBarButton(GuiConstants.CENTER_RECENT_BUTTON);
+        }
+
+        if(currentList != null) {
+            currentList.height = height-60;
         }
 
         int i = 0;
@@ -170,11 +175,18 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
             boolean favorited = ReplayMod.favoritedFileHandler.isFavorited(info.getId());
             favButton.displayString = favorited ? I18n.format("replaymod.gui.center.unfavorite") : I18n.format("replaymod.gui.center.favorite");
-            favButton.enabled = true;
+            //if not downloaded, disable favorising
+            favButton.enabled = favorited || downloaded;
         } else {
             for(GuiButton b : replayButtonBar) {
                 b.enabled = false;
             }
+        }
+    }
+
+    private void disableTopBarButton(int id) {
+        for(GuiButton b : topBar) {
+            b.enabled = b.id != id;
         }
     }
 
@@ -188,15 +200,19 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         } else if(button.id == GuiConstants.CENTER_MANAGER_BUTTON) {
             mc.displayGuiScreen(new GuiReplayViewer());
         } else if(button.id == GuiConstants.CENTER_RECENT_BUTTON) {
+            disableTopBarButton(button.id);
             showOnlineRecent();
         } else if(button.id == GuiConstants.CENTER_BEST_BUTTON) {
+            disableTopBarButton(button.id);
             showOnlineBest();
         } else if(button.id == GuiConstants.CENTER_DOWNLOADED_REPLAYS_BUTTON) {
+            disableTopBarButton(button.id);
             showDownloadedFiles();
         } else if(button.id == GuiConstants.CENTER_FAVORITED_REPLAYS_BUTTON) {
+            disableTopBarButton(button.id);
             showFavoritedFiles();
         } else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
-
+            disableTopBarButton(button.id);
         } else if(button.id == GuiConstants.CENTER_LOAD_REPLAY_BUTTON) {
             GuiReplayListEntry entry = (GuiReplayListEntry)currentList.getListEntry(currentList.selected);
             FileInfo info = entry.getFileInfo();
@@ -247,13 +263,18 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
-        this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.replaycenter"), this.width / 2, 8, Color.WHITE.getRGB());
-
         if(currentList != null) {
             currentList.drawScreen(mouseX, mouseY, partialTicks);
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);
+
+        if(((favButton.isMouseOver() && !favButton.enabled) || (likeButton.isMouseOver() && !likeButton.enabled)
+                || (dislikeButton.isMouseOver() && !dislikeButton.enabled ))&& currentList.selected != -1) {
+            this.drawString(fontRendererObj, I18n.format("replaymod.gui.center.downloadrequired"), mouseX, mouseY + 4, Color.RED.getRGB());
+        }
+
+        this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.replaycenter"), this.width / 2, 5, Color.WHITE.getRGB());
     }
 
     @Override
@@ -287,7 +308,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
     private void updateCurrentList(Pagination pagination) {
         elementSelected(-1);
-        currentList = new ReplayFileList(mc, width, height, 50, height - 70, 36, this);
+        currentList = new ReplayFileList(mc, width, height, 50, height - 60, 36, this);
         loadingListEntry = new GuiLoadingListEntry(currentList);
         currentList.addEntry(loadingListEntry);
 
@@ -322,8 +343,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                updateCurrentList(new SearchPagination(recentFileSearchQuery));
                 currentTab = Tab.RECENT_FILES;
+                updateCurrentList(new SearchPagination(recentFileSearchQuery));
             }
         });
         currentListLoader.start();
@@ -334,8 +355,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                updateCurrentList(new SearchPagination(bestFileSearchQuery));
                 currentTab = Tab.BEST_FILES;
+                updateCurrentList(new SearchPagination(bestFileSearchQuery));
             }
         });
         currentListLoader.start();
@@ -346,8 +367,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                updateCurrentList(new DownloadedFilePagination());
                 currentTab = Tab.DOWNLOADED_FILES;
+                updateCurrentList(new DownloadedFilePagination());
             }
         });
         currentListLoader.start();
@@ -358,15 +379,27 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
+                currentTab = Tab.FAVORITED_FILES;
                 ReplayMod.favoritedFileHandler.reloadFavorites();
                 updateCurrentList(new FavoritedFilePagination());
-                currentTab = Tab.FAVORITED_FILES;
             }
         });
         currentListLoader.start();
     }
 
     private enum Tab {
-        RECENT_FILES, BEST_FILES, DOWNLOADED_FILES, FAVORITED_FILES, SEARCH;
+        RECENT_FILES("replaymod.gui.center.tab.recent"),
+        BEST_FILES("replaymod.gui.center.tab.best"),
+        DOWNLOADED_FILES("replaymod.gui.center.tab.downloaded"),
+        FAVORITED_FILES("replaymod.gui.center.tab.favorited"),
+        SEARCH("replaymod.gui.center.tab.search");
+
+        private String title;
+
+        Tab(String title) {
+            this.title = title;
+        }
+
+        public String getTitle() { return I18n.format(title); }
     }
 }

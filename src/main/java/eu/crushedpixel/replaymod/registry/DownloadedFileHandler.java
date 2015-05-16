@@ -19,6 +19,7 @@ public class DownloadedFileHandler {
         downloadFolder.mkdirs();
 
         for(File f : downloadFolder.listFiles()) {
+            if(!FilenameUtils.getExtension(f.getAbsolutePath()).equals("mcpr")) continue;
             try {
                 Integer i = Integer.valueOf(FilenameUtils.getBaseName(f.getAbsolutePath()));
                 if(i != null) {

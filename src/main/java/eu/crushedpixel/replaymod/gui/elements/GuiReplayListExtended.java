@@ -115,6 +115,8 @@ public abstract class GuiReplayListExtended extends GuiListExtended {
                         int l = k / this.slotHeight;
 
                         if(this.mouseX >= i && this.mouseX <= j && l >= 0 && k >= 0 && l < this.getSize()) {
+                            //LoadingListEntries should not do anything
+                            if(this.getListEntry(l) instanceof GuiLoadingListEntry) return;
                             boolean flag1 = l == this.selectedElement && Minecraft.getSystemTime() - this.lastClicked < 250L;
                             this.elementClicked(l, flag1, this.mouseX, this.mouseY);
                             this.selectedElement = l;

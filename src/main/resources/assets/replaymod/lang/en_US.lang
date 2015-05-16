@@ -127,6 +127,8 @@ replaymod.gui.center.top.downloaded=Downloaded
 replaymod.gui.center.top.favorited=Favorited
 replaymod.gui.center.top.search=Search
 
+replaymod.gui.center.downloadrequired=Download the Replay to rate or favorite it
+
 replaymod.gui.center.favorite=Favorite
 replaymod.gui.center.unfavorite=Unfavorite
 replaymod.gui.center.favorites=Favorites
