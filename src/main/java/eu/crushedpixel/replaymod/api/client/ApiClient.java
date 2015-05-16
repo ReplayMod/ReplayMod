@@ -145,6 +145,13 @@ public class ApiClient {
         invokeAndReturn(builder, Success.class);
     }
 
+    public int[] getFavorites(String auth) throws IOException, ApiException {
+        QueryBuilder builder = new QueryBuilder(ApiMethods.get_favorites);
+        builder.put("auth", auth);
+
+        return invokeAndReturn(builder, Favorites.class).getFavorited();
+    }
+
     public void removeFile(String auth, int file) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ApiMethods.remove_file);
         builder.put("auth", auth);

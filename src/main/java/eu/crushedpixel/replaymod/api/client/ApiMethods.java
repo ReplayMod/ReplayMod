@@ -14,6 +14,7 @@ public class ApiMethods {
     public static final String remove_file = "remove_file";
     public static final String rate_file = "rate_file";
     public static final String fav_file = "fav_file";
+    public static final String get_favorites = "get_favorites";
     public static final String check_auth = "check_auth";
     public static final String get_language = "get_language";
 }
