@@ -1,13 +1,14 @@
-package eu.crushedpixel.replaymod.api.client;
+package eu.crushedpixel.replaymod.api.client.pagination;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.api.client.SearchQuery;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SearchPagination {
+public class SearchPagination implements Pagination {
 
     private final SearchQuery searchQuery;
     private int page;
@@ -18,14 +19,17 @@ public class SearchPagination {
         this.searchQuery = searchQuery;
     }
 
+    @Override
     public List<FileInfo> getFiles() {
         return new ArrayList<FileInfo>(files);
     }
 
+    @Override
     public int getLoadedPages() {
         return page;
     }
 
+    @Override
     public boolean fetchPage() {
         page++;
         searchQuery.offset = page;
