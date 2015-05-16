@@ -120,10 +120,11 @@ replaymod.gui.login.noacc=Don't have an account yet?
 
 #Replay Center GUI
 replaymod.gui.center.logoutcallback=Do you really want to log out?
-replaymod.gui.center.newest=Newest Replays
-replaymod.gui.center.best=Best Replays
-replaymod.gui.center.my=My Replays
-replaymod.gui.center.search=Search Replays
+replaymod.gui.center.top.recent=Recent
+replaymod.gui.center.top.best=Best
+replaymod.gui.center.top.downloaded=Downloaded
+replaymod.gui.center.top.favorited=Favorited
+replaymod.gui.center.top.search=Search
 
 replaymod.gui.center.favorite=Favorite
 replaymod.gui.center.favorites=Favorites

@@ -62,4 +62,8 @@ public class DownloadedFileHandler {
 
         return f;
     }
+
+    public HashMap<Integer, File> getDownloadedFiles() {
+        return downloadedFiles;
+    }
 }

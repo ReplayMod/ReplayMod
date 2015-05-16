@@ -40,9 +40,11 @@ public class DownloadedFilePagination implements Pagination {
             }
         }
 
+        files.keySet().retainAll(f.keySet());
+
         try {
             FileInfo[] fis = ReplayMod.apiClient.getFileInfo(toAdd);
-            if(fis.length <= 1) {
+            if(fis.length < 1) {
                 page--;
                 return false;
             }

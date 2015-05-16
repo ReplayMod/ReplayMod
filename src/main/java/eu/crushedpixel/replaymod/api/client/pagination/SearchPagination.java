@@ -36,7 +36,7 @@ public class SearchPagination implements Pagination {
 
         try {
             FileInfo[] fis = ReplayMod.apiClient.searchFiles(searchQuery);
-            if(fis.length <= 1) {
+            if(fis.length < 1) {
                 page--;
                 return false;
             }

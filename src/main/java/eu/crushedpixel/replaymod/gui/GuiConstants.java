@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.gui;
 
 public class GuiConstants {
 
-    public static final int CENTER_MY_REPLAYS_BUTTON = 2001;
+    public static final int CENTER_DOWNLOADED_REPLAYS_BUTTON = 2001;
     public static final int CENTER_SEARCH_BUTTON = 2002;
     public static final int CENTER_BACK_BUTTON = 2003;
     public static final int CENTER_LOGOUT_BUTTON = 2004;
@@ -13,6 +13,7 @@ public class GuiConstants {
     public static final int CENTER_FAV_REPLAY_BUTTON = 2009;
     public static final int CENTER_LIKE_REPLAY_BUTTON = 2010;
     public static final int CENTER_DISLIKE_REPLAY_BUTTON = 2011;
+    public static final int CENTER_FAVORITED_REPLAYS_BUTTON = 2012;
 
     public static final int UPLOAD_NAME_INPUT = 3001;
     public static final int UPLOAD_CATEGORY_BUTTON = 3002;
