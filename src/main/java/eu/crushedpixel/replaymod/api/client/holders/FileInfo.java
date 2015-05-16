@@ -11,13 +11,14 @@ public class FileInfo {
     private int size;
     private int category;
     private int downloads;
+    private int favorites;
     private String name;
     private boolean thumbnail;
 
 
     public FileInfo(int id, ReplayMetaData metadata, String owner,
                     Rating ratings, int size, int category, int downloads, String name,
-                    boolean thumbnail) {
+                    boolean thumbnail, int favorites) {
         this.id = id;
         this.metadata = metadata;
         this.owner = owner;
@@ -27,6 +28,7 @@ public class FileInfo {
         this.downloads = downloads;
         this.name = name;
         this.thumbnail = thumbnail;
+        this.favorites = favorites;
     }
 
     public int getId() {
@@ -56,6 +58,8 @@ public class FileInfo {
     public int getDownloads() {
         return downloads;
     }
+
+    public int getFavorites() { return favorites; }
 
     public String getName() {
         return name;

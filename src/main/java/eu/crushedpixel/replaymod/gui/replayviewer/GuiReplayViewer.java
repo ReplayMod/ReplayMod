@@ -84,7 +84,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
         for(Pair<Pair<File, ReplayMetaData>, File> p : replayFileList) {
             FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null,
-                    -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true);
+                    -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true, -1);
             replayGuiList.addEntry(fileInfo, p.second());
         }
     }

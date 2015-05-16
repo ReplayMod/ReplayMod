@@ -73,9 +73,8 @@ public class ApiClient {
         return files;
     }
 
-    public FileInfo[] getFileInfo(String auth, List<Integer> ids) throws IOException, ApiException {
+    public FileInfo[] getFileInfo(List<Integer> ids) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
-        builder.put("auth", auth);
         builder.put("ids", buildListString(ids));
         FileInfo[] info = invokeAndReturn(builder, FileInfo[].class);
         return info;
@@ -135,6 +134,14 @@ public class ApiClient {
         builder.put("auth", auth);
         builder.put("id", file);
         builder.put("like", like);
+        invokeAndReturn(builder, Success.class);
+    }
+
+    public void favFile(String auth, int file, boolean fav) throws IOException, ApiException {
+        QueryBuilder builder = new QueryBuilder(ApiMethods.fav_file);
+        builder.put("auth", auth);
+        builder.put("id", file);
+        builder.put("fav", fav);
         invokeAndReturn(builder, Success.class);
     }
 
