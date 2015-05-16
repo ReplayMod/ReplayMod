@@ -44,7 +44,6 @@ public class SimpleApiClient {
     /**
      * Returns a Json String from the API
      *
-     * @param apiKey   The apikey to use
      * @param method   The apiMethod to be called
      * @param paramMap The parameters to apply
      * @return A Json String from the API
@@ -58,7 +57,6 @@ public class SimpleApiClient {
     /**
      * Returns a Json String from the API
      *
-     * @param apiKey The apikey to use
      * @param method The apiMethod to be called
      * @return A Json String from the API
      * @throws IOException

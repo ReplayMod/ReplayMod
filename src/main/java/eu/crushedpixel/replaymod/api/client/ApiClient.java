@@ -65,17 +65,15 @@ public class ApiClient {
         return succ.hasDonated();
     }
 
+    @Deprecated
     public UserFiles getUserFiles(String auth, String user) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
-        builder.put("auth", auth);
-        builder.put("user", user);
-        UserFiles files = invokeAndReturn(builder, UserFiles.class);
-        return files;
+        //TODO if required
+        return null;
     }
 
     public FileInfo[] getFileInfo(List<Integer> ids) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.replay_files);
-        builder.put("ids", buildListString(ids));
+        QueryBuilder builder = new QueryBuilder(ApiMethods.file_details);
+        builder.put("id", buildListString(ids));
         FileInfo[] info = invokeAndReturn(builder, FileInfo[].class);
         return info;
     }

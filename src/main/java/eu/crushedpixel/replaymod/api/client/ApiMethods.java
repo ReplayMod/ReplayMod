@@ -6,7 +6,6 @@ public class ApiMethods {
     public static final String check_authkey = "check_authkey";
     public static final String login = "login";
     public static final String logout = "logout";
-    public static final String replay_files = "replay_files";
     public static final String file_details = "file_details";
     public static final String upload_file = "upload_file";
     public static final String download_file = "download_file";
