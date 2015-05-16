@@ -17,6 +17,7 @@ import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -115,6 +116,8 @@ public class ReplayMod {
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
+        GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
+
         overlay = new GuiReplayOverlay();
         FMLCommonHandler.instance().bus().register(overlay);
         MinecraftForge.EVENT_BUS.register(overlay);

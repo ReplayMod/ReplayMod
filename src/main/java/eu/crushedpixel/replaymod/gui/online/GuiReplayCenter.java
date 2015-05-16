@@ -33,7 +33,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private Tab currentTab = Tab.RECENT_FILES;
     private SearchPagination myFilePagination;
     private GuiButton loadButton, favButton, likeButton, dislikeButton;
-    private List<GuiButton> replayButtonBar;
+    private List<GuiButton> replayButtonBar, bottomBar, topBar;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, int p_152129_2_) {
         String s1 = I18n.format("replaymod.gui.center.logoutcallback");
@@ -42,37 +42,72 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         return guiyesno;
     }
 
+    private boolean initialized = false;
+
     @Override
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
 
-        if(AuthenticationHandler.isAuthenticated()) {
-            SearchQuery query = new SearchQuery();
-            query.auth = AuthenticationHandler.getKey();
-            query.order = false;
-            myFilePagination = new SearchPagination(query);
+        if(!initialized) {
+            if(AuthenticationHandler.isAuthenticated()) {
+                SearchQuery query = new SearchQuery();
+                query.auth = AuthenticationHandler.getKey();
+                query.order = false;
+                myFilePagination = new SearchPagination(query);
+            } else {
+                mc.displayGuiScreen(new GuiLoginPrompt(new GuiMainMenu(), this));
+            }
+
+            //Top Button Bar
+            topBar = new ArrayList<GuiButton>();
+
+            GuiButton recentButton = new GuiButton(GuiConstants.CENTER_RECENT_BUTTON, 20, 30, I18n.format("replaymod.gui.center.newest"));
+            topBar.add(recentButton);
+
+            GuiButton bestButton = new GuiButton(GuiConstants.CENTER_BEST_BUTTON, 20, 30, I18n.format("replaymod.gui.center.best"));
+            topBar.add(bestButton);
+
+            GuiButton ownReplayButton = new GuiButton(GuiConstants.CENTER_MY_REPLAYS_BUTTON, 20, 30, I18n.format("replaymod.gui.center.my"));
+            ownReplayButton.enabled = AuthenticationHandler.isAuthenticated();
+            topBar.add(ownReplayButton);
+
+            GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, I18n.format("replaymod.gui.center.search"));
+            topBar.add(searchButton);
+
+            //Replay specific actions (load, rate, etc)
+            replayButtonBar = new ArrayList<GuiButton>();
+
+            loadButton = new GuiButton(GuiConstants.CENTER_LOAD_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.download"));
+            replayButtonBar.add(loadButton);
+
+            favButton = new GuiButton(GuiConstants.CENTER_FAV_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.center.favorite"));
+            replayButtonBar.add(favButton);
+
+            likeButton = new GuiButton(GuiConstants.CENTER_LIKE_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.like"));
+            replayButtonBar.add(likeButton);
+
+            dislikeButton = new GuiButton(GuiConstants.CENTER_DISLIKE_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.dislike"));
+            replayButtonBar.add(dislikeButton);
+
+            //Bottom Button Bar (dat alliteration)
+            bottomBar = new ArrayList<GuiButton>();
+
+            GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, I18n.format("replaymod.gui.mainmenu"));
+            bottomBar.add(exitButton);
+
+            GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, I18n.format("replaymod.gui.replayviewer"));
+            bottomBar.add(managerButton);
+
+            GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, I18n.format("replaymod.gui.logout"));
+            bottomBar.add(logoutButton);
+
+            showOnlineRecent();
         }
 
-        //Top Button Bar
-        List<GuiButton> buttonBar = new ArrayList<GuiButton>();
-
-        GuiButton recentButton = new GuiButton(GuiConstants.CENTER_RECENT_BUTTON, 20, 30, I18n.format("replaymod.gui.center.newest"));
-        buttonBar.add(recentButton);
-
-        GuiButton bestButton = new GuiButton(GuiConstants.CENTER_BEST_BUTTON, 20, 30, I18n.format("replaymod.gui.center.best"));
-        buttonBar.add(bestButton);
-
-        GuiButton ownReplayButton = new GuiButton(GuiConstants.CENTER_MY_REPLAYS_BUTTON, 20, 30, I18n.format("replaymod.gui.center.my"));
-        ownReplayButton.enabled = AuthenticationHandler.isAuthenticated();
-        buttonBar.add(ownReplayButton);
-
-        GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, I18n.format("replaymod.gui.center.search"));
-        buttonBar.add(searchButton);
-
         int i = 0;
-        for(GuiButton b : buttonBar) {
+        for(GuiButton b : topBar) {
             int w = this.width - 30;
-            int w2 = w / buttonBar.size();
+            int w2 = w / topBar.size();
 
             int x = 15 + (w2 * i);
             b.xPosition = x + 2;
@@ -83,21 +118,6 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
             i++;
         }
-
-        //Replay specific actions (load, rate, etc)
-        replayButtonBar = new ArrayList<GuiButton>();
-
-        loadButton = new GuiButton(GuiConstants.CENTER_LOAD_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.download"));
-        replayButtonBar.add(loadButton);
-
-        favButton = new GuiButton(GuiConstants.CENTER_FAV_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.center.favorite"));
-        replayButtonBar.add(favButton);
-
-        likeButton = new GuiButton(GuiConstants.CENTER_LIKE_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.like"));
-        replayButtonBar.add(likeButton);
-
-        dislikeButton = new GuiButton(GuiConstants.CENTER_DISLIKE_REPLAY_BUTTON, 20, 30, I18n.format("replaymod.gui.dislike"));
-        replayButtonBar.add(dislikeButton);
 
         i = 0;
         for(GuiButton b : replayButtonBar) {
@@ -116,18 +136,6 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             i++;
         }
 
-        //Bottom Button Bar (dat alliteration)
-        List<GuiButton> bottomBar = new ArrayList<GuiButton>();
-
-        GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, I18n.format("replaymod.gui.mainmenu"));
-        bottomBar.add(exitButton);
-
-        GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, I18n.format("replaymod.gui.replayviewer"));
-        bottomBar.add(managerButton);
-
-        GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, I18n.format("replaymod.gui.logout"));
-        bottomBar.add(logoutButton);
-
         i = 0;
         for(GuiButton b : bottomBar) {
             int w = this.width - 30;
@@ -143,7 +151,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             i++;
         }
 
-        showOnlineRecent();
+        initialized = true;
     }
 
     public void elementSelected(int index) {
@@ -282,38 +290,47 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         }
     }
 
+    private Thread currentListLoader;
+
+    private void cancelCurrentListLoader() {
+        if(currentListLoader != null && currentListLoader.isAlive()) currentListLoader.stop();
+    }
+
     public void showOnlineRecent() {
-        Thread t = new Thread(new Runnable() {
+        cancelCurrentListLoader();
+        currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
                 updateCurrentList(recentFileList, recentFilePagination);
                 currentTab = Tab.RECENT_FILES;
             }
         });
-        t.start();
+        currentListLoader.start();
     }
 
     public void showOnlineBest() {
-        Thread t = new Thread(new Runnable() {
+        cancelCurrentListLoader();
+        currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
                 updateCurrentList(bestFileList, bestFilePagination);
                 currentTab = Tab.BEST_FILES;
             }
         });
-        t.start();
+        currentListLoader.start();
     }
 
     public void showOnlineOwnFiles() {
+        cancelCurrentListLoader();
         if(!AuthenticationHandler.isAuthenticated() || myFilePagination == null) return;
-        Thread t = new Thread(new Runnable() {
+        currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
                 updateCurrentList(myFileList, myFilePagination);
                 currentTab = Tab.MY_FILES;
             }
         });
-        t.start();
+        currentListLoader.start();
     }
 
     private enum Tab {
