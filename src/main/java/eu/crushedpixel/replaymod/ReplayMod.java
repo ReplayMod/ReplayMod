@@ -7,10 +7,7 @@ import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
-import eu.crushedpixel.replaymod.registry.DownloadedFileHandler;
-import eu.crushedpixel.replaymod.registry.KeybindRegistry;
-import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
-import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
+import eu.crushedpixel.replaymod.registry.*;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
@@ -69,6 +66,7 @@ public class ReplayMod {
     public static ReplayFileAppender replayFileAppender;
     public static UploadedFileHandler uploadedFileHandler;
     public static DownloadedFileHandler downloadedFileHandler;
+    public static FavoritedFileHandler favoritedFileHandler;
 
     private static Field defaultResourcePacksField;
     static {
@@ -96,6 +94,8 @@ public class ReplayMod {
         replaySettings.readValues();
 
         downloadedFileHandler = new DownloadedFileHandler();
+
+        favoritedFileHandler = new FavoritedFileHandler();
 
         replayFileAppender = new ReplayFileAppender();
         replayFileAppender.start();

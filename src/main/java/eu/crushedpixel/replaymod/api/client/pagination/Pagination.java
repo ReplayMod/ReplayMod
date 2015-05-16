@@ -4,9 +4,6 @@ import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 
 import java.util.List;
 
-/**
- * Created by mariusmetzger on 16/05/15.
- */
 public interface Pagination {
     public List<FileInfo> getFiles();
 

@@ -8,6 +8,7 @@ import eu.crushedpixel.replaymod.api.client.pagination.FavoritedFilePagination;
 import eu.crushedpixel.replaymod.api.client.pagination.Pagination;
 import eu.crushedpixel.replaymod.api.client.pagination.SearchPagination;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
+import eu.crushedpixel.replaymod.gui.elements.GuiLoadingListEntry;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
@@ -29,14 +30,11 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private static final SearchQuery bestFileSearchQuery = new SearchQuery(true, null, null, null, null, null,
             null, null, null, null);
     private static final int LOGOUT_CALLBACK_ID = 1;
-    private final Pagination recentFilePagination = new SearchPagination(recentFileSearchQuery);
-    private final Pagination bestFilePagination = new SearchPagination(bestFileSearchQuery);
-    private final Pagination downloadedFilePagination = new DownloadedFilePagination();
-    private final Pagination favoritedFilePagination = new FavoritedFilePagination();
     private ReplayFileList currentList;
     private Tab currentTab = Tab.RECENT_FILES;
     private GuiButton loadButton, favButton, likeButton, dislikeButton;
     private List<GuiButton> replayButtonBar, bottomBar, topBar;
+    private GuiLoadingListEntry loadingListEntry;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, int p_152129_2_) {
         String s1 = I18n.format("replaymod.gui.center.logoutcallback");
@@ -163,12 +161,16 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             }
             return;
         }
-        GuiReplayListEntry entry = currentList.getListEntry(index);
+        GuiReplayListEntry entry = (GuiReplayListEntry)currentList.getListEntry(index);
         FileInfo info = entry.getFileInfo();
         if(info != null) {
             boolean downloaded = ReplayMod.downloadedFileHandler.getFileForID(info.getId()) != null;
             loadButton.displayString = downloaded ? I18n.format("replaymod.gui.load") : I18n.format("replaymod.gui.download");
             loadButton.enabled = true;
+
+            boolean favorited = ReplayMod.favoritedFileHandler.isFavorited(info.getId());
+            favButton.displayString = favorited ? I18n.format("replaymod.gui.center.unfavorite") : I18n.format("replaymod.gui.center.favorite");
+            favButton.enabled = true;
         } else {
             for(GuiButton b : replayButtonBar) {
                 b.enabled = false;
@@ -196,7 +198,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         } else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
 
         } else if(button.id == GuiConstants.CENTER_LOAD_REPLAY_BUTTON) {
-            GuiReplayListEntry entry = currentList.getListEntry(currentList.selected);
+            GuiReplayListEntry entry = (GuiReplayListEntry)currentList.getListEntry(currentList.selected);
             FileInfo info = entry.getFileInfo();
             if(info != null) {
                 File f = ReplayMod.downloadedFileHandler.getFileForID(info.getId());
@@ -208,6 +210,19 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
+            }
+        } else if(button.id == GuiConstants.CENTER_FAV_REPLAY_BUTTON) {
+            GuiReplayListEntry entry = (GuiReplayListEntry)currentList.getListEntry(currentList.selected);
+            FileInfo info = entry.getFileInfo();
+            if(info != null) {
+                boolean favorited = ReplayMod.favoritedFileHandler.isFavorited(info.getId());
+                try {
+                    if(favorited) ReplayMod.favoritedFileHandler.removeFromFavorites(info.getId());
+                    else ReplayMod.favoritedFileHandler.addToFavorites(info.getId());
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+                elementSelected(currentList.selected);
             }
         }
     }
@@ -273,6 +288,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private void updateCurrentList(Pagination pagination) {
         elementSelected(-1);
         currentList = new ReplayFileList(mc, width, height, 50, height - 70, 36, this);
+        loadingListEntry = new GuiLoadingListEntry(currentList);
+        currentList.addEntry(loadingListEntry);
 
         if(pagination.getLoadedPages() < 0) {
             pagination.fetchPage();
@@ -285,11 +302,13 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                     tmp = File.createTempFile("thumb_online_" + i.getId(), "jpg");
                     ReplayMod.apiClient.downloadThumbnail(i.getId(), tmp);
                 }
-                currentList.addEntry(i, tmp);
+                currentList.addEntry(currentList.getEntries().size()-1, new GuiReplayListEntry(currentList, i, tmp));
             } catch(Exception e) {
                 e.printStackTrace();
             }
         }
+
+        currentList.removeEntry(loadingListEntry);
     }
 
     private Thread currentListLoader;
@@ -303,7 +322,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                updateCurrentList(recentFilePagination);
+                updateCurrentList(new SearchPagination(recentFileSearchQuery));
                 currentTab = Tab.RECENT_FILES;
             }
         });
@@ -315,7 +334,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                updateCurrentList(bestFilePagination);
+                updateCurrentList(new SearchPagination(bestFileSearchQuery));
                 currentTab = Tab.BEST_FILES;
             }
         });
@@ -327,7 +346,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                updateCurrentList(downloadedFilePagination);
+                updateCurrentList(new DownloadedFilePagination());
                 currentTab = Tab.DOWNLOADED_FILES;
             }
         });
@@ -339,7 +358,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                updateCurrentList(favoritedFilePagination);
+                ReplayMod.favoritedFileHandler.reloadFavorites();
+                updateCurrentList(new FavoritedFilePagination());
                 currentTab = Tab.FAVORITED_FILES;
             }
         });

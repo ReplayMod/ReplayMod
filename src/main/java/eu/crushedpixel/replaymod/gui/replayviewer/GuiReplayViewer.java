@@ -4,6 +4,7 @@ import com.mojang.realmsclient.util.Pair;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
+import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
@@ -85,7 +86,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         for(Pair<Pair<File, ReplayMetaData>, File> p : replayFileList) {
             FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null,
                     -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true, -1);
-            replayGuiList.addEntry(fileInfo, p.second());
+            replayGuiList.addEntry(new GuiReplayListEntry(replayGuiList, fileInfo, p.second()));
         }
     }
 
@@ -161,7 +162,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
             } else if(button.id == CANCEL_BUTTON_ID) {
                 mc.displayGuiScreen(null);
             } else if(button.id == DELETE_BUTTON_ID) {
-                String s = replayGuiList.getListEntry(replayGuiList.selected).getFileInfo().getName();
+                String s = ((GuiReplayListEntry)replayGuiList.getListEntry(replayGuiList.selected)).getFileInfo().getName();
 
                 if(s != null) {
                     delete_file = true;

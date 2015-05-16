@@ -2,10 +2,8 @@ package eu.crushedpixel.replaymod.api.client.pagination;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,7 +31,7 @@ public class FavoritedFilePagination implements Pagination {
         page++;
 
         try {
-            int[] f = ReplayMod.apiClient.getFavorites(AuthenticationHandler.getKey());
+            List<Integer> f = ReplayMod.favoritedFileHandler.getFavorited();
             List<Integer> toAdd = new ArrayList<Integer>();
             for(int i : f) {
                 if(!files.containsKey(i)) {
@@ -41,8 +39,6 @@ public class FavoritedFilePagination implements Pagination {
                     if(toAdd.size() >= Pagination.PAGE_SIZE) break;
                 }
             }
-
-            files.keySet().retainAll(Arrays.asList(f));
 
             FileInfo[] fis = ReplayMod.apiClient.getFileInfo(toAdd);
             if(fis.length < 1) {

@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
-import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiListExtended;
 import net.minecraft.client.renderer.GlStateManager;
@@ -9,14 +8,13 @@ import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.input.Mouse;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GuiReplayListExtended extends GuiListExtended {
 
     public int selected = -1;
-    private List<GuiReplayListEntry> entries = new ArrayList<GuiReplayListEntry>();
+    private List<IGuiListEntry> entries = new ArrayList<IGuiListEntry>();
 
     public GuiReplayListExtended(Minecraft mcIn, int p_i45010_2_,
                                  int p_i45010_3_, int p_i45010_4_, int p_i45010_5_, int p_i45010_6_) {
@@ -70,19 +68,27 @@ public abstract class GuiReplayListExtended extends GuiListExtended {
     }
 
     public void clearEntries() {
-        entries = new ArrayList<GuiReplayListEntry>();
+        entries = new ArrayList<IGuiListEntry>();
     }
 
-    public void addEntry(FileInfo fileInfo, File image) {
-        entries.add(new GuiReplayListEntry(this, fileInfo, image));
+    public void addEntry(IGuiListEntry entry) {
+        entries.add(entry);
+    }
+
+    public void addEntry(int index, IGuiListEntry entry) {
+        entries.add(index, entry);
+    }
+
+    public void removeEntry(IGuiListEntry entry) {
+        entries.remove(entry);
     }
 
     @Override
-    public GuiReplayListEntry getListEntry(int index) {
+    public IGuiListEntry getListEntry(int index) {
         return entries.get(index);
     }
 
-    public List<GuiReplayListEntry> getEntries() {
+    public List<IGuiListEntry> getEntries() {
         return entries;
     }
 
