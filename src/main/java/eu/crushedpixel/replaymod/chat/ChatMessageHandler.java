@@ -31,16 +31,17 @@ public class ChatMessageHandler {
                             if(!alive) {
                                 break;
                             }
-                            try {
-                                Thread.sleep(100);
-                                player = Minecraft.getMinecraft().thePlayer;
-                            } catch(Exception e) {
-                            }
+                            Thread.sleep(100);
+                            player = Minecraft.getMinecraft().thePlayer;
                         }
 
-                        player.addChatComponentMessage(requests.poll());
+                        IChatComponent message = requests.poll();
+                        if (message != null) {
+                            player.addChatComponentMessage(message);
+                        }
                         Thread.sleep(100);
                     } catch(Exception e) {
+                        e.printStackTrace();
                     }
                 }
 
