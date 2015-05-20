@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.PacketData;
+import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.PacketSerializer;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import io.netty.buffer.ByteBuf;
@@ -291,11 +292,20 @@ public class ReplayFileIO {
         Files.write(file.toPath(), json.getBytes());
     }
 
-    public static KeyframeSet[] getKeyframeRegistryFromFile(File file) throws Exception {
-        return gson.fromJson(Files.readAllLines(file.toPath()).get(0), KeyframeSet[].class);
+    public static void writePlayerVisibilityToFile(PlayerVisibility visibility, File file) throws IOException {
+        file.mkdirs();
+        file.createNewFile();
+
+        String json = gson.toJson(visibility);
+        Files.write(file.toPath(), json.getBytes());
     }
 
     public static void addFileToZip(File zipFile, File toAdd, String fileName) throws IOException {
+        if(toAdd == null) {
+            removeFileFromZip(zipFile, fileName);
+            return;
+        }
+
         // get a temp file
         File tempFile = File.createTempFile(zipFile.getName(), null, zipFile.getParentFile());
         // delete it, otherwise you cannot rename your existing zip to it.
@@ -346,5 +356,40 @@ public class ReplayFileIO {
         tempFile.renameTo(zipFile);
 
         toAdd.delete();
+    }
+
+    public static void removeFileFromZip(File zipFile, String toRemove) throws IOException {
+        // get a temp file
+        File tempFile = File.createTempFile(zipFile.getName(), null, zipFile.getParentFile());
+        // delete it, otherwise you cannot rename your existing zip to it.
+
+        byte[] buf = new byte[1024];
+
+        ZipInputStream zin = new ZipInputStream(new FileInputStream(zipFile));
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(tempFile));
+
+        ZipEntry entry = zin.getNextEntry();
+        while(entry != null) {
+            String name = entry.getName();
+            boolean isFile = name.equalsIgnoreCase(toRemove);
+            if(!isFile) {
+                // Add ZIP entry to output stream.
+                out.putNextEntry(new ZipEntry(name));
+                // Transfer bytes from the ZIP file to the output file
+                int len;
+                while((len = zin.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            }
+            entry = zin.getNextEntry();
+        }
+        // Close the streams
+        zin.close();
+
+        // Complete the ZIP file
+        out.close();
+
+        zipFile.delete();
+        tempFile.renameTo(zipFile);
     }
 }

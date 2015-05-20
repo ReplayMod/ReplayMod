@@ -52,12 +52,12 @@ public class ReplayHandler {
         keyframeRepository = repo;
         if(write) {
             try {
-                File tempFile = File.createTempFile("paths", "json");
+                File tempFile = File.createTempFile(ReplayFile.ENTRY_PATHS, "json");
                 tempFile.deleteOnExit();
 
                 ReplayFileIO.writeKeyframeRegistryToFile(repo, tempFile);
 
-                ReplayMod.replayFileAppender.registerModifiedFile(tempFile, "paths", getReplayFile());
+                ReplayMod.replayFileAppender.registerModifiedFile(tempFile, ReplayFile.ENTRY_PATHS, getReplayFile());
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -344,7 +344,8 @@ public class ReplayHandler {
         KeyframeSet[] paths = currentReplayFile.paths().get();
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
 
-        PlayerHandler.resetHiddenPlayers();
+        PlayerVisibility visibility = currentReplayFile.visibility().get();
+        PlayerHandler.loadPlayerVisibilityConfiguration(visibility);
 
         ReplayMod.replaySender = new ReplaySender(currentReplayFile, true);
         channel.pipeline().addFirst(ReplayMod.replaySender);

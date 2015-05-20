@@ -79,4 +79,5 @@ public class GuiConstants {
 
     public static final int PLAYER_OVERVIEW_HIDE_ALL = 1010;
     public static final int PLAYER_OVERVIEW_SHOW_ALL = 0101;
+    public static final int PLAYER_OVERVIEW_REMEMBER = -10;
 }

@@ -168,6 +168,8 @@ replaymod.gui.playeroverview.visible=Visible
 replaymod.gui.playeroverview.hideall=Hide all
 replaymod.gui.playeroverview.showall=Show all
 replaymod.gui.playeroverview.spectate=Spectate Player
+replaymod.gui.playeroverview.remembersettings=Remember Hidden Players
+replaymod.gui.playeroverview.remembersettings.description=Saves Player Visibility in Replay File
 
 #Replay Mod Settings GUI
 replaymod.gui.settings.title=Replay Mod Settings

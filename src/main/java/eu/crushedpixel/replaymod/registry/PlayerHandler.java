@@ -3,9 +3,9 @@ package eu.crushedpixel.replaymod.registry;
 import com.google.common.base.Predicate;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.gui.GuiPlayerOverview;
+import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 
 import java.util.ArrayList;
@@ -39,6 +39,18 @@ public class PlayerHandler {
         else hidePlayer(player);
     }
 
+    public static void loadPlayerVisibilityConfiguration(PlayerVisibility visibility) {
+        resetHiddenPlayers();
+        if(visibility != null) {
+            GuiPlayerOverview.defaultSave = true;
+            for(int i : visibility.getHiddenPlayers()) {
+                hidden.add(i);
+            }
+        } else {
+            GuiPlayerOverview.defaultSave = false;
+        }
+    }
+
     public static List<Integer> getHiddenPlayers() {
         return hidden;
     }
@@ -48,12 +60,7 @@ public class PlayerHandler {
     }
 
     public static void resetHiddenPlayers() {
-        for(int i : hidden) {
-            Entity ent = mc.theWorld.getEntityByID(i);
-            if(ent != null) {
-                ent.setInvisible(false);
-            }
-        }
+        hidden = new ArrayList<Integer>();
     }
 
     public static void openPlayerOverview() {

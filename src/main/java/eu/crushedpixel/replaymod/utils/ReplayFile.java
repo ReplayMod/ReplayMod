@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.utils;
 import com.google.common.base.Supplier;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
+import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -20,6 +21,7 @@ public class ReplayFile extends ZipFile {
     public static final String ENTRY_METADATA = "metaData" + JSON_FILE_EXTENSION;
     public static final String ENTRY_PATHS = "paths";
     public static final String ENTRY_THUMB = "thumb";
+    public static final String ENTRY_VISIBILITY = "visibility";
 
     private final File file;
 
@@ -71,6 +73,10 @@ public class ReplayFile extends ZipFile {
         return getEntry(ENTRY_PATHS);
     }
 
+    public ZipArchiveEntry visibilityEntry() {
+        return getEntry(ENTRY_VISIBILITY);
+    }
+
     public Supplier<KeyframeSet[]> paths() {
         return new Supplier<KeyframeSet[]>() {
             @Override
@@ -82,6 +88,24 @@ public class ReplayFile extends ZipFile {
                     }
                     BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(entry)));
                     return new Gson().fromJson(reader, KeyframeSet[].class);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
+    public Supplier<PlayerVisibility> visibility() {
+        return new Supplier<PlayerVisibility>() {
+            @Override
+            public PlayerVisibility get() {
+                try {
+                    ZipArchiveEntry entry = visibilityEntry();
+                    if (entry == null) {
+                        return null;
+                    }
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(entry)));
+                    return new Gson().fromJson(reader, PlayerVisibility.class);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

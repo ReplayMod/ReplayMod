@@ -43,7 +43,11 @@ public class ReplayFileAppender extends Thread {
             if(mv != null) {
                 if(mv.getRight().canWrite()) {
                     try {
-                        ReplayFileIO.addFileToZip(mv.getRight(), mv.getLeft().getLeft(), mv.getLeft().getRight());
+                        if(mv.getLeft().getLeft() == null) {
+                            ReplayFileIO.removeFileFromZip(mv.getRight(), mv.getLeft().getRight());
+                        } else {
+                            ReplayFileIO.addFileToZip(mv.getRight(), mv.getLeft().getLeft(), mv.getLeft().getRight());
+                        }
                     } catch(Exception e) {
                         e.printStackTrace();
                         filesToMove.add(mv);
