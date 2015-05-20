@@ -1,19 +1,18 @@
-package eu.crushedpixel.replaymod.api.client.pagination;
+package eu.crushedpixel.replaymod.api.replay.pagination;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
+import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class DownloadedFilePagination implements Pagination {
+public class FavoritedFilePagination implements Pagination {
 
     private int page;
     private HashMap<Integer, FileInfo> files = new HashMap<Integer, FileInfo>();
 
-    public DownloadedFilePagination() {
+    public FavoritedFilePagination() {
         this.page = -1;
     }
 
@@ -31,18 +30,16 @@ public class DownloadedFilePagination implements Pagination {
     public boolean fetchPage() {
         page++;
 
-        HashMap<Integer, File> f = ReplayMod.downloadedFileHandler.getDownloadedFiles();
-        List<Integer> toAdd = new ArrayList<Integer>();
-        for(int i : f.keySet()) {
-            if(!files.containsKey(i)) {
-                toAdd.add(i);
-                if(toAdd.size() >= Pagination.PAGE_SIZE) break;
-            }
-        }
-
-        files.keySet().retainAll(f.keySet());
-
         try {
+            List<Integer> f = ReplayMod.favoritedFileHandler.getFavorited();
+            List<Integer> toAdd = new ArrayList<Integer>();
+            for(int i : f) {
+                if(!files.containsKey(i)) {
+                    toAdd.add(i);
+                    if(toAdd.size() >= Pagination.PAGE_SIZE) break;
+                }
+            }
+
             FileInfo[] fis = ReplayMod.apiClient.getFileInfo(toAdd);
             if(fis.length < 1) {
                 page--;

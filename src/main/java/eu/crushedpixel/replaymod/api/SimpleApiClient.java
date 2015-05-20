@@ -1,9 +1,10 @@
-package eu.crushedpixel.replaymod.api.client;
+package eu.crushedpixel.replaymod.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import eu.crushedpixel.replaymod.api.client.holders.ApiError;
+import eu.crushedpixel.replaymod.api.replay.holders.ApiError;
 import eu.crushedpixel.replaymod.utils.StreamTools;
 
 import java.io.IOException;
@@ -92,8 +93,12 @@ public class SimpleApiClient {
                 } else {
                     responseContent = "";
                 }
-                JsonObject response = jsonParser.parse(responseContent).getAsJsonObject();
-                throw new ApiException(gson.fromJson(response, ApiError.class));
+                try {
+                    JsonObject response = jsonParser.parse(responseContent).getAsJsonObject();
+                    throw new ApiException(gson.fromJson(response, ApiError.class));
+                } catch(JsonParseException e) {
+                    throw new ApiException(responseContent);
+                }
             }
 
             is = httpUrlConnection.getInputStream();

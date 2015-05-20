@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.api.client.holders;
+package eu.crushedpixel.replaymod.api.replay.holders;
 
 import net.minecraft.client.resources.I18n;
 

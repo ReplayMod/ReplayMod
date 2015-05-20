@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.api.client;
+package eu.crushedpixel.replaymod.api;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;

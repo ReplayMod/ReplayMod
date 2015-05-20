@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.api.client;
+package eu.crushedpixel.replaymod.api.replay;
 
 import java.lang.reflect.Field;
 import java.net.URLEncoder;

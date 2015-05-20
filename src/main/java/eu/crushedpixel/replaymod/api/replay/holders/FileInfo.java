@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.api.client.holders;
+package eu.crushedpixel.replaymod.api.replay.holders;
 
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 

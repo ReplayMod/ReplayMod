@@ -1,9 +1,14 @@
-package eu.crushedpixel.replaymod.api.client;
+package eu.crushedpixel.replaymod.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import eu.crushedpixel.replaymod.api.client.holders.*;
+import eu.crushedpixel.replaymod.api.mojang.MojangApiMethods;
+import eu.crushedpixel.replaymod.api.mojang.holders.Profile;
+import eu.crushedpixel.replaymod.api.replay.ReplayModApiMethods;
+import eu.crushedpixel.replaymod.api.replay.SearchQuery;
+import eu.crushedpixel.replaymod.api.replay.holders.*;
 import eu.crushedpixel.replaymod.utils.StreamTools;
 import org.apache.commons.io.FileUtils;
 
@@ -15,6 +20,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 public class ApiClient {
 
@@ -22,7 +28,7 @@ public class ApiClient {
     private static final JsonParser jsonParser = new JsonParser();
 
     public AuthKey getLogin(String username, String password) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.login);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.login);
         builder.put("user", username);
         builder.put("pw", password);
         builder.put("mod", true);
@@ -31,7 +37,7 @@ public class ApiClient {
     }
 
     public AuthKey register(String username, String mail, String password) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.register);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.register);
         builder.put("username", username);
         builder.put("email", mail);
         builder.put("password", password);
@@ -41,7 +47,7 @@ public class ApiClient {
 
     public AuthConfirmation checkAuthkey(String auth) {
         try {
-            QueryBuilder builder = new QueryBuilder(ApiMethods.check_authkey);
+            QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.check_authkey);
             builder.put("auth", auth);
             AuthConfirmation conf = invokeAndReturn(builder, AuthConfirmation.class);
             return conf;
@@ -51,7 +57,7 @@ public class ApiClient {
     }
 
     public boolean logout(String auth) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.logout);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.logout);
         builder.put("auth", auth);
         builder.put("mod", true);
         Success succ = invokeAndReturn(builder, Success.class);
@@ -59,7 +65,7 @@ public class ApiClient {
     }
 
     public boolean hasDonated(String uuid) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.check_auth);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.check_auth);
         builder.put("uuid", uuid);
         Donated succ = invokeAndReturn(builder, Donated.class);
         return succ.hasDonated();
@@ -72,18 +78,15 @@ public class ApiClient {
     }
 
     public FileInfo[] getFileInfo(List<Integer> ids) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.file_details);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.file_details);
         builder.put("id", buildListString(ids));
         FileInfo[] info = invokeAndReturn(builder, FileInfo[].class);
         return info;
     }
 
     public FileInfo[] searchFiles(SearchQuery query) throws IOException, ApiException {
-        StringBuilder sb = new StringBuilder();
-
-        // build base url
-        sb.append(QueryBuilder.API_BASE_URL);
-        sb.append("search");
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.search);
+        StringBuilder sb = new StringBuilder(builder.toString());
         sb.append(query.buildQuery());
 
         FileInfo[] info = invokeAndReturn(sb.toString(), SearchResult.class).getResults();
@@ -91,21 +94,21 @@ public class ApiClient {
     }
 
     public String getTranslation(String languageCode) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.get_language);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_language);
         builder.put("language", languageCode);
         String properties = SimpleApiClient.invokeUrl(builder.toString());
         return properties;
     }
 
     public void downloadThumbnail(int file, File target) throws IOException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.get_thumbnail);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_thumbnail);
         builder.put("id", file);
         URL url = new URL(builder.toString());
         FileUtils.copyURLToFile(url, target);
     }
 
-    public void downloadFile(String auth, int file, File target) throws IOException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.download_file);
+    public void downloadFile(String auth, int file, File target) throws IOException, ApiException {
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.download_file);
         builder.put("auth", auth);
         builder.put("id", file);
         String url = builder.toString();
@@ -122,13 +125,14 @@ public class ApiClient {
                 if(err.getDesc() != null) {
                     throw new ApiException(err);
                 }
-            } catch(Exception e) {
+            } catch(JsonParseException e) {
+                throw new ApiException(StreamTools.readStreamtoString(is));
             }
         }
     }
 
     public void rateFile(String auth, int file, boolean like) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.rate_file);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.rate_file);
         builder.put("auth", auth);
         builder.put("id", file);
         builder.put("like", like);
@@ -136,7 +140,7 @@ public class ApiClient {
     }
 
     public void favFile(String auth, int file, boolean fav) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.fav_file);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.fav_file);
         builder.put("auth", auth);
         builder.put("id", file);
         builder.put("fav", fav);
@@ -144,17 +148,26 @@ public class ApiClient {
     }
 
     public int[] getFavorites(String auth) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.get_favorites);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_favorites);
         builder.put("auth", auth);
 
         return invokeAndReturn(builder, Favorites.class).getFavorited();
     }
 
     public void removeFile(String auth, int file) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ApiMethods.remove_file);
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.remove_file);
         builder.put("auth", auth);
         builder.put("id", file);
         invokeAndReturn(builder, Success.class);
+    }
+
+    /*
+     MOJANG API CALLS
+    */
+
+    public Profile getProfileFromUUID(UUID uuid) throws IOException, ApiException {
+        String url = String.format(MojangApiMethods.userprofile+"%s", uuid.toString().replace("-", ""));
+        return invokeAndReturn(url, Profile.class);
     }
 
     private <T> T invokeAndReturn(QueryBuilder builder, Class<T> classOfT) throws IOException, ApiException {

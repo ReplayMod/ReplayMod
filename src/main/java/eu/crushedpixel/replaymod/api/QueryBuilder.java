@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.api.client;
+package eu.crushedpixel.replaymod.api;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class QueryBuilder {
-
-    public static final String API_BASE_URL = "http://ReplayMod.com/api/";
 
     public String apiMethod;
     public Map<String, String> paramMap;
@@ -71,7 +69,6 @@ public class QueryBuilder {
         StringBuilder sb = new StringBuilder();
 
         // build base url
-        sb.append(API_BASE_URL);
         sb.append(apiMethod);
 
         // process parameters

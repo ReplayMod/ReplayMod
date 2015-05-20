@@ -1,9 +1,10 @@
-package eu.crushedpixel.replaymod.api.client;
+package eu.crushedpixel.replaymod.api.replay;
 
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.api.client.holders.ApiError;
-import eu.crushedpixel.replaymod.api.client.holders.Category;
+import eu.crushedpixel.replaymod.api.ApiException;
+import eu.crushedpixel.replaymod.api.replay.holders.ApiError;
+import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import net.minecraft.client.resources.I18n;
 
