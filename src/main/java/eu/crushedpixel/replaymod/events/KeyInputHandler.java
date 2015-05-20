@@ -8,7 +8,7 @@ import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
-import eu.crushedpixel.replaymod.replay.spectate.SpectateHandler;
+import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -124,8 +124,8 @@ public class KeyInputHandler {
             TickAndRenderListener.requestScreenshot();
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SPECTATE) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {
-            SpectateHandler.openSpectateSelection();
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PLAYER_OVERVIEW) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {
+            PlayerHandler.openPlayerOverview();
         }
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {

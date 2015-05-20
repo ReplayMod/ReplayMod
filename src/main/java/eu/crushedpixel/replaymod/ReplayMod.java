@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod;
 
-import eu.crushedpixel.replaymod.api.client.ApiClient;
+import eu.crushedpixel.replaymod.api.ApiClient;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.*;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
@@ -8,6 +8,7 @@ import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.registry.*;
+import eu.crushedpixel.replaymod.renderer.InvisibilityRender;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
@@ -133,6 +134,9 @@ public class ReplayMod {
         } catch(Exception e) {
             e.printStackTrace();
         }
+
+        mc.getRenderManager().skinMap.put("default", new InvisibilityRender(mc.getRenderManager()));
+        mc.getRenderManager().skinMap.put("slim", new InvisibilityRender(mc.getRenderManager(), true));
 
         //clean up replay_recordings folder
         removeTmcprFiles();

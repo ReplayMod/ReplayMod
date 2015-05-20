@@ -66,4 +66,17 @@ public class GuiConstants {
     public static final int KEYFRAME_REPOSITORY_ADD_BUTTON = 3456;
     public static final int KEYFRAME_REPOSITORY_REMOVE_BUTTON = 4567;
     public static final int KEYFRAME_REPOSITORY_LOAD_BUTTON = 5678;
+
+    public static final int KEYFRAME_EDITOR_SAVE_BUTTON = 6000;
+    public static final int KEYFRAME_EDITOR_CANCEL_BUTTON = 6001;
+    public static final int KEYFRAME_EDITOR_RIGHT_BUTTON = 6002;
+    public static final int KEYFRAME_EDITOR_LEFT_BUTTON = 6003;
+    public static final int KEYFRAME_EDITOR_X_INPUT = 6004;
+    public static final int KEYFRAME_EDITOR_Y_INPUT = 6005;
+    public static final int KEYFRAME_EDITOR_Z_INPUT = 6006;
+    public static final int KEYFRAME_EDITOR_PITCH_INPUT = 6007;
+    public static final int KEYFRAME_EDITOR_YAW_INPUT = 6008;
+
+    public static final int PLAYER_OVERVIEW_HIDE_ALL = 1010;
+    public static final int PLAYER_OVERVIEW_SHOW_ALL = 0101;
 }

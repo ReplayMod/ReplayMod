@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.holders.*;
+import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
@@ -342,6 +343,8 @@ public class ReplayHandler {
 
         KeyframeSet[] paths = currentReplayFile.paths().get();
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
+
+        PlayerHandler.resetHiddenPlayers();
 
         ReplayMod.replaySender = new ReplaySender(currentReplayFile, true);
         channel.pipeline().addFirst(ReplayMod.replaySender);

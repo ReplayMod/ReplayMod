@@ -156,16 +156,18 @@ replaymod.gui.editor.trim.description=Removes the beginning and end of a Replay 
 replaymod.gui.editor.connect.description=Connects multiple Replays in the specified order
 replaymod.gui.editor.modify.description=Provides several filters to modify Replay Files
 
-#Spectate Player GUI
-replaymod.gui.spectate.title=Spectate Player
-
 #Cancel Replay GUI
 replaymod.gui.cancelrender.title=Cancel Rendering
 replaymod.gui.cancelrender.message=Are you sure that you want to cancel the current rendering process?
-
 #Saving Replay GUI
 replaymod.gui.replaysaving.title=Saving Replay File...
 replaymod.gui.replaysaving.message=Please wait while your recent Replay is being saved.
+
+#Player Overview GUI
+replaymod.gui.playeroverview.visible=Visible
+replaymod.gui.playeroverview.hideall=Hide all
+replaymod.gui.playeroverview.showall=Show all
+replaymod.gui.playeroverview.spectate=Spectate Player
 
 #Replay Mod Settings GUI
 replaymod.gui.settings.title=Replay Mod Settings
@@ -195,7 +197,7 @@ replaymod.gui.settings.warning.lineb=applied the next time you join a world.
 #Replay Mod Keybindings
 replaymod.input.lighting=Toggle Lighting
 replaymod.input.thumbnail=Capture Thumbnail
-replaymod.input.spectate=Spectate Players
+replaymod.input.playeroverview=Player Overview
 replaymod.input.clearkeyframes=Clear Keyframes
 replaymod.input.synctimeline=Synchronize Timeline
 replaymod.input.keyframerepository=Open Keyframe Presets
@@ -216,3 +218,11 @@ replaymod.gui.keyframerepository.noentries=No Presets available
 
 replaymod.gui.keyframerepository.preset.defaultname=New Keyframe Preset
 replaymod.gui.keyframerepository.duplicate=This Preset already exists
+
+#Edit Keyframe GUI
+replaymod.gui.editkeyframe.title=Edit Keyframe
+replaymod.gui.editkeyframe.xpos=X Position
+replaymod.gui.editkeyframe.ypos=Y Position
+replaymod.gui.editkeyframe.zpos=Z Position
+replaymod.gui.editkeyframe.campitch=Camera Pitch
+replaymod.gui.editkeyframe.camyaw=Camera Yaw
