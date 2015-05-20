@@ -1,10 +1,10 @@
 package eu.crushedpixel.replaymod.online.authentication;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.api.client.ApiClient;
-import eu.crushedpixel.replaymod.api.client.ApiException;
-import eu.crushedpixel.replaymod.api.client.holders.AuthConfirmation;
-import eu.crushedpixel.replaymod.api.client.holders.AuthKey;
+import eu.crushedpixel.replaymod.api.ApiClient;
+import eu.crushedpixel.replaymod.api.ApiException;
+import eu.crushedpixel.replaymod.api.replay.holders.AuthConfirmation;
+import eu.crushedpixel.replaymod.api.replay.holders.AuthKey;
 import net.minecraftforge.common.config.Property;
 
 import java.io.IOException;

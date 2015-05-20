@@ -13,6 +13,7 @@ import net.minecraft.network.play.server.S0FPacketSpawnMob;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 public class PacketListener extends DataListener {
@@ -93,19 +94,23 @@ public class PacketListener extends DataListener {
 
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
+
         if(packet instanceof S0FPacketSpawnMob) {
             S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
-            if(p.field_149043_l == null) {
-                p.field_149043_l = new DataWatcher(null);
+            p.field_149043_l = new DataWatcher(null);
+            for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>)p.func_149027_c()) {
+                p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
             }
         }
 
         if(packet instanceof S0CPacketSpawnPlayer) {
             S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
-            if(p.field_148960_i == null) {
-                p.field_148960_i = new DataWatcher(null);
+            p.field_148960_i = new DataWatcher(null);
+            for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>)p.func_148944_c()) {
+                p.field_148960_i.addObject(wo.getDataValueId(), wo.getObject());
             }
         }
+
 
         byte[] array = ReplayFileIO.serializePacket(packet);
 

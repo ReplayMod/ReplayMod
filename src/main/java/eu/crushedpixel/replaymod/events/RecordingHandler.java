@@ -95,8 +95,6 @@ public class RecordingHandler {
 
             packet.readPacketData(pb);
 
-            packet.field_148960_i = player.getDataWatcher();
-
             return packet;
         } catch(Exception e) {
             e.printStackTrace();
@@ -320,7 +318,6 @@ public class RecordingHandler {
             if(event.entity.getEntityId() != mc.thePlayer.getEntityId()) {
                 return;
             }
-            ;
 
             S19PacketEntityStatus packet = new S19PacketEntityStatus();
 
@@ -358,7 +355,6 @@ public class RecordingHandler {
             if(event.entity.getEntityId() != mc.thePlayer.getEntityId()) {
                 return;
             }
-            ;
 
             S19PacketEntityStatus packet = new S19PacketEntityStatus();
 
@@ -404,7 +400,6 @@ public class RecordingHandler {
             if(event.entityPlayer != mc.thePlayer) {
                 return;
             }
-            ;
 
             System.out.println(event.getResult());
             S0APacketUseBed pub = new S0APacketUseBed();
@@ -433,7 +428,6 @@ public class RecordingHandler {
             if(event.player != mc.thePlayer) {
                 return;
             }
-            ;
 
             S1BPacketEntityAttach pea = new S1BPacketEntityAttach();
 

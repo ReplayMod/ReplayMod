@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.registry;
 
 import com.google.common.primitives.Ints;
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.api.client.ApiException;
+import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 
 import java.io.IOException;

@@ -1,8 +1,13 @@
 package eu.crushedpixel.replaymod.holders;
 
-public class Keyframe {
+public class Keyframe implements Cloneable {
 
     private final int realTimestamp;
+
+    @Override
+    public Object clone() {
+        return new Keyframe(realTimestamp);
+    }
 
     public Keyframe(int realTimestamp) {
         this.realTimestamp = realTimestamp;

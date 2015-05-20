@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.online;
 
-import eu.crushedpixel.replaymod.api.client.ApiException;
+import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.PasswordTextField;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;

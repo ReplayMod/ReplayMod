@@ -1,12 +1,12 @@
 package eu.crushedpixel.replaymod.gui.online;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.api.client.SearchQuery;
-import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
-import eu.crushedpixel.replaymod.api.client.pagination.DownloadedFilePagination;
-import eu.crushedpixel.replaymod.api.client.pagination.FavoritedFilePagination;
-import eu.crushedpixel.replaymod.api.client.pagination.Pagination;
-import eu.crushedpixel.replaymod.api.client.pagination.SearchPagination;
+import eu.crushedpixel.replaymod.api.replay.SearchQuery;
+import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
+import eu.crushedpixel.replaymod.api.replay.pagination.DownloadedFilePagination;
+import eu.crushedpixel.replaymod.api.replay.pagination.FavoritedFilePagination;
+import eu.crushedpixel.replaymod.api.replay.pagination.Pagination;
+import eu.crushedpixel.replaymod.api.replay.pagination.SearchPagination;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiLoadingListEntry;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;

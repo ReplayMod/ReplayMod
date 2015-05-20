@@ -6,6 +6,11 @@ public class PositionKeyframe extends Keyframe {
 
     private Position position;
 
+    @Override
+    public Object clone() {
+        return new PositionKeyframe(this.getRealTimestamp(), this.getPosition());
+    }
+
     public PositionKeyframe(int realTime, Position position) {
         super(realTime);
         this.position = position;

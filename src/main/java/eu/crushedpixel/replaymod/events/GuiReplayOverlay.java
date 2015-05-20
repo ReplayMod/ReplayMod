@@ -118,12 +118,13 @@ public class GuiReplayOverlay extends Gui {
     @SubscribeEvent
     public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
 
-        if(!ReplayHandler.isInReplay() || FMLClientHandler.instance().isGUIOpen(GuiSpectateSelection.class)
+        if(!ReplayHandler.isInReplay() || FMLClientHandler.instance().isGUIOpen(GuiPlayerOverview.class)
                 || VideoWriter.isRecording() || FMLClientHandler.instance().isGUIOpen(GuiKeyframeRepository.class)) {
             return;
         }
 
-        if(!ReplayGuiRegistry.hidden) ReplayGuiRegistry.hide();
+        if(!ReplayGuiRegistry.hidden && ReplayHandler.isCamera()) ReplayGuiRegistry.hide();
+        else if(!ReplayHandler.isCamera() && ReplayGuiRegistry.hidden) ReplayGuiRegistry.show();
 
         if(FMLClientHandler.instance().isGUIOpen(GuiChat.class) || FMLClientHandler.instance().isGUIOpen(GuiInventory.class)) {
             mc.displayGuiScreen(new GuiMouseInput());
@@ -308,7 +309,7 @@ public class GuiReplayOverlay extends Gui {
         GlStateManager.resetColor();
         this.drawModalRectWithCustomSizedTexture(time_ButtonX, time_ButtonY, x, y, 20, 20, 64, 64);
 
-        if(mouseX >= (timelineX + 4) && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29) {
+        if(mouseX >= (timelineX + 4) && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29 && mc.currentScreen == null) {
             double tot = (width - 18) - (timelineX + 4);
             double perc = (mouseX - (timelineX + 4)) / tot;
             long time = Math.round(perc * (double) ReplayMod.replaySender.replayLength());
@@ -364,6 +365,8 @@ public class GuiReplayOverlay extends Gui {
         int cursorX = (int) Math.round(zero + (perc * width));
         this.drawModalRectWithCustomSizedTexture(cursorX - 3, y + 3, 44, 0, 8, 16, 64, 64);
     }
+
+    private long keyframeSelectionTime = 0;
 
     private void drawRealTimeline(int minX, int maxX, int y, int mouseX, int mouseY) {
         int zero = minX + tl_begin_width;
@@ -469,7 +472,7 @@ public class GuiReplayOverlay extends Gui {
         }
 
         //show Time String
-        if(mouseX >= zero && mouseX <= full && mouseY >= y && mouseY <= y + 22) {
+        if(mouseX >= zero && mouseX <= full && mouseY >= y && mouseY <= y + 22 && mc.currentScreen == null) {
             long tot = Math.round((double) timelineLength * zoom_scale);
             double perc = (mouseX - (realTimelineX + 4)) / (double) (full - zero);
 
@@ -554,12 +557,22 @@ public class GuiReplayOverlay extends Gui {
                 //tolerance is 2 pixels multiplied with the timespan of one pixel
                 int tolerance = 2 * Math.round(abs_width / (float) width);
 
+                Keyframe close;
                 if(mouseY >= y + 9) {
-                    TimeKeyframe close = ReplayHandler.getClosestTimeKeyframeForRealTime(ReplayHandler.getRealTimelineCursor(), tolerance);
+                    close = ReplayHandler.getClosestTimeKeyframeForRealTime(ReplayHandler.getRealTimelineCursor(), tolerance);
                     ReplayHandler.selectKeyframe(close); //can be null, deselects keyframe
                 } else {
-                    PositionKeyframe close = ReplayHandler.getClosestPlaceKeyframeForRealTime(ReplayHandler.getRealTimelineCursor(), tolerance);
+                    close = ReplayHandler.getClosestPlaceKeyframeForRealTime(ReplayHandler.getRealTimelineCursor(), tolerance);
                     ReplayHandler.selectKeyframe(close); //can be null, deselects keyframe
+                }
+
+                if(close != null) {
+                    long cur = System.currentTimeMillis();
+                    if(cur - keyframeSelectionTime < 500) { //if double click on Keyframe
+                        mc.displayGuiScreen(new GuiEditKeyframe(close));
+                    } else {
+                        keyframeSelectionTime = cur;
+                    }
                 }
             }
         }

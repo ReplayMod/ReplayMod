@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
-import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
+import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 import eu.crushedpixel.replaymod.utils.ResourceHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;

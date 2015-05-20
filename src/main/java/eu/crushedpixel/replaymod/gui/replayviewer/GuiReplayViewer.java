@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.gui.replayviewer;
 
 import com.mojang.realmsclient.util.Pair;
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.api.client.holders.FileInfo;
+import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;

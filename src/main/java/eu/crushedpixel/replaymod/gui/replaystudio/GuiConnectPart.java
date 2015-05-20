@@ -114,10 +114,10 @@ public class GuiConnectPart extends GuiStudioPart {
                 }
             });
 
-            upButton = new GuiArrowButton(GuiConstants.REPLAY_EDITOR_UP_BUTTON, 195, yPos + 40, "", true);
+            upButton = new GuiArrowButton(GuiConstants.REPLAY_EDITOR_UP_BUTTON, 195, yPos + 40, "", GuiArrowButton.Direction.UP);
             buttonList.add(upButton);
 
-            downButton = new GuiArrowButton(GuiConstants.REPLAY_EDITOR_DOWN_BUTTON, 219, yPos + 40, "", false);
+            downButton = new GuiArrowButton(GuiConstants.REPLAY_EDITOR_DOWN_BUTTON, 219, yPos + 40, "", GuiArrowButton.Direction.DOWN);
             buttonList.add(downButton);
 
             int w = GuiReplayEditor.instance.width - 243 - 20 - 4;

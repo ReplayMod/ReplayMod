@@ -1,9 +1,9 @@
 package eu.crushedpixel.replaymod.gui.online;
 
 import com.google.gson.Gson;
-import eu.crushedpixel.replaymod.api.client.ApiException;
-import eu.crushedpixel.replaymod.api.client.FileUploader;
-import eu.crushedpixel.replaymod.api.client.holders.Category;
+import eu.crushedpixel.replaymod.api.ApiException;
+import eu.crushedpixel.replaymod.api.replay.FileUploader;
+import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;

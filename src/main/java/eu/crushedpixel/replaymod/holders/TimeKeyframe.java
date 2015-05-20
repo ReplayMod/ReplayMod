@@ -6,6 +6,11 @@ public class TimeKeyframe extends Keyframe {
 
     private final int timestamp;
 
+    @Override
+    public Object clone() {
+        return new TimeKeyframe(this.getRealTimestamp(), this.getTimestamp());
+    }
+
     public TimeKeyframe(int realTime, int timestamp) {
         super(realTime);
         this.timestamp = timestamp;
