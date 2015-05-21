@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.holders;
 
 public class Keyframe implements Cloneable {
 
-    private final int realTimestamp;
+    private int realTimestamp;
 
     @Override
     public Object clone() {
@@ -16,6 +16,8 @@ public class Keyframe implements Cloneable {
     public int getRealTimestamp() {
         return realTimestamp;
     }
+
+    public void setRealTimestamp(int realTimestamp) { this.realTimestamp = realTimestamp; }
 
     @Override
     public boolean equals(Object o2) {

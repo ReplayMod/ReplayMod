@@ -250,7 +250,7 @@ public class GuiReplayOverlay extends Gui {
             x = 20;
         }
 
-        if(ReplayHandler.getSelected() != null && ReplayHandler.getSelected() instanceof PositionKeyframe) {
+        if(ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe() instanceof PositionKeyframe) {
             y += 20;
         }
 
@@ -258,10 +258,10 @@ public class GuiReplayOverlay extends Gui {
 
         if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)
                 && !ReplayHandler.isInPath()) {
-            if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof PositionKeyframe)) {
+            if(ReplayHandler.getSelectedKeyframe() == null || !(ReplayHandler.getSelectedKeyframe() instanceof PositionKeyframe)) {
                 addPlaceKeyframe();
             } else {
-                ReplayHandler.removeKeyframe(ReplayHandler.getSelected());
+                ReplayHandler.removeKeyframe(ReplayHandler.getSelectedKeyframe());
             }
         }
 
@@ -275,7 +275,7 @@ public class GuiReplayOverlay extends Gui {
         y = 40;
 
         boolean timeSelected = false;
-        if(ReplayHandler.getSelected() != null && ReplayHandler.getSelected() instanceof TimeKeyframe) {
+        if(ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe() instanceof TimeKeyframe) {
             timeSelected = true;
             x = 40;
             y = 0;
@@ -299,10 +299,10 @@ public class GuiReplayOverlay extends Gui {
         mc.renderEngine.bindTexture(extended_gui);
 
         if(hover && Mouse.isButtonDown(0) && isClick() && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
-            if(ReplayHandler.getSelected() == null || !(ReplayHandler.getSelected() instanceof TimeKeyframe) && !ReplayHandler.isInPath()) {
+            if(ReplayHandler.getSelectedKeyframe() == null || !(ReplayHandler.getSelectedKeyframe() instanceof TimeKeyframe) && !ReplayHandler.isInPath()) {
                 addTimeKeyframe();
             } else {
-                ReplayHandler.removeKeyframe(ReplayHandler.getSelected());
+                ReplayHandler.removeKeyframe(ReplayHandler.getSelectedKeyframe());
             }
         }
 
@@ -367,6 +367,10 @@ public class GuiReplayOverlay extends Gui {
     }
 
     private long keyframeSelectionTime = 0;
+
+    private boolean liftedSinceSelection = false;
+    private int selectionTimestamp = 0;
+    private boolean overcameToleranceSinceSelection = false;
 
     private void drawRealTimeline(int minX, int maxX, int y, int mouseX, int mouseY) {
         int zero = minX + tl_begin_width;
@@ -548,9 +552,20 @@ public class GuiReplayOverlay extends Gui {
             float rel_pos = (float) rel_x / (float) width;
 
             float abs_width = (zoom_scale * (float) timelineLength);
-            int real_pos = Math.round(left_real + ((rel_pos) * abs_width));
+            int real_pos = (int)Math.floor(left_real + ((rel_pos) * abs_width));
 
-            ReplayHandler.setRealTimelineCursor(real_pos);
+            if(liftedSinceSelection) {
+                ReplayHandler.setRealTimelineCursor(real_pos);
+            } else if(ReplayHandler.getSelectedKeyframe() != null) {
+                int tolerance = Math.round(abs_width / (float) width);
+
+                if(Math.abs(selectionTimestamp - real_pos) > tolerance || overcameToleranceSinceSelection) {
+                    ReplayHandler.setRealTimelineCursor(real_pos);
+                    ReplayHandler.getSelectedKeyframe().setRealTimestamp(real_pos);
+                    ReplayHandler.sortKeyframes();
+                    overcameToleranceSinceSelection = true;
+                }
+            }
 
             //Keyframe click handling here
             if(isClick()) {
@@ -567,6 +582,14 @@ public class GuiReplayOverlay extends Gui {
                 }
 
                 if(close != null) {
+                    liftedSinceSelection = false;
+                    overcameToleranceSinceSelection = false;
+                    selectionTimestamp = close.getRealTimestamp();
+                    float perc = (selectionTimestamp - left_real) / abs_width;
+                    int newX = Math.round(minX + tl_begin_width + (perc * width));
+                    MouseUtils.moveMouse(newX, mouseY);
+                    ReplayHandler.setRealTimelineCursor(selectionTimestamp);
+
                     long cur = System.currentTimeMillis();
                     if(cur - keyframeSelectionTime < 500) { //if double click on Keyframe
                         mc.displayGuiScreen(new GuiEditKeyframe(close));
@@ -575,6 +598,8 @@ public class GuiReplayOverlay extends Gui {
                     }
                 }
             }
+        } else if(!Mouse.isButtonDown(0)) {
+            liftedSinceSelection = true;
         }
 
         //Draw Realtime Cursor

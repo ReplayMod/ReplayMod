@@ -21,6 +21,17 @@ public class MouseUtils {
         return new Point(mouseX, mouseY);
     }
 
+    public static void moveMouse(int mouseX, int mouseY) {
+        Point scaled = getScaledDimensions();
+        int width = (int) scaled.getX();
+        int height = (int) scaled.getY();
+
+        int x = (int)Math.round(((mouseX+0.5)*mc.displayWidth)/width);
+        int y = (mouseY*mc.displayHeight)/height;
+
+        Mouse.setCursorPosition(x, y);
+    }
+
     public static Point getScaledDimensions() {
         ScaledResolution sr = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
         final int width = sr.getScaledWidth();

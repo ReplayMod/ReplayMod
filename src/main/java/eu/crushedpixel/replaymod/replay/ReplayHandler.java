@@ -132,7 +132,6 @@ public class ReplayHandler {
         keyframes.add(keyframe);
         selectKeyframe(keyframe);
 
-
         if(keyframe instanceof PositionKeyframe) {
             Float a = null;
             Float b;
@@ -411,7 +410,7 @@ public class ReplayHandler {
         inReplay = false;
     }
 
-    public static Keyframe getSelected() {
+    public static Keyframe getSelectedKeyframe() {
         return selectedKeyframe;
     }
 
@@ -436,7 +435,7 @@ public class ReplayHandler {
     }
 
     public static TimeKeyframe getFirstTimeKeyframe() {
-        Keyframe sel = getSelected();
+        Keyframe sel = getSelectedKeyframe();
         sortKeyframes();
         for(Keyframe k : getKeyframes()) {
             if(k instanceof TimeKeyframe) {
@@ -449,7 +448,7 @@ public class ReplayHandler {
     }
 
     public static PositionKeyframe getFirstPositionKeyframe() {
-        Keyframe sel = getSelected();
+        Keyframe sel = getSelectedKeyframe();
         sortKeyframes();
         for(Keyframe k : getKeyframes()) {
             if(k instanceof PositionKeyframe) {
