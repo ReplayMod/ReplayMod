@@ -7,7 +7,6 @@ import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
 import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
-import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import eu.crushedpixel.replaymod.gui.replaystudio.GuiReplayEditor;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
@@ -19,7 +18,6 @@ import eu.crushedpixel.replaymod.studio.VersionValidator;
 import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
-import eu.crushedpixel.replaymod.utils.ResourceHelper;
 import eu.crushedpixel.replaymod.video.VideoWriter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -58,9 +56,6 @@ public class GuiEventHandler {
             event.gui = null;
             return;
         }
-
-        if(!(event.gui instanceof GuiReplayViewer || event.gui instanceof GuiUploadFile))
-            ResourceHelper.freeAllResources();
 
         if(event.gui instanceof GuiMainMenu) {
             if(ReplayMod.firstMainMenu) {

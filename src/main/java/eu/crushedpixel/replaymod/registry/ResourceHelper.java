@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.utils;
+package eu.crushedpixel.replaymod.registry;
 
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import net.minecraft.client.Minecraft;

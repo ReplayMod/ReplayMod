@@ -9,6 +9,7 @@ import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
+import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
@@ -88,6 +89,12 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                     -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true, -1);
             replayGuiList.addEntry(new GuiReplayListEntry(replayGuiList, fileInfo, p.second()));
         }
+    }
+
+    @Override
+    public void onGuiClosed() {
+        ResourceHelper.freeAllResources();
+        super.onGuiClosed();
     }
 
     @Override

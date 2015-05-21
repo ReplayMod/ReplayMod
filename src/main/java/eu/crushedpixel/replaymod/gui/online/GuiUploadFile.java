@@ -11,7 +11,7 @@ import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
-import eu.crushedpixel.replaymod.utils.ResourceHelper;
+import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -314,7 +314,9 @@ public class GuiUploadFile extends GuiScreen {
 
     @Override
     public void onGuiClosed() {
+        ResourceHelper.freeAllResources();
         Keyboard.enableRepeatEvents(false);
+        super.onGuiClosed();
     }
 
     @Override
