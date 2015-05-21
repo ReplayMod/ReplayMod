@@ -301,11 +301,6 @@ public class ReplayFileIO {
     }
 
     public static void addFileToZip(File zipFile, File toAdd, String fileName) throws IOException {
-        if(toAdd == null) {
-            removeFileFromZip(zipFile, fileName);
-            return;
-        }
-
         // get a temp file
         File tempFile = File.createTempFile(zipFile.getName(), null, zipFile.getParentFile());
         // delete it, otherwise you cannot rename your existing zip to it.
@@ -334,57 +329,24 @@ public class ReplayFileIO {
         zin.close();
         // Compress the files
 
-        InputStream in = new FileInputStream(toAdd);
-        // Add ZIP entry to output stream.
-        out.putNextEntry(new ZipEntry(fileName));
-        // Transfer bytes from the file to the ZIP file
+        if(toAdd != null) {
+            InputStream in = new FileInputStream(toAdd);
+            // Add ZIP entry to output stream.
+            out.putNextEntry(new ZipEntry(fileName));
+            // Transfer bytes from the file to the ZIP file
 
-        int len;
-        if(fileName.equals("thumb")) out.write(uniqueBytes);
+            int len;
+            if(fileName.equals("thumb")) out.write(uniqueBytes);
 
-        while((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        // Complete the entry
-        out.closeEntry();
-        in.close();
-
-        // Complete the ZIP file
-        out.close();
-
-        zipFile.delete();
-        tempFile.renameTo(zipFile);
-
-        toAdd.delete();
-    }
-
-    public static void removeFileFromZip(File zipFile, String toRemove) throws IOException {
-        // get a temp file
-        File tempFile = File.createTempFile(zipFile.getName(), null, zipFile.getParentFile());
-        // delete it, otherwise you cannot rename your existing zip to it.
-
-        byte[] buf = new byte[1024];
-
-        ZipInputStream zin = new ZipInputStream(new FileInputStream(zipFile));
-        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(tempFile));
-
-        ZipEntry entry = zin.getNextEntry();
-        while(entry != null) {
-            String name = entry.getName();
-            boolean isFile = name.equalsIgnoreCase(toRemove);
-            if(!isFile) {
-                // Add ZIP entry to output stream.
-                out.putNextEntry(new ZipEntry(name));
-                // Transfer bytes from the ZIP file to the output file
-                int len;
-                while((len = zin.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
+            while((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
             }
-            entry = zin.getNextEntry();
+            // Complete the entry
+            out.closeEntry();
+            in.close();
+
+            toAdd.delete();
         }
-        // Close the streams
-        zin.close();
 
         // Complete the ZIP file
         out.close();
