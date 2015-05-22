@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.gui;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
@@ -44,6 +45,8 @@ public class GuiEditKeyframe extends GuiScreen {
         this.keyframe = keyframe;
         this.keyframeBackup = (Keyframe)keyframe.clone();
         this.posKeyframe = keyframe instanceof PositionKeyframe;
+
+        ReplayMod.replaySender.setReplaySpeed(0);
     }
 
     @Override
@@ -87,17 +90,20 @@ public class GuiEditKeyframe extends GuiScreen {
             }
         }
 
-        w3 = fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes"))+5+min.width+5+
+        w3 =    fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.timelineposition")+":")+10+
+                fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes"))+5+min.width+5+
                 fontRendererObj.getStringWidth(I18n.format("replaymod.gui.seconds"))+5+sec.width+5+
                 fontRendererObj.getStringWidth(I18n.format("replaymod.gui.milliseconds"))+5+ms.width;
 
         int l = (this.width-w3)/2;
-        min.xPosition = l;
-        sec.xPosition = l + min.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes")) + 5;
-        ms.xPosition = l + min.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes")) + 5
+        min.xPosition = fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.timelineposition")+":")+10 + l;
+        sec.xPosition = fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.timelineposition")+":")+10 + l +
+                min.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes")) + 5;
+        ms.xPosition = fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.timelineposition")+":")+10 + l +
+                min.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes")) + 5
             + sec.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.seconds")) + 5;
 
-        min.yPosition = sec.yPosition = ms.yPosition = virtualY+virtualHeight-60;
+        min.yPosition = sec.yPosition = ms.yPosition = virtualY+virtualHeight-65;
 
         if(posKeyframe) {
             w = Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.xpos")),
@@ -136,10 +142,11 @@ public class GuiEditKeyframe extends GuiScreen {
             ReplayHandler.addKeyframe(keyframeBackup);
             ReplayHandler.selectKeyframe(keyframeBackup);
         } else {
+            keyframe.setRealTimestamp(TimestampUtils.calculateTimestamp(min.getIntValue(), sec.getIntValue(), ms.getIntValue()));
             if(posKeyframe) {
-                ((PositionKeyframe)keyframe).setPosition(new Position(xCoord.getValue(false), yCoord.getValue(false),
-                        zCoord.getValue(false), new Float(pitch.getValue(false)), new Float(yaw.getValue(false)),
-                        new Float(roll.getValue(false))));
+                ((PositionKeyframe)keyframe).setPosition(new Position(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
+                        zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float)yaw.getPreciseValue(),
+                        (float)roll.getPreciseValue()));
             }
         }
         Keyboard.enableRepeatEvents(false);
@@ -176,6 +183,11 @@ public class GuiEditKeyframe extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawGradientRect(10, virtualY, width - 10, virtualY + virtualHeight, -1072689136, -804253680);
         drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.title"), this.width / 2, virtualY + 5, Color.WHITE.getRGB());
+
+        drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.timelineposition")+":", (width-w3)/2, min.yPosition + 7, Color.WHITE.getRGB());
+        drawString(fontRendererObj, I18n.format("replaymod.gui.minutes"), min.xPosition + min.width + 5, min.yPosition + 7, Color.WHITE.getRGB());
+        drawString(fontRendererObj, I18n.format("replaymod.gui.seconds"), sec.xPosition+sec.width+5, sec.yPosition+7, Color.WHITE.getRGB());
+        drawString(fontRendererObj, I18n.format("replaymod.gui.milliseconds"), ms.xPosition+ms.width+5, ms.yPosition+7, Color.WHITE.getRGB());
 
         if(posKeyframe) {
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.xpos"), left, virtualY + 27, Color.WHITE.getRGB());

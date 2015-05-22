@@ -233,3 +233,4 @@ replaymod.gui.editkeyframe.zpos=Z Position
 replaymod.gui.editkeyframe.campitch=Camera Pitch
 replaymod.gui.editkeyframe.camyaw=Camera Yaw
 replaymod.gui.editkeyframe.camroll=Camera Roll
+replaymod.gui.editkeyframe.timelineposition=Timeline Position

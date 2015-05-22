@@ -31,12 +31,16 @@ public class GuiNumberInput extends GuiTextField {
 
     @Override
     public void writeText(String text) {
+        String textBefore = getText();
+        int cursorPositionBefore = getCursorPosition();
         try {
+            super.writeText(text);
+
             double val;
             if(acceptFloats) {
-                val = Double.valueOf(getText() + text);
+                val = Double.valueOf(getText());
             } else {
-                val = Integer.valueOf(getText() + text);
+                val = Integer.valueOf(getText());
             }
             if(minimum != null && val < minimum) {
                 setText(acceptFloats ? minimum.toString() : new Integer((int)Math.round(minimum)).toString());
@@ -46,16 +50,42 @@ public class GuiNumberInput extends GuiTextField {
                 setText(acceptFloats ? maximum.toString() : new Integer((int)Math.round(maximum)).toString());
                 return;
             }
-            super.writeText(text);
+
         } catch(NumberFormatException e) {
+            setText(textBefore);
+            setCursorPosition(cursorPositionBefore);
         }
     }
 
-    public Double getValue(boolean nullable) {
+    public int getIntValue() {
+        try {
+            return Integer.valueOf(getText());
+        } catch(Exception e) {
+            return 0;
+        }
+    }
+
+    public Integer getIntValueNullable() {
+        try {
+            return Integer.valueOf(getText());
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
+    public double getPreciseValue() {
         try {
             return Double.valueOf(getText());
         } catch(Exception e) {
-            return nullable ? null : 0d;
+            return 0d;
+        }
+    }
+
+    public Double getPreciseValueNullable() {
+        try {
+            return Double.valueOf(getText());
+        } catch(Exception e) {
+            return null;
         }
     }
 
