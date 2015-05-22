@@ -72,6 +72,7 @@ replaymod.gui.speed=Speed
 replaymod.gui.register=Register
 replaymod.gui.mail=Email Address
 replaymod.gui.loading=Loading
+replaymod.gui.pleasewait=Please wait
 
 replaymod.gui.minutes=min
 replaymod.gui.seconds=sec

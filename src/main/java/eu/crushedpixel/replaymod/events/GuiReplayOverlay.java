@@ -16,6 +16,7 @@ import eu.crushedpixel.replaymod.video.VideoWriter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
@@ -26,10 +27,15 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.Display;
 
+import java.awt.Color;
 import java.awt.*;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
+import static net.minecraft.client.renderer.GlStateManager.*;
+import static org.lwjgl.opengl.GL11.*;
 
 public class GuiReplayOverlay extends Gui {
 
@@ -130,7 +136,7 @@ public class GuiReplayOverlay extends Gui {
             mc.displayGuiScreen(new GuiMouseInput());
         }
 
-        GL11.glEnable(GL11.GL_BLEND);
+        glEnable(GL_BLEND);
 
         Point mousePoint = MouseUtils.getMousePos();
         final int mouseX = (int) mousePoint.getX();
@@ -185,7 +191,7 @@ public class GuiReplayOverlay extends Gui {
                     if(mouseX >= timelineX + 4 && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29) {
                         double tot = (width - 18) - (timelineX + 4);
                         double perc = (mouseX - (timelineX + 4)) / tot;
-                        double time = perc * (double) ReplayMod.replaySender.replayLength();
+                        final double time = perc * (double) ReplayMod.replaySender.replayLength();
 
                         if(time < ReplayMod.replaySender.currentTimeStamp()) {
                             mc.displayGuiScreen(null);
@@ -198,8 +204,61 @@ public class GuiReplayOverlay extends Gui {
                             ReplayHandler.setLastPosition(null);
                         }
 
-                        if((int) time != ReplayMod.replaySender.getDesiredTimestamp())
-                            ReplayMod.replaySender.jumpToTime((int) time);
+                        long diff = (long) time - ReplayMod.replaySender.getDesiredTimestamp();
+                        if(diff != 0) {
+                            if (diff > 0 && diff < 5000) { // Small difference and no time travel
+                                ReplayMod.replaySender.jumpToTime((int) time);
+                            } else { // We either have to restart the replay or send a significant amount of packets
+                                // Render our please-wait-screen
+                                GuiScreen guiScreen = new GuiScreen() {
+                                    @Override
+                                    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+                                        drawBackground(0);
+                                        drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.pleasewait"),
+                                                width / 2, height / 2, 0xffffffff);
+                                    }
+                                };
+
+                                // Make sure that the replaysender changes into sync mode
+                                ReplayMod.replaySender.setAsyncMode(false);
+                                synchronized (ReplayMod.replaySender) {
+                                    // This will make sure that the async thread has stopped
+                                }
+
+                                // Perform the rendering using OpenGL
+                                pushMatrix();
+                                clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                                enableTexture2D();
+                                mc.getFramebuffer().bindFramebuffer(true);
+                                mc.entityRenderer.setupOverlayRendering();
+
+                                guiScreen.setWorldAndResolution(mc, width, height);
+                                guiScreen.drawScreen(0, 0, 0);
+
+                                mc.getFramebuffer().unbindFramebuffer();
+                                popMatrix();
+                                pushMatrix();
+                                mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
+                                popMatrix();
+
+                                Display.update();
+
+                                // Send the packets
+                                ReplayMod.replaySender.sendPacketsTill((int) time);
+                                ReplayMod.replaySender.setAsyncMode(true);
+
+                                // Tick twice to process all packets and position interpolation
+                                try {
+                                    mc.runTick();
+                                    mc.runTick();
+                                } catch (IOException e) {
+                                    e.printStackTrace(); // This should never be thrown but whatever
+                                }
+
+                                // No need to remove our please-wait-screen. It'll vanish with the next
+                                // render pass as it's never been a real GuiScreen in the first place.
+                            }
+                        }
                     }
                 }
             }
@@ -614,7 +673,7 @@ public class GuiReplayOverlay extends Gui {
             int real_x = (int) Math.round((minX + tl_begin_width) + rel_x);
             mc.renderEngine.bindTexture(this.replay_gui);
 
-            GL11.glEnable(GL11.GL_BLEND);
+            glEnable(GL_BLEND);
             this.drawModalRectWithCustomSizedTexture(real_x - 3, y + 3, 44, 0, 8, 16, 64, 64);
             //this.drawModalRectWithCustomSizedTexture(real_x, sl_y, u, v, width, height, textureWidth, textureHeight)
         }
