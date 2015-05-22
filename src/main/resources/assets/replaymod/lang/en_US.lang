@@ -73,6 +73,10 @@ replaymod.gui.register=Register
 replaymod.gui.mail=Email Address
 replaymod.gui.loading=Loading
 
+replaymod.gui.minutes=min
+replaymod.gui.seconds=sec
+replaymod.gui.milliseconds=ms
+
 replaymod.gui.unknownerror=An unknown error occured
 
 replaymod.gui.exit=Exit Replay
@@ -203,8 +207,8 @@ replaymod.input.playeroverview=Player Overview
 replaymod.input.clearkeyframes=Clear Keyframes
 replaymod.input.synctimeline=Synchronize Timeline
 replaymod.input.keyframerepository=Open Keyframe Presets
-replaymod.input.rotateclockwise=Rotate Clockwise
-replaymod.input.rotatecounterclockwise=Rotate Counterclockwise
+replaymod.input.rollclockwise=Roll Clockwise
+replaymod.input.rollcounterclockwise=Roll Counterclockwise
 replaymod.input.resettilt=Reset Camera Tilt
 replaymod.input.playpause=Play/Pause Replay
 
@@ -228,3 +232,4 @@ replaymod.gui.editkeyframe.ypos=Y Position
 replaymod.gui.editkeyframe.zpos=Z Position
 replaymod.gui.editkeyframe.campitch=Camera Pitch
 replaymod.gui.editkeyframe.camyaw=Camera Yaw
+replaymod.gui.editkeyframe.camroll=Camera Roll

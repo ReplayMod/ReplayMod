@@ -22,7 +22,7 @@ public class LinearPoint extends LinearInterpolation<Position> {
         float pitch = (float)getInterpolatedValue(first.getPitch(), second.getPitch(), perc);
         float yaw = (float)getInterpolatedValue(first.getYaw(), second.getYaw(), perc);
 
-        float rot = (float)getInterpolatedValue(first.getRotation(), second.getRotation(), perc);
+        float rot = (float)getInterpolatedValue(first.getRoll(), second.getRoll(), perc);
 
         Position inter = new Position(x, y, z, pitch, yaw, rot);
 

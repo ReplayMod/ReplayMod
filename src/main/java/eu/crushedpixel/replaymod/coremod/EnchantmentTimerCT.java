@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class ClassTransformer implements IClassTransformer {
+public class EnchantmentTimerCT implements IClassTransformer {
 
     @Override
     public byte[] transform(String name, String transformedName,

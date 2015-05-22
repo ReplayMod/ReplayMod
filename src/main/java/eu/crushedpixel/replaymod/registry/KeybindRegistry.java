@@ -16,8 +16,8 @@ public class KeybindRegistry {
     public static final String KEY_CLEAR_KEYFRAMES = "replaymod.input.clearkeyframes";
     public static final String KEY_SYNC_TIMELINE = "replaymod.input.synctimeline";
     public static final String KEY_KEYFRAME_PRESETS = "replaymod.input.keyframerepository";
-    public static final String KEY_ROTATE_CLOCKWISE = "replaymod.input.rotateclockwise";
-    public static final String KEY_ROTATE_COUNTERCLOCKWISE = "replaymod.input.rotatecounterclockwise";
+    public static final String KEY_ROLL_CLOCKWISE = "replaymod.input.rollclockwise";
+    public static final String KEY_ROLL_COUNTERCLOCKWISE = "replaymod.input.rollcounterclockwise";
     public static final String KEY_RESET_TILT = "replaymod.input.resettilt";
     public static final String KEY_PLAY_PAUSE = "replaymod.input.playpause";
     private static Minecraft mc = Minecraft.getMinecraft();
@@ -31,9 +31,9 @@ public class KeybindRegistry {
         bindings.add(new KeyBinding(KEY_SYNC_TIMELINE, Keyboard.KEY_V, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_CLEAR_KEYFRAMES, Keyboard.KEY_C, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_KEYFRAME_PRESETS, Keyboard.KEY_X, "replaymod.title"));
-        bindings.add(new KeyBinding(KEY_ROTATE_CLOCKWISE, Keyboard.KEY_L, "replaymod.title"));
+        bindings.add(new KeyBinding(KEY_ROLL_CLOCKWISE, Keyboard.KEY_L, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_RESET_TILT, Keyboard.KEY_K, "replaymod.title"));
-        bindings.add(new KeyBinding(KEY_ROTATE_COUNTERCLOCKWISE, Keyboard.KEY_J, "replaymod.title"));
+        bindings.add(new KeyBinding(KEY_ROLL_COUNTERCLOCKWISE, Keyboard.KEY_J, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_PLAY_PAUSE, Keyboard.KEY_P, "replaymod.title"));
 
         mc.gameSettings.keyBindings = bindings.toArray(new KeyBinding[bindings.size()]);

@@ -6,8 +6,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class Position {
 
     private double x, y, z;
-    private float pitch, yaw;
-    private float rotation = 0;
+    private float pitch, yaw, roll;
 
     public Position(Entity e) {
         this.x = e.posX;
@@ -17,13 +16,13 @@ public class Position {
         this.yaw = e.rotationYaw;
     }
 
-    public Position(double x, double y, double z, float pitch, float yaw, float rotation) {
+    public Position(double x, double y, double z, float pitch, float yaw, float roll) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.pitch = pitch;
         this.yaw = yaw;
-        this.rotation = rotation;
+        this.roll = roll;
     }
 
     public Position(double x, double y, double z, float pitch, float yaw) {
@@ -74,13 +73,13 @@ public class Position {
         this.yaw = yaw;
     }
 
-    public float getRotation() { return rotation; }
+    public float getRoll() { return roll; }
 
-    public void setRotation(float rotation) { this.rotation = rotation; }
+    public void setRoll(float roll) { this.roll = roll; }
 
     @Override
     public String toString() {
-        return "X=" + x + ", Y=" + y + ", Z=" + z + ", Yaw=" + yaw + ", Pitch=" + pitch;
+        return "X=" + x + ", Y=" + y + ", Z=" + z + ", Yaw=" + yaw + ", Pitch=" + pitch + ", Roll="+roll;
     }
 
     @Override
@@ -99,7 +98,7 @@ public class Position {
                 .append(z)
                 .append(pitch)
                 .append(yaw)
-                .append(rotation)
+                .append(roll)
                 .toHashCode();
     }
 }

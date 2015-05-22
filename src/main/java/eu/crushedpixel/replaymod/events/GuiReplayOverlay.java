@@ -557,7 +557,7 @@ public class GuiReplayOverlay extends Gui {
             if(liftedSinceSelection) {
                 ReplayHandler.setRealTimelineCursor(real_pos);
             } else if(ReplayHandler.getSelectedKeyframe() != null) {
-                int tolerance = Math.round(abs_width / (float) width);
+                int tolerance = 2 * Math.round(abs_width / (float) width);
 
                 if(Math.abs(selectionTimestamp - real_pos) > tolerance || overcameToleranceSinceSelection) {
                     ReplayHandler.setRealTimelineCursor(real_pos);

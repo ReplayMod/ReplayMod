@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.gui.replaystudio;
 
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
 import eu.crushedpixel.replaymod.studio.StudioImplementation;
+import eu.crushedpixel.replaymod.utils.TimestampUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
@@ -50,7 +51,7 @@ public class GuiTrimPart extends GuiStudioPart {
         int secs = valueOf(startSecInput.getText());
         int ms = valueOf(startMsInput.getText());
 
-        return (mins * 60 * 1000) + (secs * 1000) + ms;
+        return TimestampUtils.calculateTimestamp(mins, secs, ms);
     }
 
     private int getEndTimestamp() {
@@ -58,7 +59,7 @@ public class GuiTrimPart extends GuiStudioPart {
         int secs = valueOf(endSecInput.getText());
         int ms = valueOf(endMsInput.getText());
 
-        return (mins * 60 * 1000) + (secs * 1000) + ms;
+        return TimestampUtils.calculateTimestamp(mins, secs, ms);
     }
 
     @Override
@@ -106,12 +107,12 @@ public class GuiTrimPart extends GuiStudioPart {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawString(mc.fontRendererObj, I18n.format("replaymod.gui.start")+":", 30, yPos + 7, Color.WHITE.getRGB());
         drawString(mc.fontRendererObj, I18n.format("replaymod.gui.end")+":", 30, yPos + 7 + 30, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, "m", 105, yPos + 7, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, "m", 105, yPos + 7 + 30, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, "s", 150, yPos + 7, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, "s", 150, yPos + 7 + 30, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, "ms", 200, yPos + 7, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, "ms", 200, yPos + 7 + 30, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.minutes"), 105, yPos + 7, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.minutes"), 105, yPos + 7 + 30, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.seconds"), 150, yPos + 7, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.seconds"), 150, yPos + 7 + 30, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.milliseconds"), 200, yPos + 7, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.milliseconds"), 200, yPos + 7 + 30, Color.WHITE.getRGB());
 
         drawString(mc.fontRendererObj, "Timestamp: " + getStartTimestamp(), 230, yPos + 7, Color.WHITE.getRGB());
         drawString(mc.fontRendererObj, "Timestamp: " + getEndTimestamp(), 230, yPos + 30 + 7, Color.WHITE.getRGB());

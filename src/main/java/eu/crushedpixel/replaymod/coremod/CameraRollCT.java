@@ -9,7 +9,7 @@ import java.util.ListIterator;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class CameraTiltingCT implements IClassTransformer {
+public class CameraRollCT implements IClassTransformer {
 
     private static final String REPLAY_HANDLER = "eu/crushedpixel/replaymod/replay/ReplayHandler";
     private static final String CLASS_NAME = "net.minecraft.client.renderer.EntityRenderer";
@@ -47,7 +47,7 @@ public class CameraTiltingCT implements IClassTransformer {
      * public void orientCamera(float f) {
      *     ...
      *     if (ReplayHandler.isInReplay()) {
-     *         GL11.glRotated(Math.toRadians(ReplayHandler.getCameraTilt()), 0, 0, 1);
+     *         GL11.glRotated(ReplayHandler.getCameraTilt(), 0, 0, 1);
      *     }
      *     ...
      * }
@@ -58,7 +58,6 @@ public class CameraTiltingCT implements IClassTransformer {
         iter.add(new JumpInsnNode(IFEQ, l));
         iter.add(new MethodInsnNode(INVOKESTATIC, REPLAY_HANDLER, "getCameraTilt", "()F", false));
         iter.add(new InsnNode(F2D));
-        iter.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Math", "toRadians", "(D)D", false));
         iter.add(new LdcInsnNode(0D));
         iter.add(new LdcInsnNode(0D));
         iter.add(new LdcInsnNode(1D));

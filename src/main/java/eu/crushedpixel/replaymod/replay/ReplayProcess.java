@@ -333,7 +333,7 @@ public class ReplayProcess {
             }
         }
 
-        ReplayHandler.setCameraTilt(pos.getRotation());
+        ReplayHandler.setCameraTilt(pos.getRoll());
 
         Integer curTimestamp = null;
         if(timeLinear != null && timeCount > 1) {

@@ -9,8 +9,8 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
     @Override
     public String[] getASMTransformerClass() {
         return new String[]{
-                CameraTiltingCT.class.getName(),
-                ClassTransformer.class.getName()
+                CameraRollCT.class.getName(),
+                EnchantmentTimerCT.class.getName()
         };
     }
 

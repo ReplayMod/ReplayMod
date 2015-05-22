@@ -15,7 +15,18 @@ public class GuiNumberInput extends GuiTextField {
         this.minimum = minimum;
         this.maximum = maximum;
         this.acceptFloats = acceptFloats;
-        if(defaultValue != null) setText(""+defaultValue);
+        if(defaultValue != null) {
+            if(acceptFloats) {
+                setText("" + defaultValue);
+            } else {
+                setText("" + (int)Math.round(defaultValue));
+            }
+        }
+    }
+
+    public GuiNumberInput(int id, FontRenderer fontRenderer,
+                          int xPos, int yPos, int width, int minimum, int maximum, int defaultValue, boolean acceptFloats) {
+        this(id, fontRenderer, xPos, yPos, width, new Double(minimum), new Double(maximum), new Double(defaultValue), acceptFloats);
     }
 
     @Override
@@ -27,10 +38,24 @@ public class GuiNumberInput extends GuiTextField {
             } else {
                 val = Integer.valueOf(getText() + text);
             }
-            if(minimum != null && val < minimum) return;
-            if(maximum != null && val > maximum) return;
+            if(minimum != null && val < minimum) {
+                setText(acceptFloats ? minimum.toString() : new Integer((int)Math.round(minimum)).toString());
+                return;
+            }
+            if(maximum != null && val > maximum) {
+                setText(acceptFloats ? maximum.toString() : new Integer((int)Math.round(maximum)).toString());
+                return;
+            }
             super.writeText(text);
         } catch(NumberFormatException e) {
+        }
+    }
+
+    public Double getValue(boolean nullable) {
+        try {
+            return Double.valueOf(getText());
+        } catch(Exception e) {
+            return nullable ? null : 0d;
         }
     }
 
