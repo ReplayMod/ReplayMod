@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
@@ -22,6 +23,7 @@ public class GuiEditKeyframe extends GuiScreen {
     private boolean initialized = false;
 
     private GuiButton saveButton, cancelButton;
+    private GuiArrowButton leftButton, rightButton;
 
     private GuiNumberInput xCoord, yCoord, zCoord, pitch, yaw, roll;
     private GuiNumberInput min, sec, ms;
@@ -37,6 +39,8 @@ public class GuiEditKeyframe extends GuiScreen {
     private boolean save;
     private boolean posKeyframe;
 
+    private Keyframe previous, next;
+
     private int w, w2, w3;
     private int totalWidth;
     private int left;
@@ -45,6 +49,17 @@ public class GuiEditKeyframe extends GuiScreen {
         this.keyframe = keyframe;
         this.keyframeBackup = (Keyframe)keyframe.clone();
         this.posKeyframe = keyframe instanceof PositionKeyframe;
+
+        ReplayHandler.selectKeyframe(null);
+
+        if(posKeyframe) {
+            previous = ReplayHandler.getPreviousPositionKeyframe(keyframe.getRealTimestamp()-1);
+            next = ReplayHandler.getNextPositionKeyframe(keyframe.getRealTimestamp() + 1);
+        } else {
+            previous = ReplayHandler.getPreviousTimeKeyframe(keyframe.getRealTimestamp()-1);
+            next = ReplayHandler.getNextTimeKeyframe(keyframe.getRealTimestamp()+1);
+        }
+        ReplayHandler.selectKeyframe(keyframe);
 
         ReplayMod.replaySender.setReplaySpeed(0);
     }
@@ -59,9 +74,15 @@ public class GuiEditKeyframe extends GuiScreen {
             saveButton = new GuiButton(GuiConstants.KEYFRAME_EDITOR_SAVE_BUTTON, 0, 0, 100, 20, I18n.format("replaymod.gui.save"));
             cancelButton = new GuiButton(GuiConstants.KEYFRAME_EDITOR_CANCEL_BUTTON, 0, 0, 100, 20, I18n.format("replaymod.gui.cancel"));
 
+            leftButton = new GuiArrowButton(GuiConstants.KEYFRAME_EDITOR_LEFT_BUTTON, 0, 0, "", GuiArrowButton.Direction.LEFT);
+            rightButton = new GuiArrowButton(GuiConstants.KEYFRAME_EDITOR_RIGHT_BUTTON, 0, 0, "", GuiArrowButton.Direction.RIGHT);
+
+            leftButton.enabled = previous != null;
+            rightButton.enabled = next != null;
+
             //Real Time Input
             int timestamp = keyframe.getRealTimestamp();
-            min = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_REAL_MIN_INPUT, fontRendererObj, 0, 0, 30, 0, 10, TimestampUtils.getMinutesFromTimestamp(timestamp), false);
+            min = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_REAL_MIN_INPUT, fontRendererObj, 0, 0, 30, 0, 9, TimestampUtils.getMinutesFromTimestamp(timestamp), false);
             sec = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_REAL_SEC_INPUT, fontRendererObj, 0, 0, 25, 0, 59, TimestampUtils.getSecondsFromTimestamp(timestamp), false);
             ms = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_REAL_SEC_INPUT, fontRendererObj, 0, 0, 35, 0, 999, TimestampUtils.getMillisecondsFromTimestamp(timestamp), false);
 
@@ -131,6 +152,13 @@ public class GuiEditKeyframe extends GuiScreen {
 
         buttonList.add(saveButton);
         buttonList.add(cancelButton);
+
+        leftButton.xPosition = 15;
+        rightButton.xPosition = width-35;
+        leftButton.yPosition = rightButton.yPosition = virtualY + ((virtualHeight - leftButton.height)/2);
+
+        buttonList.add(leftButton);
+        buttonList.add(rightButton);
 
         initialized = true;
     }
@@ -218,6 +246,12 @@ public class GuiEditKeyframe extends GuiScreen {
         } else if(button.id == GuiConstants.KEYFRAME_EDITOR_CANCEL_BUTTON) {
             save = false;
             mc.displayGuiScreen(null);
+        } else if(button.id == GuiConstants.KEYFRAME_EDITOR_LEFT_BUTTON) {
+            save = false;
+            mc.displayGuiScreen(new GuiEditKeyframe(previous));
+        } else if(button.id == GuiConstants.KEYFRAME_EDITOR_RIGHT_BUTTON) {
+            save = false;
+            mc.displayGuiScreen(new GuiEditKeyframe(next));
         }
     }
 }

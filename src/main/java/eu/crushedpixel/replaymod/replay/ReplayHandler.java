@@ -237,54 +237,66 @@ public class ReplayHandler {
 
     public static PositionKeyframe getPreviousPositionKeyframe(int realTime) {
         if(keyframes.isEmpty()) return null;
+        PositionKeyframe backup = null;
         List<PositionKeyframe> found = new ArrayList<PositionKeyframe>();
         for(Keyframe kf : keyframes) {
             if(!(kf instanceof PositionKeyframe)) continue;
             if(kf.getRealTimestamp() < realTime) {
-                found.add((PositionKeyframe) kf);
+                found.add((PositionKeyframe)kf);
+            } else if(kf.getRealTimestamp() == realTime) {
+                backup = (PositionKeyframe)kf;
             }
         }
 
         if(found.size() > 0)
             return found.get(found.size() - 1); //last element is nearest
-        else return null;
+        else return backup;
     }
 
     public static PositionKeyframe getNextPositionKeyframe(int realTime) {
         if(keyframes.isEmpty()) return null;
+        PositionKeyframe backup = null;
         for(Keyframe kf : keyframes) {
             if(!(kf instanceof PositionKeyframe)) continue;
-            if(kf.getRealTimestamp() >= realTime) {
-                return (PositionKeyframe) kf; //first found element is next
+            if(kf.getRealTimestamp() > realTime) {
+                return (PositionKeyframe)kf; //first found element is next
+            } else if(kf.getRealTimestamp() == realTime) {
+                backup = (PositionKeyframe)kf;
             }
         }
-        return null;
+        return backup;
     }
 
     public static TimeKeyframe getPreviousTimeKeyframe(int realTime) {
         if(keyframes.isEmpty()) return null;
+        TimeKeyframe backup = null;
         List<TimeKeyframe> found = new ArrayList<TimeKeyframe>();
         for(Keyframe kf : keyframes) {
             if(!(kf instanceof TimeKeyframe)) continue;
             if(kf.getRealTimestamp() < realTime) {
-                found.add((TimeKeyframe) kf);
+                found.add((TimeKeyframe)kf);
+            } else if(kf.getRealTimestamp() == realTime) {
+                backup = (TimeKeyframe)kf;
             }
         }
 
         if(found.size() > 0)
             return found.get(found.size() - 1); //last element is nearest
-        else return null;
+        else return backup;
     }
 
     public static TimeKeyframe getNextTimeKeyframe(int realTime) {
         if(keyframes.isEmpty()) return null;
+        TimeKeyframe backup = null;
         for(Keyframe kf : keyframes) {
             if(!(kf instanceof TimeKeyframe)) continue;
-            if(kf.getRealTimestamp() >= realTime) {
+            if(kf.getRealTimestamp() > realTime) {
                 return (TimeKeyframe) kf; //first found element is next
+            } else if(kf.getRealTimestamp() == realTime) {
+                backup = (TimeKeyframe)kf;
             }
         }
-        return null;
+        return backup;
     }
 
     public static List<Keyframe> getKeyframes() {

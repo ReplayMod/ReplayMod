@@ -34,9 +34,13 @@ public class GuiArrowButton extends GuiButton {
                     drawHorizontalLine(xPosition + width - height + i + 4, xPosition + width - i - 6, yPosition + (height / 3) + i + 2, Color.BLACK.getRGB());
                 }
             } else if(dir == Direction.LEFT) {
-
+                for(int i = -1; i < Math.ceil(height / 2) - 5; i++) {
+                    drawVerticalLine(xPosition + height - ((height / 3) + i + 4), yPosition + width - height + i + 4, yPosition + width - i - 6, Color.BLACK.getRGB());
+                }
             } else if(dir == Direction.RIGHT) {
-
+                for(int i = -1; i < Math.ceil(height / 2) - 5; i++) {
+                    drawVerticalLine(xPosition + (height / 3) + i + 2, yPosition + width - height + i + 4, yPosition + width - i - 6, Color.BLACK.getRGB());
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();
