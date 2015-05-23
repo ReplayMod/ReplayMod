@@ -246,6 +246,7 @@ public class GuiReplayOverlay extends Gui {
                                 // Send the packets
                                 ReplayMod.replaySender.sendPacketsTill((int) time);
                                 ReplayMod.replaySender.setAsyncMode(true);
+                                ReplayMod.replaySender.setReplaySpeed(0);
 
                                 // Tick twice to process all packets and position interpolation
                                 try {
