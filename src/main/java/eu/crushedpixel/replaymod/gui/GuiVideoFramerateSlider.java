@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.gui;
 
-import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
@@ -34,7 +33,6 @@ public class GuiVideoFramerateSlider extends GuiButton {
                 sliderValue = MathHelper.clamp_float(sliderValue, 0.0F, 1.0F);
                 int f = denormalizeValue(sliderValue);
                 this.displayString = displayKey + ": " + translate(f);
-                ReplayMod.replaySettings.setVideoFramerate(f);
             }
 
             mc.getTextureManager().bindTexture(buttonTextures);
@@ -42,6 +40,10 @@ public class GuiVideoFramerateSlider extends GuiButton {
             this.drawTexturedModalRect(this.xPosition + (int) (sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
             this.drawTexturedModalRect(this.xPosition + (int) (sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
         }
+    }
+
+    public int getFPS() {
+        return denormalizeValue(sliderValue);
     }
 
     private float normalizeValue(int val) {

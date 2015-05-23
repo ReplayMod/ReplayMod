@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.gui;
 
-import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
@@ -49,14 +48,17 @@ public class GuiVideoQualitySlider extends GuiButton {
                 f = snapValue(f);
                 sliderValue = normalizeValue(f);
                 this.displayString = displayKey + ": " + translate(f);
-                ReplayMod.replaySettings.setVideoQuality(f);
             }
 
             mc.getTextureManager().bindTexture(buttonTextures);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            this.drawTexturedModalRect(this.xPosition + (int) (sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
-            this.drawTexturedModalRect(this.xPosition + (int) (sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
+            this.drawTexturedModalRect(this.xPosition +  (int)Math.ceil(sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
+            this.drawTexturedModalRect(this.xPosition + (int)Math.ceil(sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
         }
+    }
+
+    public float getQuality() {
+        return snapValue(denormalizeValue(sliderValue));
     }
 
     private float snapValue(float val) {

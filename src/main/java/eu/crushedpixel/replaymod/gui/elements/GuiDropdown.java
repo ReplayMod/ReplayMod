@@ -111,6 +111,12 @@ public class GuiDropdown<T> extends GuiTextField {
 
     @Override
     public void mouseClicked(int xPos, int yPos, int mouseButton) {
+        mouseClickedResult(xPos, yPos, mouseButton);
+    }
+
+
+    public boolean mouseClickedResult(int xPos, int yPos, int mouseButton) {
+        boolean success = false;
         if(xPos > xPosition + width - height && xPos < xPosition + width && yPos > yPosition && yPos < yPosition + height) {
             open = !open;
         } else {
@@ -119,6 +125,7 @@ public class GuiDropdown<T> extends GuiTextField {
                 if(yPos > yPosition + height && yPos < yPosition + height + requiredHeight) {
                     int clickedIndex = (int) Math.floor((yPos - (yPosition + height)) / dropoutElementHeight) + upperIndex;
                     this.selectionIndex = clickedIndex;
+                    success = true;
                     fireSelectionChangeEvent();
                 }
                 open = false;
@@ -126,6 +133,7 @@ public class GuiDropdown<T> extends GuiTextField {
                 open = false;
             }
         }
+        return success;
     }
 
     @Override

@@ -78,6 +78,8 @@ public class ReplayProcess {
     }
 
     public static void startReplayProcess(RenderOptions renderOptions) {
+        mc.displayGuiScreen(null);
+
         ReplayHandler.selectKeyframe(null);
         resetProcess();
 

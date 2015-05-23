@@ -87,4 +87,17 @@ public class GuiConstants {
     public static final int PLAYER_OVERVIEW_HIDE_ALL = 1010;
     public static final int PLAYER_OVERVIEW_SHOW_ALL = 0101;
     public static final int PLAYER_OVERVIEW_REMEMBER = -10;
+
+    public static final int RENDER_SETTINGS_RENDERER_DROPDOWN = 9001;
+    public static final int RENDER_SETTINGS_RENDER_BUTTON = 9002;
+    public static final int RENDER_SETTINGS_CANCEL_BUTTON = 9003;
+    public static final int RENDER_SETTINGS_RESOLUTION_CHECKBOX = 9004;
+    public static final int RENDER_SETTINGS_RESOLUTION_X = 9005;
+    public static final int RENDER_SETTINGS_RESOLUTION_Y = 9006;
+    public static final int RENDER_SETTINGS_INTERPOLATION_BUTTON = 9007;
+    public static final int RENDER_SETTINGS_FORCECHUNKS_BUTTON = 9008;
+    public static final int RENDER_SETTINGS_FRAMERATE_SLIDER = 9009;
+    public static final int RENDER_SETTINGS_QUALITY_SLIDER = 9010;
+    public static final int RENDER_SETTINGS_YOUTUBE_READY = 9011;
+    public static final int RENDER_SETTINGS_STATIC_CAMERA = 9012;
 }

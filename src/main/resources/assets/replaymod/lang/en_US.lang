@@ -73,6 +73,7 @@ replaymod.gui.register=Register
 replaymod.gui.mail=Email Address
 replaymod.gui.loading=Loading
 replaymod.gui.pleasewait=Please wait
+replaymod.gui.render=Render
 
 replaymod.gui.minutes=min
 replaymod.gui.seconds=sec
@@ -235,3 +236,29 @@ replaymod.gui.editkeyframe.campitch=Camera Pitch
 replaymod.gui.editkeyframe.camyaw=Camera Yaw
 replaymod.gui.editkeyframe.camroll=Camera Roll
 replaymod.gui.editkeyframe.timelineposition=Timeline Position
+
+#Render Settings GUI
+replaymod.gui.rendersettings.title=Rendering Options
+replaymod.gui.rendersettings.renderer=Rendering Method
+
+replaymod.gui.rendersettings.renderer.default=Default Rendering
+replaymod.gui.rendersettings.renderer.tiled=Tiled Rendering
+replaymod.gui.rendersettings.renderer.stereoscopic=Stereoscopic Rendering
+replaymod.gui.rendersettings.renderer.cubic=Cubic Rendering
+replaymod.gui.rendersettings.renderer.equirectangular=Equirectangular Rendering
+
+replaymod.gui.rendersettings.renderer.default.description=Renders the video with your current resolution. Fastest Rendering Option.
+replaymod.gui.rendersettings.renderer.tiled.description=Renders the video with a custom resolution, even if it's larger than your screen.
+replaymod.gui.rendersettings.renderer.stereoscopic.description=Renders the video as a steroscopic (side-by-side) 3D movie, useable by different 3D technologies.
+replaymod.gui.rendersettings.renderer.cubic.description=Renders the video with a 360 degree panoramic view, using Cubic Projection. This is useable by several 360 degree video players (and the Oculus Rift), for example VR Player.
+replaymod.gui.rendersettings.renderer.equirectangular.description=Renders the video with a 360 degree panoramic view, using Equirectangular Projection. This is useable by YouTube's new 360 degree video function, and several video players (and the Oculus Rift), for example VR Player.
+
+replaymod.gui.rendersettings.customresolution=Custom Video Resolution
+replaymod.gui.rendersettings.resolution=Video Resolution
+replaymod.gui.rendersettings.interpolation=Path Interpolation
+replaymod.gui.rendersettings.forcechunks=Force Render Chunks
+replaymod.gui.rendersettings.framerate=Video Framerate
+replaymod.gui.rendersettings.quality=Video Quality
+
+replaymod.gui.rendersettings.stablecamera=Ignore Camera Rotation
+replaymod.gui.rendersettings.exportyoutube=Export for YouTube
