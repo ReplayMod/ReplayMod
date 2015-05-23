@@ -1,8 +1,10 @@
 package eu.crushedpixel.replaymod;
 
+import com.google.common.util.concurrent.ListenableFutureTask;
 import eu.crushedpixel.replaymod.api.ApiClient;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.*;
+import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
@@ -10,10 +12,14 @@ import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.registry.*;
 import eu.crushedpixel.replaymod.renderer.InvisibilityRender;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import eu.crushedpixel.replaymod.video.frame.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,8 +34,10 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Queue;
 
 @Mod(modid = ReplayMod.MODID, version = ReplayMod.VERSION)
 public class ReplayMod {
@@ -116,7 +124,7 @@ public class ReplayMod {
     }
 
     @EventHandler
-    public void postInit(FMLPostInitializationEvent event) {
+    public void postInit(FMLPostInitializationEvent event) throws IOException {
         GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
 
         overlay = new GuiReplayOverlay();
@@ -164,6 +172,102 @@ public class ReplayMod {
             FMLCommonHandler.instance().exitJava(0, false);
         }
         */
+
+        if (System.getProperty("replaymod.render.file") != null) {
+            final File file = new File(System.getProperty("replaymod.render.file"));
+            if (!file.exists()) {
+                throw new IOException("File \"" + file.getPath() + "\" not found.");
+            }
+
+            String renderDistance = System.getProperty("mc.renderdistance");
+            if (renderDistance != null) {
+                mc.gameSettings.renderDistanceChunks = Integer.parseInt(renderDistance);
+            }
+
+            final String path = System.getProperty("replaymod.render.path");
+            String type = System.getProperty("replaymod.render.type");
+            String quality = System.getProperty("replaymod.render.quality");
+            String fps = System.getProperty("replaymod.render.fps");
+            String waitForChunks = System.getProperty("replaymod.render.waitforchunks");
+            String linearMovement = System.getProperty("replaymod.render.linearmovement");
+            FrameRenderer renderer;
+            if (type != null) {
+                String[] parts = type.split(":");
+                type = parts[0].toUpperCase();
+                if ("NORMAL".equals(type) || "DEFAULT".equals(type)) {
+                    renderer = new DefaultFrameRenderer();
+                } else if ("TILED".equals(type)) {
+                    if (parts.length < 3) {
+                        throw new IllegalArgumentException("Tiled renderer requires width and height.");
+                    }
+                    int width = Integer.parseInt(parts[1]);
+                    int height = Integer.parseInt(parts[2]);
+                    renderer = new TilingFrameRenderer(width, height);
+                } else if ("STEREO".equals(type) || "STEREOSCOPIC".equals(type)) {
+                    renderer = new StereoscopicFrameRenderer();
+                } else if ("CUBIC".equals(type)) {
+                    if (parts.length < 2) {
+                        throw new IllegalArgumentException("Cubic renderer requires boolean for whether it's stable.");
+                    }
+                    renderer = new CubicFrameRenderer(Boolean.parseBoolean(parts[1]));
+                } else if ("EQUIRECTANGULAR".equals(type)) {
+                    if (parts.length < 2) {
+                        throw new IllegalArgumentException("Equirectangular renderer requires boolean for whether it's stable.");
+                    }
+                    renderer = new EquirectangularFrameRenderer(Boolean.parseBoolean(parts[1]));
+                } else {
+                    throw new IllegalArgumentException("Unknown type: " + parts[0]);
+                }
+            } else {
+                renderer = new DefaultFrameRenderer();
+            }
+            final RenderOptions options = new RenderOptions(renderer);
+            if (quality != null) {
+                options.setQuality(Float.parseFloat(quality));
+            }
+            if (fps != null) {
+                options.setFps(Integer.parseInt(fps));
+            }
+            if (waitForChunks != null) {
+                options.setWaitForChunks(Boolean.parseBoolean(waitForChunks));
+            }
+            if (linearMovement != null) {
+                options.setLinearMovement(Boolean.parseBoolean(linearMovement));
+            }
+
+            @SuppressWarnings("unchecked")
+            Queue<ListenableFutureTask> tasks = mc.scheduledTasks;
+            synchronized (mc.scheduledTasks) {
+                tasks.add(ListenableFutureTask.create(new Runnable() {
+                    @Override
+                    public void run() {
+                        System.out.println("Loading replay...");
+                        ReplayHandler.startReplay(file, false);
+
+                        int index = 0;
+                        if (path != null) {
+                            for (KeyframeSet set : ReplayHandler.getKeyframeRepository()) {
+                                if (set.getName().equals(path)) {
+                                    break;
+                                }
+                                index++;
+                            }
+                            if (index >= ReplayHandler.getKeyframeRepository().length) {
+                                throw new IllegalArgumentException("No path named \"" + path + "\".");
+                            }
+                        } else if (ReplayHandler.getKeyframeRepository().length == 0) {
+                            throw new IllegalArgumentException("Replay file has no paths defined.");
+                        }
+                        ReplayHandler.useKeyframePresetFromRepository(index);
+
+                        System.out.println("Rendering started...");
+                        ReplayProcess.startReplayProcess(options);
+                        System.out.println("Rendering done. Shutting down...");
+                        mc.shutdown();
+                    }
+                }, null));
+            }
+        }
     }
 
     private void removeTmcprFiles() {

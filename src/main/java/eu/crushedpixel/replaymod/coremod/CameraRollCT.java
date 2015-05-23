@@ -30,8 +30,22 @@ public class CameraRollCT implements IClassTransformer {
         boolean success = false;
         for (MethodNode m : classNode.methods) {
             if ("(F)V".equals(m.desc) && name_orientCamera.equals(m.name)) {
-                inject(m.instructions.iterator());
-                success = true;
+                ListIterator<AbstractInsnNode> iter = m.instructions.iterator();
+                int f = 0;
+                while (iter.hasNext()) {
+                    AbstractInsnNode node = iter.next();
+                    if ((f == 0 || f == 1) && node.getOpcode() == FCONST_0) {
+                        f++;
+                    } else if ((f == 2) && node instanceof LdcInsnNode && ((LdcInsnNode) node).cst.equals(-0.1f)) {
+                        f++;
+                    } else if (f == 3) {
+                        inject(iter);
+                        success = true;
+                        break;
+                    } else {
+                        f = 0;
+                    }
+                }
             }
         }
         if (!success) {

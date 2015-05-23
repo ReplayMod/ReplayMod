@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Vector;
 
-public class SplinePoint extends BasicSpline {
+public class SplinePoint extends BasicSpline implements Interpolation<Position> {
     private static final Object[] EMPTYOBJ = new Object[]{};
     private Vector<Position> points;
     private Vector<Cubic> xCubics;
@@ -60,7 +60,8 @@ public class SplinePoint extends BasicSpline {
         return points;
     }
 
-    public void calcSpline() {
+    @Override
+    public void prepare() {
         try {
             calcNaturalCubic(points, vectorX, xCubics);
             calcNaturalCubic(points, vectorY, yCubics);

@@ -11,8 +11,10 @@ import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
-import eu.crushedpixel.replaymod.video.VideoWriter;
+import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
+import eu.crushedpixel.replaymod.video.frame.DefaultFrameRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiChat;
@@ -123,9 +125,8 @@ public class GuiReplayOverlay extends Gui {
 
     @SubscribeEvent
     public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
-
         if(!ReplayHandler.isInReplay() || FMLClientHandler.instance().isGUIOpen(GuiPlayerOverview.class)
-                || VideoWriter.isRecording() || FMLClientHandler.instance().isGUIOpen(GuiKeyframeRepository.class)) {
+                || FMLClientHandler.instance().isGUIOpen(GuiKeyframeRepository.class)) {
             return;
         }
 
@@ -185,7 +186,19 @@ public class GuiReplayOverlay extends Gui {
                     if(hover) {
                         playOrPause();
                     } else if(mouseX >= exportButtonX && mouseX <= exportButtonX + 20 && mouseY >= exportButtonY && exportButtonY <= exportButtonY + 20) {
-                        ReplayHandler.startPath(true);
+                        // TODO Put all those settings into a nice little GUI
+                        FrameRenderer renderer = new DefaultFrameRenderer();
+//                        FrameRenderer renderer = new TilingReadPixelFrameRenderer(mc.displayWidth*3, mc.displayHeight*2);
+//                        FrameRenderer renderer = new TilingReadPixelFrameRenderer(3840, 2160);
+//                        FrameRenderer renderer = new StereoscopicFrameRenderer();
+//                        FrameRenderer renderer = new CubicFrameRenderer(false);
+//                        FrameRenderer renderer = new EquirectangularFrameRenderer(false);
+                        RenderOptions options = new RenderOptions(renderer);
+                        options.setLinearMovement(ReplayMod.replaySettings.isLinearMovement());
+                        options.setWaitForChunks(ReplayMod.replaySettings.getWaitForChunks());
+                        options.setFps(ReplayMod.replaySettings.getVideoFramerate());
+                        options.setQuality((float) ReplayMod.replaySettings.getVideoQuality());
+                        ReplayHandler.startPath(options);
                     }
 
                     if(mouseX >= timelineX + 4 && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29) {
@@ -743,7 +756,7 @@ public class GuiReplayOverlay extends Gui {
             if(ReplayHandler.isInPath()) {
                 ReplayHandler.interruptReplay();
             } else {
-                ReplayHandler.startPath(false);
+                ReplayHandler.startPath(null);
             }
         }
 

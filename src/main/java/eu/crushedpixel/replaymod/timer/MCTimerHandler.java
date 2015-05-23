@@ -44,6 +44,10 @@ public class MCTimerHandler {
         return mc.timer.renderPartialTicks;
     }
 
+    public static Timer getTimer() {
+        return mc.timer;
+    }
+
     public static void advanceTicks(int ticks) {
         mc.timer.elapsedTicks += ticks;
     }

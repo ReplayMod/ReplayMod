@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
@@ -86,8 +87,8 @@ public class ReplayHandler {
         return currentEntity == cameraEntity;
     }
 
-    public static void startPath(boolean save) {
-        if(!ReplayHandler.isInPath()) ReplayProcess.startReplayProcess(save);
+    public static void startPath(RenderOptions renderOptions) {
+        if(!ReplayHandler.isInPath()) ReplayProcess.startReplayProcess(renderOptions);
     }
 
     public static void interruptReplay() {
@@ -322,7 +323,11 @@ public class ReplayHandler {
         return inReplay;
     }
 
-    public static void startReplay(File file) throws NoSuchMethodException, SecurityException, NoSuchFieldException {
+    public static void startReplay(File file) {
+        startReplay(file, true);
+    }
+
+    public static void startReplay(File file, boolean asyncMode) {
 
         ReplayMod.chatMessageHandler.initialize();
         mc.ingameGUI.getChatGUI().clearChatMessages();
@@ -358,7 +363,7 @@ public class ReplayHandler {
         PlayerVisibility visibility = currentReplayFile.visibility().get();
         PlayerHandler.loadPlayerVisibilityConfiguration(visibility);
 
-        ReplayMod.replaySender = new ReplaySender(currentReplayFile, true);
+        ReplayMod.replaySender = new ReplaySender(currentReplayFile, asyncMode);
         channel.pipeline().addFirst(ReplayMod.replaySender);
         channel.pipeline().fireChannelActive();
 

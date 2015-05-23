@@ -5,12 +5,17 @@ import akka.japi.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class LinearInterpolation<K> {
+public abstract class LinearInterpolation<K> implements Interpolation<K> {
 
     protected List<K> points = new ArrayList<K>();
 
     public LinearInterpolation() {
         points = new ArrayList<K>();
+    }
+
+    @Override
+    public void prepare() {
+
     }
 
     public abstract K getPoint(float position);

@@ -2,8 +2,6 @@ package eu.crushedpixel.replaymod.events;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
-import eu.crushedpixel.replaymod.gui.GuiCancelRender;
-import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.video.ReplayScreenshot;
@@ -40,6 +38,7 @@ public class TickAndRenderListener {
     public void onRenderWorld(RenderWorldLastEvent event) throws
             InvocationTargetException, IOException, IllegalAccessException, IllegalArgumentException {
         if(!ReplayHandler.isInReplay()) return; //If not in Replay, cancel
+        if (ReplayProcess.isVideoRecording()) return; // If recording, cancel
 
         if(requestScreenshot == 1) {
             mc.addScheduledTask(new Runnable() {
@@ -77,16 +76,12 @@ public class TickAndRenderListener {
 
     @SubscribeEvent
     public void tick(TickEvent event) {
-        if(!ReplayHandler.isInReplay()) return;
+        if(!ReplayHandler.isInReplay() || ReplayProcess.isVideoRecording()) return;
 
         if(ReplayHandler.getCameraEntity() != null)
             ReplayHandler.getCameraEntity().updateMovement();
         if(ReplayHandler.isInPath()) {
             ReplayProcess.unblockAndTick(true);
-            if(ReplayProcess.isVideoRecording() &&
-                    !(mc.currentScreen instanceof GuiMouseInput || mc.currentScreen instanceof GuiCancelRender)) {
-                mc.displayGuiScreen(new GuiMouseInput());
-            }
         } else onMouseMove(new MouseEvent());
 
         FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());

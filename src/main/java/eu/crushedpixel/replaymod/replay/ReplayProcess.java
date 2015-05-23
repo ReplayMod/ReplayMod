@@ -2,7 +2,6 @@ package eu.crushedpixel.replaymod.replay;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
-import eu.crushedpixel.replaymod.gui.GuiCancelRender;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
@@ -10,14 +9,13 @@ import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.interpolation.LinearPoint;
 import eu.crushedpixel.replaymod.interpolation.LinearTimestamp;
 import eu.crushedpixel.replaymod.interpolation.SplinePoint;
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.MCTimerHandler;
-import eu.crushedpixel.replaymod.video.ScreenCapture;
-import eu.crushedpixel.replaymod.video.VideoWriter;
+import eu.crushedpixel.replaymod.video.VideoRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.chunk.RenderChunk;
 
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 public class ReplayProcess {
 
@@ -79,11 +77,11 @@ public class ReplayProcess {
         EnchantmentTimer.resetRecordingTime();
     }
 
-    public static void startReplayProcess(boolean record) {
+    public static void startReplayProcess(RenderOptions renderOptions) {
         ReplayHandler.selectKeyframe(null);
         resetProcess();
 
-        isVideoRecording = record;
+        isVideoRecording = renderOptions != null;
 
         ReplayMod.chatMessageHandler.initialize();
 
@@ -97,24 +95,28 @@ public class ReplayProcess {
         ReplayHandler.setInPath(true);
         ReplayMod.replaySender.setAsyncMode(false);
 
-        //gets first Timestamp and sets Replay Time to it
-        TimeKeyframe tf = ReplayHandler.getFirstTimeKeyframe();
-        if(tf != null) {
-            int ts = tf.getTimestamp();
-            if(ts < ReplayMod.replaySender.currentTimeStamp()) {
-                mc.displayGuiScreen(null);
+        if (renderOptions == null) {
+            //gets first Timestamp and sets Replay Time to it
+            TimeKeyframe tf = ReplayHandler.getFirstTimeKeyframe();
+            if (tf != null) {
+                int ts = tf.getTimestamp();
+                if (ts < ReplayMod.replaySender.currentTimeStamp()) {
+                    mc.displayGuiScreen(null);
+                }
+                ReplayMod.replaySender.sendPacketsTill(ts);
             }
-            ReplayMod.replaySender.sendPacketsTill(ts);
-        }
 
-        ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
-
-        //if video is recording, the Replay Process takes control over the Minecraft Timer
-        if(isVideoRecording()) {
+            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
             MCTimerHandler.setTimerSpeed(1f);
-            MCTimerHandler.setPassiveTimer();
         } else {
-            MCTimerHandler.setTimerSpeed(1f);
+            try {
+                isVideoRecording = true;
+                boolean success = new VideoRenderer(renderOptions).renderVideo();
+                isVideoRecording = false;
+                stopReplayProcess(success);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -125,9 +127,6 @@ public class ReplayProcess {
         if(finished) ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathfinished", ChatMessageType.INFORMATION);
         else {
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathinterrupted", ChatMessageType.INFORMATION);
-            if(isVideoRecording()) {
-                VideoWriter.abortRecording();
-            }
         }
 
         ReplayHandler.setInPath(false);
@@ -143,14 +142,17 @@ public class ReplayProcess {
     public static void unblockAndTick(boolean justCheck) {
         if(!deepBlock) blocked = false;
         if(!blocked || !isVideoRecording())
-            pathTick(isVideoRecording(), justCheck);
+            ReplayProcess.tickReplay(justCheck);
     }
 
     //if justCheck is true, no Screenshot will be taken, it will only be checked
     //whether all chunks have been rendered. This is necessary because no Render ticks
     //are called if the Timer speed is set to 0, leading to this method never being
     //called from the RenderWorldLastEvent handlers.
-    private static void pathTick(boolean recording, boolean justCheck) {
+    public static void tickReplay(boolean justCheck) {
+        if (isVideoRecording) {
+            return;
+        }
         if(ReplayMod.replaySender.isHurrying()) {
             lastRealTime = System.currentTimeMillis();
             return;
@@ -166,34 +168,7 @@ public class ReplayProcess {
             MCTimerHandler.setTicks(100);
         }
 
-        if(recording && ((ReplayMod.replaySettings.getWaitForChunks() && RenderChunk.renderChunksUpdated != 0) || mc.currentScreen instanceof GuiCancelRender)) {
-            if(!firstTime) {
-                MCTimerHandler.setTimerSpeed(0f);
-                MCTimerHandler.setPartialTicks(0f);
-                MCTimerHandler.setRenderPartialTicks(0f);
-                MCTimerHandler.setTicks(0);
-                resetTimer = true;
-            }
-            return;
-        } else if(recording && ReplayMod.replaySettings.getWaitForChunks()) {
-            MCTimerHandler.setTimerSpeed((float) lastSpeed);
-            //MCTimerHandler.setRenderPartialTicks(lastRenderPartialTicks);
-            if(resetTimer) {
-                MCTimerHandler.setPartialTicks(lastPartialTicks);
-                MCTimerHandler.setRenderPartialTicks(lastRenderPartialTicks);
-                MCTimerHandler.setTicks(lastTicks);
-                resetTimer = false;
-            }
-        }
-
         if(justCheck) return;
-
-        if(recording) {
-            if(blocked) return;
-
-            deepBlock = true;
-            blocked = true;
-        }
 
         int posCount = ReplayHandler.getPosKeyframeCount();
         int timeCount = ReplayHandler.getTimeKeyframeCount();
@@ -233,16 +208,11 @@ public class ReplayProcess {
         if(!calculated) {
             calculated = true;
             if(posCount > 1 && motionSpline != null)
-                motionSpline.calcSpline();
+                motionSpline.prepare();
         }
 
         long curTime = System.currentTimeMillis();
-        long timeStep;
-        if(recording) {
-            timeStep = 1000 / ReplayMod.replaySettings.getVideoFramerate();
-        } else {
-            timeStep = curTime - lastRealTime;
-        }
+        long timeStep = curTime - lastRealTime;
 
         int curRealReplayTime = (int) (lastRealReplayTime + timeStep);
 
@@ -333,25 +303,19 @@ public class ReplayProcess {
             }
         }
 
-        ReplayHandler.setCameraTilt(pos.getRoll());
-
         Integer curTimestamp = null;
         if(timeLinear != null && timeCount > 1) {
             curTimestamp = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
         }
 
         if(pos != null) {
+            ReplayHandler.setCameraTilt(pos.getRoll());
             ReplayHandler.getCameraEntity().movePath(pos);
         }
 
         if(!isVideoRecording()) ReplayMod.replaySender.setReplaySpeed(curSpeed);
         //if(curSpeed > 0)
         lastSpeed = curSpeed;
-
-        if(recording) {
-            MCTimerHandler.updateTimer((1f / ReplayMod.replaySettings.getVideoFramerate()));
-            EnchantmentTimer.increaseRecordingTime((1000 / ReplayMod.replaySettings.getVideoFramerate()));
-        }
 
         lastPartialTicks = MCTimerHandler.getPartialTicks();
         lastRenderPartialTicks = MCTimerHandler.getRenderTicks();
@@ -365,33 +329,13 @@ public class ReplayProcess {
         lastRealReplayTime = curRealReplayTime;
         lastRealTime = curTime;
 
-        if(isVideoRecording()) {
-            try {
-                if(!VideoWriter.isRecording() && ReplayHandler.isInPath()) {
-                    VideoWriter.startRecording(mc.displayWidth, mc.displayHeight);
-                } else {
-                    final BufferedImage screen = ScreenCapture.captureScreen();
-                    VideoWriter.writeImage(screen);
-                }
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-
         if(requestFinish) {
             stopReplayProcess(true);
             requestFinish = false;
-            if(recording) {
-                VideoWriter.endRecording();
-            }
         }
 
         if((splinePos >= 1 || posCount <= 1) && (timePos >= 1 || timeCount <= 1)) {
             requestFinish = true;
-        }
-
-        if(recording) {
-            deepBlock = false;
         }
     }
 }
