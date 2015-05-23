@@ -38,7 +38,7 @@ public class SplinePoint extends BasicSpline implements Interpolation<Position> 
             vectorZ = Position.class.getDeclaredField("z");
             vectorPitch = Position.class.getDeclaredField("pitch");
             vectorYaw = Position.class.getDeclaredField("yaw");
-            vectorRot = Position.class.getDeclaredField("rotation");
+            vectorRot = Position.class.getDeclaredField("roll");
             vectorX.setAccessible(true);
             vectorY.setAccessible(true);
             vectorZ.setAccessible(true);
