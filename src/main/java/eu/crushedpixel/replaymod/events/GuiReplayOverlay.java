@@ -309,7 +309,7 @@ public class GuiReplayOverlay extends Gui {
         GlStateManager.resetColor();
         this.drawModalRectWithCustomSizedTexture(time_ButtonX, time_ButtonY, x, y, 20, 20, 64, 64);
 
-        if(mouseX >= (timelineX + 4) && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29 && mc.currentScreen.getClass() == GuiMouseInput.class) {
+        if(mouseX >= (timelineX + 4) && mouseX <= width - 18 && mouseY >= 11 && mouseY <= 29 && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
             double tot = (width - 18) - (timelineX + 4);
             double perc = (mouseX - (timelineX + 4)) / tot;
             long time = Math.round(perc * (double) ReplayMod.replaySender.replayLength());
@@ -476,7 +476,7 @@ public class GuiReplayOverlay extends Gui {
         }
 
         //show Time String
-        if(mouseX >= zero && mouseX <= full && mouseY >= y && mouseY <= y + 22 && mc.currentScreen.getClass() == GuiMouseInput.class) {
+        if(mouseX >= zero && mouseX <= full && mouseY >= y && mouseY <= y + 22 && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
             long tot = Math.round((double) timelineLength * zoom_scale);
             double perc = (mouseX - (realTimelineX + 4)) / (double) (full - zero);
 
