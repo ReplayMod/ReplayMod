@@ -32,6 +32,8 @@ public class GuiRenderSettings extends GuiScreen {
     private GuiVideoFramerateSlider framerateSlider;
     private GuiVideoQualitySlider qualitySlider;
 
+    private int w1, w2, w3;
+
     private boolean initialized;
 
     private boolean linear = false;
@@ -76,6 +78,8 @@ public class GuiRenderSettings extends GuiScreen {
             qualitySlider = new GuiVideoQualitySlider(GuiConstants.RENDER_SETTINGS_QUALITY_SLIDER, 0, 0, (float)ReplayMod.replaySettings.getVideoQuality(),
                     I18n.format("replaymod.gui.rendersettings.quality"));
 
+            forceChunks.width = interpolation.width = framerateSlider.width = qualitySlider.width = 150;
+
             ignoreCamDir = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_STATIC_CAMERA, 0, 0, I18n.format("replaymod.gui.rendersettings.stablecamera"), false);
             youtubeExport = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_YOUTUBE_READY, 0, 0, I18n.format("replaymod.gui.rendersettings.exportyoutube"), true);
             ignoreCamDir.enabled = youtubeExport.enabled = false;
@@ -88,9 +92,6 @@ public class GuiRenderSettings extends GuiScreen {
         virtualHeight = 200;
         virtualY = (this.height-virtualHeight)/2;
 
-        rendererDropdown.yPosition = virtualY + 15 + 5;
-        rendererDropdown.xPosition = leftBorder + 10 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.renderer") + ":")+10;
-
         cancelButton.width = renderButton.width = 100;
 
         cancelButton.xPosition = width-10-5-100;
@@ -101,17 +102,23 @@ public class GuiRenderSettings extends GuiScreen {
         buttonList.add(cancelButton);
         buttonList.add(renderButton);
 
-        customResolution.yPosition = virtualY + 15 + 5 + 20 + 10 + 5;
-        customResolution.xPosition = leftBorder + 10;
+        w1 = rendererDropdown.width + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.renderer") + ":")+10;
+        rendererDropdown.yPosition = virtualY + 15 + 15;
+        rendererDropdown.xPosition = (width-w1)/2 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.renderer") + ":")+10;
+
+        w2 = customResolution.width+5+xRes.width+5+fontRendererObj.getStringWidth("*")+5+yRes.width;
+
+        customResolution.yPosition = virtualY + 15 + 5 + 20 + 10 +5+fontRendererObj.getStringWidth("*")+5;
+        customResolution.xPosition = (width-w2)/2;
         buttonList.add(customResolution);
 
-        xRes.xPosition = customResolution.xPosition + 20 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.customresolution"));
-        yRes.xPosition = xRes.xPosition+xRes.width+5+fontRendererObj.getStringWidth("*")+8;
+        xRes.xPosition = customResolution.xPosition + customResolution.width + 5;
+        yRes.xPosition = xRes.xPosition+xRes.width+5+fontRendererObj.getStringWidth("*")+5;
         xRes.yPosition = yRes.yPosition = customResolution.yPosition-3;
 
-        forceChunks.width = interpolation.width = framerateSlider.width = qualitySlider.width = 150;
+        w3 = interpolation.width + 10 + forceChunks.width;
 
-        interpolation.xPosition = leftBorder+10;
+        interpolation.xPosition = (width-w3)/2;
         interpolation.yPosition = xRes.yPosition+20+10;
         buttonList.add(interpolation);
 
@@ -126,8 +133,8 @@ public class GuiRenderSettings extends GuiScreen {
         buttonList.add(framerateSlider);
         buttonList.add(qualitySlider);
 
-        ignoreCamDir.xPosition = framerateSlider.xPosition;
-        youtubeExport.xPosition = qualitySlider.xPosition;
+        ignoreCamDir.xPosition = framerateSlider.xPosition + (framerateSlider.width - ignoreCamDir.width)/2;
+        youtubeExport.xPosition = qualitySlider.xPosition + (qualitySlider.width - youtubeExport.width)/2;
         
         ignoreCamDir.yPosition = youtubeExport.yPosition = framerateSlider.yPosition+20+10;
 
@@ -145,7 +152,7 @@ public class GuiRenderSettings extends GuiScreen {
                 this.width / 2, virtualY + 5, Color.WHITE.getRGB());
 
         this.drawString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.renderer") + ":",
-                leftBorder + 10, virtualY + 15 + 5 + 7, Color.WHITE.getRGB());
+                (width-w1)/2, rendererDropdown.yPosition + 8, Color.WHITE.getRGB());
 
         xRes.drawTextBox();
         yRes.drawTextBox();
