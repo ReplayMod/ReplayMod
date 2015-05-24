@@ -139,6 +139,13 @@ public class ApiClient {
         invokeAndReturn(builder, Success.class);
     }
 
+    public FileRating[] getRatedFiles(String auth) throws IOException, ApiException {
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_ratings);
+        builder.put("auth", auth);
+
+        return invokeAndReturn(builder, RatedFiles.class).getRated();
+    }
+
     public void favFile(String auth, int file, boolean fav) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.fav_file);
         builder.put("auth", auth);

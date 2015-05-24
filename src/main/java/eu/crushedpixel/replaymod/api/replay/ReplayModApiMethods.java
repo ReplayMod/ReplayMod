@@ -14,6 +14,7 @@ public class ReplayModApiMethods {
     public static final String get_thumbnail = REPLAYMOD_BASE_URL+"get_thumbnail";
     public static final String remove_file = REPLAYMOD_BASE_URL+"remove_file";
     public static final String rate_file = REPLAYMOD_BASE_URL+"rate_file";
+    public static final String get_ratings = REPLAYMOD_BASE_URL+"get_ratings";
     public static final String fav_file = REPLAYMOD_BASE_URL+"fav_file";
     public static final String get_favorites = REPLAYMOD_BASE_URL+"get_favorites";
     public static final String check_auth = REPLAYMOD_BASE_URL+"check_auth";
