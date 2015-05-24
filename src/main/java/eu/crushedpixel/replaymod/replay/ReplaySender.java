@@ -14,6 +14,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
@@ -290,6 +291,11 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         if(p instanceof S08PacketPlayerPosLook) {
             if(!hasWorldLoaded) hasWorldLoaded = true;
             final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook) p;
+
+            if (mc.currentScreen instanceof GuiDownloadTerrain) {
+                // Close the world loading screen manually in case we swallow the packet
+                mc.displayGuiScreen(null);
+            }
 
             if(ReplayHandler.isInPath()) return null;
 
