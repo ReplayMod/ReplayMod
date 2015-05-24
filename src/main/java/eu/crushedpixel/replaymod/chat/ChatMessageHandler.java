@@ -52,7 +52,7 @@ public class ChatMessageHandler {
                 }
             }
         }
-    });
+    }, "replaymod-chat-message-handler");
 
     public ChatMessageHandler() {
         t.start();

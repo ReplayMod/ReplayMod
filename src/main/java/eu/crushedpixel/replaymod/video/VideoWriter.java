@@ -110,7 +110,7 @@ public class VideoWriter {
                     e.printStackTrace();
                 }
             }
-        });
+        }, "replaymod-video-writer");
         writerThread.start();
     }
 

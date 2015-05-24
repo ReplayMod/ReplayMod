@@ -155,7 +155,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         this.replayLength = file.metadata().get().getDuration();
 
         if (asyncMode) {
-            new Thread(asyncSender).start();
+            new Thread(asyncSender, "replaymod-async-sender").start();
         }
     }
 
@@ -170,7 +170,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         this.asyncMode = asyncMode;
         if (asyncMode) {
             this.terminate = false;
-            new Thread(asyncSender).start();
+            new Thread(asyncSender, "replaymod-async-sender").start();
         } else {
             this.terminate = true;
         }

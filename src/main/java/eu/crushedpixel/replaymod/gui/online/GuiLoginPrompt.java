@@ -114,7 +114,7 @@ public class GuiLoginPrompt extends GuiScreen {
                                 break;
                         }
                     }
-                }).start();
+                }, "replaymod-auth").start();
             }
         } else if(button.id == GuiConstants.LOGIN_CANCEL_BUTTON) {
             mc.displayGuiScreen(parent);

@@ -105,7 +105,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 }
 
             }
-        });
+        }, "replaymod-packet-writer");
 
         public DataWriter(DataOutputStream stream) {
             this.stream = stream;

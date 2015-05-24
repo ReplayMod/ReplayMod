@@ -200,7 +200,7 @@ public class GuiRegister extends GuiScreen {
                             message = I18n.format("replaymod.gui.login.connectionerror");
                         }
                     }
-                }).start();
+                }, "replaymod-register").start();
                 break;
         }
     }

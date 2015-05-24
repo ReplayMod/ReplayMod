@@ -19,7 +19,7 @@ public class ReplayFileAppender extends Thread {
             public void run() {
                 ReplayFileAppender.this.shutdown();
             }
-        }));
+        }, "replaymod-file-appender-shutdown"));
     }
 
     public void registerModifiedFile(File toAdd, String name, File replayFile) {

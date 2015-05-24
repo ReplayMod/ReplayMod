@@ -86,7 +86,7 @@ public class GuiPlayerOverview extends GuiScreen {
                         e.printStackTrace();
                     }
                 }
-            }).start();
+            }, "replaymod-skin-loader").start();
         }
 
         playerCount = players.size();

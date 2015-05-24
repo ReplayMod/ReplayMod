@@ -96,7 +96,7 @@ public class ReplayScreenshot {
                         TickAndRenderListener.finishScreenshot();
                     }
                 }
-            });
+            }, "replaymod-screenshot-saver");
 
             ioThread.start();
         } catch(Exception exception) {

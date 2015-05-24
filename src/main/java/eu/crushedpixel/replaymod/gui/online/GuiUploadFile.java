@@ -241,7 +241,7 @@ public class GuiUploadFile extends GuiScreen {
                         e.printStackTrace();
                     }
                 }
-            }).start();
+            }, "replaymod-file-uploader").start();
         } else if(button.id == GuiConstants.UPLOAD_CANCEL_BUTTON) {
             uploader.cancelUploading();
         }

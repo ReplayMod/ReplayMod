@@ -390,7 +390,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 currentTab = Tab.RECENT_FILES;
                 updateCurrentList(new SearchPagination(recentFileSearchQuery));
             }
-        });
+        }, "replaymod-list-loader");
         currentListLoader.start();
     }
 
@@ -402,7 +402,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 currentTab = Tab.BEST_FILES;
                 updateCurrentList(new SearchPagination(bestFileSearchQuery));
             }
-        });
+        }, "replaymod-list-loader");
         currentListLoader.start();
     }
 
@@ -414,7 +414,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 currentTab = Tab.DOWNLOADED_FILES;
                 updateCurrentList(new DownloadedFilePagination());
             }
-        });
+        }, "replaymod-list-loader");
         currentListLoader.start();
     }
 
@@ -427,7 +427,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 ReplayMod.favoritedFileHandler.reloadFavorites();
                 updateCurrentList(new FavoritedFilePagination());
             }
-        });
+        }, "replaymod-list-loader");
         currentListLoader.start();
     }
 

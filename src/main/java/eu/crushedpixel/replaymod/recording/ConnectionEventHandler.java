@@ -109,23 +109,23 @@ public class ConnectionEventHandler {
                     @Override
                     public void run() {
                         String worldName = null;
-                        while(worldName == null) {
-                            try {
+                        while (true) {
+                            if (MinecraftServer.getServer() != null) {
                                 worldName = MinecraftServer.getServer().getWorldName();
-                                listener.setWorldName(worldName);
-                                return;
-
-                            } catch(Exception e) {
+                            }
+                            if (worldName == null) {
                                 try {
                                     Thread.sleep(100);
-                                } catch(InterruptedException e1) {
-                                    e1.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
                                 }
+                            } else {
+                                listener.setWorldName(worldName);
+                                return;
                             }
                         }
-
                     }
-                }).start();
+                }, "replaymod-world-name-fetcher").start();
             }
 
             packetListener = listener;
