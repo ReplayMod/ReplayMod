@@ -23,5 +23,10 @@ public class Rating {
         RatingType(String key) {
             this.key = key;
         }
+
+        public static RatingType fromBoolean(Boolean rating) {
+            return rating == null ? RatingType.NEUTRAL :
+                    (rating ? RatingType.LIKE : RatingType.DISLIKE);
+        }
     }
 }

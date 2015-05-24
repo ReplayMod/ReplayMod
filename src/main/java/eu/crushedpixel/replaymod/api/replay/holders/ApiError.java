@@ -31,6 +31,11 @@ public class ApiError {
     }
 
     public String getTranslatedDesc() {
-        return I18n.format(key, (Object[])objects);
+        try {
+            return I18n.format(key, (Object[]) objects);
+        } catch(Exception e) {
+            e.printStackTrace();
+            return desc;
+        }
     }
 }

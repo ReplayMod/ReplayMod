@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui.online;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.SearchQuery;
 import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
+import eu.crushedpixel.replaymod.api.replay.holders.Rating;
 import eu.crushedpixel.replaymod.api.replay.pagination.DownloadedFilePagination;
 import eu.crushedpixel.replaymod.api.replay.pagination.FavoritedFilePagination;
 import eu.crushedpixel.replaymod.api.replay.pagination.Pagination;
@@ -177,6 +178,19 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             favButton.displayString = favorited ? I18n.format("replaymod.gui.center.unfavorite") : I18n.format("replaymod.gui.center.favorite");
             //if not downloaded, disable favorising
             favButton.enabled = favorited || downloaded;
+
+            likeButton.enabled = dislikeButton.enabled = downloaded;
+            Rating.RatingType rating = ReplayMod.ratedFileHandler.getRating(info.getId());
+
+            likeButton.displayString = I18n.format("replaymod.gui.like");
+            dislikeButton.displayString = I18n.format("replaymod.gui.dislike");
+
+            if(rating == Rating.RatingType.LIKE) {
+                likeButton.displayString = I18n.format("replaymod.gui.removelike");
+            } else if(rating == Rating.RatingType.DISLIKE) {
+                dislikeButton.displayString = I18n.format("replaymod.gui.removedislike");
+            }
+
         } else {
             for(GuiButton b : replayButtonBar) {
                 b.enabled = false;
@@ -240,6 +254,36 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 }
                 elementSelected(currentList.selected);
             }
+        } else if(button.id == GuiConstants.CENTER_LIKE_REPLAY_BUTTON) {
+            GuiReplayListEntry entry = (GuiReplayListEntry)currentList.getListEntry(currentList.selected);
+            FileInfo info = entry.getFileInfo();
+            if(info != null) {
+                try {
+                    if(ReplayMod.ratedFileHandler.getRating(info.getId()) == Rating.RatingType.LIKE) {
+                        ReplayMod.ratedFileHandler.rateFile(info.getId(), Rating.RatingType.NEUTRAL);
+                    } else {
+                        ReplayMod.ratedFileHandler.rateFile(info.getId(), Rating.RatingType.LIKE);
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+                elementSelected(currentList.selected);
+            }
+        } else if(button.id == GuiConstants.CENTER_DISLIKE_REPLAY_BUTTON) {
+            GuiReplayListEntry entry = (GuiReplayListEntry)currentList.getListEntry(currentList.selected);
+            FileInfo info = entry.getFileInfo();
+            if(info != null) {
+                try {
+                    if(ReplayMod.ratedFileHandler.getRating(info.getId()) == Rating.RatingType.DISLIKE) {
+                        ReplayMod.ratedFileHandler.rateFile(info.getId(), Rating.RatingType.NEUTRAL);
+                    } else {
+                        ReplayMod.ratedFileHandler.rateFile(info.getId(), Rating.RatingType.DISLIKE);
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+                elementSelected(currentList.selected);
+            }
         }
     }
 
@@ -271,7 +315,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
         if(((favButton.isMouseOver() && !favButton.enabled) || (likeButton.isMouseOver() && !likeButton.enabled)
                 || (dislikeButton.isMouseOver() && !dislikeButton.enabled ))&& currentList.selected != -1) {
-            this.drawString(fontRendererObj, I18n.format("replaymod.gui.center.downloadrequired"), mouseX, mouseY + 4, Color.RED.getRGB());
+            this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.center.downloadrequired"), mouseX, mouseY + 4, Color.RED.getRGB());
         }
 
         this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.replaycenter"), this.width / 2, 5, Color.WHITE.getRGB());

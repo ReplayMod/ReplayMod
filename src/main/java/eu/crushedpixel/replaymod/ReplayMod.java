@@ -76,6 +76,7 @@ public class ReplayMod {
     public static UploadedFileHandler uploadedFileHandler;
     public static DownloadedFileHandler downloadedFileHandler;
     public static FavoritedFileHandler favoritedFileHandler;
+    public static RatedFileHandler ratedFileHandler;
 
     private static Field defaultResourcePacksField;
     static {
@@ -103,8 +104,8 @@ public class ReplayMod {
         replaySettings.readValues();
 
         downloadedFileHandler = new DownloadedFileHandler();
-
         favoritedFileHandler = new FavoritedFileHandler();
+        ratedFileHandler = new RatedFileHandler();
 
         replayFileAppender = new ReplayFileAppender();
         replayFileAppender.start();
