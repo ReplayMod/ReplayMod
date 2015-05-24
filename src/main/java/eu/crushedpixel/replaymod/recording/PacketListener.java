@@ -98,16 +98,20 @@ public class PacketListener extends DataListener {
         if(packet instanceof S0FPacketSpawnMob) {
             S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
             p.field_149043_l = new DataWatcher(null);
-            for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>)p.func_149027_c()) {
-                p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
+            if(p.func_149027_c() != null) {
+                for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_149027_c()) {
+                    p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
+                }
             }
         }
 
         if(packet instanceof S0CPacketSpawnPlayer) {
             S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
             p.field_148960_i = new DataWatcher(null);
-            for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>)p.func_148944_c()) {
-                p.field_148960_i.addObject(wo.getDataValueId(), wo.getObject());
+            if(p.func_148944_c() != null) {
+                for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_148944_c()) {
+                    p.field_148960_i.addObject(wo.getDataValueId(), wo.getObject());
+                }
             }
         }
 
