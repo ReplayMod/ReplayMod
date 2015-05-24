@@ -144,7 +144,6 @@ public class CameraEntity extends EntityPlayer {
         this.prevRotationYaw = this.rotationYaw;
     }
 
-
     @Override
     public MovingObjectPosition rayTrace(double p_174822_1_, float p_174822_3_) {
         return null;
@@ -156,8 +155,7 @@ public class CameraEntity extends EntityPlayer {
     }
 
     @Override
-    protected void createRunningParticles() {
-    }
+    protected void createRunningParticles() {}
 
     @Override
     public boolean canBeCollidedWith() {
@@ -170,8 +168,7 @@ public class CameraEntity extends EntityPlayer {
     }
 
     @Override
-    public void setCurrentItemOrArmor(int slotIn, ItemStack stack) {
-    }
+    public void setCurrentItemOrArmor(int slotIn, ItemStack stack) {}
 
     @Override
     public ItemStack[] getInventory() {
