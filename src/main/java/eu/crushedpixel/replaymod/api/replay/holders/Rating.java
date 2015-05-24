@@ -11,4 +11,17 @@ public class Rating {
     public int getPositive() {
         return positive;
     }
+
+    public enum RatingType {
+
+        LIKE("like"), DISLIKE("dislike"), NEUTRAL("neutral");
+
+        private String key;
+
+        public String getKey() { return key; }
+
+        RatingType(String key) {
+            this.key = key;
+        }
+    }
 }

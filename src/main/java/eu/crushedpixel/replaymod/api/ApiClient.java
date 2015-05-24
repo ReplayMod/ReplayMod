@@ -131,11 +131,11 @@ public class ApiClient {
         }
     }
 
-    public void rateFile(String auth, int file, boolean like) throws IOException, ApiException {
+    public void rateFile(String auth, int file, Rating.RatingType rating) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.rate_file);
         builder.put("auth", auth);
         builder.put("id", file);
-        builder.put("like", like);
+        builder.put("rating", rating.getKey());
         invokeAndReturn(builder, Success.class);
     }
 
