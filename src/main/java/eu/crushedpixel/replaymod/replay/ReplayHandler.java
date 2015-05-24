@@ -427,6 +427,10 @@ public class ReplayHandler {
         inReplay = false;
     }
 
+    public static void setInReplay(boolean inReplay1) {
+        inReplay = inReplay1;
+    }
+
     public static Keyframe getSelectedKeyframe() {
         return selectedKeyframe;
     }

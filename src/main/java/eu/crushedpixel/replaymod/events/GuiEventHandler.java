@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.events;
 
+import de.johni0702.replaystudio.replay.Replay;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
@@ -64,6 +65,7 @@ public class GuiEventHandler {
                     e.printStackTrace();
                 }
             }
+            if(ReplayHandler.isInReplay()) ReplayHandler.setInReplay(false);
         }
 
         if(!AuthenticationHandler.isAuthenticated()) return;
