@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.renderer;
 
+import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -18,7 +19,7 @@ public class InvisibilityRender extends RenderPlayer {
 
     @Override
     public boolean shouldRender(Entity entity, ICamera camera, double camX, double camY, double camZ) {
-        if(PlayerHandler.isHidden(entity.getEntityId())) return false;
+        if(PlayerHandler.isHidden(entity.getEntityId()) || entity instanceof CameraEntity) return false;
         return super.shouldRender(entity, camera, camX, camY, camZ);
     }
 }
