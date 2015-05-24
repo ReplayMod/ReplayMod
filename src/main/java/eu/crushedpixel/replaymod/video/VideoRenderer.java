@@ -78,6 +78,7 @@ public class VideoRenderer {
         // the second time to prevent interpolation of the player position
         tick();
 
+        mc.renderGlobal.renderEntitiesStartupCounter = 0;
 
         framesDone = 0;
         while (framesDone < totalFrames && !cancelled) {
