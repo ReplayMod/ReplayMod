@@ -87,6 +87,10 @@ public class ReplayHandler {
         return currentEntity == cameraEntity;
     }
 
+    public static Entity getCurrentEntity() {
+        return currentEntity;
+    }
+
     public static void startPath(RenderOptions renderOptions) {
         if(!ReplayHandler.isInPath()) ReplayProcess.startReplayProcess(renderOptions);
     }

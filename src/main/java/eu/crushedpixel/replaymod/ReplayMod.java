@@ -12,6 +12,7 @@ import eu.crushedpixel.replaymod.reflection.MCPNames;
 import eu.crushedpixel.replaymod.registry.*;
 import eu.crushedpixel.replaymod.renderer.InvisibilityRender;
 import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
+import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
@@ -77,6 +78,7 @@ public class ReplayMod {
     public static DownloadedFileHandler downloadedFileHandler;
     public static FavoritedFileHandler favoritedFileHandler;
     public static RatedFileHandler ratedFileHandler;
+    public static SpectatorRenderer spectatorRenderer;
 
     private static Field defaultResourcePacksField;
     static {
@@ -135,6 +137,10 @@ public class ReplayMod {
         TickAndRenderListener tarl = new TickAndRenderListener();
         FMLCommonHandler.instance().bus().register(tarl);
         MinecraftForge.EVENT_BUS.register(tarl);
+
+        spectatorRenderer = new SpectatorRenderer();
+        FMLCommonHandler.instance().bus().register(spectatorRenderer);
+        MinecraftForge.EVENT_BUS.register(spectatorRenderer);
 
         KeybindRegistry.initialize();
 
