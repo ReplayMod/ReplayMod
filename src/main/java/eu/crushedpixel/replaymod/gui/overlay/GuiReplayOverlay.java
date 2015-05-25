@@ -402,6 +402,14 @@ public class GuiReplayOverlay extends Gui {
         GlStateManager.enableBlend();
     }
 
+    public void togglePlayPause() {
+        if (ReplayMod.replaySender.paused()) {
+            ReplayMod.replaySender.setReplaySpeed(speedSlider.getSliderValue());
+        } else {
+            ReplayMod.replaySender.setReplaySpeed(0);
+        }
+    }
+
     /**
      * Dummy interface for GUI on which this replay overlay shall not be rendered.
      */

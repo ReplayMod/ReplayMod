@@ -105,7 +105,7 @@ public class KeyInputHandler {
     public void handleCustomKeybindings(KeyBinding kb, boolean found, int keyCode) {
         //Custom registered handlers
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PLAY_PAUSE) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
-            ReplayMod.overlay.playOrPause();
+            ReplayMod.overlay.togglePlayPause();
         }
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ROLL_CLOCKWISE) && (kb.isKeyDown() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
