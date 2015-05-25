@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import eu.crushedpixel.replaymod.api.ApiClient;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.*;
+import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
@@ -130,9 +131,7 @@ public class ReplayMod {
     public void postInit(FMLPostInitializationEvent event) throws IOException {
         GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
 
-        overlay = new GuiReplayOverlay();
-        FMLCommonHandler.instance().bus().register(overlay);
-        MinecraftForge.EVENT_BUS.register(overlay);
+        overlay.register();
 
         TickAndRenderListener tarl = new TickAndRenderListener();
         FMLCommonHandler.instance().bus().register(tarl);

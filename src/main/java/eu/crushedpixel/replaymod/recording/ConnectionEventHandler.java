@@ -2,14 +2,17 @@ package eu.crushedpixel.replaymod.recording;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
+import eu.crushedpixel.replaymod.gui.overlay.GuiRecordingOverlay;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
@@ -33,6 +36,7 @@ public class ConnectionEventHandler {
     private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
     private static PacketListener packetListener = null;
     private static boolean isRecording = false;
+    private final GuiRecordingOverlay guiOverlay = new GuiRecordingOverlay(Minecraft.getMinecraft());
     private File currentFile;
     private String fileName;
 
@@ -101,6 +105,8 @@ public class ConnectionEventHandler {
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.recordingstarted", ChatMessageType.INFORMATION);
             isRecording = true;
 
+            MinecraftForge.EVENT_BUS.register(guiOverlay);
+
             final PacketListener listener = insert;
 
             if(insert != null && event.isLocal) {
@@ -139,6 +145,7 @@ public class ConnectionEventHandler {
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
         isRecording = false;
+        MinecraftForge.EVENT_BUS.unregister(guiOverlay);
         packetListener = null;
         ReplayMod.chatMessageHandler.stop();
     }

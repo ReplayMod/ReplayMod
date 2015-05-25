@@ -89,7 +89,7 @@ public class KeyInputHandler {
                 }
 
                 if(kb.getKeyDescription().equals("key.chat") && kb.isPressed()) {
-                    mc.displayGuiScreen(new GuiMouseInput());
+                    mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));
                     break;
                 }
 

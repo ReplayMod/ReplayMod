@@ -26,11 +26,6 @@ public class GuiReplaySpeedSlider extends GuiButton {
         this.valueStep = 1;
         this.displayString = displayKey + ": 1x";
         this.displayKey = displayKey;
-
-        Minecraft.getMinecraft().getTextureManager().bindTexture(buttonTextures);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        this.drawTexturedModalRect(this.xPosition + (int) (sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
-        this.drawTexturedModalRect(this.xPosition + (int) (sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
     }
 
     public static float convertScaleRet(float value) {
@@ -151,7 +146,7 @@ public class GuiReplaySpeedSlider extends GuiButton {
         float min = 0 - valueMin;
         float max = valueMax + min;
 
-        return Math.round(value * (max) - min);
+        return Math.round(value * max - min);
     }
 
     public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {

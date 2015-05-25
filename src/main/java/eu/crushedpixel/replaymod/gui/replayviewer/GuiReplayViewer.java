@@ -24,6 +24,7 @@ import net.minecraft.util.Util;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.Point;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

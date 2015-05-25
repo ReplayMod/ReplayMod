@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.GuiEntryList;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -18,7 +19,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class GuiKeyframeRepository extends GuiScreen {
+public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
     private boolean initialized = false;
 

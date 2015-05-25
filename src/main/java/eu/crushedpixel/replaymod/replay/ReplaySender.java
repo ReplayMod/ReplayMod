@@ -177,6 +177,20 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     }
 
     /**
+     * Set whether this replay sender  to operate in sync mode.
+     * When in sync mode, it will send packets when {@link #sendPacketsTill(int)} is called.
+     * This call will block until the async worker thread has stopped.
+     */
+    public void setSyncModeAndWait() {
+        if (!this.asyncMode) return;
+        this.asyncMode = false;
+        this.terminate = true;
+        synchronized (this) {
+            // This will wait for the worker thread to leave the synchronized code part
+        }
+    }
+
+    /**
      * Return the timestamp of the last packet sent.
      * @return The timestamp in milliseconds since the start of the replay
      */

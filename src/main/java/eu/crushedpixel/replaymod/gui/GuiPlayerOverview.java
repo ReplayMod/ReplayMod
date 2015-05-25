@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.gui;
 
 import com.mojang.realmsclient.util.Pair;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -30,7 +31,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class GuiPlayerOverview extends GuiScreen {
+public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
     public static boolean defaultSave = false;
 
@@ -289,7 +290,7 @@ public class GuiPlayerOverview extends GuiScreen {
         }
 
         //this is necessary to reset the GL parameters for further GUI rendering
-        drawRect(0, 0, 0, 0, Color.LIGHT_GRAY.getRGB());
+        GlStateManager.enableBlend();
     }
 
     private PlayerVisibility getVisibilityInstance() {

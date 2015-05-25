@@ -3,8 +3,7 @@ package eu.crushedpixel.replaymod.utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Mouse;
-
-import java.awt.*;
+import org.lwjgl.util.Point;
 
 public class MouseUtils {
 
