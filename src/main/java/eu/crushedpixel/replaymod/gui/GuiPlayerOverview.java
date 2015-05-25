@@ -2,19 +2,17 @@ package eu.crushedpixel.replaymod.gui;
 
 import com.mojang.realmsclient.util.Pair;
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.api.mojang.SkinDownloader;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import eu.crushedpixel.replaymod.utils.SkinProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.texture.ITextureObject;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
@@ -38,7 +36,6 @@ public class GuiPlayerOverview extends GuiScreen {
 
     private List<Pair<EntityPlayer, ResourceLocation>> players;
     private List<GuiCheckBox> checkBoxes;
-    private List<Integer> loadedPlayers = new ArrayList<Integer>();
 
     private GuiCheckBox hideAllBox, showAllBox;
     private GuiCheckBox rememberHidden;
@@ -65,28 +62,8 @@ public class GuiPlayerOverview extends GuiScreen {
         this.checkBoxes = new ArrayList<GuiCheckBox>();
 
         for(final EntityPlayer p : players) {
-            final ResourceLocation loc = new ResourceLocation("/temp-skins/" + p.getGameProfile().getName());
-
+            final ResourceLocation loc = SkinProvider.getResourceLocationForPlayerUUID(p.getUniqueID());
             this.players.add(Pair.of(p, loc));
-
-            //mc.getTextureManager().loadTexture(loc, new SimpleTexture(DefaultPlayerSkin.getDefaultSkin(p.getUniqueID())));
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final ITextureObject tex = SkinDownloader.getDownloadImageSkin(loc, p.getUniqueID());
-                        mc.addScheduledTask(new Runnable() {
-                            @Override
-                            public void run() {
-                                mc.getTextureManager().loadTexture(loc, tex);
-                                loadedPlayers.add(p.getEntityId());
-                            }
-                        });
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, "replaymod-skin-loader").start();
         }
 
         playerCount = players.size();
@@ -248,12 +225,7 @@ public class GuiPlayerOverview extends GuiScreen {
             this.drawString(fontRendererObj, p.first().getName(), k2 + 16 + 5, l2 + 8 - (fontRendererObj.FONT_HEIGHT / 2),
                     spec ? Color.DARK_GRAY.getRGB() : Color.WHITE.getRGB());
 
-            if(loadedPlayers.contains(p.first().getEntityId())) {
-                mc.getTextureManager().bindTexture(p.second());
-            } else {
-                mc.getTextureManager().bindTexture(DefaultPlayerSkin.getDefaultSkin(p.first().getUniqueID()));
-            }
-
+            mc.getTextureManager().bindTexture(p.second());
 
             drawScaledCustomSizeModalRect(k2, l2, 8.0F, 8.0F, 8, 8, 16, 16, 64.0F, 64.0F);
             if(p.first().func_175148_a(EnumPlayerModelParts.HAT))

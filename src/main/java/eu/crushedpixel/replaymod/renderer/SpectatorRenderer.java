@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.renderer;
 
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.utils.SkinProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -9,7 +10,6 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -191,7 +191,6 @@ public class SpectatorRenderer {
             if (itemToRender.getItem() == Items.filled_map) {
                 renderMapInHand(entityPlayer, f3, f1, f2);
             }
-            //TODO check those
             else if (entityPlayer.getItemInUseCount() > 0)
             {
                 EnumAction enumaction = itemToRender.getItemUseAction();
@@ -386,10 +385,8 @@ public class SpectatorRenderer {
     }
 
     private void bindPlayerTexture(EntityPlayer player) {
-        //TODO: Get spectated player's skin
-        //this.mc.getTextureManager().bindTexture(player.getLocationSkin());
-        this.mc.getTextureManager().bindTexture(DefaultPlayerSkin.getDefaultSkin(player.getUniqueID()));
-
+        this.mc.getTextureManager().bindTexture(
+                SkinProvider.getResourceLocationForPlayerUUID(player.getUniqueID()));
     }
 
     public void func_178095_a(EntityPlayer p_178095_1_, float p_178095_2_, float p_178095_3_)
