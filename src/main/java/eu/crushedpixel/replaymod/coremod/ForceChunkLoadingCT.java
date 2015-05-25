@@ -39,9 +39,9 @@ public class ForceChunkLoadingCT implements IClassTransformer {
                         "isPositionInRenderChunk", "(Lnet/minecraft/util/BlockPos;Lnet/minecraft/client/renderer/chunk/RenderChunk;)Z",
                         "updateChunks", "(J)V");
             } else {
-                return transformRenderGlobal(bytes, "g", "",
-                        "", "",
-                        "", "(J)V");
+                return transformRenderGlobal(bytes, "a", "(Lwv;DLcox;IZ)V",
+                        "a", "(Ldt;Lcop;)Z",
+                        "a", "(J)V");
             }
         } else if (HOOK.equals(transformedName)) {
             return transformHook(bytes);
@@ -103,7 +103,7 @@ public class ForceChunkLoadingCT implements IClassTransformer {
         classReader.accept(classNode, 0);
 
         // Add field
-        classNode.visitField(ACC_PUBLIC, "hook", HOOK_TYPE, "", null);
+        classNode.visitField(ACC_PUBLIC, "hook", HOOK_TYPE, null, null);
 
         // Find methods
         MethodNode setupTerrain = null;
