@@ -42,6 +42,7 @@ public class VideoRenderer {
     private int fps;
     private boolean mouseWasGrabbed;
 
+    private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
     private Interpolation<Position> movement;
     private Interpolation<Integer> time;
 
@@ -160,7 +161,7 @@ public class VideoRenderer {
         gui.setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
         if (options.isWaitForChunks()) {
-            ChunkLoadingRenderGlobal.install(mc);
+            chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.renderGlobal);
         }
     }
 
@@ -178,9 +179,10 @@ public class VideoRenderer {
         if (mouseWasGrabbed) {
             Mouse.setGrabbed(true);
         }
+        MCTimerHandler.setActiveTimer();
         mc.displayGuiScreen(null);
-        if (mc.renderGlobal instanceof ChunkLoadingRenderGlobal) {
-            ((ChunkLoadingRenderGlobal) mc.renderGlobal).uninstall();
+        if (chunkLoadingRenderGlobal != null) {
+            chunkLoadingRenderGlobal.uninstall();
         }
     }
 

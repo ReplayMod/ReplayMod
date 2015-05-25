@@ -10,6 +10,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
     public String[] getASMTransformerClass() {
         return new String[]{
                 CameraRollCT.class.getName(),
+                ForceChunkLoadingCT.class.getName(),
                 EnchantmentTimerCT.class.getName()
         };
     }
