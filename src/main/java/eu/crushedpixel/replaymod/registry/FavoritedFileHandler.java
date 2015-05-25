@@ -26,14 +26,14 @@ public class FavoritedFileHandler {
     }
 
     public void addToFavorites(Integer id) throws IOException, ApiException {
+        ReplayMod.apiClient.favFile(AuthenticationHandler.getKey(), id, true);
         favorited.remove(id);
         favorited.add(id);
-        ReplayMod.apiClient.favFile(AuthenticationHandler.getKey(), id, true);
     }
 
     public void removeFromFavorites(Integer id) throws IOException, ApiException {
-        favorited.remove(id);
         ReplayMod.apiClient.favFile(AuthenticationHandler.getKey(), id, false);
+        favorited.remove(id);
     }
 
     public void reloadFavorites() {

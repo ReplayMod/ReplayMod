@@ -28,12 +28,12 @@ public class RatedFileHandler {
     }
 
     public void rateFile(int id, Rating.RatingType type) throws IOException, ApiException {
+        ReplayMod.apiClient.rateFile(AuthenticationHandler.getKey(), id, type);
         if(type == Rating.RatingType.LIKE || type == Rating.RatingType.DISLIKE) {
             rated.put(id, type == Rating.RatingType.LIKE);
         } else {
             rated.remove(id);
         }
-        ReplayMod.apiClient.rateFile(AuthenticationHandler.getKey(), id, type);
     }
 
     public void reloadRatings() {

@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.EntityRenderer;
 
 public class SafeEntityRenderer extends EntityRenderer {
 
-    public SafeEntityRenderer(Minecraft mcIn, EntityRenderer renderer) throws IllegalArgumentException, IllegalAccessException {
+    public SafeEntityRenderer(Minecraft mcIn, EntityRenderer renderer) {
         super(mcIn, renderer.resourceManager);
     }
 

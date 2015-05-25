@@ -300,6 +300,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 });
             } else {
                 mc.displayGuiScreen(this);
+                elementSelected(currentList.selected);
+                initGui();
             }
         }
     }
