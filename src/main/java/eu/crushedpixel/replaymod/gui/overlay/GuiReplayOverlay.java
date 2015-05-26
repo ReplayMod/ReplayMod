@@ -310,6 +310,7 @@ public class GuiReplayOverlay extends Gui {
 
     @SubscribeEvent
     public void onRenderGui(RenderGameOverlayEvent.Post event) throws IllegalArgumentException, IllegalAccessException {
+        if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
         if (!isVisible()) return;
 
         FMLClientHandler fml = FMLClientHandler.instance();
