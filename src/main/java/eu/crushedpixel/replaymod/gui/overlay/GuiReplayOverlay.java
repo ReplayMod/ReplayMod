@@ -31,7 +31,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Point;
 
@@ -146,11 +145,6 @@ public class GuiReplayOverlay extends Gui {
     }
 
     private void tick() {
-        if (mc.inGameHasFocus) { // TODO Check if this is necessary
-            Point scaled = MouseUtils.getScaledDimensions();
-            Mouse.setCursorPosition(scaled.getX() / 2, scaled.getY() / 2);
-        }
-
         if (FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
             Entity player = ReplayHandler.getCameraEntity();
             if(player != null) {
