@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.registry;
 
-import eu.crushedpixel.replaymod.reflection.MCPNames;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 
@@ -16,7 +15,7 @@ public class ResourceHelper {
 
     static {
         try {
-            defaultThumb = ImageIO.read(MCPNames.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
+            defaultThumb = ImageIO.read(ResourceHelper.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
         } catch(Exception e) {
             defaultThumb = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
             e.printStackTrace();

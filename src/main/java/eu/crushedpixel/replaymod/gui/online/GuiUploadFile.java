@@ -8,10 +8,9 @@ import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
-import eu.crushedpixel.replaymod.reflection.MCPNames;
+import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
-import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -98,7 +97,7 @@ public class GuiUploadFile extends GuiScreen {
         //If thumb is null, set image to placeholder
         if(thumb == null) {
             try {
-                thumb = ImageIO.read(MCPNames.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
+                thumb = ImageIO.read(GuiUploadFile.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
             } catch(Exception e) {
                 e.printStackTrace();
             }
