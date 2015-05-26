@@ -22,6 +22,7 @@ public class DefaultFrameRenderer extends FrameRenderer {
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         copyPixelsToImage(buffer, width, image, 0, 0);
+        updateDefaultPreview(image);
         return image;
     }
 }
