@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.video.frame;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Runnables;
 import eu.crushedpixel.replaymod.gui.GuiVideoRenderer;
@@ -20,6 +19,7 @@ import java.awt.image.DataBufferInt;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -29,7 +29,7 @@ public abstract class FrameRenderer {
     protected final Minecraft mc = Minecraft.getMinecraft();
     private final int videoWidth;
     private final int videoHeight;
-    private Optional<CustomEntityRenderer> customEntityRenderer;
+    private CustomEntityRenderer customEntityRenderer;
     private DynamicTexture previewTexture;
     private Runnable renderPreviewCallback;
     private boolean previewActive = false;
@@ -39,14 +39,14 @@ public abstract class FrameRenderer {
         this.videoWidth = videoWidth;
         this.videoHeight = videoHeight;
         this.buffer = BufferUtils.createByteBuffer(mc.displayWidth * mc.displayHeight * 3);
-        this.customEntityRenderer = Optional.absent();
+        this.customEntityRenderer = new CustomEntityRenderer() {};
     }
 
     public FrameRenderer(int videoWidth, int videoHeight, int bufferSize) {
         this.videoWidth = videoWidth;
         this.videoHeight = videoHeight;
         this.buffer = BufferUtils.createByteBuffer(bufferSize);
-        this.customEntityRenderer = Optional.absent();
+        this.customEntityRenderer = new CustomEntityRenderer() {};
     }
 
     public final int getVideoWidth() {
@@ -80,7 +80,7 @@ public abstract class FrameRenderer {
     }
 
     public void setCustomEntityRenderer(CustomEntityRenderer customEntityRenderer) {
-        this.customEntityRenderer = Optional.fromNullable(customEntityRenderer);
+        this.customEntityRenderer = checkNotNull(customEntityRenderer);
     }
 
     public abstract BufferedImage captureFrame(Timer timer);
@@ -145,11 +145,7 @@ public abstract class FrameRenderer {
 
         enableTexture2D();
 
-        if (customEntityRenderer.isPresent()) {
-            customEntityRenderer.get().updateCameraAndRender(timer.renderPartialTicks);
-        } else {
-            mc.entityRenderer.updateCameraAndRender(timer.renderPartialTicks);
-        }
+        customEntityRenderer.updateCameraAndRender(timer.renderPartialTicks);
 
         mc.getFramebuffer().unbindFramebuffer();
         popMatrix();
