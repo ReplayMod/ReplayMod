@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.api.ApiClient;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.api.replay.holders.AuthConfirmation;
 import eu.crushedpixel.replaymod.api.replay.holders.AuthKey;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.config.Property;
 
 import java.io.IOException;
@@ -33,8 +34,12 @@ public class AuthenticationHandler {
         return apiClient.hasDonated(uuid);
     }
 
+    private static Minecraft mc = Minecraft.getMinecraft();
+
     public static void register(String usrname, String mail, String password) throws IOException, ApiException {
-        AuthKey auth = apiClient.register(usrname, mail, password);
+        AuthKey auth = apiClient.register(usrname, mail, password,
+                mc.getSession().getProfile().getId().toString(),
+                Minecraft.getMinecraft().getSession().getToken());
         username = usrname;
         authkey = auth.getAuthkey();
         saveAuthkey(authkey);

@@ -197,6 +197,7 @@ public class GuiRegister extends GuiScreen {
                         } catch(ApiException ae) {
                             message = ae.getLocalizedMessage();
                         } catch(Exception e) {
+                            e.printStackTrace();
                             message = I18n.format("replaymod.gui.login.connectionerror");
                         }
                     }

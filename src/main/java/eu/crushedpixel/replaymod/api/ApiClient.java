@@ -36,11 +36,14 @@ public class ApiClient {
         return auth;
     }
 
-    public AuthKey register(String username, String mail, String password) throws IOException, ApiException {
+    public AuthKey register(String username, String mail, String password, String uuid, String accessToken)
+            throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.register);
         builder.put("username", username);
         builder.put("email", mail);
         builder.put("password", password);
+        builder.put("uuid", uuid);
+        builder.put("accesstoken", accessToken);
         AuthKey auth = invokeAndReturn(builder, AuthKey.class);
         return auth;
     }
