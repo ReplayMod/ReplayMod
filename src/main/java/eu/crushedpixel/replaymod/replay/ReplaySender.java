@@ -76,12 +76,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     protected int lastTimeStamp;
 
     /**
-     * Whether the replay has been restarted.
-     * It might be required to advance some ticks in order for rendering to keep up.
-     */
-    protected boolean hasRestarted;
-
-    /**
      * The replay file.
      */
     protected ReplayFile replayFile;
@@ -574,11 +568,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                                 if (isHurrying() && lastTimeStamp > desiredTimeStamp && !startFromBeginning) {
                                     desiredTimeStamp = -1;
 
-                                    // Give the render engine a reason to get going
-                                    MCTimerHandler.advanceRenderPartialTicks(5);
-                                    MCTimerHandler.advancePartialTicks(5);
-                                    MCTimerHandler.advanceTicks(5);
-
                                     Position pos = ReplayHandler.getLastPosition();
                                     CameraEntity cam = ReplayHandler.getCameraEntity();
                                     if (cam != null && pos != null) {
@@ -608,7 +597,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                         }
 
                         // Restart the replay.
-                        hasRestarted = true;
                         hasWorldLoaded = false;
                         lastTimeStamp = 0;
                         startFromBeginning = false;
@@ -701,7 +689,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
             synchronized (this) {
                 if (timestamp < lastTimeStamp) { // Restart the replay if we need to go backwards in time
-                    hasRestarted = true;
                     hasWorldLoaded = false;
                     lastTimeStamp = 0;
                     if (dis != null) {
@@ -753,13 +740,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
                 // This might be required if we change to async mode anytime soon
                 lastPacketSent = System.currentTimeMillis();
-
-                // In case we have restarted the replay we have to give the render engine a reason to get going
-                if (hasRestarted) {
-                    MCTimerHandler.advanceRenderPartialTicks(5);
-                    MCTimerHandler.advancePartialTicks(5);
-                    MCTimerHandler.advanceTicks(5);
-                }
             }
         } catch (Exception e) {
             e.printStackTrace();
