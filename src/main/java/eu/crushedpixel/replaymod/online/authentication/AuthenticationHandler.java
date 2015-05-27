@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.online.authentication;
 
+import com.mojang.authlib.exceptions.AuthenticationException;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiClient;
 import eu.crushedpixel.replaymod.api.ApiException;
@@ -36,10 +37,10 @@ public class AuthenticationHandler {
 
     private static Minecraft mc = Minecraft.getMinecraft();
 
-    public static void register(String usrname, String mail, String password) throws IOException, ApiException {
+    public static void register(String usrname, String mail, String password)
+            throws IOException, ApiException, AuthenticationException {
         AuthKey auth = apiClient.register(usrname, mail, password,
-                mc.getSession().getProfile().getId().toString(),
-                Minecraft.getMinecraft().getSession().getToken());
+                mc.getSession().getProfile().getId().toString());
         username = usrname;
         authkey = auth.getAuthkey();
         saveAuthkey(authkey);

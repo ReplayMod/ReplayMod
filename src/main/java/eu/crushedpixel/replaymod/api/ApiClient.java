@@ -4,12 +4,15 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.mojang.authlib.exceptions.AuthenticationException;
 import eu.crushedpixel.replaymod.api.mojang.MojangApiMethods;
 import eu.crushedpixel.replaymod.api.mojang.holders.Profile;
 import eu.crushedpixel.replaymod.api.replay.ReplayModApiMethods;
 import eu.crushedpixel.replaymod.api.replay.SearchQuery;
 import eu.crushedpixel.replaymod.api.replay.holders.*;
+import eu.crushedpixel.replaymod.online.authentication.AuthenticationHash;
 import eu.crushedpixel.replaymod.utils.StreamTools;
+import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -24,6 +27,7 @@ import java.util.UUID;
 
 public class ApiClient {
 
+    private static final Minecraft mc = Minecraft.getMinecraft();
     private static final Gson gson = new Gson();
     private static final JsonParser jsonParser = new JsonParser();
 
@@ -36,16 +40,30 @@ public class ApiClient {
         return auth;
     }
 
-    public AuthKey register(String username, String mail, String password, String uuid, String accessToken)
-            throws IOException, ApiException {
+    public AuthKey register(String username, String mail, String password, String uuid)
+            throws IOException, ApiException, AuthenticationException {
+
+        AuthenticationHash authenticationHash = sessionserverJoin();
+
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.register);
         builder.put("username", username);
         builder.put("email", mail);
         builder.put("password", password);
         builder.put("uuid", uuid);
-        builder.put("accesstoken", accessToken);
+        builder.put("mcusername", authenticationHash.username);
+        builder.put("timelong", authenticationHash.currentTime);
+        builder.put("randomlong", authenticationHash.randomLong);
         AuthKey auth = invokeAndReturn(builder, AuthKey.class);
         return auth;
+    }
+
+    private AuthenticationHash sessionserverJoin() throws AuthenticationException {
+        AuthenticationHash hash = new AuthenticationHash();
+
+        mc.getSessionService().joinServer(
+                mc.getSession().getProfile(), mc.getSession().getToken(), hash.hash);
+
+        return hash;
     }
 
     public AuthConfirmation checkAuthkey(String auth) {

@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.gui.online;
 
+import com.mojang.authlib.exceptions.AuthenticationException;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.PasswordTextField;
@@ -196,6 +197,9 @@ public class GuiRegister extends GuiScreen {
                             });
                         } catch(ApiException ae) {
                             message = ae.getLocalizedMessage();
+                        } catch(AuthenticationException aue) {
+                            aue.printStackTrace();
+                            message = I18n.format("replaymod.gui.register.error.authfailed");
                         } catch(Exception e) {
                             e.printStackTrace();
                             message = I18n.format("replaymod.gui.login.connectionerror");
