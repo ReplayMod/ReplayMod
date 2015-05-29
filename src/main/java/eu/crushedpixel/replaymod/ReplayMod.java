@@ -34,7 +34,6 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.commons.io.FilenameUtils;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Queue;
@@ -150,7 +149,7 @@ public class ReplayMod {
             e.printStackTrace();
         }
 
-
+        /*
         boolean auth = false;
         try {
             auth = AuthenticationHandler.hasDonated(Minecraft.getMinecraft().getSession().getPlayerID());
@@ -163,6 +162,7 @@ public class ReplayMod {
             JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
             FMLCommonHandler.instance().exitJava(0, false);
         }
+        */
 
 
         if (System.getProperty("replaymod.render.file") != null) {
