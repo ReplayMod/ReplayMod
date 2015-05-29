@@ -15,6 +15,8 @@ public class GuiProgressBar extends Gui {
 
     private float progress = 0;
 
+    private String progressString = null;
+
     public GuiProgressBar(int xPosition, int yPosition, int width, int height) {
         this(xPosition, yPosition, width, height, 0);
     }
@@ -49,9 +51,25 @@ public class GuiProgressBar extends Gui {
         this.height = height;
     }
 
+    /**
+     * Replaces the default progress String that is being displayed (x%) with a custom String.
+     * This has to be called whenever the progress itself changes.
+     * Setting <code>progressString</code> to <code>null</code> uses the default progress String.
+     * @param progressString
+     */
+    public void setProgressString(String progressString) {
+        this.progressString = progressString;
+    }
+
     public void drawProgressBar() {
         int progressWidth = Math.round((width - (2*BORDER_WIDTH)) * progress);
-        String progressString = (int)Math.floor(progress * 100) + "%";
+
+        String progressString;
+        if(this.progressString == null) {
+            progressString = (int) Math.floor(progress * 100) + "%";
+        } else {
+            progressString = this.progressString;
+        }
 
         // Draws black outline
         drawRect(xPosition, yPosition, xPosition + width, yPosition + height, Color.BLACK.getRGB());
