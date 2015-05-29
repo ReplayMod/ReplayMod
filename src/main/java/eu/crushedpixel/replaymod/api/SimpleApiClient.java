@@ -73,7 +73,6 @@ public class SimpleApiClient {
         String responseContent = null;
         InputStream is = null;
         HttpURLConnection httpUrlConnection = null;
-        HttpURLConnection.setFollowRedirects(false);
         try {
             URL url = new URL(urlString);
             httpUrlConnection = (HttpURLConnection) url.openConnection();
