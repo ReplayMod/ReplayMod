@@ -29,11 +29,9 @@ public class GuiVideoRenderer extends GuiScreen {
     @Override
     @SuppressWarnings("unchecked") // I blame forge for not re-adding generics to that list
     public void initGui() {
-        FrameRenderer frameRenderer = renderer.getFrameRenderer();
-
         String text = PREVIEW;
         buttonList.add(previewCheckBox = new GuiCheckBox(0, (width - fontRendererObj.getStringWidth(text)) / 2 - 8,
-                frameRenderer.getPreviewHeight(this), text, false));
+                height - 20, text, false));
 
         text = PAUSE_RENDERING;
         buttonList.add(pauseButton = new GuiButton(1, width / 2 - 152, height / 2 - 23, text));
@@ -88,11 +86,14 @@ public class GuiVideoRenderer extends GuiScreen {
         String framesProgress = I18n.format("replaymod.gui.rendering.progress", renderer.getFramesDone(), renderer.getTotalFrames());
         drawCenteredString(fontRendererObj, framesProgress, centerX, centerY - 45, 0xffffffff);
 
+        int previewX = width / 4;
+        int previewY = height / 2 + 10;
+        int previewWidth = width / 2;
+        int previewHeight = height - 30 - previewY;
         if (previewCheckBox.isChecked()) {
-            frameRenderer.renderPreview(this);
+            frameRenderer.renderPreview(previewX, previewY, previewWidth, previewHeight);
         } else {
-            int previewHeight = frameRenderer.getPreviewHeight(this) - height / 2 - 10;
-            FrameRenderer.renderNoPreview(width, height, previewHeight);
+            FrameRenderer.renderNoPreview(previewX, previewY, previewWidth, previewHeight);
         }
         super.drawScreen(mouseX, mouseY, partialTicks);
     }

@@ -2,11 +2,9 @@ package eu.crushedpixel.replaymod.video.frame;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Runnables;
-import eu.crushedpixel.replaymod.gui.GuiVideoRenderer;
 import eu.crushedpixel.replaymod.video.entity.CustomEntityRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.util.ResourceLocation;
@@ -174,48 +172,43 @@ public abstract class FrameRenderer {
     }
 
     /**
-     * Return the height including any borders of the preview.
-     * No rendering should be performed by {@link #renderPreview(GuiVideoRenderer)} below this height.
-     * @param guiScreen The gui screen
-     * @return Bottom of the preview
+     * Draw a preview of the current scene within the specified box.
+     * @param x Left border of the box
+     * @param y Upper border of the box
+     * @param width Width of the box
+     * @param height Height of the box
      */
-    public int getPreviewHeight(GuiScreen guiScreen) {
-        int width = guiScreen.width / 2;
-        int height = guiScreen.height / 3;
-        if (width / height < getVideoWidth() / getVideoHeight()) {
-            height = width * getVideoHeight() / getVideoWidth();
-        }
-        return guiScreen.height / 2 + height + 10;
-    }
-
-    /**
-     * Draw a preview of the current scene on the lower half of the screen.
-     * @param guiScreen The gui screen
-     */
-    public void renderPreview(GuiVideoRenderer guiScreen) {
-        int width = guiScreen.width / 2;
-        int height = guiScreen.height / 3;
+    public void renderPreview(int x, int y, int width, int height) {
+        int actualWidth = width;
+        int actualHeight = height;
         if (width / height > getVideoWidth() / getVideoHeight()) {
-            width = height * getVideoWidth() / getVideoHeight();
+            actualWidth = height * getVideoWidth() / getVideoHeight();
         } else {
-            height = width * getVideoHeight() / getVideoWidth();
+            actualHeight = width * getVideoHeight() / getVideoWidth();
         }
 
-        int x = guiScreen.width / 2 - width / 2;
-        int y = guiScreen.height / 2 + 5;
+        x += (width - actualWidth) / 2;
+        y += (height - actualHeight) / 2;
 
         bindTexture(previewTexture.getGlTextureId());
         color(1, 1, 1, 1);
-        Gui.drawScaledCustomSizeModalRect(x, y, 0, 0, videoWidth, videoHeight, width, height, videoWidth, videoHeight);
+        Gui.drawScaledCustomSizeModalRect(x, y, 0, 0, videoWidth, videoHeight, actualWidth, actualHeight, videoWidth, videoHeight);
     }
 
-    public static void renderNoPreview(int guiWidth, int guiHeight, int height) {
-        int width = height * 1280 / 720;
-        int x = guiWidth / 2 - width / 2;
-        int y = guiHeight / 2 + 5;
+    public static void renderNoPreview(int x, int y, int width, int height) {
+        int actualWidth = width;
+        int actualHeight = height;
+        if (width / height > 1280 / 720) {
+            actualWidth = height * 1280 / 720;
+        } else {
+            actualHeight = width * 720 / 1280;
+        }
+
+        x += (width - actualWidth) / 2;
+        y += (height - actualHeight) / 2;
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(noPreviewTexture);
         color(1, 1, 1, 1);
-        Gui.drawScaledCustomSizeModalRect(x, y, 0, 0, 1280, 720, width, height, 1280, 720);
+        Gui.drawScaledCustomSizeModalRect(x, y, 0, 0, 1280, 720, actualWidth, actualHeight, 1280, 720);
     }
 }
