@@ -16,12 +16,14 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -58,7 +60,8 @@ public class ReplayFileIO {
         return files;
     }
 
-    public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData) throws IOException {
+    public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData,
+                                       Map<String, File> resourcePacks, Map<Integer, String> resourcePackRequests) throws IOException {
         byte[] buffer = new byte[1024];
 
         if(!replayFile.exists()) {
@@ -85,6 +88,20 @@ public class ReplayFileIO {
 
         fis.close();
         zos.closeEntry();
+
+        if (!resourcePackRequests.isEmpty()) {
+            zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_RESOURCE_PACK_INDEX));
+            pw = new PrintWriter(zos);
+            pw.write(new Gson().toJson(resourcePackRequests));
+            pw.flush();
+            zos.closeEntry();
+
+            for (Map.Entry<String, File> entry : resourcePacks.entrySet()) {
+                zos.putNextEntry(new ZipEntry(String.format(ReplayFile.ENTRY_RESOURCE_PACK, entry.getKey())));
+                IOUtils.copy(new FileInputStream(entry.getValue()), zos);
+                zos.closeEntry();
+            }
+        }
 
         zos.close();
     }

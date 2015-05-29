@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.replay;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
@@ -15,7 +16,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
-import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
@@ -24,14 +24,12 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -136,6 +134,11 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      * Whether to allow (process) the next player movement packet.
      */
     protected boolean allowMovement;
+
+    /**
+     * Directory to which resource packs are extracted.
+     */
+    private final File tempResourcePackFolder = Files.createTempDir();
 
     /**
      * Create a new replay sender.
@@ -249,7 +252,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      * @param p The packet to process
      * @return The processed packet or {@code null} if no packet shall be sent
      */
-    protected Packet processPacket(Packet p) {
+    protected Packet processPacket(Packet p) throws Exception {
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
         if(p instanceof S29PacketSoundEffect && ReplayProcess.isVideoRecording()) {
@@ -262,7 +265,21 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
         if(p instanceof S48PacketResourcePackSend) {
             S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
-            new ResourcePackCheck(packet.func_179783_a(), packet.func_179784_b()).start();
+            String url = packet.func_179783_a();
+            if (url.startsWith("replay://")) {
+                int id = Integer.parseInt(url.substring("replay://".length()));
+                Map<Integer, String> index = replayFile.resourcePackIndex().get();
+                if (index != null) {
+                    String hash = index.get(id);
+                    if (hash != null) {
+                        File file = new File(tempResourcePackFolder, hash + ".zip");
+                        if (!file.exists()) {
+                            IOUtils.copy(replayFile.resourcePack(hash).get(), new FileOutputStream(file));
+                        }
+                        mc.getResourcePackRepository().func_177319_a(file);
+                    }
+                }
+            }
             return null;
         }
 
@@ -355,6 +372,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         replayFile.close();
+        FileUtils.deleteDirectory(tempResourcePackFolder);
         super.channelInactive(ctx);
     }
 
@@ -384,102 +402,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     public void setReplaySpeed(final double d) {
         if(d != 0) this.replaySpeed = d;
         MCTimerHandler.setTimerSpeed((float) d);
-    }
-
-    /**
-     * Checks for stored resource packs and loads them or downloads a new one.
-     */
-    private static class ResourcePackCheck extends Thread {
-
-        private static Minecraft mc = Minecraft.getMinecraft();
-        private static ResourcePackRepository repo = mc.getResourcePackRepository();
-
-        private String url, hash;
-
-        public ResourcePackCheck(String url, String hash) {
-            this.url = url;
-            this.hash = hash;
-        }
-
-        /**
-         * Return the location of the stored resource pack.
-         * @param url The original url of the resource pack
-         * @param hash The hash code of the resource pack
-         * @return File location of the resource pack
-         */
-        private File getServerResourcePackLocation(String url, String hash) {
-
-            String filename;
-
-            if(hash.matches("^[a-f0-9]{40}$")) {
-                filename = hash;
-            } else {
-                filename = url.substring(url.lastIndexOf("/") + 1);
-
-                if(filename.contains("?")) {
-                    filename = filename.substring(0, filename.indexOf("?"));
-                }
-
-                if(!filename.endsWith(".zip")) {
-                    return null;
-                }
-
-                filename = "legacy_" + filename.replaceAll("\\W", "");
-            }
-
-            return new File(repo.dirServerResourcepacks, filename);
-        }
-
-        /**
-         * Download a resource pack from a specified URL.
-         * @param url The URL to download from
-         * @param file The target file location
-         * @return {@code true} if the download was successful, {@code false} if an I/O-error occured
-         */
-        private boolean downloadServerResourcePack(String url, File file) {
-            try {
-                FileUtils.copyURLToFile(new URL(url), file);
-                return true;
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-            return false;
-        }
-
-        /**
-         * Add the resource pack to the loaded resource packs if resource packs are enabled in the config.
-         * If there is no local copy of the resource pack, this loads the resource pack from the specified url.
-         */
-        @Override
-        public void run() {
-            try {
-                boolean use = ReplayMod.replaySettings.getUseResourcePacks();
-                if(!use) return;
-
-                System.out.println("Looking for downloaded Resource Pack...");
-                File rp = getServerResourcePackLocation(url, hash);
-                if(rp == null) {
-                    System.out.println("Invalid Resource Pack provided");
-                    return;
-                }
-                if(rp.exists()) {
-                    System.out.println("Resource Pack found!");
-                    repo.func_177319_a(rp);
-
-                } else {
-                    System.out.println("No Resource Pack found.");
-                    System.out.println("Attempting to download Resource Pack...");
-                    boolean success = downloadServerResourcePack(url, rp);
-                    System.out.println(success ? "Resource pack was successfully downloaded!" : "Resource Pack download failed.");
-                    if(success) {
-                        repo.func_177319_a(rp);
-                    }
-                }
-
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /////////////////////////////////////////////////////////

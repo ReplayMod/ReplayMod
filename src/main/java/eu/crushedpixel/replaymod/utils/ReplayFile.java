@@ -2,6 +2,8 @@ package eu.crushedpixel.replaymod.utils;
 
 import com.google.common.base.Supplier;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
@@ -11,6 +13,8 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReplayFile extends ZipFile {
 
@@ -21,6 +25,8 @@ public class ReplayFile extends ZipFile {
     public static final String ENTRY_METADATA = "metaData" + JSON_FILE_EXTENSION;
     public static final String ENTRY_PATHS = "paths";
     public static final String ENTRY_THUMB = "thumb";
+    public static final String ENTRY_RESOURCE_PACK = "resourcepack/%s.zip";
+    public static final String ENTRY_RESOURCE_PACK_INDEX = "resourcepack/index.json";
     public static final String ENTRY_VISIBILITY = "visibility";
 
     private final File file;
@@ -132,6 +138,54 @@ public class ReplayFile extends ZipFile {
                         i -= is.skip(i);  // Security through obscurity \o/
                     }
                     return ImageIO.read(is);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
+    public ZipArchiveEntry resourcePackIndexEntry() {
+        return getEntry(ENTRY_RESOURCE_PACK_INDEX);
+    }
+
+    public Supplier<Map<Integer, String>> resourcePackIndex() {
+        return new Supplier<Map<Integer, String>>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public Map<Integer, String> get() {
+                try {
+                    ZipArchiveEntry entry = resourcePackIndexEntry();
+                    if (entry == null) {
+                        return null;
+                    }
+                    Map<Integer, String> index = new HashMap<Integer, String>();
+                    JsonObject json = new Gson().fromJson(new InputStreamReader(getInputStream(entry)), JsonObject.class);
+                    for (Map.Entry<String, JsonElement> e : json.entrySet()) {
+                        index.put(Integer.parseInt(e.getKey()), e.getValue().getAsString());
+                    }
+                    return index;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
+    public ZipArchiveEntry resourcePackEntry(String hash) {
+        return getEntry(String.format(ENTRY_RESOURCE_PACK, hash));
+    }
+
+    public Supplier<InputStream> resourcePack(final String hash) {
+        return new Supplier<InputStream>() {
+            @Override
+            public InputStream get() {
+                try {
+                    ZipArchiveEntry entry = resourcePackEntry(hash);
+                    if (entry == null) {
+                        return null;
+                    }
+                    return getInputStream(entry);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

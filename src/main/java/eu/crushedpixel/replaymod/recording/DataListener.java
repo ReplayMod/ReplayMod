@@ -1,5 +1,7 @@
 package eu.crushedpixel.replaymod.recording;
 
+import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.holders.PacketData;
@@ -8,15 +10,19 @@ import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class DataListener extends ChannelInboundHandlerAdapter {
+
+    private static final Logger logger = LogManager.getLogger();
 
     protected File file;
     protected Long startTime = null;
@@ -28,6 +34,10 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     protected Set<String> players = new HashSet<String>();
     private boolean singleplayer;
     private Gson gson = new Gson();
+
+    private final File tempResourcePacksFolder = Files.createTempDir();
+    private final Map<Integer, String> requestToHash = new ConcurrentHashMap<Integer, String>();
+    private final Map<String, File> resourcePacks = new HashMap<String, File>();
 
     public DataListener(File file, String name, String worldName, long startTime, boolean singleplayer) throws FileNotFoundException {
         this.file = file;
@@ -52,6 +62,22 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         dataWriter.requestFinish(players);
+    }
+
+    protected void recordResourcePack(File file, int requestId) {
+        try {
+            String hash = Hashing.sha1().hashBytes(Files.toByteArray(file)).toString();
+            requestToHash.put(requestId, hash);
+            synchronized (resourcePacks) {
+                if (!resourcePacks.containsKey(hash)) {
+                    File tempFile = new File(tempResourcePacksFolder, hash);
+                    FileUtils.copyFile(file, tempFile);
+                    resourcePacks.put(hash, tempFile);
+                }
+            }
+        } catch (IOException e) {
+            logger.warn("Failed to save resource pack.", e);
+        }
     }
 
     public class DataWriter {
@@ -138,9 +164,10 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 File archive = new File(folder, name + ReplayFile.ZIP_FILE_EXTENSION);
                 archive.createNewFile();
 
-                ReplayFileIO.writeReplayFile(archive, file, metaData);
+                ReplayFileIO.writeReplayFile(archive, file, metaData, resourcePacks, requestToHash);
 
                 file.delete();
+                FileUtils.deleteDirectory(tempResourcePacksFolder);
 
                 GuiReplaySaving.replaySaving = false;
             } catch(Exception e) {
