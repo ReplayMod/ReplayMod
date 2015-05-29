@@ -1,10 +1,10 @@
 package eu.crushedpixel.replaymod.gui.online;
 
-import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.api.replay.FileUploader;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
+import eu.crushedpixel.replaymod.gui.elements.GuiProgressBar;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
@@ -36,20 +36,30 @@ import java.util.regex.Pattern;
 
 public class GuiUploadFile extends GuiScreen {
 
-    private static final Pattern p = Pattern.compile("[^a-z0-9 \\-_]", Pattern.CASE_INSENSITIVE);
-    private static final Pattern pt = Pattern.compile("[^a-z0-9,]", Pattern.CASE_INSENSITIVE);
+    private final Minecraft mc = Minecraft.getMinecraft();
+
+    private static final Pattern titlePattern = Pattern.compile("[^a-z0-9 \\-_]", Pattern.CASE_INSENSITIVE);
+    private static final Pattern tagsPattern = Pattern.compile("[^a-z0-9,]", Pattern.CASE_INSENSITIVE);
+
     private final ResourceLocation textureResource;
+    private DynamicTexture dynTex = null;
+
     private GuiTextField fileTitleInput, tagInput, messageTextField, tagPlaceholder;
     private GuiButton categoryButton, startUploadButton, cancelUploadButton, backButton;
-    private Gson gson = new Gson();
+    private GuiProgressBar progressBar;
+
     private File replayFile;
+
     private ReplayMetaData metaData;
     private BufferedImage thumb;
+
     private FileUploader uploader = new FileUploader();
+
     private Category category = Category.MINIGAME;
-    private DynamicTexture dynTex = null;
-    private Minecraft mc = Minecraft.getMinecraft();
+
     private GuiReplayViewer parent;
+
+    private boolean lockUploadButton = false;
 
     private final Logger logger = LogManager.getLogger();
 
@@ -204,6 +214,12 @@ public class GuiUploadFile extends GuiScreen {
             tagPlaceholder.width = Math.min(200, this.width - 20 - 260);
         }
 
+        if(progressBar == null) {
+            progressBar = new GuiProgressBar(19, height - 52, width - (2*19), 15);
+        } else {
+            progressBar.setBounds(19, height - 52, width - (2*19), 15);
+        }
+
         validateStartButton();
     }
 
@@ -251,7 +267,7 @@ public class GuiUploadFile extends GuiScreen {
         this.drawDefaultBackground();
 
         drawString(fontRendererObj, metaData.getServerName(), (this.width / 2) + 20 + 10, 50, Color.GRAY.getRGB());
-        drawString(fontRendererObj, I18n.format("replaymod.gui.duration")+": " + String.format("%02dm%02ds",
+        drawString(fontRendererObj, I18n.format("replaymod.gui.duration") + ": " + String.format("%02dm%02ds",
                 TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()),
                 TimeUnit.MILLISECONDS.toSeconds(metaData.getDuration()) -
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()))
@@ -285,17 +301,8 @@ public class GuiUploadFile extends GuiScreen {
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 
-        this.drawRect(19, this.height - 52, width - 19, this.height - 37, Color.BLACK.getRGB());
-        this.drawRect(21, this.height - 50, width - 21, this.height - 39, Color.WHITE.getRGB());
-
-        int width = this.width - 21 - 21;
-        float prog = uploader.getUploadProgress();
-        float w = width * prog;
-
-        this.drawRect(21, this.height - 50, Math.round(21 + w), this.height - 39, Color.RED.getRGB());
-
-        String perc = (int) Math.floor(prog * 100) + "%";
-        fontRendererObj.drawString(perc, this.width / 2 - fontRendererObj.getStringWidth(perc) / 2, this.height - 48, Color.BLACK.getRGB());
+        progressBar.setProgress(uploader.getUploadProgress());
+        progressBar.drawProgressBar();
     }
 
     @Override
@@ -337,16 +344,19 @@ public class GuiUploadFile extends GuiScreen {
         boolean enabled = true;
         if(fileTitleInput.getText().trim().length() < 5 || fileTitleInput.getText().trim().length() > 30) {
             enabled = false;
-        } else if(p.matcher(fileTitleInput.getText()).find()) {
+        } else if(titlePattern.matcher(fileTitleInput.getText()).find()) {
             enabled = false;
             fileTitleInput.setTextColor(Color.RED.getRGB());
-        } else if(pt.matcher(tagInput.getText()).find()) {
+        } else if(tagsPattern.matcher(tagInput.getText()).find()) {
             enabled = false;
             tagInput.setTextColor(Color.RED.getRGB());
         } else {
             fileTitleInput.setTextColor(Color.WHITE.getRGB());
             tagInput.setTextColor(Color.WHITE.getRGB());
         }
+
+        if(lockUploadButton) enabled = false;
+
         startUploadButton.enabled = enabled;
     }
 
@@ -369,6 +379,8 @@ public class GuiUploadFile extends GuiScreen {
         if(success) {
             messageTextField.setText(I18n.format("replaymod.gui.upload.success"));
             messageTextField.setTextColor(Color.GREEN.getRGB());
+            startUploadButton.enabled = false;
+            lockUploadButton = true;
         } else {
             messageTextField.setText(info);
             messageTextField.setTextColor(Color.RED.getRGB());

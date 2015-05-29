@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
 
+import java.awt.*;
 import java.io.IOException;
 
 public class GuiVideoRenderer extends GuiScreen {
@@ -84,12 +85,14 @@ public class GuiVideoRenderer extends GuiScreen {
         drawBackground(0);
 
         String framesProgress = I18n.format("replaymod.gui.rendering.progress", renderer.getFramesDone(), renderer.getTotalFrames());
-        drawCenteredString(fontRendererObj, framesProgress, centerX, centerY - 45, 0xffffffff);
+        drawCenteredString(fontRendererObj, framesProgress, centerX, centerY - 45, Color.WHITE.getRGB());
 
         int previewX = width / 4;
-        int previewY = height / 2 + 10;
         int previewWidth = width / 2;
+
+        int previewY = height / 2 + 10;
         int previewHeight = height - 30 - previewY;
+
         if (previewCheckBox.isChecked()) {
             frameRenderer.renderPreview(previewX, previewY, previewWidth, previewHeight);
         } else {

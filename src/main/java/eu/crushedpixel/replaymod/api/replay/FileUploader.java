@@ -112,20 +112,20 @@ public class FileUploader {
                 success = true;
                 is = con.getInputStream();
             } else {
+                success = false;
                 is = con.getErrorStream();
             }
 
             if(is != null) {
                 BufferedReader r = new BufferedReader(new InputStreamReader(is));
                 info = null;
+                String result = "";
+                while(r.ready()) {
+                    result += r.readLine();
+                }
                 if(responseCode != 200) {
-                    String json = "";
-                    while(r.ready()) {
-                        json += r.readLine();
-                    }
-                    ApiError error = gson.fromJson(json, ApiError.class);
+                    ApiError error = gson.fromJson(result, ApiError.class);
                     info = error.getTranslatedDesc();
-                    System.out.println(info);
                 }
             }
             con.disconnect();
@@ -133,8 +133,6 @@ public class FileUploader {
             if(info == null) info = I18n.format("replaymod.gui.unknownerror");
 
             ReplayMod.uploadedFileHandler.markAsUploaded(file);
-
-            success = true;
         } catch(Exception e) {
             success = false;
         } finally {
