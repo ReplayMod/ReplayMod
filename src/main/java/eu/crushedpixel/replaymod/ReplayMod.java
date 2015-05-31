@@ -20,6 +20,7 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import eu.crushedpixel.replaymod.utils.TooltipRenderer;
 import eu.crushedpixel.replaymod.video.frame.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
@@ -41,23 +42,6 @@ import java.util.Queue;
 @Mod(modid = ReplayMod.MODID, version = ReplayMod.VERSION)
 public class ReplayMod {
 
-    //TODO: Set ReplayHandler replaying to false when replay is exited
-    //TODO: Hide Titles upon hurrying
-
-    //TODO: Show the player whether he has already uploaded a replay
-
-    //TODO: help page
-
-    //TODO: Add "Miscellaneous" Replay Category
-
-    //XXX
-    //Known Bugs
-    //
-    //Keyframes have problems with Linear Paths
-    //Rain isn't working
-    //Incompatible with Shaders Mod
-    //
-
     public static final String MODID = "replaymod";
     public static final String VERSION = "0.0.1";
     public static final ApiClient apiClient = new ApiClient();
@@ -78,6 +62,7 @@ public class ReplayMod {
     public static FavoritedFileHandler favoritedFileHandler;
     public static RatedFileHandler ratedFileHandler;
     public static SpectatorRenderer spectatorRenderer;
+    public static TooltipRenderer tooltipRenderer;
 
     // The instance of your mod that Forge uses.
     @Instance(value = "ReplayModID")
@@ -136,6 +121,8 @@ public class ReplayMod {
         } catch(Exception e) {
             e.printStackTrace();
         }
+
+        tooltipRenderer = new TooltipRenderer();
 
         mc.getRenderManager().skinMap.put("default", new InvisibilityRender(mc.getRenderManager()));
         mc.getRenderManager().skinMap.put("slim", new InvisibilityRender(mc.getRenderManager(), true));

@@ -154,10 +154,10 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         if(uploadButton.isMouseOver() && !uploadButton.enabled && loadButton.enabled) {
             if(!AuthenticationHandler.isAuthenticated()) {
                 Point mouse = MouseUtils.getMousePos();
-                drawCenteredString(mc.fontRendererObj, I18n.format("replaymod.gui.viewer.noauth"), (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
+                ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.viewer.noauth"), this, Color.RED.getRGB());
             } else if(currentFileUploaded) {
                 Point mouse = MouseUtils.getMousePos();
-                drawCenteredString(mc.fontRendererObj, I18n.format("replaymod.gui.viewer.alreadyuploaded"), (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
+                ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.viewer.alreadyuploaded"), this, Color.RED.getRGB());
             }
         }
     }

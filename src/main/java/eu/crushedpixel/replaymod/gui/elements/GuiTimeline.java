@@ -1,7 +1,10 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+
+import java.awt.*;
 
 import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.TEXTURE_SIZE;
 import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.replay_gui;
@@ -149,7 +152,7 @@ public class GuiTimeline extends Gui {
         if (mouseTime != -1) {
             long sec = mouseTime / 1000;
             String timestamp = String.format("%02d:%02ds", sec / 60, sec % 60);
-            drawCenteredString(mc.fontRendererObj, timestamp, mouseX, mouseY + 5, 0xffffffff);
+            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, timestamp, null, Color.WHITE.getRGB());
         }
     }
 

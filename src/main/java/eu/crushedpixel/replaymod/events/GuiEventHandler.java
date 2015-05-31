@@ -97,12 +97,12 @@ public class GuiEventHandler {
             if(replayCount == 0) {
                 if(editorButton.isMouseOver()) {
                     Point mouse = MouseUtils.getMousePos();
-                    e.gui.drawCenteredString(mc.fontRendererObj, I18n.format("replaymod.gui.morereplays"), (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
+                    ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), I18n.format("replaymod.gui.morereplays"), e.gui, Color.RED.getRGB());
                 }
             } else if(!VersionValidator.isValid) {
                 if(editorButton.isMouseOver()) {
                     Point mouse = MouseUtils.getMousePos();
-                    e.gui.drawCenteredString(mc.fontRendererObj, I18n.format("replaymod.gui.java"), (int) mouse.getX(), (int) mouse.getY() + 4, Color.RED.getRGB());
+                    ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), I18n.format("replaymod.gui.java"), e.gui, Color.RED.getRGB());
                 }
             }
         }

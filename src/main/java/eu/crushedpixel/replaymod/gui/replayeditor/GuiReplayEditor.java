@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import eu.crushedpixel.replaymod.utils.StringUtils;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
@@ -162,30 +163,11 @@ public class GuiReplayEditor extends GuiScreen {
 
         drawCenteredString(fontRendererObj, "§n" + currentTab.getStudioPart().getTitle(), width / 2, 92, Color.WHITE.getRGB());
 
-        List<String> rows = new ArrayList<String>();
-        String remaining = currentTab.getStudioPart().getDescription();
-        while(remaining.length() > 0) {
-            String[] split = remaining.split(" ");
-            String b = "";
-            for(String sp : split) {
-                b += sp + " ";
-                if(fontRendererObj.getStringWidth(b.trim()) > width - 30 - 70 - 20) {
-                    b = b.substring(0, b.trim().length() - (sp.length()));
-                    break;
-                }
-            }
-            String trimmed = b.trim();
-            rows.add(trimmed);
-            try {
-                remaining = remaining.substring(trimmed.length() + 1);
-            } catch(Exception e) {
-                break;
-            }
-        }
+        String[] rows = StringUtils.splitStringInMultipleRows(currentTab.getStudioPart().getDescription(), width - 30 - 70 - 20);
 
         int i = 0;
         for(String row : rows) {
-            drawString(fontRendererObj, row, 30, height - (15 * (rows.size() - i)), Color.WHITE.getRGB());
+            drawString(fontRendererObj, row, 30, height - (15 * (rows.length - i)), Color.WHITE.getRGB());
             i++;
         }
 

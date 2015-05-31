@@ -317,7 +317,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
         if(((favButton.isMouseOver() && !favButton.enabled) || (likeButton.isMouseOver() && !likeButton.enabled)
                 || (dislikeButton.isMouseOver() && !dislikeButton.enabled ))&& currentList.selected != -1) {
-            this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.center.downloadrequired"), mouseX, mouseY + 4, Color.RED.getRGB());
+            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.center.downloadrequired"), this, Color.RED.getRGB());
         }
 
         this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.replaycenter"), this.width / 2, 5, Color.WHITE.getRGB());
