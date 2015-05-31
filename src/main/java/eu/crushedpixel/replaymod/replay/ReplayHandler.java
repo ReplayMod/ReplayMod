@@ -8,6 +8,7 @@ import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
@@ -347,7 +348,12 @@ public class ReplayHandler {
 
         setCameraTilt(0);
 
-        networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND);
+        networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND) {
+            @Override
+            public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
+                t.printStackTrace();
+            }
+        };
         INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
         networkManager.setNetHandler(pc);
 
@@ -388,7 +394,12 @@ public class ReplayHandler {
             channel.close();
         }
 
-        networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND);
+        networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND) {
+            @Override
+            public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
+                t.printStackTrace();
+            }
+        };
         INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
         networkManager.setNetHandler(pc);
 
