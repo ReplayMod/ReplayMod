@@ -36,6 +36,55 @@ public class SpectatorRenderer {
         return (EntityPlayer)current;
     }
 
+    public void renderSpectatorHand(EntityPlayer entityPlayer, float partialTicks, int renderPass) {
+
+        GlStateManager.matrixMode(GL11.GL_PROJECTION);
+        GlStateManager.loadIdentity();
+
+        float f1 = 0.07F;
+
+        if(this.mc.gameSettings.anaglyph) {
+            GlStateManager.translate((float)(-(renderPass * 2 - 1)) * f1, 0.0F, 0.0F);
+        }
+
+        Project.gluPerspective(mc.entityRenderer.getFOVModifier(partialTicks, false),
+                (float) this.mc.displayWidth / (float) this.mc.displayHeight, 0.05F, mc.entityRenderer.farPlaneDistance * 2.0F);
+
+        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+        GlStateManager.loadIdentity();
+
+        if(this.mc.gameSettings.anaglyph) {
+            GlStateManager.translate((float)(renderPass * 2 - 1) * 0.1F, 0.0F, 0.0F);
+        }
+
+        GlStateManager.pushMatrix();
+        mc.entityRenderer.hurtCameraEffect(partialTicks);
+
+        if(this.mc.gameSettings.viewBobbing) {
+            mc.entityRenderer.setupViewBobbing(partialTicks);
+        }
+
+        boolean sleeping = this.mc.getRenderViewEntity() instanceof EntityLivingBase &&
+                ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping();
+
+        if(this.mc.gameSettings.thirdPersonView == 0 && !sleeping && !this.mc.gameSettings.hideGUI) {
+            mc.entityRenderer.enableLightmap();
+            renderItemInFirstPerson(partialTicks);
+            mc.entityRenderer.disableLightmap();
+        }
+
+        GlStateManager.popMatrix();
+
+        if(this.mc.gameSettings.thirdPersonView == 0 && !sleeping) {
+            renderOverlays(partialTicks, entityPlayer);
+            mc.entityRenderer.hurtCameraEffect(partialTicks);
+        }
+
+        if(this.mc.gameSettings.viewBobbing) {
+            mc.entityRenderer.setupViewBobbing(partialTicks);
+        }
+    }
+
     @SubscribeEvent
     public void renderHandEvent(RenderHandEvent event) {
         if(!ReplayHandler.isInReplay() || ReplayHandler.isCamera()) {
@@ -45,54 +94,8 @@ public class SpectatorRenderer {
         EntityPlayer entityPlayer = getSpectatedPlayer();
         if(entityPlayer == null) return;
 
+        renderSpectatorHand(entityPlayer, event.partialTicks, event.renderPass);
         event.setCanceled(true);
-
-        GlStateManager.matrixMode(GL11.GL_PROJECTION);
-        GlStateManager.loadIdentity();
-
-        float f1 = 0.07F;
-
-        if(this.mc.gameSettings.anaglyph) {
-            GlStateManager.translate((float)(-(event.renderPass * 2 - 1)) * f1, 0.0F, 0.0F);
-        }
-
-        Project.gluPerspective(mc.entityRenderer.getFOVModifier(event.partialTicks, false),
-                (float)this.mc.displayWidth / (float) this.mc.displayHeight, 0.05F, mc.entityRenderer.farPlaneDistance * 2.0F);
-
-        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-        GlStateManager.loadIdentity();
-
-        if(this.mc.gameSettings.anaglyph) {
-            GlStateManager.translate((float)(event.renderPass * 2 - 1) * 0.1F, 0.0F, 0.0F);
-        }
-
-        GlStateManager.pushMatrix();
-        mc.entityRenderer.hurtCameraEffect(event.partialTicks);
-
-        if(this.mc.gameSettings.viewBobbing) {
-            mc.entityRenderer.setupViewBobbing(event.partialTicks);
-        }
-
-        boolean sleeping = this.mc.getRenderViewEntity() instanceof EntityLivingBase &&
-                ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping();
-
-        if(this.mc.gameSettings.thirdPersonView == 0 && !sleeping && !this.mc.gameSettings.hideGUI) {
-            mc.entityRenderer.enableLightmap();
-            renderItemInFirstPerson(event.partialTicks);
-            mc.entityRenderer.disableLightmap();
-        }
-
-        GlStateManager.popMatrix();
-
-        if(this.mc.gameSettings.thirdPersonView == 0 && !sleeping) {
-            renderOverlays(event.partialTicks, entityPlayer);
-            mc.entityRenderer.hurtCameraEffect(event.partialTicks);
-        }
-
-        if(this.mc.gameSettings.viewBobbing) {
-            mc.entityRenderer.setupViewBobbing(event.partialTicks);
-        }
-
     }
 
     public void renderItemInFirstPerson(float partialTicks) {

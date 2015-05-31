@@ -71,8 +71,13 @@ public class ReplayHandler {
     }
 
     public static void spectateEntity(Entity e) {
-        currentEntity = e;
-        mc.setRenderViewEntity(currentEntity);
+        if(e == null) {
+            spectateCamera();
+        }
+        else {
+            currentEntity = e;
+            mc.setRenderViewEntity(currentEntity);
+        }
     }
 
     public static void spectateCamera() {

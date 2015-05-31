@@ -1,5 +1,7 @@
 package eu.crushedpixel.replaymod.video.entity;
 
+import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.renderer.*;
@@ -7,6 +9,7 @@ import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
@@ -172,6 +175,9 @@ public abstract class CustomEntityRenderer {
         }
 
         net.minecraftforge.client.ForgeHooksClient.dispatchRenderLast(renderglobal, partialTicks);
+
+        if(!ReplayHandler.isCamera() && ReplayHandler.getCurrentEntity() instanceof EntityPlayer)
+            ReplayMod.spectatorRenderer.renderSpectatorHand((EntityPlayer)ReplayHandler.getCurrentEntity(), partialTicks, renderPass);
     }
 
     protected void setupCameraTransform(float partialTicks) {

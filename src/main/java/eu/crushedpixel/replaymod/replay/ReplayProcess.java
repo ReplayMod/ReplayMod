@@ -221,6 +221,18 @@ public class ReplayProcess {
         PositionKeyframe lastPos = ReplayHandler.getPreviousPositionKeyframe(curRealReplayTime);
         PositionKeyframe nextPos = ReplayHandler.getNextPositionKeyframe(curRealReplayTime);
 
+
+        boolean spectating = false;
+
+        //if it's between two spectator keyframes sharing the same entity, spectate this entity
+        if(lastPos != null && nextPos != null) {
+            if(lastPos.getSpectatedEntityID() != null && nextPos.getSpectatedEntityID() != null) {
+                if(lastPos.getSpectatedEntityID().equals(nextPos.getSpectatedEntityID())) {
+                    spectating = true;
+                }
+            }
+        }
+
         ReplayHandler.setRealTimelineCursor(curRealReplayTime);
 
         int lastPosStamp = 0;
@@ -292,27 +304,32 @@ public class ReplayProcess {
         float splinePos = ((float) ReplayHandler.getKeyframeIndex(lastPos) + currentPosStepPerc) / (float) (posCount - 1);
         float timePos = ((float) ReplayHandler.getKeyframeIndex(lastTime) + currentTimeStepPerc) / (float) (timeCount - 1);
 
-        Position pos = null;
-        if(posCount > 1) {
-            if(!linear) {
-                pos = motionSpline.getPoint(Math.max(0, Math.min(1, splinePos)));
+        if(!spectating) {
+            ReplayHandler.spectateCamera();
+            Position pos = null;
+            if(posCount > 1) {
+                if(!linear) {
+                    pos = motionSpline.getPoint(Math.max(0, Math.min(1, splinePos)));
+                } else {
+                    pos = motionLinear.getPoint(Math.max(0, Math.min(1, splinePos)));
+                }
             } else {
-                pos = motionLinear.getPoint(Math.max(0, Math.min(1, splinePos)));
+                if(posCount == 1) {
+                    pos = ReplayHandler.getFirstPositionKeyframe().getPosition();
+                }
+            }
+
+            if(pos != null) {
+                ReplayHandler.setCameraTilt(pos.getRoll());
+                ReplayHandler.getCameraEntity().movePath(pos);
             }
         } else {
-            if(posCount == 1) {
-                pos = ReplayHandler.getFirstPositionKeyframe().getPosition();
-            }
+            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getSpectatedEntityID()));
         }
 
         Integer curTimestamp = null;
         if(timeLinear != null && timeCount > 1) {
             curTimestamp = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
-        }
-
-        if(pos != null) {
-            ReplayHandler.setCameraTilt(pos.getRoll());
-            ReplayHandler.getCameraEntity().movePath(pos);
         }
 
         if(!isVideoRecording()) ReplayMod.replaySender.setReplaySpeed(curSpeed);

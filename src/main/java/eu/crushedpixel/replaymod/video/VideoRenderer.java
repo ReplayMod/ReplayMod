@@ -198,12 +198,13 @@ public class VideoRenderer {
 
         Position pos;
         PositionKeyframe lastPos = ReplayHandler.getPreviousPositionKeyframe(videoTime);
+        PositionKeyframe nextPos = null;
         if (movement == null || lastPos == null) {
             // Stay at one position, no movement
             pos = ReplayHandler.getNextPositionKeyframe(-1).getPosition();
         } else {
             // Position interpolation
-            PositionKeyframe nextPos = ReplayHandler.getNextPositionKeyframe(videoTime);
+            nextPos = ReplayHandler.getNextPositionKeyframe(videoTime);
 
             int lastPosStamp = lastPos.getRealTimestamp();
             int nextPosStamp = (nextPos == null ? lastPos : nextPos).getRealTimestamp();
@@ -215,13 +216,32 @@ public class VideoRenderer {
             float totalPct = (ReplayHandler.getKeyframeIndex(lastPos) + diffPct) / (posCount-1);
             pos = movement.getPoint(Math.max(0, Math.min(1, totalPct)));
         }
-        ReplayHandler.setCameraTilt(pos.getRoll());
-        ReplayHandler.getCameraEntity().movePath(pos);
 
-        // Make sure we're spectating the camera entity
-        // We do not use .spectateCamera() as that method sets the position of the camera to the previous
-        // entity, overriding our calculations
-        ReplayHandler.spectateEntity(ReplayHandler.getCameraEntity());
+        boolean spectating = false;
+
+        //if it's between two spectator keyframes sharing the same entity, spectate this entity
+        if(lastPos != null && nextPos != null) {
+            if(lastPos.getSpectatedEntityID() != null && nextPos.getSpectatedEntityID() != null) {
+                if(lastPos.getSpectatedEntityID().equals(nextPos.getSpectatedEntityID())) {
+                    spectating = true;
+                }
+            }
+        }
+
+        if(!spectating) {
+            // Make sure we're spectating the camera entity
+            // We do not use .spectateCamera() as that method sets the position of the camera to the previous
+            // entity, overriding our calculations
+            ReplayHandler.spectateEntity(ReplayHandler.getCameraEntity());
+            
+            if(pos != null) {
+                ReplayHandler.setCameraTilt(pos.getRoll());
+                ReplayHandler.getCameraEntity().movePath(pos);
+            }
+        } else {
+            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getSpectatedEntityID()));
+        }
+
     }
 
     private void updateTime(Timer timer, int framesDone) {

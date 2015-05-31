@@ -214,7 +214,9 @@ public class GuiReplayOverlay extends Gui {
                 if(cam != null) {
                     Position position = new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
                             cam.rotationYaw % 360, ReplayHandler.getCameraTilt());
-                    ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), position));
+
+                    if(ReplayHandler.isCamera()) ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), position));
+                    else ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), cam.getEntityId()));
                 }
             }
         }

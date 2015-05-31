@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.holders;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -7,6 +8,10 @@ public class Position {
 
     private double x, y, z;
     private float pitch, yaw, roll;
+
+    public Position(int entityID) {
+        this(Minecraft.getMinecraft().theWorld.getEntityByID(entityID));
+    }
 
     public Position(Entity e) {
         this.x = e.posX;
