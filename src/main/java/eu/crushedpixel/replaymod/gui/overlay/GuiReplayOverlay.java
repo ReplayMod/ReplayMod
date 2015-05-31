@@ -46,8 +46,8 @@ public class GuiReplayOverlay extends Gui {
     public static final int TEXTURE_SIZE = 128;
     private static final float ZOOM_STEPS = 0.05f;
 
-    private static GuiTexturedButton texturedButton(int x, int y, int u, int v, int size) {
-        return new GuiTexturedButton(0, x, y, size, size, replay_gui, u, v, TEXTURE_SIZE, TEXTURE_SIZE);
+    private static GuiTexturedButton texturedButton(int x, int y, int u, int v, int size, String hoverKey) {
+        return new GuiTexturedButton(0, x, y, size, size, replay_gui, u, v, TEXTURE_SIZE, TEXTURE_SIZE, hoverKey);
     }
 
     private final int displayWidth = mc.displayWidth;
@@ -73,16 +73,16 @@ public class GuiReplayOverlay extends Gui {
     private final int TIMELINE_REAL_X = BUTTON_TIME_X + 25;
     private final int TIMELINE_REAL_WIDTH = WIDTH - 14 - 11 - TIMELINE_REAL_X;
 
-    private final GuiButton buttonPlay = texturedButton(BUTTON_PLAY_PAUSE_X, TOP_ROW, 0, 0, 20);
-    private final GuiButton buttonPause = texturedButton(BUTTON_PLAY_PAUSE_X, TOP_ROW, 0, 20, 20);
-    private final GuiButton buttonExport = texturedButton(BUTTON_EXPORT_X, BOTTOM_ROW, 40, 0, 20);
-    private final GuiButton buttonPlayPath = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 0, 20);
-    private final GuiButton buttonPlace = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 0, 40, 20);
-    private final GuiButton buttonPlaceSelected = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 0, 60, 20);
-    private final GuiButton buttonTime = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 80, 20);
-    private final GuiButton buttonTimeSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 100, 20);
-    private final GuiButton buttonZoomIn = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW, 40, 20, 9);
-    private final GuiButton buttonZoomOut = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW + 11, 40, 30, 9);
+    private final GuiButton buttonPlay = texturedButton(BUTTON_PLAY_PAUSE_X, TOP_ROW, 0, 0, 20, "replaymod.gui.ingame.menu.unpause");
+    private final GuiButton buttonPause = texturedButton(BUTTON_PLAY_PAUSE_X, TOP_ROW, 0, 20, 20, "replaymod.gui.ingame.menu.pause");
+    private final GuiButton buttonExport = texturedButton(BUTTON_EXPORT_X, BOTTOM_ROW, 40, 0, 20, "replaymod.gui.ingame.menu.renderpath");
+    private final GuiButton buttonPlayPath = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 0, 20, "replaymod.gui.ingame.menu.playpath");
+    private final GuiButton buttonPlace = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 0, 40, 20, "replaymod.gui.ingame.menu.addposkeyframe");
+    private final GuiButton buttonPlaceSelected = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 0, 60, 20, "replaymod.gui.ingame.menu.removeposkeyframe");
+    private final GuiButton buttonTime = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 80, 20, "replaymod.gui.ingame.menu.addtimekeyframe");
+    private final GuiButton buttonTimeSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 100, 20, "replaymod.gui.ingame.menu.removetimekeyframe");
+    private final GuiButton buttonZoomIn = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW, 40, 20, 9, "replaymod.gui.ingame.menu.zoomin");
+    private final GuiButton buttonZoomOut = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW + 11, 40, 30, 9, "replaymod.gui.ingame.menu.zoomout");
 
     private final GuiTimeline timeline = new GuiTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X);
     private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH);

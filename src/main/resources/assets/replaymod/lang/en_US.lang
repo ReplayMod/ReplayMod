@@ -275,3 +275,16 @@ replaymod.gui.rendering.cancel=Cancel Rendering
 replaymod.gui.rendering.cancel.callback=Are you sure?
 replaymod.gui.rendering.preview=Show Preview (Performance might suffer)
 replaymod.gui.rendering.progress=Frames rendered: %1$d / %2$d
+
+#Ingame Menu
+replaymod.gui.ingame.menu.addposkeyframe=Add Position Keyframe
+replaymod.gui.ingame.menu.removeposkeyframe=Remove Position Keyframe
+replaymod.gui.ingame.menu.addtimekeyframe=Add Time Keyframe
+replaymod.gui.ingame.menu.removetimekeyframe=Remove Time Keyframe
+replaymod.gui.ingame.menu.pause=Pause Replay
+replaymod.gui.ingame.menu.unpause=Unpause Replay
+replaymod.gui.ingame.menu.renderpath=Render Camera Path
+replaymod.gui.ingame.menu.playpath=Play Camera Path
+replaymod.gui.ingame.menu.pausepath=Pause Camera Path
+replaymod.gui.ingame.menu.zoomin=Zoom in
+replaymod.gui.ingame.menu.zoomout=Zoom out
