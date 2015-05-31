@@ -130,10 +130,10 @@ public class PacketListener extends DataListener {
             S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
             if (p.field_149043_l == null) {
                 p.field_149043_l = new DataWatcher(null);
-            }
-            if(p.func_149027_c() != null) {
-                for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_149027_c()) {
-                    p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
+                if(p.func_149027_c() != null) {
+                    for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_149027_c()) {
+                        p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
+                    }
                 }
             }
         }
@@ -142,10 +142,10 @@ public class PacketListener extends DataListener {
             S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
             if (p.field_148960_i == null) {
                 p.field_148960_i = new DataWatcher(null);
-            }
-            if(p.func_148944_c() != null) {
-                for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_148944_c()) {
-                    p.field_148960_i.addObject(wo.getDataValueId(), wo.getObject());
+                if(p.func_148944_c() != null) {
+                    for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_148944_c()) {
+                        p.field_148960_i.addObject(wo.getDataValueId(), wo.getObject());
+                    }
                 }
             }
         }
