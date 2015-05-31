@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.video.entity;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EffectRenderer;
@@ -21,6 +21,12 @@ import static org.lwjgl.opengl.GL11.*;
 public abstract class CustomEntityRenderer {
     protected final Minecraft mc = Minecraft.getMinecraft();
     protected final EntityRenderer proxied = mc.entityRenderer;
+    protected final SpectatorRenderer spectatorRenderer = new SpectatorRenderer(){
+        @Override
+        protected void gluPerspective(float fovY, float aspect, float zNear, float zFar) {
+            CustomEntityRenderer.this.gluPerspective(fovY, aspect, zNear, zFar);
+        }
+    };
     protected int frameCount;
 
     protected void gluPerspective(float fovY, float aspect, float zNear, float zFar) {
@@ -176,8 +182,14 @@ public abstract class CustomEntityRenderer {
 
         net.minecraftforge.client.ForgeHooksClient.dispatchRenderLast(renderglobal, partialTicks);
 
-        if(!ReplayHandler.isCamera() && ReplayHandler.getCurrentEntity() instanceof EntityPlayer)
-            ReplayMod.spectatorRenderer.renderSpectatorHand((EntityPlayer)ReplayHandler.getCurrentEntity(), partialTicks, renderPass);
+        renderSpectatorHand(partialTicks, renderPass);
+    }
+
+    protected void renderSpectatorHand(float partialTicks, int renderPass) {
+        Entity currentEntity = ReplayHandler.getCurrentEntity();
+        if(!ReplayHandler.isCamera() && currentEntity instanceof EntityPlayer) {
+            spectatorRenderer.renderSpectatorHand((EntityPlayer) currentEntity, partialTicks, renderPass);
+        }
     }
 
     protected void setupCameraTransform(float partialTicks) {

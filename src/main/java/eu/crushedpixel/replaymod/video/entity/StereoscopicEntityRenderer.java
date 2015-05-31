@@ -16,6 +16,14 @@ public class StereoscopicEntityRenderer extends CustomEntityRenderer {
         this.leftEye = leftEye;
     }
 
+    @Override
+    public void updateCameraAndRender(float renderPartialTicks) {
+        boolean wasAnaglyph = mc.gameSettings.anaglyph;
+        mc.gameSettings.anaglyph = true;
+        super.updateCameraAndRender(renderPartialTicks);
+        mc.gameSettings.anaglyph = wasAnaglyph;
+    }
+
     protected void translateStereoscopic() {
         GlStateManager.translate(leftEye ? 0.07 : -0.07, 0, 0);
     }
@@ -35,5 +43,10 @@ public class StereoscopicEntityRenderer extends CustomEntityRenderer {
         translateStereoscopic();
 
         orientCamera(partialTicks);
+    }
+
+    @Override
+    protected void renderSpectatorHand(float partialTicks, int renderPass) {
+        super.renderSpectatorHand(partialTicks, leftEye ? 1 : 0);
     }
 }

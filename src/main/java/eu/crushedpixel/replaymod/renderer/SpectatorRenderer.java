@@ -29,6 +29,7 @@ import org.lwjgl.util.glu.Project;
 public class SpectatorRenderer {
 
     private final Minecraft mc = Minecraft.getMinecraft();
+    private EntityPlayer currentPlayer;
 
     private EntityPlayer getSpectatedPlayer() {
         Entity current = ReplayHandler.getCurrentEntity();
@@ -36,7 +37,16 @@ public class SpectatorRenderer {
         return (EntityPlayer)current;
     }
 
+    protected void gluPerspective(float fovY, float aspect, float zNear, float zFar) {
+        Project.gluPerspective(fovY, aspect, zNear, zFar);
+    }
+
     public void renderSpectatorHand(EntityPlayer entityPlayer, float partialTicks, int renderPass) {
+        if (entityPlayer != currentPlayer) {
+            updateNow(entityPlayer);
+        }
+
+        GlStateManager.clear(GL11.GL_DEPTH_BUFFER_BIT);
 
         GlStateManager.matrixMode(GL11.GL_PROJECTION);
         GlStateManager.loadIdentity();
@@ -47,7 +57,7 @@ public class SpectatorRenderer {
             GlStateManager.translate((float)(-(renderPass * 2 - 1)) * f1, 0.0F, 0.0F);
         }
 
-        Project.gluPerspective(mc.entityRenderer.getFOVModifier(partialTicks, false),
+        gluPerspective(mc.entityRenderer.getFOVModifier(partialTicks, false),
                 (float) this.mc.displayWidth / (float) this.mc.displayHeight, 0.05F, mc.entityRenderer.farPlaneDistance * 2.0F);
 
         GlStateManager.matrixMode(GL11.GL_MODELVIEW);
@@ -440,6 +450,17 @@ public class SpectatorRenderer {
             itemToRender = itemstack;
             mc.entityRenderer.itemRenderer.equippedItemSlot = player.inventory.currentItem;
         }
+    }
+
+    public void updateNow(EntityPlayer player) {
+        this.currentPlayer = player;
+
+        prevEquippedProgress = equippedProgress = 1;
+        itemToRender = player.inventory.getCurrentItem();
+        mc.entityRenderer.itemRenderer.equippedItemSlot = player.inventory.currentItem;
+
+        renderArmYaw = prevRenderArmYaw = player.rotationYaw;
+        renderArmPitch = prevRenderArmPitch = player.rotationPitch;
     }
     
     /**

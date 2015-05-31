@@ -106,4 +106,9 @@ public class CubicEntityRenderer extends CustomEntityRenderer {
         GlStateManager.translate(0.0F, 0.0F, 0.1F);
         super.orientCamera(partialTicks);
     }
+
+    @Override
+    protected void renderSpectatorHand(float partialTicks, int renderPass) {
+        // No spectator hands during 360° view
+    }
 }
