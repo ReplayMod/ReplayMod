@@ -11,7 +11,7 @@ import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.replay_gui;
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.glEnable;
 
-public class GuiTimeline extends Gui {
+public class GuiTimeline extends Gui implements GuiElement {
 
     protected static final int TEXTURE_WIDTH = 64;
     protected static final int BORDER_TOP = 4;
@@ -146,7 +146,10 @@ public class GuiTimeline extends Gui {
 
             rect(cursorX - 2, positionY + BORDER_TOP, 84, 20, 5, 16);
         }
+    }
 
+    @Override
+    public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
         // Draw time under cursor if the mouse is on the timeline
         long mouseTime = getTimeAt(mouseX, mouseY);
         if (mouseTime != -1) {
@@ -154,6 +157,26 @@ public class GuiTimeline extends Gui {
             String timestamp = String.format("%02d:%02ds", sec / 60, sec % 60);
             ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, timestamp, null, Color.WHITE.getRGB());
         }
+    }
+
+    @Override
+    public boolean isHovering(int mouseX, int mouseY) {
+        return getTimeAt(mouseX, mouseY) != -1;
+    }
+
+    @Override
+    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+
+    }
+
+    @Override
+    public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
+
+    }
+
+    @Override
+    public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
+
     }
 
     protected void rect(int x, int y, int u, int v, int width, int height) {

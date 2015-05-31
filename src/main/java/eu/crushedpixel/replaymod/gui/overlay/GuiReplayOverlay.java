@@ -5,11 +5,7 @@ import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.gui.GuiRenderSettings;
 import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
-import eu.crushedpixel.replaymod.gui.elements.GuiKeyframeTimeline;
-import eu.crushedpixel.replaymod.gui.elements.GuiScrollbar;
-import eu.crushedpixel.replaymod.gui.elements.GuiTexturedButton;
-import eu.crushedpixel.replaymod.gui.elements.GuiTimeline;
-import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
@@ -18,7 +14,6 @@ import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiInventory;
@@ -46,8 +41,8 @@ public class GuiReplayOverlay extends Gui {
     public static final int TEXTURE_SIZE = 128;
     private static final float ZOOM_STEPS = 0.05f;
 
-    private static GuiTexturedButton texturedButton(int x, int y, int u, int v, int size, String hoverKey) {
-        return new GuiTexturedButton(0, x, y, size, size, replay_gui, u, v, TEXTURE_SIZE, TEXTURE_SIZE, hoverKey);
+    private static GuiTexturedButton texturedButton(int x, int y, int u, int v, int size, Runnable action, String hoverText) {
+        return new GuiTexturedButton(0, x, y, size, size, replay_gui, u, v, TEXTURE_SIZE, TEXTURE_SIZE, action, I18n.format(hoverText));
     }
 
     private final int displayWidth = mc.displayWidth;
@@ -73,25 +68,150 @@ public class GuiReplayOverlay extends Gui {
     private final int TIMELINE_REAL_X = BUTTON_TIME_X + 25;
     private final int TIMELINE_REAL_WIDTH = WIDTH - 14 - 11 - TIMELINE_REAL_X;
 
-    private final GuiButton buttonPlay = texturedButton(BUTTON_PLAY_PAUSE_X, TOP_ROW, 0, 0, 20, "replaymod.gui.ingame.menu.unpause");
-    private final GuiButton buttonPause = texturedButton(BUTTON_PLAY_PAUSE_X, TOP_ROW, 0, 20, 20, "replaymod.gui.ingame.menu.pause");
-    private final GuiButton buttonExport = texturedButton(BUTTON_EXPORT_X, BOTTOM_ROW, 40, 0, 20, "replaymod.gui.ingame.menu.renderpath");
-    private final GuiButton buttonPlayPath = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 0, 20, "replaymod.gui.ingame.menu.playpath");
-    private final GuiButton buttonPlace = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 0, 40, 20, "replaymod.gui.ingame.menu.addposkeyframe");
-    private final GuiButton buttonPlaceSelected = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 0, 60, 20, "replaymod.gui.ingame.menu.removeposkeyframe");
-    private final GuiButton buttonTime = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 80, 20, "replaymod.gui.ingame.menu.addtimekeyframe");
-    private final GuiButton buttonTimeSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 100, 20, "replaymod.gui.ingame.menu.removetimekeyframe");
-    private final GuiButton buttonZoomIn = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW, 40, 20, 9, "replaymod.gui.ingame.menu.zoomin");
-    private final GuiButton buttonZoomOut = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW + 11, 40, 30, 9, "replaymod.gui.ingame.menu.zoomout");
+    private final GuiElement buttonPlayPause = new DelegatingElement() {
 
-    private final GuiTimeline timeline = new GuiTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X);
+        private final GuiElement buttonPlay = texturedButton(BUTTON_PLAY_PAUSE_X, TOP_ROW, 0, 0, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayMod.replaySender.setReplaySpeed(speedSlider.getSliderValue());
+            }
+        }, "replaymod.gui.ingame.menu.unpause");
+
+        private final GuiElement buttonPause = texturedButton(BUTTON_PLAY_PAUSE_X, TOP_ROW, 0, 20, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayMod.replaySender.setReplaySpeed(0);
+            }
+        }, "replaymod.gui.ingame.menu.pause");
+
+        @Override
+        public GuiElement delegate() {
+            return ReplayMod.replaySender.paused() ? buttonPlay : buttonPause;
+        }
+    };
+
+    private final GuiElement buttonExport = texturedButton(BUTTON_EXPORT_X, BOTTOM_ROW, 40, 0, 20, new Runnable() {
+        @Override
+        public void run() {
+            mc.displayGuiScreen(new GuiRenderSettings());
+        }
+    }, "replaymod.gui.ingame.menu.renderpath");
+
+    private final GuiElement buttonPlayPausePath = new DelegatingElement() {
+
+        private final GuiElement buttonPlay = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 0, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.startPath(null);
+
+            }
+        }, "replaymod.gui.ingame.menu.playpath");
+
+        private final GuiElement buttonPause = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 0, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.interruptReplay();
+
+            }
+        }, "replaymod.gui.ingame.menu.pausepath");
+
+        @Override
+        public GuiElement delegate() {
+            return ReplayHandler.isInPath() ? buttonPause : buttonPlay;
+        }
+    };
+
+    private final GuiElement buttonPlace = new DelegatingElement() {
+        private final GuiElement buttonNotSelected = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 0, 40, 20, new Runnable() {
+            @Override
+            public void run() {
+                Entity cam = mc.getRenderViewEntity();
+                if (cam != null) {
+                    Position position = new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
+                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt());
+
+                    if (ReplayHandler.isCamera())
+                        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), position));
+                    else
+                        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), cam.getEntityId()));
+                }
+            }
+        }, "replaymod.gui.ingame.menu.addposkeyframe");
+
+        private final GuiElement buttonSelected = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 0, 60, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.removeKeyframe(ReplayHandler.getSelectedKeyframe());
+            }
+        }, "replaymod.gui.ingame.menu.removeposkeyframe");
+
+        @Override
+        public GuiElement delegate() {
+            return ReplayHandler.getSelectedKeyframe() instanceof PositionKeyframe ? buttonSelected : buttonNotSelected;
+        }
+    };
+
+    private final GuiElement buttonTime = new DelegatingElement() {
+
+        private final GuiElement buttonNotSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 80, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.addKeyframe(new TimeKeyframe(ReplayHandler.getRealTimelineCursor(), ReplayMod.replaySender.currentTimeStamp()));
+            }
+        }, "replaymod.gui.ingame.menu.addtimekeyframe");
+
+        private final GuiElement buttonSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 100, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.removeKeyframe(ReplayHandler.getSelectedKeyframe());
+            }
+        }, "replaymod.gui.ingame.menu.removetimekeyframe");
+
+        @Override
+        public GuiElement delegate() {
+            return ReplayHandler.getSelectedKeyframe() instanceof TimeKeyframe ? buttonSelected : buttonNotSelected;
+        }
+    };
+
+    private final GuiElement buttonZoomIn = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW, 40, 20, 9, new Runnable() {
+        @Override
+        public void run() {
+            zoom_scale = Math.max(0.025f, zoom_scale - ZOOM_STEPS);
+        }
+    }, "replaymod.gui.ingame.menu.zoomin");
+
+    private final GuiElement buttonZoomOut = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW + 11, 40, 30, 9, new Runnable() {
+
+        @Override
+        public void run() {
+            zoom_scale = Math.min(1f, zoom_scale + ZOOM_STEPS);
+            pos_left = Math.min(pos_left, 1f - zoom_scale);
+        }
+    }, "replaymod.gui.ingame.menu.zoomout");
+
+    private final GuiTimeline timeline = new GuiTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X) {
+        @Override
+        public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+            performJump(timeline.getTimeAt(mouseX, mouseY));
+        }
+    };
+
     private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH);
     {
         timelineReal.timelineLength = 10 * 60 * 1000;
     }
-    private final GuiScrollbar scrollbar = new GuiScrollbar(TIMELINE_REAL_X, BOTTOM_ROW + 22, TIMELINE_REAL_WIDTH);
 
-    private GuiReplaySpeedSlider speedSlider = new GuiReplaySpeedSlider(1, SPEED_X, TOP_ROW, I18n.format("replaymod.gui.speed"));
+    private final GuiScrollbar scrollbar = new GuiScrollbar(TIMELINE_REAL_X, BOTTOM_ROW + 22, TIMELINE_REAL_WIDTH) {
+        @Override
+        public void dragged() {
+            pos_left = scrollbar.sliderPosition;
+        }
+    };
+
+    private final GuiReplaySpeedSlider speedSlider = new GuiReplaySpeedSlider(1, SPEED_X, TOP_ROW, I18n.format("replaymod.gui.speed"));
+
+    private final GuiElement content = new ComposedElement(buttonPlayPause, buttonExport, buttonPlace, buttonTime,
+            buttonPlayPausePath, buttonZoomIn, buttonZoomOut, timeline, timelineReal, scrollbar, speedSlider);
 
     private float zoom_scale = 0.1f; //can see 1/10th of the timeline
     private double pos_left = 0f; //left border of timeline is at 0%
@@ -109,8 +229,9 @@ public class GuiReplayOverlay extends Gui {
             mc.displayGuiScreen(null);
         }
         ReplayHandler.setRealTimelineCursor(0);
-        if(slider)
-            speedSlider = new GuiReplaySpeedSlider(1, SPEED_X, TOP_ROW, I18n.format("replaymod.gui.speed"));
+        if (slider) {
+            speedSlider.reset();
+        }
     }
 
     public void register() {
@@ -128,7 +249,7 @@ public class GuiReplayOverlay extends Gui {
             GuiReplayOverlay other = new GuiReplayOverlay();
             other.zoom_scale = this.zoom_scale;
             other.pos_left = this.pos_left;
-            other.speedSlider = this.speedSlider;
+            other.speedSlider.copyValueFrom(this.speedSlider);
 
             this.unregister();
             other.register();
@@ -159,90 +280,23 @@ public class GuiReplayOverlay extends Gui {
         checkResize();
     }
 
-    public void mouseDrag(int mouseX, int mouseY) {
-        speedSlider.mousePressed(mc, mouseX, mouseY);
-
-        scrollbar.doDragging(mouseX);
-        pos_left = scrollbar.sliderPosition;
-
-        timelineReal.mouseDrag(mouseX, mouseY);
+    public void mouseDrag(int mouseX, int mouseY, int button) {
+        content.mouseDrag(mc, mouseX, mouseY, button);
     }
 
-    public void mouseReleased(int mouseX, int mouseY) {
-        speedSlider.mouseReleased(mouseX, mouseY);
-
-        scrollbar.endDragging(mouseX);
-        pos_left = scrollbar.sliderPosition;
-
-        timelineReal.mouseRelease(mouseX, mouseY);
+    public void mouseReleased(int mouseX, int mouseY, int button) {
+        content.mouseRelease(mc, mouseX, mouseY, button);
     }
 
-    public void mouseClicked(int mouseX, int mouseY) {
-        if (buttonPlayPath.mousePressed(mc, mouseX, mouseY)) {
-            if (ReplayHandler.isInPath()) {
-                ReplayHandler.interruptReplay();
-            } else {
-                ReplayHandler.startPath(null);
-            }
-        }
-
-        if (ReplayHandler.isInPath()) {
-            return; // Only allow clicking of cancel button during path replay
-        }
-
-        if (ReplayMod.replaySender.paused()) {
-            if (buttonPlay.mousePressed(mc, mouseX, mouseY)) {
-                ReplayMod.replaySender.setReplaySpeed(speedSlider.getSliderValue());
-            }
+    public void mouseClicked(int mouseX, int mouseY, int button) {
+        if (ReplayHandler.isInPath()) { // Only allow clicking of cancel button during path replay
+            buttonPlayPausePath.mouseClick(mc, mouseX, mouseY, button);
         } else {
-            if (buttonPause.mousePressed(mc, mouseX, mouseY)) {
-                ReplayMod.replaySender.setReplaySpeed(0);
-            }
+            content.mouseClick(mc, mouseX, mouseY, button);
         }
+    }
 
-        speedSlider.mousePressed(mc, mouseX, mouseY);
-        scrollbar.startDragging(mouseX, mouseY);
-        timelineReal.mouseClicked(mc, mouseX, mouseY);
-
-        if (buttonExport.mousePressed(mc, mouseX, mouseY)) {
-            mc.displayGuiScreen(new GuiRenderSettings());
-        }
-
-        Keyframe keyframe = ReplayHandler.getSelectedKeyframe();
-
-        if (buttonPlace.mousePressed(mc, mouseX, mouseY)) {
-            if (keyframe instanceof PositionKeyframe) {
-                ReplayHandler.removeKeyframe(keyframe);
-            } else {
-                Entity cam = mc.getRenderViewEntity();
-                if(cam != null) {
-                    Position position = new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
-                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt());
-
-                    if(ReplayHandler.isCamera()) ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), position));
-                    else ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), cam.getEntityId()));
-                }
-            }
-        }
-
-        if (buttonTime.mousePressed(mc, mouseX, mouseY)) {
-            if (keyframe instanceof TimeKeyframe) {
-                ReplayHandler.removeKeyframe(keyframe);
-            } else {
-                ReplayHandler.addKeyframe(new TimeKeyframe(ReplayHandler.getRealTimelineCursor(), ReplayMod.replaySender.currentTimeStamp()));
-            }
-        }
-
-        if (buttonZoomIn.mousePressed(mc, mouseX, mouseY)) {
-            zoom_scale = Math.max(0.025f, zoom_scale - ZOOM_STEPS);
-        }
-
-        if (buttonZoomOut.mousePressed(mc, mouseX, mouseY)) {
-            zoom_scale = Math.min(1f, zoom_scale + ZOOM_STEPS);
-            pos_left = Math.min(pos_left, 1f - zoom_scale);
-        }
-
-        long timelineTime = timeline.getTimeAt(mouseX, mouseY);
+    private void performJump(long timelineTime) {
         if (timelineTime != -1) { // Click on timeline
             //When hurrying, no Timeline jumping etc. is possible
             if(!ReplayMod.replaySender.isHurrying()) {
@@ -342,8 +396,6 @@ public class GuiReplayOverlay extends Gui {
 
         GlStateManager.resetColor();
 
-        Keyframe keyframe = ReplayHandler.getSelectedKeyframe();
-
         Point mousePoint = MouseUtils.getMousePos();
         int mouseX = mousePoint.getX();
         int mouseY = mousePoint.getY();
@@ -354,51 +406,20 @@ public class GuiReplayOverlay extends Gui {
             mouseX = mouseY = -1000;
         }
 
-        // Draw speed slider
-        speedSlider.drawButton(mc, mouseX, mouseY);
-
-        // Draw buttons
-        buttonExport.drawButton(mc, mouseX, mouseY);
-
-        // Draw play/pause button
-        if (ReplayMod.replaySender.paused()) {
-            buttonPlay.drawButton(mc, mouseX, mouseY);
-        } else {
-            buttonPause.drawButton(mc, mouseX, mouseY);
-        }
-
-        buttonPlayPath.drawButton(mc, mouseX, mouseY);
-
-        // Keyframe buttons
-        if (keyframe instanceof PositionKeyframe) {
-            buttonPlaceSelected.drawButton(mc, mouseX, mouseY);
-        } else {
-            buttonPlace.drawButton(mc, mouseX, mouseY);
-        }
-
-        if (keyframe instanceof TimeKeyframe) {
-            buttonTimeSelected.drawButton(mc, mouseX, mouseY);
-        } else {
-            buttonTime.drawButton(mc, mouseX, mouseY);
-        }
-
-        buttonZoomIn.drawButton(mc, mouseX, mouseY);
-        buttonZoomOut.drawButton(mc, mouseX, mouseY);
-
-        // Draw scrollbar for real timeline
+        // Setup scrollbar and timelines
         scrollbar.size = zoom_scale;
         scrollbar.sliderPosition = pos_left;
-        scrollbar.draw(mc);
 
-        // Finally draw timelines so that no other GUI elements overlap the mouse-position strings
         timeline.cursorPosition = ReplayMod.replaySender.currentTimeStamp();
         timeline.timelineLength = ReplayMod.replaySender.replayLength();
-        timeline.draw(mc, mouseX, mouseY);
 
         timelineReal.cursorPosition = ReplayHandler.getRealTimelineCursor();
         timelineReal.zoom = zoom_scale;
         timelineReal.timeStart = pos_left;
-        timelineReal.draw(mc, mouseX, mouseY);
+
+        // Draw all elements
+        content.draw(mc, mouseX, mouseY);
+        content.drawOverlay(mc, mouseX, mouseY);
 
         GlStateManager.enableBlend();
     }

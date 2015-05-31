@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.gui.elements.GuiElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -8,7 +9,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
-public class GuiReplaySpeedSlider extends GuiButton {
+public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
 
     private float sliderValue;
 
@@ -18,7 +19,6 @@ public class GuiReplaySpeedSlider extends GuiButton {
 
     public GuiReplaySpeedSlider(int buttonId, int p_i45017_2_, int p_i45017_3_, String displayKey) {
         super(buttonId, p_i45017_2_, p_i45017_3_, 150, 20, "");
-        sliderValue = (9f / 38f);
 
         this.width = 100;
         this.valueMin = 1;
@@ -26,6 +26,16 @@ public class GuiReplaySpeedSlider extends GuiButton {
         this.valueStep = 1;
         this.displayString = displayKey + ": 1x";
         this.displayKey = displayKey;
+
+        reset();
+    }
+
+    public void copyValueFrom(GuiReplaySpeedSlider other) {
+        sliderValue = other.sliderValue;
+    }
+
+    public void reset() {
+        sliderValue = 9f / 38f;
     }
 
     public static float convertScaleRet(float value) {
@@ -58,7 +68,7 @@ public class GuiReplaySpeedSlider extends GuiButton {
                 FontRenderer fontrenderer = mc.fontRendererObj;
                 mc.getTextureManager().bindTexture(buttonTextures);
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+                this.hovered = isHovering(mouseX, mouseY);
                 int k = this.getHoverState(this.hovered);
                 GlStateManager.enableBlend();
                 GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
@@ -162,4 +172,36 @@ public class GuiReplaySpeedSlider extends GuiButton {
         this.dragging = false;
     }
 
+    @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY) {
+        drawButton(mc, mouseX, mouseY);
+    }
+
+    @Override
+    public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
+
+    }
+
+    @Override
+    public boolean isHovering(int mouseX, int mouseY) {
+        return mouseX >= this.xPosition
+                && mouseY >= this.yPosition
+                && mouseX < this.xPosition + this.width
+                && mouseY < this.yPosition + this.height;
+    }
+
+    @Override
+    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        mousePressed(mc, mouseX, mouseY);
+    }
+
+    @Override
+    public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
+        mouseDragged(mc, mouseX, mouseY);
+    }
+
+    @Override
+    public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
+        mouseReleased(mouseX, mouseY);
+    }
 }

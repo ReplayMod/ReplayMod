@@ -22,7 +22,8 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         showMarkers = true;
     }
 
-    public void mouseClicked(Minecraft mc, int mouseX, int mouseY) {
+    @Override
+    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
         long time = getTimeAt(mouseX, mouseY);
         if (time == -1) {
             return;
@@ -58,7 +59,8 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         this.clickTime = currentTime;
     }
 
-    public void mouseDrag(int mouseX, int mouseY) {
+    @Override
+    public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
         long time = getTimeAt(mouseX, mouseY);
         if (time != -1) {
             if (clickedKeyFrame != null) {
@@ -75,8 +77,9 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         }
     }
 
-    public void mouseRelease(int mouseX, int mouseY) {
-        mouseDrag(mouseX, mouseY);
+    @Override
+    public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
+        mouseDrag(mc, mouseX, mouseY, button);
         clickedKeyFrame = null;
         dragging = false;
     }

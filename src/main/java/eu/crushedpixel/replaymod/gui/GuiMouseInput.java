@@ -18,17 +18,17 @@ public class GuiMouseInput extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        overlay.mouseClicked(mouseX, mouseY);
+        overlay.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int state) {
-        overlay.mouseReleased(mouseX, mouseY);
+        overlay.mouseReleased(mouseX, mouseY, state);
     }
 
     @Override
     protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-        overlay.mouseDrag(mouseX, mouseY);
+        overlay.mouseDrag(mouseX, mouseY, clickedMouseButton);
     }
 
     @Override

@@ -9,7 +9,7 @@ import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.replay_gui;
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.glEnable;
 
-public class GuiScrollbar extends Gui {
+public class GuiScrollbar extends Gui implements GuiElement {
 
     protected static final int BORDER_LEFT = 1;
     protected static final int BORDER_RIGHT = 2;
@@ -56,34 +56,31 @@ public class GuiScrollbar extends Gui {
         return (int) Math.round((width - BORDER_LEFT - BORDER_RIGHT) * sliderPosition) + BORDER_LEFT;
     }
 
-    public boolean startDragging(int mouseX, int mouseY) {
-        int offsetX = getSliderOffsetX();
-        int minX = positionX + offsetX;
-        int maxX = positionX + offsetX + (int) (width * size);
-        int minY = positionY + BORDER_TOP;
-        int maxY = minY + SLIDER_HEIGHT;
-        if (mouseX >= minX && mouseY >= minY && mouseX < maxX && mouseY < maxY) {
+    @Override
+    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        if (isHovering(mouseX, mouseY)) {
             draggingStart = mouseX;
             draggingStartPosition = sliderPosition;
-            return true;
-        } else {
-            return false;
         }
     }
 
-    public void doDragging(int mouseX) {
+    @Override
+    public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
         if (draggingStart != -1) {
             double delta = (double) (mouseX - draggingStart) / (width - BORDER_LEFT - BORDER_RIGHT);
             sliderPosition = Math.max(0, Math.min(1 - size, draggingStartPosition + delta));
+            dragged();
         }
     }
 
-    public void endDragging(int mouseX) {
-        doDragging(mouseX);
+    @Override
+    public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
+        mouseDrag(mc, mouseX, mouseY, button);
         draggingStart = -1;
     }
 
-    public void draw(Minecraft mc) {
+    @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY) {
         GlStateManager.resetColor();
         mc.renderEngine.bindTexture(replay_gui);
         glEnable(GL_BLEND);
@@ -138,5 +135,24 @@ public class GuiScrollbar extends Gui {
         glEnable(GL_BLEND);
 
         drawModalRectWithCustomSizedTexture(x, y, u, v, width, height, TEXTURE_SIZE, TEXTURE_SIZE);
+    }
+
+    @Override
+    public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
+
+    }
+
+    @Override
+    public boolean isHovering(int mouseX, int mouseY) {
+        int offsetX = getSliderOffsetX();
+        int minX = positionX + offsetX;
+        int maxX = positionX + offsetX + (int) (width * size);
+        int minY = positionY + BORDER_TOP;
+        int maxY = minY + SLIDER_HEIGHT;
+        return mouseX >= minX && mouseY >= minY && mouseX < maxX && mouseY < maxY;
+    }
+
+    public void dragged() {
+
     }
 }
