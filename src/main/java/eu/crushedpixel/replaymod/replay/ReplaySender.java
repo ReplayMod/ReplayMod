@@ -279,8 +279,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                         mc.getResourcePackRepository().func_177319_a(file);
                     }
                 }
+                return null;
             }
-            return null;
         }
 
         if(p instanceof S1CPacketEntityMetadata) {
