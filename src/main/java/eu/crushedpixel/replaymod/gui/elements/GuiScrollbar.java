@@ -43,7 +43,7 @@ public class GuiScrollbar extends Gui {
     protected final int positionY;
     protected final int width;
 
-    private int draggingStart;
+    private int draggingStart = -1;
     private double draggingStartPosition;
 
     public GuiScrollbar(int positionX, int positionY, int width) {
