@@ -1,5 +1,6 @@
-package eu.crushedpixel.replaymod.gui.replaystudio;
+package eu.crushedpixel.replaymod.gui.replayeditor;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -41,6 +42,11 @@ public class GuiReplayEditor extends GuiScreen {
     private void refreshReplayDropdown() {
         replayDropdown.clearElements();
         replayFiles = ReplayFileIO.getAllReplayFiles();
+        if(replayFiles.size() == 0) {
+            mc.displayGuiScreen(null);
+            ReplayMod.guiEventHandler.replayCount = 0;
+            return;
+        }
         for(File file : replayFiles) {
             String name = FilenameUtils.getBaseName(file.getAbsolutePath());
             replayDropdown.addElement(name);

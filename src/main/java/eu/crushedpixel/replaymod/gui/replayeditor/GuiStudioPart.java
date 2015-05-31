@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui.replaystudio;
+package eu.crushedpixel.replaymod.gui.replayeditor;
 
 import net.minecraft.client.gui.GuiScreen;
 

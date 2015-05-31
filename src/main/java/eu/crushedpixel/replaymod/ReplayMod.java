@@ -62,6 +62,7 @@ public class ReplayMod {
     public static final String VERSION = "0.0.1";
     public static final ApiClient apiClient = new ApiClient();
     private static final Minecraft mc = Minecraft.getMinecraft();
+    public static GuiEventHandler guiEventHandler;
     public static GuiReplayOverlay overlay = new GuiReplayOverlay();
     public static ReplaySettings replaySettings;
     public static Configuration config;
@@ -104,7 +105,7 @@ public class ReplayMod {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         FMLCommonHandler.instance().bus().register(new ConnectionEventHandler());
-        MinecraftForge.EVENT_BUS.register(new GuiEventHandler());
+        MinecraftForge.EVENT_BUS.register(guiEventHandler = new GuiEventHandler());
 
         FMLCommonHandler.instance().bus().register(keyInputHandler);
         MinecraftForge.EVENT_BUS.register(new MouseInputHandler());

@@ -1,13 +1,12 @@
 package eu.crushedpixel.replaymod.events;
 
-import de.johni0702.replaystudio.replay.Replay;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
 import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
-import eu.crushedpixel.replaymod.gui.replaystudio.GuiReplayEditor;
+import eu.crushedpixel.replaymod.gui.replayeditor.GuiReplayEditor;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.registry.LightingHandler;
@@ -47,7 +46,7 @@ public class GuiEventHandler {
             add(GuiVideoSettings.class);
         }
     };
-    private int replayCount = 0;
+    public int replayCount = 0;
     private GuiButton editorButton;
 
     @SubscribeEvent

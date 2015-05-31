@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui.replaystudio;
+package eu.crushedpixel.replaymod.gui.replayeditor;
 
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
