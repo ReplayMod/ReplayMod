@@ -133,6 +133,10 @@ public class GuiReplayOverlay extends Gui {
             this.unregister();
             other.register();
             ReplayMod.overlay = other;
+
+            if (mc.currentScreen instanceof GuiMouseInput) {
+                mc.displayGuiScreen(new GuiMouseInput(other));
+            }
         }
     }
 
