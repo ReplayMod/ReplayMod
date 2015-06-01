@@ -164,7 +164,6 @@ public class GuiVideoRenderer extends GuiScreen {
         drawString(fontRendererObj, leftString, width - 12 - fontRendererObj.getStringWidth(leftString),
                 previewCheckBox.yPosition + 5 + 20, Color.WHITE.getRGB());
 
-
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 }

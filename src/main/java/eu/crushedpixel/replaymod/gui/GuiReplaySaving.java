@@ -19,6 +19,12 @@ public class GuiReplaySaving extends GuiScreen {
     }
 
     @Override
+    public void setWorldAndResolution(Minecraft mc, int width, int height) {
+        super.setWorldAndResolution(mc, width, height);
+        ReplayMod.replayFileAppender.callListeners();
+    }
+
+    @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
         this.drawCenteredString(this.fontRendererObj, I18n.format("replaymod.gui.replaysaving.title"), this.width / 2, 20, 16777215);

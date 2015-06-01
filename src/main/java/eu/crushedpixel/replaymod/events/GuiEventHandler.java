@@ -2,7 +2,6 @@ package eu.crushedpixel.replaymod.events;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
 import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
@@ -37,15 +36,7 @@ public class GuiEventHandler {
     private static final Color DARK_RED = Color.decode("#DF0101");
     private static final Color DARK_GREEN = Color.decode("#01DF01");
     private final Minecraft mc = Minecraft.getMinecraft();
-    private final List<Class> allowedGUIs = new ArrayList<Class>() {
-        {
-            add(GuiReplaySettings.class);
-            add(GuiReplaySaving.class);
-            add(GuiIngameMenu.class);
-            add(GuiOptions.class);
-            add(GuiVideoSettings.class);
-        }
-    };
+
     public int replayCount = 0;
     private GuiButton editorButton;
 
@@ -66,11 +57,6 @@ public class GuiEventHandler {
                 }
             }
             if(ReplayHandler.isInReplay()) ReplayHandler.setInReplay(false);
-        }
-
-        if(event.gui != null && ReplayMod.replayFileAppender.isBusy() && !allowedGUIs.contains(event.gui.getClass())) {
-            event.gui = new GuiReplaySaving(event.gui);
-            return;
         }
 
         if(!AuthenticationHandler.isAuthenticated()) return;

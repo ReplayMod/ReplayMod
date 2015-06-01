@@ -29,7 +29,6 @@ public class ReplayFileAppender extends Thread {
                 @Override
                 public void run() {
                     final GuiReplaySaving savingScreen = new GuiReplaySaving(null);
-
                     Minecraft.getMinecraft().displayGuiScreen(savingScreen);
                 }
             });
@@ -96,7 +95,7 @@ public class ReplayFileAppender extends Thread {
         }
     }
 
-    private void callListeners() {
+    public void callListeners() {
         if(filesToMove.isEmpty() && !newReplayFileWriting) {
             for(final GuiReplaySaving gui : listeners) {
                 Minecraft.getMinecraft().addScheduledTask(new Runnable() {
