@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.frame;
 
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Timer;
 
@@ -7,8 +8,8 @@ import java.awt.image.BufferedImage;
 
 public class DefaultFrameRenderer extends FrameRenderer {
 
-    public DefaultFrameRenderer() {
-        super(Minecraft.getMinecraft().displayWidth, Minecraft.getMinecraft().displayHeight);
+    public DefaultFrameRenderer(RenderOptions options) {
+        super(options, Minecraft.getMinecraft().displayWidth, Minecraft.getMinecraft().displayHeight);
     }
 
     @Override

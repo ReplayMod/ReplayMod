@@ -159,49 +159,14 @@ public class ReplayMod {
                 throw new IOException("File \"" + file.getPath() + "\" not found.");
             }
 
-            String renderDistance = System.getProperty("mc.renderdistance");
-            if (renderDistance != null) {
-                mc.gameSettings.renderDistanceChunks = Integer.parseInt(renderDistance);
-            }
-
             final String path = System.getProperty("replaymod.render.path");
             String type = System.getProperty("replaymod.render.type");
             String quality = System.getProperty("replaymod.render.quality");
             String fps = System.getProperty("replaymod.render.fps");
             String waitForChunks = System.getProperty("replaymod.render.waitforchunks");
             String linearMovement = System.getProperty("replaymod.render.linearmovement");
-            FrameRenderer renderer;
-            if (type != null) {
-                String[] parts = type.split(":");
-                type = parts[0].toUpperCase();
-                if ("NORMAL".equals(type) || "DEFAULT".equals(type)) {
-                    renderer = new DefaultFrameRenderer();
-                } else if ("TILED".equals(type)) {
-                    if (parts.length < 3) {
-                        throw new IllegalArgumentException("Tiled renderer requires width and height.");
-                    }
-                    int width = Integer.parseInt(parts[1]);
-                    int height = Integer.parseInt(parts[2]);
-                    renderer = new TilingFrameRenderer(width, height);
-                } else if ("STEREO".equals(type) || "STEREOSCOPIC".equals(type)) {
-                    renderer = new StereoscopicFrameRenderer();
-                } else if ("CUBIC".equals(type)) {
-                    if (parts.length < 2) {
-                        throw new IllegalArgumentException("Cubic renderer requires boolean for whether it's stable.");
-                    }
-                    renderer = new CubicFrameRenderer(Boolean.parseBoolean(parts[1]));
-                } else if ("EQUIRECTANGULAR".equals(type)) {
-                    if (parts.length < 2) {
-                        throw new IllegalArgumentException("Equirectangular renderer requires boolean for whether it's stable.");
-                    }
-                    renderer = new EquirectangularFrameRenderer(Boolean.parseBoolean(parts[1]));
-                } else {
-                    throw new IllegalArgumentException("Unknown type: " + parts[0]);
-                }
-            } else {
-                renderer = new DefaultFrameRenderer();
-            }
-            final RenderOptions options = new RenderOptions(renderer);
+            String skyColor = System.getProperty("replaymod.render.skycolor");
+            final RenderOptions options = new RenderOptions();
             if (quality != null) {
                 options.setQuality(Float.parseFloat(quality));
             }
@@ -214,6 +179,46 @@ public class ReplayMod {
             if (linearMovement != null) {
                 options.setLinearMovement(Boolean.parseBoolean(linearMovement));
             }
+            if (skyColor != null) {
+                if (skyColor.startsWith("0x")) {
+                    options.setSkyColor(Integer.parseInt(skyColor.substring(2), 16));
+                } else {
+                    options.setSkyColor(Integer.parseInt(skyColor));
+                }
+            }
+
+            FrameRenderer renderer;
+            if (type != null) {
+                String[] parts = type.split(":");
+                type = parts[0].toUpperCase();
+                if ("NORMAL".equals(type) || "DEFAULT".equals(type)) {
+                    renderer = new DefaultFrameRenderer(options);
+                } else if ("TILED".equals(type)) {
+                    if (parts.length < 3) {
+                        throw new IllegalArgumentException("Tiled renderer requires width and height.");
+                    }
+                    int width = Integer.parseInt(parts[1]);
+                    int height = Integer.parseInt(parts[2]);
+                    renderer = new TilingFrameRenderer(options, width, height);
+                } else if ("STEREO".equals(type) || "STEREOSCOPIC".equals(type)) {
+                    renderer = new StereoscopicFrameRenderer(options);
+                } else if ("CUBIC".equals(type)) {
+                    if (parts.length < 2) {
+                        throw new IllegalArgumentException("Cubic renderer requires boolean for whether it's stable.");
+                    }
+                    renderer = new CubicFrameRenderer(options, Boolean.parseBoolean(parts[1]));
+                } else if ("EQUIRECTANGULAR".equals(type)) {
+                    if (parts.length < 2) {
+                        throw new IllegalArgumentException("Equirectangular renderer requires boolean for whether it's stable.");
+                    }
+                    renderer = new EquirectangularFrameRenderer(options, Boolean.parseBoolean(parts[1]));
+                } else {
+                    throw new IllegalArgumentException("Unknown type: " + parts[0]);
+                }
+            } else {
+                renderer = new DefaultFrameRenderer(options);
+            }
+            options.setRenderer(renderer);
 
             @SuppressWarnings("unchecked")
             Queue<ListenableFutureTask> tasks = mc.scheduledTasks;
@@ -221,6 +226,15 @@ public class ReplayMod {
                 tasks.add(ListenableFutureTask.create(new Runnable() {
                     @Override
                     public void run() {
+                        String renderDistance = System.getProperty("replaymod.render.mc.renderdistance");
+                        String clouds = System.getProperty("replaymod.render.mc.clouds");
+                        if (renderDistance != null) {
+                            mc.gameSettings.renderDistanceChunks = Integer.parseInt(renderDistance);
+                        }
+                        if (clouds != null) {
+                            mc.gameSettings.clouds = Boolean.parseBoolean(clouds);
+                        }
+
                         System.out.println("Loading replay...");
                         ReplayHandler.startReplay(file, false);
 

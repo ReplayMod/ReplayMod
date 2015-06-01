@@ -10,10 +10,7 @@ public final class RenderOptions {
     private int fps = 30;
     private boolean waitForChunks = true;
     private boolean isLinearMovement = false;
-
-    public RenderOptions(FrameRenderer renderer) {
-        this.renderer = notNull(renderer);
-    }
+    private int skyColor = -1;
 
     public FrameRenderer getRenderer() {
         return renderer;
@@ -57,12 +54,26 @@ public final class RenderOptions {
         this.isLinearMovement = isLinearMovement;
     }
 
+    public boolean isDefaultSky() {
+        return skyColor == -1;
+    }
+
+    public int getSkyColor() {
+        return skyColor;
+    }
+
+    public void setSkyColor(int skyColor) {
+        this.skyColor = skyColor;
+    }
+
     public RenderOptions copy() {
-        RenderOptions copy = new RenderOptions(renderer);
+        RenderOptions copy = new RenderOptions();
+        copy.renderer = this.renderer;
         copy.quality = this.quality;
         copy.fps = this.fps;
         copy.waitForChunks = this.waitForChunks;
         copy.isLinearMovement = this.isLinearMovement;
+        copy.skyColor = this.skyColor;
         return copy;
     }
 }

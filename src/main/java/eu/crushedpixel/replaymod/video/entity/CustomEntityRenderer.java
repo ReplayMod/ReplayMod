@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.video.entity;
 
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.renderer.*;
@@ -28,6 +29,12 @@ public abstract class CustomEntityRenderer {
         }
     };
     protected int frameCount;
+
+    protected final RenderOptions options;
+
+    public CustomEntityRenderer(RenderOptions options) {
+        this.options = options;
+    }
 
     protected void gluPerspective(float fovY, float aspect, float zNear, float zFar) {
         Project.gluPerspective(fovY, aspect, zNear, zFar);
@@ -76,27 +83,33 @@ public abstract class CustomEntityRenderer {
         ClippingHelperImpl.getInstance();
         ICamera camera = new NoCullingCamera();
 
-        if (this.mc.gameSettings.renderDistanceChunks >= 4) {
-            proxied.setupFog(-1, partialTicks);
+        if (this.mc.gameSettings.renderDistanceChunks >= 4 || !options.isDefaultSky()   ) {
+            setupFog(-1, partialTicks);
             matrixMode(GL_PROJECTION);
             loadIdentity();
             gluPerspective(proxied.getFOVModifier(partialTicks, true), (float) mc.displayWidth / mc.displayHeight, 0.05F, proxied.farPlaneDistance * 2.0F);
             matrixMode(GL_MODELVIEW);
-            renderglobal.renderSky(partialTicks, renderPass);
+            if (options.isDefaultSky()) {
+                renderglobal.renderSky(partialTicks, renderPass);
+            } else {
+                int c = options.getSkyColor();
+                clearColor(c >> 16, c >> 8 & 0xff, c & 0xff, 0xff);
+                clear(GL_COLOR_BUFFER_BIT);
+            }
             matrixMode(GL_PROJECTION);
             loadIdentity();
             gluPerspective(proxied.getFOVModifier(partialTicks, true), (float) mc.displayWidth / mc.displayHeight, 0.05F, proxied.farPlaneDistance * MathHelper.SQRT_2);
             matrixMode(GL_MODELVIEW);
         }
 
-        proxied.setupFog(0, partialTicks);
+        setupFog(0, partialTicks);
         shadeModel(GL_SMOOTH);
 
         if (entity.posY + entity.getEyeHeight() < 128) {
             renderCloudsCheck(renderglobal, partialTicks, renderPass);
         }
 
-        proxied.setupFog(0, partialTicks);
+        setupFog(0, partialTicks);
         mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
         RenderHelper.disableStandardItemLighting();
         renderglobal.setupTerrain(entity, partialTicks, camera, frameCount++, mc.thePlayer.isSpectator());
@@ -136,7 +149,7 @@ public abstract class CustomEntityRenderer {
         proxied.enableLightmap();
         effectrenderer.renderLitParticles(entity, partialTicks);
         RenderHelper.disableStandardItemLighting();
-        proxied.setupFog(0, partialTicks);
+        setupFog(0, partialTicks);
         effectrenderer.renderParticles(entity, partialTicks);
         proxied.disableLightmap();
 
@@ -149,7 +162,7 @@ public abstract class CustomEntityRenderer {
         enableCull();
         tryBlendFuncSeparate(770, 771, 1, 0);
         alphaFunc(516, 0.1F);
-        proxied.setupFog(0, partialTicks);
+        setupFog(0, partialTicks);
         enableBlend();
         depthMask(false);
         mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
@@ -206,6 +219,12 @@ public abstract class CustomEntityRenderer {
         orientCamera(partialTicks);
     }
 
+    protected void setupFog(int fogDistanceFlag, float partialTicks) {
+        if (options.isDefaultSky()) {
+            proxied.setupFog(fogDistanceFlag, partialTicks);
+        }
+    }
+
     protected void orientCamera(float partialTicks) {
         proxied.orientCamera(partialTicks);
     }
@@ -217,7 +236,7 @@ public abstract class CustomEntityRenderer {
             gluPerspective(proxied.getFOVModifier(partialTicks, true), (float) this.mc.displayWidth / (float) this.mc.displayHeight, 0.05F, proxied.farPlaneDistance * 4.0F);
             matrixMode(GL_MODELVIEW);
             pushMatrix();
-            proxied.setupFog(0, partialTicks);
+            setupFog(0, partialTicks);
             renderglobal.renderClouds(partialTicks, renderPass);
             disableFog();
             popMatrix();

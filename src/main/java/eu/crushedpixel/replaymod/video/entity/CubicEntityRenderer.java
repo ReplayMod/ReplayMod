@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.video.entity;
 
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 
@@ -32,7 +33,8 @@ public class CubicEntityRenderer extends CustomEntityRenderer {
     private final boolean stable;
     private Direction direction;
 
-    public CubicEntityRenderer(boolean stable) {
+    public CubicEntityRenderer(RenderOptions options, boolean stable) {
+        super(options);
         this.stable = stable;
     }
 

@@ -256,19 +256,8 @@ public class GuiRenderSettings extends GuiScreen {
         FrameRenderer renderer = null;
 
         RendererSettings r = rendererDropdown.getElement(rendererDropdown.getSelectionIndex());
-        if(r == RendererSettings.DEFAULT) {
-            renderer = new DefaultFrameRenderer();
-        } else if(r == RendererSettings.TILED) {
-            renderer = new TilingFrameRenderer(getWidthSetting(), getHeightSetting());
-        } else if(r == RendererSettings.STEREOSCOPIC) {
-            renderer = new StereoscopicFrameRenderer();
-        } else if(r == RendererSettings.CUBIC) {
-            renderer = new CubicFrameRenderer(ignoreCamDir.isChecked());
-        } else if(r == RendererSettings.EQUIRECTANGULAR) {
-            renderer = new EquirectangularFrameRenderer(ignoreCamDir.isChecked());
-        }
 
-        RenderOptions options = new RenderOptions(renderer);
+        RenderOptions options = new RenderOptions();
 
         options.setLinearMovement(linear);
         ReplayMod.replaySettings.setLinearMovement(linear);
@@ -281,6 +270,19 @@ public class GuiRenderSettings extends GuiScreen {
 
         options.setQuality(qualitySlider.getQuality());
         ReplayMod.replaySettings.setVideoQuality(qualitySlider.getQuality());
+
+        if(r == RendererSettings.DEFAULT) {
+            renderer = new DefaultFrameRenderer(options);
+        } else if(r == RendererSettings.TILED) {
+            renderer = new TilingFrameRenderer(options, getWidthSetting(), getHeightSetting());
+        } else if(r == RendererSettings.STEREOSCOPIC) {
+            renderer = new StereoscopicFrameRenderer(options);
+        } else if(r == RendererSettings.CUBIC) {
+            renderer = new CubicFrameRenderer(options, ignoreCamDir.isChecked());
+        } else if(r == RendererSettings.EQUIRECTANGULAR) {
+            renderer = new EquirectangularFrameRenderer(options, ignoreCamDir.isChecked());
+        }
+        options.setRenderer(renderer);
 
         ReplayHandler.startPath(options);
     }

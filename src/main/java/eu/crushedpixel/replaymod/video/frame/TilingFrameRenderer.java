@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.frame;
 
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.entity.TilingEntityRenderer;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
@@ -9,12 +10,13 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 public class TilingFrameRenderer extends FrameRenderer {
-    private final TilingEntityRenderer entityRenderer = new TilingEntityRenderer(this);
+    private final TilingEntityRenderer entityRenderer;
     private final int tileWidth;
     private final int tileHeight;
 
-    public TilingFrameRenderer(int videoWidth, int videoHeight) {
-        super(videoWidth, videoHeight);
+    public TilingFrameRenderer(RenderOptions options, int videoWidth, int videoHeight) {
+        super(options, videoWidth, videoHeight);
+        this.entityRenderer = new TilingEntityRenderer(options, this);
         this.tileWidth = mc.displayWidth;
         this.tileHeight = mc.displayHeight;
         setCustomEntityRenderer(entityRenderer);

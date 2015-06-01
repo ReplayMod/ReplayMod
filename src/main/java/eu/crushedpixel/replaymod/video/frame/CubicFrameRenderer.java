@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.frame;
 
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.entity.CubicEntityRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
@@ -17,15 +18,15 @@ public class CubicFrameRenderer extends FrameRenderer {
     protected final CubicEntityRenderer entityRenderer;
     protected final int displaySize;
 
-    protected CubicFrameRenderer(int videoWidth, int videoHeight, boolean stable) {
-        super(videoWidth, videoHeight, getDisplaySize() * getDisplaySize() * 3);
+    protected CubicFrameRenderer(RenderOptions options, int videoWidth, int videoHeight, boolean stable) {
+        super(options, videoWidth, videoHeight, getDisplaySize() * getDisplaySize() * 3);
         this.displaySize = getDisplaySize();
-        this.entityRenderer = new CubicEntityRenderer(stable);
+        this.entityRenderer = new CubicEntityRenderer(options, stable);
         setCustomEntityRenderer(entityRenderer);
     }
 
-    public CubicFrameRenderer(boolean stable) {
-        this(getDisplaySize() * 4, getDisplaySize() * 3, stable);
+    public CubicFrameRenderer(RenderOptions options, boolean stable) {
+        this(options, getDisplaySize() * 4, getDisplaySize() * 3, stable);
     }
 
     @Override

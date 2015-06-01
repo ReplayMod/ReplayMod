@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.entity;
 
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 
@@ -11,6 +12,10 @@ import static org.lwjgl.opengl.GL11.GL_PROJECTION;
 public class StereoscopicEntityRenderer extends CustomEntityRenderer {
 
     private boolean leftEye;
+
+    public StereoscopicEntityRenderer(RenderOptions options) {
+        super(options);
+    }
 
     public void setEye(boolean leftEye) {
         this.leftEye = leftEye;

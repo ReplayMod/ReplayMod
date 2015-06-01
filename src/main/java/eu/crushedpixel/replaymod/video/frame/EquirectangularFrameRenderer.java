@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.frame;
 
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.entity.CubicEntityRenderer;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
@@ -12,8 +13,8 @@ import static java.lang.Math.PI;
 
 public class EquirectangularFrameRenderer extends CubicFrameRenderer {
 
-    public EquirectangularFrameRenderer(boolean stable) {
-        super(getDisplaySize() * 4, getDisplaySize() * 2, stable);
+    public EquirectangularFrameRenderer(RenderOptions options, boolean stable) {
+        super(options, getDisplaySize() * 4, getDisplaySize() * 2, stable);
     }
 
     @Override

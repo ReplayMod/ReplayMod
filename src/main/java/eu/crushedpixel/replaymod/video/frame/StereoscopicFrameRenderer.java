@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.frame;
 
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.entity.StereoscopicEntityRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
@@ -9,10 +10,11 @@ import net.minecraft.util.Timer;
 import java.awt.image.BufferedImage;
 
 public class StereoscopicFrameRenderer extends FrameRenderer {
-    private final StereoscopicEntityRenderer entityRenderer = new StereoscopicEntityRenderer();
+    private final StereoscopicEntityRenderer entityRenderer;
 
-    public StereoscopicFrameRenderer() {
-        super(Minecraft.getMinecraft().displayWidth * 2, Minecraft.getMinecraft().displayHeight);
+    public StereoscopicFrameRenderer(RenderOptions options) {
+        super(options, Minecraft.getMinecraft().displayWidth * 2, Minecraft.getMinecraft().displayHeight);
+        entityRenderer = new StereoscopicEntityRenderer(options);
         setCustomEntityRenderer(entityRenderer);
     }
 

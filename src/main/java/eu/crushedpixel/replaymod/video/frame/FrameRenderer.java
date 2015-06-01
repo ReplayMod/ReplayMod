@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.video.frame;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Runnables;
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.entity.CustomEntityRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -25,6 +26,7 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 public abstract class FrameRenderer {
     private static final ResourceLocation noPreviewTexture = new ResourceLocation("replaymod", "logo.jpg");
     protected final Minecraft mc = Minecraft.getMinecraft();
+    protected final RenderOptions options;
     private final int videoWidth;
     private final int videoHeight;
     private CustomEntityRenderer customEntityRenderer;
@@ -33,18 +35,20 @@ public abstract class FrameRenderer {
     private boolean previewActive = false;
     protected final ByteBuffer buffer;
 
-    public FrameRenderer(int videoWidth, int videoHeight) {
+    public FrameRenderer(RenderOptions options, int videoWidth, int videoHeight) {
+        this.options = options;
         this.videoWidth = videoWidth;
         this.videoHeight = videoHeight;
         this.buffer = BufferUtils.createByteBuffer(mc.displayWidth * mc.displayHeight * 3);
-        this.customEntityRenderer = new CustomEntityRenderer() {};
+        this.customEntityRenderer = new CustomEntityRenderer(options) {};
     }
 
-    public FrameRenderer(int videoWidth, int videoHeight, int bufferSize) {
+    public FrameRenderer(RenderOptions options, int videoWidth, int videoHeight, int bufferSize) {
+        this.options = options;
         this.videoWidth = videoWidth;
         this.videoHeight = videoHeight;
         this.buffer = BufferUtils.createByteBuffer(bufferSize);
-        this.customEntityRenderer = new CustomEntityRenderer() {};
+        this.customEntityRenderer = new CustomEntityRenderer(options) {};
     }
 
     public final int getVideoWidth() {

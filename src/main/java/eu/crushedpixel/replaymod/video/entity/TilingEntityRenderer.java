@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.entity;
 
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.frame.TilingFrameRenderer;
 
 import static net.minecraft.client.renderer.GlStateManager.scale;
@@ -10,7 +11,8 @@ public class TilingEntityRenderer extends CustomEntityRenderer {
     private final TilingFrameRenderer renderer;
     private int tileX, tileY;
 
-    public TilingEntityRenderer(TilingFrameRenderer renderer) {
+    public TilingEntityRenderer(RenderOptions options, TilingFrameRenderer renderer) {
+        super(options);
         this.renderer = renderer;
     }
 
