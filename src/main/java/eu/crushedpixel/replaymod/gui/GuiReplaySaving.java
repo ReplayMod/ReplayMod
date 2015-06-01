@@ -1,11 +1,16 @@
 package eu.crushedpixel.replaymod.gui;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+
+import java.io.IOException;
 
 public class GuiReplaySaving extends GuiScreen {
 
     private GuiScreen waiting = null;
+
+    private final Minecraft mc = Minecraft.getMinecraft();
 
     public GuiReplaySaving(GuiScreen waiting) {
         this.waiting = waiting;
@@ -23,4 +28,8 @@ public class GuiReplaySaving extends GuiScreen {
         mc.displayGuiScreen(waiting);
     }
 
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        //Ignore key inputs to disallow users from closing this GUI
+    }
 }

@@ -68,14 +68,12 @@ public class GuiEventHandler {
             if(ReplayHandler.isInReplay()) ReplayHandler.setInReplay(false);
         }
 
-        if(!AuthenticationHandler.isAuthenticated()) return;
-
-        /*
-        if(event.gui != null && GuiReplaySaving.replaySaving && !allowedGUIs.contains(event.gui.getClass())) {
+        if(event.gui != null && ReplayMod.replayFileAppender.isBusy() && !allowedGUIs.contains(event.gui.getClass())) {
             event.gui = new GuiReplaySaving(event.gui);
             return;
         }
-        */
+
+        if(!AuthenticationHandler.isAuthenticated()) return;
 
         if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
             if(ReplayHandler.isInReplay()) {

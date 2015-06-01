@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.recording;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -17,7 +18,6 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -48,8 +48,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
         this.worldName = worldName;
         this.singleplayer = singleplayer;
 
-        System.out.println(worldName);
-
         FileOutputStream fos = new FileOutputStream(file);
         BufferedOutputStream bos = new BufferedOutputStream(fos);
         DataOutputStream out = new DataOutputStream(bos);
@@ -58,7 +56,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
     public void setWorldName(String worldName) {
         this.worldName = worldName;
-        System.out.println(worldName);
     }
 
     @Override
@@ -88,12 +85,11 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
         private ConcurrentLinkedQueue<PacketData> queue = new ConcurrentLinkedQueue<PacketData>();
         private DataOutputStream stream;
+
         Thread outputThread = new Thread(new Runnable() {
 
             @Override
             public void run() {
-
-                HashMap<Class, Integer> counts = new HashMap<Class, Integer>();
 
                 while(active) {
                     PacketData dataReciever = queue.poll();
@@ -128,10 +124,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                     e.printStackTrace();
                 }
 
-                for(Entry<Class, Integer> entries : counts.entrySet()) {
-                    System.out.println(entries.getKey() + "| " + entries.getValue());
-                }
-
             }
         }, "replaymod-packet-writer");
 
@@ -148,6 +140,8 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             active = false;
 
             try {
+                ReplayMod.replayFileAppender.startNewReplayFileWriting();
+
                 String mcversion = Minecraft.getMinecraft().getVersion();
                 String[] split = mcversion.split("-");
                 if(split.length > 0) {
@@ -157,7 +151,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 String[] pl = players.toArray(new String[players.size()]);
 
                 ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime, pl, mcversion);
-                String json = gson.toJson(metaData);
 
                 File folder = ReplayFileIO.getReplayFolder();
 
@@ -171,6 +164,8 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
             } catch(Exception e) {
                 e.printStackTrace();
+            } finally {
+                ReplayMod.replayFileAppender.replayFileWritingFinished();
             }
         }
 
