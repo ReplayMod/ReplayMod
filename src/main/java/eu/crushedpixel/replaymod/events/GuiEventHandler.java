@@ -69,10 +69,14 @@ public class GuiEventHandler {
         }
 
         if(!AuthenticationHandler.isAuthenticated()) return;
+
+        /*
         if(event.gui != null && GuiReplaySaving.replaySaving && !allowedGUIs.contains(event.gui.getClass())) {
             event.gui = new GuiReplaySaving(event.gui);
             return;
         }
+        */
+
         if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
             if(ReplayHandler.isInReplay()) {
                 event.setCanceled(true);

@@ -3,7 +3,6 @@ package eu.crushedpixel.replaymod.recording;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
-import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -15,8 +14,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -146,8 +148,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             active = false;
 
             try {
-                GuiReplaySaving.replaySaving = true;
-
                 String mcversion = Minecraft.getMinecraft().getVersion();
                 String[] split = mcversion.split("-");
                 if(split.length > 0) {
@@ -169,10 +169,8 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 file.delete();
                 FileUtils.deleteDirectory(tempResourcePacksFolder);
 
-                GuiReplaySaving.replaySaving = false;
             } catch(Exception e) {
                 e.printStackTrace();
-                GuiReplaySaving.replaySaving = false;
             }
         }
 

@@ -3,7 +3,6 @@ package eu.crushedpixel.replaymod.video;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import eu.crushedpixel.replaymod.events.TickAndRenderListener;
-import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import net.minecraft.client.Minecraft;
@@ -37,8 +36,6 @@ public class ReplayScreenshot {
         locked = true;
 
         try {
-            GuiReplaySaving.replaySaving = true;
-
             mc.gameSettings.hideGUI = true;
             mc.currentScreen = null;
 
@@ -91,7 +88,6 @@ public class ReplayScreenshot {
                     } catch(Exception e) {
                         e.printStackTrace();
                     } finally {
-                        GuiReplaySaving.replaySaving = false;
                         locked = false;
                         TickAndRenderListener.finishScreenshot();
                     }
