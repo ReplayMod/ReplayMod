@@ -29,7 +29,6 @@ public class ReplayFileAppender extends Thread {
                 @Override
                 public void run() {
                     final GuiReplaySaving savingScreen = new GuiReplaySaving(null);
-                    addFinishListener(savingScreen);
 
                     Minecraft.getMinecraft().displayGuiScreen(savingScreen);
                 }
