@@ -23,11 +23,13 @@ public class ReplayFile extends ZipFile {
     public static final String ZIP_FILE_EXTENSION = ".mcpr";
     public static final String ENTRY_RECORDING = "recording" + TEMP_FILE_EXTENSION;
     public static final String ENTRY_METADATA = "metaData" + JSON_FILE_EXTENSION;
-    public static final String ENTRY_PATHS = "paths";
+    public static final String ENTRY_PATHS_OLD = "paths";
+    public static final String ENTRY_PATHS = "paths" + JSON_FILE_EXTENSION;
     public static final String ENTRY_THUMB = "thumb";
     public static final String ENTRY_RESOURCE_PACK = "resourcepack/%s.zip";
     public static final String ENTRY_RESOURCE_PACK_INDEX = "resourcepack/index.json";
-    public static final String ENTRY_VISIBILITY = "visibility";
+    public static final String ENTRY_VISIBILITY_OLD = "visibility";
+    public static final String ENTRY_VISIBILITY = "visibility" + JSON_FILE_EXTENSION;
 
     private final File file;
 
@@ -76,11 +78,13 @@ public class ReplayFile extends ZipFile {
     }
 
     public ZipArchiveEntry pathsEntry() {
-        return getEntry(ENTRY_PATHS);
+        ZipArchiveEntry newEntry = getEntry(ENTRY_PATHS);
+        return newEntry != null ? newEntry : getEntry(ENTRY_PATHS_OLD);
     }
 
     public ZipArchiveEntry visibilityEntry() {
-        return getEntry(ENTRY_VISIBILITY);
+        ZipArchiveEntry newEntry = getEntry(ENTRY_VISIBILITY);
+        return newEntry != null ? newEntry : getEntry(ENTRY_VISIBILITY_OLD);
     }
 
     public Supplier<KeyframeSet[]> paths() {
