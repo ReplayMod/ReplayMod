@@ -18,6 +18,7 @@ import org.lwjgl.input.Keyboard;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
@@ -221,9 +222,19 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
     }
 
     private void saveOnQuit() {
-        ArrayList<KeyframeSet> copy = new ArrayList<KeyframeSet>(keyframeSetList.getCopyOfElements());
-        this.keyframeRepository = copy.toArray(new KeyframeSet[copy.size()]);
-        ReplayHandler.setKeyframeRepository(keyframeRepository, true);
+        if(isDirty()) {
+            ArrayList<KeyframeSet> copy = new ArrayList<KeyframeSet>(keyframeSetList.getCopyOfElements());
+            this.keyframeRepository = copy.toArray(new KeyframeSet[copy.size()]);
+            ReplayHandler.setKeyframeRepository(keyframeRepository, true);
+        }
+    }
+
+    private boolean isDirty() {
+        KeyframeSet[] repo = ReplayHandler.getKeyframeRepository();
+        KeyframeSet[] newRepo = keyframeSetList.getCopyOfElements().
+                toArray(new KeyframeSet[keyframeSetList.getCopyOfElements().size()]);
+
+        return Arrays.equals(repo, newRepo);
     }
 
     @Override
