@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
+import org.lwjgl.util.Point;
 
 public class TooltipRenderer extends Gui {
 
@@ -17,8 +18,9 @@ public class TooltipRenderer extends Gui {
 
         int screenWidth, screenHeight;
         if(parent == null) {
-            screenWidth = mc.displayWidth;
-            screenHeight = mc.displayHeight;
+            Point screenDimensions = MouseUtils.getScaledDimensions();
+            screenWidth = screenDimensions.getX();
+            screenHeight = screenDimensions.getY();
         } else {
             screenWidth = parent.width;
             screenHeight = parent.height;

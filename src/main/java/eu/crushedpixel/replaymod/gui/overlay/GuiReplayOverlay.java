@@ -449,6 +449,22 @@ public class GuiReplayOverlay extends Gui {
     }
 
     /**
+     * Render the eye icon in the bottom right corner of the screen.
+     * @param event Rendered post game overlay
+     */
+    @SubscribeEvent
+    public void renderLightingIndicator(RenderGameOverlayEvent.Post event) {
+        if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
+        if(ReplayMod.replaySettings.isLightingEnabled() && ReplayHandler.isInReplay()) {
+            mc.renderEngine.bindTexture(replay_gui);
+            GlStateManager.resetColor();
+            GlStateManager.enableAlpha();
+            Gui.drawModalRectWithCustomSizedTexture(WIDTH - 10 - 19, HEIGHT - 10 - 13,
+                    90, 20, 19, 13, TEXTURE_SIZE, TEXTURE_SIZE);
+        }
+    }
+
+    /**
      * Dummy interface for GUI on which this replay overlay shall not be rendered.
      */
     public static interface NoOverlay {

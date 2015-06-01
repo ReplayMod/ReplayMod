@@ -7,12 +7,12 @@ import net.minecraft.client.settings.GameSettings.Options;
 
 public class LightingHandler {
 
+    private static final Minecraft mc = Minecraft.getMinecraft();
+
     private static float initialGamma = 0;
 
     private static boolean enabled = false;
-
-    //TODO: Properly reset Gamma on game start
-    //TODO: Properly handle manual gamma changes while in Replay
+    
     public static void setLighting(boolean lighting) {
         if(lighting) {
             if(!enabled) {
@@ -33,6 +33,16 @@ public class LightingHandler {
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mc.gameSettings.gammaSetting = initialGamma;
+                mc.gameSettings.saveOptions();
+            }
+        }, "lighting-handler-shutdown-hook"));
     }
 
 }
