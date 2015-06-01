@@ -4,12 +4,15 @@ import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.replay.LesserDataWatcher;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.Sys;
 
 import java.lang.reflect.Field;
@@ -29,6 +32,25 @@ public class CameraEntity extends EntityPlayer {
     public CameraEntity(World worldIn) {
         //super(worldIn);
         super(worldIn, Minecraft.getMinecraft().getSession().getProfile());
+    }
+
+    @SubscribeEvent
+    public void tick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            Entity view = Minecraft.getMinecraft().getRenderViewEntity();
+            if (view != this) {
+                prevPosX = view.prevPosX;
+                prevPosY = view.prevPosY;
+                prevPosZ = view.prevPosZ;
+                prevRotationYaw = view.prevRotationYaw;
+                prevRotationPitch = view.prevRotationPitch;
+                posX = view.posX;
+                posY = view.posY;
+                posZ = view.posZ;
+                rotationYaw = view.rotationYaw;
+                rotationPitch = view.rotationPitch;
+            }
+        }
     }
 
     //frac = time since last tick

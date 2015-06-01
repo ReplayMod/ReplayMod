@@ -15,6 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 
 import java.io.File;
@@ -119,7 +120,11 @@ public class ReplayHandler {
 
     public static void setCameraEntity(CameraEntity entity) {
         if(entity == null) return;
+        if (cameraEntity != null) {
+            FMLCommonHandler.instance().bus().unregister(cameraEntity);
+        }
         cameraEntity = entity;
+        FMLCommonHandler.instance().bus().register(cameraEntity);
         spectateCamera();
     }
 

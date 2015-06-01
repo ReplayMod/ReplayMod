@@ -44,7 +44,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
-            S28PacketEffect.class,
             S2BPacketChangeGameState.class,
             S06PacketUpdateHealth.class,
             S2DPacketOpenWindow.class,
@@ -255,8 +254,10 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     protected Packet processPacket(Packet p) throws Exception {
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
-        if(p instanceof S29PacketSoundEffect && ReplayProcess.isVideoRecording()) {
-            return null;
+        if (p instanceof S29PacketSoundEffect || p instanceof S28PacketEffect) {
+            if (!asyncMode || isHurrying()) {
+                return null;
+            }
         }
 
         if(p instanceof S03PacketTimeUpdate) {
