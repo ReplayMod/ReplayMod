@@ -8,8 +8,7 @@ import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class PlayerHandler {
 
@@ -23,15 +22,15 @@ public class PlayerHandler {
         }
     };
 
-    private static List<Integer> hidden = new ArrayList<Integer>();
+    private static Set<UUID> hidden = new HashSet<UUID>();
 
     public static void hidePlayer(EntityPlayer player) {
-        hidden.remove((Integer) player.getEntityId());
-        hidden.add(player.getEntityId());
+        hidden.remove(player.getUniqueID());
+        hidden.add(player.getUniqueID());
     }
 
     public static void showPlayer(EntityPlayer player) {
-        hidden.remove((Integer) player.getEntityId());
+        hidden.remove(player.getUniqueID());
     }
 
     public static void setIsVisible(EntityPlayer player, boolean visible) {
@@ -43,24 +42,22 @@ public class PlayerHandler {
         resetHiddenPlayers();
         if(visibility != null) {
             GuiPlayerOverview.defaultSave = true;
-            for(int i : visibility.getHiddenPlayers()) {
-                hidden.add(i);
-            }
+            Collections.addAll(hidden, visibility.getHiddenPlayers());
         } else {
             GuiPlayerOverview.defaultSave = false;
         }
     }
 
-    public static List<Integer> getHiddenPlayers() {
+    public static Set<UUID> getHiddenPlayers() {
         return hidden;
     }
 
-    public static boolean isHidden(int id) {
-        return hidden.contains(id);
+    public static boolean isHidden(UUID uuid) {
+        return hidden.contains(uuid);
     }
 
     public static void resetHiddenPlayers() {
-        hidden = new ArrayList<Integer>();
+        hidden.clear();
     }
 
     public static void openPlayerOverview() {

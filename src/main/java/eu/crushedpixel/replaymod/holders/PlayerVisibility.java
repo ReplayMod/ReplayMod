@@ -1,16 +1,17 @@
 package eu.crushedpixel.replaymod.holders;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.UUID;
 
 public class PlayerVisibility {
 
-    public PlayerVisibility(List<Integer> hidden) {
-        this.hidden = hidden.toArray(new Integer[hidden.size()]);
+    public PlayerVisibility(Collection<UUID> hidden) {
+        this.hidden = hidden.toArray(new UUID[hidden.size()]);
     }
 
-    private Integer[] hidden;
+    private UUID[] hidden;
 
-    public Integer[] getHiddenPlayers() {
+    public UUID[] getHiddenPlayers() {
         return hidden;
     }
 

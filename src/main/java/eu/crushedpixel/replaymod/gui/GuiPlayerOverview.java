@@ -237,7 +237,7 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
                 checkBoxes.add(new GuiCheckBox(checkBoxes.size(), (int)(this.width*0.7)-5, l2+3, "", true));
                 buttonList.add(checkBoxes.get(checkBoxes.size() - 1));
             }
-            checkBoxes.get(fitting).setIsChecked(!PlayerHandler.isHidden(p.first().getEntityId()));
+            checkBoxes.get(fitting).setIsChecked(!PlayerHandler.isHidden(p.first().getUniqueID()));
 
             l2 += 16 + 5;
             fitting++;
