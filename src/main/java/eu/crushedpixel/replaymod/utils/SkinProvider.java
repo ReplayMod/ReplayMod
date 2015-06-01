@@ -12,7 +12,7 @@ public class SkinProvider {
     public static ResourceLocation getResourceLocationForPlayerUUID(UUID uuid) {
         NetworkPlayerInfo info = Minecraft.getMinecraft().getNetHandler().getPlayerInfo(uuid);
         ResourceLocation skinLocation;
-        if(info.hasLocationSkin()) {
+        if (info != null && info.hasLocationSkin()) {
             skinLocation = info.getLocationSkin();
         } else {
             skinLocation = DefaultPlayerSkin.getDefaultSkin(uuid);
