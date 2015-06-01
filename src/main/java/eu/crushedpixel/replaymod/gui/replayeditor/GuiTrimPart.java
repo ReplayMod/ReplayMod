@@ -32,7 +32,7 @@ public class GuiTrimPart extends GuiStudioPart {
     @Override
     public void applyFilters(File replayFile, File outputFile) {
         try {
-            StudioImplementation.trimReplay(replayFile, false, getStartTimestamp(), getEndTimestamp(), outputFile);
+            StudioImplementation.trimReplay(replayFile, getStartTimestamp(), getEndTimestamp(), outputFile);
         } catch(Exception e) {
             e.printStackTrace();
         }
