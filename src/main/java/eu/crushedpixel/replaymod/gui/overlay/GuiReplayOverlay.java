@@ -13,6 +13,7 @@ import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
@@ -30,6 +31,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Point;
 
 import java.io.IOException;
+import java.util.List;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -352,9 +354,23 @@ public class GuiReplayOverlay extends Gui {
                         ReplayMod.replaySender.setAsyncMode(true);
                         ReplayMod.replaySender.setReplaySpeed(0);
 
-                        // Tick twice to process all packets and position interpolation
+                        mc.getNetHandler().getNetworkManager().processReceivedPackets();
+                        @SuppressWarnings("unchecked")
+                        List<Entity> entities = (List<Entity>) mc.theWorld.loadedEntityList;
+                        for (Entity entity : entities) {
+                            if (entity instanceof EntityOtherPlayerMP) {
+                                EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
+                                e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);
+                                e.rotationYaw = (float) e.otherPlayerMPYaw;
+                                e.rotationPitch = (float) e.otherPlayerMPPitch;
+                            }
+                            entity.lastTickPosX = entity.prevPosX = entity.posX;
+                            entity.lastTickPosY = entity.prevPosY = entity.posY;
+                            entity.lastTickPosZ = entity.prevPosZ = entity.posZ;
+                            entity.prevRotationYaw = entity.rotationYaw;
+                            entity.prevRotationPitch = entity.rotationPitch;
+                        }
                         try {
-                            mc.runTick();
                             mc.runTick();
                         } catch (IOException e) {
                             e.printStackTrace(); // This should never be thrown but whatever
