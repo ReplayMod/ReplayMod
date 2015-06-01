@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.gui.elements.GuiProgressBar;
+import eu.crushedpixel.replaymod.utils.DurationUtils;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
 import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -26,6 +27,15 @@ public class GuiVideoRenderer extends GuiScreen {
     private GuiCheckBox previewCheckBox;
     private GuiProgressBar progressBar;
 
+    private int renderTimeTaken = 0;
+    private long prevRenderTime = -1;
+
+    private int[] renderTimes = new int[50];
+    private int currentIndex = 0;
+
+    private int prevRenderedFrames = 0;
+    private int renderTimeLeft = 0;
+
     public GuiVideoRenderer(VideoRenderer renderer) {
         this.renderer = renderer;
     }
@@ -45,7 +55,7 @@ public class GuiVideoRenderer extends GuiScreen {
 
         text = PREVIEW;
         buttonList.add(previewCheckBox = new GuiCheckBox(0, (width - fontRendererObj.getStringWidth(text)) / 2 - 8,
-                pauseButton.yPosition - 10 - 20 - 10 - 5 , text, false));
+                pauseButton.yPosition - 10 - 20 - 10 - 20 - 5 , text, false));
     }
 
     @Override
@@ -83,6 +93,48 @@ public class GuiVideoRenderer extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        long current = System.currentTimeMillis();
+
+        //calculate estimated time left
+        if(prevRenderTime == -1) {
+            prevRenderTime = current;
+        }
+
+        int renderTime = (int)(current - prevRenderTime);
+
+        if(!renderer.isPaused()) {
+            renderTimeTaken += renderTime;
+        }
+
+        if(prevRenderedFrames < renderer.getFramesDone()) {
+            prevRenderedFrames = renderer.getFramesDone();
+
+            renderTimes[currentIndex] = renderTime;
+
+            int validValues = 0;
+
+            int totalTime = 0;
+            for(int i : renderTimes) {
+                if(i > 0) {
+                    totalTime += i;
+                    validValues++;
+                }
+            }
+
+            float averageRenderTime = validValues > 0 ? totalTime / validValues : 0;
+
+            prevRenderTime = current;
+
+            //remaining render time in seconds
+            renderTimeLeft = Math.round((averageRenderTime * (renderer.getTotalFrames() - renderer.getFramesDone())) / 1000);
+        }
+
+        currentIndex++;
+        if(currentIndex >= renderTimes.length) currentIndex = 0;
+
+        String takenString = I18n.format("replaymod.gui.rendering.timetaken")+": "+DurationUtils.convertSecondsToString(renderTimeTaken/1000);
+        String leftString = I18n.format("replaymod.gui.rendering.timeleft")+": "+DurationUtils.convertSecondsToString(renderTimeLeft);
+
         FrameRenderer frameRenderer = renderer.getFrameRenderer();
         int centerX = width / 2;
 
@@ -102,11 +154,17 @@ public class GuiVideoRenderer extends GuiScreen {
         int previewHeight = previewCheckBox.yPosition - 10 - 20;
         int previewY = previewCheckBox.yPosition - 10 - previewHeight;
 
-        if (previewCheckBox.isChecked()) {
+        if(previewCheckBox.isChecked()) {
             frameRenderer.renderPreview(previewX, previewY, previewWidth, previewHeight);
         } else {
             FrameRenderer.renderNoPreview(previewX, previewY, previewWidth, previewHeight);
         }
+
+        drawString(fontRendererObj, takenString, 12, previewCheckBox.yPosition + 5 + 20, Color.WHITE.getRGB());
+        drawString(fontRendererObj, leftString, width - 12 - fontRendererObj.getStringWidth(leftString),
+                previewCheckBox.yPosition + 5 + 20, Color.WHITE.getRGB());
+
+
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 }
