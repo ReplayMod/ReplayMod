@@ -269,6 +269,7 @@ replaymod.gui.rendersettings.stablecamera=Ignore Camera Rotation
 replaymod.gui.rendersettings.exportyoutube=Export for YouTube
 
 #Rendering GUI
+replaymod.gui.rendering.title=Rendering Video
 replaymod.gui.rendering.pause=Pause Rendering
 replaymod.gui.rendering.resume=Resume Rendering
 replaymod.gui.rendering.cancel=Cancel Rendering

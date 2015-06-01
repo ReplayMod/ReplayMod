@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.gui;
 
+import eu.crushedpixel.replaymod.gui.elements.GuiProgressBar;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
 import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -13,6 +14,7 @@ import java.io.IOException;
 public class GuiVideoRenderer extends GuiScreen {
     private final VideoRenderer renderer;
 
+    private final String SCREEN_TITLE = I18n.format("replaymod.gui.rendering.title");
     private final String PAUSE_RENDERING = I18n.format("replaymod.gui.rendering.pause");
     private final String RESUME_RENDERING = I18n.format("replaymod.gui.rendering.resume");
     private final String CANCEL = I18n.format("replaymod.gui.rendering.cancel");
@@ -22,6 +24,7 @@ public class GuiVideoRenderer extends GuiScreen {
     private GuiButton pauseButton;
     private GuiButton cancelButton;
     private GuiCheckBox previewCheckBox;
+    private GuiProgressBar progressBar;
 
     public GuiVideoRenderer(VideoRenderer renderer) {
         this.renderer = renderer;
@@ -30,17 +33,19 @@ public class GuiVideoRenderer extends GuiScreen {
     @Override
     @SuppressWarnings("unchecked") // I blame forge for not re-adding generics to that list
     public void initGui() {
-        String text = PREVIEW;
-        buttonList.add(previewCheckBox = new GuiCheckBox(0, (width - fontRendererObj.getStringWidth(text)) / 2 - 8,
-                height - 20, text, false));
-
-        text = PAUSE_RENDERING;
-        buttonList.add(pauseButton = new GuiButton(1, width / 2 - 152, height / 2 - 23, text));
+        String text = PAUSE_RENDERING;
+        buttonList.add(pauseButton = new GuiButton(1, width / 2 - 152, height - 10 - 20, text));
 
         text = CANCEL;
-        buttonList.add(cancelButton = new GuiButton(1, width / 2 + 2, height / 2 - 23, text));
+        buttonList.add(cancelButton = new GuiButton(1, width / 2 + 2, height - 10 - 20, text));
 
         pauseButton.width = cancelButton.width = 150;
+
+        progressBar = new GuiProgressBar(10, height - 10 - 20 - 10 - 20, width-20, 20);
+
+        text = PREVIEW;
+        buttonList.add(previewCheckBox = new GuiCheckBox(0, (width - fontRendererObj.getStringWidth(text)) / 2 - 8,
+                pauseButton.yPosition - 10 - 20 - 10 - 5 , text, false));
     }
 
     @Override
@@ -80,18 +85,22 @@ public class GuiVideoRenderer extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         FrameRenderer frameRenderer = renderer.getFrameRenderer();
         int centerX = width / 2;
-        int centerY = height / 2;
 
         drawBackground(0);
 
+        drawCenteredString(fontRendererObj, SCREEN_TITLE, centerX, 5, Color.WHITE.getRGB());
+
         String framesProgress = I18n.format("replaymod.gui.rendering.progress", renderer.getFramesDone(), renderer.getTotalFrames());
-        drawCenteredString(fontRendererObj, framesProgress, centerX, centerY - 45, Color.WHITE.getRGB());
+        progressBar.setProgressString(framesProgress);
+        progressBar.setProgress((float) renderer.getFramesDone() / renderer.getTotalFrames());
 
-        int previewX = width / 4;
-        int previewWidth = width / 2;
+        progressBar.drawProgressBar();
 
-        int previewY = height / 2 + 10;
-        int previewHeight = height - 30 - previewY;
+        int previewX = 10;
+        int previewWidth = width - 20;
+
+        int previewHeight = previewCheckBox.yPosition - 10 - 20;
+        int previewY = previewCheckBox.yPosition - 10 - previewHeight;
 
         if (previewCheckBox.isChecked()) {
             frameRenderer.renderPreview(previewX, previewY, previewWidth, previewHeight);
