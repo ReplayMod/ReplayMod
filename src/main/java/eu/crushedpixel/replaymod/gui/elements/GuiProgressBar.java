@@ -55,7 +55,7 @@ public class GuiProgressBar extends Gui {
      * Replaces the default progress String that is being displayed (x%) with a custom String.
      * This has to be called whenever the progress itself changes.
      * Setting <code>progressString</code> to <code>null</code> uses the default progress String.
-     * @param progressString
+     * @param progressString The String to display
      */
     public void setProgressString(String progressString) {
         this.progressString = progressString;
@@ -80,7 +80,7 @@ public class GuiProgressBar extends Gui {
 
         // Draws red progress
         drawRect(xPosition + BORDER_WIDTH, yPosition + BORDER_WIDTH,
-                xPosition + BORDER_WIDTH + progressWidth, yPosition + height - BORDER_WIDTH, Color.RED.getRGB());
+                xPosition + BORDER_WIDTH + progressWidth, yPosition + height - BORDER_WIDTH, Color.GRAY.getRGB());
 
 
         int xMiddle = xPosition + (width/2);
