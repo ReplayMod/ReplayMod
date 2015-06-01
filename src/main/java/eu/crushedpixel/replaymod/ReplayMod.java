@@ -113,8 +113,6 @@ public class ReplayMod {
         MinecraftForge.EVENT_BUS.register(tarl);
 
         spectatorRenderer = new SpectatorRenderer();
-        FMLCommonHandler.instance().bus().register(spectatorRenderer);
-        MinecraftForge.EVENT_BUS.register(spectatorRenderer);
 
         KeybindRegistry.initialize();
 

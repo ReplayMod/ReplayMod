@@ -21,6 +21,7 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.storage.MapData;
 import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.opengl.GL11;
@@ -30,6 +31,10 @@ public class SpectatorRenderer {
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private EntityPlayer currentPlayer;
+
+    public SpectatorRenderer() {
+        FMLCommonHandler.instance().bus().register(this);
+    }
 
     private EntityPlayer getSpectatedPlayer() {
         Entity current = ReplayHandler.getCurrentEntity();
