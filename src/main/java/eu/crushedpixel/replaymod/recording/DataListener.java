@@ -41,6 +41,9 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     private final Map<Integer, String> requestToHash = new ConcurrentHashMap<Integer, String>();
     private final Map<String, File> resourcePacks = new HashMap<String, File>();
 
+    private Boolean writing = false;
+    private final Object lock = new Object();
+
     public DataListener(File file, String name, String worldName, long startTime, boolean singleplayer) throws FileNotFoundException {
         this.file = file;
         this.startTime = startTime;
@@ -52,6 +55,20 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
         BufferedOutputStream bos = new BufferedOutputStream(fos);
         DataOutputStream out = new DataOutputStream(bos);
         dataWriter = new DataWriter(out);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if(DataListener.this.alive) {
+                        System.out.println("Saving Replay File to prevent Corruption");
+                        DataListener.this.channelInactive(null);
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "shutdown-hook-data-listener"));
     }
 
     public void setWorldName(String worldName) {
@@ -59,7 +76,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         dataWriter.requestFinish(players);
     }
 
@@ -141,6 +158,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
             try {
                 ReplayMod.replayFileAppender.startNewReplayFileWriting();
+                writing = true;
 
                 String mcversion = Minecraft.getMinecraft().getVersion();
                 String[] split = mcversion.split("-");
@@ -165,6 +183,8 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             } catch(Exception e) {
                 e.printStackTrace();
             } finally {
+                writing = false;
+                lock.notify();
                 ReplayMod.replayFileAppender.replayFileWritingFinished();
             }
         }
