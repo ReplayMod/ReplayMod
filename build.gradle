@@ -97,6 +97,19 @@ jar {
 	}
 }
 
+def getGitCommitHash() {
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--always', '--dirty=*'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    } catch (e) {
+        return "unknown"
+    }
+}
+
 processResources
 {
     // this will ensure that this task is redone when the versions change.
@@ -108,7 +121,7 @@ processResources
         include 'mcmod.info'
                 
         // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version':project.version + '-' + getGitCommitHash(), 'mcversion':project.minecraft.version
     }
         
     // copy everything else, thats not the mcmod.info

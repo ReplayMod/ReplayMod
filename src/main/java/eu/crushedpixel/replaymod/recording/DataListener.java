@@ -165,7 +165,9 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
                 String[] pl = players.toArray(new String[players.size()]);
 
-                ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, (int) lastSentPacket, startTime, pl, mcversion);
+                String generator = "ReplayMod v" + ReplayMod.getContainer().getVersion();
+
+                ReplayMetaData metaData = new ReplayMetaData(singleplayer, worldName, generator, (int) lastSentPacket, startTime, pl, mcversion);
 
                 File folder = ReplayFileIO.getReplayFolder();
 

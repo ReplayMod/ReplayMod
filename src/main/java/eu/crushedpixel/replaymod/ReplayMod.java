@@ -27,9 +27,11 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -39,11 +41,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Queue;
 
-@Mod(modid = ReplayMod.MODID, version = ReplayMod.VERSION)
+@Mod(modid = ReplayMod.MODID, useMetadata = true)
 public class ReplayMod {
 
+    public static ModContainer getContainer() {
+        return Loader.instance().getIndexedModList().get(MODID);
+    }
+
     public static final String MODID = "replaymod";
-    public static final String VERSION = "0.0.1";
     public static final ApiClient apiClient = new ApiClient();
     private static final Minecraft mc = Minecraft.getMinecraft();
     public static GuiEventHandler guiEventHandler;
