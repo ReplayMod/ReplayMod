@@ -242,6 +242,12 @@ public class GuiRenderSettings extends GuiScreen {
     }
 
     @Override
+    protected void mouseReleased(int mouseX, int mouseY, int state) {
+        framerateSlider.mouseReleased(mouseX, mouseY);
+        qualitySlider.mouseReleased(mouseX, mouseY);
+    }
+
+    @Override
     protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
         if(advancedTab) colorPicker.mouseDragged(mc, mouseX, mouseY);
         super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
@@ -290,7 +296,8 @@ public class GuiRenderSettings extends GuiScreen {
         } else if(defaultButtons.contains(button) && !advancedTab) {
 
             if(button.id == GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX) {
-                boolean enabled = ((GuiCheckBox)button).isChecked();
+                customResolution.setIsChecked(!customResolution.isChecked());
+                boolean enabled = customResolution.isChecked();
                 xRes.setEnabled(enabled);
                 yRes.setEnabled(enabled);
             }
