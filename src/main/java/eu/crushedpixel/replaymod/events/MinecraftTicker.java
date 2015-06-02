@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.events;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
@@ -8,6 +9,7 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
+import net.minecraftforge.client.event.MouseEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -17,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 public class MinecraftTicker {
 
     public static void runMouseKeyboardTick(Minecraft mc) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
-
+        ReplayMod.mouseInputHandler.mouseEvent(new MouseEvent());
         if(mc.thePlayer == null) return;
         try {
             mc.mcProfiler.endStartSection("mouse");
