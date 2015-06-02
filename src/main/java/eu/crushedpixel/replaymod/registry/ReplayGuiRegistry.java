@@ -17,7 +17,6 @@ public class ReplayGuiRegistry {
         GuiIngameForge.renderHotbar = false;
         GuiIngameForge.renderFood = false;
         GuiIngameForge.renderBossHealth = false;
-        GuiIngameForge.renderCrosshairs = false;
         GuiIngameForge.renderHelmet = false;
         GuiIngameForge.renderPortal = false;
         GuiIngameForge.renderHealthMount = false;
@@ -37,7 +36,6 @@ public class ReplayGuiRegistry {
         GuiIngameForge.renderHotbar = true;
         GuiIngameForge.renderFood = true;
         GuiIngameForge.renderBossHealth = true;
-        GuiIngameForge.renderCrosshairs = true;
         GuiIngameForge.renderHelmet = true;
         GuiIngameForge.renderPortal = true;
         GuiIngameForge.renderHealthMount = true;
