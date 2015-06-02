@@ -185,6 +185,8 @@ public class GuiRenderSettings extends GuiScreen {
                 GuiColorPicker picker = (GuiColorPicker)b;
                 picker.pickerX = b.xPosition + 25;
                 picker.pickerY = b.yPosition + 20 + 5;
+            } else if(b instanceof GuiCheckBox) {
+                b.yPosition += 5;
             }
 
             i++;
