@@ -28,6 +28,7 @@ public class GuiVideoRenderer extends GuiScreen {
     private GuiProgressBar progressBar;
 
     private int renderTimeTaken = 0;
+    private long prevTime = -1;
     private long prevRenderTime = -1;
 
     private int[] renderTimes = new int[50];
@@ -98,16 +99,13 @@ public class GuiVideoRenderer extends GuiScreen {
         //calculate estimated time left
         if(prevRenderTime == -1) {
             prevRenderTime = current;
-        }
-
-        int renderTime = (int)(current - prevRenderTime);
-
-        if(!renderer.isPaused()) {
-            renderTimeTaken += renderTime;
+            prevTime = current;
         }
 
         if(prevRenderedFrames < renderer.getFramesDone()) {
             prevRenderedFrames = renderer.getFramesDone();
+
+            int renderTime = (int)(current - prevRenderTime);
 
             renderTimes[currentIndex] = renderTime;
 
@@ -128,6 +126,12 @@ public class GuiVideoRenderer extends GuiScreen {
             //remaining render time in seconds
             renderTimeLeft = Math.round((averageRenderTime * (renderer.getTotalFrames() - renderer.getFramesDone())) / 1000);
         }
+
+        if(!renderer.isPaused()) {
+            renderTimeTaken += (current - prevTime);
+        }
+
+        prevTime = current;
 
         currentIndex++;
         if(currentIndex >= renderTimes.length) currentIndex = 0;
