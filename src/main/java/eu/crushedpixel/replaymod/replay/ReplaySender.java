@@ -16,11 +16,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.*;
 import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
 import org.apache.commons.io.FileUtils;
@@ -236,6 +238,36 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                     p = processPacket(p);
                     if (p != null) {
                         super.channelRead(ctx, p);
+                    }
+
+                    // If we do not give minecraft time to tick, there will be dead entity artifacts left in the world
+                    // Therefore we have to remove all loaded, dead entities manually if we are in sync mode.
+                    // We do this after every SpawnX packet and after the destroy entities packet.
+                    if (!asyncMode && mc.theWorld != null) {
+                        if (p instanceof S0CPacketSpawnPlayer
+                                || p instanceof S0EPacketSpawnObject
+                                || p instanceof S0FPacketSpawnMob
+                                || p instanceof S2CPacketSpawnGlobalEntity
+                                || p instanceof S10PacketSpawnPainting
+                                || p instanceof S11PacketSpawnExperienceOrb
+                                || p instanceof S13PacketDestroyEntities) {
+                            World world = mc.theWorld;
+                            for (int i = 0; i < world.loadedEntityList.size(); ++i) {
+                                Entity entity = (Entity) world.loadedEntityList.get(i);
+                                if (entity.isDead) {
+                                    int chunkX = entity.chunkCoordX;
+                                    int chunkY = entity.chunkCoordZ;
+
+                                    if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
+                                        world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);
+                                    }
+
+                                    world.loadedEntityList.remove(i--);
+                                    world.onEntityRemoved(entity);
+                                }
+
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
