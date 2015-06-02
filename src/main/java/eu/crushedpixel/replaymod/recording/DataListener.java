@@ -37,6 +37,8 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     private boolean singleplayer;
     private Gson gson = new Gson();
 
+    private int saveState = 0; //0: Idle, 1: Saving, 2: Saved
+
     private final File tempResourcePacksFolder = Files.createTempDir();
     private final Map<Integer, String> requestToHash = new ConcurrentHashMap<Integer, String>();
     private final Map<String, File> resourcePacks = new HashMap<String, File>();
@@ -58,7 +60,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             @Override
             public void run() {
                 try {
-                    if(DataListener.this.alive) {
+                    if(saveState == 0) {
                         System.out.println("Saving Replay File to prevent Corruption");
                         DataListener.this.channelInactive(null);
                     }
@@ -156,6 +158,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
             try {
                 ReplayMod.replayFileAppender.startNewReplayFileWriting();
+                saveState = 1;
 
                 String mcversion = Minecraft.getMinecraft().getVersion();
                 String[] split = mcversion.split("-");
@@ -183,6 +186,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 e.printStackTrace();
             } finally {
                 ReplayMod.replayFileAppender.replayFileWritingFinished();
+                saveState = 2;
             }
         }
 
