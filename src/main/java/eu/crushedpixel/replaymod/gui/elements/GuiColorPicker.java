@@ -54,10 +54,13 @@ public class GuiColorPicker extends GuiButton {
             int strWidth = fontrenderer.getStringWidth(this.displayString);
 
             this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2 - 10, this.yPosition + (this.height - 8) / 2, l);
-            this.drawGradientRect(this.xPosition + (width+strWidth)/2, this.yPosition + 5, this.xPosition + (width+strWidth)/2 + 10,
+            this.drawGradientRect(this.xPosition + (width+strWidth)/2 - 6, this.yPosition + 4, this.xPosition + (width+strWidth)/2 + 6,
+                    this.yPosition + 4 + 12, Color.BLACK.getRGB(), Color.BLACK.getRGB());
+            this.drawGradientRect(this.xPosition + (width+strWidth)/2 - 5, this.yPosition + 5, this.xPosition + (width+strWidth)/2 + 5,
                     this.yPosition + 5 + 10, pickedColor, pickedColor);
 
             if(pickerVisible && this.enabled) {
+                this.drawGradientRect(pickerX-1, pickerY-1, pickerX+PICKER_SIZE+1, pickerY+PICKER_SIZE+1, Color.BLACK.getRGB(), Color.BLACK.getRGB());
                 for(int x=0; x < PICKER_SIZE; x++) {
                     for(int y=0; y < PICKER_SIZE; y++) {
                         int color = getColorAtPosition(x, y);
