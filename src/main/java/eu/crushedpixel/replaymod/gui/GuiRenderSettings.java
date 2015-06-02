@@ -2,8 +2,10 @@ package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
+import eu.crushedpixel.replaymod.gui.elements.GuiColorPicker;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
+import eu.crushedpixel.replaymod.gui.elements.GuiToggleButton;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
@@ -17,27 +19,33 @@ import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiRenderSettings extends GuiScreen {
 
-    private GuiButton renderButton, cancelButton;
+    private GuiButton renderButton, cancelButton, advancedButton;
     private GuiDropdown<RendererSettings> rendererDropdown;
 
     private int virtualY, virtualHeight;
     private int leftBorder = 10;
 
-    private GuiCheckBox customResolution, ignoreCamDir, youtubeExport;
+    private GuiCheckBox customResolution, ignoreCamDir, youtubeExport, enableGreenscreen;
     private GuiNumberInput xRes, yRes;
-    private GuiButton interpolation, forceChunks;
+    private GuiToggleButton interpolation, forceChunks;
     private GuiVideoFramerateSlider framerateSlider;
     private GuiVideoQualitySlider qualitySlider;
+    private GuiColorPicker colorPicker;
+
+    private List<GuiButton> permanentButtons = new ArrayList<GuiButton>();
+    private List<GuiButton> defaultButtons = new ArrayList<GuiButton>();
+    private List<GuiButton> advancedButtons = new ArrayList<GuiButton>();
+
+    private boolean advancedTab = false;
 
     private int w1, w2, w3;
 
     private boolean initialized;
-
-    private boolean linear = false;
-    private boolean waitForChunks = true;
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
@@ -45,7 +53,7 @@ public class GuiRenderSettings extends GuiScreen {
         //if not enough keyframes, abort and leave chat message
         if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.notenoughkeyframes", ChatMessageHandler.ChatMessageType.WARNING);
-            mc.displayGuiScreen(null);
+            mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));
             return;
         }
         ReplayMod.replaySender.setReplaySpeed(0);
@@ -60,6 +68,7 @@ public class GuiRenderSettings extends GuiScreen {
 
             renderButton = new GuiButton(GuiConstants.RENDER_SETTINGS_RENDER_BUTTON, 0, 0, I18n.format("replaymod.gui.render"));
             cancelButton = new GuiButton(GuiConstants.RENDER_SETTINGS_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.cancel"));
+            advancedButton = new GuiButton(GuiConstants.RENDER_SETTINGS_ADVANCED_BUTTON, 0, 0, I18n.format("replaymod.gui.rendersettings.advanced"));
 
             customResolution = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX, 0, 0, I18n.format("replaymod.gui.rendersettings.customresolution"), false);
             customResolution.enabled = false;
@@ -70,37 +79,68 @@ public class GuiRenderSettings extends GuiScreen {
             xRes.setEnabled(false);
             yRes.setEnabled(false);
 
-            interpolation = new GuiButton(GuiConstants.RENDER_SETTINGS_INTERPOLATION_BUTTON, 0, 0, getInterpolationDisplayString());
-            forceChunks = new GuiButton(GuiConstants.RENDER_SETTINGS_FORCECHUNKS_BUTTON, 0, 0, getForceChunksDisplayString());
-
             framerateSlider = new GuiVideoFramerateSlider(GuiConstants.RENDER_SETTINGS_FRAMERATE_SLIDER, 0, 0, ReplayMod.replaySettings.getVideoFramerate(),
                     I18n.format("replaymod.gui.rendersettings.framerate"));
             qualitySlider = new GuiVideoQualitySlider(GuiConstants.RENDER_SETTINGS_QUALITY_SLIDER, 0, 0, (float)ReplayMod.replaySettings.getVideoQuality(),
                     I18n.format("replaymod.gui.rendersettings.quality"));
 
+            interpolation = new GuiToggleButton(GuiConstants.RENDER_SETTINGS_INTERPOLATION_BUTTON, 0, 0,
+                    I18n.format("replaymod.gui.rendersettings.interpolation")+": ",
+                    new String[]{I18n.format("replaymod.gui.settings.interpolation.cubic"),
+                            I18n.format("replaymod.gui.settings.interpolation.linear")});
+
+            interpolation.setValue(ReplayMod.replaySettings.isLinearMovement() ? 1 : 0);
+
+            forceChunks = new GuiToggleButton(GuiConstants.RENDER_SETTINGS_FORCECHUNKS_BUTTON, 0, 0,
+                    I18n.format("replaymod.gui.rendersettings.forcechunks")+": ",
+                    new String[]{I18n.format("options.on"), I18n.format("options.off")});
+
+            forceChunks.setValue(ReplayMod.replaySettings.getWaitForChunks() ? 0 : 1);
+
             forceChunks.width = interpolation.width = framerateSlider.width = qualitySlider.width = 150;
+
+            enableGreenscreen = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN, 0, 0, I18n.format("replaymod.gui.rendersettings.greenscreen"), false);
+
+            colorPicker = new GuiColorPicker(GuiConstants.RENDER_SETTINGS_COLOR_PICKER, 0, 0, I18n.format("replaymod.gui.rendersettings.skycolor")+": ", 0, 0);
+            colorPicker.enabled = enableGreenscreen.isChecked();
 
             ignoreCamDir = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_STATIC_CAMERA, 0, 0, I18n.format("replaymod.gui.rendersettings.stablecamera"), false);
             youtubeExport = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_YOUTUBE_READY, 0, 0, I18n.format("replaymod.gui.rendersettings.exportyoutube"), true);
             ignoreCamDir.enabled = youtubeExport.enabled = false;
 
+            int i = 0;
             for(RendererSettings r : RendererSettings.values()) {
                 rendererDropdown.addElement(r);
+                rendererDropdown.setHoverText(i, r.getDescription());
+                i++;
             }
+
+            permanentButtons.add(advancedButton);
+            permanentButtons.add(renderButton);
+            permanentButtons.add(cancelButton);
+
+            defaultButtons.add(customResolution);
+            defaultButtons.add(framerateSlider);
+            defaultButtons.add(qualitySlider);
+            defaultButtons.add(ignoreCamDir);
+            defaultButtons.add(youtubeExport);
+
+            advancedButtons.add(interpolation);
+            advancedButtons.add(forceChunks);
+            advancedButtons.add(enableGreenscreen);
+            advancedButtons.add(colorPicker);
         }
 
         virtualHeight = 200;
         virtualY = (this.height-virtualHeight)/2;
 
-        cancelButton.width = renderButton.width = 100;
+        cancelButton.width = renderButton.width = advancedButton.width = 100;
 
         cancelButton.xPosition = width-10-5-100;
         renderButton.xPosition = cancelButton.xPosition-5-100;
+        advancedButton.xPosition = renderButton.xPosition-5-100;
 
-        cancelButton.yPosition = renderButton.yPosition = virtualY+virtualHeight-5-18;
-
-        buttonList.add(cancelButton);
-        buttonList.add(renderButton);
+        cancelButton.yPosition = renderButton.yPosition = advancedButton.yPosition = virtualY+virtualHeight-5-18;
 
         w1 = rendererDropdown.width + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.renderer") + ":")+10;
         rendererDropdown.yPosition = virtualY + 15 + 15;
@@ -110,7 +150,6 @@ public class GuiRenderSettings extends GuiScreen {
 
         customResolution.yPosition = virtualY + 15 + 5 + 20 + 10 +5+fontRendererObj.getStringWidth("*")+5;
         customResolution.xPosition = (width-w2)/2;
-        buttonList.add(customResolution);
 
         xRes.xPosition = customResolution.xPosition + customResolution.width + 5;
         yRes.xPosition = xRes.xPosition+xRes.width+5+fontRendererObj.getStringWidth("*")+5;
@@ -120,29 +159,42 @@ public class GuiRenderSettings extends GuiScreen {
 
         interpolation.xPosition = (width-w3)/2;
         interpolation.yPosition = xRes.yPosition+20+10;
-        buttonList.add(interpolation);
 
         forceChunks.xPosition = interpolation.xPosition+interpolation.width+10;
         forceChunks.yPosition = interpolation.yPosition;
-        buttonList.add(forceChunks);
 
         framerateSlider.xPosition = interpolation.xPosition;
         qualitySlider.xPosition = forceChunks.xPosition;
         framerateSlider.yPosition = qualitySlider.yPosition = interpolation.yPosition + 20 + 10;
-
-        buttonList.add(framerateSlider);
-        buttonList.add(qualitySlider);
 
         ignoreCamDir.xPosition = framerateSlider.xPosition + (framerateSlider.width - ignoreCamDir.width)/2;
         youtubeExport.xPosition = qualitySlider.xPosition + (qualitySlider.width - youtubeExport.width)/2;
         
         ignoreCamDir.yPosition = youtubeExport.yPosition = framerateSlider.yPosition+20+10;
 
-        buttonList.add(ignoreCamDir);
-        buttonList.add(youtubeExport);
+        //align all advanced buttons
+
+        int i = 0;
+        for(GuiButton b : advancedButtons) {
+            b.width = 150;
+            b.xPosition = i % 2 == 0 ? this.width/2 - b.width - 2 : this.width/2 + 2;
+
+            b.yPosition = this.virtualY + 20 + ((i/2)*25);
+
+            if(b instanceof GuiColorPicker) {
+                GuiColorPicker picker = (GuiColorPicker)b;
+                picker.pickerX = b.xPosition + 25;
+                picker.pickerY = b.yPosition + 20 + 5;
+            }
+
+            i++;
+        }
+
 
         initialized = true;
     }
+
+
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
@@ -151,16 +203,25 @@ public class GuiRenderSettings extends GuiScreen {
         this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.title"),
                 this.width / 2, virtualY + 5, Color.WHITE.getRGB());
 
-        this.drawString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.renderer") + ":",
-                (width-w1)/2, rendererDropdown.yPosition + 8, Color.WHITE.getRGB());
 
-        xRes.drawTextBox();
-        yRes.drawTextBox();
-        this.drawString(fontRendererObj, "*", xRes.xPosition + xRes.width + 5, xRes.yPosition + 3, Color.WHITE.getRGB());
+        List<GuiButton> toHandle = new ArrayList<GuiButton>();
+        toHandle.addAll(permanentButtons);
+        toHandle.addAll(advancedTab ? advancedButtons : defaultButtons);
 
-        super.drawScreen(mouseX, mouseY, partialTicks);
+        for(GuiButton b : toHandle) {
+            b.drawButton(mc, mouseX, mouseY);
+        }
 
-        rendererDropdown.drawTextBox();
+        if(!advancedTab) {
+            this.drawString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.renderer") + ":",
+                    (width - w1) / 2, rendererDropdown.yPosition + 8, Color.WHITE.getRGB());
+
+            xRes.drawTextBox();
+            yRes.drawTextBox();
+            this.drawString(fontRendererObj, "*", xRes.xPosition + xRes.width + 5, xRes.yPosition + 3, Color.WHITE.getRGB());
+
+            rendererDropdown.drawTextBox();
+        }
     }
 
     @Override
@@ -168,8 +229,27 @@ public class GuiRenderSettings extends GuiScreen {
         if(!rendererDropdown.mouseClickedResult(mouseX, mouseY, mouseButton)) {
             xRes.mouseClicked(mouseX, mouseY, mouseButton);
             yRes.mouseClicked(mouseX, mouseY, mouseButton);
-            super.mouseClicked(mouseX, mouseY, mouseButton);
+
+            if(mouseButton == 0) {
+                List<GuiButton> toHandle = new ArrayList<GuiButton>();
+                toHandle.addAll(permanentButtons);
+                toHandle.addAll(advancedTab ? advancedButtons : defaultButtons);
+
+                for(GuiButton b : toHandle) {
+                    b.mousePressed(this.mc, mouseX, mouseY);
+                    if(b.mousePressed(this.mc, mouseX, mouseY)) {
+                        b.playPressSound(this.mc.getSoundHandler());
+                        actionPerformed(b);
+                    }
+                }
+            }
         }
+    }
+
+    @Override
+    protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
+        if(advancedTab) colorPicker.mouseDragged(mc, mouseX, mouseY);
+        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
     }
 
     @Override
@@ -200,32 +280,40 @@ public class GuiRenderSettings extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         if(!button.enabled) return;
-        if(button.id == GuiConstants.RENDER_SETTINGS_RENDER_BUTTON) {
-            startRendering();
-        } else if(button.id == GuiConstants.RENDER_SETTINGS_CANCEL_BUTTON) {
-            mc.displayGuiScreen(null);
-        } else if(button.id == GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX) {
-            boolean enabled = ((GuiCheckBox)button).isChecked();
-            xRes.setEnabled(enabled);
-            yRes.setEnabled(enabled);
-        } else if(button.id == GuiConstants.RENDER_SETTINGS_INTERPOLATION_BUTTON) {
-            linear = !linear;
-            button.displayString = getInterpolationDisplayString();
-        } else if(button.id == GuiConstants.RENDER_SETTINGS_FORCECHUNKS_BUTTON) {
-            waitForChunks = !waitForChunks;
-            button.displayString = getForceChunksDisplayString();
+        if(permanentButtons.contains(button)) {
+
+            if(button.id == GuiConstants.RENDER_SETTINGS_RENDER_BUTTON) {
+                startRendering();
+            } else if(button.id == GuiConstants.RENDER_SETTINGS_CANCEL_BUTTON) {
+                mc.displayGuiScreen(null);
+            } else if(button.id == GuiConstants.RENDER_SETTINGS_ADVANCED_BUTTON) {
+                advancedTab = !advancedTab;
+                advancedButton.displayString = advancedTab ? I18n.format("replaymod.gui.rendersettings.basic")
+                        : I18n.format("replaymod.gui.rendersettings.advanced");
+            }
+
+        } else if(defaultButtons.contains(button) && !advancedTab) {
+
+            if(button.id == GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX) {
+                boolean enabled = ((GuiCheckBox)button).isChecked();
+                xRes.setEnabled(enabled);
+                yRes.setEnabled(enabled);
+            }
+
+        } else if(advancedButtons.contains(button) && advancedTab) {
+
+            if(button instanceof GuiToggleButton) {
+                ((GuiToggleButton)button).toggle();
+            } else if(button instanceof GuiColorPicker) {
+                ((GuiColorPicker)button).pickerToggled();
+            } else {
+                if(button.id == GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN) {
+                    enableGreenscreen.setIsChecked(!enableGreenscreen.isChecked());
+                    colorPicker.enabled = enableGreenscreen.isChecked();
+                }
+            }
+
         }
-    }
-
-    private String getInterpolationDisplayString() {
-        return I18n.format("replaymod.gui.rendersettings.interpolation")+": "+
-                (linear ? I18n.format("replaymod.gui.settings.interpolation.linear") :
-                        I18n.format("replaymod.gui.settings.interpolation.cubic"));
-    }
-
-    private String getForceChunksDisplayString() {
-        return I18n.format("replaymod.gui.rendersettings.forcechunks")+": "+
-                (waitForChunks ? I18n.format("options.on") : I18n.format("options.off"));
     }
 
     private enum RendererSettings {
@@ -239,7 +327,7 @@ public class GuiRenderSettings extends GuiScreen {
 
         RendererSettings(String name) {
             this.name = "replaymod.gui.rendersettings.renderer."+name;
-            this.desc = name+".description";
+            this.desc = this.name+".description";
         }
 
         @Override
@@ -247,9 +335,7 @@ public class GuiRenderSettings extends GuiScreen {
             return I18n.format(name);
         }
 
-        public String getDescription() {
-            return desc;
-        }
+        public String getDescription() { return I18n.format(desc); }
     }
 
     private void startRendering() {
@@ -259,17 +345,21 @@ public class GuiRenderSettings extends GuiScreen {
 
         RenderOptions options = new RenderOptions();
 
-        options.setLinearMovement(linear);
-        ReplayMod.replaySettings.setLinearMovement(linear);
+        options.setLinearMovement(interpolation.getValue() == 1);
+        ReplayMod.replaySettings.setLinearMovement(interpolation.getValue() == 1);
 
-        options.setWaitForChunks(waitForChunks);
-        ReplayMod.replaySettings.setWaitForChunks(waitForChunks);
+        options.setWaitForChunks(forceChunks.getValue() == 0);
+        ReplayMod.replaySettings.setWaitForChunks(forceChunks.getValue() == 0);
 
         options.setFps(framerateSlider.getFPS());
         ReplayMod.replaySettings.setVideoFramerate(framerateSlider.getFPS());
 
         options.setQuality(qualitySlider.getQuality());
         ReplayMod.replaySettings.setVideoQuality(qualitySlider.getQuality());
+
+        if(enableGreenscreen.isChecked()) {
+            options.setSkyColor(colorPicker.getPickedColor());
+        }
 
         if(r == RendererSettings.DEFAULT) {
             renderer = new DefaultFrameRenderer(options);

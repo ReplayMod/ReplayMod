@@ -39,7 +39,7 @@ public class TooltipRenderer extends Gui {
         int i1 = 8;
 
         if (textLines.length > 1) {
-            i1 += 2 + (textLines.length - 1) * 10;
+            i1 += (textLines.length - 1) * 12;
         }
 
         if (j2 + maxLineWidth > screenWidth) {
@@ -66,13 +66,8 @@ public class TooltipRenderer extends Gui {
         this.drawGradientRect(j2 - 3, k2 - 3, j2 + maxLineWidth + 3, k2 - 3 + 1, k1, k1);
         this.drawGradientRect(j2 - 3, k2 + i1 + 2, j2 + maxLineWidth + 3, k2 + i1 + 3, l1, l1);
 
-        int i = 0;
         for(String line : textLines) {
             mc.fontRendererObj.drawStringWithShadow(line, j2, k2, textColor);
-
-            if(i == 0) {
-                k2 += 2;
-            }
 
             k2 += 12;
         }

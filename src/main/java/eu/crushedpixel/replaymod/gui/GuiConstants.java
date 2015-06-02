@@ -100,4 +100,7 @@ public class GuiConstants {
     public static final int RENDER_SETTINGS_QUALITY_SLIDER = 9010;
     public static final int RENDER_SETTINGS_YOUTUBE_READY = 9011;
     public static final int RENDER_SETTINGS_STATIC_CAMERA = 9012;
+    public static final int RENDER_SETTINGS_ADVANCED_BUTTON = 9013;
+    public static final int RENDER_SETTINGS_COLOR_PICKER = 9014;
+    public static final int RENDER_SETTINGS_ENABLE_GREENSCREEN = 9015;
 }

@@ -38,4 +38,10 @@ public class MouseUtils {
 
         return new Point(width, heigth);
     }
+
+    public static boolean isMouseWithinBounds(int minX, int minY, int width, int height) {
+        Point mousePos = getMousePos();
+        return mousePos.getX() >= minX && mousePos.getX() <= minX + width
+                && mousePos.getY() >= minY && mousePos.getY() <= minY + height;
+    }
 }

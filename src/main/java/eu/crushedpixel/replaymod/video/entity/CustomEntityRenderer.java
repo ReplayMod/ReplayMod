@@ -93,7 +93,7 @@ public abstract class CustomEntityRenderer {
                 renderglobal.renderSky(partialTicks, renderPass);
             } else {
                 int c = options.getSkyColor();
-                clearColor(c >> 16, c >> 8 & 0xff, c & 0xff, 0xff);
+                clearColor((c >> 16 & 0xff) / (float) 0xff, (c >> 8 & 0xff) / (float) 0xff, (c & 0xff) / (float) 0xff, 1);
                 clear(GL_COLOR_BUFFER_BIT);
             }
             matrixMode(GL_PROJECTION);

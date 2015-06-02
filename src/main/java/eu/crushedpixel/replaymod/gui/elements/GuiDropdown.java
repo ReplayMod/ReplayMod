@@ -1,13 +1,17 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiTextField;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.util.Point;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class GuiDropdown<T> extends GuiTextField {
@@ -22,6 +26,7 @@ public class GuiDropdown<T> extends GuiTextField {
 
     private int upperIndex = 0;
     private List<T> elements = new ArrayList<T>();
+    private HashMap<Integer, String> hoverTexts = new HashMap<Integer, String>();
 
     public GuiDropdown(int id, FontRenderer fontRenderer,
                        int xPos, int yPos, int width, int visibleDropout) {
@@ -48,6 +53,10 @@ public class GuiDropdown<T> extends GuiTextField {
         for(int i = 0; i <= Math.ceil(height / 2) - 4; i++) {
             drawHorizontalLine(xPosition + width - height + i + 4, xPosition + width - i - 4, yPosition + (height / 4) + i + 2, -6250336);
         }
+
+        boolean drawHover = false;
+        Point hoverPos = null;
+        String hoverText = null;
 
         if(open && elements.size() > 0) {
             //draw the dropout part when opened
@@ -78,6 +87,16 @@ public class GuiDropdown<T> extends GuiTextField {
                 String toWrite = mc.fontRendererObj.trimStringToWidth(obj.toString(), width - 8);
                 drawString(mc.fontRendererObj, toWrite, xPosition + 4, yPosition + height + y + 4, Color.WHITE.getRGB());
 
+                if(MouseUtils.isMouseWithinBounds(xPosition, yPosition + height + y, width, dropoutElementHeight)) {
+                    String hover = hoverTexts.get(i);
+                    if(hover != null) {
+                        Point mousePos = MouseUtils.getMousePos();
+                        drawHover = true;
+                        hoverPos = mousePos;
+                        hoverText = hover;
+                    }
+                }
+
                 y += dropoutElementHeight;
                 i++;
                 if(y >= requiredHeight) {
@@ -105,6 +124,10 @@ public class GuiDropdown<T> extends GuiTextField {
                 int barY = (int) (posPerc * (requiredHeight - 1));
 
                 drawRect(xPosition + width - 3, yPosition + height + barY, xPosition + width, yPosition + height + 2 + barY + barHeight, -6250336);
+            }
+
+            if(drawHover) {
+                ReplayMod.tooltipRenderer.drawTooltip(hoverPos.getX(), hoverPos.getY(), hoverText, null, Color.WHITE.getRGB());
             }
         }
     }
@@ -160,6 +183,10 @@ public class GuiDropdown<T> extends GuiTextField {
         if(selectionIndex == -1) {
             selectionIndex = 0;
         }
+    }
+
+    public void setHoverText(int index, String text) {
+        hoverTexts.put(index, text);
     }
 
     public T getElement(int index) {
