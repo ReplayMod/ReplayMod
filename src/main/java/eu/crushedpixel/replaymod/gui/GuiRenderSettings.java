@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.gui.elements.GuiColorPicker;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
@@ -50,12 +49,6 @@ public class GuiRenderSettings extends GuiScreen {
     private final Minecraft mc = Minecraft.getMinecraft();
 
     public GuiRenderSettings() {
-        //if not enough keyframes, abort and leave chat message
-        if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
-            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.notenoughkeyframes", ChatMessageHandler.ChatMessageType.WARNING);
-            mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));
-            return;
-        }
         ReplayMod.replaySender.setReplaySpeed(0);
     }
 

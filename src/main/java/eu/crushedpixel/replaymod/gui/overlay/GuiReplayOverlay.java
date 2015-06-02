@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.gui.overlay;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.gui.GuiRenderSettings;
@@ -95,7 +96,12 @@ public class GuiReplayOverlay extends Gui {
     private final GuiElement buttonExport = texturedButton(BUTTON_EXPORT_X, BOTTOM_ROW, 40, 0, 20, new Runnable() {
         @Override
         public void run() {
-            mc.displayGuiScreen(new GuiRenderSettings());
+            //if not enough keyframes, abort and leave chat message
+            if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
+                ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.notenoughkeyframes", ChatMessageHandler.ChatMessageType.WARNING);
+            } else {
+                mc.displayGuiScreen(new GuiRenderSettings());
+            }
         }
     }, "replaymod.gui.ingame.menu.renderpath");
 
