@@ -41,8 +41,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     private final Map<Integer, String> requestToHash = new ConcurrentHashMap<Integer, String>();
     private final Map<String, File> resourcePacks = new HashMap<String, File>();
 
-    private Boolean writing = false;
-    private final Object lock = new Object();
 
     public DataListener(File file, String name, String worldName, long startTime, boolean singleplayer) throws FileNotFoundException {
         this.file = file;
@@ -158,7 +156,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
             try {
                 ReplayMod.replayFileAppender.startNewReplayFileWriting();
-                writing = true;
 
                 String mcversion = Minecraft.getMinecraft().getVersion();
                 String[] split = mcversion.split("-");
@@ -183,8 +180,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             } catch(Exception e) {
                 e.printStackTrace();
             } finally {
-                writing = false;
-                lock.notify();
                 ReplayMod.replayFileAppender.replayFileWritingFinished();
             }
         }
