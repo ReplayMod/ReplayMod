@@ -26,6 +26,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -110,7 +111,8 @@ public class ReplayMod {
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) throws IOException {
-        GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
+        if(!FMLClientHandler.instance().hasOptifine())
+            GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
 
         overlay.register();
 
