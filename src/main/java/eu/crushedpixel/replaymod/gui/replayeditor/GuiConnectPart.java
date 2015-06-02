@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.gui.elements.GuiEntryList;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.studio.StudioImplementation;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -42,7 +43,22 @@ public class GuiConnectPart extends GuiStudioPart {
 
     @Override
     public void applyFilters(File replayFile, File outputFile) {
-        //TODO
+        try {
+            List<File> inputFiles = new ArrayList<File>();
+            OUTER:
+            for (String fileName : filesToConcat) {
+                for (File file : replayFiles) {
+                    if (fileName.equals(FilenameUtils.getBaseName(file.getAbsolutePath()))) {
+                        inputFiles.add(file);
+                        continue OUTER;
+                    }
+                }
+                throw new RuntimeException(fileName);
+            }
+            StudioImplementation.connectReplayFiles(inputFiles, outputFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
