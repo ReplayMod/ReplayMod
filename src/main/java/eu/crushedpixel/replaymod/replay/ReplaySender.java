@@ -542,7 +542,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                                 // Pause the replay which will cause it to freeze before getting restarted
                                 setReplaySpeed(0);
                                 // Then wait until the user tells us to continue
-                                while (paused() && hasWorldLoaded && desiredTimeStamp == -1) {
+                                while (paused() && hasWorldLoaded && desiredTimeStamp == -1 && !terminate) {
                                     Thread.sleep(10);
                                 }
                                 break;
