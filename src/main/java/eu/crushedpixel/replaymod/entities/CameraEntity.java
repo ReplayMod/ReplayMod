@@ -37,8 +37,9 @@ public class CameraEntity extends EntityPlayer {
     @SubscribeEvent
     public void tick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
+            if(!ReplayHandler.isInReplay()) return;
             Entity view = Minecraft.getMinecraft().getRenderViewEntity();
-            if (view != this) {
+            if (view != this && view != null) {
                 prevPosX = view.prevPosX;
                 prevPosY = view.prevPosY;
                 prevPosZ = view.prevPosZ;
