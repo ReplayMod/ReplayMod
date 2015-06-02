@@ -87,7 +87,9 @@ public class ReplayFileAppender extends Thread {
                     try {
                         HashMap<String, File> toAdd = new HashMap<String, File>();
                         for(Pair<File, String> p : filesToMove.get(replayFile)) {
-                            toAdd.put(p.getRight(), p.getLeft());
+                            if(p.getLeft() == null || p.getLeft().exists()) {
+                                toAdd.put(p.getRight(), p.getLeft());
+                            }
                         }
                         ReplayFileIO.addFilesToZip(replayFile, toAdd);
 
