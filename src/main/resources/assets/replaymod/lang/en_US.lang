@@ -264,7 +264,7 @@ replaymod.gui.rendersettings.interpolation=Path Interpolation
 replaymod.gui.rendersettings.forcechunks=Force Render Chunks
 replaymod.gui.rendersettings.framerate=Video Framerate
 replaymod.gui.rendersettings.quality=Video Quality
-replaymod.gui.rendersettings.greenscreen=Render Greenscreen Sky
+replaymod.gui.rendersettings.chromakey=Chroma Keying
 replaymod.gui.rendersettings.skycolor=Sky Color
 
 replaymod.gui.rendersettings.stablecamera=Ignore Camera Rotation

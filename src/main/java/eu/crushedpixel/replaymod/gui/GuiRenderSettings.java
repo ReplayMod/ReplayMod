@@ -92,7 +92,7 @@ public class GuiRenderSettings extends GuiScreen {
 
             forceChunks.width = interpolation.width = framerateSlider.width = qualitySlider.width = 150;
 
-            enableGreenscreen = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN, 0, 0, I18n.format("replaymod.gui.rendersettings.greenscreen"), false);
+            enableGreenscreen = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN, 0, 0, I18n.format("replaymod.gui.rendersettings.chromakey"), false);
 
             colorPicker = new GuiColorPicker(GuiConstants.RENDER_SETTINGS_COLOR_PICKER, 0, 0, I18n.format("replaymod.gui.rendersettings.skycolor")+": ", 0, 0);
             colorPicker.enabled = enableGreenscreen.isChecked();
