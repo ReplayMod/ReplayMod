@@ -1,5 +1,7 @@
 package eu.crushedpixel.replaymod.registry;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
@@ -7,14 +9,14 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ReplayFileAppender extends Thread {
 
-    private Queue<Pair<Pair<File, String>, File>> filesToMove = new ConcurrentLinkedQueue<Pair<Pair<File, String>, File>>();
+    private Multimap<File, Pair<File, String>> filesToMove = ArrayListMultimap.create();
+    private Queue<File> filesToRewrite = new ConcurrentLinkedQueue<File>();
+
     private boolean shutdown = false;
     private List<GuiReplaySaving> listeners = new ArrayList<GuiReplaySaving>();
 
@@ -50,21 +52,26 @@ public class ReplayFileAppender extends Thread {
     }
 
     public void registerModifiedFile(File toAdd, String name, File replayFile) {
-        for(Pair<Pair<File, String>, File> p : new ArrayList<Pair<Pair<File, String>, File>>(filesToMove)) {
-            if(p.getLeft().getRight().equals(name) && p.getRight().equals(replayFile)) {
-                filesToMove.remove(p);
+        //first, remove any files with the same name assigned to this Replay File
+        if(filesToMove.get(replayFile) != null) {
+            for(Pair<File, String> p : new ArrayList<Pair<File, String>>((Collection<Pair<File, String>>)filesToMove.get(replayFile))) {
+                if(p.getRight().equals(name)) {
+                    filesToMove.remove(replayFile, p);
+                }
             }
         }
 
-        filesToMove.add(Pair.of(Pair.of(toAdd, name), replayFile));
+        //then, assign the file/name pair to the Replay File
+        filesToMove.put(replayFile, Pair.of(toAdd, name));
+
+        //finally, add the Replay File to the Queue if not already contained
+        if(!filesToRewrite.contains(replayFile)) {
+            filesToRewrite.add(replayFile);
+        }
     }
 
     public void shutdown() {
         shutdown = true;
-    }
-
-    public boolean isBusy() {
-        return !filesToMove.isEmpty() && !newReplayFileWriting;
     }
 
     public void addFinishListener(GuiReplaySaving gui) {
@@ -73,20 +80,31 @@ public class ReplayFileAppender extends Thread {
 
     @Override
     public void run() {
-        while(!shutdown || !filesToMove.isEmpty()) {
-            Pair<Pair<File, String>, File> mv = filesToMove.poll();
-            if(mv != null) {
-                if(mv.getRight().canWrite()) {
+        while(!shutdown || !filesToRewrite.isEmpty()) {
+            File replayFile = filesToRewrite.poll();
+            if(replayFile != null) {
+                if(replayFile.canWrite()) {
                     try {
-                        ReplayFileIO.addFileToZip(mv.getRight(), mv.getLeft().getLeft(), mv.getLeft().getRight());
+                        HashMap<String, File> toAdd = new HashMap<String, File>();
+                        for(Pair<File, String> p : filesToMove.get(replayFile)) {
+                            toAdd.put(p.getRight(), p.getLeft());
+                        }
+                        ReplayFileIO.addFilesToZip(replayFile, toAdd);
+
+                        //delete all written files
+                        for(Pair<File, String> p : filesToMove.get(replayFile)) {
+                            p.getLeft().delete();
+                        }
+                        filesToMove.removeAll(replayFile);
                     } catch(Exception e) {
                         e.printStackTrace();
-                        filesToMove.add(mv);
+                        filesToRewrite.add(replayFile);
                     } finally {
                         callListeners();
                     }
+
                 } else {
-                    filesToMove.add(mv);
+                    filesToRewrite.add(replayFile);
                 }
             }
             try {

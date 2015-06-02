@@ -20,10 +20,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -317,7 +314,14 @@ public class ReplayFileIO {
         Files.write(file.toPath(), json.getBytes());
     }
 
-    public static void addFileToZip(File zipFile, File toAdd, String fileName) throws IOException {
+    /**
+     * Adds Files as entries to a ZIP File.
+     * @param zipFile The ZIP File to add the files to.
+     * @param toAdd A Map containing the file's desired names as the keys and the files themselves as the values.
+     *              Files may be null in order to remove entries with the respective name from the ZIP File.
+     * @throws IOException
+     */
+    public static void addFilesToZip(File zipFile, HashMap<String, File> toAdd) throws IOException {
         // get a temp file
         File tempFile = File.createTempFile(zipFile.getName(), null, zipFile.getParentFile());
         // delete it, otherwise you cannot rename your existing zip to it.
@@ -328,13 +332,15 @@ public class ReplayFileIO {
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(tempFile));
 
         ZipEntry entry = zin.getNextEntry();
+
         while(entry != null) {
             String name = entry.getName();
-            boolean isFile = name.equalsIgnoreCase(fileName);
-            if(!isFile) {
-                // Add ZIP entry to output stream.
+
+            // Don't rewrite (keep) the old file if one of the new files uses the same name
+            boolean willBeOverwritten = toAdd.containsKey(name);
+            if(!willBeOverwritten) {
                 out.putNextEntry(new ZipEntry(name));
-                // Transfer bytes from the ZIP file to the output file
+                // Transfer bytes from the ZIP entry to the output entry
                 int len;
                 while((len = zin.read(buf)) > 0) {
                     out.write(buf, 0, len);
@@ -346,23 +352,29 @@ public class ReplayFileIO {
         zin.close();
         // Compress the files
 
-        if(toAdd != null) {
-            InputStream in = new FileInputStream(toAdd);
-            // Add ZIP entry to output stream.
-            out.putNextEntry(new ZipEntry(fileName));
-            // Transfer bytes from the file to the ZIP file
+        // Write all files to Replay File
+        if(!toAdd.isEmpty()) {
+            for(Map.Entry<String, File> e : toAdd.entrySet()) {
+                String fileName = e.getKey();
+                File toWrite = e.getValue();
 
-            int len;
-            if(fileName.equals("thumb")) out.write(uniqueBytes);
+                // The File may be null to simply be removed
+                if(toWrite != null) {
+                    InputStream in = new FileInputStream(toWrite);
+                    // Add ZIP entry to output stream.
+                    out.putNextEntry(new ZipEntry(fileName));
 
-            while((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
+                    int len;
+                    if(fileName.equals("thumb")) out.write(uniqueBytes);
+
+                    while((len = in.read(buf)) > 0) {
+                        out.write(buf, 0, len);
+                    }
+                    // Complete the entry
+                    out.closeEntry();
+                    in.close();
+                }
             }
-            // Complete the entry
-            out.closeEntry();
-            in.close();
-
-            toAdd.delete();
         }
 
         // Complete the ZIP file
