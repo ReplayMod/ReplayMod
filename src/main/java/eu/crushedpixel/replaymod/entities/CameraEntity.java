@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -15,15 +16,14 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.Sys;
 
-import java.lang.reflect.Field;
-
 public class CameraEntity extends EntityPlayer {
 
     private static final double MAX_SPEED = 20;
     private Vec3 direction;
     private double motion;
-    private Field drawBlockOutline;
     private double decay = 4;
+
+    private final Minecraft mc = Minecraft.getMinecraft();
 
     private long lastCall = 0;
 
@@ -94,10 +94,6 @@ public class CameraEntity extends EntityPlayer {
         lastCall = Sys.getTime();
     }
 
-    public void setDirection(float pitch, float yaw) {
-        this.setRotation(yaw, pitch);
-    }
-
     public void speedUp() {
         this.motion = Math.min(MAX_SPEED, motion + 0.1);
         speedup = true;
@@ -136,6 +132,7 @@ public class CameraEntity extends EntityPlayer {
         this.lastTickPosX = this.prevPosX = this.posX = x;
         this.lastTickPosY = this.prevPosY = this.posY = y;
         this.lastTickPosZ = this.prevPosZ = this.posZ = z;
+        updateBoundingBox();
     }
 
     public void moveRelative(double x, double y, double z) {
@@ -143,6 +140,7 @@ public class CameraEntity extends EntityPlayer {
         this.lastTickPosX = this.prevPosX = this.posX = this.posX + x;
         this.lastTickPosY = this.prevPosY = this.posY = this.posY + y;
         this.lastTickPosZ = this.prevPosZ = this.posZ = this.posZ + z;
+        updateBoundingBox();
     }
 
     public void movePath(Position pos) {
@@ -151,11 +149,19 @@ public class CameraEntity extends EntityPlayer {
         this.lastTickPosX = this.prevPosX = this.posX = pos.getX();
         this.lastTickPosY = this.prevPosY = this.posY = pos.getY();
         this.lastTickPosZ = this.prevPosZ = this.posZ = pos.getZ();
+        updateBoundingBox();
+    }
+
+    private void updateBoundingBox() {
+        this.setEntityBoundingBox(new AxisAlignedBB(posX - width / 2, posY, posZ - width / 2,
+                posX + width / 2, posY + height, posZ + width / 2));
     }
 
     @Override
     protected void entityInit() {
         this.dataWatcher = new LesserDataWatcher(this);
+        this.setSize(0.6f, 1.8f);
+        updateBoundingBox();
     }
 
     @Override
@@ -164,17 +170,12 @@ public class CameraEntity extends EntityPlayer {
         this.rotationPitch = (float) ((double) this.rotationPitch - (double) pitch * 0.15D);
         this.rotationPitch = MathHelper.clamp_float(this.rotationPitch, -90.0F, 90.0F);
         this.prevRotationPitch = this.rotationPitch;
-        this.prevRotationYaw = this.rotationYaw;
-    }
-
-    @Override
-    public MovingObjectPosition rayTrace(double p_174822_1_, float p_174822_3_) {
-        return null;
+        this.prevRotationYawHead = this.rotationYawHead = this.prevRotationYaw = this.rotationYaw;
     }
 
     @Override
     public boolean canBePushed() {
-        return false;
+        return true;
     }
 
     @Override
@@ -182,7 +183,7 @@ public class CameraEntity extends EntityPlayer {
 
     @Override
     public boolean canBeCollidedWith() {
-        return false;
+        return true;
     }
 
     @Override
@@ -207,4 +208,14 @@ public class CameraEntity extends EntityPlayer {
         UP, DOWN, LEFT, RIGHT, FORWARD, BACKWARD;
     }
 
+    @Override
+    public MovingObjectPosition rayTrace(double p_174822_1_, float p_174822_3_) {
+        MovingObjectPosition pos = super.rayTrace(p_174822_1_, 1f);
+
+        if(pos.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+            pos.typeOfHit = MovingObjectPosition.MovingObjectType.MISS;
+        }
+
+        return pos;
+    }
 }
