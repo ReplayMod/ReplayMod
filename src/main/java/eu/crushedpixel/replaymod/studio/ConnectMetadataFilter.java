@@ -15,7 +15,6 @@ import org.spacehq.mc.protocol.packet.ingame.server.entity.spawn.ServerSpawnPlay
 import org.spacehq.packetlib.packet.Packet;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.*;
 
 // TODO Reset resourcepack when changing from a resourcepack replay to a normal replay
@@ -74,7 +73,7 @@ public class ConnectMetadataFilter implements StreamFilter {
                                 Optional<InputStream> in = replayFile.getResourcePack(hash);
                                 if (in.isPresent()) {
                                     try {
-                                        file = Files.createTempFile("replaymod", "resourcepack").toFile();
+                                        file = File.createTempFile("replaymod", "resourcepack");
                                         OutputStream out = new FileOutputStream(file);
                                         try {
                                             IOUtils.copy(in.get(), out);

@@ -15,11 +15,11 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -303,7 +303,7 @@ public class ReplayFileIO {
         file.createNewFile();
 
         String json = gson.toJson(keyframeRegistry);
-        Files.write(file.toPath(), json.getBytes());
+        FileUtils.write(file, json);
     }
 
     public static void writePlayerVisibilityToFile(PlayerVisibility visibility, File file) throws IOException {
@@ -311,7 +311,7 @@ public class ReplayFileIO {
         file.createNewFile();
 
         String json = gson.toJson(visibility);
-        Files.write(file.toPath(), json.getBytes());
+        FileUtils.write(file, json);
     }
 
     public static void writeReplayMetaDataToFile(ReplayMetaData metaData, File file) throws IOException {
@@ -319,7 +319,7 @@ public class ReplayFileIO {
         file.createNewFile();
 
         String json = gson.toJson(metaData);
-        Files.write(file.toPath(), json.getBytes());
+        FileUtils.write(file, json);
     }
 
     /**

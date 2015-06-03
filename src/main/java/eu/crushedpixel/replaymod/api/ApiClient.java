@@ -14,14 +14,11 @@ import eu.crushedpixel.replaymod.online.authentication.AuthenticationHash;
 import eu.crushedpixel.replaymod.utils.StreamTools;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
@@ -138,7 +135,12 @@ public class ApiClient {
         InputStream is = con.getInputStream();
 
         if(con.getResponseCode() == 200) {
-            Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            OutputStream out = new FileOutputStream(target);
+            try {
+                IOUtils.copy(is, out);
+            } finally {
+                out.close();
+            }
         } else {
             JsonElement element = jsonParser.parse(StreamTools.readStreamtoString(is));
             try {

@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.video;
 import com.google.common.base.Preconditions;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import org.apache.commons.io.FileUtils;
 import org.monte.media.*;
 import org.monte.media.FormatKeys.MediaType;
 import org.monte.media.math.Rational;
@@ -10,7 +11,6 @@ import org.monte.media.math.Rational;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -50,7 +50,7 @@ public class VideoWriter {
         File folder = ReplayFileIO.getRenderFolder();
         String fileName = FILE_FORMAT.format(Calendar.getInstance().getTime());
         file = new File(folder, fileName + VIDEO_EXTENSION);
-        Files.createFile(file.toPath());
+        FileUtils.touch(file);
 
         out = Registry.getInstance().getWriter(file);
         Format format = new Format(FormatKeys.MediaTypeKey, MediaType.VIDEO,
@@ -101,7 +101,7 @@ public class VideoWriter {
                     toWrite.clear();
                     out.close();
                     if (cancelled) {
-                        Files.delete(file.toPath());
+                        FileUtils.forceDelete(file);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
