@@ -7,11 +7,15 @@ import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 
+import java.util.ListIterator;
+
 public class GuiKeyframeTimeline extends GuiTimeline {
     private static final int KEYFRAME_PLACE_X = 74;
     private static final int KEYFRAME_PLACE_Y = 20;
     private static final int KEYFRAME_TIME_X = 74;
     private static final int KEYFRAME_TIME_Y = 25;
+    private static final int KEYFRAME_SPEC_X = 74;
+    private static final int KEYFRAME_SPEC_Y = 30;
 
     private Keyframe clickedKeyFrame;
     private long clickTime;
@@ -95,34 +99,98 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
         double segmentLength = timelineLength * zoom;
 
-        //Draw Keyframe logos
-        for(Keyframe kf : ReplayHandler.getKeyframes()) {
-            if (kf.getRealTimestamp() <= rightTime && kf.getRealTimestamp() >= leftTime) {
-                int textureX;
-                int textureY;
-                int y = positionY;
-                if (kf instanceof PositionKeyframe) {
-                    textureX = KEYFRAME_PLACE_X;
-                    textureY = KEYFRAME_PLACE_Y;
-                    y += 0;
-                } else if (kf instanceof TimeKeyframe) {
-                    textureX = KEYFRAME_TIME_X;
-                    textureY = KEYFRAME_TIME_Y;
-                    y += 5;
-                } else {
-                    throw new UnsupportedOperationException("Unknown keyframe type: " + kf.getClass());
+        //iterate over keyframes to find spectator segments
+        ListIterator<Keyframe> iterator = ReplayHandler.getKeyframes().listIterator();
+        while(iterator.hasNext()) {
+            Keyframe kf = iterator.next();
+
+            if(!(kf instanceof PositionKeyframe) || ((PositionKeyframe)kf).getSpectatedEntityID() == null) continue;
+
+            int i = iterator.nextIndex();
+            int nextSpectatorKeyframeRealTime = -1;
+
+            while(iterator.hasNext()) {
+                Keyframe kf2 = iterator.next();
+
+                if(kf2 instanceof PositionKeyframe) {
+                    if(((PositionKeyframe) kf).getSpectatedEntityID()
+                            .equals(((PositionKeyframe) kf2).getSpectatedEntityID())) {
+
+                        nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
+                    }
+                    break;
                 }
-
-                if (ReplayHandler.isSelected(kf)) {
-                    textureX += 5;
-                }
-
-                long positionInSegment = kf.getRealTimestamp() - leftTime;
-                double fractionOfSegment = positionInSegment / segmentLength;
-                int x = (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
-
-                rect(x - 2, y + BORDER_TOP, textureX, textureY, 5, 5);
             }
+
+            int i2 = iterator.previousIndex();
+
+            while(i2 >= i) {
+                iterator.previous();
+                i2--;
+            }
+
+            if(nextSpectatorKeyframeRealTime != -1) {
+                int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, rightTime, bodyWidth, segmentLength);
+                int nextX = getKeyframeX(nextSpectatorKeyframeRealTime, leftTime, rightTime, bodyWidth, segmentLength);
+
+                drawGradientRect(keyframeX + 2, positionY + BORDER_TOP + 1, nextX - 2, positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
+            }
+        }
+
+        drawTimelineCursor(leftTime, rightTime, bodyWidth);
+
+
+        //Draw Keyframe logos
+        iterator = ReplayHandler.getKeyframes().listIterator();
+        while(iterator.hasNext()) {
+            Keyframe kf = iterator.next();
+
+            if(!kf.equals(ReplayHandler.getSelectedKeyframe()))
+                drawKeyframe(kf, bodyWidth, leftTime, rightTime, segmentLength);
+        }
+
+        if(ReplayHandler.getSelectedKeyframe() != null) {
+            drawKeyframe(ReplayHandler.getSelectedKeyframe(), bodyWidth, leftTime, rightTime, segmentLength);
+        }
+    }
+
+    private int getKeyframeX(int timestamp, long leftTime, long rightTime, int bodyWidth, double segmentLength) {
+        long positionInSegment = timestamp - leftTime;
+        double fractionOfSegment = positionInSegment / segmentLength;
+        return (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
+    }
+
+    private void drawKeyframe(Keyframe kf, int bodyWidth, long leftTime, long rightTime, double segmentLength) {
+        if (kf.getRealTimestamp() <= rightTime && kf.getRealTimestamp() >= leftTime) {
+            int textureX;
+            int textureY;
+            int y = positionY;
+
+            int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, rightTime, bodyWidth, segmentLength);
+
+            if (kf instanceof PositionKeyframe) {
+                textureX = KEYFRAME_PLACE_X;
+                textureY = KEYFRAME_PLACE_Y;
+                y += 0;
+
+                //If Spectator Keyframe, use different texture
+                if(((PositionKeyframe) kf).getSpectatedEntityID() != null) {
+                    textureX = KEYFRAME_SPEC_X;
+                    textureY = KEYFRAME_SPEC_Y;
+                }
+            } else if (kf instanceof TimeKeyframe) {
+                textureX = KEYFRAME_TIME_X;
+                textureY = KEYFRAME_TIME_Y;
+                y += 5;
+            } else {
+                throw new UnsupportedOperationException("Unknown keyframe type: " + kf.getClass());
+            }
+
+            if (ReplayHandler.isSelected(kf)) {
+                textureX += 5;
+            }
+
+            rect(keyframeX - 2, y + BORDER_TOP, textureX, textureY, 5, 5);
         }
     }
 }

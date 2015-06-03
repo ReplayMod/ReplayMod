@@ -138,6 +138,10 @@ public class GuiTimeline extends Gui implements GuiElement {
             }
         }
 
+        drawTimelineCursor(leftTime, rightTime, bodyWidth);
+    }
+
+    protected void drawTimelineCursor(long leftTime, long rightTime, int bodyWidth) {
         // Draw the cursor if it's on the current timeline segment
         if (cursorPosition >= leftTime && cursorPosition <= rightTime) {
             long positionInSegment = cursorPosition - leftTime;

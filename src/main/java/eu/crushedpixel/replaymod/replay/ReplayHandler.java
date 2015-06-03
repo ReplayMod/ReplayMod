@@ -27,7 +27,6 @@ public class ReplayHandler {
     public static long lastExit = 0;
     private static NetworkManager networkManager;
     private static Minecraft mc = Minecraft.getMinecraft();
-    //private static ReplaySender replaySender;
     private static OpenEmbeddedChannel channel;
     private static int realTimelinePosition = 0;
     private static Keyframe selectedKeyframe;
