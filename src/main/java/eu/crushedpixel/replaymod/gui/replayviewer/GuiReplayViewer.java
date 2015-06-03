@@ -71,7 +71,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                 File tmp = null;
                 if(img != null) {
                     img = ImageUtils.scaleImage(img, new Dimension(1280, 720));
-                    tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath()), "jpg");
+                    tmp = File.createTempFile(FilenameUtils.getBaseName(file.getAbsolutePath())+"_THUMBNAIL", "jpg");
                     tmp.deleteOnExit();
 
                     ImageIO.write(img, "jpg", tmp);
