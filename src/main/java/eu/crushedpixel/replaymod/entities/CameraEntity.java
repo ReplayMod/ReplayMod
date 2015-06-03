@@ -18,9 +18,28 @@ import org.lwjgl.Sys;
 
 public class CameraEntity extends EntityPlayer {
 
-    private static final double MAX_SPEED = 10;
-    private static final double THRESHOLD = MAX_SPEED / 20;
-    private static final double DECAY = MAX_SPEED/3;
+    public static final double SPEED_CHANGE = 0.5;
+    public static final double LOWER_SPEED = 2;
+    public static final double UPPER_SPEED = 20;
+
+    private static double MAX_SPEED = 10;
+    private static double THRESHOLD = MAX_SPEED / 20;
+    private static double DECAY = MAX_SPEED/3;
+
+    public static void modifyCameraSpeed(boolean increase) {
+        setCameraMaximumSpeed(getCameraMaximumSpeed() + (increase ? 1 : -1) * SPEED_CHANGE);
+    }
+
+    public static void setCameraMaximumSpeed(double maxSpeed) {
+        if(maxSpeed < LOWER_SPEED || maxSpeed > UPPER_SPEED) return;
+        MAX_SPEED = maxSpeed;
+        THRESHOLD = MAX_SPEED / 20;
+        DECAY = MAX_SPEED/3;
+    }
+
+    public static double getCameraMaximumSpeed() {
+        return MAX_SPEED;
+    }
 
     private Vec3 direction;
     private double motion;
@@ -32,7 +51,6 @@ public class CameraEntity extends EntityPlayer {
     private boolean speedup = false;
 
     public CameraEntity(World worldIn) {
-        //super(worldIn);
         super(worldIn, Minecraft.getMinecraft().getSession().getProfile());
     }
 

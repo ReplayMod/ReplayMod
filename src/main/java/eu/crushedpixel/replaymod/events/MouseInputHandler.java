@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.events;
 
+import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.MouseEvent;
@@ -13,9 +14,13 @@ public class MouseInputHandler {
 
     @SubscribeEvent
     public void mouseEvent(MouseEvent event) {
-        if(!ReplayHandler.isInReplay() || !Mouse.isButtonDown(1)) {
-            rightDown = false;
+        if(!ReplayHandler.isInReplay()) {
             return;
+        }
+
+        if(event.dwheel != 0 && mc.currentScreen == null) {
+            boolean increase = event.dwheel > 0;
+            CameraEntity.modifyCameraSpeed(increase);
         }
 
         if(Mouse.isButtonDown(1)) {
