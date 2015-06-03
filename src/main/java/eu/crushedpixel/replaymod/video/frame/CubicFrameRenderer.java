@@ -2,7 +2,6 @@ package eu.crushedpixel.replaymod.video.frame;
 
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.entity.CubicEntityRenderer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.Timer;
@@ -10,23 +9,19 @@ import net.minecraft.util.Timer;
 import java.awt.image.BufferedImage;
 
 public class CubicFrameRenderer extends FrameRenderer {
-    protected static int getDisplaySize() {
-        Minecraft mc = Minecraft.getMinecraft();
-        return Math.min(mc.displayWidth, mc.displayHeight);
-    }
 
+    protected final int frameSize;
     protected final CubicEntityRenderer entityRenderer;
-    protected final int displaySize;
 
-    protected CubicFrameRenderer(RenderOptions options, int videoWidth, int videoHeight, boolean stable) {
-        super(options, videoWidth, videoHeight, getDisplaySize() * getDisplaySize() * 3);
-        this.displaySize = getDisplaySize();
-        this.entityRenderer = new CubicEntityRenderer(options, stable);
+    protected CubicFrameRenderer(RenderOptions options, int frameSize, boolean stable) {
+        super(options);
+        this.frameSize = frameSize;
+        this.entityRenderer = new CubicEntityRenderer(options, frameSize, stable);
         setCustomEntityRenderer(entityRenderer);
     }
 
     public CubicFrameRenderer(RenderOptions options, boolean stable) {
-        this(options, getDisplaySize() * 4, getDisplaySize() * 3, stable);
+        this(options, options.getWidth() / 4, stable);
     }
 
     @Override
@@ -34,7 +29,12 @@ public class CubicFrameRenderer extends FrameRenderer {
         BufferedImage image = new BufferedImage(getVideoWidth(), getVideoHeight(), BufferedImage.TYPE_INT_RGB);
         for (CubicEntityRenderer.Direction direction : CubicEntityRenderer.Direction.values()) {
             try {
-                captureFrame(timer, image, direction);
+                entityRenderer.setDirection(direction);
+
+                int frame = direction.getCubicFrame();
+                int xVideo = frame % 4 * frameSize;
+                int yVideo = frame / 4 * frameSize;
+                renderFrame(timer, image, xVideo, yVideo);
             } catch (Throwable t) {
                 CrashReport crash = CrashReport.makeCrashReport(t, "Rendering frame " + direction + ".");
                 throw new ReportedException(crash);
@@ -42,39 +42,5 @@ public class CubicFrameRenderer extends FrameRenderer {
         }
         updateDefaultPreview(image);
         return image;
-    }
-
-    protected void captureFrame(Timer timer, BufferedImage into, CubicEntityRenderer.Direction direction) {
-        renderFrameToBuffer(timer, direction);
-
-        // Copy to image
-        int frame = direction.getCubicFrame();
-        int xVideo = frame % 4 * displaySize;
-        int yVideo = frame / 4 * displaySize;
-        copyPixelsToImage(buffer, displaySize, into, xVideo, yVideo);
-    }
-
-    protected void renderFrameToBuffer(Timer timer, CubicEntityRenderer.Direction direction) {
-        // Setup aspect ratio
-        int originalWidth = mc.displayWidth;
-        int originalHeight = mc.displayHeight;
-        mc.displayWidth = mc.displayHeight = displaySize;
-        updateFrameBufferSize();
-
-        // Render frame
-        entityRenderer.setDirection(direction);
-        renderFrame(timer);
-
-        // Read pixels
-        readPixels(buffer);
-
-        mc.displayWidth = originalWidth;
-        mc.displayHeight = originalHeight;
-        updateFrameBufferSize();
-    }
-
-    private void updateFrameBufferSize() {
-        mc.getFramebuffer().createBindFramebuffer(mc.displayWidth, mc.displayHeight);
-        mc.entityRenderer.updateShaderGroupSize(mc.displayWidth, mc.displayHeight);
     }
 }

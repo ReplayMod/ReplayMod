@@ -176,6 +176,8 @@ public class ReplayMod {
             String waitForChunks = System.getProperty("replaymod.render.waitforchunks");
             String linearMovement = System.getProperty("replaymod.render.linearmovement");
             String skyColor = System.getProperty("replaymod.render.skycolor");
+            String width = System.getProperty("replaymod.render.width");
+            String height = System.getProperty("replaymod.render.height");
             final RenderOptions options = new RenderOptions();
             if (quality != null) {
                 options.setQuality(Float.parseFloat(quality));
@@ -196,6 +198,12 @@ public class ReplayMod {
                     options.setSkyColor(Integer.parseInt(skyColor));
                 }
             }
+            if (width != null) {
+                options.setWidth(Integer.parseInt(width));
+            }
+            if (height != null) {
+                options.setHeight(Integer.parseInt(height));
+            }
 
             FrameRenderer renderer;
             if (type != null) {
@@ -203,13 +211,6 @@ public class ReplayMod {
                 type = parts[0].toUpperCase();
                 if ("NORMAL".equals(type) || "DEFAULT".equals(type)) {
                     renderer = new DefaultFrameRenderer(options);
-                } else if ("TILED".equals(type)) {
-                    if (parts.length < 3) {
-                        throw new IllegalArgumentException("Tiled renderer requires width and height.");
-                    }
-                    int width = Integer.parseInt(parts[1]);
-                    int height = Integer.parseInt(parts[2]);
-                    renderer = new TilingFrameRenderer(options, width, height);
                 } else if ("STEREO".equals(type) || "STEREOSCOPIC".equals(type)) {
                     renderer = new StereoscopicFrameRenderer(options);
                 } else if ("CUBIC".equals(type)) {

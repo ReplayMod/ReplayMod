@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.video;
 
 import com.google.common.base.Preconditions;
+import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import org.monte.media.*;
 import org.monte.media.FormatKeys.MediaType;
@@ -42,12 +43,8 @@ public class VideoWriter {
     private final Condition noLongerEmptyCondition = lock.newCondition();
     private final Condition noLongerFullCondition = lock.newCondition();
 
-    public VideoWriter(int width, int height, int fps, float quality) throws IOException {
-        this(width, height, fps, quality, Integer.MAX_VALUE);
-    }
-
-    public VideoWriter(int width, int height, int fps, float quality, int queueLimit) throws IOException {
-        this.queueLimit = queueLimit;
+    public VideoWriter(RenderOptions options) throws IOException {
+        this.queueLimit = options.getWriterQueueSize();
         this.toWrite = new LinkedList<BufferedImage>();
 
         File folder = ReplayFileIO.getRenderFolder();
@@ -58,11 +55,11 @@ public class VideoWriter {
         out = Registry.getInstance().getWriter(file);
         Format format = new Format(FormatKeys.MediaTypeKey, MediaType.VIDEO,
                 FormatKeys.EncodingKey, VideoFormatKeys.ENCODING_AVI_MJPG,
-                FormatKeys.FrameRateKey, new Rational(fps, 1),
-                VideoFormatKeys.WidthKey, width,
-                VideoFormatKeys.HeightKey, height,
+                FormatKeys.FrameRateKey, new Rational(options.getFps(), 1),
+                VideoFormatKeys.WidthKey, options.getWidth(),
+                VideoFormatKeys.HeightKey, options.getHeight(),
                 VideoFormatKeys.DepthKey, 24,
-                VideoFormatKeys.QualityKey, quality);
+                VideoFormatKeys.QualityKey, options.getQuality());
 
         track = out.addTrack(format);
 

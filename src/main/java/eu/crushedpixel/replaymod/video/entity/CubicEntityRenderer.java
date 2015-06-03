@@ -33,8 +33,8 @@ public class CubicEntityRenderer extends CustomEntityRenderer {
     private final boolean stable;
     private Direction direction;
 
-    public CubicEntityRenderer(RenderOptions options, boolean stable) {
-        super(options);
+    public CubicEntityRenderer(RenderOptions options, int frameSize, boolean stable) {
+        super(options, frameSize, frameSize);
         this.stable = stable;
     }
 

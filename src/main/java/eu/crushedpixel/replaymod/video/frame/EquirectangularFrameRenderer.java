@@ -11,10 +11,16 @@ import java.awt.image.DataBufferInt;
 
 import static java.lang.Math.PI;
 
-public class EquirectangularFrameRenderer extends CubicFrameRenderer {
+public class EquirectangularFrameRenderer extends FrameRenderer {
+
+    private final int frameSize;
+    protected final CubicEntityRenderer entityRenderer;
 
     public EquirectangularFrameRenderer(RenderOptions options, boolean stable) {
-        super(options, getDisplaySize() * 4, getDisplaySize() * 2, stable);
+        super(options);
+        this.frameSize = options.getWidth() / 4;
+        this.entityRenderer = new CubicEntityRenderer(options, frameSize, stable);
+        setCustomEntityRenderer(entityRenderer);
     }
 
     @Override
@@ -77,8 +83,8 @@ public class EquirectangularFrameRenderer extends CubicFrameRenderer {
                     pt = top;
                 }
 
-                int cX = Math.min(displaySize - 1, (int) (cXN * displaySize));
-                int cY = Math.min(displaySize - 1, (int) (cYN * displaySize));
+                int cX = Math.min(frameSize - 1, (int) (cXN * frameSize));
+                int cY = Math.min(frameSize - 1, (int) (cYN * frameSize));
                 resultPixels[i + j * rWidth] = 0xff000000 | pt.getRGB(cX, cY); // Make sure we got alpha value as well
             }
         }
@@ -88,11 +94,9 @@ public class EquirectangularFrameRenderer extends CubicFrameRenderer {
 
     protected BufferedImage captureFrame(Timer timer, CubicEntityRenderer.Direction direction) {
         try {
-            renderFrameToBuffer(timer, direction);
-
-            // Copy to image
-            BufferedImage image = new BufferedImage(displaySize, displaySize, BufferedImage.TYPE_INT_RGB);
-            copyPixelsToImage(buffer, displaySize, image, displaySize, 0, 0);
+            BufferedImage image = new BufferedImage(frameSize, frameSize, BufferedImage.TYPE_INT_RGB);
+            entityRenderer.setDirection(direction);
+            renderFrame(timer, image, 0, 0);
             return image;
         } catch (Throwable t) {
             CrashReport crash = CrashReport.makeCrashReport(t, "Rendering frame " + direction);

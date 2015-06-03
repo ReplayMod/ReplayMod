@@ -60,7 +60,7 @@ public class SpectatorRenderer {
 
         float f1 = 0.07F;
 
-        if(this.mc.gameSettings.anaglyph) {
+        if (renderPass != 2) {
             GlStateManager.translate((float)(-(renderPass * 2 - 1)) * f1, 0.0F, 0.0F);
         }
 
@@ -70,7 +70,7 @@ public class SpectatorRenderer {
         GlStateManager.matrixMode(GL11.GL_MODELVIEW);
         GlStateManager.loadIdentity();
 
-        if(this.mc.gameSettings.anaglyph) {
+        if (renderPass != 2) {
             GlStateManager.translate((float)(renderPass * 2 - 1) * 0.1F, 0.0F, 0.0F);
         }
 
@@ -539,5 +539,10 @@ public class SpectatorRenderer {
         GlStateManager.popMatrix();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.disableBlend();
+    }
+
+    public void cleanup() {
+        MinecraftForge.EVENT_BUS.unregister(this);
+        FMLCommonHandler.instance().bus().unregister(this);
     }
 }

@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.settings;
 
 import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
+import net.minecraft.client.Minecraft;
 
 import static org.apache.commons.lang3.Validate.*;
 
@@ -8,9 +9,16 @@ public final class RenderOptions {
     private FrameRenderer renderer;
     private float quality = 0.5f;
     private int fps = 30;
+
+    // Advanced
     private boolean waitForChunks = true;
     private boolean isLinearMovement = false;
     private int skyColor = -1;
+    private int width = Minecraft.getMinecraft().displayWidth;
+    private int height = Minecraft.getMinecraft().displayHeight;
+
+    // Highly advanced
+    private int writerQueueSize = Integer.parseInt(System.getProperty("replaymod.render.writerQueueSize", "1"));
 
     public FrameRenderer getRenderer() {
         return renderer;
@@ -66,6 +74,30 @@ public final class RenderOptions {
         this.skyColor = skyColor;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getWriterQueueSize() {
+        return writerQueueSize;
+    }
+
+    public void setWriterQueueSize(int writerQueueSize) {
+        this.writerQueueSize = writerQueueSize;
+    }
+
     public RenderOptions copy() {
         RenderOptions copy = new RenderOptions();
         copy.renderer = this.renderer;
@@ -74,6 +106,9 @@ public final class RenderOptions {
         copy.waitForChunks = this.waitForChunks;
         copy.isLinearMovement = this.isLinearMovement;
         copy.skyColor = this.skyColor;
+        copy.width = this.width;
+        copy.height = this.height;
+        copy.writerQueueSize = this.writerQueueSize;
         return copy;
     }
 }

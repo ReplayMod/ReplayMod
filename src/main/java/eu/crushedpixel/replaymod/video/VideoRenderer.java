@@ -50,14 +50,12 @@ public class VideoRenderer {
     private int totalFrames;
 
     private final GuiVideoRenderer gui;
-    private boolean frameRendererUpdatesGui;
     private boolean paused;
     private boolean cancelled;
 
     public VideoRenderer(RenderOptions options) throws IOException {
         this.frameRenderer = options.getRenderer();
-        this.videoWriter = new VideoWriter(frameRenderer.getVideoWidth(), frameRenderer.getVideoHeight(),
-                options.getFps(), options.getQuality(), 10);
+        this.videoWriter = new VideoWriter(options);
         this.gui = new GuiVideoRenderer(this);
         this.replaySender = ReplayMod.replaySender;
         this.options = options;
@@ -100,9 +98,7 @@ public class VideoRenderer {
             frame(timer);
             framesDone++;
 
-            if (!frameRendererUpdatesGui) {
-                drawGui();
-            }
+            drawGui();
             System.gc();
         }
 
@@ -149,12 +145,6 @@ public class VideoRenderer {
         }
         time.prepare();
 
-        frameRendererUpdatesGui = frameRenderer.setRenderPreviewCallback(new Runnable() {
-            @Override
-            public void run() {
-                drawGui();
-            }
-        });
         frameRenderer.setup();
 
         ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);

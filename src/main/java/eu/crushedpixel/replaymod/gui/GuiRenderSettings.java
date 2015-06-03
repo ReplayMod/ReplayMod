@@ -59,15 +59,51 @@ public class GuiRenderSettings extends GuiScreen {
                     fontRendererObj, 0, 0, 200, 5);
             rendererDropdown.addSelectionListener(new RendererDropdownListener());
 
+            int i = 0;
+            for (RendererSettings r : RendererSettings.values()) {
+                rendererDropdown.addElement(r);
+                rendererDropdown.setHoverText(i, r.getDescription());
+                i++;
+            }
+
             renderButton = new GuiButton(GuiConstants.RENDER_SETTINGS_RENDER_BUTTON, 0, 0, I18n.format("replaymod.gui.render"));
             cancelButton = new GuiButton(GuiConstants.RENDER_SETTINGS_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.cancel"));
             advancedButton = new GuiButton(GuiConstants.RENDER_SETTINGS_ADVANCED_BUTTON, 0, 0, I18n.format("replaymod.gui.rendersettings.advanced"));
 
             customResolution = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX, 0, 0, I18n.format("replaymod.gui.rendersettings.customresolution"), false);
-            customResolution.enabled = false;
 
-            xRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_X, fontRendererObj, 0, 0, 50, 1, 100000, mc.displayWidth, false);
-            yRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_Y, fontRendererObj, 0, 0, 50, 1, 100000, mc.displayHeight, false);
+            xRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_X, fontRendererObj, 0, 0, 50, 1, 100000, mc.displayWidth, false) {
+                @Override
+                public void setCursorPosition(int p_146190_1_) {
+                    super.setCursorPosition(p_146190_1_);
+                    RendererSettings renderer = rendererDropdown.getElement(rendererDropdown.getSelectionIndex());
+                    Integer value = getIntValueNullable();
+                    if (value != null) {
+                        if (renderer == RendererSettings.CUBIC) {
+                            yRes.text = Integer.toString(Math.max(1, value * 3 / 4));
+                        }
+                        if (renderer == RendererSettings.EQUIRECTANGULAR) {
+                            yRes.text = Integer.toString(Math.max(1, value / 2));
+                        }
+                    }
+                }
+            };
+            yRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_Y, fontRendererObj, 0, 0, 50, 1, 100000, mc.displayHeight, false) {
+                @Override
+                public void setCursorPosition(int p_146190_1_) {
+                    super.setCursorPosition(p_146190_1_);
+                    RendererSettings renderer = rendererDropdown.getElement(rendererDropdown.getSelectionIndex());
+                    Integer value = getIntValueNullable();
+                    if (value != null) {
+                        if (renderer == RendererSettings.CUBIC) {
+                            xRes.text = Integer.toString(value * 4 / 3);
+                        }
+                        if (renderer == RendererSettings.EQUIRECTANGULAR) {
+                            xRes.text = Integer.toString(value * 2);
+                        }
+                    }
+                }
+            };
 
             xRes.setEnabled(false);
             yRes.setEnabled(false);
@@ -100,13 +136,6 @@ public class GuiRenderSettings extends GuiScreen {
             ignoreCamDir = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_STATIC_CAMERA, 0, 0, I18n.format("replaymod.gui.rendersettings.stablecamera"), false);
             youtubeExport = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_YOUTUBE_READY, 0, 0, I18n.format("replaymod.gui.rendersettings.exportyoutube"), true);
             ignoreCamDir.enabled = youtubeExport.enabled = false;
-
-            int i = 0;
-            for(RendererSettings r : RendererSettings.values()) {
-                rendererDropdown.addElement(r);
-                rendererDropdown.setHoverText(i, r.getDescription());
-                i++;
-            }
 
             permanentButtons.add(advancedButton);
             permanentButtons.add(renderButton);
@@ -320,7 +349,6 @@ public class GuiRenderSettings extends GuiScreen {
 
     private enum RendererSettings {
         DEFAULT("default"),
-        TILED("tiled"),
         STEREOSCOPIC("stereoscopic"),
         CUBIC("cubic"),
         EQUIRECTANGULAR("equirectangular");
@@ -363,10 +391,11 @@ public class GuiRenderSettings extends GuiScreen {
             options.setSkyColor(colorPicker.getPickedColor());
         }
 
+        options.setWidth(getWidthSetting());
+        options.setHeight(getHeightSetting());
+
         if(r == RendererSettings.DEFAULT) {
             renderer = new DefaultFrameRenderer(options);
-        } else if(r == RendererSettings.TILED) {
-            renderer = new TilingFrameRenderer(options, getWidthSetting(), getHeightSetting());
         } else if(r == RendererSettings.STEREOSCOPIC) {
             renderer = new StereoscopicFrameRenderer(options);
         } else if(r == RendererSettings.CUBIC) {
@@ -393,32 +422,18 @@ public class GuiRenderSettings extends GuiScreen {
             RendererSettings s = rendererDropdown.getElement(selectionIndex);
 
             if(s == RendererSettings.DEFAULT) {
-                customResolution.enabled = false;
-                xRes.setEnabled(false);
-                yRes.setEnabled(false);
-                youtubeExport.enabled = ignoreCamDir.enabled = false;
-            } else if(s == RendererSettings.TILED) {
-                customResolution.enabled = true;
-                xRes.setEnabled(customResolution.isChecked());
-                yRes.setEnabled(customResolution.isChecked());
                 youtubeExport.enabled = ignoreCamDir.enabled = false;
             } else if(s == RendererSettings.STEREOSCOPIC) {
-                customResolution.enabled = false;
-                xRes.setEnabled(false);
-                yRes.setEnabled(false);
                 youtubeExport.enabled = ignoreCamDir.enabled = false;
             } else if(s == RendererSettings.CUBIC) {
-                customResolution.enabled = false;
-                xRes.setEnabled(false);
-                yRes.setEnabled(false);
                 youtubeExport.enabled = true;
                 ignoreCamDir.enabled = false;
             } else if(s == RendererSettings.EQUIRECTANGULAR) {
-                customResolution.enabled = false;
-                xRes.setEnabled(false);
-                yRes.setEnabled(false);
                 youtubeExport.enabled = ignoreCamDir.enabled = true;
             }
+
+            xRes.setCursorPositionEnd();
+            yRes.setCursorPositionEnd();
         }
     }
 }

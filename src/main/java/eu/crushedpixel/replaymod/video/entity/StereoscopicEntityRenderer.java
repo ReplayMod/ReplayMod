@@ -4,6 +4,8 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 
+import java.awt.image.BufferedImage;
+
 import static net.minecraft.client.renderer.GlStateManager.loadIdentity;
 import static net.minecraft.client.renderer.GlStateManager.matrixMode;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
@@ -14,7 +16,7 @@ public class StereoscopicEntityRenderer extends CustomEntityRenderer {
     private boolean leftEye;
 
     public StereoscopicEntityRenderer(RenderOptions options) {
-        super(options);
+        super(options, options.getWidth() / 2, options.getHeight());
     }
 
     public void setEye(boolean leftEye) {
@@ -22,11 +24,8 @@ public class StereoscopicEntityRenderer extends CustomEntityRenderer {
     }
 
     @Override
-    public void updateCameraAndRender(float renderPartialTicks) {
-        boolean wasAnaglyph = mc.gameSettings.anaglyph;
-        mc.gameSettings.anaglyph = true;
-        super.updateCameraAndRender(renderPartialTicks);
-        mc.gameSettings.anaglyph = wasAnaglyph;
+    public void renderFrame(float partialTicks, BufferedImage into, int x, int y) {
+        super.renderFrame(partialTicks, into, x, y);
     }
 
     protected void translateStereoscopic() {
