@@ -31,10 +31,12 @@ public class KeyInputHandler {
 
         if(mc.currentScreen == null) {
             for(KeyBinding kb : keyBindings) {
+                //don't act on Mouse inputs
+                if(kb.getKeyCode() < 0) continue;
+
                 if(!ReplayMod.replaySender.paused() && !kb.isKeyDown()) continue;
 
-                //keyCode has to be positive, otherwise it's a Mouse key and will horribly crash
-                if(ReplayMod.replaySender.paused() && kb.getKeyCode() >= 0 && !Keyboard.isKeyDown(kb.getKeyCode()))
+                if(ReplayMod.replaySender.paused() && !Keyboard.isKeyDown(kb.getKeyCode()))
                     continue;
                 try {
 
