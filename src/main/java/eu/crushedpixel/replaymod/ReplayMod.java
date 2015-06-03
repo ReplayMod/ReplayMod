@@ -102,6 +102,8 @@ public class ReplayMod {
         MinecraftForge.EVENT_BUS.register(guiEventHandler = new GuiEventHandler());
 
         FMLCommonHandler.instance().bus().register(keyInputHandler);
+        MinecraftForge.EVENT_BUS.register(keyInputHandler);
+        FMLCommonHandler.instance().bus().register(mouseInputHandler);
         MinecraftForge.EVENT_BUS.register(mouseInputHandler);
 
         recordingHandler = new RecordingHandler();

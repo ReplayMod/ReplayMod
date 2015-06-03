@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
 import net.minecraftforge.client.event.MouseEvent;
+import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -18,7 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 
 public class MinecraftTicker {
 
-    public static void runMouseKeyboardTick(Minecraft mc) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
+    public static void runMouseKeyboardTick(Minecraft mc) throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, IOException, LWJGLException {
         ReplayMod.mouseInputHandler.mouseEvent(new MouseEvent());
         if(mc.thePlayer == null) return;
         try {
@@ -201,6 +203,7 @@ public class MinecraftTicker {
                         }
                     }
                 }
+
                 net.minecraftforge.fml.common.FMLCommonHandler.instance().fireKeyInput();
             }
 

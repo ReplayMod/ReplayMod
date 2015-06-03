@@ -18,10 +18,12 @@ import org.lwjgl.Sys;
 
 public class CameraEntity extends EntityPlayer {
 
-    private static final double MAX_SPEED = 20;
+    private static final double MAX_SPEED = 10;
+    private static final double THRESHOLD = MAX_SPEED / 20;
+    private static final double DECAY = MAX_SPEED/3;
+
     private Vec3 direction;
     private double motion;
-    private double decay = 4;
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
@@ -56,7 +58,22 @@ public class CameraEntity extends EntityPlayer {
 
     //frac = time since last tick
     public void updateMovement() {
-        Minecraft mc = Minecraft.getMinecraft();
+
+        long frac = Sys.getTime() - lastCall;
+
+        if(frac == 0) return;
+
+        double decFac = Math.max(0, 1 - (DECAY * (frac / 1000D)));
+
+        if(speedup) {
+            if(motion < THRESHOLD) motion = THRESHOLD;
+            motion /= decFac;
+        } else {
+            motion *= decFac;
+        }
+
+        motion = Math.min(motion, MAX_SPEED);
+
         if(ReplayHandler.getCameraEntity() != null && mc.thePlayer != null
                 && mc.getRenderViewEntity() != null) {
             //Aligns the particle rotation
@@ -69,34 +86,24 @@ public class CameraEntity extends EntityPlayer {
             mc.thePlayer.posZ = 0;
         }
 
-        if(direction == null || motion < 0.1) {
-            lastCall = Sys.getTime();
+        lastCall = Sys.getTime();
+
+        if(direction == null || motion < THRESHOLD) {
             return;
         }
-
-        long frac = Sys.getTime() - lastCall;
-
-        if(frac == 0) return;
 
         Vec3 movement = direction.normalize();
         double factor = motion * (frac / 1000D);
 
         moveRelative(movement.xCoord * factor, movement.yCoord * factor, movement.zCoord * factor);
-
-        double decFac = Math.max(0, 1 - (decay * (frac / 1000D)));
-
-        if(!speedup) {
-            motion *= decFac;
-        } else {
-            speedup = false;
-        }
-
-        lastCall = Sys.getTime();
     }
 
     public void speedUp() {
-        this.motion = Math.min(MAX_SPEED, motion + 0.1);
         speedup = true;
+    }
+
+    public void stopSpeedUp() {
+        speedup = false;
     }
 
     public void setMovement(MoveDirection dir) {
@@ -205,14 +212,14 @@ public class CameraEntity extends EntityPlayer {
     }
 
     public enum MoveDirection {
-        UP, DOWN, LEFT, RIGHT, FORWARD, BACKWARD;
+        UP, DOWN, LEFT, RIGHT, FORWARD, BACKWARD
     }
 
     @Override
     public MovingObjectPosition rayTrace(double p_174822_1_, float p_174822_3_) {
         MovingObjectPosition pos = super.rayTrace(p_174822_1_, 1f);
 
-        if(pos.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+        if(pos != null && pos.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
             pos.typeOfHit = MovingObjectPosition.MovingObjectType.MISS;
         }
 

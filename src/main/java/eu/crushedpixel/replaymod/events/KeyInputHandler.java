@@ -2,104 +2,120 @@ package eu.crushedpixel.replaymod.events;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
-import eu.crushedpixel.replaymod.gui.GuiCancelRender;
 import eu.crushedpixel.replaymod.gui.GuiKeyframeRepository;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
-import org.lwjgl.LWJGLException;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
+import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 
 public class KeyInputHandler {
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
-    private boolean escDown = false;
+    private long prevKeysDown = Sys.getTime();
+
+    public void onKeyInput() throws Exception {
+        if(!Keyboard.isCreated()) Keyboard.create();
+
+        Keyboard.poll();
+
+        KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
+
+        boolean speedup = false;
+
+        if(mc.currentScreen == null) {
+            for(KeyBinding kb : keyBindings) {
+                if(!ReplayMod.replaySender.paused() && !kb.isKeyDown()) continue;
+
+                //keyCode has to be positive, otherwise it's a Mouse key and will horribly crash
+                if(ReplayMod.replaySender.paused() && kb.getKeyCode() >= 0 && !Keyboard.isKeyDown(kb.getKeyCode()))
+                    continue;
+                try {
+
+                    if(ReplayHandler.isCamera()) {
+                        if(kb.getKeyDescription().equals("key.forward")) {
+                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.FORWARD);
+                            speedup = true;
+                        }
+
+                        if(kb.getKeyDescription().equals("key.back")) {
+                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.BACKWARD);
+                            speedup = true;
+                        }
+
+                        if(kb.getKeyDescription().equals("key.jump")) {
+                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.UP);
+                            speedup = true;
+                        }
+
+                        if(kb.getKeyDescription().equals("key.left")) {
+                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.LEFT);
+                            speedup = true;
+                        }
+
+                        if(kb.getKeyDescription().equals("key.right")) {
+                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.RIGHT);
+                            speedup = true;
+                        }
+                    }
+
+                    if(kb.getKeyDescription().equals("key.sneak")) {
+                        if(ReplayHandler.isCamera()) {
+                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.DOWN);
+                            speedup = true;
+                        } else {
+                            ReplayHandler.spectateCamera();
+                        }
+                    }
+
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if(ReplayHandler.getCameraEntity() != null) {
+            if(speedup) {
+                ReplayHandler.getCameraEntity().speedUp();
+                prevKeysDown = Sys.getTime();
+            } else {
+                if(Sys.getTime() - prevKeysDown > 100) {
+                    ReplayHandler.getCameraEntity().stopSpeedUp();
+                }
+            }
+        }
+    }
 
     @SubscribeEvent
-    public void onKeyInput(KeyInputEvent event) throws LWJGLException {
-
-        if(!ReplayHandler.isInReplay()) return;
-        if(mc.currentScreen != null && !(mc.currentScreen instanceof GuiMouseInput)) {
-            return;
+    public void keyInput(InputEvent.KeyInputEvent event) {
+        try {
+            onKeyInput();
+        } catch(Exception e) {
+            e.printStackTrace();
         }
 
-        if(Keyboard.getEventKeyState() && !Keyboard.isRepeatEvent() && Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)
-                && ReplayHandler.isInPath() && ReplayProcess.isVideoRecording()
-                && mc.currentScreen == null && !escDown) {
-            mc.displayGuiScreen(new GuiCancelRender());
-        }
-
-        if(!Keyboard.isCreated()) Keyboard.create();
-        escDown = Keyboard.isKeyDown(Keyboard.KEY_ESCAPE) && Keyboard.getEventKeyState();
+        KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
 
         boolean found = false;
 
-        KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
         for(KeyBinding kb : keyBindings) {
-            if(!kb.isKeyDown()) {
-                continue;
+            if(!kb.isKeyDown()) continue;
+
+            if(kb.getKeyDescription().equals("key.chat") && kb.isPressed()) {
+                mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));
+                break;
             }
-            try {
-                boolean speedup = false;
 
-                if(ReplayHandler.isCamera()) {
-                    if(kb.getKeyDescription().equals("key.forward")) {
-                        ReplayHandler.getCameraEntity().setMovement(MoveDirection.FORWARD);
-                        speedup = true;
-                    }
-
-                    if(kb.getKeyDescription().equals("key.back")) {
-                        ReplayHandler.getCameraEntity().setMovement(MoveDirection.BACKWARD);
-                        speedup = true;
-                    }
-
-                    if(kb.getKeyDescription().equals("key.jump")) {
-                        ReplayHandler.getCameraEntity().setMovement(MoveDirection.UP);
-                        speedup = true;
-                    }
-
-                    if(kb.getKeyDescription().equals("key.left")) {
-                        ReplayHandler.getCameraEntity().setMovement(MoveDirection.LEFT);
-                        speedup = true;
-                    }
-
-                    if(kb.getKeyDescription().equals("key.right")) {
-                        ReplayHandler.getCameraEntity().setMovement(MoveDirection.RIGHT);
-                        speedup = true;
-                    }
-                }
-                if(kb.getKeyDescription().equals("key.sneak")) {
-                    if(ReplayHandler.isCamera()) {
-                        ReplayHandler.getCameraEntity().setMovement(MoveDirection.DOWN);
-                        speedup = true;
-                    } else {
-                        ReplayHandler.spectateCamera();
-                    }
-                }
-
-                if(speedup) {
-                    ReplayHandler.getCameraEntity().speedUp();
-                }
-
-                if(kb.getKeyDescription().equals("key.chat") && kb.isPressed()) {
-                    mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));
-                    break;
-                }
-
-                handleCustomKeybindings(kb, found, -1);
-
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
+            handleCustomKeybindings(kb, found, -1);
             found = true;
         }
+
     }
 
     public void handleCustomKeybindings(KeyBinding kb, boolean found, int keyCode) {

@@ -15,9 +15,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
 public class TickAndRenderListener {
 
     private static Minecraft mc = Minecraft.getMinecraft();
@@ -35,8 +32,7 @@ public class TickAndRenderListener {
     }
 
     @SubscribeEvent
-    public void onRenderWorld(RenderWorldLastEvent event) throws
-            InvocationTargetException, IOException, IllegalAccessException, IllegalArgumentException {
+    public void onRenderWorld(RenderWorldLastEvent event) throws Exception {
         if(!ReplayHandler.isInReplay()) return; //If not in Replay, cancel
         if (ReplayProcess.isVideoRecording()) return; // If recording, cancel
 
