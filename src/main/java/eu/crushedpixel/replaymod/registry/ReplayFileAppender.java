@@ -95,8 +95,11 @@ public class ReplayFileAppender extends Thread {
 
                         //delete all written files
                         for(Pair<File, String> p : filesToMove.get(replayFile)) {
-                            p.getLeft().delete();
+                            if(p.getLeft() != null) {
+                                p.getLeft().delete();
+                            }
                         }
+
                         filesToMove.removeAll(replayFile);
                     } catch(Exception e) {
                         e.printStackTrace();
