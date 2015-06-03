@@ -74,8 +74,8 @@ public class GuiRenderSettings extends GuiScreen {
 
             xRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_X, fontRendererObj, 0, 0, 50, 1, 100000, mc.displayWidth, false) {
                 @Override
-                public void setCursorPosition(int p_146190_1_) {
-                    super.setCursorPosition(p_146190_1_);
+                public void moveCursorBy(int move) {
+                    super.moveCursorBy(move);
                     RendererSettings renderer = rendererDropdown.getElement(rendererDropdown.getSelectionIndex());
                     Integer value = getIntValueNullable();
                     if (value != null) {
@@ -86,12 +86,13 @@ public class GuiRenderSettings extends GuiScreen {
                             yRes.text = Integer.toString(Math.max(1, value / 2));
                         }
                     }
+                    yRes.setCursorPositionEnd();
                 }
             };
             yRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_Y, fontRendererObj, 0, 0, 50, 1, 100000, mc.displayHeight, false) {
                 @Override
-                public void setCursorPosition(int p_146190_1_) {
-                    super.setCursorPosition(p_146190_1_);
+                public void moveCursorBy(int move) {
+                    super.moveCursorBy(move);
                     RendererSettings renderer = rendererDropdown.getElement(rendererDropdown.getSelectionIndex());
                     Integer value = getIntValueNullable();
                     if (value != null) {
@@ -102,6 +103,7 @@ public class GuiRenderSettings extends GuiScreen {
                             xRes.text = Integer.toString(value * 2);
                         }
                     }
+                    xRes.setCursorPositionEnd();
                 }
             };
 
@@ -310,7 +312,10 @@ public class GuiRenderSettings extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         if(!button.enabled) return;
+
         if(permanentButtons.contains(button)) {
+            if(button instanceof GuiCheckBox)
+                ((GuiCheckBox)button).setIsChecked(!((GuiCheckBox)button).isChecked());
 
             if(button.id == GuiConstants.RENDER_SETTINGS_RENDER_BUTTON) {
                 startRendering();
@@ -323,15 +328,17 @@ public class GuiRenderSettings extends GuiScreen {
             }
 
         } else if(defaultButtons.contains(button) && !advancedTab) {
-
+            if(button instanceof GuiCheckBox)
+                ((GuiCheckBox)button).setIsChecked(!((GuiCheckBox)button).isChecked());
             if(button.id == GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX) {
-                customResolution.setIsChecked(!customResolution.isChecked());
                 boolean enabled = customResolution.isChecked();
                 xRes.setEnabled(enabled);
                 yRes.setEnabled(enabled);
             }
 
         } else if(advancedButtons.contains(button) && advancedTab) {
+            if(button instanceof GuiCheckBox)
+                ((GuiCheckBox)button).setIsChecked(!((GuiCheckBox)button).isChecked());
 
             if(button instanceof GuiToggleButton) {
                 ((GuiToggleButton)button).toggle();
@@ -339,7 +346,6 @@ public class GuiRenderSettings extends GuiScreen {
                 ((GuiColorPicker)button).pickerToggled();
             } else {
                 if(button.id == GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN) {
-                    enableGreenscreen.setIsChecked(!enableGreenscreen.isChecked());
                     colorPicker.enabled = enableGreenscreen.isChecked();
                 }
             }
@@ -432,8 +438,12 @@ public class GuiRenderSettings extends GuiScreen {
                 youtubeExport.enabled = ignoreCamDir.enabled = true;
             }
 
+
             xRes.setCursorPositionEnd();
+            xRes.setSelectionPos(xRes.getCursorPosition());
+
             yRes.setCursorPositionEnd();
+            yRes.setSelectionPos(yRes.getCursorPosition());
         }
     }
 }
