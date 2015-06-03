@@ -10,6 +10,11 @@ public class ReplayMetaData {
     private String[] players;
     private String mcversion;
 
+    public ReplayMetaData copy() {
+        return new ReplayMetaData(this.singleplayer, this.serverName, this.generator,
+                this.duration, this.date, this.players, this.mcversion);
+    }
+
     public ReplayMetaData(boolean singleplayer, String serverName, String generator,
                           int duration, long date, String[] players, String mcversion) {
         this.singleplayer = singleplayer;
@@ -20,6 +25,8 @@ public class ReplayMetaData {
         this.players = players;
         this.mcversion = mcversion;
     }
+
+    public void removeServer() { this.serverName = null; }
 
     public boolean isSingleplayer() {
         return singleplayer;

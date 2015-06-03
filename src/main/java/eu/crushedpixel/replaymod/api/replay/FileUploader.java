@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.api.replay;
 
 import com.google.gson.Gson;
-import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.api.replay.holders.ApiError;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
@@ -131,13 +130,11 @@ public class FileUploader {
             con.disconnect();
 
             if(info == null) info = I18n.format("replaymod.gui.unknownerror");
-
-            ReplayMod.uploadedFileHandler.markAsUploaded(file);
         } catch(Exception e) {
             success = false;
+            e.printStackTrace();
         } finally {
             parent.onFinishUploading(success, info);
-
             uploading = false;
         }
     }

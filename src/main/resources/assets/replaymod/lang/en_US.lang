@@ -78,6 +78,7 @@ replaymod.gui.mail=Email Address
 replaymod.gui.loading=Loading
 replaymod.gui.pleasewait=Please wait
 replaymod.gui.render=Render
+replaymod.gui.iphidden=Server IP Hidden
 
 replaymod.gui.minutes=min
 replaymod.gui.seconds=sec
@@ -152,6 +153,7 @@ replaymod.gui.upload.tagshint=Tags separated by comma
 replaymod.gui.upload.uploading=Uploading...
 replaymod.gui.upload.success=File has been successfully uploaded
 replaymod.gui.upload.canceled=Upload has been canceled
+replaymod.gui.upload.hideip=Hide Server IP
 
 #Replay Editor
 replaymod.gui.editor.replayfile=Replay File

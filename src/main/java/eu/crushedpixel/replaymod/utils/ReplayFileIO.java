@@ -314,6 +314,14 @@ public class ReplayFileIO {
         Files.write(file.toPath(), json.getBytes());
     }
 
+    public static void writeReplayMetaDataToFile(ReplayMetaData metaData, File file) throws IOException {
+        file.mkdirs();
+        file.createNewFile();
+
+        String json = gson.toJson(metaData);
+        Files.write(file.toPath(), json.getBytes());
+    }
+
     /**
      * Adds Files as entries to a ZIP File.
      * @param zipFile The ZIP File to add the files to.

@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.online;
 
-import eu.crushedpixel.replaymod.api.ApiException;
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.FileUploader;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
@@ -11,6 +11,7 @@ import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -19,6 +20,8 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.config.GuiCheckBox;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +33,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -45,6 +49,7 @@ public class GuiUploadFile extends GuiScreen {
     private DynamicTexture dynTex = null;
 
     private GuiTextField fileTitleInput, tagInput, messageTextField, tagPlaceholder;
+    private GuiCheckBox hideServerIP;
     private GuiButton categoryButton, startUploadButton, cancelUploadButton, backButton;
     private GuiProgressBar progressBar;
 
@@ -125,18 +130,27 @@ public class GuiUploadFile extends GuiScreen {
             fileTitleInput.setMaxStringLength(30);
         } else {
             fileTitleInput.xPosition = (this.width / 2) + 20 + 10;
-            //fileTitleInput.yPosition = 21;
             fileTitleInput.width = Math.min(200, this.width - 20 - 260);
-            //fileTitleInput.height = 20;
+        }
+
+        if(hideServerIP == null) {
+            hideServerIP = new GuiCheckBox(GuiConstants.UPLOAD_HIDE_SERVER_IP, 0, 80, I18n.format("replaymod.gui.upload.hideip"), false);
+            hideServerIP.enabled = !metaData.isSingleplayer();
+        }
+
+        if(hideServerIP.enabled) {
+            hideServerIP.xPosition = (this.width / 2) + 20 + 9;
+            buttonList.add(hideServerIP);
         }
 
         if(categoryButton == null) {
-            categoryButton = new GuiButton(GuiConstants.UPLOAD_CATEGORY_BUTTON, (this.width / 2) + 20 + 10 - 1, 80, I18n.format("replaymod.category")+": " + category.toNiceString());
+            categoryButton = new GuiButton(GuiConstants.UPLOAD_CATEGORY_BUTTON, (this.width / 2) + 20 + 10 - 1, 95, I18n.format("replaymod.category")+": " + category.toNiceString());
             categoryButton.width = Math.min(202, this.width - 20 - 260 + 2);
-            buttonList.add(categoryButton);
         } else {
             categoryButton.xPosition = (this.width / 2) + 20 + 10 - 1;
         }
+
+        buttonList.add(categoryButton);
 
         if(startUploadButton == null) {
             List<GuiButton> bottomBar = new ArrayList<GuiButton>();
@@ -198,7 +212,7 @@ public class GuiUploadFile extends GuiScreen {
         }
 
         if(tagInput == null) {
-            tagInput = new GuiTextField(GuiConstants.UPLOAD_TAG_INPUT, fontRendererObj, (this.width / 2) + 20 + 10, 110, Math.min(200, this.width - 20 - 260), 20);
+            tagInput = new GuiTextField(GuiConstants.UPLOAD_TAG_INPUT, fontRendererObj, (this.width / 2) + 20 + 10, categoryButton.yPosition + 20 + 5, Math.min(200, this.width - 20 - 260), 20);
             tagInput.setMaxStringLength(30);
         } else {
             tagInput.xPosition = (this.width / 2) + 20 + 10;
@@ -206,7 +220,7 @@ public class GuiUploadFile extends GuiScreen {
         }
 
         if(tagPlaceholder == null) {
-            tagPlaceholder = new GuiTextField(GuiConstants.UPLOAD_TAG_PLACEHOLDER, fontRendererObj, (this.width / 2) + 20 + 10, 110, Math.min(200, this.width - 20 - 260), 20);
+            tagPlaceholder = new GuiTextField(GuiConstants.UPLOAD_TAG_PLACEHOLDER, fontRendererObj, (this.width / 2) + 20 + 10, tagInput.yPosition, Math.min(200, this.width - 20 - 260), 20);
             tagPlaceholder.setTextColor(Color.DARK_GRAY.getRGB());
             tagPlaceholder.setText(I18n.format("replaymod.gui.upload.tagshint"));
         } else {
@@ -245,14 +259,33 @@ public class GuiUploadFile extends GuiScreen {
                                 tags.add(str);
                             }
                         }
-                        uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, replayFile, category);
-                    } catch(ApiException e) { //TODO: Error handling
-                        e.printStackTrace();
-                        //mc.displayGuiScreen(new GuiMainMenu());
-                    } catch(RuntimeException e) {
-                        e.printStackTrace();
-                        //mc.displayGuiScreen(new GuiMainMenu());
-                    } catch(IOException e) {
+
+                        if(hideServerIP.isChecked()) {
+                            File tmp = File.createTempFile("replay_hidden_ip", "mcpr");
+                            File tmpMeta = File.createTempFile("metadata", "json");
+
+                            ReplayMetaData newMetaData = metaData.copy();
+                            newMetaData.removeServer();
+                            ReplayFileIO.writeReplayMetaDataToFile(newMetaData, tmpMeta);
+
+                            HashMap<String, File> toAdd = new HashMap<String, File>();
+                            toAdd.put(ReplayFile.ENTRY_METADATA, tmpMeta);
+
+                            FileUtils.copyFile(replayFile, tmp);
+                            ReplayFileIO.addFilesToZip(tmp, toAdd);
+
+                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, tmp, category);
+
+                            tmpMeta.delete();
+                            tmp.delete();
+                        } else {
+                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, replayFile, category);
+                        }
+
+                        ReplayMod.uploadedFileHandler.markAsUploaded(replayFile);
+                    } catch(Exception e) {
+                        messageTextField.setText(I18n.format("replaymod.gui.unknownerror"));
+                        messageTextField.setTextColor(Color.RED.getRGB());
                         e.printStackTrace();
                     }
                 }
@@ -266,12 +299,15 @@ public class GuiUploadFile extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
 
-        drawString(fontRendererObj, metaData.getServerName(), (this.width / 2) + 20 + 10, 50, Color.GRAY.getRGB());
-        drawString(fontRendererObj, I18n.format("replaymod.gui.duration") + ": " + String.format("%02dm%02ds",
+        String durationString = I18n.format("replaymod.gui.duration") + ": " + String.format("%02dm%02ds",
                 TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()),
                 TimeUnit.MILLISECONDS.toSeconds(metaData.getDuration()) -
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(metaData.getDuration()))
-        ), (this.width / 2) + 20 + 10, 65, Color.GRAY.getRGB());
+        );
+
+        drawString(fontRendererObj, durationString, (this.width / 2) + 20 + 10, 50, Color.WHITE.getRGB());
+        drawString(fontRendererObj, hideServerIP.isChecked() ? I18n.format("replaymod.gui.iphidden") : metaData.getServerName(),
+                (this.width / 2) + 20 + 10, 65, Color.GRAY.getRGB());
 
         drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.upload.title"), this.width / 2, 5, Color.WHITE.getRGB());
 
