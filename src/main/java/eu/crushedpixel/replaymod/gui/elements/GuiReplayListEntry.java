@@ -6,9 +6,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiListExtended.IGuiListEntry;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DateFormat;
@@ -78,7 +80,9 @@ public class GuiReplayListEntry implements IGuiListEntry {
             }
 
             List<String> list = new ArrayList<String>();
-            list.add(fileInfo.getMetadata().getServerName() + " (" + dateFormat.format(new Date(fileInfo.getMetadata().getDate())) + ")");
+            String serverName = fileInfo.getMetadata().getServerName();
+            list.add((serverName == null ? I18n.format("replaymod.gui.iphidden") : serverName)
+                    + " (" + dateFormat.format(new Date(fileInfo.getMetadata().getDate())) + ")");
 
             list.add(String.format("%02dm%02ds",
                     TimeUnit.MILLISECONDS.toMinutes(fileInfo.getMetadata().getDuration()),
@@ -88,6 +92,13 @@ public class GuiReplayListEntry implements IGuiListEntry {
 
             for(int l1 = 0; l1 < Math.min(list.size(), 2); ++l1) {
                 minecraft.fontRendererObj.drawString((String) list.get(l1), x + 3, y + 12 + minecraft.fontRendererObj.FONT_HEIGHT * l1, 8421504);
+            }
+
+            if(fileInfo.getRatings() != null) {
+                String thumbsString = "§a+" + fileInfo.getRatings().getPositive() + " §4-" + fileInfo.getRatings().getNegative();
+                int stringWidth = minecraft.fontRendererObj.getStringWidth(thumbsString);
+
+                minecraft.fontRendererObj.drawString(thumbsString, x + listWidth - stringWidth - 5, y + slotHeight - minecraft.fontRendererObj.FONT_HEIGHT, Color.GREEN.getRGB());
             }
         } catch(Exception e) {
             e.printStackTrace();
