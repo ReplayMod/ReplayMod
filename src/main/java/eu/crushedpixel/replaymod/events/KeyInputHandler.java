@@ -96,6 +96,8 @@ public class KeyInputHandler {
 
     @SubscribeEvent
     public void keyInput(InputEvent.KeyInputEvent event) {
+        if (!ReplayHandler.isInReplay()) return;
+
         try {
             onKeyInput();
         } catch(Exception e) {
