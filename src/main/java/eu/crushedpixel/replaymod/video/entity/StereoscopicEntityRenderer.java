@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.video.entity;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 
 import java.awt.image.BufferedImage;
 
@@ -26,6 +27,15 @@ public class StereoscopicEntityRenderer extends CustomEntityRenderer {
     @Override
     public void renderFrame(float partialTicks, BufferedImage into, int x, int y) {
         super.renderFrame(partialTicks, into, x, y);
+    }
+
+    @Override
+    public void loadShader(ResourceLocation resourceLocation) {
+        if (proxied.theShaderGroup != null) {
+            proxied.theShaderGroup.deleteShaderGroup();
+            proxied.theShaderGroup = null;
+        }
+        proxied.useShader = false;
     }
 
     protected void translateStereoscopic() {

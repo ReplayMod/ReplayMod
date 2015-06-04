@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 
 public class CubicEntityRenderer extends CustomEntityRenderer {
 
@@ -49,6 +50,15 @@ public class CubicEntityRenderer extends CustomEntityRenderer {
     @Override
     protected void gluPerspective(float fovY, float aspect, float zNear, float zFar) {
         super.gluPerspective(90, 1, zNear, zFar);
+    }
+
+    @Override
+    public void loadShader(ResourceLocation resourceLocation) {
+        if (proxied.theShaderGroup != null) {
+            proxied.theShaderGroup.deleteShaderGroup();
+            proxied.theShaderGroup = null;
+        }
+        proxied.useShader = false;
     }
 
     @Override

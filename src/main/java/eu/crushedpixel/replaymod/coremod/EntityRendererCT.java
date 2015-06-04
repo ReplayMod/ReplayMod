@@ -86,6 +86,7 @@ public class EntityRendererCT implements IClassTransformer {
 
         // Rename original method
         setupTerrain.name = "loadShader$Original";
+        setupTerrain.access = ACC_PUBLIC;
 
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classNode.accept(classWriter);

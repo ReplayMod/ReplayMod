@@ -54,11 +54,8 @@ public class VanillaFrameBufferRenderingStrategy implements FrameRenderingStrate
         if (frameBuffer == null) {
             frameBuffer = new Framebuffer(renderer.resultWidth, renderer.resultHeight, true);
 
-            ShaderGroup theShaderGroup = renderer.proxied.theShaderGroup;
-            if (theShaderGroup != null) {
-                theShaderGroup.deleteShaderGroup();
-                renderer.proxied.theShaderGroup = null;
-            }
+            renderer.loadShaderHook = this;
+            renderer.proxied.loadEntityShader(renderer.mc.getRenderViewEntity());
         }
         return frameBuffer;
     }

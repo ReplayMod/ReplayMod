@@ -20,6 +20,7 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.glu.Project;
 
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Field;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -70,10 +71,20 @@ public abstract class CustomEntityRenderer {
             }
         }
         System.out.println("CustomEntityRenderer using " + renderingStrategy);
+
+        // Install entity renderer hooks
+        try {
+            Field hookField = EntityRenderer.class.getField("hook");
+            hookField.set(proxied, this);
+        } catch (NoSuchFieldException e) {
+            throw new Error(e);
+        } catch (IllegalAccessException e) {
+            throw new Error(e);
+        }
     }
 
     @SuppressWarnings("unused") // Method called by ASM hook
-    protected void loadShader(ResourceLocation resourceLocation) {
+    public void loadShader(ResourceLocation resourceLocation) {
         if (loadShaderHook != null) {
             loadShaderHook.loadShader(resourceLocation);
         } else {
@@ -300,6 +311,15 @@ public abstract class CustomEntityRenderer {
     }
 
     public void cleanup() {
+        try {
+            Field hookField = EntityRenderer.class.getField("hook");
+            hookField.set(proxied, null);
+        } catch (NoSuchFieldException e) {
+            throw new Error(e);
+        } catch (IllegalAccessException e) {
+            throw new Error(e);
+        }
+
         renderingStrategy.cleanup();
         spectatorRenderer.cleanup();
     }
