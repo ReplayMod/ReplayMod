@@ -50,6 +50,7 @@ public class GuiLoginPrompt extends GuiScreen {
             username = new GuiTextField(GuiConstants.LOGIN_USERNAME_FIELD, fontRendererObj, this.width / 2 - 45, 30, 145, 20);
             username.setEnabled(true);
             username.setFocused(true);
+            username.setMaxStringLength(16);
 
             password = new PasswordTextField(GuiConstants.LOGIN_PASSWORD_FIELD, fontRendererObj, this.width / 2 - 45, 60, 145, 20);
             password.setEnabled(true);

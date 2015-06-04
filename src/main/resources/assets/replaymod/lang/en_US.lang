@@ -26,6 +26,7 @@ replaymod.api.nopermissions=You don't have permission to do this
 replaymod.api.authfailed=Authentication to the Minecraft Session Servers failed
 replaymod.api.mcuserexists=A ReplayMod account is already associated with this Minecraft account
 replaymod.api.filetoobig=The uploaded file is too big
+replaymod.api.usernametoolong=The username is too long
 
 #All of the chat messages
 replaymod.chat.recordingstarted=Recording started
