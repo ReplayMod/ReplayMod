@@ -48,7 +48,7 @@ public class GuiUploadFile extends GuiScreen {
     private final ResourceLocation textureResource;
     private DynamicTexture dynTex = null;
 
-    private GuiTextField fileTitleInput, tagInput, messageTextField, tagPlaceholder;
+    private GuiTextField fileTitleInput, fileTitlePlaceholder, tagInput, messageTextField, tagPlaceholder;
     private GuiCheckBox hideServerIP;
     private GuiButton categoryButton, startUploadButton, cancelUploadButton, backButton;
     private GuiProgressBar progressBar;
@@ -139,6 +139,15 @@ public class GuiUploadFile extends GuiScreen {
         } else {
             fileTitleInput.xPosition = (this.width / 2) + 20 + 10;
             fileTitleInput.width = Math.min(200, this.width - 20 - 260);
+        }
+
+        if(fileTitlePlaceholder == null) {
+            fileTitlePlaceholder = new GuiTextField(GuiConstants.UPLOAD_NAME_PLACEHOLDER, fontRendererObj, fileTitleInput.xPosition, fileTitleInput.yPosition, fileTitleInput.width, 20);
+            fileTitlePlaceholder.setTextColor(Color.DARK_GRAY.getRGB());
+            fileTitlePlaceholder.setText(I18n.format("replaymod.gui.upload.namehint"));
+        } else {
+            fileTitlePlaceholder.xPosition = fileTitleInput.xPosition;
+            fileTitlePlaceholder.width = fileTitleInput.width;
         }
 
         if(hideServerIP == null) {
@@ -282,12 +291,12 @@ public class GuiUploadFile extends GuiScreen {
                             FileUtils.copyFile(replayFile, tmp);
                             ReplayFileIO.addFilesToZip(tmp, toAdd);
 
-                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, tmp, category);
+                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, tmp, category, null);
 
                             tmpMeta.delete();
                             tmp.delete();
                         } else {
-                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, replayFile, category);
+                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, replayFile, category, null);
                         }
 
                         ReplayMod.uploadedFileHandler.markAsUploaded(replayFile);
@@ -334,7 +343,12 @@ public class GuiUploadFile extends GuiScreen {
             Gui.drawScaledCustomSizeModalRect(19, 20, 0, 0, 1280, 720, wid, hei, 1280, 720);
         }
 
-        fileTitleInput.drawTextBox();
+        if(fileTitleInput.getText().length() > 0 || fileTitleInput.isFocused()) {
+            fileTitleInput.drawTextBox();
+        } else {
+            fileTitlePlaceholder.drawTextBox();
+        }
+
         messageTextField.drawTextBox();
 
         if(tagInput.getText().length() > 0 || tagInput.isFocused()) {

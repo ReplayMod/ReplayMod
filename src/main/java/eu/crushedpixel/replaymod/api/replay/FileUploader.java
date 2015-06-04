@@ -31,7 +31,8 @@ public class FileUploader {
     private String boundary = "*****";
     private GuiUploadFile parent;
 
-    public void uploadFile(GuiUploadFile gui, String auth, String filename, List<String> tags, File file, Category category) throws IOException, ApiException, RuntimeException {
+    public void uploadFile(GuiUploadFile gui, String auth, String filename, List<String> tags, File file, Category category, String description)
+            throws IOException, ApiException, RuntimeException {
         boolean success = false;
         String info = null;
 

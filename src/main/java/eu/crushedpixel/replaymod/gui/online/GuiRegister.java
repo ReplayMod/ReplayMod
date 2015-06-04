@@ -47,7 +47,7 @@ public class GuiRegister extends GuiScreen {
         if(!initialized) {
             usernameInput = new GuiTextField(GuiConstants.REGISTER_USERNAME_FIELD, fontRendererObj, this.width / 2 - 45, 30, 145, 20);
             usernameInput.setMaxStringLength(16);
-            
+
             mailInput = new GuiTextField(GuiConstants.REGISTER_MAIL_FIELD, fontRendererObj, this.width / 2 - 45, 60, 145, 20);
             passwordInput = new PasswordTextField(GuiConstants.REGISTER_PASSWORD_FIELD, fontRendererObj, this.width / 2 - 45, 90, 145, 20);
             passwordConfirmation = new PasswordTextField(GuiConstants.REGISTER_PASSWORD_CONFIRM_FIELD, fontRendererObj, this.width / 2 - 45, 120, 145, 20);

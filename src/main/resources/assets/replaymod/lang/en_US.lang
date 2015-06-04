@@ -27,6 +27,7 @@ replaymod.api.authfailed=Authentication to the Minecraft Session Servers failed
 replaymod.api.mcuserexists=A ReplayMod account is already associated with this Minecraft account
 replaymod.api.filetoobig=The uploaded file is too big
 replaymod.api.usernametoolong=The username is too long
+replaymod.api.descriptiontoolong=The description is too long
 
 #All of the chat messages
 replaymod.chat.recordingstarted=Recording started
@@ -154,6 +155,7 @@ replaymod.gui.upload.title=Upload File
 replaymod.gui.upload.start=Start Upload
 replaymod.gui.upload.cancel=Cancel Upload
 replaymod.gui.upload.tagshint=Tags separated by comma
+replaymod.gui.upload.namehint=Replay Title
 replaymod.gui.upload.uploading=Uploading...
 replaymod.gui.upload.success=File has been successfully uploaded
 replaymod.gui.upload.canceled=Upload has been canceled
