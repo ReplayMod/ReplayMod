@@ -4,6 +4,7 @@ import com.mojang.realmsclient.util.Pair;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
+import eu.crushedpixel.replaymod.gui.elements.GuiLoadingListEntry;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
@@ -11,7 +12,6 @@ import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
-import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.gui.GuiButton;
@@ -23,7 +23,6 @@ import net.minecraft.util.Util;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.Point;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -59,7 +58,11 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     }
 
     private void reloadFiles() {
+        GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
+
         replayGuiList.clearEntries();
+        replayGuiList.addEntry(loadingListEntry);
+
         replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
 
         for(File file : ReplayFileIO.getAllReplayFiles()) {
@@ -75,19 +78,28 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
                     ImageIO.write(img, "jpg", tmp);
                 }
-                replayFileList.add(Pair.of(Pair.of(file, metaData), tmp));
+
+                final Pair<Pair<File, ReplayMetaData>, File> p = Pair.of(Pair.of(file, metaData), tmp);
+                final int index = getInsertionIndex(p, replayFileList);
+
+                replayFileList.add(index, p);
+
+                final FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null,
+                        -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true, -1);
+
+                mc.addScheduledTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        replayGuiList.addEntry(index, new GuiReplayListEntry(replayGuiList, fileInfo, p.second()));
+                    }
+                });
+
                 replayFile.close();
             } catch(Exception e) {
                 e.printStackTrace();
+            } finally {
+                replayGuiList.removeEntry(loadingListEntry);
             }
-        }
-
-        Collections.sort(replayFileList, new FileAgeComparator());
-
-        for(Pair<Pair<File, ReplayMetaData>, File> p : replayFileList) {
-            FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null,
-                    -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true, -1);
-            replayGuiList.addEntry(new GuiReplayListEntry(replayGuiList, fileInfo, p.second()));
         }
     }
 
@@ -109,7 +121,13 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
             this.replayGuiList.setDimensions(this.width, this.height, 32, this.height - 64);
         }
 
-        reloadFiles();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                reloadFiles();
+            }
+        }, "replay-viewer-file-reloader").start();
+
         this.createButtons();
     }
 
@@ -152,7 +170,6 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
         if(uploadButton.isMouseOver() && !uploadButton.enabled && loadButton.enabled) {
             if(currentFileUploaded) {
-                Point mouse = MouseUtils.getMousePos();
                 ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.viewer.alreadyuploaded"), this, Color.RED.getRGB());
             }
         }
@@ -258,17 +275,27 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
     }
 
-    public class FileAgeComparator implements Comparator<Pair<Pair<File, ReplayMetaData>, File>> {
+    private static FileAgeComparator fileAgeComparator = new FileAgeComparator();
+
+    public static class FileAgeComparator implements Comparator<Pair<Pair<File, ReplayMetaData>, File>> {
 
         @Override
         public int compare(Pair<Pair<File, ReplayMetaData>, File> o1, Pair<Pair<File, ReplayMetaData>, File> o2) {
             try {
-                return (int) (new Date(o2.first().second().getDate()).compareTo(new Date(o1.first().second().getDate())));
+                return new Date(o2.first().second().getDate()).compareTo(new Date(o1.first().second().getDate()));
             } catch(Exception e) {
                 return 0;
             }
         }
+    }
 
+    private int getInsertionIndex(Pair<Pair<File, ReplayMetaData>, File> p, List<Pair<Pair<File, ReplayMetaData>, File>> list) {
+        List<Pair<Pair<File, ReplayMetaData>, File>> nl = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>(list);
+
+        nl.add(p);
+        Collections.sort(nl, fileAgeComparator);
+
+        return nl.indexOf(p);
     }
 
 }

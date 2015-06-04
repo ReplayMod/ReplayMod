@@ -121,7 +121,11 @@ public class GuiUploadFile extends GuiScreen {
 
     @Override
     public void initGui() {
-        if(replayFile == null) return;
+        if(replayFile == null) {
+            mc.displayGuiScreen(parent);
+            return;
+        }
+
         if(!AuthenticationHandler.isAuthenticated()) {
             mc.displayGuiScreen(new GuiLoginPrompt(parent, this));
             return;

@@ -10,12 +10,7 @@ public class GuiLoadingListEntry implements IGuiListEntry {
 
     boolean registered = false;
     private final Minecraft mc = Minecraft.getMinecraft();
-    private GuiReplayListExtended parent;
     private final String message = I18n.format("replaymod.gui.loading")+"...";
-
-    public GuiLoadingListEntry(GuiReplayListExtended parent) {
-        this.parent = parent;
-    }
 
     @Override
     public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
