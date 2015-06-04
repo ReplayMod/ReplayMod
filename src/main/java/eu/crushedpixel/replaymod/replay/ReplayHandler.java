@@ -76,7 +76,9 @@ public class ReplayHandler {
         }
         else {
             currentEntity = e;
-            mc.setRenderViewEntity(currentEntity);
+            if (mc.getRenderViewEntity() != currentEntity) {
+                mc.setRenderViewEntity(currentEntity);
+            }
         }
     }
 
