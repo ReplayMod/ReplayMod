@@ -359,6 +359,14 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
             CameraEntity cent = ReplayHandler.getCameraEntity();
 
+            for (Object relative : ppl.func_179834_f()) {
+                if (relative == S08PacketPlayerPosLook.EnumFlags.X
+                        || relative == S08PacketPlayerPosLook.EnumFlags.Y
+                        || relative == S08PacketPlayerPosLook.EnumFlags.Z) {
+                    return null; // At least one of the coordinates is relative, so we don't care
+                }
+            }
+
             if(cent != null) {
                 if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > ReplayMod.TP_DISTANCE_LIMIT) ||
                         (Math.abs(cent.posZ - ppl.func_148933_e()) > ReplayMod.TP_DISTANCE_LIMIT))) {
