@@ -80,6 +80,7 @@ replaymod.gui.pleasewait=Please wait
 replaymod.gui.render=Render
 replaymod.gui.iphidden=Server IP Hidden
 
+replaymod.gui.hours=h
 replaymod.gui.minutes=min
 replaymod.gui.seconds=sec
 replaymod.gui.milliseconds=ms
@@ -144,6 +145,8 @@ replaymod.gui.center.downloadrequired=Download the Replay to rate or favorite it
 replaymod.gui.center.favorite=Favorite
 replaymod.gui.center.unfavorite=Unfavorite
 replaymod.gui.center.favorites=Favorites
+
+replaymod.gui.center.author=by %1$s%2$s
 
 #Upload GUI
 replaymod.gui.upload.title=Upload File
