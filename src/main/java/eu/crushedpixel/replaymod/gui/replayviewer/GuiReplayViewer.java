@@ -7,7 +7,6 @@ import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;
 import eu.crushedpixel.replaymod.gui.elements.GuiReplayListExtended;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -152,10 +151,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         super.drawScreen(mouseX, mouseY, partialTicks);
 
         if(uploadButton.isMouseOver() && !uploadButton.enabled && loadButton.enabled) {
-            if(!AuthenticationHandler.isAuthenticated()) {
-                Point mouse = MouseUtils.getMousePos();
-                ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.viewer.noauth"), this, Color.RED.getRGB());
-            } else if(currentFileUploaded) {
+            if(currentFileUploaded) {
                 Point mouse = MouseUtils.getMousePos();
                 ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.viewer.alreadyuploaded"), this, Color.RED.getRGB());
             }
@@ -240,12 +236,12 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
     public void setButtonsEnabled(boolean b) {
         loadButton.enabled = b;
-        if(!b || !AuthenticationHandler.isAuthenticated()) {
-            uploadButton.enabled = false;
-        } else {
+
+        if(b) {
             currentFileUploaded = ReplayMod.uploadedFileHandler.isUploaded(replayFileList.get(replayGuiList.selected).first().first());
             uploadButton.enabled = !currentFileUploaded;
         }
+
 
         renameButton.enabled = b;
         deleteButton.enabled = b;

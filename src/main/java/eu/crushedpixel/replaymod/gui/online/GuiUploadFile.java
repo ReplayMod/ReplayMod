@@ -122,6 +122,10 @@ public class GuiUploadFile extends GuiScreen {
     @Override
     public void initGui() {
         if(replayFile == null) return;
+        if(!AuthenticationHandler.isAuthenticated()) {
+            mc.displayGuiScreen(new GuiLoginPrompt(parent, this));
+            return;
+        }
 
         if(fileTitleInput == null) {
             fileTitleInput = new GuiTextField(GuiConstants.UPLOAD_NAME_INPUT, fontRendererObj, (this.width / 2) + 20 + 10, 21, Math.min(200, this.width - 20 - 260), 20);
