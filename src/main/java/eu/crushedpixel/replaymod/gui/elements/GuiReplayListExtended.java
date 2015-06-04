@@ -172,4 +172,14 @@ public abstract class GuiReplayListExtended extends GuiListExtended {
     }
 
 
+    @Override
+    public int getSlotIndexFromScreenCoords(int p_148124_1_, int p_148124_2_) {
+        int k = this.left + this.width / 2 - this.getListWidth() / 2 - (int)(slotHeight*(16/9f));
+        int l = this.left + this.width / 2 + this.getListWidth() / 2;
+        int i1 = p_148124_2_ - this.top - this.headerPadding + (int)this.amountScrolled - 4;
+        int j1 = i1 / this.slotHeight;
+        return p_148124_1_ < this.getScrollBarX() && p_148124_1_ >= k && p_148124_1_ <= l && j1 >= 0 && i1 >= 0 && j1 < this.getSize() ? j1 : -1;
+    }
+
+
 }

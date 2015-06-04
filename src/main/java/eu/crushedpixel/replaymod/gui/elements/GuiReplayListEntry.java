@@ -1,7 +1,10 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
+import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
+import eu.crushedpixel.replaymod.utils.DurationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiListExtended.IGuiListEntry;
@@ -15,16 +18,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class GuiReplayListEntry implements IGuiListEntry {
 
     private final DateFormat dateFormat = new SimpleDateFormat();
     boolean registered = false;
-    private Minecraft minecraft = Minecraft.getMinecraft();
+    private Minecraft mc = Minecraft.getMinecraft();
     private FileInfo fileInfo;
     private ResourceLocation textureResource;
     private DynamicTexture dynTex = null;
@@ -45,11 +45,15 @@ public class GuiReplayListEntry implements IGuiListEntry {
 
     @Override
     public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
+        boolean online = fileInfo.getDownloads() >= 0;
+
         try {
             if(fileInfo.getName() == null || fileInfo.getName().length() < 1) {
                 fileInfo.setName("No Name");
             }
-            minecraft.fontRendererObj.drawString(fileInfo.getName(), x + 3, y + 1, 16777215);
+            mc.fontRendererObj.drawString(ChatFormatting.UNDERLINE.toString()+fileInfo.getName(), x + 3, y + 1, 16777215);
+
+            int thumbnailOffset = -5;
 
             if(y < -slotHeight || y > parent.height) {
                 if(registered) {
@@ -69,36 +73,63 @@ public class GuiReplayListEntry implements IGuiListEntry {
                         image = ImageIO.read(imageFile);
                     }
                     dynTex = new DynamicTexture(image);
-                    minecraft.getTextureManager().loadTexture(textureResource, dynTex);
+                    mc.getTextureManager().loadTexture(textureResource, dynTex);
                     dynTex.updateDynamicTexture();
                     ResourceHelper.registerResource(textureResource);
                     registered = true;
                 }
 
-                minecraft.getTextureManager().bindTexture(textureResource);
-                Gui.drawScaledCustomSizeModalRect(x - 60, y, 0, 0, 1280, 720, 57, 32, 1280, 720);
+                mc.getTextureManager().bindTexture(textureResource);
+                Gui.drawScaledCustomSizeModalRect(x - (int)(slotHeight*(16/9f)) + thumbnailOffset, y, 0, 0, 1280, 720, (int)(slotHeight*(16/9f)), slotHeight, 1280, 720);
             }
 
-            List<String> list = new ArrayList<String>();
+            if(online) {
+                String downloads = fileInfo.getDownloads() + " ⬇";
+                int downloadsWidth = mc.fontRendererObj.getStringWidth(downloads);
+
+                Gui.drawRect(x + thumbnailOffset - 2 - downloadsWidth - 1, y + slotHeight - (mc.fontRendererObj.FONT_HEIGHT + 2) * 2,
+                        x + thumbnailOffset, y + slotHeight - (mc.fontRendererObj.FONT_HEIGHT + 2), 0x80000000);
+
+                mc.fontRendererObj.drawStringWithShadow(downloads, x + thumbnailOffset - 1 - downloadsWidth,
+                        y + slotHeight - (mc.fontRendererObj.FONT_HEIGHT) * 2 - 2, Color.WHITE.getRGB());
+            }
+
+            String duration = DurationUtils.convertSecondsToShortString(fileInfo.getMetadata().getDuration() / 1000);
+            int durationWidth = mc.fontRendererObj.getStringWidth(duration);
+
+            Gui.drawRect(x + thumbnailOffset - 2 - durationWidth - 1, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT - 2, x + thumbnailOffset, y + slotHeight,
+                    0x80000000);
+
+            mc.fontRendererObj.drawStringWithShadow(duration, x + thumbnailOffset - 1 - durationWidth,
+                    y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.WHITE.getRGB());
+
             String serverName = fileInfo.getMetadata().getServerName();
-            list.add((serverName == null ? I18n.format("replaymod.gui.iphidden") : serverName)
-                    + " (" + dateFormat.format(new Date(fileInfo.getMetadata().getDate())) + ")");
+            if(serverName == null) serverName = ChatFormatting.DARK_RED.toString()+I18n.format("replaymod.gui.iphidden");
 
-            list.add(String.format("%02dm%02ds",
-                    TimeUnit.MILLISECONDS.toMinutes(fileInfo.getMetadata().getDuration()),
-                    TimeUnit.MILLISECONDS.toSeconds(fileInfo.getMetadata().getDuration()) -
-                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(fileInfo.getMetadata().getDuration()))
-            ));
+            mc.fontRendererObj.drawStringWithShadow(serverName, x + 3, y + (online ? 25 : 13), Color.LIGHT_GRAY.getRGB());
 
-            for(int l1 = 0; l1 < Math.min(list.size(), 2); ++l1) {
-                minecraft.fontRendererObj.drawString((String) list.get(l1), x + 3, y + 12 + minecraft.fontRendererObj.FONT_HEIGHT * l1, 8421504);
+            String dateRecorded = dateFormat.format(new Date(fileInfo.getMetadata().getDate()));
+            int dateWidth = mc.fontRendererObj.getStringWidth(dateRecorded);
+            mc.fontRendererObj.drawStringWithShadow(dateRecorded, x + (online ? listWidth - 9 - dateWidth : 3), y + (online ? 13 : 23), Color.LIGHT_GRAY.getRGB());
+
+            if(online) {
+                String owner = I18n.format("replaymod.gui.center.author", ChatFormatting.GRAY.toString()+ChatFormatting.ITALIC, fileInfo.getOwner());
+
+                mc.fontRendererObj.drawStringWithShadow(ChatFormatting.RESET.toString()+owner, x + 3, y + 13, Color.WHITE.getRGB());
+            }
+
+            if(online) {
+                Category category = Category.fromId(fileInfo.getCategory());
+
+                mc.fontRendererObj.drawStringWithShadow(ChatFormatting.ITALIC.toString()+category.toNiceString(), x + 3, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.GRAY.getRGB());
             }
 
             if(fileInfo.getRatings() != null) {
-                String thumbsString = "§a+" + fileInfo.getRatings().getPositive() + " §4-" + fileInfo.getRatings().getNegative();
-                int stringWidth = minecraft.fontRendererObj.getStringWidth(thumbsString);
+                String thumbsString = ChatFormatting.GOLD.toString()+"⭑"+fileInfo.getFavorites()+ChatFormatting.GREEN.toString()+" ⬆"
+                        + fileInfo.getRatings().getPositive() + ChatFormatting.RED.toString()+" ⬇" + fileInfo.getRatings().getNegative();
+                int stringWidth = mc.fontRendererObj.getStringWidth(thumbsString);
 
-                minecraft.fontRendererObj.drawString(thumbsString, x + listWidth - stringWidth - 5, y + slotHeight - minecraft.fontRendererObj.FONT_HEIGHT, Color.GREEN.getRGB());
+                mc.fontRendererObj.drawString(thumbsString, x + listWidth - stringWidth - 5, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.GREEN.getRGB());
             }
         } catch(Exception e) {
             e.printStackTrace();

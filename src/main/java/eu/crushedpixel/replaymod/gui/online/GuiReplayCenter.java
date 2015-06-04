@@ -354,7 +354,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
     private void updateCurrentList(Pagination pagination) {
         elementSelected(-1);
-        currentList = new ReplayFileList(mc, width, height, 50, height - 60, 36, this);
+        currentList = new ReplayFileList(mc, width, height, 50, height - 60, this);
         loadingListEntry = new GuiLoadingListEntry(currentList);
         currentList.addEntry(loadingListEntry);
 

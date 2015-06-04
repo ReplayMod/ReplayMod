@@ -19,7 +19,7 @@ public enum Category {
         return this.id;
     }
 
-    public Category fromId(int id) {
+    public static Category fromId(int id) {
         for(Category c : values()) {
             if(c.id == id) return c;
         }
