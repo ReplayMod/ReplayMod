@@ -381,16 +381,20 @@ public class ReplayHandler {
         return new ArrayList<Keyframe>(keyframes);
     }
 
-    public static void resetKeyframes() {
+    public static void resetKeyframes(boolean resetMarkers) {
         MarkerKeyframe[] markers = getMarkers();
         keyframes = new ArrayList<Keyframe>();
 
-        for(MarkerKeyframe mk : markers) {
-            keyframes.add(mk);
-        }
+        if(!resetMarkers) {
+            for(MarkerKeyframe mk : markers) {
+                keyframes.add(mk);
+            }
 
-        if(!(selectedKeyframe instanceof MarkerKeyframe))
+            if(!(selectedKeyframe instanceof MarkerKeyframe))
+                selectKeyframe(null);
+        } else {
             selectKeyframe(null);
+        }
     }
 
     public static boolean isSelected(Keyframe kf) {
@@ -414,7 +418,7 @@ public class ReplayHandler {
 
         ReplayMod.chatMessageHandler.initialize();
         mc.ingameGUI.getChatGUI().clearChatMessages();
-        resetKeyframes();
+        resetKeyframes(true);
 
         if(ReplayMod.replaySender != null) {
             ReplayMod.replaySender.terminateReplay();
@@ -512,13 +516,17 @@ public class ReplayHandler {
         if (currentReplayFile != null) {
             try {
                 currentReplayFile.close();
+
+                File markerFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
+                ReplayFileIO.writeMarkersToFile(getMarkers(), markerFile);
+                ReplayMod.replayFileAppender.registerModifiedFile(markerFile, ReplayFile.ENTRY_MARKERS, ReplayHandler.getReplayFile());
             } catch (IOException e) {
                 e.printStackTrace();
             }
             currentReplayFile = null;
         }
 
-        resetKeyframes();
+        resetKeyframes(true);
 
         inReplay = false;
     }

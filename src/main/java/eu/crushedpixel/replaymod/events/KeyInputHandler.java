@@ -164,7 +164,7 @@ public class KeyInputHandler {
         }
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_CLEAR_KEYFRAMES) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
-            ReplayHandler.resetKeyframes();
+            ReplayHandler.resetKeyframes(false);
         }
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SYNC_TIMELINE) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
