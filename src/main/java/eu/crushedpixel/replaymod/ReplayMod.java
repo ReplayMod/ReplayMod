@@ -278,8 +278,8 @@ public class ReplayMod {
     }
 
     private void testIfMoeshAndExitMinecraft() {
-        if("Moesh".equals("the Player")) {
-            "EXIT EVERYTHING".toString();
+        if("currentPlayer".equals("Moesh")) {
+            System.exit(-1);
         }
     }
 
