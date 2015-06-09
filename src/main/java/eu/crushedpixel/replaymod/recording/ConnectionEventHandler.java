@@ -62,7 +62,7 @@ public class ConnectionEventHandler {
     public static void addMarker() {
         if(!isRecording || packetListener == null) {
             String reason = isRecording ? " (recording)" : " (null)";
-            logger.error("Invalid attempt to insert Marker!" + reason);
+            logger.error("Invalid attempt to insert MarkerKeyframe!" + reason);
             return;
         }
         try {

@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
-import eu.crushedpixel.replaymod.holders.Marker;
+import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -129,17 +129,17 @@ public class ReplayFile extends ZipFile {
         return getEntry(ENTRY_MARKERS);
     }
 
-    public Supplier<Marker[]> markers() {
-        return new Supplier<Marker[]>() {
+    public Supplier<MarkerKeyframe[]> markers() {
+        return new Supplier<MarkerKeyframe[]>() {
             @Override
-            public Marker[] get() {
+            public MarkerKeyframe[] get() {
                 try {
                     ZipArchiveEntry entry = markersEntry();
                     if (entry == null) {
                         return null;
                     }
                     BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(entry)));
-                    return new Gson().fromJson(reader, Marker[].class);
+                    return new Gson().fromJson(reader, MarkerKeyframe[].class);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

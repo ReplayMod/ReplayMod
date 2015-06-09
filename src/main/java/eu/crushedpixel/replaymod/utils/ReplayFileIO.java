@@ -3,7 +3,7 @@ package eu.crushedpixel.replaymod.utils;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
-import eu.crushedpixel.replaymod.holders.Marker;
+import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.PacketSerializer;
@@ -58,7 +58,7 @@ public class ReplayFileIO {
         return files;
     }
 
-    public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData, Set<Marker> markers,
+    public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData, Set<MarkerKeyframe> markers,
                                        Map<String, File> resourcePacks, Map<Integer, String> resourcePackRequests) throws IOException {
         byte[] buffer = new byte[1024];
 
@@ -91,7 +91,7 @@ public class ReplayFileIO {
             zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_MARKERS));
 
             pw = new PrintWriter(zos);
-            pw.write(new Gson().toJson(markers.toArray(new Marker[markers.size()])));
+            pw.write(new Gson().toJson(markers.toArray(new MarkerKeyframe[markers.size()])));
             pw.flush();
             zos.closeEntry();
         }
@@ -332,7 +332,7 @@ public class ReplayFileIO {
         FileUtils.write(file, json);
     }
 
-    public static void writeMarkersToFile(Marker[] markers, File file) throws IOException {
+    public static void writeMarkersToFile(MarkerKeyframe[] markers, File file) throws IOException {
         file.mkdirs();
         file.createNewFile();
 

@@ -2,25 +2,26 @@ package eu.crushedpixel.replaymod.holders;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Marker {
-
-    public Marker(Position position, int timestamp, String name) {
-        this.position = position;
-        this.timestamp = timestamp;
-        this.name = name;
-    }
+public class MarkerKeyframe extends Keyframe {
 
     private Position position;
-    private int timestamp;
     private String name;
+
+    @Override
+    public Object clone() {
+        return new MarkerKeyframe(this.getPosition(), this.getRealTimestamp(), this.getName());
+    }
+
+    public MarkerKeyframe(Position position, int timestamp, String name) {
+        super(timestamp);
+        this.position = position;
+        this.name = name;
+    }
 
     public Position getPosition() {
         return position;
     }
 
-    public int getTimestamp() {
-        return timestamp;
-    }
 
     public String getName() {
         return name;
@@ -29,8 +30,8 @@ public class Marker {
     @Override
     public boolean equals(Object o2) {
         if(o2 == null) return false;
-        if(!(o2 instanceof Marker)) return false;
-        Marker m2 = (Marker)o2;
+        if(!(o2 instanceof MarkerKeyframe)) return false;
+        MarkerKeyframe m2 = (MarkerKeyframe)o2;
         return hashCode() == m2.hashCode();
     }
 
@@ -38,7 +39,7 @@ public class Marker {
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
                 .append(position)
-                .append(timestamp)
+                .append(getRealTimestamp())
                 .append(name)
                 .toHashCode();
     }

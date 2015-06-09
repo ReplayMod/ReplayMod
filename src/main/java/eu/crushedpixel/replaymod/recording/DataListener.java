@@ -4,7 +4,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.holders.Marker;
+import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -35,7 +35,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     protected boolean alive = true;
     protected DataWriter dataWriter;
     protected Set<String> players = new HashSet<String>();
-    protected Set<Marker> markers = new HashSet<Marker>();
+    protected Set<MarkerKeyframe> markers = new HashSet<MarkerKeyframe>();
     private boolean singleplayer;
     private Gson gson = new Gson();
 
@@ -154,7 +154,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             queue.add(data);
         }
 
-        public void requestFinish(Set<String> players, Set<Marker> markers) {
+        public void requestFinish(Set<String> players, Set<MarkerKeyframe> markers) {
             active = false;
 
             try {

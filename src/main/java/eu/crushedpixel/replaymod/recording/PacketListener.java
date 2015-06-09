@@ -7,7 +7,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
-import eu.crushedpixel.replaymod.holders.Marker;
+import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -223,7 +223,7 @@ public class PacketListener extends DataListener {
         Position pos = new Position(Minecraft.getMinecraft().getRenderViewEntity());
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
-        Marker marker = new Marker(pos, timestamp, null);
+        MarkerKeyframe marker = new MarkerKeyframe(pos, timestamp, null);
 
         markers.add(marker);
 

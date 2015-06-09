@@ -1,7 +1,9 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
 import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -16,15 +18,23 @@ public class GuiKeyframeTimeline extends GuiTimeline {
     private static final int KEYFRAME_TIME_Y = 25;
     private static final int KEYFRAME_SPEC_X = 74;
     private static final int KEYFRAME_SPEC_Y = 30;
+    private static final int KEYFRAME_MARKER_X = 40;
+    private static final int KEYFRAME_MARKER_Y = 39;
 
     private Keyframe clickedKeyFrame;
     private long clickTime;
     private boolean dragging;
+    private boolean markerKeyframes;
+    private boolean timeKeyframes;
+    private boolean placeKeyframes;
 
-    public GuiKeyframeTimeline(int positionX, int positionY, int width) {
+    public GuiKeyframeTimeline(int positionX, int positionY, int width, boolean showMarkers,
+                               boolean showMarkerKeyframes, boolean showPlaceKeyframes, boolean showTimeKeyframes) {
         super(positionX, positionY, width);
-        showMarkers = true;
-        showMarkerIndicators = false;
+        this.showMarkers = showMarkers;
+        this.markerKeyframes = showMarkerKeyframes;
+        this.timeKeyframes = showTimeKeyframes;
+        this.placeKeyframes = showPlaceKeyframes;
     }
 
     @Override
@@ -34,13 +44,15 @@ public class GuiKeyframeTimeline extends GuiTimeline {
             return;
         }
 
-        int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
+        int tolerance = (int)(2 * Math.round(zoom * timelineLength / width));
 
         Keyframe closest;
-        if (mouseY >= positionY + BORDER_TOP + 5) {
+        if (mouseY >= positionY + BORDER_TOP + 5 && timeKeyframes) {
             closest = ReplayHandler.getClosestTimeKeyframeForRealTime((int) time, tolerance);
-        } else if (mouseY >= positionY + BORDER_TOP) {
+        } else if (mouseY >= positionY + BORDER_TOP && placeKeyframes) {
             closest = ReplayHandler.getClosestPlaceKeyframeForRealTime((int) time, tolerance);
+        } else if (mouseY >= positionY + BORDER_TOP + 10 && markerKeyframes) {
+            closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
         } else {
             closest = null;
         }
@@ -85,6 +97,10 @@ public class GuiKeyframeTimeline extends GuiTimeline {
     @Override
     public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
         mouseDrag(mc, mouseX, mouseY, button);
+        if(clickedKeyFrame instanceof MarkerKeyframe && dragging == false) {
+            ReplayMod.replaySender.jumpToTime(clickedKeyFrame.getRealTimestamp());
+            ReplayHandler.setLastPosition(((MarkerKeyframe)clickedKeyFrame).getPosition());
+        }
         clickedKeyFrame = null;
         dragging = false;
     }
@@ -169,7 +185,8 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
             int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
 
-            if (kf instanceof PositionKeyframe) {
+            if(kf instanceof PositionKeyframe) {
+                if(!placeKeyframes) return;
                 textureX = KEYFRAME_PLACE_X;
                 textureY = KEYFRAME_PLACE_Y;
                 y += 0;
@@ -179,10 +196,16 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                     textureX = KEYFRAME_SPEC_X;
                     textureY = KEYFRAME_SPEC_Y;
                 }
-            } else if (kf instanceof TimeKeyframe) {
+            } else if(kf instanceof TimeKeyframe) {
+                if(!timeKeyframes) return;
                 textureX = KEYFRAME_TIME_X;
                 textureY = KEYFRAME_TIME_Y;
                 y += 5;
+            } else if(kf instanceof MarkerKeyframe) {
+                if(!markerKeyframes) return;
+                textureX = KEYFRAME_MARKER_X;
+                textureY = KEYFRAME_MARKER_Y;
+                y += 10;
             } else {
                 throw new UnsupportedOperationException("Unknown keyframe type: " + kf.getClass());
             }

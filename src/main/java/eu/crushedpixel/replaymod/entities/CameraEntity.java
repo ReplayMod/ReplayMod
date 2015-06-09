@@ -152,6 +152,12 @@ public class CameraEntity extends EntityPlayer {
             direction = direction.normalize().add(new Vec3(oldDir.xCoord * (motion / 4f), oldDir.yCoord * (motion / 4f), oldDir.zCoord * (motion / 4f)).normalize());
     }
 
+    public void moveAbsolute(Position pos) {
+        this.moveAbsolute(pos.getX(), pos.getY(), pos.getZ());
+        rotationPitch = pos.getPitch();
+        rotationYaw = pos.getYaw();
+    }
+
     public void moveAbsolute(double x, double y, double z) {
         if(ReplayHandler.isInPath()) return;
         this.lastTickPosX = this.prevPosX = this.posX = x;

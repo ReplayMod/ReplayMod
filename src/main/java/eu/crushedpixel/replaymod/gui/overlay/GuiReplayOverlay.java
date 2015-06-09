@@ -7,6 +7,7 @@ import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.gui.GuiRenderSettings;
 import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
 import eu.crushedpixel.replaymod.gui.elements.*;
+import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
@@ -181,6 +182,28 @@ public class GuiReplayOverlay extends Gui {
         }
     };
 
+    private final GuiElement buttonMarker = new DelegatingElement() {
+
+        private final GuiElement buttonNotSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 80, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.addKeyframe(new TimeKeyframe(ReplayHandler.getRealTimelineCursor(), ReplayMod.replaySender.currentTimeStamp()));
+            }
+        }, "replaymod.gui.ingame.menu.addtimekeyframe");
+
+        private final GuiElement buttonSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 100, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.removeKeyframe(ReplayHandler.getSelectedKeyframe());
+            }
+        }, "replaymod.gui.ingame.menu.removetimekeyframe");
+
+        @Override
+        public GuiElement delegate() {
+            return ReplayHandler.getSelectedKeyframe() instanceof TimeKeyframe ? buttonSelected : buttonNotSelected;
+        }
+    };
+
     private final GuiElement buttonZoomIn = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW, 40, 20, 9, new Runnable() {
         @Override
         public void run() {
@@ -197,14 +220,16 @@ public class GuiReplayOverlay extends Gui {
         }
     }, "replaymod.gui.ingame.menu.zoomout");
 
-    private final GuiTimeline timeline = new GuiTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X) {
+    private final GuiKeyframeTimeline timeline = new GuiKeyframeTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, false, true, false, false) {
         @Override
         public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-            performJump(timeline.getTimeAt(mouseX, mouseY));
+            super.mouseClick(mc, mouseX, mouseY, button);
+            if(!(ReplayHandler.getSelectedKeyframe() instanceof MarkerKeyframe))
+                performJump(timeline.getTimeAt(mouseX, mouseY));
         }
     };
 
-    private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH);
+    private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH, true, false, true, true);
     {
         timelineReal.timelineLength = 10 * 60 * 1000;
     }

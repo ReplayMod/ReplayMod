@@ -40,7 +40,6 @@ public class ReplayHandler {
     private static float cameraTilt = 0;
 
     private static KeyframeSet[] keyframeRepository = new KeyframeSet[]{};
-    private static Marker[] markers = new Marker[]{};
 
     /**
      * The file currently being played.
@@ -66,10 +65,22 @@ public class ReplayHandler {
         }
     }
 
-    public static Marker[] getMarkers() { return markers; }
+    public static MarkerKeyframe[] getMarkers() {
+        List<MarkerKeyframe> markers = new ArrayList<MarkerKeyframe>();
+        for(Keyframe kf : keyframes) {
+            if(kf instanceof MarkerKeyframe) markers.add((MarkerKeyframe)kf);
+        }
+        return markers.toArray(new MarkerKeyframe[markers.size()]);
+    }
 
-    public static void setMarkers(Marker[] m, boolean write) {
-        markers = m;
+    public static void setMarkers(MarkerKeyframe[] m, boolean write) {
+        for(Keyframe kf : new ArrayList<Keyframe>(keyframes)) {
+            if(kf instanceof MarkerKeyframe) keyframes.remove(kf);
+        }
+        for(MarkerKeyframe marker : m) {
+            keyframes.add(marker);
+        }
+
         if(write) {
             try {
                 File tempFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
@@ -165,19 +176,7 @@ public class ReplayHandler {
     public static void addMarker() {
         Position pos = new Position(mc.getRenderViewEntity());
         int timestamp = ReplayMod.replaySender.currentTimeStamp();
-        addMarker(new Marker(pos, timestamp, null));
-    }
-
-    public static void addMarker(Marker marker) {
-        List<Marker> markerList = new ArrayList<Marker>(Arrays.asList(markers));
-        markerList.add(marker);
-        markers = markerList.toArray(new Marker[markerList.size()]);
-    }
-
-    public static void removeMarker(Marker marker) {
-        List<Marker> markerList = new ArrayList<Marker>(Arrays.asList(markers));
-        markerList.remove(marker);
-        markers = markerList.toArray(new Marker[markerList.size()]);
+        addKeyframe(new MarkerKeyframe(pos, timestamp, null));
     }
 
     public static void addKeyframe(Keyframe keyframe) {
@@ -287,6 +286,25 @@ public class ReplayHandler {
         return closest;
     }
 
+    public static MarkerKeyframe getClosestMarkerForRealTime(int realTime, int tolerance) {
+        List<MarkerKeyframe> found = new ArrayList<MarkerKeyframe>();
+        for(Keyframe kf : keyframes) {
+            if(!(kf instanceof MarkerKeyframe)) continue;
+            if(Math.abs(kf.getRealTimestamp() - realTime) <= tolerance) {
+                found.add((MarkerKeyframe) kf);
+            }
+        }
+
+        MarkerKeyframe closest = null;
+
+        for(MarkerKeyframe kf : found) {
+            if(closest == null || Math.abs(closest.getRealTimestamp() - realTime) > Math.abs(kf.getRealTimestamp() - realTime)) {
+                closest = kf;
+            }
+        }
+        return closest;
+    }
+
     public static PositionKeyframe getPreviousPositionKeyframe(int realTime) {
         if(keyframes.isEmpty()) return null;
         PositionKeyframe backup = null;
@@ -365,11 +383,6 @@ public class ReplayHandler {
         return kf == selectedKeyframe;
     }
 
-    public static boolean isSelected(Marker marker) {
-        //TODO: Make marker selectable
-        return false;
-    }
-
     public static void selectKeyframe(Keyframe kf) {
         selectedKeyframe = kf;
         sortKeyframes();
@@ -421,8 +434,8 @@ public class ReplayHandler {
         KeyframeSet[] paths = currentReplayFile.paths().get();
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
 
-        Marker[] markers = currentReplayFile.markers().get();
-        ReplayHandler.setMarkers(markers == null ? new Marker[0] : markers, false);
+        MarkerKeyframe[] markers = currentReplayFile.markers().get();
+        ReplayHandler.setMarkers(markers == null ? new MarkerKeyframe[0] : markers, false);
 
         PlayerVisibility visibility = currentReplayFile.visibility().get();
         PlayerHandler.loadPlayerVisibilityConfiguration(visibility);
