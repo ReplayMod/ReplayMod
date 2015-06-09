@@ -127,7 +127,7 @@ public class KeyInputHandler {
         //Custom registered handlers
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ADD_MARKER) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
             if(ReplayHandler.isInReplay()) {
-                ReplayHandler.addMarker();
+                ReplayHandler.toggleMarker();
             } else if(ConnectionEventHandler.isRecording()) {
                 ConnectionEventHandler.addMarker();
             }

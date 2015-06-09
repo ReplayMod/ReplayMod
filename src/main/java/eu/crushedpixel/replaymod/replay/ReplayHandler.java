@@ -181,10 +181,13 @@ public class ReplayHandler {
         Collections.sort(keyframes, new KeyframeComparator());
     }
 
-    public static void addMarker() {
-        Position pos = new Position(mc.getRenderViewEntity());
-        int timestamp = ReplayMod.replaySender.currentTimeStamp();
-        addKeyframe(new MarkerKeyframe(pos, timestamp, null));
+    public static void toggleMarker() {
+        if(selectedKeyframe instanceof MarkerKeyframe) removeKeyframe(selectedKeyframe);
+        else {
+            Position pos = new Position(mc.getRenderViewEntity());
+            int timestamp = ReplayMod.replaySender.currentTimeStamp();
+            addKeyframe(new MarkerKeyframe(pos, timestamp, null));
+        }
     }
 
     public static void addKeyframe(Keyframe keyframe) {
