@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.utils;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.PacketSerializer;
@@ -57,7 +58,7 @@ public class ReplayFileIO {
         return files;
     }
 
-    public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData,
+    public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData, Set<Marker> markers,
                                        Map<String, File> resourcePacks, Map<Integer, String> resourcePackRequests) throws IOException {
         byte[] buffer = new byte[1024];
 
@@ -86,14 +87,23 @@ public class ReplayFileIO {
         fis.close();
         zos.closeEntry();
 
-        if (!resourcePackRequests.isEmpty()) {
+        if(!markers.isEmpty()) {
+            zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_MARKERS));
+
+            pw = new PrintWriter(zos);
+            pw.write(new Gson().toJson(markers.toArray(new Marker[markers.size()])));
+            pw.flush();
+            zos.closeEntry();
+        }
+
+        if(!resourcePackRequests.isEmpty()) {
             zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_RESOURCE_PACK_INDEX));
             pw = new PrintWriter(zos);
             pw.write(new Gson().toJson(resourcePackRequests));
             pw.flush();
             zos.closeEntry();
 
-            for (Map.Entry<String, File> entry : resourcePacks.entrySet()) {
+            for(Map.Entry<String, File> entry : resourcePacks.entrySet()) {
                 zos.putNextEntry(new ZipEntry(String.format(ReplayFile.ENTRY_RESOURCE_PACK, entry.getKey())));
                 IOUtils.copy(new FileInputStream(entry.getValue()), zos);
                 zos.closeEntry();
@@ -319,6 +329,14 @@ public class ReplayFileIO {
         file.createNewFile();
 
         String json = gson.toJson(metaData);
+        FileUtils.write(file, json);
+    }
+
+    public static void writeMarkersToFile(Marker[] markers, File file) throws IOException {
+        file.mkdirs();
+        file.createNewFile();
+
+        String json = gson.toJson(markers);
         FileUtils.write(file, json);
     }
 

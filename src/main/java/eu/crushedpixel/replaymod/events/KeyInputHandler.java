@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
 import eu.crushedpixel.replaymod.gui.GuiKeyframeRepository;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
+import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -21,6 +22,8 @@ public class KeyInputHandler {
     private long prevKeysDown = Sys.getTime();
 
     public void onKeyInput() throws Exception {
+        if(!ReplayHandler.isInReplay()) return;
+
         if(!Keyboard.isCreated()) Keyboard.create();
 
         Keyboard.poll();
@@ -96,8 +99,6 @@ public class KeyInputHandler {
 
     @SubscribeEvent
     public void keyInput(InputEvent.KeyInputEvent event) {
-        if (!ReplayHandler.isInReplay()) return;
-
         try {
             onKeyInput();
         } catch(Exception e) {
@@ -124,6 +125,16 @@ public class KeyInputHandler {
 
     public void handleCustomKeybindings(KeyBinding kb, boolean found, int keyCode) {
         //Custom registered handlers
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ADD_MARKER) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            if(ReplayHandler.isInReplay()) {
+                ReplayHandler.addMarker();
+            } else if(ConnectionEventHandler.isRecording()) {
+                ConnectionEventHandler.addMarker();
+            }
+        }
+
+        if(!ReplayHandler.isInReplay()) return;
+
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PLAY_PAUSE) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             ReplayMod.overlay.togglePlayPause();
         }

@@ -37,6 +37,8 @@ replaymod.chat.savingthumb=Saving Thumbnail...
 replaymod.chat.savedthumb=Thumbnail has been successfully saved
 replaymod.chat.failedthumb=Thumbnail could not be saved
 
+replaymod.chat.addedmarker=Event Marker has been added
+
 #Chat messages displayed in Replay Viewer
 replaymod.chat.notenoughkeyframes=At least 2 position or time keyframes required
 replaymod.chat.pathstarted=Camera Path started
@@ -156,6 +158,7 @@ replaymod.gui.upload.start=Start Upload
 replaymod.gui.upload.cancel=Cancel Upload
 replaymod.gui.upload.tagshint=Tags separated by comma
 replaymod.gui.upload.namehint=Replay Title
+replaymod.gui.upload.descriptionhint=Description
 replaymod.gui.upload.uploading=Uploading...
 replaymod.gui.upload.success=File has been successfully uploaded
 replaymod.gui.upload.canceled=Upload has been canceled
@@ -226,6 +229,7 @@ replaymod.input.rollclockwise=Roll Clockwise
 replaymod.input.rollcounterclockwise=Roll Counterclockwise
 replaymod.input.resettilt=Reset Camera Tilt
 replaymod.input.playpause=Play/Pause Replay
+replaymod.input.marker=Add Event Marker
 
 #Keyframe Presets GUI
 replaymod.gui.keyframerepository.title=Keyframe Repository

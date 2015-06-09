@@ -40,6 +40,7 @@ public class ReplayHandler {
     private static float cameraTilt = 0;
 
     private static KeyframeSet[] keyframeRepository = new KeyframeSet[]{};
+    private static Marker[] markers = new Marker[]{};
 
     /**
      * The file currently being played.
@@ -55,11 +56,27 @@ public class ReplayHandler {
         if(write) {
             try {
                 File tempFile = File.createTempFile(ReplayFile.ENTRY_PATHS, "json");
-                tempFile.deleteOnExit();
 
                 ReplayFileIO.writeKeyframeRegistryToFile(repo, tempFile);
 
                 ReplayMod.replayFileAppender.registerModifiedFile(tempFile, ReplayFile.ENTRY_PATHS, getReplayFile());
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static Marker[] getMarkers() { return markers; }
+
+    public static void setMarkers(Marker[] m, boolean write) {
+        markers = m;
+        if(write) {
+            try {
+                File tempFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
+
+                ReplayFileIO.writeMarkersToFile(m, tempFile);
+
+                ReplayMod.replayFileAppender.registerModifiedFile(tempFile, ReplayFile.ENTRY_MARKERS, getReplayFile());
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -143,6 +160,24 @@ public class ReplayHandler {
 
     public static void sortKeyframes() {
         Collections.sort(keyframes, new KeyframeComparator());
+    }
+
+    public static void addMarker() {
+        Position pos = new Position(mc.getRenderViewEntity());
+        int timestamp = ReplayMod.replaySender.currentTimeStamp();
+        addMarker(new Marker(pos, timestamp, null));
+    }
+
+    public static void addMarker(Marker marker) {
+        List<Marker> markerList = new ArrayList<Marker>(Arrays.asList(markers));
+        markerList.add(marker);
+        markers = markerList.toArray(new Marker[markerList.size()]);
+    }
+
+    public static void removeMarker(Marker marker) {
+        List<Marker> markerList = new ArrayList<Marker>(Arrays.asList(markers));
+        markerList.remove(marker);
+        markers = markerList.toArray(new Marker[markerList.size()]);
     }
 
     public static void addKeyframe(Keyframe keyframe) {
@@ -330,6 +365,11 @@ public class ReplayHandler {
         return kf == selectedKeyframe;
     }
 
+    public static boolean isSelected(Marker marker) {
+        //TODO: Make marker selectable
+        return false;
+    }
+
     public static void selectKeyframe(Keyframe kf) {
         selectedKeyframe = kf;
         sortKeyframes();
@@ -380,6 +420,9 @@ public class ReplayHandler {
 
         KeyframeSet[] paths = currentReplayFile.paths().get();
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
+
+        Marker[] markers = currentReplayFile.markers().get();
+        ReplayHandler.setMarkers(markers == null ? new Marker[0] : markers, false);
 
         PlayerVisibility visibility = currentReplayFile.visibility().get();
         PlayerHandler.loadPlayerVisibilityConfiguration(visibility);

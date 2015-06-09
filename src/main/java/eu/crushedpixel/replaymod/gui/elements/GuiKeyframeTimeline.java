@@ -24,6 +24,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
     public GuiKeyframeTimeline(int positionX, int positionY, int width) {
         super(positionX, positionY, width);
         showMarkers = true;
+        showMarkerIndicators = false;
     }
 
     @Override
@@ -130,8 +131,8 @@ public class GuiKeyframeTimeline extends GuiTimeline {
             }
 
             if(nextSpectatorKeyframeRealTime != -1) {
-                int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, rightTime, bodyWidth, segmentLength);
-                int nextX = getKeyframeX(nextSpectatorKeyframeRealTime, leftTime, rightTime, bodyWidth, segmentLength);
+                int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
+                int nextX = getKeyframeX(nextSpectatorKeyframeRealTime, leftTime, bodyWidth, segmentLength);
 
                 drawGradientRect(keyframeX + 2, positionY + BORDER_TOP + 1, nextX - 2, positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
             }
@@ -154,7 +155,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         }
     }
 
-    private int getKeyframeX(int timestamp, long leftTime, long rightTime, int bodyWidth, double segmentLength) {
+    private int getKeyframeX(int timestamp, long leftTime, int bodyWidth, double segmentLength) {
         long positionInSegment = timestamp - leftTime;
         double fractionOfSegment = positionInSegment / segmentLength;
         return (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
@@ -166,7 +167,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
             int textureY;
             int y = positionY;
 
-            int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, rightTime, bodyWidth, segmentLength);
+            int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
 
             if (kf instanceof PositionKeyframe) {
                 textureX = KEYFRAME_PLACE_X;

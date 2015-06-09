@@ -59,6 +59,19 @@ public class ConnectionEventHandler {
         }
     }
 
+    public static void addMarker() {
+        if(!isRecording || packetListener == null) {
+            String reason = isRecording ? " (recording)" : " (null)";
+            logger.error("Invalid attempt to insert Marker!" + reason);
+            return;
+        }
+        try {
+            packetListener.addMarker();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @SubscribeEvent
     public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
         ReplayMod.chatMessageHandler.initialize();

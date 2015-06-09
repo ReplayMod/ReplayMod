@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -34,6 +35,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     protected boolean alive = true;
     protected DataWriter dataWriter;
     protected Set<String> players = new HashSet<String>();
+    protected Set<Marker> markers = new HashSet<Marker>();
     private boolean singleplayer;
     private Gson gson = new Gson();
 
@@ -42,7 +44,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     private final File tempResourcePacksFolder = Files.createTempDir();
     private final Map<Integer, String> requestToHash = new ConcurrentHashMap<Integer, String>();
     private final Map<String, File> resourcePacks = new HashMap<String, File>();
-
 
     public DataListener(File file, String name, String worldName, long startTime, boolean singleplayer) throws FileNotFoundException {
         this.file = file;
@@ -77,7 +78,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        dataWriter.requestFinish(players);
+        dataWriter.requestFinish(players, markers);
     }
 
     protected void recordResourcePack(File file, int requestId) {
@@ -153,7 +154,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             queue.add(data);
         }
 
-        public void requestFinish(Set<String> players) {
+        public void requestFinish(Set<String> players, Set<Marker> markers) {
             active = false;
 
             try {
@@ -177,7 +178,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 File archive = new File(folder, name + ReplayFile.ZIP_FILE_EXTENSION);
                 archive.createNewFile();
 
-                ReplayFileIO.writeReplayFile(archive, file, metaData, resourcePacks, requestToHash);
+                ReplayFileIO.writeReplayFile(archive, file, metaData, markers, resourcePacks, requestToHash);
 
                 file.delete();
                 FileUtils.deleteDirectory(tempResourcePacksFolder);

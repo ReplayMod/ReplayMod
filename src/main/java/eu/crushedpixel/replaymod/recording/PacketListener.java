@@ -5,7 +5,11 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.PacketData;
+import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
@@ -213,6 +217,17 @@ public class PacketListener extends DataListener {
             }
         }
         return requestId;
+    }
+
+    public void addMarker() {
+        Position pos = new Position(Minecraft.getMinecraft().getRenderViewEntity());
+        int timestamp = (int) (System.currentTimeMillis() - startTime);
+
+        Marker marker = new Marker(pos, timestamp, null);
+
+        markers.add(marker);
+
+        ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.addedmarker", ChatMessageHandler.ChatMessageType.INFORMATION);
     }
 
     private void downloadResourcePackFuture(int requestId, String url, final String hash) {

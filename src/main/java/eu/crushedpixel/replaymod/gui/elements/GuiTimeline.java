@@ -1,6 +1,8 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.holders.Marker;
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 
@@ -24,6 +26,11 @@ public class GuiTimeline extends Gui implements GuiElement {
     protected static final int BORDER_LEFT = 4;
     protected static final int BORDER_RIGHT = 4;
     protected static final int BODY_WIDTH = TEXTURE_WIDTH - BORDER_LEFT - BORDER_RIGHT;
+
+    protected static final int MARKER_TEXTURE_X = 40;
+    protected static final int MARKER_TEXTURE_Y = 39;
+    protected static final int MARKER_TEXTURE_WIDTH = 5;
+    protected static final int MARKER_TEXTURE_HEIGHT = 5;
 
     /**
      * Current position of the cursor. Should normally be between 0 and {@link #timelineLength}.
@@ -51,6 +58,11 @@ public class GuiTimeline extends Gui implements GuiElement {
      * should be kept empty if markers are desired.
      */
     public boolean showMarkers;
+
+    /**
+     * Whether to draw indicators for Replay Markers.
+     */
+    public boolean showMarkerIndicators = true;
 
     protected final int positionX;
     protected final int positionY;
@@ -138,7 +150,33 @@ public class GuiTimeline extends Gui implements GuiElement {
             }
         }
 
+        if(showMarkerIndicators) {
+            double segmentLength = timelineLength * zoom;
+
+            for(Marker marker : ReplayHandler.getMarkers()) {
+                if(marker.getTimestamp() <= rightTime && marker.getTimestamp() >= leftTime) {
+                    int textureX = MARKER_TEXTURE_X;
+                    int textureY = MARKER_TEXTURE_Y;
+                    int y = positionY;
+
+                    int markerX = getMarkerX(marker.getTimestamp(), leftTime, bodyWidth, segmentLength);
+
+                    if(ReplayHandler.isSelected(marker)) {
+                        textureX += MARKER_TEXTURE_WIDTH;
+                    }
+
+                    rect(markerX - 2, y + HEIGHT - 3 - MARKER_TEXTURE_HEIGHT, textureX, textureY, MARKER_TEXTURE_WIDTH, MARKER_TEXTURE_HEIGHT);
+                }
+            }
+        }
+
         drawTimelineCursor(leftTime, rightTime, bodyWidth);
+    }
+
+    private int getMarkerX(int timestamp, long leftTime, int bodyWidth, double segmentLength) {
+        long positionInSegment = timestamp - leftTime;
+        double fractionOfSegment = positionInSegment / segmentLength;
+        return (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
     }
 
     protected void drawTimelineCursor(long leftTime, long rightTime, int bodyWidth) {

@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -30,6 +31,7 @@ public class ReplayFile extends ZipFile {
     public static final String ENTRY_RESOURCE_PACK_INDEX = "resourcepack/index.json";
     public static final String ENTRY_VISIBILITY_OLD = "visibility";
     public static final String ENTRY_VISIBILITY = "visibility" + JSON_FILE_EXTENSION;
+    public static final String ENTRY_MARKERS = "markers" + JSON_FILE_EXTENSION;
 
     private final File file;
 
@@ -82,11 +84,6 @@ public class ReplayFile extends ZipFile {
         return newEntry != null ? newEntry : getEntry(ENTRY_PATHS_OLD);
     }
 
-    public ZipArchiveEntry visibilityEntry() {
-        ZipArchiveEntry newEntry = getEntry(ENTRY_VISIBILITY);
-        return newEntry != null ? newEntry : getEntry(ENTRY_VISIBILITY_OLD);
-    }
-
     public Supplier<KeyframeSet[]> paths() {
         return new Supplier<KeyframeSet[]>() {
             @Override
@@ -105,6 +102,11 @@ public class ReplayFile extends ZipFile {
         };
     }
 
+    public ZipArchiveEntry visibilityEntry() {
+        ZipArchiveEntry newEntry = getEntry(ENTRY_VISIBILITY);
+        return newEntry != null ? newEntry : getEntry(ENTRY_VISIBILITY_OLD);
+    }
+
     public Supplier<PlayerVisibility> visibility() {
         return new Supplier<PlayerVisibility>() {
             @Override
@@ -116,6 +118,28 @@ public class ReplayFile extends ZipFile {
                     }
                     BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(entry)));
                     return new Gson().fromJson(reader, PlayerVisibility.class);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
+    public ZipArchiveEntry markersEntry() {
+        return getEntry(ENTRY_MARKERS);
+    }
+
+    public Supplier<Marker[]> markers() {
+        return new Supplier<Marker[]>() {
+            @Override
+            public Marker[] get() {
+                try {
+                    ZipArchiveEntry entry = markersEntry();
+                    if (entry == null) {
+                        return null;
+                    }
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(entry)));
+                    return new Gson().fromJson(reader, Marker[].class);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
