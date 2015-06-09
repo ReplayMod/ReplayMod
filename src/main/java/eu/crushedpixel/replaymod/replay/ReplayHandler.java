@@ -95,7 +95,15 @@ public class ReplayHandler {
     }
 
     public static void useKeyframePresetFromRepository(int index) {
+        MarkerKeyframe[] markers = getMarkers();
+
         keyframes = new ArrayList<Keyframe>(Arrays.asList(keyframeRepository[index].getKeyframes()));
+
+        for(MarkerKeyframe mk : markers) {
+            keyframes.add(mk);
+        }
+
+        if(!(selectedKeyframe instanceof MarkerKeyframe)) selectedKeyframe = null;
     }
 
     public static void spectateEntity(Entity e) {
@@ -374,9 +382,15 @@ public class ReplayHandler {
     }
 
     public static void resetKeyframes() {
+        MarkerKeyframe[] markers = getMarkers();
         keyframes = new ArrayList<Keyframe>();
 
-        selectKeyframe(null);
+        for(MarkerKeyframe mk : markers) {
+            keyframes.add(mk);
+        }
+
+        if(!(selectedKeyframe instanceof MarkerKeyframe))
+            selectKeyframe(null);
     }
 
     public static boolean isSelected(Keyframe kf) {
