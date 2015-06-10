@@ -278,15 +278,15 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
         rememberHidden.drawButton(mc, mouseX, mouseY);
 
         if(hideAllBox.isMouseOver()) {
-            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.playeroverview.hideall"), this, Color.WHITE.getRGB());
+            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.playeroverview.hideall"), this, Color.WHITE);
         }
 
         if(showAllBox.isMouseOver()) {
-            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.playeroverview.showall"), this, Color.WHITE.getRGB());
+            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.playeroverview.showall"), this, Color.WHITE);
         }
 
         if(rememberHidden.isMouseOver()) {
-            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.playeroverview.remembersettings.description"), this, Color.WHITE.getRGB());
+            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.playeroverview.remembersettings.description"), this, Color.WHITE);
         }
 
         //this is necessary to reset the GL parameters for further GUI rendering

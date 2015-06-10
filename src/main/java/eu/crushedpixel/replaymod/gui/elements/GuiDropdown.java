@@ -127,7 +127,7 @@ public class GuiDropdown<T> extends GuiTextField {
             }
 
             if(drawHover) {
-                ReplayMod.tooltipRenderer.drawTooltip(hoverPos.getX(), hoverPos.getY(), hoverText, null, Color.WHITE.getRGB());
+                ReplayMod.tooltipRenderer.drawTooltip(hoverPos.getX(), hoverPos.getY(), hoverText, null, Color.WHITE);
             }
         }
     }

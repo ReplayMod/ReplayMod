@@ -170,7 +170,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
         if(uploadButton.isMouseOver() && !uploadButton.enabled && loadButton.enabled) {
             if(currentFileUploaded) {
-                ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.viewer.alreadyuploaded"), this, Color.RED.getRGB());
+                ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.viewer.alreadyuploaded"), this, Color.RED);
             }
         }
     }

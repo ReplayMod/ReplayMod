@@ -195,7 +195,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
             if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
                 Point mouse = MouseUtils.getMousePos();
-                ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), marker.getName(), null, Color.WHITE.getRGB());
+                ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), marker.getName(), null, Color.WHITE);
 
                 drawn = true;
             }

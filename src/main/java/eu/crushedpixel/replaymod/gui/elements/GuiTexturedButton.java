@@ -7,6 +7,8 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 
+import java.awt.*;
+
 public class GuiTexturedButton extends GuiButton implements GuiElement {
     private final ResourceLocation texture;
     private final int u, v;
@@ -62,7 +64,7 @@ public class GuiTexturedButton extends GuiButton implements GuiElement {
     public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
         hovered = isHovering(mouseX, mouseY);
         if(hovered && hoverText != null) {
-            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, hoverText, null, 0xffffffff);
+            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, hoverText, null, Color.WHITE);
         }
     }
 

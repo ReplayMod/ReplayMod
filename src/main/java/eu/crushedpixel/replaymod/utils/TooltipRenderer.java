@@ -5,9 +5,15 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import org.lwjgl.util.Point;
 
+import java.awt.Color;
+
 public class TooltipRenderer extends Gui {
 
     private final Minecraft mc = Minecraft.getMinecraft();
+
+    public void drawTooltip(int x, int y, String text, GuiScreen parent, Color textColor) {
+        drawTooltip(x, y, text, parent, textColor.getRGB());
+    }
 
     public void drawTooltip(int x, int y, String text, GuiScreen parent, int textColor) {
         drawTooltip(x, y, StringUtils.splitStringInMultipleRows(text, 250), parent, textColor);

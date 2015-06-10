@@ -165,7 +165,7 @@ public class GuiTimeline extends Gui implements GuiElement {
         if (mouseTime != -1) {
             long sec = mouseTime / 1000;
             String timestamp = String.format("%02d:%02ds", sec / 60, sec % 60);
-            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, timestamp, null, Color.WHITE.getRGB());
+            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, timestamp, null, Color.WHITE);
         }
     }
 
