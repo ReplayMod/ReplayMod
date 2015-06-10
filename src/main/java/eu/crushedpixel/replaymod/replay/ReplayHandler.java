@@ -380,6 +380,38 @@ public class ReplayHandler {
         return backup;
     }
 
+    public static MarkerKeyframe getPreviousMarkerKeyframe(int realTime) {
+        if(keyframes.isEmpty()) return null;
+        MarkerKeyframe backup = null;
+        List<MarkerKeyframe> found = new ArrayList<MarkerKeyframe>();
+        for(Keyframe kf : keyframes) {
+            if(!(kf instanceof MarkerKeyframe)) continue;
+            if(kf.getRealTimestamp() < realTime) {
+                found.add((MarkerKeyframe)kf);
+            } else if(kf.getRealTimestamp() == realTime) {
+                backup = (MarkerKeyframe)kf;
+            }
+        }
+
+        if(found.size() > 0)
+            return found.get(found.size() - 1); //last element is nearest
+        else return backup;
+    }
+
+    public static MarkerKeyframe getNextMarkerKeyframe(int realTime) {
+        if(keyframes.isEmpty()) return null;
+        MarkerKeyframe backup = null;
+        for(Keyframe kf : keyframes) {
+            if(!(kf instanceof MarkerKeyframe)) continue;
+            if(kf.getRealTimestamp() > realTime) {
+                return (MarkerKeyframe) kf; //first found element is next
+            } else if(kf.getRealTimestamp() == realTime) {
+                backup = (MarkerKeyframe)kf;
+            }
+        }
+        return backup;
+    }
+
     public static List<Keyframe> getKeyframes() {
         return new ArrayList<Keyframe>(keyframes);
     }

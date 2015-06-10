@@ -85,6 +85,7 @@ public class GuiConstants {
     public static final int KEYFRAME_EDITOR_REAL_MIN_INPUT = 6013;
     public static final int KEYFRAME_EDITOR_REAL_SEC_INPUT = 6014;
     public static final int KEYFRAME_EDITOR_REAL_MS_INPUT = 6015;
+    public static final int KEYFRAME_EDITOR_MARKER_NAME_INPUT = 6016;
 
     public static final int PLAYER_OVERVIEW_HIDE_ALL = 1010;
     public static final int PLAYER_OVERVIEW_SHOW_ALL = 0101;

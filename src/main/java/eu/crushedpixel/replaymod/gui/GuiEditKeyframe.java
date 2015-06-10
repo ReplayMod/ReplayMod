@@ -3,13 +3,12 @@ package eu.crushedpixel.replaymod.gui;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
-import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Position;
-import eu.crushedpixel.replaymod.holders.PositionKeyframe;
+import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.TimestampUtils;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
 
@@ -28,8 +27,10 @@ public class GuiEditKeyframe extends GuiScreen {
     private GuiNumberInput xCoord, yCoord, zCoord, pitch, yaw, roll;
     private GuiNumberInput min, sec, ms;
 
-    private List<GuiNumberInput> inputs = new ArrayList<GuiNumberInput>();
-    private List<GuiNumberInput> posInputs = new ArrayList<GuiNumberInput>();
+    private GuiTextField markerNameInput;
+
+    private List<GuiTextField> inputs = new ArrayList<GuiTextField>();
+    private List<GuiTextField> posInputs = new ArrayList<GuiTextField>();
 
     private int virtualHeight = 200;
     private int virtualY;
@@ -38,6 +39,8 @@ public class GuiEditKeyframe extends GuiScreen {
     private Keyframe keyframeBackup;
     private boolean save;
     private boolean posKeyframe;
+    private boolean timeKeyframe;
+    private boolean markerKeyframe;
 
     private Keyframe previous, next;
 
@@ -49,16 +52,22 @@ public class GuiEditKeyframe extends GuiScreen {
         this.keyframe = keyframe;
         this.keyframeBackup = (Keyframe)keyframe.clone();
         this.posKeyframe = keyframe instanceof PositionKeyframe;
+        this.timeKeyframe = keyframe instanceof TimeKeyframe;
+        this.markerKeyframe = keyframe instanceof MarkerKeyframe;
 
         ReplayHandler.selectKeyframe(null);
 
         if(posKeyframe) {
             previous = ReplayHandler.getPreviousPositionKeyframe(keyframe.getRealTimestamp()-1);
             next = ReplayHandler.getNextPositionKeyframe(keyframe.getRealTimestamp() + 1);
-        } else {
+        } else if(timeKeyframe) {
             previous = ReplayHandler.getPreviousTimeKeyframe(keyframe.getRealTimestamp()-1);
             next = ReplayHandler.getNextTimeKeyframe(keyframe.getRealTimestamp()+1);
+        } else if(markerKeyframe) {
+            previous = ReplayHandler.getPreviousMarkerKeyframe(keyframe.getRealTimestamp()-1);
+            next = ReplayHandler.getNextMarkerKeyframe(keyframe.getRealTimestamp()+1);
         }
+
         ReplayHandler.selectKeyframe(keyframe);
 
         ReplayMod.replaySender.setReplaySpeed(0);
@@ -108,6 +117,10 @@ public class GuiEditKeyframe extends GuiScreen {
                 posInputs.add(roll);
 
                 inputs.addAll(posInputs);
+            } else if(markerKeyframe) {
+                markerNameInput = new GuiTextField(GuiConstants.KEYFRAME_REPOSTORY_NAME_INPUT, fontRendererObj, 0, 0, 300, 20);
+                markerNameInput.setText(((MarkerKeyframe)keyframe).getName());
+                inputs.add(markerNameInput);
             }
         }
 
@@ -122,7 +135,7 @@ public class GuiEditKeyframe extends GuiScreen {
                 min.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes")) + 5;
         ms.xPosition = fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.timelineposition")+":")+10 + l +
                 min.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes")) + 5
-            + sec.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.seconds")) + 5;
+                + sec.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.seconds")) + 5;
 
         min.yPosition = sec.yPosition = ms.yPosition = virtualY+virtualHeight-65;
 
@@ -139,11 +152,14 @@ public class GuiEditKeyframe extends GuiScreen {
 
             int x = w + left + 5;
             int i = 0;
-            for(GuiNumberInput input : posInputs) {
+            for(GuiTextField input : posInputs) {
                 input.xPosition = i < 3 ? x : left+totalWidth-100;
                 input.yPosition = i < 3 ? virtualY + 20 + i*30 : virtualY + 20 + (i-3)*30;
                 i++;
             }
+        } else if(markerKeyframe) {
+            markerNameInput.xPosition = (width-markerNameInput.width)/2;
+            markerNameInput.yPosition = virtualY + (virtualHeight-markerNameInput.height)/2;
         }
 
         saveButton.yPosition = cancelButton.yPosition = virtualY + virtualHeight - 20 - 5;
@@ -175,6 +191,8 @@ public class GuiEditKeyframe extends GuiScreen {
                 ((PositionKeyframe)keyframe).setPosition(new Position(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
                         zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float)yaw.getPreciseValue(),
                         (float)roll.getPreciseValue()));
+            } else if(markerKeyframe) {
+                ((MarkerKeyframe)keyframe).setName(markerNameInput.getText().trim());
             }
         }
         Keyboard.enableRepeatEvents(false);
@@ -182,7 +200,7 @@ public class GuiEditKeyframe extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        for(GuiNumberInput input : inputs) {
+        for(GuiTextField input : inputs) {
             if(input != null) input.textboxKeyTyped(typedChar, keyCode);
         }
 
@@ -194,7 +212,7 @@ public class GuiEditKeyframe extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        for(GuiNumberInput input : inputs) {
+        for(GuiTextField input : inputs) {
             if(input != null) input.mouseClicked(mouseX, mouseY, mouseButton);
         }
         super.mouseClicked(mouseX, mouseY, mouseButton);
@@ -202,7 +220,7 @@ public class GuiEditKeyframe extends GuiScreen {
 
     @Override
     public void updateScreen() {
-        for(GuiNumberInput input : inputs) {
+        for(GuiTextField input : inputs) {
             if(input != null) input.updateCursorCounter();
         }
     }
@@ -226,7 +244,7 @@ public class GuiEditKeyframe extends GuiScreen {
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.camroll"), left+totalWidth-100-5-w2, virtualY + 87, Color.WHITE.getRGB());
         }
 
-        for(GuiNumberInput input : inputs) {
+        for(GuiTextField input : inputs) {
             if(input != null) input.drawTextBox();
         }
 

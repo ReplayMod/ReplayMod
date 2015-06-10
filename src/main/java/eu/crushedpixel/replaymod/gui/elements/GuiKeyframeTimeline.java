@@ -7,8 +7,11 @@ import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PositionKeyframe;
 import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
+import org.lwjgl.util.Point;
 
+import java.awt.*;
 import java.util.ListIterator;
 
 public class GuiKeyframeTimeline extends GuiTimeline {
@@ -175,6 +178,32 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         long positionInSegment = timestamp - leftTime;
         double fractionOfSegment = positionInSegment / segmentLength;
         return (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
+    }
+
+    @Override
+    public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
+        boolean drawn = false;
+
+        int bodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
+
+        long leftTime = Math.round(timeStart * timelineLength);
+        double segmentLength = timelineLength * zoom;
+
+
+        for(MarkerKeyframe marker : ReplayHandler.getMarkers()) {
+            int keyframeX = getKeyframeX(marker.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
+
+            if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
+                Point mouse = MouseUtils.getMousePos();
+                ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), marker.getName(), null, Color.WHITE.getRGB());
+
+                drawn = true;
+            }
+        }
+
+        if(!drawn) {
+            super.drawOverlay(mc, mouseX, mouseY);
+        }
     }
 
     private void drawKeyframe(Keyframe kf, int bodyWidth, long leftTime, long rightTime, double segmentLength) {
