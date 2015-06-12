@@ -80,7 +80,7 @@ public class GuiReplayListEntry implements IGuiListEntry {
                 }
 
                 mc.getTextureManager().bindTexture(textureResource);
-                Gui.drawScaledCustomSizeModalRect(x - (int)(slotHeight*(16/9f)) + thumbnailOffset, y, 0, 0, 1280, 720, (int)(slotHeight*(16/9f)), slotHeight, 1280, 720);
+                Gui.drawScaledCustomSizeModalRect(x - (int) (slotHeight * (16 / 9f)) + thumbnailOffset, y, 0, 0, 1280, 720, (int) (slotHeight * (16 / 9f)), slotHeight, 1280, 720);
             }
 
             if(online) {
@@ -103,35 +103,36 @@ public class GuiReplayListEntry implements IGuiListEntry {
 
                 mc.fontRendererObj.drawStringWithShadow(duration, x + thumbnailOffset - 1 - durationWidth,
                         y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.WHITE.getRGB());
-            }
 
-            String serverName = fileInfo.getMetadata().getServerName();
-            if(serverName == null) serverName = ChatFormatting.DARK_RED.toString()+I18n.format("replaymod.gui.iphidden");
+                String serverName = fileInfo.getMetadata().getServerName();
+                if(serverName == null) serverName = ChatFormatting.DARK_RED.toString()+I18n.format("replaymod.gui.iphidden");
 
-            mc.fontRendererObj.drawStringWithShadow(serverName, x + 3, y + (online ? 25 : 13), Color.LIGHT_GRAY.getRGB());
+                mc.fontRendererObj.drawStringWithShadow(serverName, x + 3, y + (online ? 25 : 13), Color.LIGHT_GRAY.getRGB());
 
-            String dateRecorded = dateFormat.format(new Date(fileInfo.getMetadata().getDate()));
-            int dateWidth = mc.fontRendererObj.getStringWidth(dateRecorded);
-            mc.fontRendererObj.drawStringWithShadow(dateRecorded, x + (online ? listWidth - 9 - dateWidth : 3), y + (online ? 13 : 23), Color.LIGHT_GRAY.getRGB());
+                String dateRecorded = dateFormat.format(new Date(fileInfo.getMetadata().getDate()));
+                int dateWidth = mc.fontRendererObj.getStringWidth(dateRecorded);
+                mc.fontRendererObj.drawStringWithShadow(dateRecorded, x + (online ? listWidth - 9 - dateWidth : 3), y + (online ? 13 : 23), Color.LIGHT_GRAY.getRGB());
 
-            if(online) {
-                String owner = I18n.format("replaymod.gui.center.author", ChatFormatting.GRAY.toString()+ChatFormatting.ITALIC, fileInfo.getOwner());
 
-                mc.fontRendererObj.drawStringWithShadow(ChatFormatting.RESET.toString()+owner, x + 3, y + 13, Color.WHITE.getRGB());
-            }
+                if(online) {
+                    String owner = I18n.format("replaymod.gui.center.author", ChatFormatting.GRAY.toString()+ChatFormatting.ITALIC, fileInfo.getOwner());
 
-            if(online) {
-                Category category = Category.fromId(fileInfo.getCategory());
+                    mc.fontRendererObj.drawStringWithShadow(ChatFormatting.RESET.toString()+owner, x + 3, y + 13, Color.WHITE.getRGB());
+                }
 
-                mc.fontRendererObj.drawStringWithShadow(ChatFormatting.ITALIC.toString()+category.toNiceString(), x + 3, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.GRAY.getRGB());
-            }
+                if(online) {
+                    Category category = Category.fromId(fileInfo.getCategory());
 
-            if(fileInfo.getRatings() != null) {
-                String thumbsString = ChatFormatting.GOLD.toString()+"⭑"+fileInfo.getFavorites()+ChatFormatting.GREEN.toString()+" ⬆"
-                        + fileInfo.getRatings().getPositive() + ChatFormatting.RED.toString()+" ⬇" + fileInfo.getRatings().getNegative();
-                int stringWidth = mc.fontRendererObj.getStringWidth(thumbsString);
+                    mc.fontRendererObj.drawStringWithShadow(ChatFormatting.ITALIC.toString()+category.toNiceString(), x + 3, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.GRAY.getRGB());
+                }
 
-                mc.fontRendererObj.drawString(thumbsString, x + listWidth - stringWidth - 5, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.GREEN.getRGB());
+                if(fileInfo.getRatings() != null) {
+                    String thumbsString = ChatFormatting.GOLD.toString()+"⭑"+fileInfo.getFavorites()+ChatFormatting.GREEN.toString()+" ⬆"
+                            + fileInfo.getRatings().getPositive() + ChatFormatting.RED.toString()+" ⬇" + fileInfo.getRatings().getNegative();
+                    int stringWidth = mc.fontRendererObj.getStringWidth(thumbsString);
+
+                    mc.fontRendererObj.drawString(thumbsString, x + listWidth - stringWidth - 5, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.GREEN.getRGB());
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();
