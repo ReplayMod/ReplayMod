@@ -8,8 +8,8 @@ public class PositionKeyframe extends Keyframe {
     private Integer spectatedEntityID = null;
 
     @Override
-    public Object clone() {
-        return new PositionKeyframe(this.getRealTimestamp(), this.getPosition(), this.getSpectatedEntityID());
+    public Keyframe clone() {
+        return new PositionKeyframe(getRealTimestamp(), position, spectatedEntityID);
     }
 
     public PositionKeyframe(int realTime, Position position) {
@@ -17,7 +17,7 @@ public class PositionKeyframe extends Keyframe {
         this.position = position;
     }
 
-    public PositionKeyframe(int realTime, Position position, int spectatedEntityID) {
+    public PositionKeyframe(int realTime, Position position, Integer spectatedEntityID) {
         super(realTime);
         this.position = position;
         this.spectatedEntityID = spectatedEntityID;

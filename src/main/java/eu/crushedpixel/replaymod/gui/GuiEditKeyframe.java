@@ -50,7 +50,7 @@ public class GuiEditKeyframe extends GuiScreen {
 
     public GuiEditKeyframe(Keyframe keyframe) {
         this.keyframe = keyframe;
-        this.keyframeBackup = (Keyframe)keyframe.clone();
+        this.keyframeBackup = keyframe.clone();
         this.posKeyframe = keyframe instanceof PositionKeyframe;
         this.timeKeyframe = keyframe instanceof TimeKeyframe;
         this.markerKeyframe = keyframe instanceof MarkerKeyframe;
@@ -58,14 +58,14 @@ public class GuiEditKeyframe extends GuiScreen {
         ReplayHandler.selectKeyframe(null);
 
         if(posKeyframe) {
-            previous = ReplayHandler.getPreviousPositionKeyframe(keyframe.getRealTimestamp()-1);
+            previous = ReplayHandler.getPreviousPositionKeyframe(keyframe.getRealTimestamp() - 1);
             next = ReplayHandler.getNextPositionKeyframe(keyframe.getRealTimestamp() + 1);
         } else if(timeKeyframe) {
-            previous = ReplayHandler.getPreviousTimeKeyframe(keyframe.getRealTimestamp()-1);
-            next = ReplayHandler.getNextTimeKeyframe(keyframe.getRealTimestamp()+1);
+            previous = ReplayHandler.getPreviousTimeKeyframe(keyframe.getRealTimestamp() - 1);
+            next = ReplayHandler.getNextTimeKeyframe(keyframe.getRealTimestamp() + 1);
         } else if(markerKeyframe) {
-            previous = ReplayHandler.getPreviousMarkerKeyframe(keyframe.getRealTimestamp()-1);
-            next = ReplayHandler.getNextMarkerKeyframe(keyframe.getRealTimestamp()+1);
+            previous = ReplayHandler.getPreviousMarkerKeyframe(keyframe.getRealTimestamp() - 1);
+            next = ReplayHandler.getNextMarkerKeyframe(keyframe.getRealTimestamp() + 1);
         }
 
         ReplayHandler.selectKeyframe(keyframe);
@@ -119,7 +119,7 @@ public class GuiEditKeyframe extends GuiScreen {
                 inputs.addAll(posInputs);
             } else if(markerKeyframe) {
                 markerNameInput = new GuiTextField(GuiConstants.KEYFRAME_REPOSTORY_NAME_INPUT, fontRendererObj, 0, 0, 300, 20);
-                markerNameInput.setText(((MarkerKeyframe)keyframe).getName());
+                markerNameInput.setText(((MarkerKeyframe)keyframe).getName() == null ? "" : ((MarkerKeyframe)keyframe).getName());
                 inputs.add(markerNameInput);
             }
         }

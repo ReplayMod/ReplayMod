@@ -8,7 +8,7 @@ public class MarkerKeyframe extends Keyframe {
     private String name;
 
     @Override
-    public Object clone() {
+    public Keyframe clone() {
         return new MarkerKeyframe(this.getPosition(), this.getRealTimestamp(), this.getName());
     }
 

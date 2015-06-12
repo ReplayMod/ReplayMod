@@ -7,7 +7,7 @@ public class TimeKeyframe extends Keyframe {
     private final int timestamp;
 
     @Override
-    public Object clone() {
+    public Keyframe clone() {
         return new TimeKeyframe(this.getRealTimestamp(), this.getTimestamp());
     }
 
