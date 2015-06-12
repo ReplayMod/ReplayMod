@@ -94,14 +94,16 @@ public class GuiReplayListEntry implements IGuiListEntry {
                         y + slotHeight - (mc.fontRendererObj.FONT_HEIGHT) * 2 - 2, Color.WHITE.getRGB());
             }
 
-            String duration = DurationUtils.convertSecondsToShortString(fileInfo.getMetadata().getDuration() / 1000);
-            int durationWidth = mc.fontRendererObj.getStringWidth(duration);
+            if(fileInfo != null && fileInfo.getMetadata() != null) {
+                String duration = DurationUtils.convertSecondsToShortString(fileInfo.getMetadata().getDuration() / 1000);
+                int durationWidth = mc.fontRendererObj.getStringWidth(duration);
 
-            Gui.drawRect(x + thumbnailOffset - 2 - durationWidth - 1, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT - 2, x + thumbnailOffset, y + slotHeight,
-                    0x80000000);
+                Gui.drawRect(x + thumbnailOffset - 2 - durationWidth - 1, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT - 2, x + thumbnailOffset, y + slotHeight,
+                        0x80000000);
 
-            mc.fontRendererObj.drawStringWithShadow(duration, x + thumbnailOffset - 1 - durationWidth,
-                    y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.WHITE.getRGB());
+                mc.fontRendererObj.drawStringWithShadow(duration, x + thumbnailOffset - 1 - durationWidth,
+                        y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.WHITE.getRGB());
+            }
 
             String serverName = fileInfo.getMetadata().getServerName();
             if(serverName == null) serverName = ChatFormatting.DARK_RED.toString()+I18n.format("replaymod.gui.iphidden");
