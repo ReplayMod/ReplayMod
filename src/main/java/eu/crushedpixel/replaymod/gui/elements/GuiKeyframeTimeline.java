@@ -100,10 +100,6 @@ public class GuiKeyframeTimeline extends GuiTimeline {
     @Override
     public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
         mouseDrag(mc, mouseX, mouseY, button);
-        if(clickedKeyFrame instanceof MarkerKeyframe && dragging == false) {
-            ReplayMod.replaySender.jumpToTime(clickedKeyFrame.getRealTimestamp());
-            ReplayHandler.setLastPosition(((MarkerKeyframe)clickedKeyFrame).getPosition());
-        }
         clickedKeyFrame = null;
         dragging = false;
     }
@@ -165,7 +161,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         while(iterator.hasNext()) {
             Keyframe kf = iterator.next();
 
-            if(!kf.equals(ReplayHandler.getSelectedKeyframe()))
+            if(kf != null && !kf.equals(ReplayHandler.getSelectedKeyframe()))
                 drawKeyframe(kf, bodyWidth, leftTime, rightTime, segmentLength);
         }
 
