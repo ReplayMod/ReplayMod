@@ -112,11 +112,6 @@ public class KeyInputHandler {
         for(KeyBinding kb : keyBindings) {
             if(!kb.isKeyDown()) continue;
 
-            if(kb.getKeyDescription().equals("key.chat") && kb.isPressed()) {
-                mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));
-                break;
-            }
-
             handleCustomKeybindings(kb, found, -1);
             found = true;
         }
@@ -134,6 +129,10 @@ public class KeyInputHandler {
         }
 
         if(!ReplayHandler.isInReplay()) return;
+
+        if(kb.getKeyDescription().equals("key.chat") && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));
+        }
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PLAY_PAUSE) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             ReplayMod.overlay.togglePlayPause();
