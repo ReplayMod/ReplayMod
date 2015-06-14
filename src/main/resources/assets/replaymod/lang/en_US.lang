@@ -298,6 +298,8 @@ replaymod.gui.rendering.timeleft=Time Left
 #Ingame Menu
 replaymod.gui.ingame.menu.addposkeyframe=Add Position Keyframe
 replaymod.gui.ingame.menu.removeposkeyframe=Remove Position Keyframe
+replaymod.gui.ingame.menu.addspeckeyframe=Add Spectator Keyframe
+replaymod.gui.ingame.menu.removespeckeyframe=Remove Spectator Keyframe
 replaymod.gui.ingame.menu.addtimekeyframe=Add Time Keyframe
 replaymod.gui.ingame.menu.removetimekeyframe=Remove Time Keyframe
 replaymod.gui.ingame.menu.pause=Pause Replay

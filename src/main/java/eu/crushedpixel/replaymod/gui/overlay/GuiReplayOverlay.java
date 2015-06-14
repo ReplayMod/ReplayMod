@@ -154,9 +154,44 @@ public class GuiReplayOverlay extends Gui {
             }
         }, "replaymod.gui.ingame.menu.removeposkeyframe");
 
+        private final GuiElement buttonSpectatorNotSelected = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 40, 40, 20, new Runnable() {
+            @Override
+            public void run() {
+                Entity cam = mc.getRenderViewEntity();
+                if (cam != null) {
+                    Position position = new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
+                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt());
+
+                    if (ReplayHandler.isCamera())
+                        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), position));
+                    else
+                        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), cam.getEntityId()));
+                }
+            }
+        }, "replaymod.gui.ingame.menu.addspeckeyframe");
+
+        private final GuiElement buttonSpectatorSelected = texturedButton(BUTTON_PLACE_X, BOTTOM_ROW, 40, 60, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.removeKeyframe(ReplayHandler.getSelectedKeyframe());
+            }
+        }, "replaymod.gui.ingame.menu.removespeckeyframe");
+
         @Override
         public GuiElement delegate() {
-            return ReplayHandler.getSelectedKeyframe() instanceof PositionKeyframe ? buttonSelected : buttonNotSelected;
+            boolean selected = ReplayHandler.getSelectedKeyframe() instanceof PositionKeyframe;
+            boolean camera = true;
+            if(selected) {
+                camera = ((PositionKeyframe)ReplayHandler.getSelectedKeyframe()).getSpectatedEntityID() == null;
+            } else {
+                camera = ReplayHandler.isCamera();
+            }
+
+            if(camera) {
+                return selected ? buttonSelected : buttonNotSelected;
+            } else {
+                return selected ? buttonSpectatorSelected : buttonSpectatorNotSelected;
+            }
         }
     };
 

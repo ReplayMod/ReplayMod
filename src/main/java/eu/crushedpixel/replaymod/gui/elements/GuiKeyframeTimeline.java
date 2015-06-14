@@ -21,8 +21,8 @@ public class GuiKeyframeTimeline extends GuiTimeline {
     private static final int KEYFRAME_TIME_Y = 25;
     private static final int KEYFRAME_SPEC_X = 74;
     private static final int KEYFRAME_SPEC_Y = 30;
-    private static final int KEYFRAME_MARKER_X = 40;
-    private static final int KEYFRAME_MARKER_Y = 39;
+    private static final int KEYFRAME_MARKER_X = 109;
+    private static final int KEYFRAME_MARKER_Y = 20;
 
     private Keyframe clickedKeyFrame;
     private long clickTime;
