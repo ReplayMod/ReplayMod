@@ -41,4 +41,13 @@ public enum Category {
         }
         return this;
     }
+
+    public static String[] stringValues() {
+        String[] values = new String[Category.values().length];
+        int i = 0;
+        for (Category c : Category.values()) {
+            values[i++] = c.toNiceString();
+        }
+        return values;
+    }
 }

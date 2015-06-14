@@ -13,4 +13,8 @@ public interface GuiElement {
     void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button);
     void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button);
 
+    void buttonPressed(Minecraft mc, int mouseX, int mouseY, char key, int keyCode);
+
+    void tick(Minecraft mc);
+
 }

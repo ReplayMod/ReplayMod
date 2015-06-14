@@ -1,8 +1,8 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
-import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.Minecraft;
 
-public class GuiToggleButton extends GuiButton {
+public class GuiToggleButton extends GuiAdvancedButton {
 
     private String baseText;
     private String[] values;
@@ -18,6 +18,15 @@ public class GuiToggleButton extends GuiButton {
         }
 
         this.displayString = baseText+values[value];
+    }
+
+    @Override
+    public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+        boolean success = super.mousePressed(mc, mouseX, mouseY);
+        if (success) {
+            toggle();
+        }
+        return success;
     }
 
     public void toggle() {

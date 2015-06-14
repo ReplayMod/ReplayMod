@@ -42,4 +42,13 @@ public class KeybindRegistry {
 
         mc.gameSettings.loadOptions();
     }
+
+    public static KeyBinding getKeyBinding(String binding) {
+        for (KeyBinding keyBinding : mc.gameSettings.keyBindings) {
+            if (binding.equals(keyBinding.getKeyDescription())) {
+                return keyBinding;
+            }
+        }
+        return null;
+    }
 }

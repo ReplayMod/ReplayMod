@@ -189,6 +189,16 @@ public class GuiTimeline extends Gui implements GuiElement {
 
     }
 
+    @Override
+    public void buttonPressed(Minecraft mc, int mouseX, int mouseY, char key, int keyCode) {
+
+    }
+
+    @Override
+    public void tick(Minecraft mc) {
+
+    }
+
     protected void rect(int x, int y, int u, int v, int width, int height) {
         Minecraft.getMinecraft().renderEngine.bindTexture(replay_gui);
         glEnable(GL_BLEND);

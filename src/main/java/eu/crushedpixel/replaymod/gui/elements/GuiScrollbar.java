@@ -80,6 +80,16 @@ public class GuiScrollbar extends Gui implements GuiElement {
     }
 
     @Override
+    public void buttonPressed(Minecraft mc, int mouseX, int mouseY, char key, int keyCode) {
+
+    }
+
+    @Override
+    public void tick(Minecraft mc) {
+
+    }
+
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
         GlStateManager.resetColor();
         mc.renderEngine.bindTexture(replay_gui);

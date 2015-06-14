@@ -340,9 +340,7 @@ public class GuiRenderSettings extends GuiScreen {
             if(button instanceof GuiCheckBox)
                 ((GuiCheckBox)button).setIsChecked(!((GuiCheckBox)button).isChecked());
 
-            if(button instanceof GuiToggleButton) {
-                ((GuiToggleButton)button).toggle();
-            } else if(button instanceof GuiColorPicker) {
+            if(button instanceof GuiColorPicker) {
                 ((GuiColorPicker)button).pickerToggled();
             } else {
                 if(button.id == GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN) {

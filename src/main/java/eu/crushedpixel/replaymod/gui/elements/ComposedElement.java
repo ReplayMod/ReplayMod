@@ -53,4 +53,18 @@ public class ComposedElement implements GuiElement {
             part.mouseRelease(mc, mouseX, mouseY, button);
         }
     }
+
+    @Override
+    public void buttonPressed(Minecraft mc, int mouseX, int mouseY, char key, int keyCode) {
+        for (GuiElement part : parts) {
+            part.buttonPressed(mc, mouseX, mouseY, key, keyCode);
+        }
+    }
+
+    @Override
+    public void tick(Minecraft mc) {
+        for (GuiElement part : parts) {
+            part.tick(mc);
+        }
+    }
 }

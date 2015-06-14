@@ -85,6 +85,16 @@ public class GuiTexturedButton extends GuiButton implements GuiElement {
 
     }
 
+    @Override
+    public void buttonPressed(Minecraft mc, int mouseX, int mouseY, char key, int keyCode) {
+
+    }
+
+    @Override
+    public void tick(Minecraft mc) {
+
+    }
+
     public void performAction() {
         action.run();
     }

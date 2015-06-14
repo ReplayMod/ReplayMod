@@ -163,6 +163,7 @@ replaymod.gui.upload.uploading=Uploading...
 replaymod.gui.upload.success=File has been successfully uploaded
 replaymod.gui.upload.canceled=Upload has been canceled
 replaymod.gui.upload.hideip=Hide Server IP
+replaymod.gui.upload.nothumbnail=Missing Thumbnail. Please create a Thumbnail in the Replay using the %1$s key.
 
 #Replay Editor
 replaymod.gui.editor.replayfile=Replay File
