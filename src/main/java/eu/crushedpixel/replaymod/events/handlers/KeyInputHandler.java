@@ -173,5 +173,9 @@ public class KeyInputHandler {
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_KEYFRAME_PRESETS) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
             mc.displayGuiScreen(new GuiKeyframeRepository(ReplayHandler.getKeyframeRepository()));
         }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PATH_PREVIEW) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            ReplayMod.replaySettings.setShowPathPreview(!ReplayMod.replaySettings.showPathPreview());
+        }
     }
 }

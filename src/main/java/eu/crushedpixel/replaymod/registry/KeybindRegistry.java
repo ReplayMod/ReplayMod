@@ -21,6 +21,7 @@ public class KeybindRegistry {
     public static final String KEY_RESET_TILT = "replaymod.input.resettilt";
     public static final String KEY_PLAY_PAUSE = "replaymod.input.playpause";
     public static final String KEY_ADD_MARKER = "replaymod.input.marker";
+    public static final String KEY_PATH_PREVIEW = "replaymod.input.pathpreview";
     private static Minecraft mc = Minecraft.getMinecraft();
 
     public static void initialize() {
@@ -37,6 +38,7 @@ public class KeybindRegistry {
         bindings.add(new KeyBinding(KEY_RESET_TILT, Keyboard.KEY_K, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_ROLL_COUNTERCLOCKWISE, Keyboard.KEY_J, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_PLAY_PAUSE, Keyboard.KEY_P, "replaymod.title"));
+        bindings.add(new KeyBinding(KEY_PATH_PREVIEW, Keyboard.KEY_H, "replaymod.title"));
 
         mc.gameSettings.keyBindings = bindings.toArray(new KeyBinding[bindings.size()]);
 
