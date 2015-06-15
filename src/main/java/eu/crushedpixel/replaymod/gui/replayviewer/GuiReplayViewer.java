@@ -257,6 +257,8 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         if(b) {
             currentFileUploaded = ReplayMod.uploadedFileHandler.isUploaded(replayFileList.get(replayGuiList.selected).first().first());
             uploadButton.enabled = !currentFileUploaded;
+        } else {
+            uploadButton.enabled = false;
         }
 
 

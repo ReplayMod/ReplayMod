@@ -254,7 +254,7 @@ public class ReplaySettings {
         linear(false, "replaymod.gui.settings.interpolation"),
         lighting(false, "replaymod.gui.settings.lighting"),
         useResources(true, "replaymod.gui.settings.resources"),
-        previewPath(true, "replaymod.gui.settings.pathpreview");
+        previewPath(false, "replaymod.gui.settings.pathpreview");
 
         private Object value;
         private String name;
