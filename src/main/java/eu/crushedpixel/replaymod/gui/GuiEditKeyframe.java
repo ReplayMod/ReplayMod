@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
 import eu.crushedpixel.replaymod.holders.*;
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
@@ -195,6 +197,7 @@ public class GuiEditKeyframe extends GuiScreen {
                 ((MarkerKeyframe)keyframe).setName(markerNameInput.getText().trim());
             }
         }
+        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(ReplayHandler.getKeyframes()));
         Keyboard.enableRepeatEvents(false);
     }
 

@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.replay;
 import com.mojang.authlib.GameProfile;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
+import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
@@ -92,6 +93,8 @@ public class ReplayHandler {
                 e.printStackTrace();
             }
         }
+
+        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
     }
 
     public static void useKeyframePresetFromRepository(int index) {
@@ -104,6 +107,8 @@ public class ReplayHandler {
         }
 
         if(!(selectedKeyframe instanceof MarkerKeyframe)) selectedKeyframe = null;
+
+        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
     }
 
     public static void spectateEntity(Entity e) {
@@ -214,6 +219,8 @@ public class ReplayHandler {
                 a = b;
             }
         }
+
+        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
     }
 
     public static void removeKeyframe(Keyframe keyframe) {
@@ -223,6 +230,8 @@ public class ReplayHandler {
         } else {
             sortKeyframes();
         }
+
+        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
     }
 
     public static int getKeyframeIndex(TimeKeyframe timeKeyframe) {
@@ -430,6 +439,8 @@ public class ReplayHandler {
         } else {
             selectKeyframe(null);
         }
+
+        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
     }
 
     public static boolean isSelected(Keyframe kf) {

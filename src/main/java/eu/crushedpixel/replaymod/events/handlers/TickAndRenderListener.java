@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.events;
+package eu.crushedpixel.replaymod.events.handlers;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;

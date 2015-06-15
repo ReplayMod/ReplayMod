@@ -180,7 +180,7 @@ public class GuiReplayOverlay extends Gui {
         @Override
         public GuiElement delegate() {
             boolean selected = ReplayHandler.getSelectedKeyframe() instanceof PositionKeyframe;
-            boolean camera = true;
+            boolean camera;
             if(selected) {
                 camera = ((PositionKeyframe)ReplayHandler.getSelectedKeyframe()).getSpectatedEntityID() == null;
             } else {

@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.video;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
-import eu.crushedpixel.replaymod.events.TickAndRenderListener;
+import eu.crushedpixel.replaymod.events.handlers.TickAndRenderListener;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import net.minecraft.client.Minecraft;

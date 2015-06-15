@@ -20,6 +20,12 @@ public class GuiToggleButton extends GuiAdvancedButton {
         this.displayString = baseText+values[value];
     }
 
+    public GuiToggleButton(int buttonId, int x, int y, int width, int height, String buttonText, String[] values) {
+        this(buttonId, x, y, buttonText, values);
+        this.width = width;
+        this.height = height;
+    }
+
     @Override
     public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
         boolean success = super.mousePressed(mc, mouseX, mouseY);
@@ -41,6 +47,7 @@ public class GuiToggleButton extends GuiAdvancedButton {
 
     public void setValue(int value) {
         this.value = value;
+        this.displayString = baseText+values[value];
     }
 
 

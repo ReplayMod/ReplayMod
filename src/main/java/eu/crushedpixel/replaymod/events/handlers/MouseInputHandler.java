@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.events;
+package eu.crushedpixel.replaymod.events.handlers;
 
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;

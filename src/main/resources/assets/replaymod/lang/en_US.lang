@@ -210,6 +210,7 @@ replaymod.gui.settings.lighting=Ambient Lighting
 replaymod.gui.settings.forcechunks=Force Render Chunks
 replaymod.gui.settings.resources=Server Resource Packs
 replaymod.gui.settings.interpolation=Path Interpolation
+replaymod.gui.settings.pathpreview=Show Path Preview
 
 replaymod.gui.settings.videoquality.draft=Draft
 replaymod.gui.settings.videoquality.normal=Normal

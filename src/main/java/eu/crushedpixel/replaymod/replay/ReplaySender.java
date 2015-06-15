@@ -5,7 +5,7 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
-import eu.crushedpixel.replaymod.events.RecordingHandler;
+import eu.crushedpixel.replaymod.events.handlers.RecordingHandler;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.timer.MCTimerHandler;

@@ -3,7 +3,7 @@ package eu.crushedpixel.replaymod;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import eu.crushedpixel.replaymod.api.ApiClient;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
-import eu.crushedpixel.replaymod.events.*;
+import eu.crushedpixel.replaymod.events.handlers.*;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
@@ -11,6 +11,8 @@ import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.*;
 import eu.crushedpixel.replaymod.renderer.InvisibilityRender;
+import eu.crushedpixel.replaymod.renderer.PathPreviewRenderer;
+import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
@@ -69,6 +71,7 @@ public class ReplayMod {
     public static RatedFileHandler ratedFileHandler;
     public static SpectatorRenderer spectatorRenderer;
     public static TooltipRenderer tooltipRenderer;
+    public static PathPreviewRenderer pathPreviewRenderer;
 
     // The instance of your mod that Forge uses.
     @Instance(value = "ReplayModID")
@@ -122,13 +125,17 @@ public class ReplayMod {
 
         spectatorRenderer = new SpectatorRenderer();
 
+        pathPreviewRenderer = new PathPreviewRenderer();
+        FMLCommonHandler.instance().bus().register(pathPreviewRenderer);
+        MinecraftForge.EVENT_BUS.register(pathPreviewRenderer);
+
         KeybindRegistry.initialize();
 
-//        try {
-//            mc.entityRenderer = new SafeEntityRenderer(mc, mc.entityRenderer);
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            mc.entityRenderer = new SafeEntityRenderer(mc, mc.entityRenderer);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         tooltipRenderer = new TooltipRenderer();
 

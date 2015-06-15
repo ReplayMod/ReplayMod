@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.settings;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.registry.LightingHandler;
+import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -149,6 +150,13 @@ public class ReplaySettings {
         rewriteSettings();
     }
 
+    public boolean showPathPreview() { return (Boolean) ReplayOptions.previewPath.getValue(); };
+
+    public void setShowPathPreview(boolean show) {
+        ReplayOptions.previewPath.setValue(show);
+        rewriteSettings();
+    }
+
     public void rewriteSettings() {
         ReplayMod.instance.config.load();
 
@@ -218,12 +226,17 @@ public class ReplaySettings {
     }
 
     public enum RecordingOptions implements ValueEnum {
-        recordServer(true), recordSingleplayer(true), notifications(true), indicator(true);
+        recordServer(true, "replaymod.gui.settings.recordserver"),
+        recordSingleplayer(true, "replaymod.gui.settings.recordsingleplayer"),
+        notifications(true, "replaymod.gui.settings.notifications"),
+        indicator(true, "replaymod.gui.settings.indicator");
 
         private Object value;
+        private String name;
 
-        RecordingOptions(Object value) {
+        RecordingOptions(Object value, String name) {
             this.value = value;
+            this.name = name;
         }
 
         public Object getValue() {
@@ -233,15 +246,22 @@ public class ReplaySettings {
         public void setValue(Object value) {
             this.value = value;
         }
+
+        public String getName() { return I18n.format(name); };
     }
 
     public enum ReplayOptions implements ValueEnum {
-        linear(false), lighting(false), useResources(true);
+        linear(false, "replaymod.gui.settings.interpolation"),
+        lighting(false, "replaymod.gui.settings.lighting"),
+        useResources(true, "replaymod.gui.settings.resources"),
+        previewPath(true, "replaymod.gui.settings.pathpreview");
 
         private Object value;
+        private String name;
 
-        ReplayOptions(Object value) {
+        ReplayOptions(Object value, String name) {
             this.value = value;
+            this.name = name;
         }
 
         public Object getValue() {
@@ -251,15 +271,21 @@ public class ReplaySettings {
         public void setValue(Object value) {
             this.value = value;
         }
+
+        public String getName() { return I18n.format(name); };
     }
 
     public enum RenderOptions implements ValueEnum {
-        videoQuality(0.5f), videoFramerate(30), waitForChunks(true);
+        videoQuality(0.5f, "replaymod.gui.settings.quality"),
+        videoFramerate(30, "replaymod.gui.settings.framerate"),
+        waitForChunks(true, "replaymod.gui.settings.forcechunks");
 
         private Object value;
+        private String name;
 
-        RenderOptions(Object value) {
+        RenderOptions(Object value, String name) {
             this.value = value;
+            this.name = name;
         }
 
         public Object getValue() {
@@ -269,15 +295,21 @@ public class ReplaySettings {
         public void setValue(Object value) {
             this.value = value;
         }
+
+        public String getName() { return I18n.format(name); };
     }
 
     public enum AdvancedOptions implements ValueEnum {
-        recordingPath("./replay_recordings/"), renderPath("./replay_videos/"), downloadPath("./replay_downloads");
+        recordingPath("./replay_recordings/", ""),
+        renderPath("./replay_videos/", ""),
+        downloadPath("./replay_downloads", "");
 
         private Object value;
+        private String name;
 
-        AdvancedOptions(Object value) {
+        AdvancedOptions(Object value, String name) {
             this.value = value;
+            this.name = name;
         }
 
         public Object getValue() {
@@ -287,11 +319,15 @@ public class ReplaySettings {
         public void setValue(Object value) {
             this.value = value;
         }
+
+        public String getName() { return I18n.format(name); };
     }
 
     public interface ValueEnum {
         Object getValue();
 
         void setValue(Object value);
+
+        String getName();
     }
 }
