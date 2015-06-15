@@ -25,6 +25,7 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
@@ -306,6 +307,9 @@ public class GuiUploadFile extends GuiScreen {
                         }
 
                         Category category = Category.values()[GuiUploadFile.this.category.getValue()];
+
+                        String desc = StringUtils.join(description.getText(), '\n');
+
                         if(hideServerIP.isChecked()) {
                             File tmp = File.createTempFile("replay_hidden_ip", "mcpr");
                             File tmpMeta = File.createTempFile("metadata", "json");
@@ -320,12 +324,12 @@ public class GuiUploadFile extends GuiScreen {
                             FileUtils.copyFile(replayFile, tmp);
                             ReplayFileIO.addFilesToZip(tmp, toAdd);
 
-                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, tmp, category, null);
+                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, tmp, category, desc);
 
                             tmpMeta.delete();
                             tmp.delete();
                         } else {
-                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, replayFile, category, null);
+                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, replayFile, category, desc);
                         }
 
                         ReplayMod.uploadedFileHandler.markAsUploaded(replayFile);

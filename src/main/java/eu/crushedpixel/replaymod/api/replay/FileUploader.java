@@ -56,8 +56,11 @@ public class FileUploader {
                 }
             }
 
+            if(description != null && description.length() > 0) {
+                postData += "&description=" + URLEncoder.encode(description, "UTF-8");
+            }
+
             postData += "&name=" + URLEncoder.encode(filename, "UTF-8");
-            System.out.println(postData);
 
             String url = "http://ReplayMod.com/api/upload_file" + postData;
             HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
