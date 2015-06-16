@@ -193,7 +193,7 @@ public class GuiRenderSettings extends GuiScreen {
 
         ignoreCamDir.xPosition = framerateSlider.xPosition + (framerateSlider.width - ignoreCamDir.width)/2;
         youtubeExport.xPosition = qualitySlider.xPosition + (qualitySlider.width - youtubeExport.width)/2;
-        
+
         ignoreCamDir.yPosition = youtubeExport.yPosition = framerateSlider.yPosition+20+10;
 
         //align all advanced buttons
@@ -341,7 +341,9 @@ public class GuiRenderSettings extends GuiScreen {
                 ((GuiCheckBox)button).setIsChecked(!((GuiCheckBox)button).isChecked());
 
             if(button instanceof GuiColorPicker) {
-                ((GuiColorPicker)button).pickerToggled();
+                ((GuiColorPicker) button).pickerToggled();
+            } else if(button instanceof GuiToggleButton) {
+                ((GuiToggleButton) button).toggle();
             } else {
                 if(button.id == GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN) {
                     colorPicker.enabled = enableGreenscreen.isChecked();
