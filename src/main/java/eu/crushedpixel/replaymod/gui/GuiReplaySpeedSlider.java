@@ -36,6 +36,7 @@ public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
 
     public void reset() {
         sliderValue = 9f / 38f;
+        displayString = displayKey + ": 1x";
     }
 
     public static float convertScaleRet(float value) {
