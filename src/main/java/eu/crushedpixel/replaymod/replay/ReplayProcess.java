@@ -11,7 +11,7 @@ import eu.crushedpixel.replaymod.interpolation.LinearTimestamp;
 import eu.crushedpixel.replaymod.interpolation.SplinePoint;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
-import eu.crushedpixel.replaymod.timer.MCTimerHandler;
+import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
 import net.minecraft.client.Minecraft;
 
@@ -109,7 +109,7 @@ public class ReplayProcess {
             }
 
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
-            MCTimerHandler.setTimerSpeed(1f);
+            mc.timer.timerSpeed = 1;
         } else {
             try {
                 isVideoRecording = true;
@@ -136,7 +136,7 @@ public class ReplayProcess {
 
         ReplayMod.replaySender.stopHurrying();
 
-        MCTimerHandler.setActiveTimer();
+        ReplayTimer.get(mc).passive = false;
         ReplayMod.replaySender.setReplaySpeed(previousReplaySpeed);
         ReplayMod.replaySender.setReplaySpeed(0);
     }
@@ -165,9 +165,9 @@ public class ReplayProcess {
             lastPartialTicks = 100;
             lastRenderPartialTicks = 100;
             lastTicks = 100;
-            MCTimerHandler.setRenderPartialTicks(100);
-            MCTimerHandler.setPartialTicks(100);
-            MCTimerHandler.setTicks(100);
+            mc.timer.renderPartialTicks = 100;
+            mc.timer.elapsedPartialTicks = 100;
+            mc.timer.elapsedTicks = 100;
         }
 
         if(justCheck) return;
@@ -336,9 +336,9 @@ public class ReplayProcess {
         //if(curSpeed > 0)
         lastSpeed = curSpeed;
 
-        lastPartialTicks = MCTimerHandler.getPartialTicks();
-        lastRenderPartialTicks = MCTimerHandler.getRenderTicks();
-        lastTicks = MCTimerHandler.getTicks();
+        lastPartialTicks = mc.timer.elapsedPartialTicks;
+        lastRenderPartialTicks = mc.timer.renderPartialTicks;
+        lastTicks = mc.timer.elapsedTicks;
 
         if(curTimestamp != null)
             ReplayMod.replaySender.sendPacketsTill(curTimestamp);

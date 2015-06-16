@@ -16,7 +16,7 @@ import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
-import eu.crushedpixel.replaymod.timer.MCTimerHandler;
+import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -69,7 +69,7 @@ public class VideoRenderer {
     public boolean renderVideo() throws IOException {
         setup();
 
-        Timer timer = MCTimerHandler.getTimer();
+        Timer timer = mc.timer;
 
         replaySender.sendPacketsTill(time.getPoint(0));
         // Pre-tick twice, once to process all the packets
@@ -111,8 +111,8 @@ public class VideoRenderer {
             mouseWasGrabbed = true;
         }
         Mouse.setGrabbed(false);
-        MCTimerHandler.setTimerSpeed(1f);
-        MCTimerHandler.setPassiveTimer();
+        ReplayTimer.get(mc).passive = true;
+        mc.timer.timerSpeed = 1;
 
         fps = options.getFps();
         if (options.isLinearMovement()) {
@@ -169,7 +169,7 @@ public class VideoRenderer {
         if (mouseWasGrabbed) {
             Mouse.setGrabbed(true);
         }
-        MCTimerHandler.setActiveTimer();
+        ReplayTimer.get(mc).passive = false;
         mc.displayGuiScreen(null);
         if (chunkLoadingRenderGlobal != null) {
             chunkLoadingRenderGlobal.uninstall();

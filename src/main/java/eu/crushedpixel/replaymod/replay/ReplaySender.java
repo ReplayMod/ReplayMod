@@ -8,7 +8,6 @@ import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.handlers.RecordingHandler;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.Position;
-import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -422,7 +421,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      * @return {@code true} if it is paused, {@code false} otherwise
      */
     public boolean paused() {
-        return MCTimerHandler.getTimerSpeed() == 0;
+        return mc.timer.timerSpeed == 0;
     }
 
     /**
@@ -442,7 +441,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      */
     public void setReplaySpeed(final double d) {
         if(d != 0) this.replaySpeed = d;
-        MCTimerHandler.setTimerSpeed((float) d);
+        mc.timer.timerSpeed = (float) d;
     }
 
     /////////////////////////////////////////////////////////

@@ -13,7 +13,6 @@ import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
-import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
@@ -51,7 +50,7 @@ public class GuiEventHandler {
                 }
             } else {
                 try {
-                    MCTimerHandler.setTimerSpeed(1);
+                    mc.timer.timerSpeed = 1;
                 } catch(Exception e) {
                     e.printStackTrace();
                 }

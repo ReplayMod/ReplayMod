@@ -56,10 +56,6 @@ public class TickAndRenderListener {
 
         if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick(false);
         if(ReplayHandler.isCamera()) ReplayHandler.setCameraEntity(ReplayHandler.getCameraEntity());
-        if(ReplayHandler.isInReplay() && ReplayMod.replaySender.paused()) {
-            if(mc != null && mc.thePlayer != null)
-                MinecraftTicker.runMouseKeyboardTick(mc);
-        }
         if((mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive())
                 && ReplayHandler.getCameraEntity() != null && !ReplayHandler.isInPath()) {
             ReplayHandler.spectateCamera();

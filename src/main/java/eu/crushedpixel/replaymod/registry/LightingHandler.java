@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.registry;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.timer.MCTimerHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings.Options;
 
@@ -25,8 +24,8 @@ public class LightingHandler {
 
         try {
             if(ReplayMod.replaySender.paused()) {
-                MCTimerHandler.advancePartialTicks(1);
-                MCTimerHandler.advanceRenderPartialTicks(1);
+                mc.timer.elapsedPartialTicks += 1;
+                mc.timer.renderPartialTicks += 1;
             } else {
                 Minecraft.getMinecraft().entityRenderer.updateCameraAndRender(0);
             }

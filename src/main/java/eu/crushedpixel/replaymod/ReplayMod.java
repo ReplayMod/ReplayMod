@@ -22,6 +22,7 @@ import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
+import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.video.frame.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
@@ -98,6 +99,7 @@ public class ReplayMod {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
+        mc.timer = new ReplayTimer();
         overlay = new GuiReplayOverlay();
 
         FMLCommonHandler.instance().bus().register(new ConnectionEventHandler());
