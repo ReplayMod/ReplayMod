@@ -217,28 +217,6 @@ public class GuiReplayOverlay extends Gui {
         }
     };
 
-    private final GuiElement buttonMarker = new DelegatingElement() {
-
-        private final GuiElement buttonNotSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 80, 20, new Runnable() {
-            @Override
-            public void run() {
-                ReplayHandler.addKeyframe(new TimeKeyframe(ReplayHandler.getRealTimelineCursor(), ReplayMod.replaySender.currentTimeStamp()));
-            }
-        }, "replaymod.gui.ingame.menu.addtimekeyframe");
-
-        private final GuiElement buttonSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 100, 20, new Runnable() {
-            @Override
-            public void run() {
-                ReplayHandler.removeKeyframe(ReplayHandler.getSelectedKeyframe());
-            }
-        }, "replaymod.gui.ingame.menu.removetimekeyframe");
-
-        @Override
-        public GuiElement delegate() {
-            return ReplayHandler.getSelectedKeyframe() instanceof TimeKeyframe ? buttonSelected : buttonNotSelected;
-        }
-    };
-
     private final GuiElement buttonZoomIn = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW, 40, 20, 9, new Runnable() {
         @Override
         public void run() {
@@ -296,6 +274,8 @@ public class GuiReplayOverlay extends Gui {
         if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
             mc.displayGuiScreen(null);
         }
+        zoom_scale = 0.1f;
+        pos_left = 0;
         ReplayHandler.setRealTimelineCursor(0);
         if (slider) {
             speedSlider.reset();
