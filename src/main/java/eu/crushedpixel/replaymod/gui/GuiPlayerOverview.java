@@ -304,7 +304,6 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
                 File f = File.createTempFile(ReplayFile.ENTRY_VISIBILITY, "json");
                 ReplayFileIO.writePlayerVisibilityToFile(getVisibilityInstance(), f);
                 ReplayMod.replayFileAppender.registerModifiedFile(f, ReplayFile.ENTRY_VISIBILITY, ReplayHandler.getReplayFile());
-                System.out.println("here");
             } catch(Exception e) {
                 e.printStackTrace();
             }
