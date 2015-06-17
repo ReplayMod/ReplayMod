@@ -52,6 +52,9 @@ public class GuiRegister extends GuiScreen {
             passwordInput = new PasswordTextField(GuiConstants.REGISTER_PASSWORD_FIELD, fontRendererObj, this.width / 2 - 45, 90, 145, 20);
             passwordConfirmation = new PasswordTextField(GuiConstants.REGISTER_PASSWORD_CONFIRM_FIELD, fontRendererObj, this.width / 2 - 45, 120, 145, 20);
 
+            passwordInput.setMaxStringLength(32);
+            passwordConfirmation.setMaxStringLength(32);
+
             registerButton = new GuiButton(GuiConstants.REGISTER_OKAY_BUTTON, this.width / 2 - 150 - 2, 170, I18n.format("replaymod.gui.register"));
             registerButton.enabled = false;
             registerButton.width = 150;
