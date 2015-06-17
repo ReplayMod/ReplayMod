@@ -13,14 +13,75 @@ import static java.lang.Math.PI;
 
 public class EquirectangularFrameRenderer extends FrameRenderer {
 
+    private static final byte IMAGE_BACK = 0;
+    private static final byte IMAGE_FRONT = 1;
+    private static final byte IMAGE_LEFT = 2;
+    private static final byte IMAGE_RIGHT = 3;
+    private static final byte IMAGE_TOP = 4;
+    private static final byte IMAGE_BOTTOM = 5;
+
     private final int frameSize;
     protected final CubicEntityRenderer entityRenderer;
+
+    private byte[][] image;
+    private double[][] imageX;
+    private double[][] imageY;
 
     public EquirectangularFrameRenderer(RenderOptions options, boolean stable) {
         super(options);
         this.frameSize = options.getWidth() / 4;
         this.entityRenderer = new CubicEntityRenderer(options, frameSize, stable);
         setCustomEntityRenderer(entityRenderer);
+    }
+
+    private void computeCubicToEquirectangularTables() {
+        int rWidth = getVideoWidth();
+        int rHeight = getVideoHeight();
+        image = new byte[rWidth][rHeight];
+        imageX = new double[rWidth][rHeight];
+        imageY = new double[rWidth][rHeight];
+        for (int i = 0; i < rWidth; i++) {
+            double yaw = PI * 2 * i / rWidth;
+            int piQuarter = 8 * i / rWidth - 4;
+            byte target;
+            if (piQuarter < -3) {
+                target = IMAGE_BACK;
+            } else if (piQuarter < -1) {
+                target = IMAGE_LEFT;
+            } else if (piQuarter < 1) {
+                target = IMAGE_FRONT;
+            } else if (piQuarter < 3) {
+                target = IMAGE_RIGHT;
+            } else {
+                target = IMAGE_BACK;
+            }
+            double fYaw = (yaw + PI/4) % (PI / 2) - PI/4;
+            double d = 1 / Math.cos(fYaw);
+            double gcXN = (Math.tan(fYaw) + 1) / 2;
+            for (int j = 0; j < rHeight; j++) {
+                double cXN = gcXN;
+                byte pt = target;
+                double pitch = PI * j / rHeight - PI / 2;
+                double cYN = (Math.tan(pitch) * d + 1) / 2;
+
+                if (cYN >= 1) {
+                    double pd = Math.tan(PI/2 - pitch);
+                    cXN = (-Math.sin(yaw) * pd + 1) / 2;
+                    cYN = (Math.cos(yaw) * pd + 1) / 2;
+                    pt = IMAGE_BOTTOM;
+                }
+                if (cYN < 0) {
+                    double pd = Math.tan(PI/2 - pitch);
+                    cXN = (Math.sin(yaw) * pd + 1) / 2;
+                    cYN = (Math.cos(yaw) * pd + 1) / 2;
+                    pt = IMAGE_TOP;
+                }
+
+                image[i][j] = pt;
+                imageX[i][j] = Math.min(frameSize - 1, (cXN * frameSize));
+                imageY[i][j] = Math.min(frameSize - 1, (cYN * frameSize));
+            }
+        }
     }
 
     @Override
@@ -42,50 +103,36 @@ public class EquirectangularFrameRenderer extends FrameRenderer {
     }
 
     protected BufferedImage cubicToEquirectangular(BufferedImage top, BufferedImage bottom, BufferedImage front, BufferedImage back, BufferedImage left, BufferedImage right) {
+        int[][] images = {
+                ((DataBufferInt) back.getRaster().getDataBuffer()).getData(),
+                ((DataBufferInt) front.getRaster().getDataBuffer()).getData(),
+                ((DataBufferInt) left.getRaster().getDataBuffer()).getData(),
+                ((DataBufferInt) right.getRaster().getDataBuffer()).getData(),
+                ((DataBufferInt) top.getRaster().getDataBuffer()).getData(),
+                ((DataBufferInt) bottom.getRaster().getDataBuffer()).getData()
+        };
+
+        int fWidth = frameSize;
         int rWidth = getVideoWidth();
         int rHeight = getVideoHeight();
+        if (image == null || image.length != rWidth || image[0].length != rHeight) {
+            try {
+                computeCubicToEquirectangularTables();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+
         BufferedImage result = new BufferedImage(rWidth, rHeight, BufferedImage.TYPE_INT_RGB);
         int[] resultPixels = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
+        byte[] image;
+        double[] imageX, imageY;
         for (int i = 0; i < rWidth; i++) {
-            double yaw = PI * 2 * i / rWidth;
-            int piQuarter = 8 * i / rWidth - 4;
-            BufferedImage target;
-            if (piQuarter < -3) {
-                target = back;
-            } else if (piQuarter < -1) {
-                target = left;
-            } else if (piQuarter < 1) {
-                target = front;
-            } else if (piQuarter < 3) {
-                target = right;
-            } else {
-                target = back;
-            }
-            double fYaw = (yaw + PI/4) % (PI / 2) - PI/4;
-            double d = 1 / Math.cos(fYaw);
-            double gcXN = (Math.tan(fYaw) + 1) / 2;
+            image = this.image[i];
+            imageX = this.imageX[i];
+            imageY = this.imageY[i];
             for (int j = 0; j < rHeight; j++) {
-                double cXN = gcXN;
-                BufferedImage pt = target;
-                double pitch = PI * j / rHeight - PI / 2;
-                double cYN = (Math.tan(pitch) * d + 1) / 2;
-
-                if (cYN >= 1) {
-                    double pd = Math.tan(PI/2 - pitch);
-                    cXN = (-Math.sin(yaw) * pd + 1) / 2;
-                    cYN = (Math.cos(yaw) * pd + 1) / 2;
-                    pt = bottom;
-                }
-                if (cYN < 0) {
-                    double pd = Math.tan(PI/2 - pitch);
-                    cXN = (Math.sin(yaw) * pd + 1) / 2;
-                    cYN = (Math.cos(yaw) * pd + 1) / 2;
-                    pt = top;
-                }
-
-                int cX = Math.min(frameSize - 1, (int) (cXN * frameSize));
-                int cY = Math.min(frameSize - 1, (int) (cYN * frameSize));
-                resultPixels[i + j * rWidth] = 0xff000000 | pt.getRGB(cX, cY); // Make sure we got alpha value as well
+                resultPixels[i + j * rWidth] = images[image[j]][(int) imageX[j] + (int) imageY[j] * fWidth];
             }
         }
 

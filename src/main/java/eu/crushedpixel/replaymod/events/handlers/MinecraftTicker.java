@@ -246,7 +246,10 @@ public class MinecraftTicker {
 
             if(mc != null)
                 mc.systemTime = Minecraft.getSystemTime();
-        } catch(Exception e) {
+        } catch (ReportedException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
