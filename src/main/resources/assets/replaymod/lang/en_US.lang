@@ -249,7 +249,10 @@ replaymod.gui.keyframerepository.preset.defaultname=New Keyframe Preset
 replaymod.gui.keyframerepository.duplicate=This Preset already exists
 
 #Edit Keyframe GUI
-replaymod.gui.editkeyframe.title=Edit Keyframe
+replaymod.gui.editkeyframe.title.pos=Edit Position Keyframe
+replaymod.gui.editkeyframe.title.time=Edit Time Keyframe
+replaymod.gui.editkeyframe.title.marker=Edit Event Marker
+replaymod.gui.editkeyframe.title.spec=Edit Spectator Keyframe
 replaymod.gui.editkeyframe.xpos=X Position
 replaymod.gui.editkeyframe.ypos=Y Position
 replaymod.gui.editkeyframe.zpos=Z Position
@@ -257,6 +260,7 @@ replaymod.gui.editkeyframe.campitch=Camera Pitch
 replaymod.gui.editkeyframe.camyaw=Camera Yaw
 replaymod.gui.editkeyframe.camroll=Camera Roll
 replaymod.gui.editkeyframe.timelineposition=Timeline Position
+replaymod.gui.editkeyframe.markername=Event Marker Name
 
 #Render Settings GUI
 replaymod.gui.rendersettings.title=Rendering Options
@@ -313,3 +317,5 @@ replaymod.gui.ingame.menu.playpath=Play Camera Path
 replaymod.gui.ingame.menu.pausepath=Pause Camera Path
 replaymod.gui.ingame.menu.zoomin=Zoom in
 replaymod.gui.ingame.menu.zoomout=Zoom out
+
+replaymod.gui.ingame.unnamedmarker=Unnamed Event Marker
