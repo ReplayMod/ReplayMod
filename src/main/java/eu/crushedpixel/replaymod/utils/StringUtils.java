@@ -10,6 +10,7 @@ public class StringUtils {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     public static String[] splitStringInMultipleRows(String string, int maxWidth) {
+        if(string == null) return new String[0];
         List<String> rows = new ArrayList<String>();
         String remaining = string;
         while(remaining.length() > 0) {
