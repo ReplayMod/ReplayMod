@@ -31,6 +31,11 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
 
     @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
+        drawTextBox();
+    }
+
+    @Override
+    public void drawTextBox() {
         if (text.isEmpty() && !isFocused()) {
             super.setEnabled(false);
             super.setDisabledTextColour(hintTextColor);
@@ -42,7 +47,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
             super.setDisabledTextColour(disabledTextColor);
             super.setEnabled(isEnabled);
         } else {
-            drawTextBox();
+            super.drawTextBox();
         }
     }
 
