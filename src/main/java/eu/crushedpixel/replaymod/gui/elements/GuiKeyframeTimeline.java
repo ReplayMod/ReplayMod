@@ -9,6 +9,7 @@ import eu.crushedpixel.replaymod.holders.TimeKeyframe;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
 import org.lwjgl.util.Point;
 
 import java.awt.*;
@@ -42,41 +43,65 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
     @Override
     public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        long time = getTimeAt(mouseX, mouseY);
-        if (time == -1) {
-            return;
-        }
-
-        int tolerance = (int)(2 * Math.round(zoom * timelineLength / width));
-
-        Keyframe closest;
-        if (mouseY >= positionY + BORDER_TOP + 5 && timeKeyframes) {
-            closest = ReplayHandler.getClosestTimeKeyframeForRealTime((int) time, tolerance);
-        } else if (mouseY >= positionY + BORDER_TOP && placeKeyframes) {
-            closest = ReplayHandler.getClosestPlaceKeyframeForRealTime((int) time, tolerance);
-        } else if (mouseY >= positionY + BORDER_TOP + 10 && markerKeyframes) {
-            closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
-        } else {
-            closest = null;
-        }
-
-        ReplayHandler.selectKeyframe(closest); //can be null, deselects keyframe
-
-        // If we clicked on a key frame, then continue monitoring the mouse for movements
-        long currentTime = System.currentTimeMillis();
-        if (closest != null) {
-            if (currentTime - clickTime < 500) { // if double clicked then open GUI instead
-                mc.displayGuiScreen(new GuiEditKeyframe(closest));
-                this.clickedKeyFrame = null;
-            } else {
-                this.clickedKeyFrame = closest;
-                this.dragging = false;
+        //left mouse button
+        if(button == 0) {
+            long time = getTimeAt(mouseX, mouseY);
+            if(time == -1) {
+                return;
             }
-        } else { // If we didn't then just update the cursor
-            ReplayHandler.setRealTimelineCursor((int) time);
-            this.dragging = true;
+
+            int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
+
+            Keyframe closest;
+            if(mouseY >= positionY + BORDER_TOP + 5 && timeKeyframes) {
+                closest = ReplayHandler.getClosestTimeKeyframeForRealTime((int) time, tolerance);
+            } else if(mouseY >= positionY + BORDER_TOP && placeKeyframes) {
+                closest = ReplayHandler.getClosestPlaceKeyframeForRealTime((int) time, tolerance);
+            } else if(mouseY >= positionY + BORDER_TOP + 10 && markerKeyframes) {
+                closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
+            } else {
+                closest = null;
+            }
+
+            ReplayHandler.selectKeyframe(closest); //can be null, deselects keyframe
+
+            // If we clicked on a key frame, then continue monitoring the mouse for movements
+            long currentTime = System.currentTimeMillis();
+            if(closest != null) {
+                if(currentTime - clickTime < 500) { // if double clicked then open GUI instead
+                    mc.displayGuiScreen(new GuiEditKeyframe(closest));
+                    this.clickedKeyFrame = null;
+                } else {
+                    this.clickedKeyFrame = closest;
+                    this.dragging = false;
+                }
+            } else { // If we didn't then just update the cursor
+                ReplayHandler.setRealTimelineCursor((int) time);
+                this.dragging = true;
+            }
+            this.clickTime = currentTime;
+
+        } else if(button == 1) {
+            if(markerKeyframes) {
+                long time = getTimeAt(mouseX, mouseY);
+                if(time == -1) {
+                    return;
+                }
+
+                int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
+
+                MarkerKeyframe closest = null;
+                if(mouseY >= positionY + BORDER_TOP + 10 && markerKeyframes) {
+                    closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
+                }
+
+                if(closest != null) {
+                    //Jump to clicked Marker Keyframe
+                    ReplayHandler.setLastPosition(closest.getPosition());
+                    ReplayMod.replaySender.jumpToTime(closest.getRealTimestamp());
+                }
+            }
         }
-        this.clickTime = currentTime;
     }
 
     @Override
@@ -194,7 +219,9 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
                 if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
                     Point mouse = MouseUtils.getMousePos();
-                    ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), marker.getName(), null, Color.WHITE);
+                    String markerName = marker.getName();
+                    if(markerName == null) markerName = I18n.format("replaymod.gui.ingame.unnamedmarker");
+                    ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), markerName, null, Color.WHITE);
 
                     drawn = true;
                 }
