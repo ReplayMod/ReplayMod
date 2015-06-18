@@ -116,40 +116,43 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         double segmentLength = timelineLength * zoom;
 
         //iterate over keyframes to find spectator segments
-        ListIterator<Keyframe> iterator = ReplayHandler.getKeyframes().listIterator();
-        while(iterator.hasNext()) {
-            Keyframe kf = iterator.next();
-
-            if(!(kf instanceof PositionKeyframe) || ((PositionKeyframe)kf).getSpectatedEntityID() == null) continue;
-
-            int i = iterator.nextIndex();
-            int nextSpectatorKeyframeRealTime = -1;
-
+        if(placeKeyframes) {
+            ListIterator<Keyframe> iterator = ReplayHandler.getKeyframes().listIterator();
             while(iterator.hasNext()) {
-                Keyframe kf2 = iterator.next();
+                Keyframe kf = iterator.next();
 
-                if(kf2 instanceof PositionKeyframe) {
-                    if(((PositionKeyframe) kf).getSpectatedEntityID()
-                            .equals(((PositionKeyframe) kf2).getSpectatedEntityID())) {
+                if(!(kf instanceof PositionKeyframe) || ((PositionKeyframe) kf).getSpectatedEntityID() == null)
+                    continue;
 
-                        nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
+                int i = iterator.nextIndex();
+                int nextSpectatorKeyframeRealTime = -1;
+
+                while(iterator.hasNext()) {
+                    Keyframe kf2 = iterator.next();
+
+                    if(kf2 instanceof PositionKeyframe) {
+                        if(((PositionKeyframe) kf).getSpectatedEntityID()
+                                .equals(((PositionKeyframe) kf2).getSpectatedEntityID())) {
+
+                            nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
+                        }
+                        break;
                     }
-                    break;
                 }
-            }
 
-            int i2 = iterator.previousIndex();
+                int i2 = iterator.previousIndex();
 
-            while(i2 >= i) {
-                iterator.previous();
-                i2--;
-            }
+                while(i2 >= i) {
+                    iterator.previous();
+                    i2--;
+                }
 
-            if(nextSpectatorKeyframeRealTime != -1) {
-                int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
-                int nextX = getKeyframeX(nextSpectatorKeyframeRealTime, leftTime, bodyWidth, segmentLength);
+                if(nextSpectatorKeyframeRealTime != -1) {
+                    int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
+                    int nextX = getKeyframeX(nextSpectatorKeyframeRealTime, leftTime, bodyWidth, segmentLength);
 
-                drawGradientRect(keyframeX + 2, positionY + BORDER_TOP + 1, nextX - 2, positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
+                    drawGradientRect(keyframeX + 2, positionY + BORDER_TOP + 1, nextX - 2, positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
+                }
             }
         }
 
@@ -157,7 +160,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
 
         //Draw Keyframe logos
-        iterator = ReplayHandler.getKeyframes().listIterator();
+        ListIterator<Keyframe> iterator = ReplayHandler.getKeyframes().listIterator();
         while(iterator.hasNext()) {
             Keyframe kf = iterator.next();
 
@@ -185,15 +188,16 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         long leftTime = Math.round(timeStart * timelineLength);
         double segmentLength = timelineLength * zoom;
 
+        if(markerKeyframes) {
+            for(MarkerKeyframe marker : ReplayHandler.getMarkers()) {
+                int keyframeX = getKeyframeX(marker.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
 
-        for(MarkerKeyframe marker : ReplayHandler.getMarkers()) {
-            int keyframeX = getKeyframeX(marker.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
+                if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
+                    Point mouse = MouseUtils.getMousePos();
+                    ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), marker.getName(), null, Color.WHITE);
 
-            if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
-                Point mouse = MouseUtils.getMousePos();
-                ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), marker.getName(), null, Color.WHITE);
-
-                drawn = true;
+                    drawn = true;
+                }
             }
         }
 
