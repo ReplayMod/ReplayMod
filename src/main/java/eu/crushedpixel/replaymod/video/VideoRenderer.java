@@ -174,6 +174,8 @@ public class VideoRenderer {
         if (chunkLoadingRenderGlobal != null) {
             chunkLoadingRenderGlobal.uninstall();
         }
+
+        ReplayMod.soundHandler.playRenderSuccessSound();
     }
 
     private void updateCam() {

@@ -19,10 +19,11 @@ import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
+import eu.crushedpixel.replaymod.sound.SoundHandler;
+import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
-import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.video.frame.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
@@ -73,6 +74,7 @@ public class ReplayMod {
     public static SpectatorRenderer spectatorRenderer;
     public static TooltipRenderer tooltipRenderer;
     public static PathPreviewRenderer pathPreviewRenderer;
+    public static SoundHandler soundHandler = new SoundHandler();
 
     // The instance of your mod that Forge uses.
     @Instance(value = "ReplayModID")
