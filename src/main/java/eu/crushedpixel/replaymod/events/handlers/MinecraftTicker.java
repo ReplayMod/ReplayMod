@@ -241,7 +241,7 @@ public class MinecraftTicker {
                 }
             }
 
-            if(mc != null)
+            if(mc != null && mc.thePlayer != null)
                 mc.sendClickBlockToController(mc.currentScreen == null && mc.gameSettings.keyBindAttack.isKeyDown() && mc.inGameHasFocus);
 
             if(mc != null)
