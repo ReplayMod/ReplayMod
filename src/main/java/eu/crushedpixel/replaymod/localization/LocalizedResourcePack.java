@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import java.util.Set;
 public class LocalizedResourcePack implements IResourcePack {
 
     private Map<String, String> availableLanguages = new HashMap<String, String>();
+    private boolean websiteAvailable = true;
 
     @Override
     public InputStream getInputStream(ResourceLocation loc) {
@@ -33,11 +35,17 @@ public class LocalizedResourcePack implements IResourcePack {
     public boolean resourceExists(ResourceLocation loc) {
         if(!(loc.getResourcePath().endsWith(".lang"))) return false;
         String langcode = loc.getResourcePath().split("/")[1].split("\\.")[0];
+        if(availableLanguages.containsKey(langcode)) return true;
+        if(!websiteAvailable) return false;
         boolean downloaded = true;
         try {
             String lang = ReplayMod.apiClient.getTranslation(langcode);
             String prop = StringEscapeUtils.unescapeHtml4(lang);
             availableLanguages.put(langcode, prop);
+        } catch(ConnectException ce) {
+            websiteAvailable = false;
+            ce.printStackTrace();
+            downloaded = false;
         } catch(Exception e) {
             e.printStackTrace();
             downloaded = false;

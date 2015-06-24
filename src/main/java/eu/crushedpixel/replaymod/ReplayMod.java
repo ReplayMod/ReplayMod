@@ -149,12 +149,19 @@ public class ReplayMod {
         //clean up replay_recordings folder
         removeTmcprFiles();
 
-        try {
-            mc.defaultResourcePacks.add(new LocalizedResourcePack());
-            mc.refreshResources();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        Thread localizedResourcePackLoader = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mc.defaultResourcePacks.add(new LocalizedResourcePack());
+                    mc.refreshResources();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "localizedResourcePackLoader");
+        localizedResourcePackLoader.start();
+
 
         /*
         boolean auth = false;
