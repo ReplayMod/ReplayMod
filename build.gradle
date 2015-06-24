@@ -73,6 +73,7 @@ jar {
 
     def langDir = file("$buildDir/languages")
     doFirst {
+	try {
         langDir.deleteDir()
         langDir.mkdirs()
         def dir = new File(langDir, 'assets/replaymod/lang/')
@@ -83,6 +84,9 @@ jar {
             new File(dir, e.getName()) << zip
             zip.closeEntry()
         }
+	} catch(Exception e) {
+	    e.printStackTrace();
+	}
     }
     from langDir
 
