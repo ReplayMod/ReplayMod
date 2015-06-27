@@ -192,16 +192,18 @@ public class ReplayMod {
 
             final String path = System.getProperty("replaymod.render.path");
             String type = System.getProperty("replaymod.render.type");
-            String quality = System.getProperty("replaymod.render.quality");
+            String bitrate = System.getProperty("replaymod.render.bitrate");
             String fps = System.getProperty("replaymod.render.fps");
             String waitForChunks = System.getProperty("replaymod.render.waitforchunks");
             String linearMovement = System.getProperty("replaymod.render.linearmovement");
             String skyColor = System.getProperty("replaymod.render.skycolor");
             String width = System.getProperty("replaymod.render.width");
             String height = System.getProperty("replaymod.render.height");
+            String exportCommand = System.getProperty("replaymod.render.exportcommand");
+            String exportCommandArgs = System.getProperty("replaymod.render.exportcommandargs");
             final RenderOptions options = new RenderOptions();
-            if (quality != null) {
-                options.setQuality(Float.parseFloat(quality));
+            if (bitrate != null) {
+                options.setBitrate(bitrate);
             }
             if (fps != null) {
                 options.setFps(Integer.parseInt(fps));
@@ -224,6 +226,13 @@ public class ReplayMod {
             }
             if (height != null) {
                 options.setHeight(Integer.parseInt(height));
+            }
+
+            if (exportCommand != null) {
+                options.setExportCommand(exportCommand);
+            }
+            if (exportCommandArgs != null) {
+                options.setExportCommandArgs(exportCommandArgs);
             }
 
             FrameRenderer renderer;

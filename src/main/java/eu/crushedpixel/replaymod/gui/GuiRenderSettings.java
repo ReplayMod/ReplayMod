@@ -390,7 +390,7 @@ public class GuiRenderSettings extends GuiScreen {
         options.setFps(framerateSlider.getFPS());
         ReplayMod.replaySettings.setVideoFramerate(framerateSlider.getFPS());
 
-        options.setQuality(qualitySlider.getQuality());
+        //TODO options.setQuality(qualitySlider.getQuality());
         ReplayMod.replaySettings.setVideoQuality(qualitySlider.getQuality());
 
         if(enableGreenscreen.isChecked()) {

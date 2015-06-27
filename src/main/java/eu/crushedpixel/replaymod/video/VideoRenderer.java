@@ -55,7 +55,7 @@ public class VideoRenderer {
 
     public VideoRenderer(RenderOptions options) throws IOException {
         this.frameRenderer = options.getRenderer();
-        this.videoWriter = new VideoWriter(options);
+        this.videoWriter = new VideoWriter(this, options);
         this.gui = new GuiVideoRenderer(this);
         this.replaySender = ReplayMod.replaySender;
         this.options = options;

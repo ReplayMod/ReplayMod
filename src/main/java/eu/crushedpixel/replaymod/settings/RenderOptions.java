@@ -7,7 +7,7 @@ import static org.apache.commons.lang3.Validate.*;
 
 public final class RenderOptions {
     private FrameRenderer renderer;
-    private float quality = 0.5f;
+    private String bitrate = "10M";
     private int fps = 30;
 
     // Advanced
@@ -18,6 +18,10 @@ public final class RenderOptions {
     private int height = Minecraft.getMinecraft().displayHeight;
 
     // Highly advanced
+    private String exportCommand = "ffmpeg";
+    private String exportCommandArgs = "-f rawvideo -pix_fmt argb -s %WIDTH%x%HEIGHT% -r %FPS% -i - " +
+            "-an " +
+            "-c:v libvpx -b:v %BITRATE% %FILENAME%.webm";
     private int writerQueueSize = Integer.parseInt(System.getProperty("replaymod.render.writerQueueSize", "1"));
 
     public FrameRenderer getRenderer() {
@@ -28,13 +32,12 @@ public final class RenderOptions {
         this.renderer = notNull(renderer);
     }
 
-    public float getQuality() {
-        return quality;
+    public String getBitrate() {
+        return bitrate;
     }
 
-    public void setQuality(float quality) {
-        inclusiveBetween(0f, 1f, quality);
-        this.quality = quality;
+    public void setBitrate(String bitrate) {
+        this.bitrate = bitrate;
     }
 
     public int getFps() {
@@ -90,6 +93,22 @@ public final class RenderOptions {
         this.height = height;
     }
 
+    public String getExportCommand() {
+        return exportCommand;
+    }
+
+    public void setExportCommand(String exportCommand) {
+        this.exportCommand = exportCommand;
+    }
+
+    public String getExportCommandArgs() {
+        return exportCommandArgs;
+    }
+
+    public void setExportCommandArgs(String exportCommandArgs) {
+        this.exportCommandArgs = exportCommandArgs;
+    }
+
     public int getWriterQueueSize() {
         return writerQueueSize;
     }
@@ -101,13 +120,15 @@ public final class RenderOptions {
     public RenderOptions copy() {
         RenderOptions copy = new RenderOptions();
         copy.renderer = this.renderer;
-        copy.quality = this.quality;
+        copy.bitrate = this.bitrate;
         copy.fps = this.fps;
         copy.waitForChunks = this.waitForChunks;
         copy.isLinearMovement = this.isLinearMovement;
         copy.skyColor = this.skyColor;
         copy.width = this.width;
         copy.height = this.height;
+        copy.exportCommand = this.exportCommand;
+        copy.exportCommandArgs = this.exportCommandArgs;
         copy.writerQueueSize = this.writerQueueSize;
         return copy;
     }
