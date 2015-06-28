@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.WorldType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
@@ -79,6 +80,10 @@ public class ConnectionEventHandler {
 
         try {
             if(event.isLocal) {
+                if (MinecraftServer.getServer().getEntityWorld().getWorldType() == WorldType.DEBUG_WORLD) {
+                    logger.info("Debug World recording is not supported.");
+                    return;
+                }
                 if(!ReplayMod.replaySettings.isEnableRecordingSingleplayer()) {
                     logger.info("Singleplayer Recording is disabled");
                     return;
