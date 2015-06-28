@@ -7,9 +7,11 @@ import eu.crushedpixel.replaymod.utils.OpenGLUtils;
 import eu.crushedpixel.replaymod.video.entity.strategy.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EffectRenderer;
+import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.ICamera;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,6 +23,7 @@ import org.lwjgl.util.glu.Project;
 
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -135,7 +138,6 @@ public abstract class CustomEntityRenderer {
 
     protected void renderWorldPass(float partialTicks, long finishTimeNano, int renderPass) {
         RenderGlobal renderglobal = mc.renderGlobal;
-        EffectRenderer effectrenderer = mc.effectRenderer;
         Entity entity = mc.getRenderViewEntity();
         enableCull();
         viewport(0, 0, mc.displayWidth, mc.displayHeight);
@@ -209,12 +211,7 @@ public abstract class CustomEntityRenderer {
         renderglobal.drawBlockDamageTexture(Tessellator.getInstance(), Tessellator.getInstance().getWorldRenderer(), entity, partialTicks);
         disableBlend();
 
-        proxied.enableLightmap();
-        effectrenderer.renderLitParticles(entity, partialTicks);
-        RenderHelper.disableStandardItemLighting();
-        setupFog(0, partialTicks);
-        effectrenderer.renderParticles(entity, partialTicks);
-        proxied.disableLightmap();
+        renderParticles(entity, partialTicks);
 
         depthMask(false);
         enableCull();
@@ -259,6 +256,101 @@ public abstract class CustomEntityRenderer {
         net.minecraftforge.client.ForgeHooksClient.dispatchRenderLast(renderglobal, partialTicks);
 
         renderSpectatorHand(partialTicks, renderPass);
+    }
+
+    protected void renderParticles(Entity entity, float partialTicks) {
+        proxied.enableLightmap();
+        renderLitParticles(entity, partialTicks);
+        RenderHelper.disableStandardItemLighting();
+        setupFog(0, partialTicks);
+        renderNormalParticles(entity, partialTicks);
+        proxied.disableLightmap();
+    }
+
+    protected void renderLitParticles(Entity entity, float partialTicks) {
+        EffectRenderer effectRenderer = mc.effectRenderer;
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+
+        double yaw = Math.toRadians(entity.rotationYaw);
+        double pitch = Math.toRadians(entity.rotationPitch);
+
+        float rotX = (float) Math.cos(yaw);
+        float rotZ = (float) Math.sin(yaw);
+        float rotXZ = (float) Math.cos(pitch);
+
+        float rotYZ = (float) (-rotZ * Math.sin(pitch));
+        float rotXY = (float) (rotX * Math.sin(pitch));
+
+        for (int i = 0; i < 2; i++) {
+            @SuppressWarnings("unchecked")
+            List<EntityFX> list = (List<EntityFX>) effectRenderer.fxLayers[3][i];
+            for (EntityFX fx : list) {
+                worldrenderer.setBrightness(fx.getBrightnessForRender(partialTicks));
+                renderParticle(fx, worldrenderer, entity, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
+            }
+        }
+    }
+
+    protected void renderNormalParticles(Entity entity, float partialTicks) {
+        EffectRenderer effectRenderer = mc.effectRenderer;
+        TextureManager textureManager = mc.getTextureManager();
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer worldRenderer = tessellator.getWorldRenderer();
+
+        float rotX = ActiveRenderInfo.getRotationX();
+        float rotZ = ActiveRenderInfo.getRotationZ();
+        float rotYZ = ActiveRenderInfo.getRotationYZ();
+        float rotXY = ActiveRenderInfo.getRotationXY();
+        float rotXZ = ActiveRenderInfo.getRotationXZ();
+        EntityFX.interpPosX = entity.posX;
+        EntityFX.interpPosY = entity.posY;
+        EntityFX.interpPosZ = entity.posZ;
+
+        enableBlend();
+        blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        alphaFunc(GL_GREATER, 0.003921569F);
+
+        for (int texture = 0; texture < 3; texture++) {
+            for (int depthMask = 0; depthMask < 2; depthMask++) {
+                if (effectRenderer.fxLayers[texture][depthMask].isEmpty()) {
+                    continue;
+                }
+
+                if (depthMask == 0) {
+                    GlStateManager.depthMask(false);
+                } else {
+                    GlStateManager.depthMask(true);
+                }
+
+                if (texture == 1) {
+                    textureManager.bindTexture(TextureMap.locationBlocksTexture);
+                } else {
+                    textureManager.bindTexture(EffectRenderer.particleTextures);
+                }
+
+                color(1, 1, 1, 1);
+                worldRenderer.startDrawingQuads();
+
+                @SuppressWarnings("unchecked")
+                List<EntityFX> list = (List<EntityFX>) effectRenderer.fxLayers[texture][depthMask];
+                for (final EntityFX fx : list) {
+                    worldRenderer.setBrightness(fx.getBrightnessForRender(partialTicks));
+                    renderParticle(fx, worldRenderer, entity, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
+                }
+
+                tessellator.draw();
+            }
+        }
+
+        depthMask(true);
+        disableBlend();
+        alphaFunc(516, 0.1F);
+    }
+
+    protected void renderParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks,
+                                  float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
+        fx.func_180434_a(worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
     }
 
     protected void renderSpectatorHand(float partialTicks, int renderPass) {

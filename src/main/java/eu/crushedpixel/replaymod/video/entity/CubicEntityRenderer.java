@@ -2,7 +2,9 @@ package eu.crushedpixel.replaymod.video.entity;
 
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
+import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
@@ -122,5 +124,24 @@ public class CubicEntityRenderer extends CustomEntityRenderer {
     @Override
     protected void renderSpectatorHand(float partialTicks, int renderPass) {
         // No spectator hands during 360° view
+    }
+
+    @Override
+    protected void renderParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks, float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
+        // Align all particles towards the camera
+        double dx = fx.prevPosX + (fx.posX - fx.prevPosX) * partialTicks - view.posX;
+        double dy = fx.prevPosY + (fx.posY - fx.prevPosY) * partialTicks - view.posY;
+        double dz = fx.prevPosZ + (fx.posZ - fx.prevPosZ) * partialTicks - view.posZ;
+        double pitch = -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+        double yaw = -Math.atan2(dx, dz);
+
+        rotX = (float) Math.cos(yaw);
+        rotZ = (float) Math.sin(yaw);
+        rotXZ = (float) Math.cos(pitch);
+
+        rotYZ = (float) (-rotZ * Math.sin(pitch));
+        rotXY = (float) (rotX * Math.sin(pitch));
+
+        super.renderParticle(fx, worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
     }
 }
