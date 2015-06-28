@@ -298,11 +298,16 @@ public abstract class CustomEntityRenderer {
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer worldRenderer = tessellator.getWorldRenderer();
 
-        float rotX = ActiveRenderInfo.getRotationX();
-        float rotZ = ActiveRenderInfo.getRotationZ();
-        float rotYZ = ActiveRenderInfo.getRotationYZ();
-        float rotXY = ActiveRenderInfo.getRotationXY();
-        float rotXZ = ActiveRenderInfo.getRotationXZ();
+        double yaw = Math.toRadians(entity.rotationYaw);
+        double pitch = Math.toRadians(entity.rotationPitch);
+
+        float rotX = (float) Math.cos(yaw);
+        float rotZ = (float) Math.sin(yaw);
+        float rotXZ = (float) Math.cos(pitch);
+
+        float rotYZ = (float) (-rotZ * Math.sin(pitch));
+        float rotXY = (float) (rotX * Math.sin(pitch));
+
         EntityFX.interpPosX = entity.posX;
         EntityFX.interpPosY = entity.posY;
         EntityFX.interpPosZ = entity.posZ;
