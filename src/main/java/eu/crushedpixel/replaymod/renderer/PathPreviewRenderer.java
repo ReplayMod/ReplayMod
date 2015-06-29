@@ -130,7 +130,7 @@ public class PathPreviewRenderer {
 
         @Override
         public int compare(PositionKeyframe o1, PositionKeyframe o2) {
-            return -(new Double(o1.getPosition().distanceTo(playerX, playerY, playerZ)).compareTo(o2.getPosition().distanceTo(playerX, playerY, playerZ)));
+            return -(new Double(o1.getPosition().distanceSquared(playerX, playerY, playerZ)).compareTo(o2.getPosition().distanceSquared(playerX, playerY, playerZ)));
         }
 
         @Override

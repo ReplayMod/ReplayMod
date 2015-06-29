@@ -82,12 +82,11 @@ public class Position {
 
     public void setRoll(float roll) { this.roll = roll; }
 
-    public double distanceTo(double x, double y, double z) {
-        return distanceTo(new Position(x, y, z, 0, 0));
-    }
-
-    public double distanceTo(Position p2) {
-        return Math.sqrt(Math.pow((p2.getX() - getX()), 2) + Math.pow((p2.getY() - getY()), 2) + Math.pow((p2.getZ() - getZ()), 2));
+    public double distanceSquared(double x, double y, double z) {
+        double dx = this.x -  x;
+        double dy = this.y -  y;
+        double dz = this.z -  z;
+        return dx * dx + dy * dy + dz * dz;
     }
 
     @Override
