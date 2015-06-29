@@ -20,7 +20,7 @@ public class InvisibilityRender extends RenderPlayer {
 
     @Override
     public boolean shouldRender(Entity entity, ICamera camera, double camX, double camY, double camZ) {
-        if(PlayerHandler.isHidden(entity.getUniqueID()) ||
+        if(PlayerHandler.isHidden(entity.getUniqueID()) || entity.isInvisible() ||
                 (ReplayHandler.isInReplay() && entity == Minecraft.getMinecraft().thePlayer)) return false;
         return super.shouldRender(entity, camera, camX, camY, camZ);
     }

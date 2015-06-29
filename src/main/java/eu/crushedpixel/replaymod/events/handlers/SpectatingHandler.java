@@ -11,6 +11,6 @@ public class SpectatingHandler {
     private static Minecraft mc = Minecraft.getMinecraft();
     
     public static boolean canSpectate(Entity e) {
-        return ((e instanceof EntityPlayer || e instanceof EntityLiving || e instanceof EntityItemFrame) && e != mc.thePlayer);
+        return ((e instanceof EntityPlayer || e instanceof EntityLiving || e instanceof EntityItemFrame) && e != mc.thePlayer && !e.isInvisible());
     } 
 }
