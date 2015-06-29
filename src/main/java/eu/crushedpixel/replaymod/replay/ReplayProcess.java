@@ -14,6 +14,8 @@ import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiErrorScreen;
+import net.minecraft.client.resources.I18n;
 
 import java.io.IOException;
 
@@ -98,13 +100,20 @@ public class ReplayProcess {
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
             mc.timer.timerSpeed = 1;
         } else {
+            boolean success = false;
             try {
                 isVideoRecording = true;
-                boolean success = new VideoRenderer(renderOptions).renderVideo();
-                isVideoRecording = false;
-                stopReplayProcess(success);
+                VideoRenderer videoRenderer = new VideoRenderer(renderOptions);
+                success = videoRenderer.renderVideo();
             } catch (IOException e) {
                 e.printStackTrace();
+
+                GuiErrorScreen errorScreen = new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"),
+                        I18n.format("replaymod.gui.rendering.error.message"));
+                mc.displayGuiScreen(errorScreen);
+            } finally {
+                isVideoRecording = false;
+                stopReplayProcess(success);
             }
         }
     }

@@ -303,6 +303,10 @@ replaymod.gui.rendering.progress=Frames rendered: %1$d / %2$d
 replaymod.gui.rendering.timetaken=Render Time
 replaymod.gui.rendering.timeleft=Time Left
 
+#Render Errors
+replaymod.gui.rendering.error.title=Rendering Failed
+replaymod.gui.rendering.error.message=To render a video, you need to have ffmpeg installed. http://ffmpeg.org
+
 #Ingame Menu
 replaymod.gui.ingame.menu.addposkeyframe=Add Position Keyframe
 replaymod.gui.ingame.menu.removeposkeyframe=Remove Position Keyframe
