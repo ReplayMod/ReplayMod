@@ -24,6 +24,8 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
+import java.util.Objects;
+
 public class RecordingHandler {
 
     public static final int entityID = Integer.MIN_VALUE + 9001;
@@ -34,7 +36,7 @@ public class RecordingHandler {
     private int ticksSinceLastCorrection = 0;
     private boolean wasSleeping = false;
     private int lastRiding = -1;
-    private Integer rotationYawHeadBefore = 0;
+    private Integer rotationYawHeadBefore = null;
 
     @SubscribeEvent
     public void onPlayerJoin(EntityJoinWorldEvent e) {
@@ -156,7 +158,7 @@ public class RecordingHandler {
             //HEAD POS
             int rotationYawHead = ((int)(e.player.rotationYawHead * 256.0F / 360.0F));
 
-            if(rotationYawHead != rotationYawHeadBefore) {
+            if(!Objects.equals(rotationYawHead, rotationYawHeadBefore)) {
                 S19PacketEntityHeadLook head = new S19PacketEntityHeadLook();
                 ByteBuf bb1 = Unpooled.buffer();
                 PacketBuffer pb1 = new PacketBuffer(bb1);
