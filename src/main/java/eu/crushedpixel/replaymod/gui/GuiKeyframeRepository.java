@@ -156,7 +156,7 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
                 keyframeSetList.removeElement(keyframeSetList.getSelectionIndex());
                 break;
             case GuiConstants.KEYFRAME_REPOSITORY_LOAD_BUTTON:
-                ReplayHandler.useKeyframePresetFromRepository(keyframeSetList.getSelectionIndex());
+                ReplayHandler.useKeyframePreset(keyframeRepository[keyframeSetList.getSelectionIndex()].getKeyframes());
                 saveOnQuit();
                 mc.displayGuiScreen(null);
                 break;

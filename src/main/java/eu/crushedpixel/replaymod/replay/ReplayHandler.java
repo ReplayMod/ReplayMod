@@ -102,9 +102,13 @@ public class ReplayHandler {
     }
 
     public static void useKeyframePresetFromRepository(int index) {
+        useKeyframePreset(keyframeRepository[index].getKeyframes());
+    }
+
+    public static void useKeyframePreset(Keyframe[] kfs) {
         MarkerKeyframe[] markers = getMarkers();
 
-        keyframes = new ArrayList<Keyframe>(Arrays.asList(keyframeRepository[index].getKeyframes()));
+        keyframes = new ArrayList<Keyframe>(Arrays.asList(kfs));
 
         for(MarkerKeyframe mk : markers) {
             keyframes.add(mk);
