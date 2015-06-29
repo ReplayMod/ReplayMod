@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItemFrame;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Mouse;
@@ -29,7 +30,7 @@ public class MouseInputHandler {
             if(!rightDown) {
                 rightDown = true;
                 if(mc.pointedEntity != null && ReplayHandler.isCamera() && mc.currentScreen == null) {
-                    if(mc.pointedEntity instanceof EntityLiving || mc.pointedEntity instanceof EntityItemFrame)
+                    if(mc.pointedEntity instanceof EntityPlayer || mc.pointedEntity instanceof EntityLiving || mc.pointedEntity instanceof EntityItemFrame)
                         ReplayHandler.spectateEntity(mc.pointedEntity);
                 }
             }
