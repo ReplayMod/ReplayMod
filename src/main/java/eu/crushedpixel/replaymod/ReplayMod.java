@@ -154,7 +154,12 @@ public class ReplayMod {
             public void run() {
                 try {
                     mc.defaultResourcePacks.add(new LocalizedResourcePack());
-                    mc.refreshResources();
+                    mc.addScheduledTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            mc.refreshResources();
+                        }
+                    });
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
