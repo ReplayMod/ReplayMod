@@ -12,15 +12,19 @@ import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
+import net.minecraft.init.Bootstrap;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
+import net.minecraft.util.ReportedException;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ReplayHandler {
@@ -141,7 +145,29 @@ public class ReplayHandler {
     }
 
     public static void startPath(RenderOptions renderOptions) {
-        if(!ReplayHandler.isInPath()) ReplayProcess.startReplayProcess(renderOptions);
+        if(!ReplayHandler.isInPath()) {
+            try {
+                ReplayProcess.startReplayProcess(renderOptions);
+            } catch (ReportedException e) {
+                // We have to manually unwrap OOM errors as Minecraft doesn't handle them when they're wrapped
+                Throwable cause = e;
+                while (cause != null) {
+                    if (cause instanceof OutOfMemoryError) {
+                        // Nevertheless save the crash report in case we actually need it
+                        Minecraft minecraft = Minecraft.getMinecraft();
+                        CrashReport crashReport = e.getCrashReport();
+                        minecraft.addGraphicsAndWorldToCrashReport(crashReport);
+                        Bootstrap.printToSYSOUT(crashReport.getCompleteReport());
+                        File folder = new File(minecraft.mcDataDir, "crash-reports");
+                        File file = new File(folder, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
+                        crashReport.saveToFile(file);
+                        throw (OutOfMemoryError) cause;
+                    }
+                    cause = e.getCause();
+                }
+                throw e;
+            }
+        }
     }
 
     public static void interruptReplay() {

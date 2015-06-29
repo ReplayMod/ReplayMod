@@ -44,6 +44,11 @@ public class ReplayTimer extends Timer {
                 e.printStackTrace();
             } catch (LWJGLException e) {
                 e.printStackTrace();
+            } catch (OutOfMemoryError e) {
+                // Disable passive mode and reset timer speed so we can use the buttons on the OOM screen
+                passive = false;
+                timerSpeed = 1;
+                throw e;
             }
         }
     }
