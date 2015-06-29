@@ -150,8 +150,13 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             outputThread.start();
         }
 
-        public void writeData(PacketData data) {
-            queue.add(data);
+        public synchronized void writePacket(byte[] bytes) {
+            if(startTime == null) {
+                startTime = System.currentTimeMillis();
+            }
+            int timestamp = (int) (System.currentTimeMillis() - startTime);
+            lastSentPacket = timestamp;
+            queue.add(new PacketData(bytes, timestamp));
         }
 
         public void requestFinish(Set<String> players, Set<MarkerKeyframe> markers) {

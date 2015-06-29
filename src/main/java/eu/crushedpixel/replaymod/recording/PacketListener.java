@@ -8,7 +8,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
-import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
@@ -61,8 +60,7 @@ public class PacketListener extends DataListener {
                 players.add(uuid.toString());
             }
 
-            PacketData pd = getPacketData(packet);
-            writeData(pd);
+            dataWriter.writePacket(getPacketData(packet));
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -106,8 +104,7 @@ public class PacketListener extends DataListener {
                     return;
                 }
 
-                PacketData pd = getPacketData(packet);
-                writeData(pd);
+                dataWriter.writePacket(getPacketData(packet));
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -117,19 +114,8 @@ public class PacketListener extends DataListener {
         super.channelRead(ctx, msg);
     }
 
-    private void writeData(PacketData pd) {
-        dataWriter.writeData(pd);
-        lastSentPacket = pd.getTimestamp();
-    }
-
     @SuppressWarnings("unchecked")
-    private PacketData getPacketData(Packet packet) throws IOException {
-
-        if(startTime == null) startTime = System.currentTimeMillis();
-
-        int timestamp = (int) (System.currentTimeMillis() - startTime);
-
-
+    private byte[] getPacketData(Packet packet) throws IOException {
         if(packet instanceof S0FPacketSpawnMob) {
             S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
             if (p.field_149043_l == null) {
@@ -154,9 +140,7 @@ public class PacketListener extends DataListener {
             }
         }
 
-        byte[] array = ReplayFileIO.serializePacket(packet);
-
-        return new PacketData(array, timestamp);
+        return ReplayFileIO.serializePacket(packet);
     }
 
     public synchronized int handleResourcePack(S48PacketResourcePackSend packet) {
