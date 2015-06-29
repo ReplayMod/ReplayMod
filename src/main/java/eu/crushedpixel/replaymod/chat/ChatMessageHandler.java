@@ -4,8 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.*;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -15,10 +14,23 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @SideOnly(Side.CLIENT)
 public class ChatMessageHandler {
 
+    private static final IChatComponent prefix;
+
+    static {
+        //results in "§8[§6Replay Mod§8]§r "
+
+        ChatStyle dark_gray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
+        ChatStyle gold = new ChatStyle().setColor(EnumChatFormatting.GOLD);
+
+        prefix = new ChatComponentText("[").setChatStyle(dark_gray)
+                .appendSibling(new ChatComponentTranslation("replaymod.title").setChatStyle(gold))
+                .appendSibling(new ChatComponentText("] "));
+    }
+
+
     private boolean active = true;
     private boolean alive = true;
     private Queue<IChatComponent> requests = new ConcurrentLinkedQueue<IChatComponent>();
-    private String prefix = "§8[§6Replay Mod§8]§r ";
     private EntityPlayerSP player = null;
     public Thread t = new Thread(new Runnable() {
 
@@ -61,20 +73,12 @@ public class ChatMessageHandler {
     public void addLocalizedChatMessage(String message, ChatMessageType type, Object... options) {
         message = I18n.format(message, options);
         if(ReplayMod.replaySettings.isShowNotifications()) {
-            message = prefix + toColor(message, type);
+
             ChatComponentText cct = new ChatComponentText(message);
-            requests.add(cct);
-        }
-    }
+            cct.setChatStyle(type.getChatStyle());
 
-    private String toColor(String message, ChatMessageType type) {
-        if(type == ChatMessageType.INFORMATION) {
-            return "§2" + message;
-        } else if(type == ChatMessageType.WARNING) {
-            return "§c" + message;
+            requests.add(prefix.createCopy().appendSibling(cct));
         }
-
-        return message;
     }
 
     public void stop() {
@@ -90,6 +94,16 @@ public class ChatMessageHandler {
     }
 
     public enum ChatMessageType {
-        INFORMATION, WARNING;
+        INFORMATION(new ChatStyle().setColor(EnumChatFormatting.DARK_GREEN)), WARNING(new ChatStyle().setColor(EnumChatFormatting.RED));
+
+        private ChatStyle chatStyle;
+
+        public ChatStyle getChatStyle() {
+            return chatStyle;
+        }
+
+        ChatMessageType(ChatStyle chatStyle) {
+            this.chatStyle = chatStyle;
+        }
     }
 }
