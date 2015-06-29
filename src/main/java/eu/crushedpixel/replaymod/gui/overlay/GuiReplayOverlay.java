@@ -98,8 +98,8 @@ public class GuiReplayOverlay extends Gui {
         @Override
         public void run() {
             //if not enough keyframes, abort and leave chat message
-            if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
-                ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.notenoughkeyframes", ChatMessageHandler.ChatMessageType.WARNING);
+            if(ReplayHandler.getPosKeyframeCount() < 2 || ReplayHandler.getTimeKeyframeCount() < 1) {
+                ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.morekeyframes", ChatMessageHandler.ChatMessageType.WARNING);
             } else {
                 mc.displayGuiScreen(new GuiRenderSettings());
             }

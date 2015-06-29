@@ -41,7 +41,7 @@ replaymod.chat.failedthumb=Thumbnail could not be saved
 replaymod.chat.addedmarker=Event Marker has been added
 
 #Chat messages displayed in Replay Viewer
-replaymod.chat.notenoughkeyframes=At least 2 position or time keyframes required
+replaymod.chat.morekeyframes=At least 2 position keyframes and 1 time keyframe required
 replaymod.chat.pathstarted=Camera Path started
 replaymod.chat.pathfinished=Camera Path finished
 replaymod.chat.pathinterrupted=Camera Path canceled

@@ -88,8 +88,8 @@ public class ReplayProcess {
         ReplayMod.chatMessageHandler.initialize();
 
         //if not enough keyframes, abort and leave chat message
-        if(ReplayHandler.getPosKeyframeCount() < 2 && ReplayHandler.getTimeKeyframeCount() < 2) {
-            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.notenoughkeyframes", ChatMessageType.WARNING);
+        if(ReplayHandler.getPosKeyframeCount() < 2 || ReplayHandler.getTimeKeyframeCount() < 1) {
+            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.morekeyframes", ChatMessageType.WARNING);
             return;
         }
 

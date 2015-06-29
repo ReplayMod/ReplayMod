@@ -140,8 +140,8 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
                 Keyframe[] keyframes = kfs.toArray(new Keyframe[ReplayHandler.getKeyframes().size()]);
                 KeyframeSet newSet = new KeyframeSet(I18n.format("replaymod.gui.keyframerepository.preset.defaultname"), keyframes);
-                if(newSet.getPositionKeyframeCount() < 2 && newSet.getTimeKeyframeCount() < 2) {
-                    message = I18n.format("replaymod.chat.notenoughkeyframes");
+                if(newSet.getPositionKeyframeCount() < 2 || newSet.getTimeKeyframeCount() < 1) {
+                    message = I18n.format("replaymod.chat.morekeyframes");
                     break;
                 } else if(keyframeSetList.getCopyOfElements().contains(newSet)) {
                     message = I18n.format("replaymod.gui.keyframerepository.duplicate");
