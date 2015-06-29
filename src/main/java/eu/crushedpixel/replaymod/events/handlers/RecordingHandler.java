@@ -38,6 +38,7 @@ public class RecordingHandler {
     private int ticksSinceLastCorrection = 0;
     private boolean wasSleeping = false;
     private int lastRiding = -1;
+    private Integer rotationYawHeadBefore = 0;
 
     @SubscribeEvent
     public void onPlayerJoin(EntityJoinWorldEvent e) {
@@ -104,6 +105,7 @@ public class RecordingHandler {
 
     public void resetVars() {
         lastX = lastY = lastZ = null;
+        rotationYawHeadBefore = null;
         lastEffects = new ArrayList<Integer>();
         playerItems = new ItemStack[5];
     }
@@ -162,16 +164,22 @@ public class RecordingHandler {
             ConnectionEventHandler.insertPacket(packet);
 
             //HEAD POS
-            S19PacketEntityHeadLook head = new S19PacketEntityHeadLook();
-            ByteBuf bb1 = Unpooled.buffer();
-            PacketBuffer pb1 = new PacketBuffer(bb1);
+            int rotationYawHead = ((int)(e.player.rotationYawHead * 256.0F / 360.0F));
 
-            pb1.writeVarIntToBuffer(entityID);
-            pb1.writeByte(((int) (e.player.rotationYawHead * 256.0F / 360.0F)));
+            if(rotationYawHead != rotationYawHeadBefore) {
+                S19PacketEntityHeadLook head = new S19PacketEntityHeadLook();
+                ByteBuf bb1 = Unpooled.buffer();
+                PacketBuffer pb1 = new PacketBuffer(bb1);
 
-            head.readPacketData(pb1);
+                pb1.writeVarIntToBuffer(entityID);
+                pb1.writeByte(rotationYawHead);
 
-            ConnectionEventHandler.insertPacket(head);
+                head.readPacketData(pb1);
+
+                ConnectionEventHandler.insertPacket(head);
+
+                rotationYawHeadBefore = rotationYawHead;
+            }
 
             S12PacketEntityVelocity vel = new S12PacketEntityVelocity(entityID, e.player.motionX, e.player.motionY, e.player.motionZ);
             ConnectionEventHandler.insertPacket(vel);
