@@ -39,7 +39,7 @@ public class RatedFileHandler {
                 rated = new HashMap<Integer, Boolean>();
 
                 for(FileRating fr : ratings) {
-                    rated.put(fr.getFileID(), fr.getRating());
+                    rated.put(fr.getFile(), fr.isRatingPositive());
                 }
 
                 retrieved = true;
