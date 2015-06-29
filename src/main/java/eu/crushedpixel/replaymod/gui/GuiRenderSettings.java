@@ -33,7 +33,7 @@ public class GuiRenderSettings extends GuiScreen {
     private GuiNumberInput xRes, yRes;
     private GuiToggleButton interpolation, forceChunks;
     private GuiVideoFramerateSlider framerateSlider;
-    private GuiVideoQualitySlider qualitySlider;
+    private GuiNumberInput bitrateInput;
     private GuiColorPicker colorPicker;
 
     private List<GuiButton> permanentButtons = new ArrayList<GuiButton>();
@@ -47,10 +47,6 @@ public class GuiRenderSettings extends GuiScreen {
     private boolean initialized;
 
     private final Minecraft mc = Minecraft.getMinecraft();
-
-    public GuiRenderSettings() {
-        ReplayMod.replaySender.setReplaySpeed(0);
-    }
 
     @Override
     public void initGui() {
@@ -89,7 +85,7 @@ public class GuiRenderSettings extends GuiScreen {
                     yRes.setCursorPositionEnd();
                 }
             };
-            yRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_Y, fontRendererObj, 0, 0, 50, 1, 100000, mc.displayHeight, false) {
+            yRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_Y, fontRendererObj, 0, 0, 50, 1, 10000, mc.displayHeight, false) {
                 @Override
                 public void moveCursorBy(int move) {
                     super.moveCursorBy(move);
@@ -107,13 +103,25 @@ public class GuiRenderSettings extends GuiScreen {
                 }
             };
 
+            bitrateInput = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_BITRATE_INPUT, fontRendererObj, 0, 0, 50, 1D, null, 10000D, false) {
+                @Override
+                public void drawTextBox() {
+                    int index = getCursorPosition();
+                    String textBefore = getText();
+                    setText(textBefore+" kbps");
+                    setCursorPosition(index);
+                    super.drawTextBox();
+                    setText(textBefore);
+                    setCursorPosition(index);
+                }
+            };
+
             xRes.setEnabled(false);
             yRes.setEnabled(false);
+            bitrateInput.setEnabled(true);
 
             framerateSlider = new GuiVideoFramerateSlider(GuiConstants.RENDER_SETTINGS_FRAMERATE_SLIDER, 0, 0, ReplayMod.replaySettings.getVideoFramerate(),
                     I18n.format("replaymod.gui.rendersettings.framerate"));
-            qualitySlider = new GuiVideoQualitySlider(GuiConstants.RENDER_SETTINGS_QUALITY_SLIDER, 0, 0, (float)ReplayMod.replaySettings.getVideoQuality(),
-                    I18n.format("replaymod.gui.rendersettings.quality"));
 
             interpolation = new GuiToggleButton(GuiConstants.RENDER_SETTINGS_INTERPOLATION_BUTTON, 0, 0,
                     I18n.format("replaymod.gui.rendersettings.interpolation")+": ",
@@ -128,7 +136,7 @@ public class GuiRenderSettings extends GuiScreen {
 
             forceChunks.setValue(ReplayMod.replaySettings.getWaitForChunks() ? 0 : 1);
 
-            forceChunks.width = interpolation.width = framerateSlider.width = qualitySlider.width = 150;
+            forceChunks.width = interpolation.width = framerateSlider.width = 150;
 
             enableGreenscreen = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN, 0, 0, I18n.format("replaymod.gui.rendersettings.chromakey"), false);
 
@@ -145,7 +153,6 @@ public class GuiRenderSettings extends GuiScreen {
 
             defaultButtons.add(customResolution);
             defaultButtons.add(framerateSlider);
-            defaultButtons.add(qualitySlider);
             defaultButtons.add(ignoreCamDir);
             defaultButtons.add(youtubeExport);
 
@@ -187,12 +194,16 @@ public class GuiRenderSettings extends GuiScreen {
         forceChunks.xPosition = interpolation.xPosition+interpolation.width+10;
         forceChunks.yPosition = interpolation.yPosition;
 
+        String bitrateString = I18n.format("replaymod.gui.settings.bitrate")+": ";
+        int bsw = fontRendererObj.getStringWidth(bitrateString);
+        bitrateInput.xPosition = forceChunks.xPosition + bsw;
+        bitrateInput.width = forceChunks.width - bsw;
+
         framerateSlider.xPosition = interpolation.xPosition;
-        qualitySlider.xPosition = forceChunks.xPosition;
-        framerateSlider.yPosition = qualitySlider.yPosition = interpolation.yPosition + 20 + 10;
+        framerateSlider.yPosition = bitrateInput.yPosition = interpolation.yPosition + 20 + 10;
 
         ignoreCamDir.xPosition = framerateSlider.xPosition + (framerateSlider.width - ignoreCamDir.width)/2;
-        youtubeExport.xPosition = qualitySlider.xPosition + (qualitySlider.width - youtubeExport.width)/2;
+        youtubeExport.xPosition = bitrateInput.xPosition + (bitrateInput.width - youtubeExport.width)/2;
 
         ignoreCamDir.yPosition = youtubeExport.yPosition = framerateSlider.yPosition+20+10;
 
@@ -244,7 +255,11 @@ public class GuiRenderSettings extends GuiScreen {
 
             xRes.drawTextBox();
             yRes.drawTextBox();
+            bitrateInput.drawTextBox();
             this.drawString(fontRendererObj, "*", xRes.xPosition + xRes.width + 5, xRes.yPosition + 3, Color.WHITE.getRGB());
+
+            String bitrateString = I18n.format("replaymod.gui.settings.bitrate")+": ";
+            this.drawString(fontRendererObj, bitrateString, forceChunks.xPosition, bitrateInput.yPosition + 6, Color.WHITE.getRGB());
 
             rendererDropdown.drawTextBox();
         }
@@ -255,6 +270,7 @@ public class GuiRenderSettings extends GuiScreen {
         if(!rendererDropdown.mouseClickedResult(mouseX, mouseY)) {
             xRes.mouseClicked(mouseX, mouseY, mouseButton);
             yRes.mouseClicked(mouseX, mouseY, mouseButton);
+            bitrateInput.mouseClicked(mouseX, mouseY, mouseButton);
 
             if(mouseButton == 0) {
                 List<GuiButton> toHandle = new ArrayList<GuiButton>();
@@ -275,7 +291,6 @@ public class GuiRenderSettings extends GuiScreen {
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int state) {
         framerateSlider.mouseReleased(mouseX, mouseY);
-        qualitySlider.mouseReleased(mouseX, mouseY);
     }
 
     @Override
@@ -299,6 +314,7 @@ public class GuiRenderSettings extends GuiScreen {
         }
         xRes.textboxKeyTyped(typedChar, keyCode);
         yRes.textboxKeyTyped(typedChar, keyCode);
+        bitrateInput.textboxKeyTyped(typedChar, keyCode);
         super.keyTyped(typedChar, keyCode);
     }
 
@@ -306,6 +322,7 @@ public class GuiRenderSettings extends GuiScreen {
     public void updateScreen() {
         xRes.updateCursorCounter();
         yRes.updateCursorCounter();
+        bitrateInput.updateCursorCounter();
         super.updateScreen();
     }
 
@@ -390,8 +407,7 @@ public class GuiRenderSettings extends GuiScreen {
         options.setFps(framerateSlider.getFPS());
         ReplayMod.replaySettings.setVideoFramerate(framerateSlider.getFPS());
 
-        //TODO options.setQuality(qualitySlider.getQuality());
-        ReplayMod.replaySettings.setVideoQuality(qualitySlider.getQuality());
+        options.setBitrate(bitrateInput.getIntValue() + "K"); //Bitrate value is in Kilobytes
 
         if(enableGreenscreen.isChecked()) {
             options.setSkyColor(colorPicker.getPickedColor());
