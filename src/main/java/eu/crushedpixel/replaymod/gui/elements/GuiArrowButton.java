@@ -8,7 +8,7 @@ import java.awt.*;
 public class GuiArrowButton extends GuiButton {
 
     public enum Direction {
-        UP, DOWN, RIGHT, LEFT;
+        UP, DOWN, RIGHT, LEFT
     }
 
     private Direction dir;

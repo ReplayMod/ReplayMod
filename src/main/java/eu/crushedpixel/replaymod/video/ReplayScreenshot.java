@@ -17,8 +17,6 @@ public class ReplayScreenshot {
 
     private static Minecraft mc = Minecraft.getMinecraft();
 
-    private static long last_finish = -1;
-
     private static boolean before;
     private static double beforeSpeed;
     private static GuiScreen beforeScreen;
@@ -103,9 +101,5 @@ public class ReplayScreenshot {
             exception.printStackTrace();
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.failedthumb", ChatMessageType.WARNING);
         }
-
-        last_finish = System.currentTimeMillis();
     }
-
-
 }

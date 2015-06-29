@@ -22,8 +22,8 @@ public class GuiReplayEditor extends GuiScreen {
     private static final int tabYPos = 110;
     public static GuiReplayEditor instance = null;
     private StudioTab currentTab = StudioTab.TRIM;
-    private GuiDropdown replayDropdown;
-    private GuiButton saveModeButton, saveButton;
+    private GuiDropdown<String> replayDropdown;
+    private GuiButton saveModeButton;
     private boolean overrideSave = false;
     private boolean initialized = false;
     private List<File> replayFiles = new ArrayList<File>();
@@ -56,6 +56,8 @@ public class GuiReplayEditor extends GuiScreen {
 
     @Override
     public void initGui() {
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
         List<GuiButton> tabButtons = new ArrayList<GuiButton>();
 
         tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_TRIM_TAB, 0, 0, I18n.format("replaymod.gui.editor.trim.title")));
@@ -79,7 +81,7 @@ public class GuiReplayEditor extends GuiScreen {
         int modeWidth = tabButtons.get(0).width;
 
         if(!initialized) {
-            replayDropdown = new GuiDropdown(1, fontRendererObj, 15 + 2 + 1 + 80, 60, this.width - 30 - 8 - 80 - modeWidth - 4, 5);
+            replayDropdown = new GuiDropdown<String>(1, fontRendererObj, 15 + 2 + 1 + 80, 60, this.width - 30 - 8 - 80 - modeWidth - 4, 5);
             refreshReplayDropdown();
         } else {
             replayDropdown.width = this.width - 30 - 8 - 80 - modeWidth - 4;
@@ -98,7 +100,7 @@ public class GuiReplayEditor extends GuiScreen {
         backButton.width = 70;
         buttonList.add(backButton);
 
-        saveButton = new GuiButton(GuiConstants.REPLAY_EDITOR_SAVE_BUTTON, width - 70 - 18, height - (2 * 20) - 5 - 3, I18n.format("replaymod.gui.save"));
+        GuiButton saveButton = new GuiButton(GuiConstants.REPLAY_EDITOR_SAVE_BUTTON, width - 70 - 18, height - (2 * 20) - 5 - 3, I18n.format("replaymod.gui.save"));
         saveButton.width = 70;
         buttonList.add(saveButton);
 
@@ -112,8 +114,6 @@ public class GuiReplayEditor extends GuiScreen {
     private String getSaveModeLabel() {
         return overrideSave ? I18n.format("replaymod.gui.editor.savemode.override") : I18n.format("replaymod.gui.editor.savemode.newfile");
     }
-
-    ;
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
@@ -194,7 +194,7 @@ public class GuiReplayEditor extends GuiScreen {
 
         private GuiStudioPart studioPart;
 
-        private StudioTab(GuiStudioPart part) {
+        StudioTab(GuiStudioPart part) {
             this.studioPart = part;
         }
 

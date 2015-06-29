@@ -32,16 +32,13 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             null, null, null, null);
     private static final int LOGOUT_CALLBACK_ID = 1;
     private ReplayFileList currentList;
-    private Tab currentTab = Tab.RECENT_FILES;
     private GuiButton loadButton, favButton, likeButton, dislikeButton;
     private List<GuiButton> replayButtonBar, bottomBar, topBar;
-    private GuiLoadingListEntry loadingListEntry;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, int p_152129_2_) {
         String s1 = I18n.format("replaymod.gui.center.logoutcallback");
-        GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, "", I18n.format("replaymod.gui.logout"),
+        return new GuiYesNo(p_152129_0_, s1, "", I18n.format("replaymod.gui.logout"),
                 I18n.format("replaymod.gui.cancel"), p_152129_2_);
-        return guiyesno;
     }
 
     private boolean initialized = false;
@@ -109,6 +106,9 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         if(currentList != null) {
             currentList.height = height-60;
         }
+
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
 
         int i = 0;
         for(GuiButton b : topBar) {
@@ -355,7 +355,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private void updateCurrentList(Pagination pagination) {
         elementSelected(-1);
         currentList = new ReplayFileList(mc, width, height, 50, height - 60, this);
-        loadingListEntry = new GuiLoadingListEntry();
+        GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
         currentList.addEntry(loadingListEntry);
 
         if(pagination.getLoadedPages() < 0) {
@@ -381,7 +381,14 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private Thread currentListLoader;
 
     private void cancelCurrentListLoader() {
-        if(currentListLoader != null && currentListLoader.isAlive()) currentListLoader.stop();
+        if(currentListLoader != null && currentListLoader.isAlive()) {
+            currentListLoader.interrupt();
+            try {
+                currentListLoader.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     public void showOnlineRecent() {
@@ -389,7 +396,6 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                currentTab = Tab.RECENT_FILES;
                 updateCurrentList(new SearchPagination(recentFileSearchQuery));
             }
         }, "replaymod-list-loader");
@@ -401,7 +407,6 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                currentTab = Tab.BEST_FILES;
                 updateCurrentList(new SearchPagination(bestFileSearchQuery));
             }
         }, "replaymod-list-loader");
@@ -413,7 +418,6 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                currentTab = Tab.DOWNLOADED_FILES;
                 updateCurrentList(new DownloadedFilePagination());
             }
         }, "replaymod-list-loader");
@@ -425,27 +429,10 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                currentTab = Tab.FAVORITED_FILES;
                 ReplayMod.favoritedFileHandler.reloadFavorites();
                 updateCurrentList(new FavoritedFilePagination());
             }
         }, "replaymod-list-loader");
         currentListLoader.start();
-    }
-
-    private enum Tab {
-        RECENT_FILES("replaymod.gui.center.tab.recent"),
-        BEST_FILES("replaymod.gui.center.tab.best"),
-        DOWNLOADED_FILES("replaymod.gui.center.tab.downloaded"),
-        FAVORITED_FILES("replaymod.gui.center.tab.favorited"),
-        SEARCH("replaymod.gui.center.tab.search");
-
-        private String title;
-
-        Tab(String title) {
-            this.title = title;
-        }
-
-        public String getTitle() { return I18n.format(title); }
     }
 }

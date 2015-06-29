@@ -20,7 +20,9 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 
@@ -29,7 +31,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.*;
 import java.util.List;
 
@@ -45,7 +46,10 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     private boolean initialized;
     private GuiReplayListExtended replayGuiList;
     private List<Pair<Pair<File, ReplayMetaData>, File>> replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
-    private GuiButton loadButton, uploadButton, folderButton, renameButton, deleteButton, cancelButton, settingsButton;
+    private GuiButton loadButton;
+    private GuiButton uploadButton;
+    private GuiButton renameButton;
+    private GuiButton deleteButton;
     private boolean delete_file = false;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, String file, int p_152129_2_) {
@@ -53,8 +57,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         String s2 = "\'" + file + "\' " + I18n.format("replaymod.gui.viewer.delete.lineb");
         String s3 = I18n.format("replaymod.gui.delete");
         String s4 = I18n.format("replaymod.gui.cancel");
-        GuiYesNo guiyesno = new GuiYesNo(p_152129_0_, s1, s2, s3, s4, p_152129_2_);
-        return guiyesno;
+        return new GuiYesNo(p_152129_0_, s1, s2, s3, s4, p_152129_2_);
     }
 
     private void reloadFiles() {
@@ -132,13 +135,15 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     }
 
     private void createButtons() {
-        this.buttonList.add(loadButton = new GuiButton(LOAD_BUTTON_ID, this.width / 2 - 154, this.height - 52, 73, 20, I18n.format("replaymod.gui.load")));
-        this.buttonList.add(uploadButton = new GuiButton(UPLOAD_BUTTON_ID, this.width / 2 - 154 + 78, this.height - 52, 73, 20, I18n.format("replaymod.gui.upload")));
-        this.buttonList.add(folderButton = new GuiButton(FOLDER_BUTTON_ID, this.width / 2 + 4, this.height - 52, 150, 20, I18n.format("replaymod.gui.viewer.replayfolder")));
-        this.buttonList.add(renameButton = new GuiButton(RENAME_BUTTON_ID, this.width / 2 - 154, this.height - 28, 72, 20, I18n.format("replaymod.gui.rename")));
-        this.buttonList.add(deleteButton = new GuiButton(DELETE_BUTTON_ID, this.width / 2 - 76, this.height - 28, 72, 20, I18n.format("replaymod.gui.delete")));
-        this.buttonList.add(settingsButton = new GuiButton(SETTINGS_BUTTON_ID, this.width / 2 + 4, this.height - 28, 72, 20, I18n.format("replaymod.gui.settings")));
-        this.buttonList.add(cancelButton = new GuiButton(CANCEL_BUTTON_ID, this.width / 2 + 4 + 78, this.height - 28, 72, 20, I18n.format("replaymod.gui.cancel")));
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
+        buttonList.add(loadButton = new GuiButton(LOAD_BUTTON_ID, this.width / 2 - 154, this.height - 52, 73, 20, I18n.format("replaymod.gui.load")));
+        buttonList.add(uploadButton = new GuiButton(UPLOAD_BUTTON_ID, this.width / 2 - 154 + 78, this.height - 52, 73, 20, I18n.format("replaymod.gui.upload")));
+        buttonList.add(new GuiButton(FOLDER_BUTTON_ID, this.width / 2 + 4, this.height - 52, 150, 20, I18n.format("replaymod.gui.viewer.replayfolder")));
+        buttonList.add(renameButton = new GuiButton(RENAME_BUTTON_ID, this.width / 2 - 154, this.height - 28, 72, 20, I18n.format("replaymod.gui.rename")));
+        buttonList.add(deleteButton = new GuiButton(DELETE_BUTTON_ID, this.width / 2 - 76, this.height - 28, 72, 20, I18n.format("replaymod.gui.delete")));
+        buttonList.add(new GuiButton(SETTINGS_BUTTON_ID, this.width / 2 + 4, this.height - 28, 72, 20, I18n.format("replaymod.gui.settings")));
+        buttonList.add(new GuiButton(CANCEL_BUTTON_ID, this.width / 2 + 4 + 78, this.height - 28, 72, 20, I18n.format("replaymod.gui.cancel")));
         setButtonsEnabled(false);
     }
 
@@ -207,24 +212,24 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                     try {
                         Runtime.getRuntime().exec(new String[]{"/usr/bin/open", s});
                         return;
-                    } catch(IOException ioexception1) {
+                    } catch (IOException e) {
+                        LogManager.getLogger().error("Cannot open file", e);
                     }
                 } else if(Util.getOSType() == Util.EnumOS.WINDOWS) {
-                    String s1 = String.format("cmd.exe /C start \"Open file\" \"%s\"", new Object[]{s});
+                    String s1 = String.format("cmd.exe /C start \"Open file\" \"%s\"", s);
 
                     try {
                         Runtime.getRuntime().exec(s1);
                         return;
-                    } catch(IOException ioexception) {
+                    } catch(IOException e) {
+                        LogManager.getLogger().error("Cannot open file", e);
                     }
                 }
 
                 boolean flag = false;
 
                 try {
-                    Class oclass = Class.forName("java.awt.Desktop");
-                    Object object = oclass.getMethod("getDesktop", new Class[0]).invoke((Object) null, new Object[0]);
-                    oclass.getMethod("browse", new Class[]{URI.class}).invoke(object, new Object[]{file1.toURI()});
+                    Desktop.getDesktop().browse(file1.toURI());
                 } catch(Throwable throwable) {
                     flag = true;
                 }
@@ -241,7 +246,11 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
             this.delete_file = false;
 
             if(result) {
-                replayFileList.get(replayGuiList.selected).first().first().delete();
+                try {
+                    FileUtils.forceDelete(replayFileList.get(replayGuiList.selected).first().first());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 replayFileList.remove(replayGuiList.selected);
             }
 

@@ -434,11 +434,11 @@ public abstract class CustomEntityRenderer {
         }
     }
 
-    public static interface GluPerspectiveHook {
+    public interface GluPerspectiveHook {
         void gluPerspective(float fovY, float aspect, float zNear, float zFar);
     }
 
-    public static interface LoadShaderHook {
+    public interface LoadShaderHook {
         void loadShader(ResourceLocation resourceLocation);
     }
 }

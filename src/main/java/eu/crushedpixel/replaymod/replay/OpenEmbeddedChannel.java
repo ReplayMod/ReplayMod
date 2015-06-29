@@ -27,8 +27,4 @@ public class OpenEmbeddedChannel extends EmbeddedChannel {
         }
         return pipeline().close();
     }
-
-    public ChannelFuture manualClose() {
-        return pipeline().close();
-    }
 }

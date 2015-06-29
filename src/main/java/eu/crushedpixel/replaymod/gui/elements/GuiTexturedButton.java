@@ -17,11 +17,6 @@ public class GuiTexturedButton extends GuiButton implements GuiElement {
     private final String hoverText;
 
     public GuiTexturedButton(int buttonId, int x, int y, int width, int height, ResourceLocation texture,
-                             int u, int v, int textureWidth, int textureHeight, Runnable action) {
-        this(buttonId, x, y, width, height, texture, u, v, textureWidth, textureHeight, action, null);
-    }
-
-    public GuiTexturedButton(int buttonId, int x, int y, int width, int height, ResourceLocation texture,
                              int u, int v, int textureWidth, int textureHeight, Runnable action, String hoverText) {
         super(buttonId, x, y, width, height, "");
         this.texture = texture;

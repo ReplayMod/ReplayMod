@@ -42,12 +42,12 @@ public class GuiEditKeyframe extends GuiScreen {
     private Keyframe keyframeBackup;
     private boolean save;
     private boolean posKeyframe;
-    private boolean timeKeyframe;
     private boolean markerKeyframe;
 
     private Keyframe previous, next;
 
-    private int w, w2, w3;
+    private int w2;
+    private int w3;
     private int totalWidth;
     private int left;
 
@@ -55,9 +55,9 @@ public class GuiEditKeyframe extends GuiScreen {
 
     public GuiEditKeyframe(Keyframe keyframe) {
         this.keyframe = keyframe;
-        this.keyframeBackup = keyframe.clone();
+        this.keyframeBackup = keyframe.copy();
         this.posKeyframe = keyframe instanceof PositionKeyframe;
-        this.timeKeyframe = keyframe instanceof TimeKeyframe;
+        boolean timeKeyframe = keyframe instanceof TimeKeyframe;
         this.markerKeyframe = keyframe instanceof MarkerKeyframe;
 
         ReplayHandler.selectKeyframe(null);
@@ -152,14 +152,14 @@ public class GuiEditKeyframe extends GuiScreen {
         min.yPosition = sec.yPosition = ms.yPosition = virtualY+virtualHeight-65;
 
         if(posKeyframe) {
-            w = Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.xpos")),
+            int w = Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.xpos")),
                     Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.ypos")),
                             fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.zpos"))));
             w2 = Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.camyaw")),
                     Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.campitch")),
                             fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.camroll"))));
 
-            totalWidth = w+100+w2+100+5+5+10;
+            totalWidth = w +100+w2+100+5+5+10;
             left = (this.width - totalWidth)/2;
 
             int x = w + left + 5;
@@ -177,6 +177,9 @@ public class GuiEditKeyframe extends GuiScreen {
         saveButton.yPosition = cancelButton.yPosition = virtualY + virtualHeight - 20 - 5;
         saveButton.xPosition = this.width - 100 - 5 - 10;
         cancelButton.xPosition = saveButton.xPosition - 100 - 5;
+
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
 
         buttonList.add(saveButton);
         buttonList.add(cancelButton);

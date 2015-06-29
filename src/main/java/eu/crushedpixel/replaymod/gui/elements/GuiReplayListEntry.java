@@ -29,7 +29,6 @@ public class GuiReplayListEntry implements IGuiListEntry {
     private ResourceLocation textureResource;
     private DynamicTexture dynTex = null;
     private File imageFile;
-    private BufferedImage image = null;
     private GuiReplayListExtended parent;
 
     public GuiReplayListEntry(GuiReplayListExtended parent, FileInfo fileInfo, File imageFile) {
@@ -60,13 +59,13 @@ public class GuiReplayListEntry implements IGuiListEntry {
                     registered = false;
                     ResourceHelper.freeResource(textureResource);
                     textureResource = null;
-                    image = null;
                     dynTex = null;
                 }
                 return;
             } else {
                 if(!registered) {
                     textureResource = new ResourceLocation("thumbs/" + fileInfo.getName() + fileInfo.getId());
+                    BufferedImage image;
                     if(imageFile == null) {
                         image = ResourceHelper.getDefaultThumbnail();
                     } else {
@@ -122,7 +121,9 @@ public class GuiReplayListEntry implements IGuiListEntry {
 
                 if(online) {
                     Category category = Category.fromId(fileInfo.getCategory());
-
+                    if (category == null) {
+                        category = Category.MISCELLANEOUS;
+                    }
                     mc.fontRendererObj.drawStringWithShadow(ChatFormatting.ITALIC.toString()+category.toNiceString(), x + 3, y + slotHeight - mc.fontRendererObj.FONT_HEIGHT, Color.GRAY.getRGB());
                 }
 

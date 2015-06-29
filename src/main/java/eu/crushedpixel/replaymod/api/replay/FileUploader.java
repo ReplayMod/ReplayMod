@@ -11,7 +11,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.List;
 
 public class FileUploader {
@@ -21,14 +20,8 @@ public class FileUploader {
     private long filesize;
     private long current;
 
-    private String attachmentName = "file";
-    private String attachmentFileName = "file.mcpr";
-    private String crlf = "\r\n";
-    private String twoHyphens = "--";
-
     private boolean cancel = false;
 
-    private String boundary = "*****";
     private GuiUploadFile parent;
 
     public void uploadFile(GuiUploadFile gui, String auth, String filename, List<String> tags, File file, Category category, String description)
@@ -62,7 +55,7 @@ public class FileUploader {
 
             postData += "&name=" + URLEncoder.encode(filename, "UTF-8");
 
-            String url = "http://ReplayMod.com/api/upload_file" + postData;
+            String url = ReplayModApiMethods.upload_file + postData;
             HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
             con.setUseCaches(false);
             con.setDoOutput(true);
@@ -70,18 +63,18 @@ public class FileUploader {
             con.setChunkedStreamingMode(1024);
             con.setRequestProperty("Connection", "Keep-Alive");
             con.setRequestProperty("Cache-Control", "no-cache");
-            con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + this.boundary);
-
-            HashMap<String, String> params = new HashMap<String, String>();
-            params.put("auth", auth);
-            params.put("name", filename);
-            params.put("category", category.getId() + "");
+            String boundary = "*****";
+            con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
 
             DataOutputStream request = new DataOutputStream(con.getOutputStream());
 
-            request.writeBytes(this.twoHyphens + this.boundary + this.crlf);
-            request.writeBytes("Content-Disposition: form-data; name=\"" + this.attachmentName + "\";filename=\"" + this.attachmentFileName + "\"" + this.crlf);
-            request.writeBytes(this.crlf);
+            String crlf = "\r\n";
+            String twoHyphens = "--";
+            request.writeBytes(twoHyphens + boundary + crlf);
+            String attachmentName = "file";
+            String attachmentFileName = "file.mcpr";
+            request.writeBytes("Content-Disposition: form-data; name=\"" + attachmentName + "\";filename=\"" + attachmentFileName + "\"" + crlf);
+            request.writeBytes(crlf);
 
             byte[] buf = new byte[1024];
             FileInputStream fis = new FileInputStream(file);
@@ -102,8 +95,8 @@ public class FileUploader {
             }
             fis.close();
 
-            request.writeBytes(this.crlf);
-            request.writeBytes(this.twoHyphens + this.boundary + this.twoHyphens + this.crlf);
+            request.writeBytes(crlf);
+            request.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
 
             request.flush();
             request.close();

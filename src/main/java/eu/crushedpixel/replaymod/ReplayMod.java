@@ -26,6 +26,8 @@ import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
 import eu.crushedpixel.replaymod.video.frame.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.RenderPlayer;
+import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -39,11 +41,15 @@ import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+
+import static org.apache.commons.io.FileUtils.forceDelete;
+import static org.apache.commons.io.FileUtils.listFiles;
 
 @Mod(modid = ReplayMod.MODID, useMetadata = true)
 public class ReplayMod {
@@ -148,8 +154,10 @@ public class ReplayMod {
 
         tooltipRenderer = new TooltipRenderer();
 
-        mc.getRenderManager().skinMap.put("default", new InvisibilityRender(mc.getRenderManager()));
-        mc.getRenderManager().skinMap.put("slim", new InvisibilityRender(mc.getRenderManager(), true));
+        @SuppressWarnings("unchecked")
+        Map<String, RenderPlayer> skinMap = mc.getRenderManager().skinMap;
+        skinMap.put("default", new InvisibilityRender(mc.getRenderManager()));
+        skinMap.put("slim", new InvisibilityRender(mc.getRenderManager(), true));
 
         //clean up replay_recordings folder
         removeTmcprFiles();
@@ -158,7 +166,9 @@ public class ReplayMod {
             @Override
             public void run() {
                 try {
-                    mc.defaultResourcePacks.add(new LocalizedResourcePack());
+                    @SuppressWarnings("unchecked")
+                    List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
+                    defaultResourcePacks.add(new LocalizedResourcePack());
                     mc.addScheduledTask(new Runnable() {
                         @Override
                         public void run() {
@@ -319,12 +329,14 @@ public class ReplayMod {
     }
 
     private void removeTmcprFiles() {
+        try {
         File folder = ReplayFileIO.getReplayFolder();
 
-        for(File f : folder.listFiles()) {
-            if(("." + FilenameUtils.getExtension(f.getAbsolutePath())).equals(ReplayFile.TEMP_FILE_EXTENSION)) {
-                f.delete();
-            }
+        for (File file : listFiles(folder, new String[]{ReplayFile.TEMP_FILE_EXTENSION.substring(1)}, false)) {
+            forceDelete(file);
+        }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

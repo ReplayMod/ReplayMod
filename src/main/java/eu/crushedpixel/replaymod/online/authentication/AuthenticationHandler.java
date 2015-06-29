@@ -31,6 +31,7 @@ public class AuthenticationHandler {
     }
     public static String getUsername() { return username; }
 
+    @SuppressWarnings("unused")
     public static boolean hasDonated(String uuid) throws IOException, ApiException {
         return apiClient.hasDonated(uuid);
     }
@@ -42,12 +43,12 @@ public class AuthenticationHandler {
         AuthKey auth = apiClient.register(usrname, mail, password,
                 mc.getSession().getProfile().getId().toString());
         username = usrname;
-        authkey = auth.getAuthkey();
+        authkey = auth.getAuth();
         saveAuthkey(authkey);
     }
 
     public static void loadAuthkeyFromConfig() {
-        Property p = ReplayMod.instance.config.get("authkey", "authkey", "null");
+        Property p = ReplayMod.config.get("authkey", "authkey", "null");
 
         String key = null;
         if(!(p.getString().equals("null"))) {
@@ -68,7 +69,7 @@ public class AuthenticationHandler {
 
     public static int authenticate(String usrname, String password) {
         try {
-            authkey = ReplayMod.apiClient.getLogin(usrname, password).getAuthkey();
+            authkey = ReplayMod.apiClient.getLogin(usrname, password).getAuth();
             username = usrname;
             saveAuthkey(authkey);
             return SUCCESS;
@@ -94,8 +95,8 @@ public class AuthenticationHandler {
     }
 
     private static void saveAuthkey(String authkey) {
-        ReplayMod.instance.config.removeCategory(ReplayMod.config.getCategory("authkey"));
-        ReplayMod.instance.config.get("authkey", "authkey", authkey);
-        ReplayMod.instance.config.save();
+        ReplayMod.config.removeCategory(ReplayMod.config.getCategory("authkey"));
+        ReplayMod.config.get("authkey", "authkey", authkey);
+        ReplayMod.config.save();
     }
 }

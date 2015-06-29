@@ -121,6 +121,9 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
             saveButton.yPosition = keyframeSetList.yPosition+keyframeSetList.height-20;
         }
 
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
+
         buttonList.add(removeButton);
         buttonList.add(loadButton);
         buttonList.add(saveButton);

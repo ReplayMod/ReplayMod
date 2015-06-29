@@ -21,20 +21,14 @@ public class ReplayProcess {
 
     private static Minecraft mc = Minecraft.getMinecraft();
 
-    private static long startRealTime;
     private static int lastRealReplayTime;
     private static long lastRealTime = 0;
 
     private static boolean linear = false;
 
-    private static Position lastPosition = null;
-    private static int lastTimestamp = -1;
-
     private static SplinePoint motionSpline = null;
     private static LinearPoint motionLinear = null;
     private static LinearTimestamp timeLinear = null;
-
-    private static double lastSpeed = 1f;
 
     private static double previousReplaySpeed = 0;
 
@@ -44,9 +38,6 @@ public class ReplayProcess {
     private static boolean blocked = false;
     private static boolean deepBlock = false;
     private static boolean requestFinish = false;
-    private static float lastPartialTicks, lastRenderPartialTicks;
-    private static int lastTicks;
-    private static boolean resetTimer = false;
     private static boolean firstTime = false;
 
     public static boolean isVideoRecording() {
@@ -56,7 +47,6 @@ public class ReplayProcess {
     private static void resetProcess() {
         firstTime = true;
 
-        lastPosition = null;
         motionSpline = null;
         motionLinear = null;
         timeLinear = null;
@@ -65,11 +55,8 @@ public class ReplayProcess {
 
         blocked = deepBlock = false;
 
-        startRealTime = System.currentTimeMillis();
-        lastRealTime = startRealTime;
+        lastRealTime = System.currentTimeMillis();
         lastRealReplayTime = 0;
-        lastTimestamp = -1;
-        lastSpeed = 1f;
         linear = ReplayMod.replaySettings.isLinearMovement();
 
         previousReplaySpeed = ReplayMod.replaySender.getReplaySpeed();
@@ -162,9 +149,6 @@ public class ReplayProcess {
 
         if(firstTime) {
             firstTime = false;
-            lastPartialTicks = 100;
-            lastRenderPartialTicks = 100;
-            lastTicks = 100;
             mc.timer.renderPartialTicks = 100;
             mc.timer.elapsedPartialTicks = 100;
             mc.timer.elapsedTicks = 100;
@@ -278,9 +262,7 @@ public class ReplayProcess {
                 }
 
                 if(!(nextTime == null || lastTime == null)) {
-                    if(lastTimeStamp == nextTimeStamp) curSpeed = 0f;
-                    else
-                        curSpeed = ((double) ((nextTime.getTimestamp() - lastTime.getTimestamp()))) / ((double) ((nextTimeStamp - lastTimeStamp)));
+                    curSpeed = ((double) ((nextTime.getTimestamp() - lastTime.getTimestamp()))) / ((double) ((nextTimeStamp - lastTimeStamp)));
                 }
 
                 if(lastTimeStamp == nextTimeStamp) {
@@ -315,7 +297,9 @@ public class ReplayProcess {
                 }
             } else {
                 if(posCount == 1) {
-                    pos = ReplayHandler.getFirstPositionKeyframe().getPosition();
+                    PositionKeyframe keyframe = ReplayHandler.getFirstPositionKeyframe();
+                    assert keyframe != null;
+                    pos = keyframe.getPosition();
                 }
             }
 
@@ -334,11 +318,6 @@ public class ReplayProcess {
 
         if(!isVideoRecording()) ReplayMod.replaySender.setReplaySpeed(curSpeed);
         //if(curSpeed > 0)
-        lastSpeed = curSpeed;
-
-        lastPartialTicks = mc.timer.elapsedPartialTicks;
-        lastRenderPartialTicks = mc.timer.renderPartialTicks;
-        lastTicks = mc.timer.elapsedTicks;
 
         if(curTimestamp != null)
             ReplayMod.replaySender.sendPacketsTill(curTimestamp);

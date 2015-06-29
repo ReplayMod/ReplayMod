@@ -21,8 +21,6 @@ public class TickAndRenderListener {
 
     private static int requestScreenshot = 0;
 
-    //private boolean f1Down = false;
-
     public static void requestScreenshot() {
         if(requestScreenshot == 0) requestScreenshot = 1;
     }
@@ -82,17 +80,16 @@ public class TickAndRenderListener {
     @SubscribeEvent
     public void onMouseMove(MouseEvent event) {
         if(!ReplayHandler.isInReplay()) return;
-        boolean flag = true;
 
         mc.mcProfiler.startSection("mouse");
 
-        if(flag && Minecraft.isRunningOnMac && mc.inGameHasFocus && !Mouse.isInsideWindow()) {
+        if(Minecraft.isRunningOnMac && mc.inGameHasFocus && !Mouse.isInsideWindow()) {
             Mouse.setGrabbed(false);
             Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
             Mouse.setGrabbed(true);
         }
 
-        if(mc.inGameHasFocus && flag && !(ReplayHandler.isInPath())) {
+        if(mc.inGameHasFocus && !(ReplayHandler.isInPath())) {
             mc.mouseHelper.mouseXYChange();
             float f1 = mc.gameSettings.mouseSensitivity * 0.6F + 0.2F;
             float f2 = f1 * f1 * f1 * 8.0F;

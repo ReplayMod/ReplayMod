@@ -61,7 +61,7 @@ public class ReplayHandler {
             try {
                 File tempFile = File.createTempFile(ReplayFile.ENTRY_PATHS, "json");
 
-                ReplayFileIO.writeKeyframeRegistryToFile(repo, tempFile);
+                ReplayFileIO.write(repo, tempFile);
 
                 ReplayMod.replayFileAppender.registerModifiedFile(tempFile, ReplayFile.ENTRY_PATHS, getReplayFile());
             } catch(Exception e) {
@@ -82,15 +82,13 @@ public class ReplayHandler {
         for(Keyframe kf : new ArrayList<Keyframe>(keyframes)) {
             if(kf instanceof MarkerKeyframe) keyframes.remove(kf);
         }
-        for(MarkerKeyframe marker : m) {
-            keyframes.add(marker);
-        }
+        Collections.addAll(keyframes, m);
 
         if(write) {
             try {
                 File tempFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
 
-                ReplayFileIO.writeMarkersToFile(m, tempFile);
+                ReplayFileIO.write(m, tempFile);
 
                 ReplayMod.replayFileAppender.registerModifiedFile(tempFile, ReplayFile.ENTRY_MARKERS, getReplayFile());
             } catch(Exception e) {
@@ -110,9 +108,7 @@ public class ReplayHandler {
 
         keyframes = new ArrayList<Keyframe>(Arrays.asList(kfs));
 
-        for(MarkerKeyframe mk : markers) {
-            keyframes.add(mk);
-        }
+        Collections.addAll(keyframes, markers);
 
         if(!(selectedKeyframe instanceof MarkerKeyframe)) selectedKeyframe = null;
 
@@ -460,9 +456,7 @@ public class ReplayHandler {
         keyframes = new ArrayList<Keyframe>();
 
         if(!resetMarkers) {
-            for(MarkerKeyframe mk : markers) {
-                keyframes.add(mk);
-            }
+            Collections.addAll(keyframes, markers);
 
             if(!(selectedKeyframe instanceof MarkerKeyframe))
                 selectKeyframe(null);
@@ -540,7 +534,9 @@ public class ReplayHandler {
 
         try {
             ReplayMod.overlay.resetUI(true);
-        } catch(Exception e) {} // TODO proper handling
+        } catch(Exception e) {
+            // TODO: Fix exceptionsudo
+        }
 
         //Load lighting and trigger update
         ReplayMod.replaySettings.setLightingEnabled(ReplayMod.replaySettings.isLightingEnabled());
@@ -594,7 +590,7 @@ public class ReplayHandler {
                 currentReplayFile.close();
 
                 File markerFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
-                ReplayFileIO.writeMarkersToFile(getMarkers(), markerFile);
+                ReplayFileIO.write(getMarkers(), markerFile);
                 ReplayMod.replayFileAppender.registerModifiedFile(markerFile, ReplayFile.ENTRY_MARKERS, ReplayHandler.getReplayFile());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -668,18 +664,6 @@ public class ReplayHandler {
         for(Keyframe k : rev) {
             if(k instanceof TimeKeyframe) {
                 return (TimeKeyframe)k;
-            }
-        }
-        return null;
-    }
-
-    public static PositionKeyframe getLastPositionKeyframe() {
-        ArrayList<Keyframe> rev = new ArrayList<Keyframe>(getKeyframes());
-        Collections.reverse(rev);
-
-        for(Keyframe k : rev) {
-            if(k instanceof PositionKeyframe) {
-                return (PositionKeyframe)k;
             }
         }
         return null;

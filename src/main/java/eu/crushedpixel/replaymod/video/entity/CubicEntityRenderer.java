@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class CubicEntityRenderer extends CustomEntityRenderer {
 
-    public static enum Direction {
+    public enum Direction {
         TOP(1), BOTTOM(9), LEFT(4), FRONT(5), RIGHT(6), BACK(7);
 
         private final int frame;

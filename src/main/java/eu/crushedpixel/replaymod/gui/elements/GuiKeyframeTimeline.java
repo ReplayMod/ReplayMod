@@ -185,11 +185,8 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
 
         //Draw Keyframe logos
-        ListIterator<Keyframe> iterator = ReplayHandler.getKeyframes().listIterator();
-        while(iterator.hasNext()) {
-            Keyframe kf = iterator.next();
-
-            if(kf != null && !kf.equals(ReplayHandler.getSelectedKeyframe()))
+        for (Keyframe kf : ReplayHandler.getKeyframes()) {
+            if (kf != null && !kf.equals(ReplayHandler.getSelectedKeyframe()))
                 drawKeyframe(kf, bodyWidth, leftTime, rightTime, segmentLength);
         }
 

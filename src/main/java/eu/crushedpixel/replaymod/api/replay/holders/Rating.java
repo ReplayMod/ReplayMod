@@ -1,16 +1,10 @@
 package eu.crushedpixel.replaymod.api.replay.holders;
 
+import lombok.Data;
+
+@Data
 public class Rating {
-
     private int negative, positive;
-
-    public int getNegative() {
-        return negative;
-    }
-
-    public int getPositive() {
-        return positive;
-    }
 
     public enum RatingType {
 

@@ -16,7 +16,7 @@ public class UploadedFileHandler {
     public UploadedFileHandler(File confDir) {
         try {
             File confFile = new File(confDir, "uploaded");
-            confFile.createNewFile();
+            FileUtils.touch(confFile);
             configuration = new Configuration(confFile);
             configuration.load();
 

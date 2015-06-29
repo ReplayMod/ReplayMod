@@ -22,9 +22,11 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,7 +56,8 @@ public class GuiUploadFile extends GuiScreen {
 
     private boolean initialized;
 
-    private int columnWidth, columnLeft, columnMiddle, columnRight;
+    private int columnWidth;
+    private int columnRight;
 
     private GuiAdvancedTextField name, tags;
     private GuiToggleButton category;
@@ -79,8 +82,6 @@ public class GuiUploadFile extends GuiScreen {
     private GuiReplayViewer parent;
 
     private boolean lockUploadButton = false;
-
-    private final Logger logger = LogManager.getLogger();
 
     public GuiUploadFile(File file, GuiReplayViewer parent) {
         this.parent = parent;
@@ -109,17 +110,15 @@ public class GuiUploadFile extends GuiScreen {
                 e.printStackTrace();
             } finally {
                 if(archive != null) {
-                    try {
-                        archive.close();
-                    } catch(IOException e) {
-                    }
+                    IOUtils.closeQuietly(archive);
                 }
             }
         }
 
         if(!correctFile) {
+            Logger logger = LogManager.getLogger();
             logger.error("Invalid file provided to upload");
-            mc.displayGuiScreen(parent); //TODO: Error message
+            mc.displayGuiScreen(parent);
             replayFile = null;
             return;
         }
@@ -190,8 +189,8 @@ public class GuiUploadFile extends GuiScreen {
         }
 
         columnWidth = Math.min(200, (width - 60) / 3);
-        columnLeft = width / 2 - columnWidth / 2 * 3 - 10;
-        columnMiddle = width / 2 - columnWidth / 2;
+        int columnLeft = width / 2 - columnWidth / 2 * 3 - 10;
+        int columnMiddle = width / 2 - columnWidth / 2;
         columnRight = width / 2 + columnWidth / 2 + 10;
 
         name.xPosition = columnLeft;
@@ -218,6 +217,8 @@ public class GuiUploadFile extends GuiScreen {
         }
         content = new ComposedElement(elements.toArray(new GuiElement[elements.size()]));
 
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
         if(startUploadButton == null) {
             List<GuiButton> bottomBar = new ArrayList<GuiButton>();
             startUploadButton = new GuiButton(GuiConstants.UPLOAD_START_BUTTON, 0, 0, I18n.format("replaymod.gui.upload.start"));
@@ -316,7 +317,7 @@ public class GuiUploadFile extends GuiScreen {
 
                             ReplayMetaData newMetaData = metaData.copy();
                             newMetaData.removeServer();
-                            ReplayFileIO.writeReplayMetaDataToFile(newMetaData, tmpMeta);
+                            ReplayFileIO.write(newMetaData, tmpMeta);
 
                             HashMap<String, File> toAdd = new HashMap<String, File>();
                             toAdd.put(ReplayFile.ENTRY_METADATA, tmpMeta);
@@ -326,8 +327,8 @@ public class GuiUploadFile extends GuiScreen {
 
                             uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, tmp, category, desc);
 
-                            tmpMeta.delete();
-                            tmp.delete();
+                            FileUtils.deleteQuietly(tmpMeta);
+                            FileUtils.deleteQuietly(tmp);
                         } else {
                             uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, replayFile, category, desc);
                         }
@@ -365,8 +366,9 @@ public class GuiUploadFile extends GuiScreen {
             Gui.drawScaledCustomSizeModalRect(columnRight, 20, 0, 0, 1280, 720, columnWidth, height, 1280, 720);
 
             if (!hasThumbnail) {
+                KeyBinding keyBinding = KeybindRegistry.getKeyBinding(KeybindRegistry.KEY_THUMBNAIL);
                 String str = I18n.format("replaymod.gui.upload.nothumbnail",
-                        GameSettings.getKeyDisplayString(KeybindRegistry.getKeyBinding(KeybindRegistry.KEY_THUMBNAIL).getKeyCode()));
+                        keyBinding == null ? "???" : GameSettings.getKeyDisplayString(keyBinding.getKeyCode()));
                 int y = 20 + height + 10;
                 fontRendererObj.drawSplitString(str, columnRight, y, columnWidth, Color.RED.getRGB());
             }

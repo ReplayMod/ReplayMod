@@ -6,9 +6,11 @@ import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.client.FMLClientHandler;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -17,7 +19,6 @@ public class ReplayFileAppender extends Thread {
     private Multimap<File, Pair<File, String>> filesToMove = ArrayListMultimap.create();
     private Queue<File> filesToRewrite = new ConcurrentLinkedQueue<File>();
 
-    private boolean shutdown = false;
     private List<GuiReplaySaving> listeners = new ArrayList<GuiReplaySaving>();
 
     //this is true if the DataListener is currently busy saving a newly recorded Replay File
@@ -53,11 +54,9 @@ public class ReplayFileAppender extends Thread {
 
     public void registerModifiedFile(File toAdd, String name, File replayFile) {
         //first, remove any files with the same name assigned to this Replay File
-        if(filesToMove.get(replayFile) != null) {
-            for(Pair<File, String> p : new ArrayList<Pair<File, String>>((Collection<Pair<File, String>>)filesToMove.get(replayFile))) {
-                if(p.getRight().equals(name)) {
-                    filesToMove.remove(replayFile, p);
-                }
+        for (Iterator<Pair<File, String>> iter = filesToMove.get(replayFile).iterator(); iter.hasNext(); ) {
+            if (iter.next().getRight().equals(name)) {
+                iter.remove();
             }
         }
 
@@ -71,7 +70,7 @@ public class ReplayFileAppender extends Thread {
     }
 
     public void shutdown() {
-        shutdown = true;
+        interrupt();
     }
 
     public void addFinishListener(GuiReplaySaving gui) {
@@ -80,7 +79,7 @@ public class ReplayFileAppender extends Thread {
 
     @Override
     public void run() {
-        while(!shutdown || !filesToRewrite.isEmpty()) {
+        while(!Thread.interrupted() || !filesToRewrite.isEmpty()) {
             File replayFile = filesToRewrite.poll();
             if(replayFile != null) {
                 if(replayFile.canWrite()) {
@@ -96,7 +95,11 @@ public class ReplayFileAppender extends Thread {
                         //delete all written files
                         for(Pair<File, String> p : filesToMove.get(replayFile)) {
                             if(p.getLeft() != null) {
-                                p.getLeft().delete();
+                                try {
+                                    FileUtils.forceDelete(p.getLeft());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
 
@@ -114,7 +117,9 @@ public class ReplayFileAppender extends Thread {
             }
             try {
                 Thread.sleep(1000);
-            } catch(Exception e) {}
+            } catch (InterruptedException e) {
+                interrupt();
+            }
         }
     }
 

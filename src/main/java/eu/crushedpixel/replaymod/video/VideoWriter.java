@@ -132,10 +132,6 @@ public class VideoWriter {
         writerThread.start();
     }
 
-    public void setQueueLimit(int limit) {
-        this.queueLimit = limit;
-    }
-
     /**
      * Add the image to the writer queue.
      * @param image The image

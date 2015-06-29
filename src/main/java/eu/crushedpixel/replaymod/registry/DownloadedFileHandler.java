@@ -3,9 +3,11 @@ package eu.crushedpixel.replaymod.registry;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 public class DownloadedFileHandler {
@@ -16,18 +18,19 @@ public class DownloadedFileHandler {
 
     public DownloadedFileHandler() {
         downloadFolder = new File(ReplayMod.replaySettings.getDownloadPath());
-        downloadFolder.mkdirs();
+        try {
+            FileUtils.forceMkdir(downloadFolder);
 
-        for(File f : downloadFolder.listFiles()) {
-            if(!FilenameUtils.getExtension(f.getAbsolutePath()).equals("mcpr")) continue;
-            try {
-                Integer i = Integer.valueOf(FilenameUtils.getBaseName(f.getAbsolutePath()));
-                if(i != null) {
-                    downloadedFiles.put(i, f);
+            for(File f : FileUtils.listFiles(downloadFolder, new String[]{"mcpr"}, false)) {
+                try {
+                    int id = Integer.parseInt(FilenameUtils.getBaseName(f.getAbsolutePath()));
+                    downloadedFiles.put(id, f);
+                } catch(NumberFormatException e) {
+                    e.printStackTrace();
                 }
-            } catch(Exception e) {
-                e.printStackTrace();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

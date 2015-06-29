@@ -5,20 +5,8 @@ import net.minecraft.client.gui.GuiButton;
 
 public class GuiAdvancedButton extends GuiButton implements GuiElement {
 
-    public GuiAdvancedButton(int x, int y, String buttonText) {
-        this(0, x, y, buttonText);
-    }
-
-    public GuiAdvancedButton(int x, int y, int widthIn, int heightIn, String buttonText) {
-        this(0, x, y, widthIn, heightIn, buttonText);
-    }
-
     public GuiAdvancedButton(int id, int x, int y, String buttonText) {
         super(id, x, y, buttonText);
-    }
-
-    public GuiAdvancedButton(int id, int x, int y, int widthIn, int heightIn, String buttonText) {
-        super(id, x, y, widthIn, heightIn, buttonText);
     }
 
     @Override

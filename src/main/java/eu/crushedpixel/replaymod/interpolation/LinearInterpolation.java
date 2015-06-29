@@ -24,10 +24,6 @@ public abstract class LinearInterpolation<K> implements Interpolation<K> {
         points.add(point);
     }
 
-    public void clearPoints() {
-        points = new ArrayList<K>();
-    }
-
     protected Pair<Float, Pair<K, K>> getCurrentPoints(float position) {
         if(points.size() == 0) return null;
         position = position * (points.size() - 1);

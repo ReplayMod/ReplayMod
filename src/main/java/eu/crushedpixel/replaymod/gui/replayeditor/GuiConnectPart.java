@@ -74,7 +74,7 @@ public class GuiConnectPart extends GuiStudioPart {
     @Override
     public void initGui() {
         if(!initialized) {
-            concatList = new GuiEntryList(1, fontRendererObj, 30, yPos, 150, 0);
+            concatList = new GuiEntryList<String>(1, fontRendererObj, 30, yPos, 150, 0);
             filesToConcat = new ArrayList<String>();
             String selectedName = FilenameUtils.getBaseName(GuiReplayEditor.instance.getSelectedFile().getAbsolutePath());
             filesToConcat.add(selectedName);
@@ -82,7 +82,7 @@ public class GuiConnectPart extends GuiStudioPart {
 
             concatList.setSelectionIndex(0);
 
-            replayDropdown = new GuiDropdown(1, fontRendererObj, 250, yPos + 5, 0, 4);
+            replayDropdown = new GuiDropdown<String>(1, fontRendererObj, 250, yPos + 5, 0, 4);
 
             replayDropdown.clearElements();
             replayFiles = ReplayFileIO.getAllReplayFiles();
@@ -107,14 +107,15 @@ public class GuiConnectPart extends GuiStudioPart {
                         filesToConcat.set(concatList.getSelectionIndex(), replayDropdown.getElement(selectionIndex));
                         concatList.setElements(filesToConcat);
                     } catch(Exception e) {
-                    } //Sorry, too lazy to properly avoid this Exception here
+                        // TODO Prevent exception
+                    }
                 }
             });
 
             concatList.addSelectionListener(new SelectionListener() {
                 @Override
                 public void onSelectionChanged(int selectionIndex) {
-                    String selName = (String) concatList.getElement(selectionIndex);
+                    String selName = concatList.getElement(selectionIndex);
                     int i = 0;
                     for(Object s : replayDropdown.getAllElements()) {
                         String str = (String) s;
@@ -130,13 +131,14 @@ public class GuiConnectPart extends GuiStudioPart {
                 }
             });
 
+            @SuppressWarnings("unchecked")
+            List<GuiButton> buttonList = this.buttonList;
+
             upButton = new GuiArrowButton(GuiConstants.REPLAY_EDITOR_UP_BUTTON, 195, yPos + 40, "", GuiArrowButton.Direction.UP);
             buttonList.add(upButton);
 
             downButton = new GuiArrowButton(GuiConstants.REPLAY_EDITOR_DOWN_BUTTON, 219, yPos + 40, "", GuiArrowButton.Direction.DOWN);
             buttonList.add(downButton);
-
-            int w = GuiReplayEditor.instance.width - 243 - 20 - 4;
 
             removeButton = new GuiButton(GuiConstants.REPLAY_EDITOR_REMOVE_BUTTON, 249, yPos + 40, I18n.format("replaymod.gui.remove"));
             buttonList.add(removeButton);

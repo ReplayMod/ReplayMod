@@ -5,11 +5,11 @@ import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 import java.util.List;
 
 public interface Pagination {
-    public List<FileInfo> getFiles();
+    List<FileInfo> getFiles();
 
-    public int getLoadedPages();
+    int getLoadedPages();
 
-    public boolean fetchPage();
+    boolean fetchPage();
 
-    public static final int PAGE_SIZE = 30; //defined by the Website API
+    int PAGE_SIZE = 30; //defined by the Website API
 }

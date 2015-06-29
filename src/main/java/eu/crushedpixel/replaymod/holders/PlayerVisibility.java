@@ -1,18 +1,12 @@
 package eu.crushedpixel.replaymod.holders;
 
-import java.util.Collection;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.util.UUID;
 
+@Data
+@AllArgsConstructor
 public class PlayerVisibility {
-
-    public PlayerVisibility(Collection<UUID> hidden) {
-        this.hidden = hidden.toArray(new UUID[hidden.size()]);
-    }
-
     private UUID[] hidden;
-
-    public UUID[] getHiddenPlayers() {
-        return hidden;
-    }
-
 }

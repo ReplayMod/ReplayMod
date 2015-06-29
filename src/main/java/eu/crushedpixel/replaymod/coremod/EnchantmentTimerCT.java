@@ -20,17 +20,17 @@ public class EnchantmentTimerCT implements IClassTransformer {
     public byte[] transform(String name, String transformedName,
                             byte[] basicClass) {
         if(name.equals("cqh")) {
-            return patchRenderEffectMethod(name, basicClass, true);
+            return patchRenderEffectMethod(basicClass, true);
         }
 
         if(name.equals("net.minecraft.client.renderer.entity.RenderItem")) {
-            return patchRenderEffectMethod(name, basicClass, false);
+            return patchRenderEffectMethod(basicClass, false);
         }
 
         return basicClass;
     }
 
-    public byte[] patchRenderEffectMethod(String name, byte[] bytes, boolean obfuscated) {
+    public byte[] patchRenderEffectMethod(byte[] bytes, boolean obfuscated) {
         System.out.println("REPLAY MOD CORE PATCHER: Inside RenderItem class");
 
         String methodName = obfuscated ? "a" : "renderEffect";
@@ -46,18 +46,16 @@ public class EnchantmentTimerCT implements IClassTransformer {
 
         List<Pair<AbstractInsnNode, AbstractInsnNode>> toInsert = new ArrayList<Pair<AbstractInsnNode, AbstractInsnNode>>();
 
-        Iterator<MethodNode> iterator = classNode.methods.iterator();
-        while(iterator.hasNext()) {
-            MethodNode m = iterator.next();
-            if(m.name.equals(methodName) && m.desc.equals(classDescriptor)) {
+        for (MethodNode m : classNode.methods) {
+            if (m.name.equals(methodName) && m.desc.equals(classDescriptor)) {
                 System.out.println("REPLAY MOD CORE PATCHER: Inside renderEffect method");
 
                 Iterator<AbstractInsnNode> nodeIterator = m.instructions.iterator();
-                while(nodeIterator.hasNext()) {
+                while (nodeIterator.hasNext()) {
                     AbstractInsnNode node = nodeIterator.next();
-                    if(node instanceof MethodInsnNode) {
+                    if (node instanceof MethodInsnNode) {
                         MethodInsnNode min = (MethodInsnNode) node;
-                        if(min.getOpcode() == Opcodes.INVOKESTATIC && min.name.equals(getSystemTime) &&
+                        if (min.getOpcode() == Opcodes.INVOKESTATIC && min.name.equals(getSystemTime) &&
                                 min.owner.equals(minecraftClass) && min.desc.equals(sysTimeDesc)) {
                             MethodInsnNode n = new MethodInsnNode(Opcodes.INVOKESTATIC,
                                     "eu/crushedpixel/replaymod/timer/EnchantmentTimer", "getEnchantmentTime",
@@ -67,7 +65,7 @@ public class EnchantmentTimerCT implements IClassTransformer {
                     }
                 }
 
-                for(Pair<AbstractInsnNode, AbstractInsnNode> pair : toInsert) {
+                for (Pair<AbstractInsnNode, AbstractInsnNode> pair : toInsert) {
                     m.instructions.insertBefore(pair.first(), pair.second());
                     m.instructions.remove(pair.first());
                 }

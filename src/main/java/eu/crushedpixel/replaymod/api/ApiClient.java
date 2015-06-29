@@ -5,13 +5,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.exceptions.AuthenticationException;
-import eu.crushedpixel.replaymod.api.mojang.MojangApiMethods;
-import eu.crushedpixel.replaymod.api.mojang.holders.Profile;
 import eu.crushedpixel.replaymod.api.replay.ReplayModApiMethods;
 import eu.crushedpixel.replaymod.api.replay.SearchQuery;
 import eu.crushedpixel.replaymod.api.replay.holders.*;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHash;
-import eu.crushedpixel.replaymod.utils.StreamTools;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -20,7 +17,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
-import java.util.UUID;
 
 public class ApiClient {
 
@@ -33,8 +29,7 @@ public class ApiClient {
         builder.put("user", username);
         builder.put("pw", password);
         builder.put("mod", true);
-        AuthKey auth = invokeAndReturn(builder, AuthKey.class);
-        return auth;
+        return invokeAndReturn(builder, AuthKey.class);
     }
 
     public AuthKey register(String username, String mail, String password, String uuid)
@@ -50,8 +45,7 @@ public class ApiClient {
         builder.put("mcusername", authenticationHash.username);
         builder.put("timelong", authenticationHash.currentTime);
         builder.put("randomlong", authenticationHash.randomLong);
-        AuthKey auth = invokeAndReturn(builder, AuthKey.class);
-        return auth;
+        return invokeAndReturn(builder, AuthKey.class);
     }
 
     private AuthenticationHash sessionserverJoin() throws AuthenticationException {
@@ -67,8 +61,7 @@ public class ApiClient {
         try {
             QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.check_authkey);
             builder.put("auth", auth);
-            AuthConfirmation conf = invokeAndReturn(builder, AuthConfirmation.class);
-            return conf;
+            return invokeAndReturn(builder, AuthConfirmation.class);
         } catch(Exception e) {
             return null;
         }
@@ -89,33 +82,21 @@ public class ApiClient {
         return succ.hasDonated();
     }
 
-    @Deprecated
-    public UserFiles getUserFiles(String auth, String user) throws IOException, ApiException {
-        //TODO if required
-        return null;
-    }
-
     public FileInfo[] getFileInfo(List<Integer> ids) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.file_details);
         builder.put("id", buildListString(ids));
-        FileInfo[] info = invokeAndReturn(builder, FileInfo[].class);
-        return info;
+        return invokeAndReturn(builder, FileInfo[].class);
     }
 
     public FileInfo[] searchFiles(SearchQuery query) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.search);
-        StringBuilder sb = new StringBuilder(builder.toString());
-        sb.append(query.buildQuery());
-
-        FileInfo[] info = invokeAndReturn(sb.toString(), SearchResult.class).getResults();
-        return info;
+        return invokeAndReturn(builder.toString() + query.buildQuery(), SearchResult.class).getResults();
     }
 
     public String getTranslation(String languageCode) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_language);
         builder.put("language", languageCode);
-        String properties = SimpleApiClient.invokeUrl(builder.toString());
-        return properties;
+        return SimpleApiClient.invokeUrl(builder.toString());
     }
 
     public void downloadThumbnail(int file, File target) throws IOException {
@@ -142,14 +123,14 @@ public class ApiClient {
                 out.close();
             }
         } else {
-            JsonElement element = jsonParser.parse(StreamTools.readStreamtoString(is));
+            JsonElement element = jsonParser.parse(IOUtils.toString(is));
             try {
                 ApiError err = gson.fromJson(element, ApiError.class);
                 if(err.getDesc() != null) {
                     throw new ApiException(err);
                 }
             } catch(JsonParseException e) {
-                throw new ApiException(StreamTools.readStreamtoString(is));
+                throw new ApiException(IOUtils.toString(is));
             }
         }
     }
@@ -189,15 +170,6 @@ public class ApiClient {
         builder.put("auth", auth);
         builder.put("id", file);
         invokeAndReturn(builder, Success.class);
-    }
-
-    /*
-     MOJANG API CALLS
-    */
-
-    public Profile getProfileFromUUID(UUID uuid) throws IOException, ApiException {
-        String url = String.format(MojangApiMethods.userprofile+"%s", uuid.toString().replace("-", ""));
-        return invokeAndReturn(url, Profile.class);
     }
 
     private <T> T invokeAndReturn(QueryBuilder builder, Class<T> classOfT) throws IOException, ApiException {

@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.recording;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.*;
 import net.minecraft.util.MessageSerializer;
@@ -14,14 +13,6 @@ public class PacketSerializer extends MessageSerializer {
         super(direction);
     }
 
-    public static ByteBuf toByteBuf(byte[] bytes) throws IOException, ClassNotFoundException {
-        ByteBuf bb;
-        bb = Unpooled.buffer(bytes.length);
-        bb.writeBytes(bytes);
-
-        return bb;
-    }
-
     @Override
     public void encode(ChannelHandlerContext ctx, Packet packet, ByteBuf byteBuf) throws IOException {
         EnumConnectionState state = ((EnumConnectionState) ctx.channel().attr(NetworkManager.attrKeyConnectionState).get());
@@ -31,11 +22,9 @@ public class PacketSerializer extends MessageSerializer {
     public void encode(EnumConnectionState state, Packet packet, ByteBuf byteBuf) {
         Integer integer = state.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
 
-        if(integer == null) {
-            return;
-        } else {
+        if (integer != null) {
             PacketBuffer packetbuffer = new PacketBuffer(byteBuf);
-            packetbuffer.writeVarIntToBuffer(integer.intValue());
+            packetbuffer.writeVarIntToBuffer(integer);
 
             try {
                 packet.writePacketData(packetbuffer);

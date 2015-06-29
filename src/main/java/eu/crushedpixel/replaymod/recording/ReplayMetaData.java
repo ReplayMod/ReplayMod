@@ -1,5 +1,10 @@
 package eu.crushedpixel.replaymod.recording;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class ReplayMetaData {
 
     private boolean singleplayer;
@@ -15,48 +20,5 @@ public class ReplayMetaData {
                 this.duration, this.date, this.players, this.mcversion);
     }
 
-    public ReplayMetaData(boolean singleplayer, String serverName, String generator,
-                          int duration, long date, String[] players, String mcversion) {
-        this.singleplayer = singleplayer;
-        this.serverName = serverName;
-        this.generator = generator;
-        this.duration = duration;
-        this.date = date;
-        this.players = players;
-        this.mcversion = mcversion;
-    }
-
     public void removeServer() { this.serverName = null; }
-
-    public boolean isSingleplayer() {
-        return singleplayer;
-    }
-
-    public String getServerName() {
-        return serverName;
-    }
-
-    public String getGenerator() {
-        return generator;
-    }
-
-    public int getDuration() {
-        return duration;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
-    public long getDate() {
-        return date;
-    }
-
-    public String[] getPlayers() {
-        return players;
-    }
-
-    public String getMCVersion() {
-        return mcversion;
-    }
 }

@@ -8,7 +8,6 @@ import java.awt.*;
 
 public class GuiLoadingListEntry implements IGuiListEntry {
 
-    boolean registered = false;
     private final Minecraft mc = Minecraft.getMinecraft();
     private final String message = I18n.format("replaymod.gui.loading")+"...";
 

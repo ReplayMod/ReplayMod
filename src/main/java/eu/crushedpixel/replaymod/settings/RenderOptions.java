@@ -1,10 +1,12 @@
 package eu.crushedpixel.replaymod.settings;
 
 import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
+import lombok.Data;
 import net.minecraft.client.Minecraft;
 
 import static org.apache.commons.lang3.Validate.*;
 
+@Data
 public final class RenderOptions {
     private FrameRenderer renderer;
     private String bitrate = "10M";
@@ -24,20 +26,8 @@ public final class RenderOptions {
             "-c:v libvpx -b:v %BITRATE% %FILENAME%.webm";
     private int writerQueueSize = Integer.parseInt(System.getProperty("replaymod.render.writerQueueSize", "1"));
 
-    public FrameRenderer getRenderer() {
-        return renderer;
-    }
-
     public void setRenderer(FrameRenderer renderer) {
         this.renderer = notNull(renderer);
-    }
-
-    public String getBitrate() {
-        return bitrate;
-    }
-
-    public void setBitrate(String bitrate) {
-        this.bitrate = bitrate;
     }
 
     public int getFps() {
@@ -49,72 +39,8 @@ public final class RenderOptions {
         this.fps = fps;
     }
 
-    public boolean isWaitForChunks() {
-        return waitForChunks;
-    }
-
-    public void setWaitForChunks(boolean waitForChunks) {
-        this.waitForChunks = waitForChunks;
-    }
-
-    public boolean isLinearMovement() {
-        return isLinearMovement;
-    }
-
-    public void setLinearMovement(boolean isLinearMovement) {
-        this.isLinearMovement = isLinearMovement;
-    }
-
     public boolean isDefaultSky() {
         return skyColor == -1;
-    }
-
-    public int getSkyColor() {
-        return skyColor;
-    }
-
-    public void setSkyColor(int skyColor) {
-        this.skyColor = skyColor;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public String getExportCommand() {
-        return exportCommand;
-    }
-
-    public void setExportCommand(String exportCommand) {
-        this.exportCommand = exportCommand;
-    }
-
-    public String getExportCommandArgs() {
-        return exportCommandArgs;
-    }
-
-    public void setExportCommandArgs(String exportCommandArgs) {
-        this.exportCommandArgs = exportCommandArgs;
-    }
-
-    public int getWriterQueueSize() {
-        return writerQueueSize;
-    }
-
-    public void setWriterQueueSize(int writerQueueSize) {
-        this.writerQueueSize = writerQueueSize;
     }
 
     public RenderOptions copy() {

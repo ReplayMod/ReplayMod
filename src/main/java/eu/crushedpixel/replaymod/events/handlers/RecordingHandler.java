@@ -24,16 +24,12 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class RecordingHandler {
 
     public static final int entityID = Integer.MIN_VALUE + 9001;
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private Double lastX = null, lastY = null, lastZ = null;
-    private List<Integer> lastEffects = new ArrayList<Integer>();
     private ItemStack[] playerItems = new ItemStack[5];
     private int ticksSinceLastCorrection = 0;
     private boolean wasSleeping = false;
@@ -81,7 +77,7 @@ public class RecordingHandler {
             PacketBuffer pb = new PacketBuffer(bb);
 
             pb.writeVarIntToBuffer(entityID);
-            pb.writeUuid(player.getUUID(player.getGameProfile()));
+            pb.writeUuid(EntityPlayer.getUUID(player.getGameProfile()));
 
             pb.writeInt(MathHelper.floor_double(player.posX * 32.0D));
             pb.writeInt(MathHelper.floor_double(player.posY * 32.0D));
@@ -106,7 +102,6 @@ public class RecordingHandler {
     public void resetVars() {
         lastX = lastY = lastZ = null;
         rotationYawHeadBefore = null;
-        lastEffects = new ArrayList<Integer>();
         playerItems = new ItemStack[5];
     }
 
@@ -139,7 +134,7 @@ public class RecordingHandler {
             lastY = e.player.posY;
             lastZ = e.player.posZ;
 
-            Packet packet = null;
+            Packet packet;
             if(force || Math.abs(dx) > 4.0 || Math.abs(dy) > 4.0 || Math.abs(dz) > 4.0) {
                 int x = MathHelper.floor_double(e.player.posX * 32.0D);
                 int y = MathHelper.floor_double(e.player.posY * 32.0D);
@@ -148,13 +143,8 @@ public class RecordingHandler {
                 byte pitch = (byte) ((int) (e.player.rotationPitch * 256.0F / 360.0F));
                 packet = new S18PacketEntityTeleport(entityID, x, y, z, yaw, pitch, e.player.onGround);
             } else {
-                byte oldYaw = (byte) ((int) (e.player.prevRotationYaw * 256.0F / 360.0F));
                 byte newYaw = (byte) ((int) (e.player.rotationYaw * 256.0F / 360.0F));
-                byte oldPitch = (byte) ((int) (e.player.prevRotationPitch * 256.0F / 360.0F));
                 byte newPitch = (byte) ((int) (e.player.rotationPitch * 256.0F / 360.0F));
-
-                byte dPitch = (byte) (newPitch - oldPitch);
-                byte dYaw = (byte) (newYaw - oldYaw);
 
                 packet = new S17PacketEntityLookMove(entityID,
                         (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),

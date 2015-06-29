@@ -21,19 +21,14 @@ public class AuthenticationHash {
     public final String hash;
 
     private String getAuthenticationHash() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(username);
-        builder.append(currentTime);
-        builder.append(randomLong);
-
-        String md5 = builder.toString();
+        String md5 = username + currentTime + randomLong;
 
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
             byte[] array = md.digest(md5.getBytes());
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < array.length; ++i) {
-                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : array) {
+                sb.append(Integer.toHexString((b & 0xFF) | 0x100).substring(1, 3));
             }
             return sb.toString();
         } catch (java.security.NoSuchAlgorithmException e) {

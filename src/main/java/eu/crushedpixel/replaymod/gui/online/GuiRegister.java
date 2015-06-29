@@ -26,9 +26,6 @@ public class GuiRegister extends GuiScreen {
 
     private boolean initialized = false;
 
-    private int strwidth = 0;
-    private int totalwidth = 0;
-
     private String[] labels = new String[]{I18n.format("replaymod.gui.username"), I18n.format("replaymod.gui.mail"), I18n.format("replaymod.gui.password"),
             I18n.format("replaymod.gui.register.confirmpw")};
 
@@ -71,14 +68,16 @@ public class GuiRegister extends GuiScreen {
         inputFields.add(passwordInput);
         inputFields.add(passwordConfirmation);
 
-        strwidth = Math.max(Math.max(fontRendererObj.getStringWidth(labels[0]), fontRendererObj.getStringWidth(labels[1])),
+        int strwidth = Math.max(Math.max(fontRendererObj.getStringWidth(labels[0]), fontRendererObj.getStringWidth(labels[1])),
                 Math.max(fontRendererObj.getStringWidth(labels[2]), fontRendererObj.getStringWidth(labels[3])));
 
-        totalwidth = 145+10+strwidth;
+        int totalwidth = 145 + 10 + strwidth;
 
         for(GuiTextField f : inputFields)
-            f.xPosition = (width/2) - (totalwidth/2) + strwidth+5;
+            f.xPosition = (width/2) - (totalwidth /2) + strwidth +5;
 
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
         buttonList.add(registerButton);
         buttonList.add(cancelButton);
 

@@ -7,7 +7,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.Entity;
@@ -117,8 +116,10 @@ public class SpectatorRenderer {
         event.setCanceled(true);
     }
 
+    @SuppressWarnings("deprecation")
     public void renderItemInFirstPerson(float partialTicks) {
         EntityPlayer entityPlayer = getSpectatedPlayer();
+        if (entityPlayer == null) return;
 
         float equippedProgressState = 1.0F - (prevEquippedProgress + (equippedProgress - prevEquippedProgress) * partialTicks);
         float swingProgress = entityPlayer.getSwingProgress(partialTicks);
@@ -171,7 +172,8 @@ public class SpectatorRenderer {
                 mc.entityRenderer.itemRenderer.func_178096_b(equippedProgressState, swingProgress);
             }
 
-            mc.entityRenderer.itemRenderer.renderItem(entityPlayer, itemToRender, ItemCameraTransforms.TransformType.FIRST_PERSON);
+            mc.entityRenderer.itemRenderer.renderItem(entityPlayer, itemToRender,
+                    net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType.FIRST_PERSON);
         }
         else if (!entityPlayer.isInvisible()) {
             renderPlayerHand(entityPlayer, equippedProgressState, swingProgress);
@@ -210,7 +212,7 @@ public class SpectatorRenderer {
         GlStateManager.rotate(0.0F, 1.0F, 0.0F, 0.0F);
         GlStateManager.translate(-1.0F, -1.0F, 0.0F);
         GlStateManager.scale(0.015625F, 0.015625F, 0.015625F);
-        this.mc.getTextureManager().bindTexture(mc.entityRenderer.itemRenderer.RES_MAP_BACKGROUND);
+        this.mc.getTextureManager().bindTexture(ItemRenderer.RES_MAP_BACKGROUND);
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer worldrenderer = tessellator.getWorldRenderer();
         GL11.glNormal3f(0.0F, 0.0F, -1.0F);
@@ -229,7 +231,7 @@ public class SpectatorRenderer {
 
     public void renderMapArms(EntityPlayer entityPlayer) {
         bindPlayerTexture(entityPlayer);
-        Render render = mc.entityRenderer.itemRenderer.renderManager.getEntityRenderObject((EntityPlayer)ReplayHandler.getCurrentEntity());
+        Render render = mc.entityRenderer.itemRenderer.renderManager.getEntityRenderObject(ReplayHandler.getCurrentEntity());
         RenderPlayer renderplayer = (RenderPlayer)render;
 
         if(!entityPlayer.isInvisible()) {
@@ -444,11 +446,7 @@ public class SpectatorRenderer {
             if(!itemToRender.getIsItemStackEqual(itemstack)) {
                 flag = true;
             }
-        } else if(itemToRender == null && itemstack == null) {
-            flag = false;
-        } else {
-            flag = true;
-        }
+        } else flag = !(itemToRender == null && itemstack == null);
 
         float f = 0.4F;
         float f1 = flag ? 0.0F : 1.0F;
@@ -484,7 +482,7 @@ public class SpectatorRenderer {
 
             for (int i = 0; i < 8; ++i)
             {
-                double d0 = player.posX + (double)(((float)((i >> 0) % 2) - 0.5F) * player.width * 0.8F);
+                double d0 = player.posX + (double)(((float)((i) % 2) - 0.5F) * player.width * 0.8F);
                 double d1 = player.posY + (double)(((float)((i >> 1) % 2) - 0.5F) * 0.1F);
                 double d2 = player.posZ + (double)(((float)((i >> 2) % 2) - 0.5F) * player.width * 0.8F);
                 BlockPos blockpos = new BlockPos(d0, d1 + (double)player.getEyeHeight(), d2);
@@ -516,7 +514,7 @@ public class SpectatorRenderer {
     }
 
     public void renderWaterOverlayTexture(float partialTicks, EntityPlayer player) {
-        this.mc.getTextureManager().bindTexture(mc.entityRenderer.itemRenderer.RES_UNDERWATER_OVERLAY);
+        this.mc.getTextureManager().bindTexture(ItemRenderer.RES_UNDERWATER_OVERLAY);
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer worldrenderer = tessellator.getWorldRenderer();
         float f1 = player.getBrightness(partialTicks);

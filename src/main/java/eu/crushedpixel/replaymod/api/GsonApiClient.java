@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class GsonApiClient {
 
@@ -20,18 +19,7 @@ public class GsonApiClient {
         return wrapWithJson(apiResult);
     }
 
-    public static JsonElement invokeJson(String apiKey, String method, Map<String, Object> paramMap) throws IOException, ApiException {
-        String apiResult = SimpleApiClient.invoke(method, paramMap);
-        return wrapWithJson(apiResult);
-    }
-
-    public static JsonElement invokeJson(String apiKey, String method) throws IOException, ApiException {
-        String apiResult = SimpleApiClient.invoke(method, null);
-        return wrapWithJson(apiResult);
-    }
-
     private static JsonElement wrapWithJson(String apiResult) {
-        JsonElement element = parser.parse(apiResult);
-        return element;
+        return parser.parse(apiResult);
     }
 }

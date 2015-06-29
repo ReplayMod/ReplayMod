@@ -10,30 +10,8 @@ public class QueryBuilder {
     public String apiMethod;
     public Map<String, String> paramMap;
 
-    public QueryBuilder() {
-        this(null);
-    }
-
     public QueryBuilder(String apiMethod) {
         this.apiMethod = apiMethod;
-    }
-
-    public QueryBuilder(String apiMethod, String key, String value) {
-        this(apiMethod);
-        put(key, value);
-    }
-
-    public QueryBuilder(String apiMethod, String key1, String value1, String key2, String value2) {
-        this(apiMethod);
-        put(key1, value1);
-        put(key2, value2);
-    }
-
-    public QueryBuilder(String apiMethod, String key1, String value1, String key2, String value2, String key3, String value3) {
-        this(apiMethod);
-        put(key1, value1);
-        put(key2, value2);
-        put(key3, value3);
     }
 
     public void put(String key, Object value) {
@@ -43,17 +21,6 @@ public class QueryBuilder {
             }
             paramMap.put(key, value.toString());
         }
-    }
-
-    public void put(String key1, Object value1, String key2, Object value2) {
-        put(key1, value1);
-        put(key2, value2);
-    }
-
-    public void put(String key1, Object value1, String key2, Object value2, String key3, Object value3) {
-        put(key1, value1);
-        put(key2, value2);
-        put(key3, value3);
     }
 
     public void put(Map<String, Object> paraMap) {

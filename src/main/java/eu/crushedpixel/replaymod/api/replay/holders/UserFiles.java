@@ -1,22 +1,10 @@
 package eu.crushedpixel.replaymod.api.replay.holders;
 
-public class UserFiles {
+import lombok.Data;
 
+@Data
+public class UserFiles {
     private String user;
     private FileInfo[] files;
     private int total_size;
-
-    public String getUser() {
-        return user;
-    }
-
-    public FileInfo[] getFiles() {
-        return files;
-    }
-
-    public int getTotal_size() {
-        return total_size;
-    }
-
-
 }

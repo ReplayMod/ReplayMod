@@ -12,21 +12,11 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 import java.awt.*;
 import java.io.IOException;
 
-public class GuiReplaySettings extends GuiScreen {
+import static eu.crushedpixel.replaymod.gui.GuiConstants.*;
 
-    //TODO: Move to GuiConstants
-    private static final int RECORDSERVER_ID = 9004;
-    private static final int RECORDSP_ID = 9005;
-    private static final int SEND_CHAT = 9006;
-    private static final int FORCE_LINEAR = 9007;
-    private static final int ENABLE_LIGHTING = 9008;
-    private static final int RESOURCEPACK_ID = 9010;
-    private static final int INDICATOR_ID = 9012;
-    private static final int PATHPREVIEW_ID = 9013;
+public class GuiReplaySettings extends GuiScreen {
     protected String screenTitle = I18n.format("replaymod.gui.settings.title");
     private GuiScreen parentGuiScreen;
-    private GuiToggleButton recordServerButton, recordSPButton, sendChatButton, linearButton, lightingButton,
-            resourcePackButton, showIndicatorButton, pathPreviewButton;
 
     public GuiReplaySettings(GuiScreen parentGuiScreen) {
         this.parentGuiScreen = parentGuiScreen;
@@ -34,8 +24,12 @@ public class GuiReplaySettings extends GuiScreen {
 
     public void initGui() {
         this.screenTitle = I18n.format("replaymod.gui.settings.title");
-        this.buttonList.clear();
-        this.buttonList.add(new GuiButton(200, this.width / 2 - 100, this.height - 27, I18n.format("gui.done")));
+
+        @SuppressWarnings("unchecked")
+        java.util.List<GuiButton> buttonList = this.buttonList;
+
+        buttonList.clear();
+        buttonList.add(new GuiButton(200, this.width / 2 - 100, this.height - 27, I18n.format("gui.done")));
 
         int i = 0;
 
@@ -45,20 +39,20 @@ public class GuiReplaySettings extends GuiScreen {
             int yPos = this.height / 6 + 24 * (i >> 1);
 
             if(o == RecordingOptions.notifications) {
-                sendChatButton = new GuiSettingsOnOffButton(SEND_CHAT, xPos, yPos, 150, 20, o);
-                this.buttonList.add(sendChatButton);
+                GuiToggleButton sendChatButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_SEND_CHAT, xPos, yPos, 150, 20, o);
+                buttonList.add(sendChatButton);
 
             } else if(o == RecordingOptions.recordServer) {
-                recordServerButton = new GuiSettingsOnOffButton(RECORDSERVER_ID, xPos, yPos, 150, 20, o);
-                this.buttonList.add(recordServerButton);
+                GuiToggleButton recordServerButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_RECORDSERVER_ID, xPos, yPos, 150, 20, o);
+                buttonList.add(recordServerButton);
 
             } else if(o == RecordingOptions.recordSingleplayer) {
-                recordSPButton = new GuiSettingsOnOffButton(RECORDSP_ID, xPos, yPos, 150, 20, o);
-                this.buttonList.add(recordSPButton);
+                GuiToggleButton recordSPButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_RECORDSP_ID, xPos, yPos, 150, 20, o);
+                buttonList.add(recordSPButton);
 
             } else if(o == RecordingOptions.indicator) {
-                showIndicatorButton = new GuiSettingsOnOffButton(INDICATOR_ID, xPos, yPos, 150, 20, o);
-                this.buttonList.add(showIndicatorButton);
+                GuiToggleButton showIndicatorButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_INDICATOR_ID, xPos, yPos, 150, 20, o);
+                buttonList.add(showIndicatorButton);
             }
 
             ++i;
@@ -75,21 +69,21 @@ public class GuiReplaySettings extends GuiScreen {
             int yPos = this.height / 6 + 24 * (i >> 1);
 
             if(o == ReplayOptions.lighting) {
-                lightingButton = new GuiSettingsOnOffButton(ENABLE_LIGHTING, xPos, yPos, 150, 20, o);
-                this.buttonList.add(lightingButton);
+                GuiToggleButton lightingButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_ENABLE_LIGHTING, xPos, yPos, 150, 20, o);
+                buttonList.add(lightingButton);
 
             } else if(o == ReplayOptions.linear) {
-                linearButton = new GuiSettingsOnOffButton(FORCE_LINEAR, xPos, yPos, 150, 20, o,
+                GuiToggleButton linearButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_FORCE_LINEAR, xPos, yPos, 150, 20, o,
                         I18n.format("replaymod.gui.settings.interpolation.linear"), I18n.format("replaymod.gui.settings.interpolation.cubic"));
-                this.buttonList.add(linearButton);
+                buttonList.add(linearButton);
 
             } else if(o == ReplayOptions.useResources) {
-                resourcePackButton = new GuiSettingsOnOffButton(RESOURCEPACK_ID, xPos, yPos, 150, 20, o);
-                this.buttonList.add(resourcePackButton);
+                GuiToggleButton resourcePackButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_RESOURCEPACK_ID, xPos, yPos, 150, 20, o);
+                buttonList.add(resourcePackButton);
 
             } else if(o == ReplayOptions.previewPath) {
-                pathPreviewButton = new GuiSettingsOnOffButton(PATHPREVIEW_ID, xPos, yPos, 150, 20, o);
-                this.buttonList.add(pathPreviewButton);
+                GuiToggleButton pathPreviewButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_PATHPREVIEW_ID, xPos, yPos, 150, 20, o);
+                buttonList.add(pathPreviewButton);
             }
 
             ++i;

@@ -14,8 +14,6 @@ public class LinearTimestamp extends LinearInterpolation<Integer> {
         int first = pair.second().first();
         int second = pair.second().second();
 
-        int val = (int) getInterpolatedValue(first, second, perc);
-
-        return val;
+        return (int) getInterpolatedValue(first, second, perc);
     }
 }

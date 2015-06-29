@@ -39,14 +39,6 @@ public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
         displayString = displayKey + ": 1x";
     }
 
-    public static float convertScaleRet(float value) {
-        if(value <= 1) {
-            return Math.round(value * 10);
-        }
-        float steps = value - 1;
-        return Math.round(steps / 0.25f);
-    }
-
     public static float convertScale(float value) {
         if(value == 10) {
             return 1;
@@ -89,6 +81,7 @@ public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
 
                 this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, l);
             } catch(Exception e) {
+                // TODO: Fix exception
             }
         }
     }
@@ -121,19 +114,13 @@ public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
                 this.drawTexturedModalRect(this.xPosition + (int) (sliderValue * (float) (this.width - 8)), this.yPosition, 0, 66, 4, 20);
                 this.drawTexturedModalRect(this.xPosition + (int) (sliderValue * (float) (this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
             } catch(Exception e) {
+                // TODO: Fix exception
             }
         }
     }
 
     public float normalizeValue(float p_148266_1_) {
         return MathHelper.clamp_float((this.snapToStepClamp(p_148266_1_) - this.valueMin) / (this.valueMax - this.valueMin), 0.0F, 1.0F);
-    }
-
-    public float realToNormalized(float value) {
-        float min = 0 - valueMin;
-        float max = valueMax + min;
-
-        return value / (max) - min;
     }
 
     public float denormalizeValue(float p_148262_1_) {

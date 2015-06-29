@@ -6,11 +6,13 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.input.Keyboard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class GuiRenameReplay extends GuiScreen {
     private GuiScreen field_146585_a;
@@ -28,9 +30,11 @@ public class GuiRenameReplay extends GuiScreen {
 
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
-        this.buttonList.clear();
-        this.buttonList.add(new GuiButton(0, this.width / 2 - 100, this.height / 4 + 96 + 12, I18n.format("replaymod.gui.rename")));
-        this.buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 120 + 12, I18n.format("replaymod.gui.cancel")));
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
+        buttonList.clear();
+        buttonList.add(new GuiButton(0, this.width / 2 - 100, this.height / 4 + 96 + 12, I18n.format("replaymod.gui.rename")));
+        buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 120 + 12, I18n.format("replaymod.gui.cancel")));
         String s = FilenameUtils.getBaseName(file.getAbsolutePath());
         this.field_146583_f = new GuiTextField(2, this.fontRendererObj, this.width / 2 - 100, 60, 200, 20);
         this.field_146583_f.setFocused(true);
@@ -55,7 +59,7 @@ public class GuiRenameReplay extends GuiScreen {
                     renamed = new File(initRenamed.getAbsolutePath() + "_" + i);
                     i++;
                 }
-                file.renameTo(renamed);
+                FileUtils.moveFile(file, renamed);
                 this.mc.displayGuiScreen(this.field_146585_a);
             }
         }

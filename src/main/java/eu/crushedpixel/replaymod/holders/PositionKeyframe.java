@@ -1,20 +1,17 @@
 package eu.crushedpixel.replaymod.holders;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-public class PositionKeyframe extends Keyframe {
+@Data
+@EqualsAndHashCode(callSuper = true)
+public final class PositionKeyframe extends Keyframe {
 
     private Position position;
-    private Integer spectatedEntityID = null;
-
-    @Override
-    public Keyframe clone() {
-        return new PositionKeyframe(getRealTimestamp(), position, spectatedEntityID);
-    }
+    private Integer spectatedEntityID;
 
     public PositionKeyframe(int realTime, Position position) {
-        super(realTime);
-        this.position = position;
+        this(realTime, position, null);
     }
 
     public PositionKeyframe(int realTime, Position position, Integer spectatedEntityID) {
@@ -27,28 +24,8 @@ public class PositionKeyframe extends Keyframe {
         this(realTime, new Position(spectatedEntityID), spectatedEntityID);
     }
 
-    public Position getPosition() {
-        return position;
-    }
-
-    public void setPosition(Position position) { this.position = position; }
-
-    public Integer getSpectatedEntityID() { return spectatedEntityID; }
-
     @Override
-    public boolean equals(Object o2) {
-        if(o2 == null) return false;
-        if(!(o2 instanceof PositionKeyframe)) return false;
-        PositionKeyframe kf = (PositionKeyframe)o2;
-        return hashCode() == kf.hashCode();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(getPosition())
-                .append(getRealTimestamp())
-                .append(getSpectatedEntityID())
-                .toHashCode();
+    public Keyframe copy() {
+        return new PositionKeyframe(getRealTimestamp(), position, spectatedEntityID);
     }
 }

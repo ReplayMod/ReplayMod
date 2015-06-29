@@ -19,6 +19,7 @@ public class EnchantmentTimer {
         recordingTime += amount;
     }
 
+    @SuppressWarnings("unused") // Called by ASM
     public static long getEnchantmentTime() {
         if(!(ReplayHandler.isInPath() && ReplayProcess.isVideoRecording())) {
             if(ReplayHandler.isInReplay()) {

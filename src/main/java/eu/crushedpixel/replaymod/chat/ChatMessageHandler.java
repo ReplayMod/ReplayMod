@@ -29,20 +29,16 @@ public class ChatMessageHandler {
 
 
     private boolean active = true;
-    private boolean alive = true;
     private Queue<IChatComponent> requests = new ConcurrentLinkedQueue<IChatComponent>();
     private EntityPlayerSP player = null;
     public Thread t = new Thread(new Runnable() {
 
         @Override
         public void run() {
-            while(alive) {
+            while(!Thread.currentThread().isInterrupted()) {
                 while(active) {
                     try {
                         while(player == null) {
-                            if(!alive) {
-                                break;
-                            }
                             Thread.sleep(100);
                             player = Minecraft.getMinecraft().thePlayer;
                         }
@@ -67,6 +63,7 @@ public class ChatMessageHandler {
     }, "replaymod-chat-message-handler");
 
     public ChatMessageHandler() {
+        t.setDaemon(true);
         t.start();
     }
 

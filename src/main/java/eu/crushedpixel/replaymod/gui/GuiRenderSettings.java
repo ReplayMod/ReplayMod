@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GuiRenderSettings extends GuiScreen {
+    private static final int LEFT_BORDER = 10;
 
     private GuiButton renderButton, cancelButton, advancedButton;
     private GuiDropdown<RendererSettings> rendererDropdown;
 
     private int virtualY, virtualHeight;
-    private int leftBorder = 10;
 
     private GuiCheckBox customResolution, ignoreCamDir, youtubeExport, enableGreenscreen;
     private GuiNumberInput xRes, yRes;
@@ -42,7 +42,7 @@ public class GuiRenderSettings extends GuiScreen {
 
     private boolean advancedTab = false;
 
-    private int w1, w2, w3;
+    private int w1;
 
     private boolean initialized;
 
@@ -170,18 +170,18 @@ public class GuiRenderSettings extends GuiScreen {
         rendererDropdown.yPosition = virtualY + 15 + 15;
         rendererDropdown.xPosition = (width-w1)/2 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.renderer") + ":")+10;
 
-        w2 = customResolution.width+5+xRes.width+5+fontRendererObj.getStringWidth("*")+5+yRes.width;
+        int w2 = customResolution.width + 5 + xRes.width + 5 + fontRendererObj.getStringWidth("*") + 5 + yRes.width;
 
         customResolution.yPosition = virtualY + 15 + 5 + 20 + 10 +5+fontRendererObj.getStringWidth("*")+5;
-        customResolution.xPosition = (width-w2)/2;
+        customResolution.xPosition = (width- w2)/2;
 
         xRes.xPosition = customResolution.xPosition + customResolution.width + 5;
         yRes.xPosition = xRes.xPosition+xRes.width+5+fontRendererObj.getStringWidth("*")+5;
         xRes.yPosition = yRes.yPosition = customResolution.yPosition-3;
 
-        w3 = interpolation.width + 10 + forceChunks.width;
+        int w3 = interpolation.width + 10 + forceChunks.width;
 
-        interpolation.xPosition = (width-w3)/2;
+        interpolation.xPosition = (width- w3)/2;
         interpolation.yPosition = xRes.yPosition+20+10;
 
         forceChunks.xPosition = interpolation.xPosition+interpolation.width+10;
@@ -224,7 +224,7 @@ public class GuiRenderSettings extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawGradientRect(leftBorder, virtualY, width - leftBorder, virtualY + virtualHeight, -1072689136, -804253680);
+        drawGradientRect(LEFT_BORDER, virtualY, width - LEFT_BORDER, virtualY + virtualHeight, -1072689136, -804253680);
 
         this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.title"),
                 this.width / 2, virtualY + 5, Color.WHITE.getRGB());
@@ -252,7 +252,7 @@ public class GuiRenderSettings extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        if(!rendererDropdown.mouseClickedResult(mouseX, mouseY, mouseButton)) {
+        if(!rendererDropdown.mouseClickedResult(mouseX, mouseY)) {
             xRes.mouseClicked(mouseX, mouseY, mouseButton);
             yRes.mouseClicked(mouseX, mouseY, mouseButton);
 

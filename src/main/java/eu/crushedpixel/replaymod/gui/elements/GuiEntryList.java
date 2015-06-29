@@ -118,11 +118,6 @@ public class GuiEntryList<T> extends GuiTextField {
         }
     }
 
-    public void clearElements() {
-        this.elements = new ArrayList<T>();
-        selectionIndex = -1;
-    }
-
     public void addElement(T element) {
         this.elements.add(element);
         if(selectionIndex == -1) {
@@ -170,10 +165,6 @@ public class GuiEntryList<T> extends GuiTextField {
 
     public void addSelectionListener(SelectionListener listener) {
         this.selectionListeners.add(listener);
-    }
-
-    public void removeSelectionListener(SelectionListener listener) {
-        this.selectionListeners.remove(listener);
     }
 
 }

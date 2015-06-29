@@ -19,10 +19,6 @@ public class RatedFileHandler {
         reloadRatings();
     }
 
-    public HashMap<Integer, Boolean> getRated() {
-        return rated;
-    }
-
     public Rating.RatingType getRating(int id) {
         return Rating.RatingType.fromBoolean(rated.get(id));
     }

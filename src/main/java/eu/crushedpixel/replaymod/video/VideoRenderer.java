@@ -193,7 +193,9 @@ public class VideoRenderer {
         PositionKeyframe nextPos = null;
         if (movement == null || lastPos == null) {
             // Stay at one position, no movement
-            pos = ReplayHandler.getNextPositionKeyframe(-1).getPosition();
+            PositionKeyframe keyframe = ReplayHandler.getNextPositionKeyframe(-1);
+            assert keyframe != null;
+            pos = keyframe.getPosition();
         } else {
             // Position interpolation
             nextPos = ReplayHandler.getNextPositionKeyframe(videoTime);
@@ -267,8 +269,7 @@ public class VideoRenderer {
                 }
 
                 if(!(nextTime == null || lastTime == null)) {
-                    if(lastTimeStamp == nextTimeStamp) curSpeed = 0f;
-                    else curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
+                    curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
                 }
 
                 if(lastTimeStamp == nextTimeStamp) {

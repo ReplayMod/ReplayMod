@@ -97,15 +97,17 @@ public class GuiEventHandler {
 
     @SubscribeEvent
     public void onInit(InitGuiEvent event) {
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = event.buttonList;
         if(event.gui instanceof GuiIngameMenu && ReplayHandler.isInReplay()) {
             ReplayMod.replaySender.setReplaySpeed(0);
-            for(GuiButton b : new ArrayList<GuiButton>(event.buttonList)) {
+            for(GuiButton b : new ArrayList<GuiButton>(buttonList)) {
                 if(b.id == 1) {
                     b.displayString = I18n.format("replaymod.gui.exit");
                     b.yPosition -= 24 * 2;
                     b.id = GuiConstants.EXIT_REPLAY_BUTTON;
                 } else if(b.id >= 5 && b.id <= 7) {
-                    event.buttonList.remove(b);
+                    buttonList.remove(b);
                 } else if(b.id != 4) {
                     b.yPosition -= 24 * 2;
                 }
@@ -113,7 +115,7 @@ public class GuiEventHandler {
         } else if(event.gui instanceof GuiMainMenu) {
             int i1 = event.gui.height / 4 + 24 + 10;
 
-            for(GuiButton b : (List<GuiButton>) event.buttonList) {
+            for(GuiButton b : buttonList) {
                 if(b.id != 0 && b.id != 4 && b.id != 5) {
                     b.yPosition = b.yPosition - 2 * 24 + 10;
                 }
@@ -122,23 +124,23 @@ public class GuiEventHandler {
             GuiButton rm = new GuiButton(GuiConstants.REPLAY_MANAGER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 2 * 24, I18n.format("replaymod.gui.replayviewer"));
             rm.width = rm.width / 2 - 2;
             //rm.enabled = AuthenticationHandler.isAuthenticated();
-            event.buttonList.add(rm);
+            buttonList.add(rm);
 
             replayCount = ReplayFileIO.getAllReplayFiles().size();
 
             GuiButton re = new GuiButton(GuiConstants.REPLAY_EDITOR_BUTTON_ID, event.gui.width / 2 + 2, i1 + 2 * 24, I18n.format("replaymod.gui.replayeditor"));
             re.width = re.width / 2 - 2;
             re.enabled = VersionValidator.isValid && replayCount > 0;
-            event.buttonList.add(re);
+            buttonList.add(re);
 
             editorButton = re;
 
             GuiButton rc = new GuiButton(GuiConstants.REPLAY_CENTER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 3 * 24, I18n.format("replaymod.gui.replaycenter"));
             rc.enabled = true;
-            event.buttonList.add(rc);
+            buttonList.add(rc);
 
         } else if(event.gui instanceof GuiOptions) {
-            event.buttonList.add(new GuiButton(GuiConstants.REPLAY_OPTIONS_BUTTON_ID,
+            buttonList.add(new GuiButton(GuiConstants.REPLAY_OPTIONS_BUTTON_ID,
                     event.gui.width / 2 - 155, event.gui.height / 6 + 48 - 6 - 24, 310, 20, I18n.format("replaymod.gui.settings.title")));
         }
     }

@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.holders;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class KeyframeSet {
@@ -40,8 +41,8 @@ public class KeyframeSet {
 
     public Keyframe[] getKeyframes() {
         List<Keyframe> kfList = new ArrayList<Keyframe>();
-        for(Keyframe kf : positionKeyframes) kfList.add(kf);
-        for(Keyframe kf : timeKeyframes) kfList.add(kf);
+        Collections.addAll(kfList, positionKeyframes);
+        Collections.addAll(kfList, timeKeyframes);
         return kfList.toArray(new Keyframe[kfList.size()]);
     }
 

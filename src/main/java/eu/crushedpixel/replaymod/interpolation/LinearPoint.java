@@ -24,8 +24,6 @@ public class LinearPoint extends LinearInterpolation<Position> {
 
         float rot = (float)getInterpolatedValue(first.getRoll(), second.getRoll(), perc);
 
-        Position inter = new Position(x, y, z, pitch, yaw, rot);
-
-        return inter;
+        return new Position(x, y, z, pitch, yaw, rot);
     }
 }

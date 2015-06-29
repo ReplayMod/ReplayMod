@@ -11,7 +11,7 @@ public class GuiSettingsOnOffButton extends GuiOnOffButton {
         super(buttonId, x, y, width, height, toChange.getName()+": ");
         this.toChange = toChange;
         if(toChange.getValue() instanceof Boolean) {
-            this.setValue((Boolean) toChange.getValue() == true ? 0 : 1);
+            this.setValue((Boolean) toChange.getValue() ? 0 : 1);
         }
     }
 
@@ -19,7 +19,7 @@ public class GuiSettingsOnOffButton extends GuiOnOffButton {
         super(buttonId, x, y, width, height, toChange.getName()+": ", onValue, offValue);
         this.toChange = toChange;
         if(toChange.getValue() instanceof Boolean) {
-            this.setValue((Boolean) toChange.getValue() == true ? 0 : 1);
+            this.setValue((Boolean) toChange.getValue() ? 0 : 1);
         }
     }
 

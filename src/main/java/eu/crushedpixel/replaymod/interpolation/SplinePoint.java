@@ -7,7 +7,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Vector;
 
 public class SplinePoint extends BasicSpline implements Interpolation<Position> {
-    private static final Object[] EMPTYOBJ = new Object[]{};
     private Vector<Position> points;
     private Vector<Cubic> xCubics;
     private Vector<Cubic> yCubics;

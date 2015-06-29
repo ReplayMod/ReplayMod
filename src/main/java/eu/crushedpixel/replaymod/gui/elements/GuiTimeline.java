@@ -212,7 +212,6 @@ public class GuiTimeline extends Gui implements GuiElement {
 
         int distance;
         int smallDistance;
-        int maximum = 10;
 
         MarkerType(int minimum, int smallDistance) {
             this.distance = minimum;

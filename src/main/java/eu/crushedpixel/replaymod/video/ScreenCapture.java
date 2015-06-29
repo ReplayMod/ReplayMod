@@ -50,7 +50,7 @@ public class ScreenCapture {
 
         pixelBuffer.get(pixelValues);
         TextureUtil.processPixelValues(pixelValues, width, height);
-        BufferedImage bufferedimage = null;
+        BufferedImage bufferedimage;
 
 
         if(OpenGlHelper.isFramebufferEnabled()) {

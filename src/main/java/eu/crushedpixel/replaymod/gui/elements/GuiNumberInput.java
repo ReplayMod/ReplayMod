@@ -26,7 +26,7 @@ public class GuiNumberInput extends GuiTextField {
 
     public GuiNumberInput(int id, FontRenderer fontRenderer,
                           int xPos, int yPos, int width, int minimum, int maximum, int defaultValue, boolean acceptFloats) {
-        this(id, fontRenderer, xPos, yPos, width, new Double(minimum), new Double(maximum), new Double(defaultValue), acceptFloats);
+        this(id, fontRenderer, xPos, yPos, width, (double) minimum, (double) maximum, (double) defaultValue, acceptFloats);
     }
 
     @Override
@@ -42,15 +42,12 @@ public class GuiNumberInput extends GuiTextField {
             } else {
                 val = Integer.valueOf(getText());
             }
-            if(minimum != null && val < minimum) {
-                setText(acceptFloats ? minimum.toString() : new Integer((int)Math.round(minimum)).toString());
-                return;
-            }
-            if(maximum != null && val > maximum) {
-                setText(acceptFloats ? maximum.toString() : new Integer((int)Math.round(maximum)).toString());
-                return;
-            }
 
+            if(minimum != null && val < minimum) {
+                setText(acceptFloats ? minimum.toString() : Integer.toString((int) Math.round(minimum)));
+            } else if(maximum != null && val > maximum) {
+                setText(acceptFloats ? maximum.toString() : Integer.toString((int) Math.round(maximum)));
+            }
         } catch(NumberFormatException e) {
             setText(textBefore);
             setCursorPosition(cursorPositionBefore);
@@ -78,14 +75,6 @@ public class GuiNumberInput extends GuiTextField {
             return Double.valueOf(getText());
         } catch(Exception e) {
             return 0d;
-        }
-    }
-
-    public Double getPreciseValueNullable() {
-        try {
-            return Double.valueOf(getText());
-        } catch(Exception e) {
-            return null;
         }
     }
 

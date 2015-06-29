@@ -291,10 +291,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             }
         }
 
-        if(p instanceof S03PacketTimeUpdate) {
-            p = TimeHandler.getTimePacket((S03PacketTimeUpdate) p);
-        }
-
         if(p instanceof S48PacketResourcePackSend) {
             S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
             String url = packet.func_179783_a();

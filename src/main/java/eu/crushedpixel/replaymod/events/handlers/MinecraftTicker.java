@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
 import net.minecraftforge.client.event.MouseEvent;
@@ -116,26 +115,6 @@ public class MinecraftTicker {
                             mc.refreshResources();
                         }
 
-                        if(i == 17 && Keyboard.isKeyDown(61)) {
-                            ;
-                        }
-
-                        if(i == 18 && Keyboard.isKeyDown(61)) {
-                            ;
-                        }
-
-                        if(i == 47 && Keyboard.isKeyDown(61)) {
-                            ;
-                        }
-
-                        if(i == 38 && Keyboard.isKeyDown(61)) {
-                            ;
-                        }
-
-                        if(i == 22 && Keyboard.isKeyDown(61)) {
-                            ;
-                        }
-
                         if(i == 20 && Keyboard.isKeyDown(61)) {
                             mc.refreshResources();
                         }
@@ -179,10 +158,12 @@ public class MinecraftTicker {
                                 mc.gameSettings.thirdPersonView = 0;
                             }
 
-                            if(mc.gameSettings.thirdPersonView == 0) {
-                                mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
-                            } else if(mc.gameSettings.thirdPersonView == 1) {
-                                mc.entityRenderer.loadEntityShader((Entity) null);
+                            if (mc.entityRenderer != null) {
+                                if (mc.gameSettings.thirdPersonView == 0) {
+                                    mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
+                                } else if (mc.gameSettings.thirdPersonView == 1) {
+                                    mc.entityRenderer.loadEntityShader(null);
+                                }
                             }
                         }
 
@@ -222,30 +203,23 @@ public class MinecraftTicker {
                     mc.playerController.onStoppedUsingItem(mc.thePlayer);
                 }
 
-                label435:
-
                 while(true) {
                     if(!mc.gameSettings.keyBindAttack.isPressed()) {
-                        while(mc.gameSettings.keyBindUseItem.isPressed()) {
-                            ;
-                        }
-
                         while(true) {
-                            if(mc.gameSettings.keyBindPickBlock.isPressed()) {
-                                continue;
+                            if (!mc.gameSettings.keyBindUseItem.isPressed()
+                                    && !mc.gameSettings.keyBindPickBlock.isPressed()) {
+                                break;
                             }
-
-                            break label435;
                         }
+                        break;
                     }
                 }
             }
 
-            if(mc != null && mc.thePlayer != null)
+            if(mc.thePlayer != null)
                 mc.sendClickBlockToController(mc.currentScreen == null && mc.gameSettings.keyBindAttack.isKeyDown() && mc.inGameHasFocus);
 
-            if(mc != null)
-                mc.systemTime = Minecraft.getSystemTime();
+            mc.systemTime = Minecraft.getSystemTime();
         } catch (ReportedException e) {
             throw e;
         } catch (Exception e) {

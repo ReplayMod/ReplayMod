@@ -15,16 +15,10 @@ public class GuiConstants {
     public static final int CENTER_DISLIKE_REPLAY_BUTTON = 2011;
     public static final int CENTER_FAVORITED_REPLAYS_BUTTON = 2012;
 
-    public static final int UPLOAD_NAME_INPUT = 3001;
-    public static final int UPLOAD_CATEGORY_BUTTON = 3002;
     public static final int UPLOAD_START_BUTTON = 3003;
     public static final int UPLOAD_CANCEL_BUTTON = 3004;
     public static final int UPLOAD_BACK_BUTTON = 3005;
     public static final int UPLOAD_INFO_FIELD = 3006;
-    public static final int UPLOAD_TAG_INPUT = 3007;
-    public static final int UPLOAD_TAG_PLACEHOLDER = 3008;
-    public static final int UPLOAD_HIDE_SERVER_IP = 3009;
-    public static final int UPLOAD_NAME_PLACEHOLDER = 3010;
 
     public static final int EXIT_REPLAY_BUTTON = 4001;
 
@@ -33,8 +27,6 @@ public class GuiConstants {
     public static final int REPLAY_MANAGER_BUTTON_ID = 9001;
     public static final int REPLAY_EDITOR_BUTTON_ID = 9002;
     public static final int REPLAY_CENTER_BUTTON_ID = 9003;
-    public static final int REPLAY_CENTER_LOGIN_TEXT_ID = 9004;
-    public static final int REPLAY_CENTER_PASSWORD_TEXT_ID = 9005;
 
     public static final int LOGIN_OKAY_BUTTON = 1100;
     public static final int LOGIN_CANCEL_BUTTON = 1101;
@@ -79,16 +71,11 @@ public class GuiConstants {
     public static final int KEYFRAME_EDITOR_PITCH_INPUT = 6007;
     public static final int KEYFRAME_EDITOR_YAW_INPUT = 6008;
     public static final int KEYFRAME_EDITOR_ROLL_INPUT = 6009;
-    public static final int KEYFRAME_EDITOR_MIN_INPUT = 6010;
-    public static final int KEYFRAME_EDITOR_SEC_INPUT = 6011;
-    public static final int KEYFRAME_EDITOR_MS_INPUT = 6012;
     public static final int KEYFRAME_EDITOR_REAL_MIN_INPUT = 6013;
     public static final int KEYFRAME_EDITOR_REAL_SEC_INPUT = 6014;
-    public static final int KEYFRAME_EDITOR_REAL_MS_INPUT = 6015;
-    public static final int KEYFRAME_EDITOR_MARKER_NAME_INPUT = 6016;
 
     public static final int PLAYER_OVERVIEW_HIDE_ALL = 1010;
-    public static final int PLAYER_OVERVIEW_SHOW_ALL = 0101;
+    public static final int PLAYER_OVERVIEW_SHOW_ALL = 101;
     public static final int PLAYER_OVERVIEW_REMEMBER = -10;
 
     public static final int RENDER_SETTINGS_RENDERER_DROPDOWN = 9001;
@@ -106,4 +93,13 @@ public class GuiConstants {
     public static final int RENDER_SETTINGS_ADVANCED_BUTTON = 9013;
     public static final int RENDER_SETTINGS_COLOR_PICKER = 9014;
     public static final int RENDER_SETTINGS_ENABLE_GREENSCREEN = 9015;
+
+    public static final int REPLAY_SETTINGS_RECORDSERVER_ID = 9004;
+    public static final int REPLAY_SETTINGS_RECORDSP_ID = 9005;
+    public static final int REPLAY_SETTINGS_SEND_CHAT = 9006;
+    public static final int REPLAY_SETTINGS_FORCE_LINEAR = 9007;
+    public static final int REPLAY_SETTINGS_ENABLE_LIGHTING = 9008;
+    public static final int REPLAY_SETTINGS_RESOURCEPACK_ID = 9010;
+    public static final int REPLAY_SETTINGS_INDICATOR_ID = 9012;
+    public static final int REPLAY_SETTINGS_PATHPREVIEW_ID = 9013;
 }

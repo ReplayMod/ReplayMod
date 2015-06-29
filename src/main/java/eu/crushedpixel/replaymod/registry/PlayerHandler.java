@@ -17,8 +17,7 @@ public class PlayerHandler {
     private static Predicate<EntityPlayer> playerPredicate = new Predicate<EntityPlayer>() {
         @Override
         public boolean apply(EntityPlayer input) {
-            if(input instanceof CameraEntity || input == mc.thePlayer) return false;
-            return true;
+            return !(input instanceof CameraEntity || input == mc.thePlayer);
         }
     };
 
@@ -42,7 +41,7 @@ public class PlayerHandler {
         resetHiddenPlayers();
         if(visibility != null) {
             GuiPlayerOverview.defaultSave = true;
-            Collections.addAll(hidden, visibility.getHiddenPlayers());
+            Collections.addAll(hidden, visibility.getHidden());
         } else {
             GuiPlayerOverview.defaultSave = false;
         }
@@ -65,6 +64,7 @@ public class PlayerHandler {
             return;
         }
 
+        @SuppressWarnings("unchecked")
         List<EntityPlayer> players = mc.theWorld.getEntities(EntityPlayer.class, playerPredicate);
         mc.displayGuiScreen(new GuiPlayerOverview(players));
     }

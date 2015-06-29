@@ -513,7 +513,7 @@ public class GuiReplayOverlay extends Gui {
     /**
      * Dummy interface for GUI on which this replay overlay shall not be rendered.
      */
-    public static interface NoOverlay {
+    public interface NoOverlay {
 
     }
 }

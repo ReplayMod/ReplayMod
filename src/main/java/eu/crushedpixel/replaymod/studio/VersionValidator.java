@@ -8,11 +8,7 @@ public class VersionValidator {
         String version = Runtime.class.getPackage().getSpecificationVersion();
         if(version != null) {
             String[] split = version.split("\\.");
-            if(split.length > 1) {
-                isValid = Integer.valueOf(split[1]) >= 7;
-            } else {
-                isValid = false;
-            }
+            isValid = split.length > 1 && Integer.valueOf(split[1]) >= 7;
         } else {
             isValid = false;
         }

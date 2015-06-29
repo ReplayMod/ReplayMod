@@ -2,7 +2,6 @@ package eu.crushedpixel.replaymod.recording;
 
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
-import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PacketData;
@@ -37,7 +36,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     protected Set<String> players = new HashSet<String>();
     protected Set<MarkerKeyframe> markers = new HashSet<MarkerKeyframe>();
     private boolean singleplayer;
-    private Gson gson = new Gson();
 
     private int saveState = 0; //0: Idle, 1: Saving, 2: Saved
 
@@ -70,10 +68,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 }
             }
         }, "shutdown-hook-data-listener"));
-    }
-
-    public void setWorldName(String worldName) {
-        this.worldName = worldName;
     }
 
     @Override
@@ -181,11 +175,9 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 File folder = ReplayFileIO.getReplayFolder();
 
                 File archive = new File(folder, name + ReplayFile.ZIP_FILE_EXTENSION);
-                archive.createNewFile();
-
                 ReplayFileIO.writeReplayFile(archive, file, metaData, markers, resourcePacks, requestToHash);
 
-                file.delete();
+                FileUtils.forceDelete(file);
                 FileUtils.deleteDirectory(tempResourcePacksFolder);
 
             } catch(Exception e) {

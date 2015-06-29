@@ -26,9 +26,7 @@ import org.lwjgl.input.Mouse;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 
 public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoOverlay {
@@ -150,6 +148,9 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
         upperPlayer = 0;
         lowerBound = this.height - 10;
 
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
+
         int i = 0;
         for(GuiCheckBox checkBox : checkBoxes) {
             checkBox.xPosition = (int)(this.width*0.7)-5;
@@ -235,6 +236,8 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
             GlStateManager.resetColor();
             if(fitting >= checkBoxes.size()) {
                 checkBoxes.add(new GuiCheckBox(checkBoxes.size(), (int)(this.width*0.7)-5, l2+3, "", true));
+                @SuppressWarnings("unchecked")
+                List<GuiButton> buttonList = this.buttonList;
                 buttonList.add(checkBoxes.get(checkBoxes.size() - 1));
             }
             checkBoxes.get(fitting).setIsChecked(!PlayerHandler.isHidden(p.first().getUniqueID()));
@@ -294,7 +297,8 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
     }
 
     private PlayerVisibility getVisibilityInstance() {
-        return new PlayerVisibility(PlayerHandler.getHiddenPlayers());
+        Set<UUID> hidden = PlayerHandler.getHiddenPlayers();
+        return new PlayerVisibility(hidden.toArray(new UUID[hidden.size()]));
     }
 
 
@@ -302,7 +306,7 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
         if(rememberHidden.isChecked()) {
             try {
                 File f = File.createTempFile(ReplayFile.ENTRY_VISIBILITY, "json");
-                ReplayFileIO.writePlayerVisibilityToFile(getVisibilityInstance(), f);
+                ReplayFileIO.write(getVisibilityInstance(), f);
                 ReplayMod.replayFileAppender.registerModifiedFile(f, ReplayFile.ENTRY_VISIBILITY, ReplayHandler.getReplayFile());
             } catch(Exception e) {
                 e.printStackTrace();

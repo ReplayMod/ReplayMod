@@ -14,10 +14,7 @@ import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.network.play.server.S08PacketPlayerPosLook;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -31,29 +28,26 @@ public class ReplayFileIO {
 
     private static final PacketSerializer packetSerializer = new PacketSerializer(EnumPacketDirection.CLIENTBOUND);
     private static final byte[] uniqueBytes = new byte[]{0, 1, 1, 2, 3, 5, 8};
-    private static File lastReplayFile = null;
-    private static boolean lastContainsJoinPacket = false;
 
-    public static File getRenderFolder() {
+    public static File getRenderFolder() throws IOException {
         File folder = new File(ReplayMod.replaySettings.getRenderPath());
-        folder.mkdirs();
+        FileUtils.forceMkdir(folder);
         return folder;
     }
 
-    public static File getReplayFolder() {
+    public static File getReplayFolder() throws IOException {
         String path = ReplayMod.replaySettings.getRecordingPath();
         File folder = new File(path);
-        folder.mkdirs();
+        FileUtils.forceMkdir(folder);
         return folder;
     }
 
     public static List<File> getAllReplayFiles() {
         List<File> files = new ArrayList<File>();
-        File folder = getReplayFolder();
-        for(File file : folder.listFiles()) {
-            if(("." + FilenameUtils.getExtension(file.getAbsolutePath())).equals(ReplayFile.ZIP_FILE_EXTENSION)) {
-                files.add(file);
-            }
+        try {
+            files.addAll(FileUtils.listFiles(getReplayFolder(), new String[]{"mcpr"}, false));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return files;
     }
@@ -61,10 +55,6 @@ public class ReplayFileIO {
     public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData, Set<MarkerKeyframe> markers,
                                        Map<String, File> resourcePacks, Map<Integer, String> resourcePackRequests) throws IOException {
         byte[] buffer = new byte[1024];
-
-        if(!replayFile.exists()) {
-            replayFile.createNewFile();
-        }
 
         FileOutputStream fos = new FileOutputStream(replayFile);
         ZipOutputStream zos = new ZipOutputStream(fos);
@@ -113,59 +103,6 @@ public class ReplayFileIO {
         zos.close();
     }
 
-    public static ReplayMetaData getMetaData(File replayFile) throws IOException {
-        ReplayFile file = new ReplayFile(replayFile);
-        try {
-            return file.metadata().get();
-        } finally {
-            file.close();
-        }
-    }
-
-    /**
-     * @param replayFile
-     * @return Whether the given Replay File contains a {@link S01PacketJoinGame}.
-     */
-    public static boolean containsJoinPacket(File replayFile) {
-        DataInputStream dis = null;
-        if(replayFile == lastReplayFile) {
-            return lastContainsJoinPacket;
-        }
-        ReplayFile file = null;
-
-        lastReplayFile = replayFile;
-        lastContainsJoinPacket = false;
-        try {
-            file = new ReplayFile(replayFile);
-            dis = new DataInputStream(file.recording().get());
-            PacketData pd = readPacketData(dis);
-            while(dis.available() > 0) {
-                Packet p = deserializePacket(pd.getByteArray());
-                if(p instanceof S01PacketJoinGame) {
-                    lastContainsJoinPacket = true;
-                    return lastContainsJoinPacket;
-                }
-                if(p instanceof S08PacketPlayerPosLook) {
-                    lastContainsJoinPacket = false;
-                    return lastContainsJoinPacket;
-                }
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if(dis != null) {
-                    dis.close();
-                }
-                if (file != null) {
-                    file.close();
-                }
-            } catch(Exception ignored) {}
-        }
-
-        return false;
-    }
-
     public static PacketData readPacketData(DataInputStream dis) throws IOException {
         int timestamp = dis.readInt();
         int bytes = dis.readInt();
@@ -209,135 +146,27 @@ public class ReplayFileIO {
         out.write(pd.getByteArray());
     }
 
-    public static int getWrittenByteSize(PacketData pd) {
-        return (2 * 4) + pd.getByteArray().length;
-    }
-
-    public static void writePackets(Collection<PacketData> p, DataOutput out) throws IOException {
-        for(PacketData pd : p) {
-            writePacket(pd, out);
-        }
-    }
-
-    /**
-     * @param replayFile     The File to reverse
-     * @param outputFile     The File to save the reversed Packets in
-     * @param seekJoinPacket Whether a {@link S01PacketJoinGame} should be seeked in the Replay File. If containsJoinPacket is being
-     *                       called with the same File directly afterwards, this will reduce the amount of calculations. Only use if needed,
-     *                       because this consumes a significant amount of time!
-     * @param boundaries     Two timestamps which make a boundary for excluded Packets
-     * @return Whether the action was successful
-     */
-    public static boolean reversePackets(File replayFile, File outputFile, boolean seekJoinPacket, int... boundaries) {
-        lastReplayFile = replayFile;
-        lastContainsJoinPacket = false;
-
-        RandomAccessFile raf = null;
-        DataInputStream dis = null;
-        ReplayFile file = null;
-
-        boolean bounds = false;
-        int lower = 0, upper = 0;
-        if(boundaries.length >= 2) {
-            if(boundaries[0] > boundaries[1]) {
-                upper = boundaries[0];
-                lower = boundaries[1];
-            } else {
-                upper = boundaries[1];
-                lower = boundaries[0];
-            }
-        }
-        try {
-            if(!outputFile.exists()) {
-                outputFile.createNewFile();
-            }
-            raf = new RandomAccessFile(outputFile, "rw");
-            file = new ReplayFile(replayFile);
-
-            dis = new DataInputStream(file.recording().get());
-            long fileLength = file.recordingEntry().getSize();
-
-            raf.setLength(fileLength);
-
-            long pointerBefore = fileLength;
-
-            while(dis.available() > 0) {
-                try {
-                    PacketData pd = readPacketData(dis);
-
-                    boolean write = true;
-                    if(bounds) {
-                        if(pd.getTimestamp() < lower || pd.getTimestamp() > upper) {
-                            write = false;
-                        }
-                    }
-
-                    if(write) {
-                        if(seekJoinPacket && !lastContainsJoinPacket) {
-                            Packet p = deserializePacket(pd.getByteArray());
-                            if(p instanceof S01PacketJoinGame) lastContainsJoinPacket = true;
-                        }
-                        pointerBefore = pointerBefore - getWrittenByteSize(pd);
-                        raf.seek(pointerBefore);
-                        writePacket(pd, raf);
-                    }
-                } catch(EOFException e) {
-                    e.printStackTrace();
-                    break;
-                }
-            }
-            return true;
-        } catch(Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if(raf != null) {
-                    raf.close();
-                }
-                if(dis != null) {
-                    dis.close();
-                }
-                if(file != null) {
-                    file.close();
-                }
-            } catch(Exception ignored) {}
-        }
-
-        return false;
-    }
-
     private static final Gson gson = new Gson();
 
-    public static void writeKeyframeRegistryToFile(KeyframeSet[] keyframeRegistry, File file) throws IOException {
-        file.mkdirs();
-        file.createNewFile();
-
-        String json = gson.toJson(keyframeRegistry);
+    private static void write(Object obj, File file) throws IOException {
+        String json = gson.toJson(obj);
         FileUtils.write(file, json);
     }
 
-    public static void writePlayerVisibilityToFile(PlayerVisibility visibility, File file) throws IOException {
-        file.mkdirs();
-        file.createNewFile();
-
-        String json = gson.toJson(visibility);
-        FileUtils.write(file, json);
+    public static void write(KeyframeSet[] keyframeRegistry, File file) throws IOException {
+        write((Object) keyframeRegistry, file);
     }
 
-    public static void writeReplayMetaDataToFile(ReplayMetaData metaData, File file) throws IOException {
-        file.mkdirs();
-        file.createNewFile();
-
-        String json = gson.toJson(metaData);
-        FileUtils.write(file, json);
+    public static void write(PlayerVisibility visibility, File file) throws IOException {
+        write((Object) visibility, file);
     }
 
-    public static void writeMarkersToFile(MarkerKeyframe[] markers, File file) throws IOException {
-        file.mkdirs();
-        file.createNewFile();
+    public static void write(ReplayMetaData metaData, File file) throws IOException {
+        write((Object) metaData, file);
+    }
 
-        String json = gson.toJson(markers);
-        FileUtils.write(file, json);
+    public static void write(MarkerKeyframe[] markers, File file) throws IOException {
+        write((Object) markers, file);
     }
 
     /**
@@ -406,7 +235,7 @@ public class ReplayFileIO {
         // Complete the ZIP file
         out.close();
 
-        zipFile.delete();
-        tempFile.renameTo(zipFile);
+        FileUtils.forceDelete(zipFile);
+        FileUtils.moveFile(tempFile, zipFile);
     }
 }

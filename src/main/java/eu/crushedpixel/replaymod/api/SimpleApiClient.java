@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import eu.crushedpixel.replaymod.api.replay.holders.ApiError;
-import eu.crushedpixel.replaymod.utils.StreamTools;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,7 +88,7 @@ public class SimpleApiClient {
             if(responseCode != 200) {
                 is = httpUrlConnection.getErrorStream();
                 if(is != null) {
-                    responseContent = StreamTools.readStreamtoString(is, "UTF-8");
+                    responseContent = IOUtils.toString(is, "UTF-8");
                 } else {
                     responseContent = "";
                 }
@@ -102,10 +102,8 @@ public class SimpleApiClient {
 
             is = httpUrlConnection.getInputStream();
 
-            responseContent = StreamTools.readStreamtoString(is, "UTF-8");
+            responseContent = IOUtils.toString(is, "UTF-8");
 
-        } catch(IOException e) {
-            throw e;
         } finally {
             if(is != null) {
                 is.close();

@@ -12,6 +12,7 @@ import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 
 public class GuiLoginPrompt extends GuiScreen {
 
@@ -78,11 +79,11 @@ public class GuiLoginPrompt extends GuiScreen {
         int tw = 150+5+strwidth;
         registerButton.xPosition = (width/2) - (tw/2) + strwidth+5;
 
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
         buttonList.add(loginButton);
         buttonList.add(cancelButton);
         buttonList.add(registerButton);
-
-        strwidth2 = Math.max(fontRendererObj.getStringWidth(usernameLabel), fontRendererObj.getStringWidth(passwordLabel));
 
         initialized = true;
     }
@@ -126,7 +127,6 @@ public class GuiLoginPrompt extends GuiScreen {
 
     private String usernameLabel = I18n.format("replaymod.gui.username");
     private String passwordLabel = I18n.format("replaymod.gui.password");
-    private int strwidth2 = 100;
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {

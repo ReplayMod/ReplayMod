@@ -134,11 +134,11 @@ public class GuiDropdown<T> extends GuiTextField {
 
     @Override
     public void mouseClicked(int xPos, int yPos, int mouseButton) {
-        mouseClickedResult(xPos, yPos, mouseButton);
+        mouseClickedResult(xPos, yPos);
     }
 
 
-    public boolean mouseClickedResult(int xPos, int yPos, int mouseButton) {
+    public boolean mouseClickedResult(int xPos, int yPos) {
         boolean success = false;
         if(xPos > xPosition + width - height && xPos < xPosition + width && yPos > yPosition && yPos < yPosition + height) {
             open = !open;
@@ -146,8 +146,7 @@ public class GuiDropdown<T> extends GuiTextField {
             if(xPos > xPosition && xPos < xPosition + width && open) {
                 int requiredHeight = Math.min(maxDropoutHeight, elements.size() * dropoutElementHeight);
                 if(yPos > yPosition + height && yPos < yPosition + height + requiredHeight) {
-                    int clickedIndex = (int) Math.floor((yPos - (yPosition + height)) / dropoutElementHeight) + upperIndex;
-                    this.selectionIndex = clickedIndex;
+                    this.selectionIndex = (int) Math.floor((yPos - (yPosition + height)) / dropoutElementHeight) + upperIndex;
                     success = true;
                     fireSelectionChangeEvent();
                 }
@@ -215,10 +214,6 @@ public class GuiDropdown<T> extends GuiTextField {
 
     public void addSelectionListener(SelectionListener listener) {
         this.selectionListeners.add(listener);
-    }
-
-    public void removeSelectionListener(SelectionListener listener) {
-        this.selectionListeners.remove(listener);
     }
 
     public boolean isExpanded() {

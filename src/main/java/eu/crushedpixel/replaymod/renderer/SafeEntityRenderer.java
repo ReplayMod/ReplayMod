@@ -15,8 +15,7 @@ public class SafeEntityRenderer extends EntityRenderer {
             super.updateCameraAndRender(partialTicks);
         } catch(Exception e) {
             e.printStackTrace();
-        } //This is plain easier than doing proper error prevention.
-        //If Johni reads this, don't think I'm a bad programmer... Just a lazy one :P
+        }
     }
 
     @Override
@@ -24,6 +23,7 @@ public class SafeEntityRenderer extends EntityRenderer {
         try {
             super.updateRenderer();
         } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 
