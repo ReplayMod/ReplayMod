@@ -14,6 +14,7 @@ public class MouseInputHandler {
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private boolean rightDown = false;
+    private boolean leftDown = false;
 
     @SubscribeEvent
     public void mouseEvent(MouseEvent event) {
@@ -26,6 +27,18 @@ public class MouseInputHandler {
             CameraEntity.modifyCameraSpeed(increase);
         }
 
+        if(Mouse.isButtonDown(0)) {
+            if(!leftDown) {
+                leftDown = true;
+                if(mc.pointedEntity != null && ReplayHandler.isCamera() && mc.currentScreen == null) {
+                    if(mc.pointedEntity instanceof EntityPlayer || mc.pointedEntity instanceof EntityLiving || mc.pointedEntity instanceof EntityItemFrame)
+                        ReplayHandler.spectateEntity(mc.pointedEntity);
+                }
+            }
+        } else {
+            leftDown = false;
+        }
+        
         if(Mouse.isButtonDown(1)) {
             if(!rightDown) {
                 rightDown = true;
