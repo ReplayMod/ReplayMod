@@ -33,6 +33,8 @@ public class KeyInputHandler {
         boolean speedup = false;
 
         if(mc.currentScreen == null) {
+            boolean forward = false, backward = false, left = false, right = false, up = false, down = false;
+
             for(KeyBinding kb : keyBindings) {
                 //don't act on Mouse inputs
                 if(kb.getKeyCode() < 0) continue;
@@ -42,37 +44,36 @@ public class KeyInputHandler {
                 if(ReplayMod.replaySender.paused() && !Keyboard.isKeyDown(kb.getKeyCode()))
                     continue;
                 try {
-
                     if(ReplayHandler.isCamera()) {
                         if(kb.getKeyDescription().equals("key.forward")) {
-                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.FORWARD);
+                            forward = true;
                             speedup = true;
                         }
 
                         if(kb.getKeyDescription().equals("key.back")) {
-                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.BACKWARD);
+                            backward = true;
                             speedup = true;
                         }
 
                         if(kb.getKeyDescription().equals("key.jump")) {
-                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.UP);
+                            up = true;
                             speedup = true;
                         }
 
                         if(kb.getKeyDescription().equals("key.left")) {
-                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.LEFT);
+                            left = true;
                             speedup = true;
                         }
 
                         if(kb.getKeyDescription().equals("key.right")) {
-                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.RIGHT);
+                            right = true;
                             speedup = true;
                         }
                     }
 
                     if(kb.getKeyDescription().equals("key.sneak")) {
                         if(ReplayHandler.isCamera()) {
-                            ReplayHandler.getCameraEntity().setMovement(MoveDirection.DOWN);
+                            down = true;
                             speedup = true;
                         } else {
                             ReplayHandler.spectateCamera();
@@ -83,6 +84,8 @@ public class KeyInputHandler {
                     e.printStackTrace();
                 }
             }
+
+            forwardCameraMovement(forward, backward, left, right, up, down);
         }
 
         if(ReplayHandler.getCameraEntity() != null) {
@@ -115,7 +118,26 @@ public class KeyInputHandler {
             handleCustomKeybindings(kb, found, -1);
             found = true;
         }
+    }
 
+    private void forwardCameraMovement(boolean forward, boolean backward, boolean left, boolean right, boolean up, boolean down) {
+        if(forward && !backward) {
+            ReplayHandler.getCameraEntity().setMovement(MoveDirection.FORWARD);
+        } else if(backward && !forward) {
+            ReplayHandler.getCameraEntity().setMovement(MoveDirection.BACKWARD);
+        }
+
+        if(left && !right) {
+            ReplayHandler.getCameraEntity().setMovement(MoveDirection.LEFT);
+        } else if(right && !left) {
+            ReplayHandler.getCameraEntity().setMovement(MoveDirection.RIGHT);
+        }
+
+        if(up && !down) {
+            ReplayHandler.getCameraEntity().setMovement(MoveDirection.UP);
+        } else if(down && !up) {
+            ReplayHandler.getCameraEntity().setMovement(MoveDirection.DOWN);
+        }
     }
 
     public void handleCustomKeybindings(KeyBinding kb, boolean found, int keyCode) {

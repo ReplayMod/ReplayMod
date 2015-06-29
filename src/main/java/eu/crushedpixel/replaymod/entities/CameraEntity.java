@@ -42,6 +42,7 @@ public class CameraEntity extends EntityPlayer {
     }
 
     private Vec3 direction;
+    private Vec3 dirBefore;
     private double motion;
 
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -125,8 +126,6 @@ public class CameraEntity extends EntityPlayer {
     }
 
     public void setMovement(MoveDirection dir) {
-        Vec3 oldDir = direction;
-
         switch(dir) {
             case BACKWARD:
                 direction = this.getVectorForRotation(-rotationPitch, rotationYaw - 180);
@@ -148,8 +147,15 @@ public class CameraEntity extends EntityPlayer {
                 break;
         }
 
-        if(oldDir != null)
-            direction = direction.normalize().add(new Vec3(oldDir.xCoord * (motion / 4f), oldDir.yCoord * (motion / 4f), oldDir.zCoord * (motion / 4f)).normalize());
+        Vec3 dbf = direction;
+
+        if(dirBefore != null) {
+            direction = dirBefore.normalize().add(direction);
+        }
+
+        dirBefore = dbf;
+
+        updateMovement();
     }
 
     public void moveAbsolute(Position pos) {
