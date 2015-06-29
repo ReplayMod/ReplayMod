@@ -75,6 +75,7 @@ public class ReplayMod {
     public static TooltipRenderer tooltipRenderer;
     public static PathPreviewRenderer pathPreviewRenderer;
     public static SoundHandler soundHandler = new SoundHandler();
+    public static CrosshairRenderHandler crosshairRenderHandler;
 
     // The instance of your mod that Forge uses.
     @Instance(value = "ReplayModID")
@@ -132,6 +133,10 @@ public class ReplayMod {
         pathPreviewRenderer = new PathPreviewRenderer();
         FMLCommonHandler.instance().bus().register(pathPreviewRenderer);
         MinecraftForge.EVENT_BUS.register(pathPreviewRenderer);
+
+        crosshairRenderHandler = new CrosshairRenderHandler();
+        FMLCommonHandler.instance().bus().register(crosshairRenderHandler);
+        MinecraftForge.EVENT_BUS.register(crosshairRenderHandler);
 
         KeybindRegistry.initialize();
 
