@@ -460,6 +460,8 @@ public class GuiRenderSettings extends GuiScreen {
 
             yRes.setCursorPositionEnd();
             yRes.setSelectionPos(yRes.getCursorPosition());
+
+            yRes.moveCursorBy(0); //This causes the Aspect Ratio to be recalculated based on the Y Resolution
         }
     }
 }
