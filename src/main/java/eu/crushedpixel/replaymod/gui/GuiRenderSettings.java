@@ -29,7 +29,7 @@ public class GuiRenderSettings extends GuiScreen {
 
     private int virtualY, virtualHeight;
 
-    private GuiCheckBox customResolution, ignoreCamDir, youtubeExport, enableGreenscreen;
+    private GuiCheckBox customResolution, ignoreCamDir, enableGreenscreen;
     private GuiNumberInput xRes, yRes;
     private GuiToggleButton interpolation, forceChunks;
     private GuiVideoFramerateSlider framerateSlider;
@@ -144,8 +144,7 @@ public class GuiRenderSettings extends GuiScreen {
             colorPicker.enabled = enableGreenscreen.isChecked();
 
             ignoreCamDir = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_STATIC_CAMERA, 0, 0, I18n.format("replaymod.gui.rendersettings.stablecamera"), false);
-            youtubeExport = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_YOUTUBE_READY, 0, 0, I18n.format("replaymod.gui.rendersettings.exportyoutube"), true);
-            ignoreCamDir.enabled = youtubeExport.enabled = false;
+            ignoreCamDir.enabled = false;
 
             permanentButtons.add(advancedButton);
             permanentButtons.add(renderButton);
@@ -154,7 +153,6 @@ public class GuiRenderSettings extends GuiScreen {
             defaultButtons.add(customResolution);
             defaultButtons.add(framerateSlider);
             defaultButtons.add(ignoreCamDir);
-            defaultButtons.add(youtubeExport);
 
             advancedButtons.add(interpolation);
             advancedButtons.add(forceChunks);
@@ -203,9 +201,8 @@ public class GuiRenderSettings extends GuiScreen {
         framerateSlider.yPosition = bitrateInput.yPosition = interpolation.yPosition + 20 + 10;
 
         ignoreCamDir.xPosition = framerateSlider.xPosition + (framerateSlider.width - ignoreCamDir.width)/2;
-        youtubeExport.xPosition = bitrateInput.xPosition + (bitrateInput.width - youtubeExport.width)/2;
 
-        ignoreCamDir.yPosition = youtubeExport.yPosition = framerateSlider.yPosition+20+10;
+        ignoreCamDir.yPosition = framerateSlider.yPosition+20+10;
 
         //align all advanced buttons
 
@@ -431,12 +428,10 @@ public class GuiRenderSettings extends GuiScreen {
     }
 
     private int getWidthSetting() {
-        return customResolution.isChecked() ? xRes.getIntValue() : mc.displayWidth;
+        return xRes.getIntValue();
     }
 
-    private int getHeightSetting() {
-        return customResolution.isChecked() ? yRes.getIntValue() : mc.displayHeight;
-    }
+    private int getHeightSetting() { return yRes.getIntValue(); }
 
     private class RendererDropdownListener implements SelectionListener {
         @Override
@@ -444,14 +439,13 @@ public class GuiRenderSettings extends GuiScreen {
             RendererSettings s = rendererDropdown.getElement(selectionIndex);
 
             if(s == RendererSettings.DEFAULT) {
-                youtubeExport.enabled = ignoreCamDir.enabled = false;
+                ignoreCamDir.enabled = false;
             } else if(s == RendererSettings.STEREOSCOPIC) {
-                youtubeExport.enabled = ignoreCamDir.enabled = false;
+                ignoreCamDir.enabled = false;
             } else if(s == RendererSettings.CUBIC) {
-                youtubeExport.enabled = true;
                 ignoreCamDir.enabled = false;
             } else if(s == RendererSettings.EQUIRECTANGULAR) {
-                youtubeExport.enabled = ignoreCamDir.enabled = true;
+                ignoreCamDir.enabled = true;
             }
 
 
