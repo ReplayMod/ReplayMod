@@ -69,13 +69,29 @@ public class VideoRenderer {
     public boolean renderVideo() throws IOException {
         setup();
 
+        // Because this might take some time to prepare we'll render the GUI at least once to not confuse the user
+        drawGui();
+
         Timer timer = mc.timer;
 
-        replaySender.sendPacketsTill(time.getPoint(0));
-        // Pre-tick twice, once to process all the packets
-        tick();
-        // the second time to prevent interpolation of the player position
-        tick();
+        // Play up to one second before starting to render
+        // This is necessary in order to ensure that all entities have at least two position packets
+        // and their first position in the recording is correct.
+        // Note that it is impossible to also get the interpolation between their latest position
+        // and the one in the recording correct as there's no reliable way to tell when the server ticks
+        // or when we should be done with the interpolation of the entity
+        int videoStart = time.getPoint(0);
+        if (videoStart > 1000) {
+            int replayTime = time.getPoint(0) - 1000;
+            timer.elapsedPartialTicks = timer.renderPartialTicks = 0;
+            timer.timerSpeed = 1;
+            while (replayTime < videoStart) {
+                timer.elapsedTicks = 1;
+                replayTime += 50;
+                replaySender.sendPacketsTill(replayTime);
+                tick();
+            }
+        }
 
         mc.renderGlobal.renderEntitiesStartupCounter = 0;
 
