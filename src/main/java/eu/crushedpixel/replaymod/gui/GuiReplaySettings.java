@@ -113,10 +113,6 @@ public class GuiReplaySettings extends GuiScreen {
                     this.mc.displayGuiScreen(this.parentGuiScreen);
                     break;
             }
-
-            if(button instanceof GuiToggleButton) {
-                ((GuiToggleButton) button).toggle();
-            }
         }
     }
 }
