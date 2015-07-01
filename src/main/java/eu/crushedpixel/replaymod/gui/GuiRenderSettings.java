@@ -50,6 +50,8 @@ public class GuiRenderSettings extends GuiScreen {
     @Override
     public void initGui() {
         if(!initialized) {
+            Keyboard.enableRepeatEvents(true);
+
             rendererDropdown = new GuiDropdown<RendererSettings>(GuiConstants.RENDER_SETTINGS_RENDERER_DROPDOWN,
                     fontRendererObj, 0, 0, 200, 5);
             rendererDropdown.addSelectionListener(new RendererDropdownListener());
@@ -485,5 +487,11 @@ public class GuiRenderSettings extends GuiScreen {
 
             yRes.moveCursorBy(0); //This causes the Aspect Ratio to be recalculated based on the Y Resolution
         }
+    }
+
+    @Override
+    public void onGuiClosed() {
+        Keyboard.enableRepeatEvents(false);
+        super.onGuiClosed();
     }
 }
