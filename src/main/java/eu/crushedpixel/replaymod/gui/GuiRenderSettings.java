@@ -1,13 +1,11 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.gui.elements.GuiColorPicker;
-import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
-import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
-import eu.crushedpixel.replaymod.gui.elements.GuiToggleButton;
+import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
+import eu.crushedpixel.replaymod.utils.StringUtils;
 import eu.crushedpixel.replaymod.video.frame.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -35,6 +33,7 @@ public class GuiRenderSettings extends GuiScreen {
     private GuiVideoFramerateSlider framerateSlider;
     private GuiNumberInput bitrateInput;
     private GuiColorPicker colorPicker;
+    private GuiAdvancedTextField ffmpegArguments;
 
     private List<GuiButton> permanentButtons = new ArrayList<GuiButton>();
     private List<GuiButton> defaultButtons = new ArrayList<GuiButton>();
@@ -143,6 +142,10 @@ public class GuiRenderSettings extends GuiScreen {
             colorPicker = new GuiColorPicker(GuiConstants.RENDER_SETTINGS_COLOR_PICKER, 0, 0, I18n.format("replaymod.gui.rendersettings.skycolor")+": ", 0, 0);
             colorPicker.enabled = enableGreenscreen.isChecked();
 
+            ffmpegArguments = new GuiAdvancedTextField(fontRendererObj, 0, 0, 50, 20);
+            ffmpegArguments.hint = I18n.format("replaymod.gui.rendersettings.ffmpeghint");
+            ffmpegArguments.setMaxStringLength(3200);
+
             ignoreCamDir = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_STATIC_CAMERA, 0, 0, I18n.format("replaymod.gui.rendersettings.stablecamera"), false);
             ignoreCamDir.enabled = false;
 
@@ -224,6 +227,10 @@ public class GuiRenderSettings extends GuiScreen {
             i++;
         }
 
+        ffmpegArguments.width = 305;
+        ffmpegArguments.xPosition = (this.width-ffmpegArguments.width)/2;
+        ffmpegArguments.yPosition = this.virtualY + 20 + ((i/2)*25);
+
 
         initialized = true;
     }
@@ -259,15 +266,28 @@ public class GuiRenderSettings extends GuiScreen {
             this.drawString(fontRendererObj, bitrateString, forceChunks.xPosition, bitrateInput.yPosition + 6, Color.WHITE.getRGB());
 
             rendererDropdown.drawTextBox();
+        } else {
+            ffmpegArguments.drawTextBox();
+            String[] rows = StringUtils.splitStringInMultipleRows(I18n.format("replaymod.gui.rendersettings.ffmpeg.description"), 305);
+
+            int i = 0;
+            for(String row : rows) {
+                drawString(fontRendererObj, row, ffmpegArguments.xPosition, ffmpegArguments.yPosition + 30 + (15 * i), Color.WHITE.getRGB());
+                i++;
+            }
         }
     }
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         if(!rendererDropdown.mouseClickedResult(mouseX, mouseY)) {
-            xRes.mouseClicked(mouseX, mouseY, mouseButton);
-            yRes.mouseClicked(mouseX, mouseY, mouseButton);
-            bitrateInput.mouseClicked(mouseX, mouseY, mouseButton);
+            if(!advancedTab) {
+                xRes.mouseClicked(mouseX, mouseY, mouseButton);
+                yRes.mouseClicked(mouseX, mouseY, mouseButton);
+                bitrateInput.mouseClicked(mouseX, mouseY, mouseButton);
+            } else {
+                ffmpegArguments.mouseClicked(mouseX, mouseY, mouseButton);
+            }
 
             if(mouseButton == 0) {
                 List<GuiButton> toHandle = new ArrayList<GuiButton>();
@@ -298,20 +318,23 @@ public class GuiRenderSettings extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        if(keyCode == Keyboard.KEY_TAB) {
-            if(xRes.isFocused() && customResolution.isChecked()) {
-                xRes.setFocused(false);
-                yRes.setFocused(true);
+        if(!advancedTab) {
+            if(keyCode == Keyboard.KEY_TAB) {
+                if(xRes.isFocused() && customResolution.isChecked()) {
+                    xRes.setFocused(false);
+                    yRes.setFocused(true);
+                } else if(yRes.isFocused() && customResolution.isChecked()) {
+                    yRes.setFocused(false);
+                    xRes.setFocused(true);
+                }
+                return;
             }
-            else if(yRes.isFocused() && customResolution.isChecked()) {
-                yRes.setFocused(false);
-                xRes.setFocused(true);
-            }
-            return;
+            xRes.textboxKeyTyped(typedChar, keyCode);
+            yRes.textboxKeyTyped(typedChar, keyCode);
+            bitrateInput.textboxKeyTyped(typedChar, keyCode);
+        } else {
+            ffmpegArguments.textboxKeyTyped(typedChar, keyCode);
         }
-        xRes.textboxKeyTyped(typedChar, keyCode);
-        yRes.textboxKeyTyped(typedChar, keyCode);
-        bitrateInput.textboxKeyTyped(typedChar, keyCode);
         super.keyTyped(typedChar, keyCode);
     }
 
@@ -320,6 +343,7 @@ public class GuiRenderSettings extends GuiScreen {
         xRes.updateCursorCounter();
         yRes.updateCursorCounter();
         bitrateInput.updateCursorCounter();
+        ffmpegArguments.updateCursorCounter();
         super.updateScreen();
     }
 
@@ -423,6 +447,10 @@ public class GuiRenderSettings extends GuiScreen {
             renderer = new EquirectangularFrameRenderer(options, ignoreCamDir.isChecked());
         }
         options.setRenderer(renderer);
+
+        if(ffmpegArguments.getText().trim().length() > 0) {
+            options.setCommandLineArguments(ffmpegArguments.getText());
+        }
 
         ReplayHandler.startPath(options);
     }

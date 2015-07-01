@@ -286,6 +286,9 @@ replaymod.gui.rendersettings.quality=Video Quality
 replaymod.gui.rendersettings.chromakey=Chroma Keying
 replaymod.gui.rendersettings.skycolor=Sky Color
 
+replaymod.gui.rendersettings.ffmpeghint=ffmpeg Command Line Arguments
+replaymod.gui.rendersettings.ffmpeg.description=If you define custom Command Line Arguments for ffmpeg, they will replace the Replay Mod's Render Settings (File Destination, Codec, Bitrate, Framerate etc.)
+
 replaymod.gui.rendersettings.stablecamera=Ignore Camera Rotation
 replaymod.gui.rendersettings.exportyoutube=Export for YouTube
 

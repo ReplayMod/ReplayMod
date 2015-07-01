@@ -88,7 +88,6 @@ public class GuiConstants {
     public static final int RENDER_SETTINGS_FORCECHUNKS_BUTTON = 9008;
     public static final int RENDER_SETTINGS_FRAMERATE_SLIDER = 9009;
     public static final int RENDER_SETTINGS_BITRATE_INPUT = 9010;
-    public static final int RENDER_SETTINGS_YOUTUBE_READY = 9011;
     public static final int RENDER_SETTINGS_STATIC_CAMERA = 9012;
     public static final int RENDER_SETTINGS_ADVANCED_BUTTON = 9013;
     public static final int RENDER_SETTINGS_COLOR_PICKER = 9014;

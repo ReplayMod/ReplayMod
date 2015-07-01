@@ -11,6 +11,7 @@ public final class RenderOptions {
     private FrameRenderer renderer;
     private String bitrate = "10M";
     private int fps = 30;
+    private String commandLineArguments = null;
 
     // Advanced
     private boolean waitForChunks = true;

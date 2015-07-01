@@ -59,12 +59,18 @@ public class VideoWriter {
         File folder = ReplayFileIO.getRenderFolder();
         String fileName = FILE_FORMAT.format(Calendar.getInstance().getTime());
 
-        final String args = options.getExportCommandArgs()
-                .replace("%WIDTH%", String.valueOf(options.getWidth()))
-                .replace("%HEIGHT%", String.valueOf(options.getHeight()))
-                .replace("%FPS%", String.valueOf(options.getFps()))
-                .replace("%FILENAME%", fileName)
-                .replace("%BITRATE%", options.getBitrate());
+        final String args;
+
+        if(options.getCommandLineArguments() != null) {
+            args = options.getCommandLineArguments();
+        } else {
+            args = options.getExportCommandArgs()
+                    .replace("%WIDTH%", String.valueOf(options.getWidth()))
+                    .replace("%HEIGHT%", String.valueOf(options.getHeight()))
+                    .replace("%FPS%", String.valueOf(options.getFps()))
+                    .replace("%FILENAME%", fileName)
+                    .replace("%BITRATE%", options.getBitrate());
+        }
 
         List<String> command = new ArrayList<String>();
         command.add(options.getExportCommand());
