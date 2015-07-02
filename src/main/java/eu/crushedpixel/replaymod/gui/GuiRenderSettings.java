@@ -33,7 +33,7 @@ public class GuiRenderSettings extends GuiScreen {
     private GuiVideoFramerateSlider framerateSlider;
     private GuiNumberInput bitrateInput;
     private GuiColorPicker colorPicker;
-    private GuiAdvancedTextField ffmpegArguments;
+    private GuiAdvancedTextField commandInput, ffmpegArguments;
 
     private List<GuiButton> permanentButtons = new ArrayList<GuiButton>();
     private List<GuiButton> defaultButtons = new ArrayList<GuiButton>();
@@ -144,6 +144,10 @@ public class GuiRenderSettings extends GuiScreen {
             colorPicker = new GuiColorPicker(GuiConstants.RENDER_SETTINGS_COLOR_PICKER, 0, 0, I18n.format("replaymod.gui.rendersettings.skycolor")+": ", 0, 0);
             colorPicker.enabled = enableGreenscreen.isChecked();
 
+            commandInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 50, 20);
+            commandInput.hint = I18n.format("replaymod.gui.rendersettings.command");
+            commandInput.setMaxStringLength(3200);
+
             ffmpegArguments = new GuiAdvancedTextField(fontRendererObj, 0, 0, 50, 20);
             ffmpegArguments.hint = I18n.format("replaymod.gui.rendersettings.ffmpeghint");
             ffmpegArguments.setMaxStringLength(3200);
@@ -229,10 +233,12 @@ public class GuiRenderSettings extends GuiScreen {
             i++;
         }
 
-        ffmpegArguments.width = 305;
-        ffmpegArguments.xPosition = (this.width-ffmpegArguments.width)/2;
-        ffmpegArguments.yPosition = this.virtualY + 20 + ((i/2)*25);
+        commandInput.width = 55;
+        commandInput.xPosition = (this.width-305)/2;
+        commandInput.yPosition = ffmpegArguments.yPosition = this.virtualY + 20 + ((i/2)*25);
 
+        ffmpegArguments.width = 245;
+        ffmpegArguments.xPosition = commandInput.xPosition+commandInput.width+5;
 
         initialized = true;
     }
@@ -269,12 +275,13 @@ public class GuiRenderSettings extends GuiScreen {
 
             rendererDropdown.drawTextBox();
         } else {
+            commandInput.drawTextBox();
             ffmpegArguments.drawTextBox();
             String[] rows = StringUtils.splitStringInMultipleRows(I18n.format("replaymod.gui.rendersettings.ffmpeg.description"), 305);
 
             int i = 0;
             for(String row : rows) {
-                drawString(fontRendererObj, row, ffmpegArguments.xPosition, ffmpegArguments.yPosition + 30 + (15 * i), Color.WHITE.getRGB());
+                drawString(fontRendererObj, row, commandInput.xPosition, commandInput.yPosition + 30 + (15 * i), Color.WHITE.getRGB());
                 i++;
             }
         }
@@ -288,6 +295,7 @@ public class GuiRenderSettings extends GuiScreen {
                 yRes.mouseClicked(mouseX, mouseY, mouseButton);
                 bitrateInput.mouseClicked(mouseX, mouseY, mouseButton);
             } else {
+                commandInput.mouseClicked(mouseX, mouseY, mouseButton);
                 ffmpegArguments.mouseClicked(mouseX, mouseY, mouseButton);
             }
 
@@ -335,6 +343,7 @@ public class GuiRenderSettings extends GuiScreen {
             yRes.textboxKeyTyped(typedChar, keyCode);
             bitrateInput.textboxKeyTyped(typedChar, keyCode);
         } else {
+            commandInput.textboxKeyTyped(typedChar, keyCode);
             ffmpegArguments.textboxKeyTyped(typedChar, keyCode);
         }
         super.keyTyped(typedChar, keyCode);
@@ -345,6 +354,7 @@ public class GuiRenderSettings extends GuiScreen {
         xRes.updateCursorCounter();
         yRes.updateCursorCounter();
         bitrateInput.updateCursorCounter();
+        commandInput.updateCursorCounter();
         ffmpegArguments.updateCursorCounter();
         super.updateScreen();
     }
@@ -450,8 +460,12 @@ public class GuiRenderSettings extends GuiScreen {
         }
         options.setRenderer(renderer);
 
+        if(commandInput.getText().trim().length() > 0) {
+            options.setExportCommand(commandInput.getText().trim());
+        }
+
         if(ffmpegArguments.getText().trim().length() > 0) {
-            options.setExportCommandArgs(ffmpegArguments.getText());
+            options.setExportCommandArgs(ffmpegArguments.getText().trim());
         }
 
         ReplayHandler.startPath(options);
