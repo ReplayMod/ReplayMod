@@ -119,11 +119,10 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
     @Override
     public void initGui() {
-        replayGuiList = new ReplayList(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
         Keyboard.enableRepeatEvents(true);
-        this.buttonList.clear();
 
         if(!this.initialized) {
+            replayGuiList = new ReplayList(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
             this.initialized = true;
         } else {
             this.replayGuiList.setDimensions(this.width, this.height, 32, this.height - 64);

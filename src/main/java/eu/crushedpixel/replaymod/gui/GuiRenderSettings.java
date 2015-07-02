@@ -243,8 +243,6 @@ public class GuiRenderSettings extends GuiScreen {
         initialized = true;
     }
 
-
-
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawGradientRect(LEFT_BORDER, virtualY, width - LEFT_BORDER, virtualY + virtualHeight, -1072689136, -804253680);

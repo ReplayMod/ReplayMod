@@ -90,14 +90,14 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             //Bottom Button Bar (dat alliteration)
             bottomBar = new ArrayList<GuiButton>();
 
-            GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, I18n.format("replaymod.gui.mainmenu"));
-            bottomBar.add(exitButton);
+            GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, I18n.format("replaymod.gui.logout"));
+            bottomBar.add(logoutButton);
 
             GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, I18n.format("replaymod.gui.replayviewer"));
             bottomBar.add(managerButton);
-
-            GuiButton logoutButton = new GuiButton(GuiConstants.CENTER_LOGOUT_BUTTON, 20, 20, I18n.format("replaymod.gui.logout"));
-            bottomBar.add(logoutButton);
+            
+            GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, I18n.format("replaymod.gui.mainmenu"));
+            bottomBar.add(exitButton);
 
             showOnlineRecent();
             disableTopBarButton(GuiConstants.CENTER_RECENT_BUTTON);
