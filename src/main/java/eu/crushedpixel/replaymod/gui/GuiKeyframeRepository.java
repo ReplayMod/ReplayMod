@@ -53,7 +53,7 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
         if(!initialized) {
             keyframeSetList = new GuiEntryList<KeyframeSet>(GuiConstants.KEYFRAME_REPOSITORY_LIST, mc.fontRendererObj,
-                    20, 45, this.width / 2, h);
+                    0, 45, 200, h);
 
             for(KeyframeSet set : keyframeRepository)
                 keyframeSetList.addElement(set);
@@ -86,40 +86,34 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
             });
 
             nameInput = new GuiTextField(GuiConstants.KEYFRAME_REPOSTORY_NAME_INPUT, mc.fontRendererObj,
-                    30 + (this.width / 2), 45, this.width - (30 + this.width / 2 + 20), 20);
+                    0, 45, 0, 20);
             nameInput.setEnabled(false);
 
-            removeButton = new GuiButton(GuiConstants.KEYFRAME_REPOSITORY_REMOVE_BUTTON, 30 + (this.width / 2), 75,
+            removeButton = new GuiButton(GuiConstants.KEYFRAME_REPOSITORY_REMOVE_BUTTON, 0, 75,
                     I18n.format("replaymod.gui.remove"));
-            removeButton.width = (nameInput.width / 2) - 3;
-            removeButton.enabled = false;
-
-            loadButton = new GuiButton(GuiConstants.KEYFRAME_REPOSITORY_LOAD_BUTTON, 30 + (this.width / 2) + 5 + removeButton.width, 75,
+            loadButton = new GuiButton(GuiConstants.KEYFRAME_REPOSITORY_LOAD_BUTTON, 0, 75,
                     I18n.format("replaymod.gui.load"));
-            loadButton.width = removeButton.width + 1;
-            loadButton.enabled = false;
 
             saveButton = new GuiButton(GuiConstants.KEYFRAME_REPOSITORY_ADD_BUTTON, 30 + (this.width / 2),
                     keyframeSetList.yPosition+keyframeSetList.height-20,
                     I18n.format("replaymod.gui.keyframerepository.savecurrent"));
-            saveButton.width = nameInput.width;
-        } else {
-            keyframeSetList.width = this.width / 2;
-            keyframeSetList.setVisibleElements(h);
 
-            nameInput.xPosition = 30 + (this.width / 2);
-            nameInput.width = this.width - (30 + this.width / 2 + 20);
+            removeButton.enabled = loadButton.enabled = false;
 
-            removeButton.xPosition = 30 + (this.width / 2);
-            removeButton.width = (nameInput.width / 2) - 3;
-
-            loadButton.xPosition = 30 + (this.width / 2) + 5 + removeButton.width;
-            loadButton.width = removeButton.width + 1;
-
-            saveButton.xPosition = 30 + (this.width / 2);
-            saveButton.width = nameInput.width;
-            saveButton.yPosition = keyframeSetList.yPosition+keyframeSetList.height-20;
         }
+
+        keyframeSetList.xPosition = width / 2 - 205;
+        keyframeSetList.setVisibleElements(h);
+
+        nameInput.xPosition = saveButton.xPosition = width / 2 + 5;
+        loadButton.xPosition = width / 2 + 5;
+        removeButton.xPosition = width / 2 + 5 + 98 + 4;
+
+        nameInput.width = saveButton.width = 200;
+
+        removeButton.width = loadButton.width = 98;
+
+        saveButton.yPosition = keyframeSetList.yPosition+keyframeSetList.height-20;
 
         @SuppressWarnings("unchecked")
         List<GuiButton> buttonList = this.buttonList;
@@ -175,7 +169,7 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
         drawGradientRect(leftBorder, topBorder, width - leftBorder, this.height - 10, -1072689136, -804253680);
 
-        this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.keyframerepository.presets"), 20 + (this.width / 4), 30, Color.WHITE.getRGB());
+        this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.keyframerepository.presets"), keyframeSetList.xPosition + (keyframeSetList.width/2), 30, Color.WHITE.getRGB());
 
         keyframeSetList.drawTextBox();
 
