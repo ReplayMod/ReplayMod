@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ReplayFileAppender extends Thread {
+public class ReplayFileAppender {
 
     private Multimap<File, Pair<File, String>> filesToMove = ArrayListMultimap.create();
     private Queue<File> filesToRewrite = new ConcurrentLinkedQueue<File>();
@@ -49,15 +49,6 @@ public class ReplayFileAppender extends Thread {
         callListeners();
     }
 
-    public ReplayFileAppender() {
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ReplayFileAppender.this.shutdown();
-            }
-        }, "replaymod-file-appender-shutdown"));
-    }
-
     public void registerModifiedFile(File toAdd, String name, File replayFile) {
         //first, remove any files with the same name assigned to this Replay File
         for (Iterator<Pair<File, String>> iter = filesToMove.get(replayFile).iterator(); iter.hasNext(); ) {
@@ -75,10 +66,6 @@ public class ReplayFileAppender extends Thread {
         }
     }
 
-    public void shutdown() {
-        interrupt();
-    }
-
     public void addFinishListener(GuiReplaySaving gui) {
         listeners.add(gui);
     }
@@ -87,53 +74,54 @@ public class ReplayFileAppender extends Thread {
     public void onReplayExit(ReplayExitEvent event) {
         if(!filesToRewrite.isEmpty()) {
             openGuiSavingScreen();
+            writeFiles();
         }
     }
 
-    @Override
-    public void run() {
-        while(!Thread.interrupted() || !filesToRewrite.isEmpty()) {
-            File replayFile = filesToRewrite.poll();
-            if(replayFile != null) {
-                if(replayFile.canWrite()) {
-                    try {
-                        HashMap<String, File> toAdd = new HashMap<String, File>();
-                        for(Pair<File, String> p : filesToMove.get(replayFile)) {
-                            if(p.getLeft() == null || p.getLeft().exists()) {
-                                toAdd.put(p.getRight(), p.getLeft());
-                            }
-                        }
-                        ReplayFileIO.addFilesToZip(replayFile, toAdd);
-
-                        //delete all written files
-                        for(Pair<File, String> p : filesToMove.get(replayFile)) {
-                            if(p.getLeft() != null) {
-                                try {
-                                    FileUtils.forceDelete(p.getLeft());
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+    private void writeFiles() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(!filesToRewrite.isEmpty()) {
+                    File replayFile = filesToRewrite.poll();
+                    if(replayFile != null) {
+                        if(replayFile.canWrite()) {
+                            try {
+                                HashMap<String, File> toAdd = new HashMap<String, File>();
+                                for(Pair<File, String> p : filesToMove.get(replayFile)) {
+                                    if(p.getLeft() == null || p.getLeft().exists()) {
+                                        toAdd.put(p.getRight(), p.getLeft());
+                                    }
                                 }
+                                ReplayFileIO.addFilesToZip(replayFile, toAdd);
+
+                                //delete all written files
+                                for(Pair<File, String> p : filesToMove.get(replayFile)) {
+                                    if(p.getLeft() != null) {
+                                        try {
+                                            FileUtils.forceDelete(p.getLeft());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+
+                                filesToMove.removeAll(replayFile);
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                                filesToRewrite.add(replayFile);
+                            } finally {
+                                callListeners();
                             }
+
+                        } else {
+                            filesToRewrite.add(replayFile);
                         }
-
-                        filesToMove.removeAll(replayFile);
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                        filesToRewrite.add(replayFile);
-                    } finally {
-                        callListeners();
                     }
-
-                } else {
-                    filesToRewrite.add(replayFile);
                 }
+                callListeners();
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                interrupt();
-            }
-        }
+        }, "replay-file-appender").start();
     }
 
     public void callListeners() {

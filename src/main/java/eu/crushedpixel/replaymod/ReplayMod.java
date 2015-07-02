@@ -104,7 +104,6 @@ public class ReplayMod {
 
         replayFileAppender = new ReplayFileAppender();
         FMLCommonHandler.instance().bus().register(replayFileAppender);
-        replayFileAppender.start();
     }
 
     @EventHandler
