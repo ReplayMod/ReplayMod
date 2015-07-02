@@ -166,7 +166,6 @@ public class GuiEventHandler {
 
         if(ReplayHandler.isInReplay() && event.gui instanceof GuiIngameMenu && event.button.id == GuiConstants.EXIT_REPLAY_BUTTON) {
             if(ReplayHandler.isInPath()) ReplayProcess.stopReplayProcess(false);
-            ReplayHandler.endReplay();
 
             event.button.enabled = false;
 
@@ -179,6 +178,8 @@ public class GuiEventHandler {
             mc.displayGuiScreen(new GuiMainMenu());
 
             ReplayGuiRegistry.show();
+
+            ReplayHandler.endReplay();
         }
     }
 

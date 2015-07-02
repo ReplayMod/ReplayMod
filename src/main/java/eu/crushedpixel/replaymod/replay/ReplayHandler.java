@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
+import eu.crushedpixel.replaymod.events.ReplayExitEvent;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
@@ -601,6 +602,8 @@ public class ReplayHandler {
         resetKeyframes(true);
 
         inReplay = false;
+
+        FMLCommonHandler.instance().bus().post(new ReplayExitEvent());
     }
 
     public static void setInReplay(boolean inReplay1) {

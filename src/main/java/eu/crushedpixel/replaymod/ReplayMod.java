@@ -103,6 +103,7 @@ public class ReplayMod {
         ratedFileHandler = new RatedFileHandler();
 
         replayFileAppender = new ReplayFileAppender();
+        FMLCommonHandler.instance().bus().register(replayFileAppender);
         replayFileAppender.start();
     }
 
