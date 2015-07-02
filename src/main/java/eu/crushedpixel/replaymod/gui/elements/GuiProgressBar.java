@@ -17,6 +17,10 @@ public class GuiProgressBar extends Gui {
 
     private String progressString = null;
 
+    public GuiProgressBar() {
+        this(0, 0, 0, 0);
+    }
+
     public GuiProgressBar(int xPosition, int yPosition, int width, int height) {
         this(xPosition, yPosition, width, height, 0);
     }

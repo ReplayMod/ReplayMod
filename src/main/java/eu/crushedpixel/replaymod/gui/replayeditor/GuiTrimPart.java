@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.studio.StudioImplementation;
 import eu.crushedpixel.replaymod.utils.TimestampUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
+import org.apache.commons.io.FileUtils;
 import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
@@ -24,6 +25,9 @@ public class GuiTrimPart extends GuiStudioPart {
 
     private List<GuiNumberInput> inputOrder = new ArrayList<GuiNumberInput>();
 
+    private Thread filterThread;
+    private File outputFile;
+
     public GuiTrimPart(int yPos) {
         super(yPos);
         fontRendererObj = mc.fontRendererObj;
@@ -31,11 +35,28 @@ public class GuiTrimPart extends GuiStudioPart {
 
     @Override
     public void applyFilters(File replayFile, File outputFile) {
-        try {
-            StudioImplementation.trimReplay(replayFile, getStartTimestamp(), getEndTimestamp(), outputFile);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        this.outputFile = outputFile;
+        filterThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    StudioImplementation.trimReplay(replayFile, getStartTimestamp(), getEndTimestamp(), outputFile, GuiTrimPart.this);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "replay-editor-trim");
+
+        filterThread.start();
+
+        mc.displayGuiScreen(new GuiReplayEditingProcess(this));
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void cancelFilters() {
+        filterThread.stop();
+        FileUtils.deleteQuietly(outputFile);
     }
 
     private int valueOf(String text) {

@@ -180,6 +180,15 @@ replaymod.gui.editor.trim.description=Removes the beginning and end of a Replay 
 replaymod.gui.editor.connect.description=Connects multiple Replays in the specified order
 replaymod.gui.editor.modify.description=Provides several filters to modify Replay Files
 
+replaymod.gui.editor.progress.title=Editing Replay File...
+replaymod.gui.editor.progress.pleasewait=Please wait while the Replay is being edited.
+
+replaymod.gui.editor.progress.status.initializing=Initializing
+replaymod.gui.editor.progress.status.writing.raw=Rewriting Replay...
+replaymod.gui.editor.progress.status.writing.zip=Wrapping Replay File...
+replaymod.gui.editor.progress.status.writing.final=Writing File to disk...
+replaymod.gui.editor.progress.status.finished=Finished Editing!
+
 #Cancel Replay GUI
 replaymod.gui.cancelrender.title=Cancel Rendering
 replaymod.gui.cancelrender.message=Are you sure that you want to cancel the current rendering process?

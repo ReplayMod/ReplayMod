@@ -10,6 +10,7 @@ import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.resources.I18n;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.awt.*;
@@ -34,31 +35,50 @@ public class GuiConnectPart extends GuiStudioPart {
     private List<File> replayFiles;
     private List<String> filesToConcat;
 
+    private Thread filterThread;
+    private File outputFile;
+
     public GuiConnectPart(int yPos) {
         super(yPos);
         this.mc = Minecraft.getMinecraft();
         fontRendererObj = mc.fontRendererObj;
     }
 
-
     @Override
     public void applyFilters(File replayFile, File outputFile) {
-        try {
-            List<File> inputFiles = new ArrayList<File>();
-            OUTER:
-            for (String fileName : filesToConcat) {
-                for (File file : replayFiles) {
-                    if (fileName.equals(FilenameUtils.getBaseName(file.getAbsolutePath()))) {
-                        inputFiles.add(file);
-                        continue OUTER;
+        this.outputFile = outputFile;
+        filterThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    List<File> inputFiles = new ArrayList<File>();
+                    OUTER:
+                    for (String fileName : filesToConcat) {
+                        for (File file : replayFiles) {
+                            if (fileName.equals(FilenameUtils.getBaseName(file.getAbsolutePath()))) {
+                                inputFiles.add(file);
+                                continue OUTER;
+                            }
+                        }
+                        throw new RuntimeException(fileName);
                     }
+                    StudioImplementation.connectReplayFiles(inputFiles, outputFile, GuiConnectPart.this);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                throw new RuntimeException(fileName);
             }
-            StudioImplementation.connectReplayFiles(inputFiles, outputFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }, "replay-editor-connect");
+
+        filterThread.start();
+
+        mc.displayGuiScreen(new GuiReplayEditingProcess(this));
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void cancelFilters() {
+        filterThread.stop();
+        FileUtils.deleteQuietly(outputFile);
     }
 
     @Override
