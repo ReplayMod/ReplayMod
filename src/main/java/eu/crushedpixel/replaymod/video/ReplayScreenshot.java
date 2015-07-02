@@ -52,7 +52,7 @@ public class ReplayScreenshot {
                 @Override
                 public void run() {
                     try {
-                        float aspect = 1280f / 720f;
+                        float aspect = 16f/9f;
 
                         Rectangle rect;
                         if((float) fbi.getWidth() / (float) fbi.getHeight() <= aspect) {
