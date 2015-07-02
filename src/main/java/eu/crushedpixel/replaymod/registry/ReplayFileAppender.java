@@ -2,10 +2,12 @@ package eu.crushedpixel.replaymod.registry;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import eu.crushedpixel.replaymod.events.ReplayExitEvent;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -27,6 +29,10 @@ public class ReplayFileAppender extends Thread {
     public void startNewReplayFileWriting() {
         newReplayFileWriting = true;
 
+        openGuiSavingScreen();
+    }
+
+    private void openGuiSavingScreen() {
         if(!FMLClientHandler.instance().isGUIOpen(GuiReplaySaving.class)) {
             Minecraft.getMinecraft().addScheduledTask(new Runnable() {
                 @Override
@@ -75,6 +81,13 @@ public class ReplayFileAppender extends Thread {
 
     public void addFinishListener(GuiReplaySaving gui) {
         listeners.add(gui);
+    }
+
+    @SubscribeEvent
+    public void onReplayExit(ReplayExitEvent event) {
+        if(!filesToRewrite.isEmpty()) {
+            openGuiSavingScreen();
+        }
     }
 
     @Override

@@ -451,7 +451,7 @@ public class GuiRenderSettings extends GuiScreen {
         options.setRenderer(renderer);
 
         if(ffmpegArguments.getText().trim().length() > 0) {
-            options.setCommandLineArguments(ffmpegArguments.getText());
+            options.setExportCommandArgs(ffmpegArguments.getText());
         }
 
         ReplayHandler.startPath(options);
