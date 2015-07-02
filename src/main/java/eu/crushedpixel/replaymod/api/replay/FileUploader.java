@@ -84,7 +84,12 @@ public class FileUploader {
             while((len = fis.read(buf)) != -1) {
                 request.write(buf);
                 current += len;
+
+                parent.onProgressChanged(getUploadProgress());
+
                 if(cancel) {
+                    parent.onProgressChanged(0f);
+
                     uploading = false;
                     current = 0;
                     cancel = false;

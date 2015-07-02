@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.api.replay.FileUploader;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.*;
+import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
@@ -44,7 +45,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
-public class GuiUploadFile extends GuiScreen {
+public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
@@ -378,7 +379,6 @@ public class GuiUploadFile extends GuiScreen {
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 
-        progressBar.setProgress(uploader.getUploadProgress());
         progressBar.drawProgressBar();
 
         content.draw(mc, mouseX, mouseY);
@@ -463,4 +463,12 @@ public class GuiUploadFile extends GuiScreen {
             messageTextField.setTextColor(Color.RED.getRGB());
         }
     }
+
+    @Override
+    public void onProgressChanged(float progress) {
+        if(progressBar != null) progressBar.setProgress(progress);
+    }
+
+    @Override
+    public void onProgressChanged(float progress, String progressString) {}
 }
