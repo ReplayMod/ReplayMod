@@ -12,7 +12,10 @@ import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiYesNo;
+import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Bootstrap;
@@ -452,7 +455,24 @@ public class ReplayHandler {
         return new ArrayList<Keyframe>(keyframes);
     }
 
-    public static void resetKeyframes(boolean resetMarkers) {
+    public static void resetKeyframes(final boolean resetMarkers, boolean callback) {
+        if(!callback) {
+            resetKeyframes(resetMarkers);
+        } else {
+            mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
+                @Override
+                public void confirmClicked(boolean result, int id) {
+                    if(result) {
+                        resetKeyframes(resetMarkers);
+                    }
+
+                    mc.displayGuiScreen(null);
+                }
+            }, I18n.format("replaymod.gui.clearcallback.title"), I18n.format("replaymod.gui.clearcallback.message"), 1));
+        }
+    }
+
+    private static void resetKeyframes(boolean resetMarkers) {
         MarkerKeyframe[] markers = getMarkers();
         keyframes = new ArrayList<Keyframe>();
 

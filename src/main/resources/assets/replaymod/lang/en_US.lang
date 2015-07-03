@@ -337,3 +337,7 @@ replaymod.gui.ingame.menu.zoomin=Zoom in
 replaymod.gui.ingame.menu.zoomout=Zoom out
 
 replaymod.gui.ingame.unnamedmarker=Unnamed Event Marker
+
+#Clear Keyframe Callback
+replaymod.gui.clearcallback.title=Clear all Keyframes?
+replaymod.gui.clearcallback.message=This Callback can be disabled in the Replay Settings.
