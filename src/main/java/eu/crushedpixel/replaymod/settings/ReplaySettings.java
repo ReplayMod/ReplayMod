@@ -211,7 +211,6 @@ public class ReplaySettings {
     public enum ReplayOptions implements ValueEnum {
         linear(false, "replaymod.gui.settings.interpolation"),
         lighting(false, "replaymod.gui.settings.lighting"),
-        useResources(true, "replaymod.gui.settings.resources"),
         previewPath(false, "replaymod.gui.settings.pathpreview"),
         keyframeCleanCallback(true, "replaymod.gui.settings.keyframecleancallback");
 
@@ -238,7 +237,6 @@ public class ReplaySettings {
     }
 
     public enum RenderOptions implements ValueEnum {
-        videoQuality(0.5f, "replaymod.gui.settings.quality"),
         videoFramerate(30, "replaymod.gui.settings.framerate"),
         waitForChunks(true, "replaymod.gui.settings.forcechunks");
 

@@ -98,9 +98,9 @@ public class GuiConstants {
     public static final int REPLAY_SETTINGS_SEND_CHAT = 9006;
     public static final int REPLAY_SETTINGS_FORCE_LINEAR = 9007;
     public static final int REPLAY_SETTINGS_ENABLE_LIGHTING = 9008;
-    public static final int REPLAY_SETTINGS_RESOURCEPACK_ID = 9010;
     public static final int REPLAY_SETTINGS_INDICATOR_ID = 9012;
     public static final int REPLAY_SETTINGS_PATHPREVIEW_ID = 9013;
+    public static final int REPLAY_SETTINGS_CLEARCALLBACK_ID = 9014;
 
     public static final int REPLAY_EDITING_CANCEL_BUTTON = 1234;
 }

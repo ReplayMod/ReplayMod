@@ -77,13 +77,13 @@ public class GuiReplaySettings extends GuiScreen {
                         I18n.format("replaymod.gui.settings.interpolation.linear"), I18n.format("replaymod.gui.settings.interpolation.cubic"));
                 buttonList.add(linearButton);
 
-            } else if(o == ReplayOptions.useResources) {
-                GuiToggleButton resourcePackButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_RESOURCEPACK_ID, xPos, yPos, 150, 20, o);
-                buttonList.add(resourcePackButton);
-
             } else if(o == ReplayOptions.previewPath) {
                 GuiToggleButton pathPreviewButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_PATHPREVIEW_ID, xPos, yPos, 150, 20, o);
                 buttonList.add(pathPreviewButton);
+
+            } else if(o == ReplayOptions.keyframeCleanCallback) {
+                GuiToggleButton keyframeClearCallbackButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_CLEARCALLBACK_ID, xPos, yPos, 150, 20, o);
+                buttonList.add(keyframeClearCallbackButton);
             }
 
             ++i;
