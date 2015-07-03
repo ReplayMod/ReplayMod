@@ -34,7 +34,7 @@ public class GuiTrimPart extends GuiStudioPart {
     }
 
     @Override
-    public void applyFilters(File replayFile, File outputFile) {
+    public void applyFilters(final File replayFile, final File outputFile) {
         this.outputFile = outputFile;
         filterThread = new Thread(new Runnable() {
             @Override

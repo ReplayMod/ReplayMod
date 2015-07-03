@@ -61,7 +61,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     }
 
     private void reloadFiles() {
-        GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
+        final GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
 
         replayGuiList.clearEntries();
         replayGuiList.addEntry(loadingListEntry);
