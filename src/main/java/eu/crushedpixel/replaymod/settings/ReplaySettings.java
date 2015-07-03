@@ -6,23 +6,12 @@ import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class ReplaySettings {
-
-    public List<ValueEnum> getValueEnums() {
-        List<ValueEnum> enums = new ArrayList<ReplaySettings.ValueEnum>();
-        enums.addAll(Arrays.asList(ReplayOptions.values()));
-        enums.addAll(Arrays.asList(RenderOptions.values()));
-        return enums;
-    }
 
     private static final String[] CATEGORIES = new String[]{"recording", "replay", "render", "advanced"};
 
     public void readValues() {
-        Configuration config = ReplayMod.instance.config;
+        Configuration config = ReplayMod.config;
 
         config.load();
 
@@ -68,20 +57,6 @@ public class ReplaySettings {
         rewriteSettings();
     }
 
-    public double getVideoQuality() {
-        return (Double) RenderOptions.videoQuality.getValue();
-    }
-
-    public void setVideoQuality(double videoQuality) {
-        RenderOptions.videoQuality.setValue(Math.min(0.9f, Math.max(0.1f, videoQuality)));
-        rewriteSettings();
-    }
-
-    public void setEnableIndicator(boolean enable) {
-        RecordingOptions.indicator.setValue(enable);
-        rewriteSettings();
-    }
-
     public boolean showRecordingIndicator() {
         return (Boolean) RecordingOptions.indicator.getValue();
     }
@@ -90,27 +65,12 @@ public class ReplaySettings {
         return (Boolean) RecordingOptions.recordServer.getValue();
     }
 
-    public void setEnableRecordingServer(boolean enableRecordingServer) {
-        RecordingOptions.recordServer.setValue(enableRecordingServer);
-        rewriteSettings();
-    }
-
     public boolean isEnableRecordingSingleplayer() {
         return (Boolean) RecordingOptions.recordSingleplayer.getValue();
     }
 
-    public void setEnableRecordingSingleplayer(boolean enableRecordingSingleplayer) {
-        RecordingOptions.recordSingleplayer.setValue(enableRecordingSingleplayer);
-        rewriteSettings();
-    }
-
     public boolean isShowNotifications() {
         return (Boolean) RecordingOptions.notifications.getValue();
-    }
-
-    public void setShowNotifications(boolean showNotifications) {
-        RecordingOptions.notifications.setValue(showNotifications);
-        rewriteSettings();
     }
 
     public boolean isLinearMovement() {
@@ -132,15 +92,6 @@ public class ReplaySettings {
         rewriteSettings();
     }
 
-    public boolean getUseResourcePacks() {
-        return (Boolean) ReplayOptions.useResources.getValue();
-    }
-
-    public void setUseResourcePacks(boolean use) {
-        ReplayOptions.useResources.setValue(use);
-        rewriteSettings();
-    }
-
     public boolean getWaitForChunks() {
         return (Boolean) RenderOptions.waitForChunks.getValue();
     }
@@ -150,11 +101,15 @@ public class ReplaySettings {
         rewriteSettings();
     }
 
-    public boolean showPathPreview() { return (Boolean) ReplayOptions.previewPath.getValue(); };
+    public boolean showPathPreview() { return (Boolean) ReplayOptions.previewPath.getValue(); }
 
     public void setShowPathPreview(boolean show) {
         ReplayOptions.previewPath.setValue(show);
         rewriteSettings();
+    }
+
+    public boolean showClearKeyframesCallback() {
+        return (Boolean) ReplayOptions.keyframeCleanCallback.getValue();
     }
 
     public void rewriteSettings() {
@@ -250,14 +205,15 @@ public class ReplaySettings {
         }
 
         @Override
-        public String getName() { return I18n.format(name); };
+        public String getName() { return I18n.format(name); }
     }
 
     public enum ReplayOptions implements ValueEnum {
         linear(false, "replaymod.gui.settings.interpolation"),
         lighting(false, "replaymod.gui.settings.lighting"),
         useResources(true, "replaymod.gui.settings.resources"),
-        previewPath(false, "replaymod.gui.settings.pathpreview");
+        previewPath(false, "replaymod.gui.settings.pathpreview"),
+        keyframeCleanCallback(true, "replaymod.gui.settings.keyframecleancallback");
 
         private Object value;
         private String name;
@@ -278,7 +234,7 @@ public class ReplaySettings {
         }
 
         @Override
-        public String getName() { return I18n.format(name); };
+        public String getName() { return I18n.format(name); }
     }
 
     public enum RenderOptions implements ValueEnum {
@@ -305,7 +261,7 @@ public class ReplaySettings {
         }
 
         @Override
-        public String getName() { return I18n.format(name); };
+        public String getName() { return I18n.format(name); }
     }
 
     public enum AdvancedOptions implements ValueEnum {
@@ -332,7 +288,7 @@ public class ReplaySettings {
         }
 
         @Override
-        public String getName() { return I18n.format(name); };
+        public String getName() { return I18n.format(name); }
     }
 
     public interface ValueEnum {
