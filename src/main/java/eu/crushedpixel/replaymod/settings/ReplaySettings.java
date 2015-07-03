@@ -158,29 +158,29 @@ public class ReplaySettings {
     }
 
     public void rewriteSettings() {
-        ReplayMod.instance.config.load();
+        ReplayMod.config.load();
 
         for(String cat : CATEGORIES) {
-            ReplayMod.instance.config.removeCategory(ReplayMod.instance.config.getCategory(cat));
+            ReplayMod.config.removeCategory(ReplayMod.config.getCategory(cat));
         }
 
         for(RecordingOptions o : RecordingOptions.values()) {
-            getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "recording", false);
+            getConfigSetting(ReplayMod.config, o.name(), o.getValue(), "recording", false);
         }
 
         for(ReplayOptions o : ReplayOptions.values()) {
-            getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "replay", false);
+            getConfigSetting(ReplayMod.config, o.name(), o.getValue(), "replay", false);
         }
 
         for(RenderOptions o : RenderOptions.values()) {
-            getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "render", false);
+            getConfigSetting(ReplayMod.config, o.name(), o.getValue(), "render", false);
         }
 
         for(AdvancedOptions o : AdvancedOptions.values()) {
-            getConfigSetting(ReplayMod.instance.config, o.name(), o.getValue(), "advanced", false);
+            getConfigSetting(ReplayMod.config, o.name(), o.getValue(), "advanced", false);
         }
 
-        ReplayMod.instance.config.save();
+        ReplayMod.config.save();
     }
 
     private Property getConfigSetting(Configuration config, String name, Object value, String category, boolean warning) {
@@ -239,14 +239,17 @@ public class ReplaySettings {
             this.name = name;
         }
 
+        @Override
         public Object getValue() {
             return value;
         }
 
+        @Override
         public void setValue(Object value) {
             this.value = value;
         }
 
+        @Override
         public String getName() { return I18n.format(name); };
     }
 
@@ -264,14 +267,17 @@ public class ReplaySettings {
             this.name = name;
         }
 
+        @Override
         public Object getValue() {
             return value;
         }
 
+        @Override
         public void setValue(Object value) {
             this.value = value;
         }
 
+        @Override
         public String getName() { return I18n.format(name); };
     }
 
@@ -288,14 +294,17 @@ public class ReplaySettings {
             this.name = name;
         }
 
+        @Override
         public Object getValue() {
             return value;
         }
 
+        @Override
         public void setValue(Object value) {
             this.value = value;
         }
 
+        @Override
         public String getName() { return I18n.format(name); };
     }
 
@@ -312,14 +321,17 @@ public class ReplaySettings {
             this.name = name;
         }
 
+        @Override
         public Object getValue() {
             return value;
         }
 
+        @Override
         public void setValue(Object value) {
             this.value = value;
         }
 
+        @Override
         public String getName() { return I18n.format(name); };
     }
 
