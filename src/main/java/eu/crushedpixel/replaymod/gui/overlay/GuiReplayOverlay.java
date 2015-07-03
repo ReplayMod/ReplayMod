@@ -503,8 +503,9 @@ public class GuiReplayOverlay extends Gui {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
         if(ReplayMod.replaySettings.isLightingEnabled() && ReplayHandler.isInReplay()) {
             mc.renderEngine.bindTexture(replay_gui);
-            GlStateManager.resetColor();
+            GlStateManager.color(1, 1, 1, 1);
             GlStateManager.enableAlpha();
+            GlStateManager.disableLighting();
             Gui.drawModalRectWithCustomSizedTexture(WIDTH - 10 - 19, HEIGHT - 10 - 13,
                     90, 20, 19, 13, TEXTURE_SIZE, TEXTURE_SIZE);
         }
