@@ -53,7 +53,7 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
         if(!initialized) {
             keyframeSetList = new GuiEntryList<KeyframeSet>(GuiConstants.KEYFRAME_REPOSITORY_LIST, mc.fontRendererObj,
-                    0, 45, 200, h);
+                    0, 45, 0, h);
 
             for(KeyframeSet set : keyframeRepository)
                 keyframeSetList.addElement(set);
@@ -102,16 +102,16 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
         }
 
-        keyframeSetList.xPosition = width / 2 - 205;
+        keyframeSetList.width = nameInput.width = saveButton.width = 150;
+
+        keyframeSetList.xPosition = width / 2 - keyframeSetList.width - 5;
         keyframeSetList.setVisibleElements(h);
+
+        removeButton.width = loadButton.width = 73;
 
         nameInput.xPosition = saveButton.xPosition = width / 2 + 5;
         loadButton.xPosition = width / 2 + 5;
-        removeButton.xPosition = width / 2 + 5 + 98 + 4;
-
-        nameInput.width = saveButton.width = 200;
-
-        removeButton.width = loadButton.width = 98;
+        removeButton.xPosition = width / 2 + 5 + loadButton.width + 3 + 4;
 
         saveButton.yPosition = keyframeSetList.yPosition+keyframeSetList.height-20;
 
@@ -183,13 +183,13 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
         if(currentSet != null) {
             this.drawString(fontRendererObj, I18n.format("replaymod.gui.keyframerepository.positionkeyframes") + ": " +currentSetPositionKeyframeCount,
-                    30 + (this.width / 2), removeButton.yPosition + 30, Color.WHITE.getRGB());
+                    loadButton.xPosition+2, removeButton.yPosition + 30, Color.WHITE.getRGB());
 
             this.drawString(fontRendererObj, I18n.format("replaymod.gui.keyframerepository.timekeyframes") + ": " +currentSetTimeKeyframeCount,
-                    30 + (this.width / 2), removeButton.yPosition + 50, Color.WHITE.getRGB());
+                    loadButton.xPosition+2, removeButton.yPosition + 50, Color.WHITE.getRGB());
 
             this.drawString(fontRendererObj, I18n.format("replaymod.gui.duration")+": "+ DurationFormatUtils.formatDurationHMS(currentSetDuration),
-                    30 + (this.width / 2), removeButton.yPosition + 70, Color.WHITE.getRGB());
+                    loadButton.xPosition+2, removeButton.yPosition + 70, Color.WHITE.getRGB());
         }
 
         if(message != null) {
