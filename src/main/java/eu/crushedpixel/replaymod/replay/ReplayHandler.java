@@ -46,6 +46,8 @@ public class ReplayHandler {
     private static Entity currentEntity = null;
     private static Position lastPosition = null;
 
+    private static MarkerKeyframe[] initialMarkers = new MarkerKeyframe[0];
+
     private static float cameraTilt = 0;
 
     private static KeyframeSet[] keyframeRepository = new KeyframeSet[]{};
@@ -544,7 +546,9 @@ public class ReplayHandler {
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
 
         MarkerKeyframe[] markers = currentReplayFile.markers().get();
-        ReplayHandler.setMarkers(markers == null ? new MarkerKeyframe[0] : markers, false);
+        if(markers == null) markers = new MarkerKeyframe[0];
+        ReplayHandler.setMarkers(markers, false);
+        ReplayHandler.initialMarkers = markers;
 
         PlayerVisibility visibility = currentReplayFile.visibility().get();
         PlayerHandler.loadPlayerVisibilityConfiguration(visibility);
@@ -608,14 +612,23 @@ public class ReplayHandler {
 
         if (currentReplayFile != null) {
             try {
-                currentReplayFile.close();
 
-                File markerFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
-                ReplayFileIO.write(getMarkers(), markerFile);
-                ReplayMod.replayFileAppender.registerModifiedFile(markerFile, ReplayFile.ENTRY_MARKERS, ReplayHandler.getReplayFile());
+                //only if Marker keyframes changed, rewrite them
+                if(!Arrays.equals(getMarkers(), initialMarkers)) {
+                    File markerFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
+                    ReplayFileIO.write(getMarkers(), markerFile);
+                    ReplayMod.replayFileAppender.registerModifiedFile(markerFile, ReplayFile.ENTRY_MARKERS, ReplayHandler.getReplayFile());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    currentReplayFile.close();
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
             }
+
             currentReplayFile = null;
         }
 
