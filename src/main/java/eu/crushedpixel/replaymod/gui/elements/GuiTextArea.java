@@ -231,7 +231,7 @@ public class GuiTextArea extends Gui implements GuiElement {
             totalCharCount += line.length();
         }
 
-        if(totalCharCount-(getSelectedText().length()) >= maxCharCount) {
+        if(maxCharCount > 0 && totalCharCount-(getSelectedText().length()) >= maxCharCount) {
             return;
         }
 
