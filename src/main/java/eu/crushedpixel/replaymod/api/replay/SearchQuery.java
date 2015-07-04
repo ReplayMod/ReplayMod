@@ -8,6 +8,8 @@ import java.net.URLEncoder;
 @AllArgsConstructor
 public class SearchQuery {
 
+    public SearchQuery() {} //empty constructor which allows us to define values later
+
     public Boolean order, singleplayer;
     public String player, tag, version, server, name, auth;
     public Integer category, offset;

@@ -148,6 +148,17 @@ replaymod.gui.center.top.downloaded=Downloaded
 replaymod.gui.center.top.favorited=Favorited
 replaymod.gui.center.top.search=Search
 
+replaymod.gui.center.search.filters=Search Filters
+replaymod.gui.center.search.gametype=Gametype
+replaymod.gui.center.search.order=Sort by
+replaymod.gui.center.search.order.best=Best
+replaymod.gui.center.search.order.recent=Recent
+replaymod.gui.center.search.name=Replay Name
+replaymod.gui.center.search.server=Server IP (Multiplayer only)
+replaymod.gui.center.search.category=Filter by Category
+replaymod.gui.center.search.version=Filter by Version
+
+
 replaymod.gui.center.downloadrequired=Download the Replay to rate or favorite it
 
 replaymod.gui.center.favorite=Favorite

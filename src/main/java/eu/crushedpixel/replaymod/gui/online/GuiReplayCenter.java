@@ -2,15 +2,16 @@ package eu.crushedpixel.replaymod.gui.online;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.SearchQuery;
+import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
+import eu.crushedpixel.replaymod.api.replay.holders.MinecraftVersion;
 import eu.crushedpixel.replaymod.api.replay.holders.Rating;
 import eu.crushedpixel.replaymod.api.replay.pagination.DownloadedFilePagination;
 import eu.crushedpixel.replaymod.api.replay.pagination.FavoritedFilePagination;
 import eu.crushedpixel.replaymod.api.replay.pagination.Pagination;
 import eu.crushedpixel.replaymod.api.replay.pagination.SearchPagination;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.gui.elements.GuiLoadingListEntry;
-import eu.crushedpixel.replaymod.gui.elements.GuiReplayListEntry;
+import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -34,6 +35,13 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private ReplayFileList currentList;
     private GuiButton loadButton, favButton, likeButton, dislikeButton;
     private List<GuiButton> replayButtonBar, bottomBar, topBar;
+
+    private GuiToggleButton searchGametypeToggle, searchSortToggle;
+    private GuiDropdown<String> searchCategoryDropdown, searchVersionDropdown;
+    private GuiAdvancedTextField searchNameInput, searchServerInput;
+    private GuiButton searchActionButton;
+
+    private boolean showSearchFields = false;
 
     public static GuiYesNo getYesNoGui(GuiYesNoCallback p_152129_0_, int p_152129_2_) {
         String s1 = I18n.format("replaymod.gui.center.logoutcallback");
@@ -95,12 +103,54 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
             GuiButton managerButton = new GuiButton(GuiConstants.CENTER_MANAGER_BUTTON, 20, 20, I18n.format("replaymod.gui.replayviewer"));
             bottomBar.add(managerButton);
-            
+
             GuiButton exitButton = new GuiButton(GuiConstants.CENTER_BACK_BUTTON, 20, 20, I18n.format("replaymod.gui.mainmenu"));
             bottomBar.add(exitButton);
 
             showOnlineRecent();
             disableTopBarButton(GuiConstants.CENTER_RECENT_BUTTON);
+
+            //Search GUI
+            searchActionButton = new GuiButton(GuiConstants.CENTER_SEARCH_ACTION_BUTTON, 20, 20, I18n.format("replaymod.gui.center.top.search"));
+            searchGametypeToggle = new GuiToggleButton(GuiConstants.CENTER_SEARCH_GAMETYPE_TOGGLE, 0, 0, I18n.format("replaymod.gui.center.search.gametype")+": ",
+                    new String[]{I18n.format("options.particles.all"), I18n.format("menu.singleplayer"), I18n.format("menu.multiplayer")});
+            searchSortToggle = new GuiToggleButton(GuiConstants.CENTER_SEARCH_ORDER_TOGGLE, 0, 0, I18n.format("replaymod.gui.center.search.order")+": ",
+                    new String[]{I18n.format("replaymod.gui.center.search.order.best"), I18n.format("replaymod.gui.center.search.order.recent")});
+            searchCategoryDropdown = new GuiDropdown<String>(GuiConstants.CENTER_SEARCH_CATEGORY_DROPDOWN, fontRendererObj, 0, 0, 0, Category.values().length+1);
+            searchVersionDropdown = new GuiDropdown<String>(GuiConstants.CENTER_SEARCH_VERSION_DROPDOWN, fontRendererObj, 0, 0, 0, 5);
+            searchNameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 50, 20);
+            searchServerInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 50, 20);
+
+            searchNameInput.hint = I18n.format("replaymod.gui.center.search.name");
+            searchServerInput.hint = I18n.format("replaymod.gui.center.search.server");
+
+            searchCategoryDropdown.addElement(I18n.format("replaymod.gui.center.search.category"));
+            for(Category c : Category.values()) {
+                searchCategoryDropdown.addElement(c.toNiceString());
+            }
+
+            searchVersionDropdown.addElement(I18n.format("replaymod.gui.center.search.version"));
+            for(MinecraftVersion v : MinecraftVersion.values()) {
+                searchVersionDropdown.addElement(v.toNiceName());
+            }
+        }
+
+        int wd = this.width - 40;
+        int sw = wd/3 + 4;
+
+        searchNameInput.xPosition = searchServerInput.xPosition = searchActionButton.xPosition = 20;
+        searchCategoryDropdown.xPosition = searchVersionDropdown.xPosition = 20 + sw;
+        searchGametypeToggle.xPosition = searchSortToggle.xPosition = 20 + 2*sw;
+
+        searchNameInput.width = searchCategoryDropdown.width = searchGametypeToggle.width = searchActionButton.width =
+                searchServerInput.width = searchVersionDropdown.width = searchSortToggle.width = sw-7;
+
+        searchNameInput.yPosition = searchCategoryDropdown.yPosition = searchGametypeToggle.yPosition = 70;
+        searchServerInput.yPosition = searchVersionDropdown.yPosition = searchSortToggle.yPosition = 100;
+        searchActionButton.yPosition = 130;
+
+        if(showSearchFields) {
+            showSearchFields();
         }
 
         if(currentList != null) {
@@ -227,6 +277,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             showFavoritedFiles();
         } else if(button.id == GuiConstants.CENTER_SEARCH_BUTTON) {
             disableTopBarButton(button.id);
+            showReplaySearch();
         } else if(button.id == GuiConstants.CENTER_LOAD_REPLAY_BUTTON) {
             GuiReplayListEntry entry = (GuiReplayListEntry)currentList.getListEntry(currentList.selected);
             FileInfo info = entry.getFileInfo();
@@ -286,6 +337,43 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 elementSelected(currentList.selected);
             }
         }
+
+        //the search action button
+        else if(button.id == GuiConstants.CENTER_SEARCH_ACTION_BUTTON) {
+            SearchQuery searchQuery = new SearchQuery();
+
+            Boolean gameType = null;
+            if(searchGametypeToggle.getValue() > 0) {
+                gameType = searchGametypeToggle.getValue() == 1;
+            }
+            searchQuery.singleplayer = gameType;
+
+            Integer category = null;
+            if(searchCategoryDropdown.getSelectionIndex() > 0) {
+                category = searchCategoryDropdown.getSelectionIndex()-1;
+            }
+            searchQuery.category = category;
+
+            String mcversion = null;
+            if(searchVersionDropdown.getSelectionIndex() > 0) {
+                mcversion = MinecraftVersion.values()[searchVersionDropdown.getSelectionIndex()-1].getApiName();
+            }
+            searchQuery.version = mcversion;
+
+            if(searchNameInput.getText().trim().length() > 0) {
+                searchQuery.name = searchNameInput.getText().trim();
+            }
+
+            if(searchServerInput.getText().trim().length() > 0) {
+                searchQuery.server = searchServerInput.getText().trim();
+            }
+
+            Boolean order = searchSortToggle.getValue() == 0;
+            searchQuery.order = order;
+
+            SearchPagination searchPagination = new SearchPagination(searchQuery);
+            showReplaySearch(searchPagination);
+        }
     }
 
     @Override
@@ -317,11 +405,23 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         super.drawScreen(mouseX, mouseY, partialTicks);
 
         if(((favButton.isMouseOver() && !favButton.enabled) || (likeButton.isMouseOver() && !likeButton.enabled)
-                || (dislikeButton.isMouseOver() && !dislikeButton.enabled ))&& currentList.selected != -1) {
+                || (dislikeButton.isMouseOver() && !dislikeButton.enabled )) && (currentList != null && currentList.selected != -1)) {
             ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.center.downloadrequired"), this, Color.RED);
         }
 
         this.drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.replaycenter"), this.width / 2, 5, Color.WHITE.getRGB());
+
+        //search fields
+        if(showSearchFields) {
+            this.drawString(fontRendererObj, I18n.format("replaymod.gui.center.search.filters"), searchActionButton.xPosition, 50, Color.WHITE.getRGB());
+            searchActionButton.drawButton(mc, mouseX, mouseY);
+            searchGametypeToggle.drawButton(mc, mouseX, mouseY);
+            searchSortToggle.drawButton(mc, mouseX, mouseY);
+            searchVersionDropdown.drawTextBox();
+            searchCategoryDropdown.drawTextBox();
+            searchNameInput.drawTextBox();
+            searchServerInput.drawTextBox();
+        }
     }
 
     @Override
@@ -338,6 +438,31 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         if(currentList != null) {
             this.currentList.mouseClicked(mouseX, mouseY, mouseButton);
         }
+
+        if(showSearchFields) {
+            if(!searchCategoryDropdown.mouseClickedResult(mouseX, mouseY))
+                searchVersionDropdown.mouseClicked(mouseX, mouseY, mouseButton);
+            searchNameInput.mouseClicked(mouseX, mouseY, mouseButton);
+            searchServerInput.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+    }
+
+    @Override
+    public void updateScreen() {
+        if(showSearchFields) {
+            searchNameInput.updateCursorCounter();
+            searchServerInput.updateCursorCounter();
+        }
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        if(showSearchFields) {
+            searchNameInput.textboxKeyTyped(typedChar, keyCode);
+            searchServerInput.textboxKeyTyped(typedChar, keyCode);
+        }
+
+        super.keyTyped(typedChar, keyCode);
     }
 
     @Override
@@ -354,6 +479,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     }
 
     private void updateCurrentList(Pagination pagination) {
+        hideSearchFields();
+
         elementSelected(-1);
         currentList = new ReplayFileList(mc, width, height, 50, height - 60, this);
         GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
@@ -435,5 +562,37 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             }
         }, "replaymod-list-loader");
         currentListLoader.start();
+    }
+
+    public void showReplaySearch() {
+        cancelCurrentListLoader();
+        currentList = null;
+        showSearchFields();
+    }
+
+    public void showReplaySearch(final SearchPagination searchPagination) {
+        disableTopBarButton(-1);
+        currentListLoader = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                updateCurrentList(searchPagination);
+            }
+        }, "replaymod-list-loader");
+        currentListLoader.start();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void showSearchFields() {
+        showSearchFields = true;
+        buttonList.add(searchActionButton);
+        buttonList.add(searchGametypeToggle);
+        buttonList.add(searchSortToggle);
+    }
+
+    private void hideSearchFields() {
+        showSearchFields = false;
+        buttonList.remove(searchActionButton);
+        buttonList.remove(searchGametypeToggle);
+        buttonList.remove(searchSortToggle);
     }
 }

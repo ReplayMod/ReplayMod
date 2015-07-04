@@ -14,6 +14,12 @@ public class GuiConstants {
     public static final int CENTER_LIKE_REPLAY_BUTTON = 2010;
     public static final int CENTER_DISLIKE_REPLAY_BUTTON = 2011;
     public static final int CENTER_FAVORITED_REPLAYS_BUTTON = 2012;
+    public static final int CENTER_SEARCH_ACTION_BUTTON = 2013;
+    public static final int CENTER_SEARCH_GAMETYPE_ENABLE = 2014;
+    public static final int CENTER_SEARCH_GAMETYPE_TOGGLE = 2015;
+    public static final int CENTER_SEARCH_ORDER_TOGGLE = 2016;
+    public static final int CENTER_SEARCH_CATEGORY_DROPDOWN = 2017;
+    public static final int CENTER_SEARCH_VERSION_DROPDOWN = 2018;
 
     public static final int UPLOAD_START_BUTTON = 3003;
     public static final int UPLOAD_CANCEL_BUTTON = 3004;
