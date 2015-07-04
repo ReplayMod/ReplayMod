@@ -58,6 +58,7 @@ public class GuiTextArea extends Gui implements GuiElement {
     // Content
     private final int maxTextWidth;
     private final int maxTextHeight;
+    private final int maxCharCount;
 
     private String[] text = {""};
     private boolean isFocused;
@@ -76,11 +77,16 @@ public class GuiTextArea extends Gui implements GuiElement {
 
     public GuiTextArea(FontRenderer fontRenderer, int positionX, int positionY, int width, int height,
                        int maxTextWidth, int maxTextHeight) {
-        this(0, fontRenderer, positionX, positionY, width, height, maxTextWidth, maxTextHeight);
+        this(0, fontRenderer, positionX, positionY, width, height, maxTextWidth, maxTextHeight, -1);
+    }
+
+    public GuiTextArea(FontRenderer fontRenderer, int positionX, int positionY, int width, int height,
+                       int maxTextWidth, int maxTextHeight, int maxCharCount) {
+        this(0, fontRenderer, positionX, positionY, width, height, maxTextWidth, maxTextHeight, maxCharCount);
     }
 
     public GuiTextArea(int guiId, FontRenderer fontRenderer, int positionX, int positionY, int width, int height,
-                       int maxTextWidth, int maxTextHeight) {
+                       int maxTextWidth, int maxTextHeight, int maxCharCount) {
         this.guiId = guiId;
         this.fontRenderer = fontRenderer;
         this.positionX = positionX;
@@ -89,6 +95,7 @@ public class GuiTextArea extends Gui implements GuiElement {
         this.height = height;
         this.maxTextWidth = maxTextWidth;
         this.maxTextHeight = maxTextHeight;
+        this.maxCharCount = maxCharCount;
     }
 
     public void setText(String[] lines) {
@@ -216,6 +223,15 @@ public class GuiTextArea extends Gui implements GuiElement {
 
     public void writeChar(char c) {
         if (!ChatAllowedCharacters.isAllowedCharacter(c) && c != '\n') {
+            return;
+        }
+
+        int totalCharCount = 0;
+        for(String line : text) {
+            totalCharCount += line.length();
+        }
+
+        if(totalCharCount-(getSelectedText().length()) >= maxCharCount) {
             return;
         }
 

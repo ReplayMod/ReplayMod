@@ -186,7 +186,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
             tags.hint = I18n.format("replaymod.gui.upload.tagshint");
             y+=20;
 
-            description = new GuiTextArea(fontRendererObj, 0, name.yPosition, 0, y - name.yPosition, 30, 15);
+            description = new GuiTextArea(fontRendererObj, 0, name.yPosition, 0, y - name.yPosition, 1000, 100, 1000);
         }
 
         columnWidth = Math.min(200, (width - 60) / 3);
