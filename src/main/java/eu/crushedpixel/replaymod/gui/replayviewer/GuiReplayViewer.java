@@ -73,6 +73,9 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                 ReplayFile replayFile = new ReplayFile(file);
                 ReplayMetaData metaData = replayFile.metadata().get();
                 BufferedImage img = replayFile.thumb().get();
+
+                replayFile.close();
+
                 File tmp = null;
                 if(img != null) {
                     img = ImageUtils.scaleImage(img, new Dimension(1280, 720));
@@ -96,8 +99,6 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                         replayGuiList.addEntry(index, new GuiReplayListEntry(replayGuiList, fileInfo, p.second()));
                     }
                 });
-
-                replayFile.close();
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -117,7 +118,10 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         super.onGuiClosed();
     }
 
+    private Thread fileReloader;
+
     @Override
+    @SuppressWarnings("deprecation")
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
 
@@ -128,12 +132,15 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
             this.replayGuiList.setDimensions(this.width, this.height, 32, this.height - 64);
         }
 
-        new Thread(new Runnable() {
+        if(fileReloader != null) fileReloader.stop();
+
+        fileReloader = new Thread(new Runnable() {
             @Override
             public void run() {
                 reloadFiles();
             }
-        }, "replay-viewer-file-reloader").start();
+        }, "replay-viewer-file-reloader");
+        fileReloader.start();
 
         this.createButtons();
     }
