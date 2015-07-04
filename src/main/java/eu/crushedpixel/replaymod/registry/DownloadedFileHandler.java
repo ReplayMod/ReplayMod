@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.registry;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import org.apache.commons.io.FileUtils;
@@ -51,15 +52,17 @@ public class DownloadedFileHandler {
         return downloadedFiles.get(id);
     }
 
-    public File downloadFileForID(int id) {
+    public File downloadFileForID(int id, ProgressUpdateListener progressUpdateListener) {
         File f = getFileForID(id);
         if(f != null) return f;
 
         f = generateFileForID(id);
 
         try {
-            ReplayMod.apiClient.downloadFile(AuthenticationHandler.getKey(), id, f);
-            addToIndex(id);
+            ReplayMod.apiClient.downloadFile(AuthenticationHandler.getKey(), id, f, progressUpdateListener);
+            if(f.exists()) {
+                addToIndex(id);
+            }
         } catch(Exception e) {
             e.printStackTrace();
         }

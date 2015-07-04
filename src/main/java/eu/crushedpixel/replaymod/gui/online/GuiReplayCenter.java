@@ -233,12 +233,13 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             if(info != null) {
                 File f = ReplayMod.downloadedFileHandler.getFileForID(info.getId());
                 if(f == null) {
-                    f = ReplayMod.downloadedFileHandler.downloadFileForID(info.getId());
-                }
-                try {
-                    ReplayHandler.startReplay(f);
-                } catch(Exception e) {
-                    e.printStackTrace();
+                    mc.displayGuiScreen(new GuiReplayDownloading(info));
+                } else {
+                    try {
+                        ReplayHandler.startReplay(f);
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } else if(button.id == GuiConstants.CENTER_FAV_REPLAY_BUTTON) {

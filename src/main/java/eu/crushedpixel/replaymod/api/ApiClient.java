@@ -8,6 +8,7 @@ import com.mojang.authlib.exceptions.AuthenticationException;
 import eu.crushedpixel.replaymod.api.replay.ReplayModApiMethods;
 import eu.crushedpixel.replaymod.api.replay.SearchQuery;
 import eu.crushedpixel.replaymod.api.replay.holders.*;
+import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHash;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FileUtils;
@@ -106,21 +107,46 @@ public class ApiClient {
         FileUtils.copyURLToFile(url, target);
     }
 
-    public void downloadFile(String auth, int file, File target) throws IOException, ApiException {
+    private boolean cancelDownload = false;
+
+    public void downloadFile(String auth, int file, File target, ProgressUpdateListener listener) throws IOException, ApiException {
+        cancelDownload = false;
+
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.download_file);
         builder.put("auth", auth);
         builder.put("id", file);
         String url = builder.toString();
         URL website = new URL(url);
         HttpURLConnection con = (HttpURLConnection) website.openConnection();
+
+        int fileSize = con.getContentLength();
+
         InputStream is = con.getInputStream();
 
         if(con.getResponseCode() == 200) {
-            OutputStream out = new FileOutputStream(target);
+            BufferedInputStream bin = new BufferedInputStream(is);
+            FileOutputStream fout = new FileOutputStream(target);
             try {
-                IOUtils.copy(is, out);
+                final byte data[] = new byte[1024];
+                int count;
+                int read = 0;
+                while ((count = bin.read(data, 0, 1024)) != -1) {
+                    if(cancelDownload) {
+                        bin.close();
+                        fout.close();
+
+                        FileUtils.deleteQuietly(target);
+
+                        return;
+                    }
+
+                    fout.write(data, 0, count);
+                    read += count;
+                    listener.onProgressChanged((float)(read)/fileSize);
+                }
             } finally {
-                out.close();
+                bin.close();
+                fout.close();
             }
         } else {
             JsonElement element = jsonParser.parse(IOUtils.toString(is));
@@ -133,6 +159,10 @@ public class ApiClient {
                 throw new ApiException(IOUtils.toString(is));
             }
         }
+    }
+
+    public void cancelDownload() {
+        this.cancelDownload = true;
     }
 
     public void rateFile(String auth, int file, Rating.RatingType rating) throws IOException, ApiException {

@@ -103,4 +103,5 @@ public class GuiConstants {
     public static final int REPLAY_SETTINGS_CLEARCALLBACK_ID = 9014;
 
     public static final int REPLAY_EDITING_CANCEL_BUTTON = 1234;
+    public static final int REPLAY_DOWNLOADING_CANCEL_BUTTON = 2345;
 }
