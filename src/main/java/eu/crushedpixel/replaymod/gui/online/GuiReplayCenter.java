@@ -104,7 +104,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         }
 
         if(currentList != null) {
-            currentList.height = height-60;
+            currentList.setDimensions(this.width, this.height, 50, this.height - 60);
         }
 
         @SuppressWarnings("unchecked")
