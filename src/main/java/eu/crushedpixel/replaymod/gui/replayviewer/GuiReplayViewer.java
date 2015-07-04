@@ -118,8 +118,6 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         super.onGuiClosed();
     }
 
-    private Thread fileReloader;
-
     @Override
     @SuppressWarnings("deprecation")
     public void initGui() {
@@ -128,19 +126,16 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         if(!this.initialized) {
             replayGuiList = new ReplayList(this, this.mc, this.width, this.height, 32, this.height - 64, 36);
             this.initialized = true;
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    reloadFiles();
+                }
+            }, "replay-viewer-file-reloader").start();
         } else {
             this.replayGuiList.setDimensions(this.width, this.height, 32, this.height - 64);
         }
-
-        if(fileReloader != null) fileReloader.stop();
-
-        fileReloader = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                reloadFiles();
-            }
-        }, "replay-viewer-file-reloader");
-        fileReloader.start();
 
         this.createButtons();
     }
