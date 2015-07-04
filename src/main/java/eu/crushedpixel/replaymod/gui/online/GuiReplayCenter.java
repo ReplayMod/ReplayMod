@@ -491,6 +491,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         }
 
         for(FileInfo i : pagination.getFiles()) {
+            if(Thread.interrupted()) break;
             try {
                 File tmp = null;
                 if(i.hasThumbnail()) {
