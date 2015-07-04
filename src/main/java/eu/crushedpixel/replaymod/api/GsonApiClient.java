@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.api;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.IOException;
 
@@ -15,7 +16,7 @@ public class GsonApiClient {
     }
 
     public static JsonElement invokeJson(String url) throws IOException, ApiException {
-        String apiResult = SimpleApiClient.invokeUrl(url);
+        String apiResult = StringEscapeUtils.unescapeHtml4(SimpleApiClient.invokeUrl(url));
         return wrapWithJson(apiResult);
     }
 
