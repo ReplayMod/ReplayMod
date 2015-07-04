@@ -18,6 +18,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StudioImplementation {
@@ -29,7 +30,10 @@ public class StudioImplementation {
         studio.setWrappingEnabled(false);
         ReplayFile replayFile = new ZipReplayFile(studio, file);
 
+        ReplayMetaData metaData = replayFile.getMetaData();
+
         PacketStream stream = studio.createReplayStream(replayFile.getPacketData(), true);
+        stream.addFilter(new ProgressFilter(metaData.getDuration(), updateListener, 1/100f, 9/10f));
         stream.addFilter(new SquashFilter(), -1, beginning);
         stream.addFilter(new RemoveFilter(), ending, -1);
 
@@ -43,7 +47,7 @@ public class StudioImplementation {
         ReplayOutputStream out = replayFile.writePacketData();
         PacketData packetData;
 
-        updateListener.onProgressChanged(1/4f, I18n.format("replaymod.gui.editor.progress.status.writing.raw"));
+        updateListener.onProgressChanged(1/100f, I18n.format("replaymod.gui.editor.progress.status.writing.raw"));
 
         while((packetData = stream.next()) != null) {
             out.write(packetData);
@@ -56,15 +60,11 @@ public class StudioImplementation {
         }
 
         out.close();
-
-        updateListener.onProgressChanged(2/4f, I18n.format("replaymod.gui.editor.progress.status.writing.zip"));
-
-        ReplayMetaData metaData = replayFile.getMetaData();
         ending = Math.min(metaData.getDuration(), ending);
         metaData.setDuration(ending - beginning);
         replayFile.writeMetaData(metaData);
 
-        updateListener.onProgressChanged(3/4f, I18n.format("replaymod.gui.editor.progress.status.writing.final"));
+        updateListener.onProgressChanged(9/10f, I18n.format("replaymod.gui.editor.progress.status.writing.final"));
 
         replayFile.saveTo(outputFile);
 
@@ -84,15 +84,24 @@ public class StudioImplementation {
         ConnectMetadataFilter metaDataFilter = new ConnectMetadataFilter();
         int startTime = 0;
 
-        updateListener.onProgressChanged(1/4f, I18n.format("replaymod.gui.editor.progress.status.writing.raw"));
+        updateListener.onProgressChanged(1/100f, I18n.format("replaymod.gui.editor.progress.status.writing.raw"));
 
-        float i = 0;
-        float size = filesToConnect.size();
+        List<ReplayFile> zipReplayFiles = new ArrayList<ReplayFile>();
+        long totalTime = 0;
 
         for (File file : filesToConnect) {
             ReplayFile replayFile = new ZipReplayFile(studio, file);
+            zipReplayFiles.add(replayFile);
+
+            ReplayMetaData metaData = replayFile.getMetaData();
+            totalTime += metaData.getDuration();
+        }
+
+        for (ReplayFile replayFile : zipReplayFiles) {
             PacketStream stream = studio.createReplayStream(replayFile.getPacketData(), true);
             ReplayMetaData metaData = replayFile.getMetaData();
+            stream.addFilter(new ProgressFilter(metaData.getDuration(), updateListener, 1/100f + (9/10f - 1/100f) * (float)startTime/totalTime,
+                    1/100f + (9/10f - 1/100f) * ((float)startTime+metaData.getDuration())/totalTime));
 
             stream.addFilter(new NeutralizerFilter());
 
@@ -116,17 +125,13 @@ public class StudioImplementation {
             }
 
             startTime += metaData.getDuration();
-
-            updateListener.onProgressChanged((1/4f)+((1/4f)*(i/size)));
         }
 
         out.close();
 
-        updateListener.onProgressChanged(2/4f, I18n.format("replaymod.gui.editor.progress.status.writing.zip"));
-
         metaDataFilter.writeTo(outputReplayFile);
 
-        updateListener.onProgressChanged(3/4f, I18n.format("replaymod.gui.editor.progress.status.writing.final"));
+        updateListener.onProgressChanged(9/10f, I18n.format("replaymod.gui.editor.progress.status.writing.final"));
 
         outputReplayFile.saveTo(outputFile);
 
