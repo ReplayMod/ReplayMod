@@ -276,8 +276,8 @@ public class GuiReplayOverlay extends Gui {
         }
         zoom_scale = 0.1f;
         pos_left = 0;
-        ReplayHandler.setRealTimelineCursor(0);
         if (slider) {
+            ReplayHandler.setRealTimelineCursor(0);
             speedSlider.reset();
         }
     }

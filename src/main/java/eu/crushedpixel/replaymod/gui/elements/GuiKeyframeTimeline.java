@@ -76,7 +76,9 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                     this.dragging = false;
                 }
             } else { // If we didn't then just update the cursor
-                ReplayHandler.setRealTimelineCursor((int) time);
+                if(this.placeKeyframes) { //only if it's the keyframe timeline
+                    ReplayHandler.setRealTimelineCursor((int) time);
+                }
                 this.dragging = true;
             }
             this.clickTime = currentTime;
@@ -116,7 +118,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                     ReplayHandler.sortKeyframes();
                     dragging = true;
                 }
-            } else if (dragging) {
+            } else if (dragging && placeKeyframes) {
                 ReplayHandler.setRealTimelineCursor((int) time);
             }
         }
