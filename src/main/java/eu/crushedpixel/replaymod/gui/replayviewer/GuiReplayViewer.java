@@ -141,7 +141,9 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
             fileReloader = new FileReloaderThread();
             fileReloader.start();
-        } catch(Exception e) {}
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         this.createButtons();
     }
@@ -253,6 +255,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
         }
     }
 
+    @Override
     public void confirmClicked(boolean result, int id) {
         if(this.delete_file) {
             this.delete_file = false;
@@ -264,6 +267,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                     e.printStackTrace();
                 }
                 replayFileList.remove(replayGuiList.selected);
+                replayGuiList.selected = -1;
             }
 
             this.mc.displayGuiScreen(this);
