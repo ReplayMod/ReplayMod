@@ -9,8 +9,10 @@ import eu.crushedpixel.replaymod.utils.StringUtils;
 import eu.crushedpixel.replaymod.video.frame.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
 import org.lwjgl.input.Keyboard;
 
@@ -466,7 +468,12 @@ public class GuiRenderSettings extends GuiScreen {
             options.setExportCommandArgs(ffmpegArguments.getText().trim());
         }
 
-        ReplayHandler.startPath(options);
+        if(FMLClientHandler.instance().hasOptifine()) {
+            mc.displayGuiScreen(new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"), I18n.format("replaymod.gui.rendering.error.optifine")));
+        } else {
+            ReplayHandler.startPath(options);
+        }
+
     }
 
     private int getWidthSetting() {

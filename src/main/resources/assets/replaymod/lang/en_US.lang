@@ -332,6 +332,7 @@ replaymod.gui.rendering.timeleft=Time Left
 
 #Render Errors
 replaymod.gui.rendering.error.title=Rendering Failed
+replaymod.gui.rendering.error.optifine=Please uninstall Optifine before rendering.
 replaymod.gui.rendering.error.message=To render a video, you need to have ffmpeg installed. http://ffmpeg.org
 
 #Ingame Menu
