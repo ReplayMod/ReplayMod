@@ -208,16 +208,16 @@ public class PathPreviewRenderer {
         if(kf.getSpectatedEntityID() != null) {
             posX += size;
         }
+        
+        float minX = -0.5f;
+        float minY = -0.5f;
+        float maxX = 0.5f;
+        float maxY = 0.5f;
 
-        renderer.addVertexWithUV(-0.5, 0.5, 0, posX+size, posY);
-        renderer.addVertexWithUV(0.5, 0.5, 0, posX+size, posY+size);
-        renderer.addVertexWithUV(-0.5, -0.5, 0, posX, posY);
-        renderer.addVertexWithUV(0.5, -0.5, 0, posX, posY+size);
-
-        renderer.addVertexWithUV(0.5, -0.5, 0, posX+size, posY);
-        renderer.addVertexWithUV(-0.5, -0.5, 0, posX, posY);
-        renderer.addVertexWithUV(0.5, 0.5, 0, posX+size, posY+size);
-        renderer.addVertexWithUV(-0.5, 0.5, 0, posX, posY + size);
+        renderer.addVertexWithUV(minX, minY, 0, posX + size, posY + size);
+        renderer.addVertexWithUV(minX, maxY, 0, posX + size, posY);
+        renderer.addVertexWithUV(maxX, maxY, 0, posX, posY);
+        renderer.addVertexWithUV(maxX, minY, 0, posX, posY + size);
 
         tessellator.draw();
         renderer.setTranslation(0, 0, 0);
