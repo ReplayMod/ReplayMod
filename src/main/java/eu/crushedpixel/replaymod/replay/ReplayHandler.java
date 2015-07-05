@@ -52,6 +52,8 @@ public class ReplayHandler {
 
     private static KeyframeSet[] keyframeRepository = new KeyframeSet[]{};
 
+    private static List<CustomImageObject> customImageObjects = new ArrayList<CustomImageObject>();
+
     /**
      * The file currently being played.
      */
@@ -733,5 +735,13 @@ public class ReplayHandler {
         int newCursorPos = prevRealTime+(curTime-prevTime);
 
         setRealTimelineCursor(newCursorPos);
+    }
+
+    public static List<CustomImageObject> getCustomImageObjects() {
+        return customImageObjects;
+    }
+
+    public static void addCustomImageObject(CustomImageObject object) {
+        customImageObjects.add(object);
     }
 }

@@ -10,10 +10,7 @@ import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.*;
-import eu.crushedpixel.replaymod.renderer.InvisibilityRender;
-import eu.crushedpixel.replaymod.renderer.PathPreviewRenderer;
-import eu.crushedpixel.replaymod.renderer.SafeEntityRenderer;
-import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
+import eu.crushedpixel.replaymod.renderer.*;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
@@ -80,6 +77,7 @@ public class ReplayMod {
     public static SpectatorRenderer spectatorRenderer;
     public static TooltipRenderer tooltipRenderer;
     public static PathPreviewRenderer pathPreviewRenderer;
+    public static CustomObjectRenderer customObjectRenderer;
     public static SoundHandler soundHandler = new SoundHandler();
     public static CrosshairRenderHandler crosshairRenderHandler;
 
@@ -140,6 +138,10 @@ public class ReplayMod {
         FMLCommonHandler.instance().bus().register(pathPreviewRenderer);
         MinecraftForge.EVENT_BUS.register(pathPreviewRenderer);
 
+        customObjectRenderer = new CustomObjectRenderer();
+        FMLCommonHandler.instance().bus().register(customObjectRenderer);
+        MinecraftForge.EVENT_BUS.register(customObjectRenderer);
+
         crosshairRenderHandler = new CrosshairRenderHandler();
         FMLCommonHandler.instance().bus().register(crosshairRenderHandler);
         MinecraftForge.EVENT_BUS.register(crosshairRenderHandler);
@@ -182,7 +184,6 @@ public class ReplayMod {
         }, "localizedResourcePackLoader");
         localizedResourcePackLoader.start();
 
-
         /*
         boolean auth = false;
         try {
@@ -197,7 +198,6 @@ public class ReplayMod {
             FMLCommonHandler.instance().exitJava(0, false);
         }
         */
-
 
         if (System.getProperty("replaymod.render.file") != null) {
             final File file = new File(System.getProperty("replaymod.render.file"));

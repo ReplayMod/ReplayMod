@@ -23,7 +23,11 @@ public class ResourceHelper {
     }
 
     public static void registerResource(ResourceLocation loc) {
-        openResources.add(loc);
+        if(!openResources.contains(loc)) openResources.add(loc);
+    }
+
+    public static boolean isRegistered(ResourceLocation loc) {
+        return openResources.contains(loc);
     }
 
     public static void freeResource(ResourceLocation loc) {
