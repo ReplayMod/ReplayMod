@@ -143,8 +143,9 @@ public class KeyInputHandler {
 
     public void handleCustomKeybindings(KeyBinding kb, boolean found, int keyCode) {
         //Custom registered handlers
+
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ADD_MARKER) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
-            if(ReplayHandler.isInReplay()) {
+            if(ReplayHandler.isInReplay() && (mc.currentScreen == null || mc.currentScreen instanceof GuiMouseInput)) {
                 ReplayHandler.toggleMarker();
             } else if(ConnectionEventHandler.isRecording()) {
                 ConnectionEventHandler.addMarker();
