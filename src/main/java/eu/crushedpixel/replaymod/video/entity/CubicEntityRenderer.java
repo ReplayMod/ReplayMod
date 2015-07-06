@@ -5,8 +5,11 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
+
+import java.lang.reflect.Field;
 
 public class CubicEntityRenderer extends CustomEntityRenderer {
 
@@ -39,6 +42,28 @@ public class CubicEntityRenderer extends CustomEntityRenderer {
     public CubicEntityRenderer(RenderOptions options, int frameSize, boolean stable) {
         super(options, frameSize, frameSize);
         this.stable = stable;
+
+        try {
+            Field hookField = RenderManager.class.getField("hook");
+            hookField.set(mc.getRenderManager(), this);
+        } catch (NoSuchFieldException e) {
+            throw new Error(e);
+        } catch (IllegalAccessException e) {
+            throw new Error(e);
+        }
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        try {
+            Field hookField = RenderManager.class.getField("hook");
+            hookField.set(mc.getRenderManager(), null);
+        } catch (NoSuchFieldException e) {
+            throw new Error(e);
+        } catch (IllegalAccessException e) {
+            throw new Error(e);
+        }
     }
 
     public void setFrame(int id) {
@@ -143,5 +168,13 @@ public class CubicEntityRenderer extends CustomEntityRenderer {
         rotXY = (float) (rotX * Math.sin(pitch));
 
         super.renderParticle(fx, worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
+    }
+
+    @SuppressWarnings("unused") // Called by ASM
+    public void beforeEntityRender(double dx, double dy, double dz) {
+        double pitch = -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+        double yaw = -Math.atan2(dx, dz);
+        mc.getRenderManager().playerViewX = (float) Math.toDegrees(pitch);
+        mc.getRenderManager().playerViewY = (float) Math.toDegrees(yaw);
     }
 }

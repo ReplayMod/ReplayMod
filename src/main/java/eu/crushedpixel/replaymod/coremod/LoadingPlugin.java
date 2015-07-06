@@ -12,6 +12,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
                 CameraRollCT.class.getName(),
                 ForceChunkLoadingCT.class.getName(),
                 EntityRendererCT.class.getName(),
+                RenderManagerCT.class.getName(),
                 SoundManagerCT.class.getName(),
                 EnchantmentTimerCT.class.getName()
         };
