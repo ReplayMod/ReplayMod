@@ -25,7 +25,7 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
     private boolean initialized = false;
 
-    private final String screenTitle = I18n.format("replaymod.gui.keyframerepository.title");
+    private String screenTitle;
     private final Minecraft mc = Minecraft.getMinecraft();
 
     private GuiEntryList<KeyframeSet> keyframeSetList;
@@ -52,6 +52,8 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
         int h = (int)Math.floor(((double)this.height-(45+20+15))/14);
 
         if(!initialized) {
+            screenTitle = I18n.format("replaymod.gui.keyframerepository.title");
+
             keyframeSetList = new GuiEntryList<KeyframeSet>(GuiConstants.KEYFRAME_REPOSITORY_LIST, mc.fontRendererObj,
                     0, 45, 0, h);
 

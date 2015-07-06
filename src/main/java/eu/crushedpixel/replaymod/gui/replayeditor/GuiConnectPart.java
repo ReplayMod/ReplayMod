@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.gui.elements.GuiEntryList;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.holders.GuiEntryListStringEntry;
 import eu.crushedpixel.replaymod.studio.StudioImplementation;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
@@ -26,14 +27,14 @@ public class GuiConnectPart extends GuiStudioPart {
 
     private boolean initialized = false;
 
-    private GuiEntryList<String> concatList;
-    private GuiDropdown<String> replayDropdown;
+    private GuiEntryList<GuiEntryListStringEntry> concatList;
+    private GuiDropdown<GuiEntryListStringEntry> replayDropdown;
 
     private GuiButton removeButton, addButton;
     private GuiArrowButton upButton, downButton;
 
     private List<File> replayFiles;
-    private List<String> filesToConcat;
+    private List<GuiEntryListStringEntry> filesToConcat;
 
     private Thread filterThread;
     private File outputFile;
@@ -53,14 +54,14 @@ public class GuiConnectPart extends GuiStudioPart {
                 try {
                     List<File> inputFiles = new ArrayList<File>();
                     OUTER:
-                    for (String fileName : filesToConcat) {
+                    for (GuiEntryListStringEntry fileName : filesToConcat) {
                         for (File file : replayFiles) {
                             if (fileName.equals(FilenameUtils.getBaseName(file.getAbsolutePath()))) {
                                 inputFiles.add(file);
                                 continue OUTER;
                             }
                         }
-                        throw new RuntimeException(fileName);
+                        throw new RuntimeException(fileName.getDisplayString());
                     }
                     StudioImplementation.connectReplayFiles(inputFiles, outputFile, GuiConnectPart.this);
                 } catch (Exception e) {
@@ -94,15 +95,15 @@ public class GuiConnectPart extends GuiStudioPart {
     @Override
     public void initGui() {
         if(!initialized) {
-            concatList = new GuiEntryList<String>(1, fontRendererObj, 30, yPos, 150, 0);
-            filesToConcat = new ArrayList<String>();
+            concatList = new GuiEntryList<GuiEntryListStringEntry>(1, fontRendererObj, 30, yPos, 150, 0);
+            filesToConcat = new ArrayList<GuiEntryListStringEntry>();
             String selectedName = FilenameUtils.getBaseName(GuiReplayEditor.instance.getSelectedFile().getAbsolutePath());
-            filesToConcat.add(selectedName);
+            filesToConcat.add(new GuiEntryListStringEntry(selectedName));
             concatList.setElements(filesToConcat);
 
             concatList.setSelectionIndex(0);
 
-            replayDropdown = new GuiDropdown<String>(1, fontRendererObj, 250, yPos + 5, 0, 4);
+            replayDropdown = new GuiDropdown<GuiEntryListStringEntry>(1, fontRendererObj, 250, yPos + 5, 0, 4);
 
             replayDropdown.clearElements();
             replayFiles = ReplayFileIO.getAllReplayFiles();
@@ -110,7 +111,7 @@ public class GuiConnectPart extends GuiStudioPart {
             int i = 0;
             for(File file : replayFiles) {
                 String name = FilenameUtils.getBaseName(file.getAbsolutePath());
-                replayDropdown.addElement(name);
+                replayDropdown.addElement(new GuiEntryListStringEntry(name));
                 if(name.equals(selectedName)) {
                     index = i;
                 }
@@ -135,10 +136,10 @@ public class GuiConnectPart extends GuiStudioPart {
             concatList.addSelectionListener(new SelectionListener() {
                 @Override
                 public void onSelectionChanged(int selectionIndex) {
-                    String selName = concatList.getElement(selectionIndex);
+                    String selName = concatList.getElement(selectionIndex).getDisplayString();
                     int i = 0;
                     for(Object s : replayDropdown.getAllElements()) {
-                        String str = (String) s;
+                        String str = ((GuiEntryListStringEntry)s).getDisplayString();
                         if(str.equals(selName)) {
                             replayDropdown.setSelectionIndex(i);
                             break;
@@ -217,7 +218,7 @@ public class GuiConnectPart extends GuiStudioPart {
         }
 
         if(button.id == GuiConstants.REPLAY_EDITOR_ADD_BUTTON) {
-            filesToConcat.add(FilenameUtils.getBaseName(replayFiles.get(0).getAbsolutePath()));
+            filesToConcat.add(new GuiEntryListStringEntry(FilenameUtils.getBaseName(replayFiles.get(0).getAbsolutePath())));
             concatList.setElements(filesToConcat);
             concatList.setSelectionIndex(filesToConcat.size() - 1);
         } else if(button.id == GuiConstants.REPLAY_EDITOR_REMOVE_BUTTON) {

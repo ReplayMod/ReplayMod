@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class KeyframeSet {
+public class KeyframeSet implements GuiEntryListEntry {
     private String name;
     private PositionKeyframe[] positionKeyframes;
     private TimeKeyframe[] timeKeyframes;
@@ -70,7 +70,7 @@ public class KeyframeSet {
     }
 
     @Override
-    public String toString() {
+    public String getDisplayString() {
         return name;
     }
 

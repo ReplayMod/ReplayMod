@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiTextField;
@@ -10,7 +11,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiEntryList<T> extends GuiTextField {
+public class GuiEntryList<T extends GuiEntryListEntry> extends GuiTextField {
 
     public final static int elementHeight = 14;
     private int selectionIndex = -1;
@@ -61,7 +62,7 @@ public class GuiEntryList<T> extends GuiTextField {
 
                 drawRect(xPosition, yPosition + (i + 1 - upperIndex) * elementHeight - 1, xPosition + width,
                         yPosition + (i + 1 - upperIndex) * elementHeight, -6250336);
-                drawString(mc.fontRendererObj, mc.fontRendererObj.trimStringToWidth(elements.get(i).toString(), width - 4),
+                drawString(mc.fontRendererObj, mc.fontRendererObj.trimStringToWidth(elements.get(i).getDisplayString(), width - 4),
                         xPosition + 2, yPosition + (i - upperIndex) * elementHeight + 3, Color.WHITE.getRGB());
             }
 

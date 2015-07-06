@@ -41,7 +41,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
             super.setDisabledTextColour(hintTextColor);
             text = hint;
 
-            drawTextBox();
+            super.drawTextBox();
 
             text = "";
             super.setDisabledTextColour(disabledTextColor);

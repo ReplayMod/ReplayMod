@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.holders;
 
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
@@ -11,9 +12,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class CustomImageObject {
+public class CustomImageObject implements GuiEntryListEntry {
 
-    public CustomImageObject(Position position, String name, File imageSource) throws IOException {
+    public CustomImageObject(Position position, String name, File imageSource, boolean backVisible) throws IOException {
         BufferedImage bufferedImage = ImageIO.read(imageSource);
 
         this.textureWidth = bufferedImage.getWidth();
@@ -35,10 +36,13 @@ public class CustomImageObject {
 
         this.resourceLocation = new ResourceLocation("customImages/"+imageSource.getAbsolutePath());
         this.dynamicTexture = new DynamicTexture(bufferedImage);
+
+        this.backVisible = backVisible;
     }
 
-    @Getter private ExtendedPosition position;
-    @Getter private String name;
+    @Getter @Setter private ExtendedPosition position;
+    @Getter @Setter private String name;
+    @Getter @Setter private boolean backVisible;
 
     private ResourceLocation resourceLocation;
     private DynamicTexture dynamicTexture;
@@ -53,5 +57,10 @@ public class CustomImageObject {
         }
 
         return resourceLocation;
+    }
+
+    @Override
+    public String getDisplayString() {
+        return name;
     }
 }

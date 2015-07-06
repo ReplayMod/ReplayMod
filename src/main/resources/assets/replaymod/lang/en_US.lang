@@ -257,6 +257,7 @@ replaymod.input.resettilt=Reset Camera Tilt
 replaymod.input.playpause=Play/Pause Replay
 replaymod.input.marker=Add Event Marker
 replaymod.input.pathpreview=Toggle Path Preview
+replaymod.input.addassets=Add Assets
 
 #Keyframe Presets GUI
 replaymod.gui.keyframerepository.title=Keyframe Repository
@@ -355,3 +356,7 @@ replaymod.gui.ingame.unnamedmarker=Unnamed Event Marker
 #Clear Keyframe Callback
 replaymod.gui.clearcallback.title=Clear all Keyframes?
 replaymod.gui.clearcallback.message=This Callback can be disabled in the Replay Settings.
+
+#Asset Adder Gui
+replaymod.gui.assets.title=Asset Manager
+replaymod.gui.assets.filechooser=Image File

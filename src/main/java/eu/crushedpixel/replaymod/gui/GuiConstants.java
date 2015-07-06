@@ -110,4 +110,6 @@ public class GuiConstants {
 
     public static final int REPLAY_EDITING_CANCEL_BUTTON = 1234;
     public static final int REPLAY_DOWNLOADING_CANCEL_BUTTON = 2345;
+
+    public static final int ASSET_ADDER_REMOVE_BUTTON = 10;
 }

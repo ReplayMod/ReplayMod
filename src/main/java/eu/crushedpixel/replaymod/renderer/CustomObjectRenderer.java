@@ -38,7 +38,6 @@ public class CustomObjectRenderer {
 
         GlStateManager.disableTexture2D();
 
-        //do stuff here
         for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
             drawCustomImageObject(doubleX, doubleY, doubleZ, object);
         }
