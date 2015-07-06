@@ -744,4 +744,8 @@ public class ReplayHandler {
     public static void addCustomImageObject(CustomImageObject object) {
         customImageObjects.add(object);
     }
+
+    public static void setCustomImageObjects(List<CustomImageObject> objects) {
+        customImageObjects = objects;
+    }
 }

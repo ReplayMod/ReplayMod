@@ -360,3 +360,7 @@ replaymod.gui.clearcallback.message=This Callback can be disabled in the Replay 
 #Asset Adder Gui
 replaymod.gui.assets.title=Asset Manager
 replaymod.gui.assets.filechooser=Image File
+replaymod.gui.assets.defaultname=New Asset
+replaymod.gui.assets.emptylist=No Assets available
+replaymod.gui.assets.namehint=Asset Name
+replaymod.gui.assets.backvisible=Visible from behind

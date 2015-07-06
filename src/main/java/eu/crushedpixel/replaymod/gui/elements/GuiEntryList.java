@@ -120,10 +120,10 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiTextField {
     }
 
     public void addElement(T element) {
+        if(element == null) return;
         this.elements.add(element);
-        if(selectionIndex == -1) {
-            selectionIndex = 0;
-        }
+        selectionIndex = elements.size()-1;
+        fireSelectionChangeEvent();
     }
 
     public T getElement(int index) {

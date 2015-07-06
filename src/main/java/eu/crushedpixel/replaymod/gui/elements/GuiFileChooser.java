@@ -2,7 +2,6 @@ package eu.crushedpixel.replaymod.gui.elements;
 
 import eu.crushedpixel.replaymod.gui.elements.listeners.FileChooseListener;
 import lombok.Getter;
-import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 
@@ -15,8 +14,12 @@ import java.util.List;
 public class GuiFileChooser extends GuiButton {
 
     @Getter
-    @Setter
     private File selectedFile;
+
+    public void setSelectedFile(File selectedFile) {
+        this.selectedFile = selectedFile;
+        updateDisplayString();
+    }
 
     private String baseString;
 
@@ -70,8 +73,9 @@ public class GuiFileChooser extends GuiButton {
                     fileDialog.setVisible(true);
 
                     String filename = fileDialog.getFile();
+                    String directory = fileDialog.getDirectory();
                     if(filename != null) {
-                        selectedFile = new File(filename);
+                        selectedFile = new File(directory, filename);
 
                         updateDisplayString();
 

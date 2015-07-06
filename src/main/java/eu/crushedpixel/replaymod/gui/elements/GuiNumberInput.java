@@ -15,18 +15,24 @@ public class GuiNumberInput extends GuiTextField {
         this.minimum = minimum;
         this.maximum = maximum;
         this.acceptFloats = acceptFloats;
+        setCursorPositionZero();
         if(defaultValue != null) {
-            if(acceptFloats) {
-                setText("" + defaultValue);
-            } else {
-                setText("" + (int)Math.round(defaultValue));
-            }
+            setValue(defaultValue);
         }
     }
 
     public GuiNumberInput(int id, FontRenderer fontRenderer,
                           int xPos, int yPos, int width, int minimum, int maximum, int defaultValue, boolean acceptFloats) {
         this(id, fontRenderer, xPos, yPos, width, (double) minimum, (double) maximum, (double) defaultValue, acceptFloats);
+    }
+
+    public void setValue(double value) {
+        if(acceptFloats) {
+            setText("" + value);
+        } else {
+            setText("" + (int)Math.round(value));
+        }
+        setCursorPositionZero();
     }
 
     @Override

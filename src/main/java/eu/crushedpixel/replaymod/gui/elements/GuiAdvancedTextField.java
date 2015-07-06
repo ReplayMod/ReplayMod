@@ -36,7 +36,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
 
     @Override
     public void drawTextBox() {
-        if (text.isEmpty() && !isFocused()) {
+        if (text.isEmpty() && !isFocused() && hint.length() > 0) {
             super.setEnabled(false);
             super.setDisabledTextColour(hintTextColor);
             text = hint;

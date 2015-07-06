@@ -106,18 +106,7 @@ public class GuiRenderSettings extends GuiScreen {
                 }
             };
 
-            bitrateInput = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_BITRATE_INPUT, fontRendererObj, 0, 0, 50, 1D, null, 10000D, false) {
-                @Override
-                public void drawTextBox() {
-                    int index = getCursorPosition();
-                    String textBefore = getText();
-                    setText(textBefore+" kbps");
-                    setCursorPosition(index);
-                    super.drawTextBox();
-                    setText(textBefore);
-                    setCursorPosition(index);
-                }
-            };
+            bitrateInput = new GuiNumberInputWithText(GuiConstants.RENDER_SETTINGS_BITRATE_INPUT, fontRendererObj, 0, 0, 50, 1D, null, 10000D, false, " kbps");
 
             xRes.setEnabled(false);
             yRes.setEnabled(false);

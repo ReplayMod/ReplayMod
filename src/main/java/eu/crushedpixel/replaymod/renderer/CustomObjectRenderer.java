@@ -95,10 +95,12 @@ public class CustomObjectRenderer {
         renderer.addVertexWithUV(maxX, maxY, 0, 0, 0);
         renderer.addVertexWithUV(maxX, minY, 0, 0, 1);
 
-        renderer.addVertexWithUV(maxX, maxY, 0, 0, 0);
-        renderer.addVertexWithUV(minX, maxY, 0, 1, 0);
-        renderer.addVertexWithUV(minX, minY, 0, 1, 1);
-        renderer.addVertexWithUV(maxX, minY, 0, 0, 1);
+        if(customImageObject.isBackVisible()) {
+            renderer.addVertexWithUV(maxX, maxY, 0, 0, 0);
+            renderer.addVertexWithUV(minX, maxY, 0, 1, 0);
+            renderer.addVertexWithUV(minX, minY, 0, 1, 1);
+            renderer.addVertexWithUV(maxX, minY, 0, 0, 1);
+        }
 
         tessellator.draw();
         renderer.setTranslation(0, 0, 0);

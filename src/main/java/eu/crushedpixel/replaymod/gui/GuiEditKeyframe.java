@@ -7,6 +7,7 @@ import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.utils.RoundUtils;
 import eu.crushedpixel.replaymod.utils.TimestampUtils;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -113,12 +114,12 @@ public class GuiEditKeyframe extends GuiScreen {
             //Position/Virtual Time Input
             if(posKeyframe) {
                 Position pos = ((PositionKeyframe)keyframe).getPosition();
-                xCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_X_INPUT, fontRendererObj, 0, 0, 100, null, null, round(pos.getX()), true);
-                yCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_Y_INPUT, fontRendererObj, 0, 0, 100, null, null, round(pos.getY()), true);
-                zCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_Z_INPUT, fontRendererObj, 0, 0, 100, null, null, round(pos.getZ()), true);
-                yaw = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_YAW_INPUT, fontRendererObj, 0, 0, 100, -90d, 90d, round(pos.getYaw()), true);
-                pitch = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_PITCH_INPUT, fontRendererObj, 0, 0, 100, -180d, 180d, round(pos.getPitch()), true);
-                roll = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_ROLL_INPUT, fontRendererObj, 0, 0, 100, null, null, round(pos.getRoll()), true);
+                xCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_X_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getX()), true);
+                yCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_Y_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getY()), true);
+                zCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_Z_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getZ()), true);
+                yaw = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_YAW_INPUT, fontRendererObj, 0, 0, 100, -90d, 90d, RoundUtils.round(pos.getYaw()), true);
+                pitch = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_PITCH_INPUT, fontRendererObj, 0, 0, 100, -180d, 180d, RoundUtils.round(pos.getPitch()), true);
+                roll = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_ROLL_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getRoll()), true);
 
                 posInputs.add(xCoord);
                 posInputs.add(yCoord);
@@ -265,10 +266,6 @@ public class GuiEditKeyframe extends GuiScreen {
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);
-    }
-
-    private double round(double val) {
-        return Math.round(val*100.0) / 100.0;
     }
 
     @Override
