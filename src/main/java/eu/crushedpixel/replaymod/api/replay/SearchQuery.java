@@ -1,14 +1,14 @@
 package eu.crushedpixel.replaymod.api.replay;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 
 @AllArgsConstructor
+@NoArgsConstructor
 public class SearchQuery {
-
-    public SearchQuery() {} //empty constructor which allows us to define values later
 
     public Boolean order, singleplayer;
     public String player, tag, version, server, name, auth;
