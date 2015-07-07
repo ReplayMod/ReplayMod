@@ -66,6 +66,25 @@ public class ReplayFileAppender {
         }
     }
 
+    public void deleteAllFilesByFolder(String folderName, File replayFile) {
+        Iterator<Pair<File, String>> iter = filesToMove.get(replayFile).iterator();
+        List<String> toDelete = new ArrayList<String>();
+        while(iter.hasNext()) {
+            Pair<File, String> pair = iter.next();
+            if (pair.getRight().startsWith(folderName)) {
+                toDelete.add(pair.getRight());
+            }
+        }
+
+        for(String del : toDelete) {
+            registerModifiedFile(null, del, replayFile);
+        }
+
+        if(!filesToRewrite.contains(replayFile)) {
+            filesToRewrite.add(replayFile);
+        }
+    }
+
     public void addFinishListener(GuiReplaySaving gui) {
         listeners.add(gui);
     }
