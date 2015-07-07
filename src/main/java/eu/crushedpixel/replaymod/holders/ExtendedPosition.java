@@ -16,5 +16,6 @@ public class ExtendedPosition extends Position {
     private float anchorX, anchorY;
     private float width, height;
     private float scale = 1f;
+    private float opacity = 1f;
 
 }

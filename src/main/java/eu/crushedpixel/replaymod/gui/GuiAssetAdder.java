@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.fml.client.config.GuiCheckBox;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -33,8 +32,7 @@ public class GuiAssetAdder extends GuiScreen {
 
     private GuiAdvancedTextField nameInput;
 
-    private GuiNumberInput xInput, yInput, zInput, yawInput, pitchInput, rollInput, scaleInput;
-    private GuiCheckBox backVisibleCheckBox;
+    private GuiNumberInput xInput, yInput, zInput, yawInput, pitchInput, rollInput, scaleInput, opacityInput;
 
     private List<GuiTextField> textFields = new ArrayList<GuiTextField>();
 
@@ -47,7 +45,7 @@ public class GuiAssetAdder extends GuiScreen {
         if(!initialized) {
             screenTitle = I18n.format("replaymod.gui.assets.title");
 
-            objectList = new GuiEntryList<CustomImageObject>(0, fontRendererObj, 0, 0, 0, 0);
+            objectList = new GuiEntryList<CustomImageObject>(fontRendererObj, 0, 0, 0, 0);
             objectList.setEmptyMessage(I18n.format("replaymod.gui.assets.emptylist"));
 
             for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
@@ -60,12 +58,12 @@ public class GuiAssetAdder extends GuiScreen {
                 @Override protected void updateDisplayString() {}
             };
 
-            addButton.registerListener(new FileChooseListener() {
+            addButton.addFileChooseListener(new FileChooseListener() {
                 @Override
                 public void onFileChosen(File file) {
                     try {
                         objectList.addElement(new CustomImageObject(new Position(mc.getRenderViewEntity()),
-                                I18n.format("replaymod.gui.assets.defaultname"), file, true));
+                                I18n.format("replaymod.gui.assets.defaultname"), file));
                     } catch(IOException e) {
                         e.printStackTrace();
                     }
@@ -84,10 +82,10 @@ public class GuiAssetAdder extends GuiScreen {
             rollInput = new GuiNumberInput(8, fontRendererObj, 0, 0, 0, -360d, 360d, 0d, true);
 
             scaleInput = new GuiNumberInputWithText(9, fontRendererObj, 0, 0, 0, 0d, 10000d, 100d, true, "%");
-            backVisibleCheckBox = new GuiCheckBox(10, 0, 0, I18n.format("replaymod.gui.assets.backvisible"), true);
+            opacityInput = new GuiNumberInputWithText(10, fontRendererObj, 0, 0, 0, 0d, 100d, 100d, true, "%");
 
             guiFileChooser = new GuiFileChooser(3, 0, 0, I18n.format("replaymod.gui.assets.filechooser")+": ", null, ImageIO.getReaderFileSuffixes());
-            guiFileChooser.registerListener(new FileChooseListener() {
+            guiFileChooser.addFileChooseListener(new FileChooseListener() {
                 @Override
                 public void onFileChosen(File file) {
                     try {
@@ -109,6 +107,7 @@ public class GuiAssetAdder extends GuiScreen {
             textFields.add(yawInput);
             textFields.add(rollInput);
             textFields.add(scaleInput);
+            textFields.add(opacityInput);
 
             objectList.addSelectionListener(new SelectionListener() {
                 @Override
@@ -135,6 +134,7 @@ public class GuiAssetAdder extends GuiScreen {
                     yawInput.setValue(object.getPosition().getYaw());
                     rollInput.setValue(object.getPosition().getRoll());
                     scaleInput.setValue(object.getPosition().getScale()*100);
+                    opacityInput.setValue(object.getPosition().getOpacity()*100);
                 }
             });
 
@@ -163,13 +163,15 @@ public class GuiAssetAdder extends GuiScreen {
 
         xInput.yPosition = yInput.yPosition = zInput.yPosition = guiFileChooser.yPosition + 20 + 5 + 15;
         yawInput.yPosition = pitchInput.yPosition = rollInput.yPosition = xInput.yPosition + 20 + 5 + 15;
-        scaleInput.yPosition = yawInput.yPosition + 20 + 5 + 15;
+        scaleInput.yPosition = opacityInput.yPosition = yawInput.yPosition + 20 + 5 + 15;
 
         xInput.xPosition = scaleInput.xPosition = pitchInput.xPosition = this.width/2 + 8;
         yInput.xPosition = yawInput.xPosition = xInput.xPosition + 50;
         zInput.xPosition = rollInput.xPosition = yInput.xPosition + 50;
+        opacityInput.xPosition = scaleInput.xPosition + 75;
 
-        xInput.width = yInput.width = zInput.width = yawInput.width = pitchInput.width = rollInput.width = scaleInput.width = 43;
+        xInput.width = yInput.width = zInput.width = yawInput.width = pitchInput.width = rollInput.width = 43;
+        scaleInput.width = opacityInput.width = 68;
 
         buttonList.add(removeButton);
         buttonList.add(addButton);
@@ -200,6 +202,7 @@ public class GuiAssetAdder extends GuiScreen {
         drawCenteredString(fontRendererObj, "Roll", rollInput.xPosition + (rollInput.width/2), rollInput.yPosition - 12, Color.WHITE.getRGB());
 
         drawCenteredString(fontRendererObj, "Scale", scaleInput.xPosition + (scaleInput.width/2), scaleInput.yPosition - 12, Color.WHITE.getRGB());
+        drawCenteredString(fontRendererObj, "Opacity", opacityInput.xPosition + (opacityInput.width/2), opacityInput.yPosition - 12, Color.WHITE.getRGB());
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 
@@ -236,7 +239,8 @@ public class GuiAssetAdder extends GuiScreen {
             current.getPosition().setPitch((float) pitchInput.getPreciseValue());
             current.getPosition().setYaw((float) yawInput.getPreciseValue());
             current.getPosition().setRoll((float) rollInput.getPreciseValue());
-            current.getPosition().setScale((float)scaleInput.getPreciseValue()/100f);
+            current.getPosition().setScale((float) scaleInput.getPreciseValue() / 100f);
+            current.getPosition().setOpacity((float) opacityInput.getPreciseValue() / 100f);
         }
 
     }
