@@ -18,6 +18,7 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class ReplayFile extends ZipFile {
 
@@ -238,11 +239,17 @@ public class ReplayFile extends ZipFile {
                     try {
                         ZipArchiveEntry entry = entries.nextElement();
 
-                        if(entry.getName().startsWith(ENTRY_ASSET_FOLDER)) {
+                        String entryName = entry.getName();
+
+                        if(entryName.startsWith(ENTRY_ASSET_FOLDER)) {
                             String name = entry.getName().substring(ENTRY_ASSET_FOLDER.length());
-                            assetRepository.addAsset(name, getInputStream(entry));
+
+                            String[] split = name.split("_");
+                            UUID uuid = UUID.fromString(split[0]);
+
+                            assetRepository.addAsset(name, getInputStream(entry), uuid);
                         }
-                    } catch(IOException e) {
+                    } catch(Exception e) {
                         e.printStackTrace();
                     }
                 }

@@ -6,6 +6,7 @@ import eu.crushedpixel.replaymod.assets.ReplayAsset;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.FileChooseListener;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
@@ -35,8 +36,8 @@ public class GuiAssetManager extends GuiScreen {
 
     private ReplayAsset currentAsset;
 
-    public GuiAssetManager(AssetRepository assetRepository) {
-        this.assetRepository = assetRepository;
+    public GuiAssetManager() {
+        this.assetRepository = ReplayHandler.getAssetRepository();
     }
 
     @Override
@@ -110,6 +111,10 @@ public class GuiAssetManager extends GuiScreen {
                     fileChooser.setAllowedExtensions(currentAsset != null ? AssetFileUtils.fileExtensionsForAssetClass(currentAsset.getClass()) : new String[0]);
                 }
             });
+
+            for(ReplayAsset asset : assetRepository.getCopyOfReplayAssets()) {
+                assetGuiEntryList.addElement(asset);
+            }
         }
 
         int visibleEntries = (int)Math.floor(((double)this.height-(45+20+15+20))/14);
@@ -165,11 +170,26 @@ public class GuiAssetManager extends GuiScreen {
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
         Point mousePos = MouseUtils.getMousePos();
         composedElement.buttonPressed(mc, mousePos.getX(), mousePos.getY(), typedChar, keyCode);
+
+        if(currentAsset != null) {
+            currentAsset.setAssetName(assetNameInput.getText());
+        }
+
         super.keyTyped(typedChar, keyCode);
     }
 
     @Override
     public void updateScreen() {
         composedElement.tick(mc);
+    }
+
+    @Override
+    public void onGuiClosed() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                assetRepository.saveAssets();
+            }
+        }, "replaymod-asset-saver").start();
     }
 }

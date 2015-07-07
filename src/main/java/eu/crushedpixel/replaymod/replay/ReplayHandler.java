@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.replay;
 
 import com.mojang.authlib.GameProfile;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.assets.AssetRepository;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.events.ReplayExitEvent;
@@ -11,6 +12,8 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
@@ -51,6 +54,9 @@ public class ReplayHandler {
     private static float cameraTilt = 0;
 
     private static KeyframeSet[] keyframeRepository = new KeyframeSet[]{};
+
+    @Getter @Setter
+    private static AssetRepository assetRepository;
 
     private static List<CustomImageObject> customImageObjects = new ArrayList<CustomImageObject>();
 
@@ -554,6 +560,10 @@ public class ReplayHandler {
 
         PlayerVisibility visibility = currentReplayFile.visibility().get();
         PlayerHandler.loadPlayerVisibilityConfiguration(visibility);
+
+        //load assets
+        AssetRepository assets = currentReplayFile.assetRepository().get();
+        assetRepository = assets;
 
         ReplayMod.replaySender = new ReplaySender(currentReplayFile, asyncMode);
         channel.pipeline().addFirst(ReplayMod.replaySender);
