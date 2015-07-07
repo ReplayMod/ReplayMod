@@ -247,6 +247,7 @@ public class VideoRenderer {
             if(pos != null) {
                 ReplayHandler.setCameraTilt(pos.getRoll());
                 ReplayHandler.getCameraEntity().movePath(pos);
+                mc.entityRenderer.fovModifierHand = mc.entityRenderer.fovModifierHandPrev = 1;
             }
         } else {
             ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getSpectatedEntityID()));
