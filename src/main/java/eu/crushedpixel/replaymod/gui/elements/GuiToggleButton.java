@@ -35,6 +35,11 @@ public class GuiToggleButton extends GuiAdvancedButton {
         return success;
     }
 
+    @Override
+    public void performAction() {
+        toggle();
+    }
+
     public void toggle() {
         value++;
         if(value >= values.length) value = 0;
@@ -49,6 +54,5 @@ public class GuiToggleButton extends GuiAdvancedButton {
         this.value = value;
         this.displayString = baseText+values[value];
     }
-
 
 }
