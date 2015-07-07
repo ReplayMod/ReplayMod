@@ -4,14 +4,13 @@ import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiTextField;
 import org.lwjgl.input.Mouse;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiEntryList<T extends GuiEntryListEntry> extends GuiTextField {
+public class GuiEntryList<T extends GuiEntryListEntry> extends GuiAdvancedTextField {
 
     public final static int elementHeight = 14;
     private int selectionIndex = -1;
@@ -24,9 +23,9 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiTextField {
     private List<SelectionListener> selectionListeners = new ArrayList<SelectionListener>();
     private List<T> elements = new ArrayList<T>();
 
-    public GuiEntryList(int id, FontRenderer fontRenderer,
+    public GuiEntryList(FontRenderer fontRenderer,
                         int xPos, int yPos, int width, int visibleEntries) {
-        super(id, fontRenderer, xPos, yPos, width, elementHeight * visibleEntries - 1);
+        super(fontRenderer, xPos, yPos, width, elementHeight * visibleEntries - 1);
         this.visibleElements = visibleEntries;
     }
 
