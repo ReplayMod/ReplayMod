@@ -21,6 +21,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
     @Override
     public void setEnabled(boolean isEnabled) {
         this.isEnabled = isEnabled;
+        if(!isEnabled) setFocused(false);
         super.setEnabled(isEnabled);
     }
 
@@ -88,5 +89,16 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
     @Override
     public void tick(Minecraft mc) {
         updateCursorCounter();
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        if(!isEnabled) focused = false;
+        super.setFocused(focused);
+    }
+
+    @Override
+    public boolean isFocused() {
+        return isEnabled ? super.isFocused() : false;
     }
 }
