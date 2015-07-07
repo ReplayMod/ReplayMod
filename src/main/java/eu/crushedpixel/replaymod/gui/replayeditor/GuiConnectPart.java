@@ -95,7 +95,7 @@ public class GuiConnectPart extends GuiStudioPart {
     @Override
     public void initGui() {
         if(!initialized) {
-            concatList = new GuiEntryList<GuiEntryListStringEntry>(1, fontRendererObj, 30, yPos, 150, 0);
+            concatList = new GuiEntryList<GuiEntryListStringEntry>(fontRendererObj, 30, yPos, 150, 0);
             filesToConcat = new ArrayList<GuiEntryListStringEntry>();
             String selectedName = FilenameUtils.getBaseName(GuiReplayEditor.instance.getSelectedFile().getAbsolutePath());
             filesToConcat.add(new GuiEntryListStringEntry(selectedName));

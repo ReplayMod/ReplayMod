@@ -54,7 +54,7 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
         if(!initialized) {
             screenTitle = I18n.format("replaymod.gui.keyframerepository.title");
 
-            keyframeSetList = new GuiEntryList<KeyframeSet>(GuiConstants.KEYFRAME_REPOSITORY_LIST, mc.fontRendererObj,
+            keyframeSetList = new GuiEntryList<KeyframeSet>(mc.fontRendererObj,
                     0, 45, 0, h);
 
             for(KeyframeSet set : keyframeRepository)

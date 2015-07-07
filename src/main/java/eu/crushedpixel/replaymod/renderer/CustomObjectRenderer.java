@@ -78,7 +78,11 @@ public class CustomObjectRenderer {
         GlStateManager.rotate(objectPosition.getRoll(), 0, 0, 1);
         GlStateManager.rotate(objectPosition.getPitch(), 1, 0, 0);
 
-        renderer.setColorRGBA_F(1, 1, 1, 0.5f);
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+        float opacity = objectPosition.getOpacity();
+        GlStateManager.color(1, 1, 1, opacity);
 
         float width = objectPosition.getWidth() * objectPosition.getScale();
         float height = objectPosition.getHeight() * objectPosition.getScale();
@@ -95,12 +99,10 @@ public class CustomObjectRenderer {
         renderer.addVertexWithUV(maxX, maxY, 0, 0, 0);
         renderer.addVertexWithUV(maxX, minY, 0, 0, 1);
 
-        if(customImageObject.isBackVisible()) {
-            renderer.addVertexWithUV(maxX, maxY, 0, 0, 0);
-            renderer.addVertexWithUV(minX, maxY, 0, 1, 0);
-            renderer.addVertexWithUV(minX, minY, 0, 1, 1);
-            renderer.addVertexWithUV(maxX, minY, 0, 0, 1);
-        }
+        renderer.addVertexWithUV(maxX, maxY, 0, 0, 0);
+        renderer.addVertexWithUV(minX, maxY, 0, 1, 0);
+        renderer.addVertexWithUV(minX, minY, 0, 1, 1);
+        renderer.addVertexWithUV(maxX, minY, 0, 0, 1);
 
         tessellator.draw();
         renderer.setTranslation(0, 0, 0);

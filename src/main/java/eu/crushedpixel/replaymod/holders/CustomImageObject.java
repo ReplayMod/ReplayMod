@@ -15,19 +15,17 @@ import java.io.IOException;
 
 public class CustomImageObject implements GuiEntryListEntry {
 
-    public CustomImageObject(Position position, String name, final File imageSource, boolean backVisible) throws IOException {
+    public CustomImageObject(Position position, String name, final File imageSource) throws IOException {
 
         this.position = new ExtendedPosition(RoundUtils.round(position.getX()), RoundUtils.round(position.getY()), RoundUtils.round(position.getZ()), 0, 0);
 
         this.name = name;
-        this.backVisible = backVisible;
 
         setImageFile(imageSource);
     }
 
     @Getter @Setter private ExtendedPosition position;
     @Getter @Setter private String name;
-    @Getter @Setter private boolean backVisible;
     @Getter private File imageFile;
 
     public void setImageFile(final File imageSource) throws IOException {
