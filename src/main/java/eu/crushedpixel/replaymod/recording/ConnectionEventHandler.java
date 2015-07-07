@@ -39,6 +39,12 @@ public class ConnectionEventHandler {
         return isRecording;
     }
 
+    public static void notifyServerPaused() {
+        if (packetListener != null) {
+            packetListener.serverWasPaused = true;
+        }
+    }
+
     public static void insertPacket(Packet packet) {
         if(!isRecording || packetListener == null) {
             String reason = isRecording ? " (recording)" : " (null)";

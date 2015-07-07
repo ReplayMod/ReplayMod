@@ -30,6 +30,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     protected Long startTime = null;
     protected String name;
     protected String worldName;
+    protected boolean serverWasPaused;
     protected long lastSentPacket = 0;
     protected boolean alive = true;
     protected DataWriter dataWriter;
@@ -94,6 +95,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     public class DataWriter {
 
         private boolean active = true;
+        private long paused;
 
         private ConcurrentLinkedQueue<PacketData> queue = new ConcurrentLinkedQueue<PacketData>();
         private DataOutputStream stream;
@@ -145,10 +147,16 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
         }
 
         public synchronized void writePacket(byte[] bytes) {
+            long now = System.currentTimeMillis();
             if(startTime == null) {
-                startTime = System.currentTimeMillis();
+                startTime = now;
             }
-            int timestamp = (int) (System.currentTimeMillis() - startTime);
+
+            if (serverWasPaused) {
+                paused = now - startTime - lastSentPacket;
+                serverWasPaused = false;
+            }
+            int timestamp = (int) (now - startTime - paused);
             lastSentPacket = timestamp;
             queue.add(new PacketData(bytes, timestamp));
         }

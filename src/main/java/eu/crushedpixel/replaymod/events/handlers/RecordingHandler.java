@@ -12,6 +12,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.*;
 import net.minecraft.network.play.server.S14PacketEntity.S17PacketEntityLookMove;
 import net.minecraft.network.play.server.S38PacketPlayerListItem.Action;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -22,6 +23,7 @@ import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 import java.util.Objects;
@@ -445,6 +447,18 @@ public class RecordingHandler {
             lastRiding = event.minecart.getEntityId();
         } catch(Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @SubscribeEvent
+    public void checkForGamePaused(TickEvent.RenderTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        if (!ConnectionEventHandler.isRecording()) return;
+        if (mc.isIntegratedServerRunning()) {
+            IntegratedServer server =  mc.getIntegratedServer();
+            if (server != null && server.isGamePaused) {
+                ConnectionEventHandler.notifyServerPaused();
+            }
         }
     }
 }
