@@ -30,9 +30,14 @@ public class ResourceHelper {
         return openResources.contains(loc);
     }
 
-    public static void freeResource(ResourceLocation loc) {
-        Minecraft.getMinecraft().getTextureManager().deleteTexture(loc);
-        openResources.remove(loc);
+    public static void freeResource(final ResourceLocation loc) {
+        Minecraft.getMinecraft().addScheduledTask(new Runnable() {
+            @Override
+            public void run() {
+                Minecraft.getMinecraft().getTextureManager().deleteTexture(loc);
+                openResources.remove(loc);
+            }
+        });
     }
 
     public static void freeAllResources() {

@@ -4,6 +4,7 @@ import com.google.common.base.Supplier;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import eu.crushedpixel.replaymod.assets.AssetRepository;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
@@ -14,6 +15,7 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +34,7 @@ public class ReplayFile extends ZipFile {
     public static final String ENTRY_VISIBILITY_OLD = "visibility";
     public static final String ENTRY_VISIBILITY = "visibility" + JSON_FILE_EXTENSION;
     public static final String ENTRY_MARKERS = "markers" + JSON_FILE_EXTENSION;
+    public static final String ENTRY_ASSET_FOLDER = "asset/";
 
     private final File file;
 
@@ -217,6 +220,34 @@ public class ReplayFile extends ZipFile {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+            }
+        };
+    }
+
+    public Supplier<AssetRepository> assetRepository() {
+        return new Supplier<AssetRepository>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public AssetRepository get() {
+                AssetRepository assetRepository = new AssetRepository();
+
+                Enumeration<ZipArchiveEntry> entries = getEntries();
+
+                while(entries.hasMoreElements()) {
+
+                    try {
+                        ZipArchiveEntry entry = entries.nextElement();
+
+                        if(entry.getName().startsWith(ENTRY_ASSET_FOLDER)) {
+                            String name = entry.getName().substring(ENTRY_ASSET_FOLDER.length());
+                            assetRepository.addAsset(name, getInputStream(entry));
+                        }
+                    } catch(IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                return assetRepository;
             }
         };
     }

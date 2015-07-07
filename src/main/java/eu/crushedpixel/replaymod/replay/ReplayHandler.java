@@ -562,6 +562,7 @@ public class ReplayHandler {
         try {
             ReplayMod.overlay.resetUI(true);
         } catch(Exception e) {
+            e.printStackTrace();
             // TODO: Fix exceptionsudo
         }
 
@@ -584,6 +585,7 @@ public class ReplayHandler {
                 t.printStackTrace();
             }
         };
+
         INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
         networkManager.setNetHandler(pc);
 

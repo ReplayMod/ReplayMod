@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.video.frame;
 
 import eu.crushedpixel.replaymod.settings.RenderOptions;
+import eu.crushedpixel.replaymod.utils.BoundingUtils;
 import eu.crushedpixel.replaymod.video.entity.CustomEntityRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -9,6 +10,7 @@ import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Timer;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.Dimension;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -120,18 +122,12 @@ public abstract class FrameRenderer {
      * @param height Height of the box
      */
     public void renderPreview(int x, int y, int width, int height) {
-        int actualWidth = width;
-        int actualHeight = height;
-        if (width / height > getVideoWidth() / getVideoHeight()) {
-            actualWidth = height * getVideoWidth() / getVideoHeight();
-        } else {
-            actualHeight = width * getVideoHeight() / getVideoWidth();
-        }
+        Dimension dimension = BoundingUtils.fitIntoBounds(new Dimension(x, y), new Dimension(width, height));
 
-        x += (width - actualWidth) / 2;
-        y += (height - actualHeight) / 2;
+        x += (width - dimension.getWidth()) / 2;
+        y += (height - dimension.getHeight()) / 2;
 
-        drawPreviewTexture(x, y, actualWidth, actualHeight);
+        drawPreviewTexture(x, y, dimension.getWidth(), dimension.getHeight());
     }
 
     public static void renderNoPreview(int x, int y, int width, int height) {
