@@ -50,4 +50,9 @@ public class GuiAdvancedCheckBox extends GuiCheckBox implements GuiElement {
     public void tick(Minecraft mc) {
 
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 }

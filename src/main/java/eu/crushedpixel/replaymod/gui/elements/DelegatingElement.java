@@ -53,4 +53,7 @@ public abstract class DelegatingElement implements GuiElement {
     public void tick(Minecraft mc) {
         delegate().tick(mc);
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {}
 }

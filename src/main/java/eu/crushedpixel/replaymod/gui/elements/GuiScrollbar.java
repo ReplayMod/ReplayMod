@@ -4,6 +4,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 
+import java.awt.*;
+
 import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.TEXTURE_SIZE;
 import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.replay_gui;
 import static org.lwjgl.opengl.GL11.GL_BLEND;
@@ -46,6 +48,8 @@ public class GuiScrollbar extends Gui implements GuiElement {
     private int draggingStart = -1;
     private double draggingStartPosition;
 
+    private boolean enabled = true;
+
     public GuiScrollbar(int positionX, int positionY, int width) {
         this.positionX = positionX;
         this.positionY = positionY;
@@ -58,6 +62,7 @@ public class GuiScrollbar extends Gui implements GuiElement {
 
     @Override
     public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        if(!enabled) return;
         if (isHovering(mouseX, mouseY)) {
             draggingStart = mouseX;
             draggingStartPosition = sliderPosition;
@@ -66,6 +71,7 @@ public class GuiScrollbar extends Gui implements GuiElement {
 
     @Override
     public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
+        if(!enabled) return;
         if (draggingStart != -1) {
             double delta = (double) (mouseX - draggingStart) / (width - BORDER_LEFT - BORDER_RIGHT);
             sliderPosition = Math.max(0, Math.min(1 - size, draggingStartPosition + delta));
@@ -141,6 +147,9 @@ public class GuiScrollbar extends Gui implements GuiElement {
 
     protected void rect(int x, int y, int u, int v, int width, int height) {
         GlStateManager.resetColor();
+        if(!enabled) {
+            GlStateManager.color(Color.GRAY.getRed()/255f, Color.GRAY.getGreen()/255f, Color.GRAY.getBlue()/255f, 1f);
+        }
         Minecraft.getMinecraft().renderEngine.bindTexture(replay_gui);
         glEnable(GL_BLEND);
 
@@ -164,5 +173,10 @@ public class GuiScrollbar extends Gui implements GuiElement {
 
     public void dragged() {
 
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

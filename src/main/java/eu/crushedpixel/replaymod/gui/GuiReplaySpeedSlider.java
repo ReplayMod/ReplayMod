@@ -202,4 +202,9 @@ public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
     public void tick(Minecraft mc) {
 
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 }

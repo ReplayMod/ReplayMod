@@ -67,4 +67,11 @@ public class ComposedElement implements GuiElement {
             part.tick(mc);
         }
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        for(GuiElement part : parts) {
+            part.setEnabled(enabled);
+        }
+    }
 }

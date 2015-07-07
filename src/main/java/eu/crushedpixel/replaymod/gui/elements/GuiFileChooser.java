@@ -3,7 +3,6 @@ package eu.crushedpixel.replaymod.gui.elements;
 import eu.crushedpixel.replaymod.gui.elements.listeners.FileChooseListener;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 
 import java.awt.*;
 import java.io.File;
@@ -11,7 +10,7 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiFileChooser extends GuiButton {
+public class GuiFileChooser extends GuiAdvancedButton {
 
     @Getter
     private File selectedFile;
@@ -37,7 +36,7 @@ public class GuiFileChooser extends GuiButton {
         this.allowedExtensions = allowedExtensions;
     }
 
-    public void registerListener(FileChooseListener listener) {
+    public void addFileChooseListener(FileChooseListener listener) {
         this.listeners.add(listener);
     }
 

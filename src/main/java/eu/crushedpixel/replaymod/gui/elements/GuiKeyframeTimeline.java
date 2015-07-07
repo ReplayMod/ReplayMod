@@ -43,6 +43,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
     @Override
     public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        if(!enabled) return;
         //left mouse button
         if(button == 0) {
             long time = getTimeAt(mouseX, mouseY);
@@ -108,6 +109,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
     @Override
     public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
+        if(!enabled) return;
         long time = getTimeAt(mouseX, mouseY);
         if (time != -1) {
             if (clickedKeyFrame != null) {

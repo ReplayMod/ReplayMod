@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui.elements;
 import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
 
 import java.awt.*;
 
@@ -55,6 +56,8 @@ public class GuiTimeline extends Gui implements GuiElement {
     protected final int positionX;
     protected final int positionY;
     protected final int width;
+
+    protected boolean enabled = true;
 
     public GuiTimeline(int positionX, int positionY, int width) {
         this.positionX = positionX;
@@ -194,6 +197,9 @@ public class GuiTimeline extends Gui implements GuiElement {
     }
 
     protected void rect(int x, int y, int u, int v, int width, int height) {
+        if(!enabled) {
+            GlStateManager.color(Color.GRAY.getRed() / 255f, Color.GRAY.getGreen() / 255f, Color.GRAY.getBlue() / 255f, 1f);
+        }
         Minecraft.getMinecraft().renderEngine.bindTexture(replay_gui);
         glEnable(GL_BLEND);
 
@@ -229,5 +235,10 @@ public class GuiTimeline extends Gui implements GuiElement {
 
             return FIVE_M;
         }
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

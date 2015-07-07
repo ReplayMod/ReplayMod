@@ -624,6 +624,11 @@ public class GuiTextArea extends Gui implements GuiElement {
         blinkCursorTick++;
     }
 
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public void setWidth(int width) {
         this.width = width;
         updateCurrentXOffset();

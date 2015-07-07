@@ -236,6 +236,7 @@ public class GuiReplayOverlay extends Gui {
     private final GuiKeyframeTimeline timeline = new GuiKeyframeTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, false, true, false, false) {
         @Override
         public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+            if(!enabled) return;
             super.mouseClick(mc, mouseX, mouseY, button);
             if(!(ReplayHandler.getSelectedKeyframe() instanceof MarkerKeyframe))
                 performJump(timeline.getTimeAt(mouseX, mouseY));

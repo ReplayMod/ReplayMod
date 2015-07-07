@@ -10,6 +10,7 @@ public class GuiString extends Gui implements GuiElement {
     public int positionX, positionY;
     public Color color;
     public Callable<String> getContent;
+    private boolean enabled = true;
 
     public GuiString(int positionX, int positionY, Color color, final String content) {
         this(positionX, positionY, color, new Callable<String>() {
@@ -35,7 +36,7 @@ public class GuiString extends Gui implements GuiElement {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        drawString(mc.fontRendererObj, text, positionX, positionY, color.getRGB());
+        drawString(mc.fontRendererObj, text, positionX, positionY, enabled ? color.getRGB() : Color.LIGHT_GRAY.getRGB());
     }
 
     @Override
@@ -71,5 +72,10 @@ public class GuiString extends Gui implements GuiElement {
     @Override
     public void tick(Minecraft mc) {
 
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
