@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import com.google.common.base.Strings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiTextField;
@@ -36,7 +37,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
 
     @Override
     public void drawTextBox() {
-        if (text.isEmpty() && !isFocused() && hint.length() > 0) {
+        if (text.isEmpty() && !isFocused() && !Strings.isNullOrEmpty(hint)) {
             super.setEnabled(false);
             super.setDisabledTextColour(hintTextColor);
             text = hint;
