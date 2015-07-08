@@ -390,6 +390,12 @@ public class ReplayHandler {
         selectedKeyframe = kf;
     }
 
+    public static boolean isSelected(MarkerKeyframe kf) {
+        return kf == selectedMarkerKeyframe;
+    }
+
+    public static void selectMarkerKeyframe(MarkerKeyframe kf) { selectedMarkerKeyframe = kf; }
+
     public static boolean isInReplay() {
         return inReplay;
     }
@@ -456,7 +462,7 @@ public class ReplayHandler {
             ReplayMod.overlay.resetUI(true);
         } catch(Exception e) {
             e.printStackTrace();
-            // TODO: Fix exceptionsudo
+            // TODO: Fix exception
         }
 
         //Load lighting and trigger update
@@ -543,6 +549,8 @@ public class ReplayHandler {
     public static Keyframe getSelectedKeyframe() {
         return selectedKeyframe;
     }
+
+    public static MarkerKeyframe getSelectedMarkerKeyframe() { return selectedMarkerKeyframe; }
 
     public static int getRealTimelineCursor() {
         return realTimelinePosition;

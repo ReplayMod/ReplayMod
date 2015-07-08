@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public final class MarkerKeyframe {
+public class MarkerKeyframe {
 
     private int realTimestamp;
     private Position position;

@@ -7,6 +7,8 @@ import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.gui.GuiRenderSettings;
 import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
 import eu.crushedpixel.replaymod.gui.elements.*;
+import eu.crushedpixel.replaymod.gui.elements.timelines.GuiKeyframeTimeline;
+import eu.crushedpixel.replaymod.gui.elements.timelines.GuiMarkerTimeline;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
@@ -232,10 +234,7 @@ public class GuiReplayOverlay extends Gui {
         }
     }, "replaymod.gui.ingame.menu.zoomout");
 
-    //TODO: GuiMarkerKeyframeTimeline
-    private final GuiKeyframeTimeline timeline = new GuiKeyframeTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, false, false, false) {
-
-    };
+    private final GuiMarkerTimeline timeline = new GuiMarkerTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, false);
 
     private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH, true, true, true);
     {
@@ -339,7 +338,7 @@ public class GuiReplayOverlay extends Gui {
         }
     }
 
-    private void performJump(long timelineTime) {
+    public void performJump(long timelineTime) {
         if (timelineTime != -1) { // Click on timeline
             //When hurrying, no Timeline jumping etc. is possible
             if(!ReplayMod.replaySender.isHurrying()) {

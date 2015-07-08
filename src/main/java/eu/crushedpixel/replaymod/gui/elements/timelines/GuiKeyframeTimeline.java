@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.gui.elements;
+package eu.crushedpixel.replaymod.gui.elements.timelines;
 
 import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
 import eu.crushedpixel.replaymod.holders.Keyframe;
@@ -65,9 +65,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                     this.dragging = false;
                 }
             } else { // If we didn't then just update the cursor
-                if(this.placeKeyframes) { //only if it's the keyframe timeline
-                    ReplayHandler.setRealTimelineCursor((int) time);
-                }
+                ReplayHandler.setRealTimelineCursor((int) time);
                 this.dragging = true;
             }
             this.clickTime = currentTime;
@@ -89,7 +87,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                     ReplayHandler.getTimeKeyframes().sort();
                     dragging = true;
                 }
-            } else if (dragging && placeKeyframes) {
+            } else if (dragging) {
                 ReplayHandler.setRealTimelineCursor((int) time);
             }
         }
@@ -127,15 +125,12 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
                 while(iterator.hasNext()) {
                     Keyframe<Position> kf2 = iterator.next();
+                    if(kf.getValue().getSpectatedEntityID()
+                            .equals(kf2.getValue().getSpectatedEntityID())) {
 
-                    if(kf2.getValue() instanceof Position) {
-                        if(kf.getValue().getSpectatedEntityID()
-                                .equals(kf2.getValue().getSpectatedEntityID())) {
-
-                            nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
-                        }
-                        break;
+                        nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
                     }
+                    break;
                 }
 
                 int i2 = iterator.previousIndex();
@@ -172,20 +167,6 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         long positionInSegment = timestamp - leftTime;
         double fractionOfSegment = positionInSegment / segmentLength;
         return (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
-    }
-
-    @Override
-    public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
-        boolean drawn = false;
-
-        int bodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
-
-        long leftTime = Math.round(timeStart * timelineLength);
-        double segmentLength = timelineLength * zoom;
-
-        if(!drawn) {
-            super.drawOverlay(mc, mouseX, mouseY);
-        }
     }
 
     private void drawKeyframe(Keyframe kf, int bodyWidth, long leftTime, long rightTime, double segmentLength) {

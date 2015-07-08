@@ -1,6 +1,7 @@
-package eu.crushedpixel.replaymod.gui.elements;
+package eu.crushedpixel.replaymod.gui.elements.timelines;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.gui.elements.GuiElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
