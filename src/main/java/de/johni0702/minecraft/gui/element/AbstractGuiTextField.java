@@ -1,0 +1,199 @@
+/*
+ * Copyright (c) 2015 johni0702
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+package de.johni0702.minecraft.gui.element;
+
+import de.johni0702.minecraft.gui.GuiRenderer;
+import de.johni0702.minecraft.gui.RenderInfo;
+import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.function.Clickable;
+import de.johni0702.minecraft.gui.function.Focusable;
+import de.johni0702.minecraft.gui.function.Tickable;
+import de.johni0702.minecraft.gui.function.Typeable;
+import net.minecraft.client.Minecraft;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.ReadableDimension;
+import org.lwjgl.util.ReadablePoint;
+
+public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
+        extends AbstractGuiElement<T> implements Clickable, Tickable, Typeable, IGuiTextField<T> {
+    private final net.minecraft.client.gui.GuiTextField wrapped;
+
+    private Runnable textChanged;
+    private Runnable onEnter;
+
+    private Focusable next, previous;
+
+    public AbstractGuiTextField() {
+        this.wrapped = new net.minecraft.client.gui.GuiTextField(0, Minecraft.getMinecraft().fontRendererObj, 0, 0, 0, 0);
+    }
+
+    public AbstractGuiTextField(GuiContainer container) {
+        super(container);
+        this.wrapped = new net.minecraft.client.gui.GuiTextField(0, Minecraft.getMinecraft().fontRendererObj, 0, 0, 0, 0);
+    }
+
+    @Override
+    public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
+        ReadablePoint position = renderer.getOpenGlOffset();
+        wrapped.xPosition = position.getX();
+        wrapped.yPosition = position.getY();
+        wrapped.width = size.getWidth();
+        wrapped.height = size.getHeight();
+        wrapped.drawTextBox();
+    }
+
+    @Override
+    public ReadableDimension getMinSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public void mouseClick(ReadablePoint position, int button) {
+        wrapped.mouseClicked(position.getX(), position.getY(), button);
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (!isFocused()) {
+            return false;
+        }
+
+        if (keyCode == Keyboard.KEY_RETURN) {
+            onEnter();
+            return true;
+        }
+
+        if (keyCode == Keyboard.KEY_TAB) {
+            Focusable other = shiftDown ? previous : next;
+            if (other != null) {
+                setFocused(false);
+                other.setFocused(true);
+            }
+            return true;
+        }
+
+        String before = wrapped.getText();
+        wrapped.textboxKeyTyped(keyChar, keyCode);
+        String after = wrapped.getText();
+        if (!before.equals(after)) {
+            textChanged.run();
+        }
+        return true;
+    }
+
+    @Override
+    public T setText(String text) {
+        if (text.length() > wrapped.getMaxStringLength()) {
+            wrapped.text = text.substring(0, wrapped.getMaxStringLength());
+        } else {
+            wrapped.text = text;
+        }
+        return getThis();
+    }
+
+    @Override
+    public String getText() {
+        return wrapped.text;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return wrapped.isFocused();
+    }
+
+    @Override
+    public T setFocused(boolean focused) {
+        wrapped.setFocused(focused);
+        return getThis();
+    }
+
+    @Override
+    public Focusable getNext() {
+        return next;
+    }
+
+    @Override
+    public T setNext(Focusable next) {
+        if (this.next == next) return getThis();
+        if (this.next != null) {
+            this.next.setPrevious(null);
+        }
+        this.next = next;
+        if (this.next != null) {
+            this.next.setPrevious(this);
+        }
+        return getThis();
+    }
+
+    @Override
+    public Focusable getPrevious() {
+        return previous;
+    }
+
+    @Override
+    public T setPrevious(Focusable previous) {
+        if (this.previous == previous) return getThis();
+        if (this.previous != null) {
+            this.previous.setNext(null);
+        }
+        this.previous = previous;
+        if (this.previous != null) {
+            this.previous.setNext(this);
+        }
+        return getThis();
+    }
+
+    @Override
+    public int getMaxLength() {
+        return wrapped.getMaxStringLength();
+    }
+
+    @Override
+    public T setMaxLength(int maxLength) {
+        wrapped.setMaxStringLength(maxLength);
+        return getThis();
+    }
+
+    @Override
+    public void tick() {
+        wrapped.updateCursorCounter();
+    }
+
+    protected void onEnter() {
+        if (onEnter != null) {
+            onEnter.run();
+        }
+    }
+
+    @Override
+    public T onEnter(Runnable onEnter) {
+        this.onEnter = onEnter;
+        return getThis();
+    }
+
+    @Override
+    public T onTextChanged(Runnable textChanged) {
+        this.textChanged = textChanged;
+        return getThis();
+    }
+}
