@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
 import eu.crushedpixel.replaymod.gui.GuiAssetManager;
 import eu.crushedpixel.replaymod.gui.GuiKeyframeRepository;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
+import eu.crushedpixel.replaymod.gui.GuiObjectManager;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
@@ -204,6 +205,10 @@ public class KeyInputHandler {
 
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ASSET_MANAGER) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
             mc.displayGuiScreen(new GuiAssetManager());
+        }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_OBJECT_MANAGER) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            mc.displayGuiScreen(new GuiObjectManager());
         }
     }
 }

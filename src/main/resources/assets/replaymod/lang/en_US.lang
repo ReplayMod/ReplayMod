@@ -258,6 +258,7 @@ replaymod.input.playpause=Play/Pause Replay
 replaymod.input.marker=Add Event Marker
 replaymod.input.pathpreview=Toggle Path Preview
 replaymod.input.assetmanager=Open Asset Manager
+replaymod.input.objectmanager=Open Object Manager
 
 #Keyframe Presets GUI
 replaymod.gui.keyframerepository.title=Keyframe Repository
@@ -364,3 +365,5 @@ replaymod.gui.assets.defaultname=New Asset
 replaymod.gui.assets.emptylist=No Assets available
 replaymod.gui.assets.namehint=Asset Name
 replaymod.gui.assets.changefile=Change Asset File
+
+#Object Manager Gui

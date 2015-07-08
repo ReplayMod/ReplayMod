@@ -23,6 +23,7 @@ public class KeybindRegistry {
     public static final String KEY_ADD_MARKER = "replaymod.input.marker";
     public static final String KEY_PATH_PREVIEW = "replaymod.input.pathpreview";
     public static final String KEY_ASSET_MANAGER = "replaymod.input.assetmanager";
+    public static final String KEY_OBJECT_MANAGER = "replaymod.input.objectmanager";
     private static Minecraft mc = Minecraft.getMinecraft();
 
     public static void initialize() {
@@ -41,6 +42,7 @@ public class KeybindRegistry {
         bindings.add(new KeyBinding(KEY_PLAY_PAUSE, Keyboard.KEY_P, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_PATH_PREVIEW, Keyboard.KEY_H, "replaymod.title"));
         bindings.add(new KeyBinding(KEY_ASSET_MANAGER, Keyboard.KEY_G, "replaymod.title"));
+        bindings.add(new KeyBinding(KEY_OBJECT_MANAGER, Keyboard.KEY_F, "replaymod.title"));
 
         mc.gameSettings.keyBindings = bindings.toArray(new KeyBinding[bindings.size()]);
 

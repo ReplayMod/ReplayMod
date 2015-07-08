@@ -1,27 +1,39 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import eu.crushedpixel.replaymod.utils.MouseUtils;
+import eu.crushedpixel.replaymod.utils.RoundUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
-public class GuiDraggingNumberInput extends GuiNumberInput {
+public class GuiDraggingNumberInput extends GuiNumberInputWithText {
 
     public GuiDraggingNumberInput(FontRenderer fontRenderer,
                           int xPos, int yPos, int width, Double minimum, Double maximum, Double defaultValue, boolean acceptFloats) {
-        super(fontRenderer, xPos, yPos, width, minimum, maximum, defaultValue, acceptFloats);
+        this(fontRenderer, xPos, yPos, width, minimum, maximum, defaultValue, acceptFloats, "");
+    }
+
+    public GuiDraggingNumberInput(FontRenderer fontRenderer,
+                                  int xPos, int yPos, int width, Double minimum,
+                                  Double maximum, Double defaultValue, boolean acceptFloats, String suffix) {
+        super(fontRenderer, xPos, yPos, width, minimum, maximum, defaultValue, acceptFloats, suffix);
     }
 
     private int prevMouseX;
     private boolean dragging;
+    private boolean clicked;
 
     @Override
     public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        dragging = false;
-        prevMouseX = mouseX;
+        if(MouseUtils.isMouseWithinBounds(xPosition, yPosition, width, height)) {
+            dragging = false;
+            clicked = true;
+            prevMouseX = mouseX;
+        }
     }
 
     @Override
     public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
-        if(mouseX != prevMouseX) {
+        if(clicked && mouseX != prevMouseX) {
             dragging = true;
             int diff = mouseX - prevMouseX;
             prevMouseX = mouseX;
@@ -33,7 +45,7 @@ public class GuiDraggingNumberInput extends GuiNumberInput {
             }
 
             double value = getPreciseValue();
-            double valueDiff = (diff/200) * bounds;
+            double valueDiff = RoundUtils.round2Decimals((diff / 200f) * bounds);
 
             this.setValue(value+valueDiff);
         }
@@ -42,6 +54,7 @@ public class GuiDraggingNumberInput extends GuiNumberInput {
 
     @Override
     public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
+        clicked = false;
         if(!dragging) {
             super.mouseClick(mc, mouseX, mouseY, button);
         }
