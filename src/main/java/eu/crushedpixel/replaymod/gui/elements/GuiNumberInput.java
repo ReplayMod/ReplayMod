@@ -26,10 +26,16 @@ public class GuiNumberInput extends GuiAdvancedTextField {
     }
 
     public void setValue(double value) {
-        if(acceptFloats) {
-            setText("" + value);
+        if(minimum != null && value < minimum) {
+            setText(acceptFloats ? minimum.toString() : Integer.toString((int) Math.round(minimum)));
+        } else if(maximum != null && value > maximum) {
+            setText(acceptFloats ? maximum.toString() : Integer.toString((int) Math.round(maximum)));
         } else {
-            setText("" + (int)Math.round(value));
+            if(acceptFloats) {
+                setText("" + value);
+            } else {
+                setText("" + (int) Math.round(value));
+            }
         }
         setCursorPositionZero();
     }

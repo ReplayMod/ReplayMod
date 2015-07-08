@@ -367,3 +367,10 @@ replaymod.gui.assets.namehint=Asset Name
 replaymod.gui.assets.changefile=Change Asset File
 
 #Object Manager Gui
+replaymod.gui.objects.properties.anchor=Anchor Point
+replaymod.gui.objects.properties.position=Position
+replaymod.gui.objects.properties.scale=Scale
+replaymod.gui.objects.properties.orientation=Orientation
+replaymod.gui.objects.properties.opacity=Opacity
+replaymod.gui.objects.properties.name=Object Name
+replaymod.gui.objects.empty=No Objects added

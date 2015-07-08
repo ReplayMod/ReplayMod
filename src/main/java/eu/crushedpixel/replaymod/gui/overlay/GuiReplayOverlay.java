@@ -46,7 +46,7 @@ public class GuiReplayOverlay extends Gui {
     public static final int TEXTURE_SIZE = 128;
     private static final float ZOOM_STEPS = 0.05f;
 
-    private static GuiTexturedButton texturedButton(int x, int y, int u, int v, int size, Runnable action, String hoverText) {
+    public static GuiTexturedButton texturedButton(int x, int y, int u, int v, int size, Runnable action, String hoverText) {
         return new GuiTexturedButton(0, x, y, size, size, replay_gui, u, v, TEXTURE_SIZE, TEXTURE_SIZE, action, I18n.format(hoverText));
     }
 
@@ -217,7 +217,6 @@ public class GuiReplayOverlay extends Gui {
             return ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe().getValue() instanceof TimestampValue ? buttonSelected : buttonNotSelected;
         }
     };
-
     private final GuiElement buttonZoomIn = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW, 40, 20, 9, new Runnable() {
         @Override
         public void run() {
@@ -233,6 +232,7 @@ public class GuiReplayOverlay extends Gui {
             pos_left = Math.min(pos_left, 1f - zoom_scale);
         }
     }, "replaymod.gui.ingame.menu.zoomout");
+
 
     private final GuiMarkerTimeline timeline = new GuiMarkerTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, false);
 

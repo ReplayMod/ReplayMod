@@ -1,12 +1,25 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 
 public class ComposedElement implements GuiElement {
-    private final GuiElement[] parts;
+    @Getter
+    private GuiElement[] parts;
 
     public ComposedElement(GuiElement...parts) {
         this.parts = parts;
+    }
+
+    public void addPart(GuiElement part) {
+        GuiElement[] newParts = new GuiElement[parts.length+1];
+        int i = 0;
+        for(GuiElement e : parts) {
+            newParts[i] = e;
+            i++;
+        }
+        newParts[i] = part;
+        this.parts = newParts;
     }
 
     @Override

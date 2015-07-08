@@ -34,7 +34,7 @@ public class CameraEntity extends EntityPlayer {
         if(maxSpeed < LOWER_SPEED || maxSpeed > UPPER_SPEED) return;
         MAX_SPEED = maxSpeed;
         THRESHOLD = MAX_SPEED / 20;
-        DECAY = MAX_SPEED/3;
+        DECAY = 5;
     }
 
     public static double getCameraMaximumSpeed() {
