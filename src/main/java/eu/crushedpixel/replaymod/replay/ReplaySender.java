@@ -69,7 +69,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     protected boolean asyncMode;
 
     /**
-     * Value of the last packet sent in milliseconds since the start.
+     * Timestamp of the last packet sent in milliseconds since the start.
      */
     protected int lastTimeStamp;
 
@@ -91,7 +91,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
     /**
      * The next packet that should be sent.
-     * This is required as some actions such as jumping to a specified value have to peek at the next packet.
+     * This is required as some actions such as jumping to a specified timestamp have to peek at the next packet.
      */
     protected PacketData nextPacket;
 
@@ -188,8 +188,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Return the value of the last packet sent.
-     * @return The value in milliseconds since the start of the replay
+     * Return the timestamp of the last packet sent.
+     * @return The timestamp in milliseconds since the start of the replay
      */
     public int currentTimeStamp() {
         return lastTimeStamp;
@@ -450,7 +450,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     private long lastPacketSent;
 
     /**
-     * There is no waiting performed until a packet with at least this value is reached (but not yet sent).
+     * There is no waiting performed until a packet with at least this timestamp is reached (but not yet sent).
      * If this is -1, then timing is normal.
      */
     private long desiredTimeStamp = -1;
@@ -573,7 +573,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
     /**
      * Return whether this replay sender is currently rushing. When rushing, all packets are sent without waiting until
-     * a specified value is passed.
+     * a specified timestamp is passed.
      * @return {@code true} if currently rushing, {@code false} otherwise
      */
     public boolean isHurrying() {
@@ -588,19 +588,19 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Return the value to which this replay sender is currently rushing. All packets with an lower or equal
-     * value will be sent out without any sleeping.
-     * @return The value in milliseconds since the start of the replay
+     * Return the timestamp to which this replay sender is currently rushing. All packets with an lower or equal
+     * timestamp will be sent out without any sleeping.
+     * @return The timestamp in milliseconds since the start of the replay
      */
     public long getDesiredTimestamp() {
         return desiredTimeStamp;
     }
 
     /**
-     * Jumps to the specified value when in async mode by rushing all packets until one with a value greater
-     * than the specified value is found.
-     * If the value has already passed, this causes the replay to restart and then rush all packets.
-     * @param millis Value in milliseconds since the start of the replay
+     * Jumps to the specified timestamp when in async mode by rushing all packets until one with a timestamp greater
+     * than the specified timestamp is found.
+     * If the timestamp has already passed, this causes the replay to restart and then rush all packets.
+     * @param millis Timestamp in milliseconds since the start of the replay
      */
     public void jumpToTime(int millis) {
         Preconditions.checkState(asyncMode, "Can only jump in async mode. Use sendPacketsTill(int) instead.");
@@ -632,9 +632,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     /////////////////////////////////////////////////////////
 
     /**
-     * Sends all packets until the specified value is reached (inclusive).
-     * If the value is smaller than the last packet sent, the replay is restarted from the beginning.
-     * @param timestamp The value in milliseconds since the beginning of this replay
+     * Sends all packets until the specified timestamp is reached (inclusive).
+     * If the timestamp is smaller than the last packet sent, the replay is restarted from the beginning.
+     * @param timestamp The timestamp in milliseconds since the beginning of this replay
      */
     public void sendPacketsTill(int timestamp) {
         Preconditions.checkState(!asyncMode, "This method cannot be used in async mode. Use jumpToTime(int) instead.");
@@ -682,7 +682,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                         // Process packet
                         channelRead(ctx, pd.getByteArray());
 
-                        // Store last value
+                        // Store last timestamp
                         lastTimeStamp = nextTimeStamp;
                     } catch (EOFException eof) {
                         // Shit! We hit the end before finishing our job! What shall we do now?
