@@ -81,7 +81,7 @@ public class GuiReplayEditor extends GuiScreen {
         int modeWidth = tabButtons.get(0).width;
 
         if(!initialized) {
-            replayDropdown = new GuiDropdown<String>(1, fontRendererObj, 15 + 2 + 1 + 80, 60, this.width - 30 - 8 - 80 - modeWidth - 4, 5);
+            replayDropdown = new GuiDropdown<String>(fontRendererObj, 15 + 2 + 1 + 80, 60, this.width - 30 - 8 - 80 - modeWidth - 4, 5);
             refreshReplayDropdown();
         } else {
             replayDropdown.width = this.width - 30 - 8 - 80 - modeWidth - 4;

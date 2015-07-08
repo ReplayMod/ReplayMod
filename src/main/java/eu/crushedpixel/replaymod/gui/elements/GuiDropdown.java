@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class GuiDropdown<T> extends GuiTextField {
+public class GuiDropdown<T> extends GuiAdvancedTextField {
 
     private final int visibleDropout;
     private final int dropoutElementHeight = 14;
@@ -28,9 +28,9 @@ public class GuiDropdown<T> extends GuiTextField {
     private List<T> elements = new ArrayList<T>();
     private HashMap<Integer, String> hoverTexts = new HashMap<Integer, String>();
 
-    public GuiDropdown(int id, FontRenderer fontRenderer,
+    public GuiDropdown(FontRenderer fontRenderer,
                        int xPos, int yPos, int width, int visibleDropout) {
-        super(id, fontRenderer, xPos, yPos, width, 20);
+        super(fontRenderer, xPos, yPos, width, 20);
         this.visibleDropout = visibleDropout;
         this.maxDropoutHeight = dropoutElementHeight * visibleDropout;
     }

@@ -54,8 +54,7 @@ public class GuiRenderSettings extends GuiScreen {
         if(!initialized) {
             Keyboard.enableRepeatEvents(true);
 
-            rendererDropdown = new GuiDropdown<RendererSettings>(GuiConstants.RENDER_SETTINGS_RENDERER_DROPDOWN,
-                    fontRendererObj, 0, 0, 200, 5);
+            rendererDropdown = new GuiDropdown<RendererSettings>(fontRendererObj, 0, 0, 200, 5);
             rendererDropdown.addSelectionListener(new RendererDropdownListener());
 
             int i = 0;

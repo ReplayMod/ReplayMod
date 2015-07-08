@@ -103,7 +103,7 @@ public class GuiConnectPart extends GuiStudioPart {
 
             concatList.setSelectionIndex(0);
 
-            replayDropdown = new GuiDropdown<GuiEntryListStringEntry>(1, fontRendererObj, 250, yPos + 5, 0, 4);
+            replayDropdown = new GuiDropdown<GuiEntryListStringEntry>(fontRendererObj, 250, yPos + 5, 0, 4);
 
             replayDropdown.clearElements();
             replayFiles = ReplayFileIO.getAllReplayFiles();

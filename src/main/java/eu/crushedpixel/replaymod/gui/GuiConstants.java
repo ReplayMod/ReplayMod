@@ -17,8 +17,6 @@ public class GuiConstants {
     public static final int CENTER_SEARCH_ACTION_BUTTON = 2013;
     public static final int CENTER_SEARCH_GAMETYPE_TOGGLE = 2015;
     public static final int CENTER_SEARCH_ORDER_TOGGLE = 2016;
-    public static final int CENTER_SEARCH_CATEGORY_DROPDOWN = 2017;
-    public static final int CENTER_SEARCH_VERSION_DROPDOWN = 2018;
 
     public static final int UPLOAD_START_BUTTON = 3003;
     public static final int UPLOAD_CANCEL_BUTTON = 3004;
@@ -74,7 +72,6 @@ public class GuiConstants {
     public static final int PLAYER_OVERVIEW_SHOW_ALL = 101;
     public static final int PLAYER_OVERVIEW_REMEMBER = -10;
 
-    public static final int RENDER_SETTINGS_RENDERER_DROPDOWN = 9001;
     public static final int RENDER_SETTINGS_RENDER_BUTTON = 9002;
     public static final int RENDER_SETTINGS_CANCEL_BUTTON = 9003;
     public static final int RENDER_SETTINGS_RESOLUTION_CHECKBOX = 9004;

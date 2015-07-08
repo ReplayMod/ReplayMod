@@ -116,8 +116,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                     new String[]{I18n.format("options.particles.all"), I18n.format("menu.singleplayer"), I18n.format("menu.multiplayer")});
             searchSortToggle = new GuiToggleButton(GuiConstants.CENTER_SEARCH_ORDER_TOGGLE, 0, 0, I18n.format("replaymod.gui.center.search.order")+": ",
                     new String[]{I18n.format("replaymod.gui.center.search.order.best"), I18n.format("replaymod.gui.center.search.order.recent")});
-            searchCategoryDropdown = new GuiDropdown<String>(GuiConstants.CENTER_SEARCH_CATEGORY_DROPDOWN, fontRendererObj, 0, 0, 0, Category.values().length+1);
-            searchVersionDropdown = new GuiDropdown<String>(GuiConstants.CENTER_SEARCH_VERSION_DROPDOWN, fontRendererObj, 0, 0, 0, 5);
+            searchCategoryDropdown = new GuiDropdown<String>(fontRendererObj, 0, 0, 0, Category.values().length+1);
+            searchVersionDropdown = new GuiDropdown<String>(fontRendererObj, 0, 0, 0, 5);
             searchNameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 50, 20);
             searchServerInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 50, 20);
 
