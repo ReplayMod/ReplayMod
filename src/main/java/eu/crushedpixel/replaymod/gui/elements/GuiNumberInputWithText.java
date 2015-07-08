@@ -9,11 +9,11 @@ public class GuiNumberInputWithText extends GuiNumberInput {
 
     private String suffix;
 
-    public GuiNumberInputWithText(int id, FontRenderer fontRenderer,
+    public GuiNumberInputWithText(FontRenderer fontRenderer,
                                   int xPos, int yPos, int width, Double minimum, Double maximum, Double defaultValue,
                                   boolean acceptFloats, String suffix) {
 
-        super(id, fontRenderer, xPos, yPos, width, minimum, maximum, defaultValue, acceptFloats);
+        super(fontRenderer, xPos, yPos, width, minimum, maximum, defaultValue, acceptFloats);
         if(suffix == null) suffix = "";
 
         this.suffix = suffix;

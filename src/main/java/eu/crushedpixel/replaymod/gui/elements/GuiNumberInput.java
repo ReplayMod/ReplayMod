@@ -1,17 +1,16 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiTextField;
 
-public class GuiNumberInput extends GuiTextField {
+public class GuiNumberInput extends GuiAdvancedTextField {
 
-    private Double minimum, maximum;
+    protected Double minimum, maximum;
 
-    private boolean acceptFloats = false;
+    protected boolean acceptFloats = false;
 
-    public GuiNumberInput(int id, FontRenderer fontRenderer,
+    public GuiNumberInput(FontRenderer fontRenderer,
                           int xPos, int yPos, int width, Double minimum, Double maximum, Double defaultValue, boolean acceptFloats) {
-        super(id, fontRenderer, xPos, yPos, width, 20);
+        super(fontRenderer, xPos, yPos, width, 20);
         this.minimum = minimum;
         this.maximum = maximum;
         this.acceptFloats = acceptFloats;
@@ -21,9 +20,9 @@ public class GuiNumberInput extends GuiTextField {
         }
     }
 
-    public GuiNumberInput(int id, FontRenderer fontRenderer,
+    public GuiNumberInput(FontRenderer fontRenderer,
                           int xPos, int yPos, int width, int minimum, int maximum, int defaultValue, boolean acceptFloats) {
-        this(id, fontRenderer, xPos, yPos, width, (double) minimum, (double) maximum, (double) defaultValue, acceptFloats);
+        this(fontRenderer, xPos, yPos, width, (double) minimum, (double) maximum, (double) defaultValue, acceptFloats);
     }
 
     public void setValue(double value) {

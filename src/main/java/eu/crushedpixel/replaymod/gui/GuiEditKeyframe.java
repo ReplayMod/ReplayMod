@@ -97,9 +97,9 @@ public class GuiEditKeyframe extends GuiScreen {
 
             //Real Time Input
             int timestamp = keyframe.getRealTimestamp();
-            min = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_REAL_MIN_INPUT, fontRendererObj, 0, 0, 30, 0, 9, TimestampUtils.getMinutesFromTimestamp(timestamp), false);
-            sec = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_REAL_SEC_INPUT, fontRendererObj, 0, 0, 25, 0, 59, TimestampUtils.getSecondsFromTimestamp(timestamp), false);
-            ms = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_REAL_SEC_INPUT, fontRendererObj, 0, 0, 35, 0, 999, TimestampUtils.getMillisecondsFromTimestamp(timestamp), false);
+            min = new GuiNumberInput(fontRendererObj, 0, 0, 30, 0, 9, TimestampUtils.getMinutesFromTimestamp(timestamp), false);
+            sec = new GuiNumberInput(fontRendererObj, 0, 0, 25, 0, 59, TimestampUtils.getSecondsFromTimestamp(timestamp), false);
+            ms = new GuiNumberInput(fontRendererObj, 0, 0, 35, 0, 999, TimestampUtils.getMillisecondsFromTimestamp(timestamp), false);
 
             inputs.add(min);
             inputs.add(sec);
@@ -108,12 +108,12 @@ public class GuiEditKeyframe extends GuiScreen {
             //Position/Virtual Time Input
             if(posKeyframe) {
                 Position pos = ((Keyframe<Position>)keyframe).getValue();
-                xCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_X_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getX()), true);
-                yCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_Y_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getY()), true);
-                zCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_Z_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getZ()), true);
-                yaw = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_YAW_INPUT, fontRendererObj, 0, 0, 100, -90d, 90d, RoundUtils.round(pos.getYaw()), true);
-                pitch = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_PITCH_INPUT, fontRendererObj, 0, 0, 100, -180d, 180d, RoundUtils.round(pos.getPitch()), true);
-                roll = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_ROLL_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getRoll()), true);
+                xCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getX()), true);
+                yCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getY()), true);
+                zCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getZ()), true);
+                yaw = new GuiNumberInput(fontRendererObj, 0, 0, 100, -90d, 90d, RoundUtils.round(pos.getYaw()), true);
+                pitch = new GuiNumberInput(fontRendererObj, 0, 0, 100, -180d, 180d, RoundUtils.round(pos.getPitch()), true);
+                roll = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getRoll()), true);
 
                 posInputs.add(xCoord);
                 posInputs.add(yCoord);

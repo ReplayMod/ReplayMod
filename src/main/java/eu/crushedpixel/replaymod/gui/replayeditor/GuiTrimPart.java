@@ -96,13 +96,13 @@ public class GuiTrimPart extends GuiStudioPart {
     @Override
     public void initGui() {
         if(!initialized) {
-            startMinInput = new GuiNumberInput(1, fontRendererObj, 70, yPos, 30, null, 999d, null, false);
-            startSecInput = new GuiNumberInput(1, fontRendererObj, 120, yPos, 25, null, 99d, null, false);
-            startMsInput = new GuiNumberInput(1, fontRendererObj, 165, yPos, 30, null, 999d, null, false);
+            startMinInput = new GuiNumberInput(fontRendererObj, 70, yPos, 30, null, 999d, null, false);
+            startSecInput = new GuiNumberInput(fontRendererObj, 120, yPos, 25, null, 99d, null, false);
+            startMsInput = new GuiNumberInput(fontRendererObj, 165, yPos, 30, null, 999d, null, false);
 
-            endMinInput = new GuiNumberInput(1, fontRendererObj, 70, yPos + 30, 30, null, 999d, null, false);
-            endSecInput = new GuiNumberInput(1, fontRendererObj, 120, yPos + 30, 25, null, 99d, null, false);
-            endMsInput = new GuiNumberInput(1, fontRendererObj, 165, yPos + 30, 30, null, 999d, null, false);
+            endMinInput = new GuiNumberInput(fontRendererObj, 70, yPos + 30, 30, null, 999d, null, false);
+            endSecInput = new GuiNumberInput(fontRendererObj, 120, yPos + 30, 25, null, 99d, null, false);
+            endMsInput = new GuiNumberInput(fontRendererObj, 165, yPos + 30, 30, null, 999d, null, false);
 
             inputOrder.clear();
 

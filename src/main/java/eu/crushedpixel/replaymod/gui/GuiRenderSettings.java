@@ -71,7 +71,7 @@ public class GuiRenderSettings extends GuiScreen {
 
             customResolution = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX, 0, 0, I18n.format("replaymod.gui.rendersettings.customresolution"), false);
 
-            xRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_X, fontRendererObj, 0, 0, 50, 1, 100000, mc.displayWidth, false) {
+            xRes = new GuiNumberInput(fontRendererObj, 0, 0, 50, 1, 100000, mc.displayWidth, false) {
                 @Override
                 public void moveCursorBy(int move) {
                     super.moveCursorBy(move);
@@ -88,7 +88,7 @@ public class GuiRenderSettings extends GuiScreen {
                     yRes.setCursorPositionEnd();
                 }
             };
-            yRes = new GuiNumberInput(GuiConstants.RENDER_SETTINGS_RESOLUTION_Y, fontRendererObj, 0, 0, 50, 1, 10000, mc.displayHeight, false) {
+            yRes = new GuiNumberInput(fontRendererObj, 0, 0, 50, 1, 10000, mc.displayHeight, false) {
                 @Override
                 public void moveCursorBy(int move) {
                     super.moveCursorBy(move);
@@ -106,7 +106,7 @@ public class GuiRenderSettings extends GuiScreen {
                 }
             };
 
-            bitrateInput = new GuiNumberInputWithText(GuiConstants.RENDER_SETTINGS_BITRATE_INPUT, fontRendererObj, 0, 0, 50, 1D, null, 10000D, false, " kbps");
+            bitrateInput = new GuiNumberInputWithText(fontRendererObj, 0, 0, 50, 1D, null, 10000D, false, " kbps");
 
             xRes.setEnabled(false);
             yRes.setEnabled(false);
