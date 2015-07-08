@@ -57,7 +57,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
         if(!initialized) {
             if(!AuthenticationHandler.isAuthenticated()) {
-                mc.displayGuiScreen(new GuiLoginPrompt(new GuiMainMenu(), this));
+                mc.displayGuiScreen(new GuiLoginPrompt(new GuiMainMenu(), this).toMinecraft());
             }
 
             //Top Button Bar

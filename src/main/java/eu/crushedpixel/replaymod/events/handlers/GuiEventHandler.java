@@ -45,7 +45,7 @@ public class GuiEventHandler {
             if(ReplayMod.firstMainMenu) {
                 ReplayMod.firstMainMenu = false;
                 if(!AuthenticationHandler.isAuthenticated()) {
-                    event.gui = new GuiLoginPrompt(event.gui, event.gui);
+                    event.gui = new GuiLoginPrompt(event.gui, event.gui).toMinecraft();
                     return;
                 }
             } else {
@@ -155,7 +155,7 @@ public class GuiEventHandler {
                 if(AuthenticationHandler.isAuthenticated()) {
                     mc.displayGuiScreen(new GuiReplayCenter());
                 } else {
-                    mc.displayGuiScreen(new GuiLoginPrompt(event.gui, new GuiReplayCenter()));
+                    mc.displayGuiScreen(new GuiLoginPrompt(event.gui, new GuiReplayCenter()).toMinecraft());
                 }
             } else if(event.button.id == GuiConstants.REPLAY_EDITOR_BUTTON_ID) {
                 mc.displayGuiScreen(new GuiReplayEditor());
