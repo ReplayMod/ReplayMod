@@ -160,8 +160,8 @@ public class CameraEntity extends EntityPlayer {
 
     public void moveAbsolute(Position pos) {
         this.moveAbsolute(pos.getX(), pos.getY(), pos.getZ());
-        rotationPitch = pos.getPitch();
-        rotationYaw = pos.getYaw();
+        rotationPitch = (float)pos.getPitch();
+        rotationYaw = (float)pos.getYaw();
     }
 
     public void moveAbsolute(double x, double y, double z) {
@@ -181,8 +181,8 @@ public class CameraEntity extends EntityPlayer {
     }
 
     public void movePath(Position pos) {
-        this.prevRotationPitch = this.rotationPitch = pos.getPitch();
-        this.prevRotationYaw = this.rotationYaw = pos.getYaw();
+        this.prevRotationPitch = this.rotationPitch = (float)pos.getPitch();
+        this.prevRotationYaw = this.rotationYaw = (float)pos.getYaw();
         this.lastTickPosX = this.prevPosX = this.posX = pos.getX();
         this.lastTickPosY = this.prevPosY = this.posY = pos.getY();
         this.lastTickPosZ = this.prevPosZ = this.posZ = pos.getZ();

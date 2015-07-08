@@ -1,18 +1,12 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
-import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
 import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
-import eu.crushedpixel.replaymod.holders.PositionKeyframe;
-import eu.crushedpixel.replaymod.holders.TimeKeyframe;
+import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import org.lwjgl.util.Point;
 
-import java.awt.*;
 import java.util.ListIterator;
 
 public class GuiKeyframeTimeline extends GuiTimeline {
@@ -22,21 +16,17 @@ public class GuiKeyframeTimeline extends GuiTimeline {
     private static final int KEYFRAME_TIME_Y = 25;
     private static final int KEYFRAME_SPEC_X = 74;
     private static final int KEYFRAME_SPEC_Y = 30;
-    private static final int KEYFRAME_MARKER_X = 109;
-    private static final int KEYFRAME_MARKER_Y = 20;
 
     private Keyframe clickedKeyFrame;
     private long clickTime;
     private boolean dragging;
-    private boolean markerKeyframes;
     private boolean timeKeyframes;
     private boolean placeKeyframes;
 
     public GuiKeyframeTimeline(int positionX, int positionY, int width, boolean showMarkers,
-                               boolean showMarkerKeyframes, boolean showPlaceKeyframes, boolean showTimeKeyframes) {
+                               boolean showPlaceKeyframes, boolean showTimeKeyframes) {
         super(positionX, positionY, width);
         this.showMarkers = showMarkers;
-        this.markerKeyframes = showMarkerKeyframes;
         this.timeKeyframes = showTimeKeyframes;
         this.placeKeyframes = showPlaceKeyframes;
     }
@@ -55,11 +45,9 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
             Keyframe closest;
             if(mouseY >= positionY + BORDER_TOP + 5 && timeKeyframes) {
-                closest = ReplayHandler.getClosestTimeKeyframeForRealTime((int) time, tolerance);
+                closest = ReplayHandler.getTimeKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
             } else if(mouseY >= positionY + BORDER_TOP && placeKeyframes) {
-                closest = ReplayHandler.getClosestPlaceKeyframeForRealTime((int) time, tolerance);
-            } else if(mouseY >= positionY + BORDER_TOP + 10 && markerKeyframes) {
-                closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
+                closest = ReplayHandler.getPositionKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
             } else {
                 closest = null;
             }
@@ -84,26 +72,6 @@ public class GuiKeyframeTimeline extends GuiTimeline {
             }
             this.clickTime = currentTime;
 
-        } else if(button == 1) {
-            if(markerKeyframes) {
-                long time = getTimeAt(mouseX, mouseY);
-                if(time == -1) {
-                    return;
-                }
-
-                int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
-
-                MarkerKeyframe closest = null;
-                if(mouseY >= positionY + BORDER_TOP + 10 && markerKeyframes) {
-                    closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
-                }
-
-                if(closest != null) {
-                    //Jump to clicked Marker Keyframe
-                    ReplayHandler.setLastPosition(closest.getPosition());
-                    ReplayMod.replaySender.jumpToTime(closest.getRealTimestamp());
-                }
-            }
         }
     }
 
@@ -117,7 +85,8 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
                 if (dragging || Math.abs(clickedKeyFrame.getRealTimestamp() - time) > tolerance) {
                     clickedKeyFrame.setRealTimestamp((int) time);
-                    ReplayHandler.sortKeyframes();
+                    ReplayHandler.getPositionKeyframes().sort();
+                    ReplayHandler.getTimeKeyframes().sort();
                     dragging = true;
                 }
             } else if (dragging && placeKeyframes) {
@@ -146,22 +115,22 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
         //iterate over keyframes to find spectator segments
         if(placeKeyframes) {
-            ListIterator<Keyframe> iterator = ReplayHandler.getKeyframes().listIterator();
+            ListIterator<Keyframe<Position>> iterator = ReplayHandler.getPositionKeyframes().listIterator();
             while(iterator.hasNext()) {
-                Keyframe kf = iterator.next();
+                Keyframe<Position> kf = iterator.next();
 
-                if(!(kf instanceof PositionKeyframe) || ((PositionKeyframe) kf).getSpectatedEntityID() == null)
+                if(kf.getValue().getSpectatedEntityID() == null)
                     continue;
 
                 int i = iterator.nextIndex();
                 int nextSpectatorKeyframeRealTime = -1;
 
                 while(iterator.hasNext()) {
-                    Keyframe kf2 = iterator.next();
+                    Keyframe<Position> kf2 = iterator.next();
 
-                    if(kf2 instanceof PositionKeyframe) {
-                        if(((PositionKeyframe) kf).getSpectatedEntityID()
-                                .equals(((PositionKeyframe) kf2).getSpectatedEntityID())) {
+                    if(kf2.getValue() instanceof Position) {
+                        if(kf.getValue().getSpectatedEntityID()
+                                .equals(kf2.getValue().getSpectatedEntityID())) {
 
                             nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
                         }
@@ -189,7 +158,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
 
         //Draw Keyframe logos
-        for (Keyframe kf : ReplayHandler.getKeyframes()) {
+        for (Keyframe kf : ReplayHandler.getAllKeyframes()) {
             if (kf != null && !kf.equals(ReplayHandler.getSelectedKeyframe()))
                 drawKeyframe(kf, bodyWidth, leftTime, rightTime, segmentLength);
         }
@@ -214,21 +183,6 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         long leftTime = Math.round(timeStart * timelineLength);
         double segmentLength = timelineLength * zoom;
 
-        if(markerKeyframes) {
-            for(MarkerKeyframe marker : ReplayHandler.getMarkers()) {
-                int keyframeX = getKeyframeX(marker.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
-
-                if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
-                    Point mouse = MouseUtils.getMousePos();
-                    String markerName = marker.getName();
-                    if(markerName == null) markerName = I18n.format("replaymod.gui.ingame.unnamedmarker");
-                    ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), markerName, null, Color.WHITE);
-
-                    drawn = true;
-                }
-            }
-        }
-
         if(!drawn) {
             super.drawOverlay(mc, mouseX, mouseY);
         }
@@ -242,27 +196,22 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
             int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
 
-            if(kf instanceof PositionKeyframe) {
+            if(kf.getValue() instanceof Position) {
                 if(!placeKeyframes) return;
                 textureX = KEYFRAME_PLACE_X;
                 textureY = KEYFRAME_PLACE_Y;
                 y += 0;
 
                 //If Spectator Keyframe, use different texture
-                if(((PositionKeyframe) kf).getSpectatedEntityID() != null) {
+                if(((Keyframe<Position>) kf).getValue().getSpectatedEntityID() != null) {
                     textureX = KEYFRAME_SPEC_X;
                     textureY = KEYFRAME_SPEC_Y;
                 }
-            } else if(kf instanceof TimeKeyframe) {
+            } else if(kf.getValue() instanceof TimestampValue) {
                 if(!timeKeyframes) return;
                 textureX = KEYFRAME_TIME_X;
                 textureY = KEYFRAME_TIME_Y;
                 y += 5;
-            } else if(kf instanceof MarkerKeyframe) {
-                if(!markerKeyframes) return;
-                textureX = KEYFRAME_MARKER_X;
-                textureY = KEYFRAME_MARKER_Y;
-                y += 10;
             } else {
                 throw new UnsupportedOperationException("Unknown keyframe type: " + kf.getClass());
             }

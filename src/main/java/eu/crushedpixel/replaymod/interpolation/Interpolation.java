@@ -1,7 +1,7 @@
 package eu.crushedpixel.replaymod.interpolation;
 
-public interface Interpolation<T> {
+public interface Interpolation<T extends KeyframeValue> {
     void prepare();
-    T getPoint(float position);
+    void applyPoint(float position, T toEdit);
     void addPoint(T pos);
 }

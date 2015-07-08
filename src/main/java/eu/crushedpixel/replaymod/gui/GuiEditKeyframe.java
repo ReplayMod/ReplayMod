@@ -1,11 +1,12 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
-import eu.crushedpixel.replaymod.gui.elements.GuiAdvancedTextField;
 import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
-import eu.crushedpixel.replaymod.holders.*;
+import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.TimestampValue;
+import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.RoundUtils;
 import eu.crushedpixel.replaymod.utils.TimestampUtils;
@@ -13,7 +14,6 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
@@ -31,8 +31,6 @@ public class GuiEditKeyframe extends GuiScreen {
     private GuiNumberInput xCoord, yCoord, zCoord, pitch, yaw, roll;
     private GuiNumberInput min, sec, ms;
 
-    private GuiAdvancedTextField markerNameInput;
-
     private List<GuiTextField> inputs = new ArrayList<GuiTextField>();
     private List<GuiTextField> posInputs = new ArrayList<GuiTextField>();
 
@@ -43,7 +41,6 @@ public class GuiEditKeyframe extends GuiScreen {
     private Keyframe keyframeBackup;
     private boolean save;
     private boolean posKeyframe;
-    private boolean markerKeyframe;
 
     private Keyframe previous, next;
 
@@ -57,27 +54,24 @@ public class GuiEditKeyframe extends GuiScreen {
     public GuiEditKeyframe(Keyframe keyframe) {
         this.keyframe = keyframe;
         this.keyframeBackup = keyframe.copy();
-        this.posKeyframe = keyframe instanceof PositionKeyframe;
-        boolean timeKeyframe = keyframe instanceof TimeKeyframe;
-        this.markerKeyframe = keyframe instanceof MarkerKeyframe;
+        this.posKeyframe = keyframe.getValue() instanceof Position;
+        boolean timeKeyframe = keyframe.getValue() instanceof TimestampValue;
 
         ReplayHandler.selectKeyframe(null);
 
+        KeyframeList<Keyframe<Position>> positionKeyframes = ReplayHandler.getPositionKeyframes();
+        KeyframeList<Keyframe<TimestampValue>> timeKeyframes = ReplayHandler.getTimeKeyframes();
+
         if(posKeyframe) {
-            previous = ReplayHandler.getPreviousPositionKeyframe(keyframe.getRealTimestamp() - 1);
-            next = ReplayHandler.getNextPositionKeyframe(keyframe.getRealTimestamp() + 1);
+            previous = positionKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);
+            next = positionKeyframes.getNextKeyframe(keyframe.getRealTimestamp() + 1);
 
             screenTitle = I18n.format("replaymod.gui.editkeyframe.title.pos");
         } else if(timeKeyframe) {
-            previous = ReplayHandler.getPreviousTimeKeyframe(keyframe.getRealTimestamp() - 1);
-            next = ReplayHandler.getNextTimeKeyframe(keyframe.getRealTimestamp() + 1);
+            previous = timeKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);
+            next = timeKeyframes.getNextKeyframe(keyframe.getRealTimestamp() + 1);
 
             screenTitle = I18n.format("replaymod.gui.editkeyframe.title.time");
-        } else if(markerKeyframe) {
-            previous = ReplayHandler.getPreviousMarkerKeyframe(keyframe.getRealTimestamp() - 1);
-            next = ReplayHandler.getNextMarkerKeyframe(keyframe.getRealTimestamp() + 1);
-
-            screenTitle = I18n.format("replaymod.gui.editkeyframe.title.marker");
         }
 
         ReplayHandler.selectKeyframe(keyframe);
@@ -113,7 +107,7 @@ public class GuiEditKeyframe extends GuiScreen {
 
             //Position/Virtual Time Input
             if(posKeyframe) {
-                Position pos = ((PositionKeyframe)keyframe).getPosition();
+                Position pos = ((Keyframe<Position>)keyframe).getValue();
                 xCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_X_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getX()), true);
                 yCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_Y_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getY()), true);
                 zCoord = new GuiNumberInput(GuiConstants.KEYFRAME_EDITOR_Z_INPUT, fontRendererObj, 0, 0, 100, null, null, RoundUtils.round(pos.getZ()), true);
@@ -129,11 +123,6 @@ public class GuiEditKeyframe extends GuiScreen {
                 posInputs.add(roll);
 
                 inputs.addAll(posInputs);
-            } else if(markerKeyframe) {
-                markerNameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 300, 20);
-                markerNameInput.setText(((MarkerKeyframe)keyframe).getName() == null ? "" : ((MarkerKeyframe)keyframe).getName());
-                inputs.add(markerNameInput);
-                markerNameInput.hint = I18n.format("replaymod.gui.editkeyframe.markername");
             }
         }
 
@@ -170,9 +159,6 @@ public class GuiEditKeyframe extends GuiScreen {
                 input.yPosition = i < 3 ? virtualY + 20 + i*30 : virtualY + 20 + (i-3)*30;
                 i++;
             }
-        } else if(markerKeyframe) {
-            markerNameInput.xPosition = (width-markerNameInput.width)/2;
-            markerNameInput.yPosition = virtualY + (virtualHeight-markerNameInput.height)/2;
         }
 
         saveButton.yPosition = cancelButton.yPosition = virtualY + virtualHeight - 20 - 5;
@@ -204,14 +190,12 @@ public class GuiEditKeyframe extends GuiScreen {
         } else {
             keyframe.setRealTimestamp(TimestampUtils.calculateTimestamp(min.getIntValue(), sec.getIntValue(), ms.getIntValue()));
             if(posKeyframe) {
-                ((PositionKeyframe)keyframe).setPosition(new Position(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
-                        zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float)yaw.getPreciseValue(),
-                        (float)roll.getPreciseValue()));
-            } else if(markerKeyframe) {
-                ((MarkerKeyframe)keyframe).setName(markerNameInput.getText().trim());
+                ((Keyframe<Position>)keyframe).setValue(new Position(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
+                        zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float) yaw.getPreciseValue(),
+                        (float) roll.getPreciseValue(), null));
             }
         }
-        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(ReplayHandler.getKeyframes()));
+        ReplayHandler.fireKeyframesModifyEvent();
         Keyboard.enableRepeatEvents(false);
     }
 

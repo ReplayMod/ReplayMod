@@ -4,11 +4,9 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
-import eu.crushedpixel.replaymod.holders.PositionKeyframe;
-import eu.crushedpixel.replaymod.holders.TimeKeyframe;
-import eu.crushedpixel.replaymod.interpolation.LinearPoint;
-import eu.crushedpixel.replaymod.interpolation.LinearTimestamp;
-import eu.crushedpixel.replaymod.interpolation.SplinePoint;
+import eu.crushedpixel.replaymod.holders.TimestampValue;
+import eu.crushedpixel.replaymod.interpolation.GenericLinearInterpolation;
+import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
@@ -28,9 +26,9 @@ public class ReplayProcess {
 
     private static boolean linear = false;
 
-    private static SplinePoint motionSpline = null;
-    private static LinearPoint motionLinear = null;
-    private static LinearTimestamp timeLinear = null;
+    private static GenericSplineInterpolation<Position> motionSpline = null;
+    private static GenericLinearInterpolation<Position> motionLinear = null;
+    private static GenericLinearInterpolation<TimestampValue> timeLinear = null;
 
     private static double previousReplaySpeed = 0;
 
@@ -77,20 +75,19 @@ public class ReplayProcess {
         ReplayMod.chatMessageHandler.initialize();
 
         //if not enough keyframes, abort and leave chat message
-        if(ReplayHandler.getPosKeyframeCount() < 2 || ReplayHandler.getTimeKeyframeCount() < 1) {
+        if(ReplayHandler.getPositionKeyframes().size() < 2 || ReplayHandler.getTimeKeyframes().size() < 1) {
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.morekeyframes", ChatMessageType.WARNING);
             return;
         }
 
-        ReplayHandler.sortKeyframes();
         ReplayHandler.setInPath(true);
         ReplayMod.replaySender.setAsyncMode(false);
 
         if (renderOptions == null) {
-            //gets first Timestamp and sets Replay Time to it
-            TimeKeyframe tf = ReplayHandler.getFirstTimeKeyframe();
+            //gets first Value and sets Replay Time to it
+            Keyframe<TimestampValue> tf = ReplayHandler.getTimeKeyframes().first();
             if (tf != null) {
-                int ts = tf.getTimestamp();
+                int ts = (int)tf.getValue().value;
                 if (ts < ReplayMod.replaySender.currentTimeStamp()) {
                     mc.displayGuiScreen(null);
                 }
@@ -165,37 +162,29 @@ public class ReplayProcess {
 
         if(justCheck) return;
 
-        int posCount = ReplayHandler.getPosKeyframeCount();
-        int timeCount = ReplayHandler.getTimeKeyframeCount();
+        int posCount = ReplayHandler.getPositionKeyframes().size();
+        int timeCount = ReplayHandler.getTimeKeyframes().size();
 
         if(!linear && motionSpline == null) {
             //set up spline path
-            motionSpline = new SplinePoint();
-            for(Keyframe kf : ReplayHandler.getKeyframes()) {
-                if(kf instanceof PositionKeyframe) {
-                    PositionKeyframe pkf = (PositionKeyframe) kf;
-                    Position pos = pkf.getPosition();
-                    motionSpline.addPoint(pos);
-                }
+            motionSpline = new GenericSplineInterpolation<Position>();
+            for(Keyframe<Position> kf : ReplayHandler.getPositionKeyframes()) {
+                motionSpline.addPoint(kf.getValue());
             }
         }
 
         if(linear && motionLinear == null) {
             //set up linear path
-            motionLinear = new LinearPoint();
-            for(Keyframe kf : ReplayHandler.getKeyframes()) {
-                if(kf instanceof PositionKeyframe) {
-                    PositionKeyframe pkf = (PositionKeyframe) kf;
-                    Position pos = pkf.getPosition();
-                    motionLinear.addPoint(pos);
-                }
+            motionLinear = new GenericLinearInterpolation<Position>();
+            for(Keyframe<Position> kf : ReplayHandler.getPositionKeyframes()) {
+                motionLinear.addPoint(kf.getValue());
             }
         }
         if(timeLinear == null) {
-            timeLinear = new LinearTimestamp();
-            for(Keyframe kf : ReplayHandler.getKeyframes()) {
-                if(kf instanceof TimeKeyframe) {
-                    timeLinear.addPoint(((TimeKeyframe) kf).getTimestamp());
+            timeLinear = new GenericLinearInterpolation<TimestampValue>();
+            for(Keyframe<TimestampValue> kf : ReplayHandler.getTimeKeyframes()) {
+                if(kf.getValue() instanceof TimestampValue) {
+                    timeLinear.addPoint(kf.getValue());
                 }
             }
         }
@@ -211,16 +200,15 @@ public class ReplayProcess {
 
         int curRealReplayTime = (int) (lastRealReplayTime + timeStep);
 
-        PositionKeyframe lastPos = ReplayHandler.getPreviousPositionKeyframe(curRealReplayTime);
-        PositionKeyframe nextPos = ReplayHandler.getNextPositionKeyframe(curRealReplayTime);
-
+        Keyframe<Position> lastPos = ReplayHandler.getPositionKeyframes().getPreviousKeyframe(curRealReplayTime);
+        Keyframe<Position> nextPos = ReplayHandler.getPositionKeyframes().getNextKeyframe(curRealReplayTime);
 
         boolean spectating = false;
 
         //if it's between two spectator keyframes sharing the same entity, spectate this entity
         if(lastPos != null && nextPos != null) {
-            if(lastPos.getSpectatedEntityID() != null && nextPos.getSpectatedEntityID() != null) {
-                if(lastPos.getSpectatedEntityID().equals(nextPos.getSpectatedEntityID())) {
+            if(lastPos.getValue().getSpectatedEntityID() != null && nextPos.getValue().getSpectatedEntityID() != null) {
+                if(lastPos.getValue().getSpectatedEntityID().equals(nextPos.getValue().getSpectatedEntityID())) {
                     spectating = true;
                 }
             }
@@ -245,8 +233,8 @@ public class ReplayProcess {
             }
         }
 
-        TimeKeyframe lastTime = ReplayHandler.getPreviousTimeKeyframe(curRealReplayTime);
-        TimeKeyframe nextTime = ReplayHandler.getNextTimeKeyframe(curRealReplayTime);
+        Keyframe<TimestampValue> lastTime = ReplayHandler.getTimeKeyframes().getPreviousKeyframe(curRealReplayTime);
+        Keyframe<TimestampValue> nextTime = ReplayHandler.getTimeKeyframes().getNextKeyframe(curRealReplayTime);
 
         int lastTimeStamp = 0;
         int nextTimeStamp = 0;
@@ -271,7 +259,7 @@ public class ReplayProcess {
                 }
 
                 if(!(nextTime == null || lastTime == null)) {
-                    curSpeed = ((double) ((nextTime.getTimestamp() - lastTime.getTimestamp()))) / ((double) ((nextTimeStamp - lastTimeStamp)));
+                    curSpeed = ((double) (((int)nextTime.getValue().value - (int)lastTime.getValue().value))) / ((double) ((nextTimeStamp - lastTimeStamp)));
                 }
 
                 if(lastTimeStamp == nextTimeStamp) {
@@ -292,46 +280,45 @@ public class ReplayProcess {
         float currentTimeStepPerc = (float) currentTime / (float) currentTimeDiff; //The percentage of the travelled path between the current timestamps
         if(Float.isInfinite(currentTimeStepPerc)) currentTimeStepPerc = 0;
 
-        float splinePos = ((float) ReplayHandler.getKeyframeIndex(lastPos) + currentPosStepPerc) / (float) (posCount - 1);
-        float timePos = ((float) ReplayHandler.getKeyframeIndex(lastTime) + currentTimeStepPerc) / (float) (timeCount - 1);
+        float splinePos = ((float) ReplayHandler.getPositionKeyframes().indexOf(lastPos) + currentPosStepPerc) / (float) (posCount - 1);
+        float timePos = ((float) ReplayHandler.getTimeKeyframes().indexOf(lastTime) + currentTimeStepPerc) / (float) (timeCount - 1);
 
         if(!spectating) {
             ReplayHandler.spectateCamera();
-            Position pos = null;
+            Position pos = new Position();
             if(posCount > 1) {
                 if(!linear) {
-                    pos = motionSpline.getPoint(Math.max(0, Math.min(1, splinePos)));
+                    motionSpline.applyPoint(Math.max(0, Math.min(1, splinePos)), pos);
                 } else {
-                    pos = motionLinear.getPoint(Math.max(0, Math.min(1, splinePos)));
+                    motionLinear.applyPoint(Math.max(0, Math.min(1, splinePos)), pos);
                 }
             } else {
                 if(posCount == 1) {
-                    PositionKeyframe keyframe = ReplayHandler.getFirstPositionKeyframe();
+                    Keyframe<Position> keyframe = ReplayHandler.getPositionKeyframes().first();
                     assert keyframe != null;
-                    pos = keyframe.getPosition();
+                    pos = keyframe.getValue();
                 }
             }
 
             if(pos != null) {
-                ReplayHandler.setCameraTilt(pos.getRoll());
+                ReplayHandler.setCameraTilt((float)pos.getRoll());
                 ReplayHandler.getCameraEntity().movePath(pos);
             }
         } else {
-            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getSpectatedEntityID()));
+            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getValue().getSpectatedEntityID()));
         }
 
         Integer curTimestamp = null;
         if(timeLinear != null && timeCount > 1) {
-            curTimestamp = timeLinear.getPoint(Math.max(0, Math.min(1, timePos)));
+            TimestampValue timestampValue = new TimestampValue();
+            timeLinear.applyPoint(Math.max(0, Math.min(1, timePos)), timestampValue);
+            curTimestamp = (int) timestampValue.value;
         }
 
         if(!isVideoRecording()) ReplayMod.replaySender.setReplaySpeed(curSpeed);
-        //if(curSpeed > 0)
 
         if(curTimestamp != null)
             ReplayMod.replaySender.sendPacketsTill(curTimestamp);
-
-        //splinePos = (index of last entry + add) / total entries
 
         lastRealReplayTime = curRealReplayTime;
         lastRealTime = curTime;

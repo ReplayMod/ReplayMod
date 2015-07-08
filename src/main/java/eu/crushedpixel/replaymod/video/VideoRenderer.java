@@ -5,12 +5,11 @@ import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.gui.GuiVideoRenderer;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
-import eu.crushedpixel.replaymod.holders.PositionKeyframe;
-import eu.crushedpixel.replaymod.holders.TimeKeyframe;
+import eu.crushedpixel.replaymod.holders.TimestampValue;
+import eu.crushedpixel.replaymod.interpolation.GenericLinearInterpolation;
+import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
 import eu.crushedpixel.replaymod.interpolation.Interpolation;
-import eu.crushedpixel.replaymod.interpolation.LinearPoint;
-import eu.crushedpixel.replaymod.interpolation.LinearTimestamp;
-import eu.crushedpixel.replaymod.interpolation.SplinePoint;
+import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.renderer.ChunkLoadingRenderGlobal;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
@@ -44,7 +43,7 @@ public class VideoRenderer {
 
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
     private Interpolation<Position> movement;
-    private Interpolation<Integer> time;
+    private Interpolation<TimestampValue> time;
 
     private int framesDone;
     private int totalFrames;
@@ -80,9 +79,13 @@ public class VideoRenderer {
         // Note that it is impossible to also get the interpolation between their latest position
         // and the one in the recording correct as there's no reliable way to tell when the server ticks
         // or when we should be done with the interpolation of the entity
-        int videoStart = time.getPoint(0);
+        TimestampValue timestampValue = new TimestampValue();
+        time.applyPoint(0, timestampValue);
+
+        int videoStart = (int) timestampValue.value;
+
         if (videoStart > 1000) {
-            int replayTime = time.getPoint(0) - 1000;
+            int replayTime = videoStart - 1000;
             timer.elapsedPartialTicks = timer.renderPartialTicks = 0;
             timer.timerSpeed = 1;
             while (replayTime < videoStart) {
@@ -132,26 +135,33 @@ public class VideoRenderer {
 
         fps = options.getFps();
         if (options.isLinearMovement()) {
-            movement = new LinearPoint();
+            movement = new GenericLinearInterpolation<Position>();
         } else {
-            movement = new SplinePoint();
+            movement = new GenericSplineInterpolation<Position>();
         }
-        time = new LinearTimestamp();
+        time = new GenericLinearInterpolation<TimestampValue>();
 
         int duration = 0;
         int posKeyframes = 0;
-        for (Keyframe keyframe : ReplayHandler.getKeyframes()) {
+
+        for(Keyframe<Position> keyframe : ReplayHandler.getPositionKeyframes()) {
             if (keyframe.getRealTimestamp() > duration) {
                 duration = keyframe.getRealTimestamp();
             }
-            if(keyframe instanceof PositionKeyframe) {
-                movement.addPoint(((PositionKeyframe) keyframe).getPosition());
-                posKeyframes++;
-            }
-            if (keyframe instanceof TimeKeyframe) {
-                time.addPoint(((TimeKeyframe) keyframe).getTimestamp());
-            }
+
+            movement.addPoint(keyframe.getValue());
+            posKeyframes++;
         }
+
+        for(Keyframe<TimestampValue> keyframe : ReplayHandler.getTimeKeyframes()) {
+            if (keyframe.getRealTimestamp() > duration) {
+                duration = keyframe.getRealTimestamp();
+            }
+
+            int timestamp = (int)keyframe.getValue().value;
+            time.addPoint(new TimestampValue(timestamp));
+        }
+
         totalFrames = duration*fps/1000;
 
         if (posKeyframes >= 2) {
@@ -195,6 +205,8 @@ public class VideoRenderer {
     }
 
     private void updateCam() {
+        KeyframeList<Keyframe<Position>> positionKeyframes = ReplayHandler.getPositionKeyframes();
+
         if (ReplayHandler.getCameraEntity() == null) {
             if (mc.theWorld == null) {
                 return; // World hasn't been sent yet
@@ -202,19 +214,19 @@ public class VideoRenderer {
             ReplayHandler.setCameraEntity(new CameraEntity(mc.theWorld));
         }
         int videoTime = framesDone * 1000 / fps;
-        int posCount = ReplayHandler.getPosKeyframeCount();
+        int posCount = ReplayHandler.getPositionKeyframes().size();
 
-        Position pos;
-        PositionKeyframe lastPos = ReplayHandler.getPreviousPositionKeyframe(videoTime);
-        PositionKeyframe nextPos = null;
+        Position pos = new Position();
+        Keyframe<Position> lastPos = positionKeyframes.getPreviousKeyframe(videoTime);
+        Keyframe<Position> nextPos = null;
         if (movement == null || lastPos == null) {
             // Stay at one position, no movement
-            PositionKeyframe keyframe = ReplayHandler.getNextPositionKeyframe(-1);
+            Keyframe<Position> keyframe = positionKeyframes.getNextKeyframe(-1);
             assert keyframe != null;
-            pos = keyframe.getPosition();
+            pos = keyframe.getValue();
         } else {
             // Position interpolation
-            nextPos = ReplayHandler.getNextPositionKeyframe(videoTime);
+            nextPos = positionKeyframes.getNextKeyframe(videoTime);
 
             int lastPosStamp = lastPos.getRealTimestamp();
             int nextPosStamp = (nextPos == null ? lastPos : nextPos).getRealTimestamp();
@@ -223,16 +235,16 @@ public class VideoRenderer {
             float diffPct = (float) (videoTime - lastPosStamp) / diffLength;
             if(Float.isInfinite(diffPct) || Float.isNaN(diffPct)) diffPct = 0;
 
-            float totalPct = (ReplayHandler.getKeyframeIndex(lastPos) + diffPct) / (posCount-1);
-            pos = movement.getPoint(Math.max(0, Math.min(1, totalPct)));
+            float totalPct = (positionKeyframes.indexOf(lastPos) + diffPct) / (posCount-1);
+            movement.applyPoint(Math.max(0, Math.min(1, totalPct)), pos);
         }
 
         boolean spectating = false;
 
         //if it's between two spectator keyframes sharing the same entity, spectate this entity
         if(lastPos != null && nextPos != null) {
-            if(lastPos.getSpectatedEntityID() != null && nextPos.getSpectatedEntityID() != null) {
-                if(lastPos.getSpectatedEntityID().equals(nextPos.getSpectatedEntityID())) {
+            if(lastPos.getValue().getSpectatedEntityID() != null && nextPos.getValue().getSpectatedEntityID() != null) {
+                if(lastPos.getValue().getSpectatedEntityID().equals(nextPos.getValue().getSpectatedEntityID())) {
                     spectating = true;
                 }
             }
@@ -245,24 +257,26 @@ public class VideoRenderer {
             ReplayHandler.spectateEntity(ReplayHandler.getCameraEntity());
             
             if(pos != null) {
-                ReplayHandler.setCameraTilt(pos.getRoll());
+                ReplayHandler.setCameraTilt((float)pos.getRoll());
                 ReplayHandler.getCameraEntity().movePath(pos);
                 mc.entityRenderer.fovModifierHand = mc.entityRenderer.fovModifierHandPrev = 1;
             }
         } else {
-            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getSpectatedEntityID()));
+            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getValue().getSpectatedEntityID()));
         }
 
     }
 
     private void updateTime(Timer timer, int framesDone) {
+        KeyframeList<Keyframe<TimestampValue>> timeKeyframes = ReplayHandler.getTimeKeyframes();
+
         int videoTime = framesDone * 1000 / fps;
-        int timeCount = ReplayHandler.getTimeKeyframeCount();
+        int timeCount = timeKeyframes.size();
 
         // WARNING: The rest of this method contains some magic for which Marius is responsible
         // Time interpolation
-        TimeKeyframe lastTime = ReplayHandler.getPreviousTimeKeyframe(videoTime);
-        TimeKeyframe nextTime = ReplayHandler.getNextTimeKeyframe(videoTime);
+        Keyframe<TimestampValue> lastTime = timeKeyframes.getPreviousKeyframe(videoTime);
+        Keyframe<TimestampValue> nextTime = timeKeyframes.getNextKeyframe(videoTime);
 
         int lastTimeStamp = 0;
         int nextTimeStamp = 0;
@@ -286,7 +300,7 @@ public class VideoRenderer {
                 }
 
                 if(!(nextTime == null || lastTime == null)) {
-                    curSpeed = ((double)((nextTime.getTimestamp()-lastTime.getTimestamp())))/((double)((nextTimeStamp-lastTimeStamp)));
+                    curSpeed = ((double)(((int)nextTime.getValue().value-(int)lastTime.getValue().value)))/((double)((nextTimeStamp-lastTimeStamp)));
                 }
 
                 if(lastTimeStamp == nextTimeStamp) {
@@ -301,9 +315,11 @@ public class VideoRenderer {
         float currentTimeStepPerc = (float)currentTime/(float)currentTimeDiff; //The percentage of the travelled path between the current timestamps
         if(Float.isInfinite(currentTimeStepPerc) || Float.isNaN(currentTimeStepPerc)) currentTimeStepPerc = 0;
 
-        float timePos = (ReplayHandler.getKeyframeIndex(lastTime) + currentTimeStepPerc) / (timeCount-1f);
+        float timePos = (timeKeyframes.indexOf(lastTime) + currentTimeStepPerc) / (timeCount-1f);
 
-        Integer replayTime = time.getPoint(Math.max(0, Math.min(1, timePos)));
+        TimestampValue timestampValue = new TimestampValue();
+        time.applyPoint(Math.max(0, Math.min(1, timePos)), timestampValue);
+        Integer replayTime = (int) timestampValue.value;
         if(replayTime != null) {
             replaySender.sendPacketsTill(replayTime);
         }

@@ -1,16 +1,12 @@
 package eu.crushedpixel.replaymod.renderer;
 
-import eu.crushedpixel.replaymod.holders.CustomImageObject;
-import eu.crushedpixel.replaymod.holders.ExtendedPosition;
+import eu.crushedpixel.replaymod.assets.CustomImageObject;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.lwjgl.opengl.GL11;
 
 /**
  * Allows users to render custom images in the World.
@@ -51,6 +47,8 @@ public class CustomObjectRenderer {
     }
 
     private void drawCustomImageObject(double playerX, double playerY, double playerZ, CustomImageObject customImageObject) {
+        //TODO: Get current Transformations for given Timestamp
+        /*
         GlStateManager.pushMatrix();
         GlStateManager.enableTexture2D();
         GlStateManager.enableLighting();
@@ -64,7 +62,7 @@ public class CustomObjectRenderer {
 
         mc.renderEngine.bindTexture(customImageObject.getResourceLocation());
 
-        ExtendedPosition objectPosition = customImageObject.getPosition();
+        Transformations objectPosition = customImageObject.getPosition();
 
         double x = objectPosition.getX() - playerX;
         double y = objectPosition.getY() - playerY;
@@ -111,5 +109,6 @@ public class CustomObjectRenderer {
         GlStateManager.disableTexture2D();
         GlStateManager.enableLighting();
         GlStateManager.popMatrix();
+        */
     }
 }

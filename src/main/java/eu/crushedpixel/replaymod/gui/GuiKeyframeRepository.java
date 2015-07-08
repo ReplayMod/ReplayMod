@@ -6,7 +6,6 @@ import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
-import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -132,12 +131,9 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
         if(!button.enabled) return;
         switch(button.id) {
             case GuiConstants.KEYFRAME_REPOSITORY_ADD_BUTTON:
-                List<Keyframe> kfs = new ArrayList<Keyframe>(ReplayHandler.getKeyframes());
-                for(Keyframe kf : new ArrayList<Keyframe>(kfs)) {
-                    if(kf instanceof MarkerKeyframe) kfs.remove(kf);
-                }
+                List<Keyframe> kfs = new ArrayList<Keyframe>(ReplayHandler.getAllKeyframes());
 
-                Keyframe[] keyframes = kfs.toArray(new Keyframe[ReplayHandler.getKeyframes().size()]);
+                Keyframe[] keyframes = kfs.toArray(new Keyframe[ReplayHandler.getAllKeyframes().size()]);
                 KeyframeSet newSet = new KeyframeSet(I18n.format("replaymod.gui.keyframerepository.preset.defaultname"), keyframes);
                 if(newSet.getPositionKeyframeCount() < 2 || newSet.getTimeKeyframeCount() < 1) {
                     message = I18n.format("replaymod.chat.morekeyframes");

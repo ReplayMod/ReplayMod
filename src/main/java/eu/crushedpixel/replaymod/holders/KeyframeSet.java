@@ -8,8 +8,8 @@ import java.util.List;
 
 public class KeyframeSet implements GuiEntryListEntry {
     private String name;
-    private PositionKeyframe[] positionKeyframes;
-    private TimeKeyframe[] timeKeyframes;
+    private Keyframe<Position>[] positionKeyframes;
+    private Keyframe<TimestampValue>[] timeKeyframes;
 
     public KeyframeSet(String name, Keyframe[] keyframes) {
         this.name = name;
@@ -21,18 +21,18 @@ public class KeyframeSet implements GuiEntryListEntry {
     }
 
     public void setKeyframes(Keyframe[] keyframes) {
-        List<PositionKeyframe> posKFList = new ArrayList<PositionKeyframe>();
-        List<TimeKeyframe> timeKFList = new ArrayList<TimeKeyframe>();
+        List<Keyframe<Position>> posKFList = new ArrayList<Keyframe<Position>>();
+        List<Keyframe<TimestampValue>> timeKFList = new ArrayList<Keyframe<TimestampValue>>();
 
         for(Keyframe kf : keyframes) {
-            if(kf instanceof PositionKeyframe)
-                posKFList.add((PositionKeyframe)kf);
-            else if(kf instanceof TimeKeyframe)
-                timeKFList.add((TimeKeyframe) kf);
+            if(kf.getValue() instanceof Position)
+                posKFList.add((Keyframe<Position>)kf);
+            else if(kf.getValue() instanceof TimestampValue)
+                timeKFList.add((Keyframe<TimestampValue>) kf);
         }
 
-        positionKeyframes = posKFList.toArray(new PositionKeyframe[posKFList.size()]);
-        timeKeyframes = timeKFList.toArray(new TimeKeyframe[timeKFList.size()]);
+        positionKeyframes = posKFList.toArray(new Keyframe[posKFList.size()]);
+        timeKeyframes = timeKFList.toArray(new Keyframe[timeKFList.size()]);
     }
 
     public String getName() {

@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.holders;
 
+import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,9 +8,12 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode
 @AllArgsConstructor
-public abstract class Keyframe {
+public class Keyframe<T extends KeyframeValue> {
 
     private int realTimestamp;
+    private T value;
 
-    public abstract Keyframe copy();
+    public Keyframe copy() {
+        return new Keyframe<T>(realTimestamp, value);
+    }
 }

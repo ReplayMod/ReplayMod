@@ -3,10 +3,12 @@ package eu.crushedpixel.replaymod.replay;
 import com.mojang.authlib.GameProfile;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.assets.AssetRepository;
+import eu.crushedpixel.replaymod.assets.CustomImageObject;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.events.ReplayExitEvent;
 import eu.crushedpixel.replaymod.holders.*;
+import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
@@ -41,15 +43,22 @@ public class ReplayHandler {
     private static Minecraft mc = Minecraft.getMinecraft();
     private static OpenEmbeddedChannel channel;
     private static int realTimelinePosition = 0;
+
     private static Keyframe selectedKeyframe;
+    private static MarkerKeyframe selectedMarkerKeyframe;
+
     private static boolean inPath = false;
     private static CameraEntity cameraEntity;
-    private static List<Keyframe> keyframes = new ArrayList<Keyframe>();
+
+    private static KeyframeList<Keyframe<Position>> positionKeyframes = new KeyframeList<Keyframe<Position>>();
+    private static KeyframeList<Keyframe<TimestampValue>> timeKeyframes = new KeyframeList<Keyframe<TimestampValue>>();
+
     private static boolean inReplay = false;
     private static Entity currentEntity = null;
     private static Position lastPosition = null;
 
     private static MarkerKeyframe[] initialMarkers = new MarkerKeyframe[0];
+    private static List<MarkerKeyframe> markerKeyframes = new ArrayList<MarkerKeyframe>();
 
     private static float cameraTilt = 0;
 
@@ -85,18 +94,12 @@ public class ReplayHandler {
     }
 
     public static MarkerKeyframe[] getMarkers() {
-        List<MarkerKeyframe> markers = new ArrayList<MarkerKeyframe>();
-        for(Keyframe kf : keyframes) {
-            if(kf instanceof MarkerKeyframe) markers.add((MarkerKeyframe)kf);
-        }
-        return markers.toArray(new MarkerKeyframe[markers.size()]);
+        return markerKeyframes.toArray(new MarkerKeyframe[markerKeyframes.size()]);
     }
 
     public static void setMarkers(MarkerKeyframe[] m, boolean write) {
-        for(Keyframe kf : new ArrayList<Keyframe>(keyframes)) {
-            if(kf instanceof MarkerKeyframe) keyframes.remove(kf);
-        }
-        Collections.addAll(keyframes, m);
+        markerKeyframes.clear();
+        Collections.addAll(markerKeyframes, m);
 
         if(write) {
             try {
@@ -109,8 +112,6 @@ public class ReplayHandler {
                 e.printStackTrace();
             }
         }
-
-        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
     }
 
     public static void useKeyframePresetFromRepository(int index) {
@@ -118,15 +119,17 @@ public class ReplayHandler {
     }
 
     public static void useKeyframePreset(Keyframe[] kfs) {
-        MarkerKeyframe[] markers = getMarkers();
+        positionKeyframes.clear();
+        timeKeyframes.clear();
+        for(Keyframe kf : kfs) {
+            if(kf.getValue() instanceof Position) {
+                positionKeyframes.add(kf);
+            } else if(kf.getValue() instanceof TimestampValue) {
+                timeKeyframes.add(kf);
+            }
+        }
 
-        keyframes = new ArrayList<Keyframe>(Arrays.asList(kfs));
-
-        Collections.addAll(keyframes, markers);
-
-        if(!(selectedKeyframe instanceof MarkerKeyframe)) selectedKeyframe = null;
-
-        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
+        fireKeyframesModifyEvent();
     }
 
     public static void spectateEntity(Entity e) {
@@ -143,7 +146,7 @@ public class ReplayHandler {
 
     public static void spectateCamera() {
         if(currentEntity != null) {
-            Position prev = new Position(currentEntity);
+            Position prev = new Position(currentEntity, false);
             cameraEntity.movePath(prev);
         }
         currentEntity = cameraEntity;
@@ -222,136 +225,75 @@ public class ReplayHandler {
         cameraTilt += tilt;
     }
 
-    public static void sortKeyframes() {
-        Collections.sort(keyframes, new KeyframeComparator());
+    public static void toggleMarker() {
+        if(selectedMarkerKeyframe != null) markerKeyframes.remove(selectedMarkerKeyframe);
+        else {
+            Position pos = new Position(mc.getRenderViewEntity(), false);
+            int timestamp = ReplayMod.replaySender.currentTimeStamp();
+            markerKeyframes.add(new MarkerKeyframe(timestamp, pos, null));
+        }
     }
 
-    public static void toggleMarker() {
-        if(selectedKeyframe instanceof MarkerKeyframe) removeKeyframe(selectedKeyframe);
-        else {
-            Position pos = new Position(mc.getRenderViewEntity());
-            int timestamp = ReplayMod.replaySender.currentTimeStamp();
-            addKeyframe(new MarkerKeyframe(pos, timestamp, null));
+    public static void addTimeKeyframe(Keyframe<TimestampValue> keyframe) {
+        timeKeyframes.add(keyframe);
+        selectKeyframe(keyframe);
+
+        fireKeyframesModifyEvent();
+    }
+
+    public static void addPositionKeyframe(Keyframe<Position> keyframe) {
+        positionKeyframes.add(keyframe);
+        selectKeyframe(keyframe);
+
+        Float a = null;
+        Float b;
+
+        for(Keyframe kf : positionKeyframes) {
+            if(!(kf.getValue() instanceof Position)) continue;
+            Keyframe<Position> pkf = (Keyframe<Position>)kf;
+            Position pos = pkf.getValue();
+            b = (float)pos.getYaw() % 360;
+            if(a != null) {
+                float diff = b-a;
+                if(Math.abs(diff) > 180) {
+                    b = a - (360 - diff) % 360;
+                    pos.setYaw(b);
+                    pkf.setValue(pos);
+                }
+            }
+            a = b;
         }
+
+        fireKeyframesModifyEvent();
     }
 
     public static void addKeyframe(Keyframe keyframe) {
-        keyframes.add(keyframe);
-        selectKeyframe(keyframe);
-
-        if(keyframe instanceof PositionKeyframe) {
-            Float a = null;
-            Float b;
-
-            for(Keyframe kf : keyframes) {
-                if(!(kf instanceof PositionKeyframe)) continue;
-                PositionKeyframe pkf = (PositionKeyframe)kf;
-                Position pos = pkf.getPosition();
-                b = pos.getYaw() % 360;
-                if(a != null) {
-                    float diff = b-a;
-                    if(Math.abs(diff) > 180) {
-                        b = a - (360 - diff) % 360;
-                        pos.setYaw(b);
-                        pkf.setPosition(pos);
-                    }
-                }
-                a = b;
-            }
+        if(keyframe.getValue() instanceof Position) {
+            addPositionKeyframe(keyframe);
+        } else if(keyframe.getValue() instanceof TimestampValue) {
+            addTimeKeyframe(keyframe);
         }
-
-        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
     }
 
     public static void removeKeyframe(Keyframe keyframe) {
-        keyframes.remove(keyframe);
+        if(keyframe.getValue() instanceof Position) {
+            positionKeyframes.remove(keyframe);
+        } else if(keyframe.getValue() instanceof TimestampValue) {
+            timeKeyframes.remove(keyframe);
+        }
+
         if(keyframe == selectedKeyframe) {
             selectKeyframe(null);
-        } else {
-            sortKeyframes();
         }
 
-        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
-    }
-
-    public static int getKeyframeIndex(TimeKeyframe timeKeyframe) {
-        int index = 0;
-        for(Keyframe kf : keyframes) {
-            if(kf == timeKeyframe) return index;
-            else if(kf instanceof TimeKeyframe) index++;
-        }
-        return -1;
-    }
-
-    public static int getKeyframeIndex(PositionKeyframe posKeyframe) {
-        int index = 0;
-        for(Keyframe kf : keyframes) {
-            if(kf == posKeyframe) return index;
-            else if(kf instanceof PositionKeyframe) index++;
-        }
-        return -1;
-    }
-
-    public static int getPosKeyframeCount() {
-        int size = 0;
-        for(Keyframe kf : keyframes) {
-            if(kf instanceof PositionKeyframe) size++;
-        }
-        return size;
-    }
-
-    public static int getTimeKeyframeCount() {
-        int size = 0;
-        for(Keyframe kf : keyframes) {
-            if(kf instanceof TimeKeyframe) size++;
-        }
-        return size;
-    }
-
-    public static TimeKeyframe getClosestTimeKeyframeForRealTime(int realTime, int tolerance) {
-        List<TimeKeyframe> found = new ArrayList<TimeKeyframe>();
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof TimeKeyframe)) continue;
-            if(Math.abs(kf.getRealTimestamp() - realTime) <= tolerance) {
-                found.add((TimeKeyframe) kf);
-            }
-        }
-
-        TimeKeyframe closest = null;
-
-        for(TimeKeyframe kf : found) {
-            if(closest == null || Math.abs(closest.getTimestamp() - realTime) > Math.abs(kf.getRealTimestamp() - realTime)) {
-                closest = kf;
-            }
-        }
-        return closest;
-    }
-
-    public static PositionKeyframe getClosestPlaceKeyframeForRealTime(int realTime, int tolerance) {
-        List<PositionKeyframe> found = new ArrayList<PositionKeyframe>();
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof PositionKeyframe)) continue;
-            if(Math.abs(kf.getRealTimestamp() - realTime) <= tolerance) {
-                found.add((PositionKeyframe) kf);
-            }
-        }
-
-        PositionKeyframe closest = null;
-
-        for(PositionKeyframe kf : found) {
-            if(closest == null || Math.abs(closest.getRealTimestamp() - realTime) > Math.abs(kf.getRealTimestamp() - realTime)) {
-                closest = kf;
-            }
-        }
-        return closest;
+        fireKeyframesModifyEvent();
     }
 
     public static MarkerKeyframe getClosestMarkerForRealTime(int realTime, int tolerance) {
         List<MarkerKeyframe> found = new ArrayList<MarkerKeyframe>();
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof MarkerKeyframe)) continue;
+        for(MarkerKeyframe kf : markerKeyframes) {
             if(Math.abs(kf.getRealTimestamp() - realTime) <= tolerance) {
-                found.add((MarkerKeyframe) kf);
+                found.add(kf);
             }
         }
 
@@ -365,76 +307,11 @@ public class ReplayHandler {
         return closest;
     }
 
-    public static PositionKeyframe getPreviousPositionKeyframe(int realTime) {
-        if(keyframes.isEmpty()) return null;
-        PositionKeyframe backup = null;
-        List<PositionKeyframe> found = new ArrayList<PositionKeyframe>();
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof PositionKeyframe)) continue;
-            if(kf.getRealTimestamp() < realTime) {
-                found.add((PositionKeyframe)kf);
-            } else if(kf.getRealTimestamp() == realTime) {
-                backup = (PositionKeyframe)kf;
-            }
-        }
-
-        if(found.size() > 0)
-            return found.get(found.size() - 1); //last element is nearest
-        else return backup;
-    }
-
-    public static PositionKeyframe getNextPositionKeyframe(int realTime) {
-        if(keyframes.isEmpty()) return null;
-        PositionKeyframe backup = null;
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof PositionKeyframe)) continue;
-            if(kf.getRealTimestamp() > realTime) {
-                return (PositionKeyframe)kf; //first found element is next
-            } else if(kf.getRealTimestamp() == realTime) {
-                backup = (PositionKeyframe)kf;
-            }
-        }
-        return backup;
-    }
-
-    public static TimeKeyframe getPreviousTimeKeyframe(int realTime) {
-        if(keyframes.isEmpty()) return null;
-        TimeKeyframe backup = null;
-        List<TimeKeyframe> found = new ArrayList<TimeKeyframe>();
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof TimeKeyframe)) continue;
-            if(kf.getRealTimestamp() < realTime) {
-                found.add((TimeKeyframe)kf);
-            } else if(kf.getRealTimestamp() == realTime) {
-                backup = (TimeKeyframe)kf;
-            }
-        }
-
-        if(found.size() > 0)
-            return found.get(found.size() - 1); //last element is nearest
-        else return backup;
-    }
-
-    public static TimeKeyframe getNextTimeKeyframe(int realTime) {
-        if(keyframes.isEmpty()) return null;
-        TimeKeyframe backup = null;
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof TimeKeyframe)) continue;
-            if(kf.getRealTimestamp() > realTime) {
-                return (TimeKeyframe) kf; //first found element is next
-            } else if(kf.getRealTimestamp() == realTime) {
-                backup = (TimeKeyframe)kf;
-            }
-        }
-        return backup;
-    }
-
     public static MarkerKeyframe getPreviousMarkerKeyframe(int realTime) {
-        if(keyframes.isEmpty()) return null;
+        if(markerKeyframes.isEmpty()) return null;
         MarkerKeyframe backup = null;
         List<MarkerKeyframe> found = new ArrayList<MarkerKeyframe>();
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof MarkerKeyframe)) continue;
+        for(MarkerKeyframe kf : markerKeyframes) {
             if(kf.getRealTimestamp() < realTime) {
                 found.add((MarkerKeyframe)kf);
             } else if(kf.getRealTimestamp() == realTime) {
@@ -448,21 +325,32 @@ public class ReplayHandler {
     }
 
     public static MarkerKeyframe getNextMarkerKeyframe(int realTime) {
-        if(keyframes.isEmpty()) return null;
+        if(markerKeyframes.isEmpty()) return null;
         MarkerKeyframe backup = null;
-        for(Keyframe kf : keyframes) {
-            if(!(kf instanceof MarkerKeyframe)) continue;
+        for(MarkerKeyframe kf : markerKeyframes) {
             if(kf.getRealTimestamp() > realTime) {
-                return (MarkerKeyframe) kf; //first found element is next
+                return kf; //first found element is next
             } else if(kf.getRealTimestamp() == realTime) {
-                backup = (MarkerKeyframe)kf;
+                backup = kf;
             }
         }
         return backup;
     }
 
-    public static List<Keyframe> getKeyframes() {
-        return new ArrayList<Keyframe>(keyframes);
+    public static KeyframeList<Keyframe<Position>> getPositionKeyframes() {
+        return positionKeyframes;
+    }
+
+    public static KeyframeList<Keyframe<TimestampValue>> getTimeKeyframes() {
+        return timeKeyframes;
+    }
+
+    public static KeyframeList<Keyframe> getAllKeyframes() {
+        KeyframeList keyframeList = new KeyframeList();
+        keyframeList.addAll(positionKeyframes);
+        keyframeList.addAll(timeKeyframes);
+
+        return keyframeList;
     }
 
     public static void resetKeyframes(final boolean resetMarkers, boolean callback) {
@@ -483,19 +371,15 @@ public class ReplayHandler {
     }
 
     private static void resetKeyframes(boolean resetMarkers) {
-        MarkerKeyframe[] markers = getMarkers();
-        keyframes = new ArrayList<Keyframe>();
+        timeKeyframes.clear();
+        positionKeyframes.clear();
+        selectKeyframe(null);
 
-        if(!resetMarkers) {
-            Collections.addAll(keyframes, markers);
-
-            if(!(selectedKeyframe instanceof MarkerKeyframe))
-                selectKeyframe(null);
-        } else {
-            selectKeyframe(null);
+        if(resetMarkers) {
+            markerKeyframes.clear();
         }
 
-        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(keyframes));
+        fireKeyframesModifyEvent();
     }
 
     public static boolean isSelected(Keyframe kf) {
@@ -504,7 +388,6 @@ public class ReplayHandler {
 
     public static void selectKeyframe(Keyframe kf) {
         selectedKeyframe = kf;
-        sortKeyframes();
     }
 
     public static boolean isInReplay() {
@@ -681,44 +564,6 @@ public class ReplayHandler {
         return currentReplayFile == null ? null : currentReplayFile.getFile();
     }
 
-    public static TimeKeyframe getFirstTimeKeyframe() {
-        Keyframe sel = getSelectedKeyframe();
-        sortKeyframes();
-        for(Keyframe k : getKeyframes()) {
-            if(k instanceof TimeKeyframe) {
-                selectKeyframe(sel);
-                return (TimeKeyframe)k;
-            }
-        }
-        selectKeyframe(sel);
-        return null;
-    }
-
-    public static PositionKeyframe getFirstPositionKeyframe() {
-        Keyframe sel = getSelectedKeyframe();
-        sortKeyframes();
-        for(Keyframe k : getKeyframes()) {
-            if(k instanceof PositionKeyframe) {
-                selectKeyframe(sel);
-                return (PositionKeyframe)k;
-            }
-        }
-        selectKeyframe(sel);
-        return null;
-    }
-
-    public static TimeKeyframe getLastTimeKeyframe() {
-        ArrayList<Keyframe> rev = new ArrayList<Keyframe>(getKeyframes());
-        Collections.reverse(rev);
-
-        for(Keyframe k : rev) {
-            if(k instanceof TimeKeyframe) {
-                return (TimeKeyframe)k;
-            }
-        }
-        return null;
-    }
-
     public static void syncTimeCursor(boolean shiftMode) {
         selectKeyframe(null);
 
@@ -726,21 +571,21 @@ public class ReplayHandler {
 
         int prevTime, prevRealTime;
 
-        TimeKeyframe keyframe;
+        Keyframe<TimestampValue> keyframe;
 
         //if shift is down, it will refer to the previous Time Keyframe instead of the last one
         if(shiftMode) {
             int realTime = getRealTimelineCursor();
-            keyframe = getPreviousTimeKeyframe(realTime);
+            keyframe = timeKeyframes.getPreviousKeyframe(realTime);
         } else {
-            keyframe = getLastTimeKeyframe();
+            keyframe = timeKeyframes.last();
         }
 
         if(keyframe == null) {
             prevTime = 0;
             prevRealTime = 0;
         } else {
-            prevTime = keyframe.getTimestamp();
+            prevTime = (int)keyframe.getValue().value;
             prevRealTime = keyframe.getRealTimestamp();
         }
 
@@ -759,5 +604,10 @@ public class ReplayHandler {
 
     public static void setCustomImageObjects(List<CustomImageObject> objects) {
         customImageObjects = objects;
+    }
+
+    public static void fireKeyframesModifyEvent() {
+        FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(positionKeyframes, timeKeyframes));
+
     }
 }

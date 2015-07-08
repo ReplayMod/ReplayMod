@@ -101,4 +101,8 @@ public class AssetRepository {
         return new ArrayList<ReplayAsset>(replayAssets.values());
     }
 
+    public ReplayAsset getAssetByUUID(UUID uuid) {
+        return replayAssets.get(uuid);
+    }
+
 }

@@ -7,10 +7,9 @@ import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.gui.GuiRenderSettings;
 import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
 import eu.crushedpixel.replaymod.gui.elements.*;
-import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
+import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
-import eu.crushedpixel.replaymod.holders.PositionKeyframe;
-import eu.crushedpixel.replaymod.holders.TimeKeyframe;
+import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
@@ -98,7 +97,7 @@ public class GuiReplayOverlay extends Gui {
         @Override
         public void run() {
             //if not enough keyframes, abort and leave chat message
-            if(ReplayHandler.getPosKeyframeCount() < 2 || ReplayHandler.getTimeKeyframeCount() < 1) {
+            if(ReplayHandler.getPositionKeyframes().size() < 2 || ReplayHandler.getTimeKeyframes().size() < 1) {
                 ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.morekeyframes", ChatMessageHandler.ChatMessageType.WARNING);
             } else {
                 mc.displayGuiScreen(new GuiRenderSettings());
@@ -137,12 +136,12 @@ public class GuiReplayOverlay extends Gui {
                 Entity cam = mc.getRenderViewEntity();
                 if (cam != null) {
                     Position position = new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
-                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt());
+                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt(), null);
 
                     if (ReplayHandler.isCamera())
-                        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), position));
+                        ReplayHandler.addKeyframe(new Keyframe<Position>(ReplayHandler.getRealTimelineCursor(), position));
                     else
-                        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), cam.getEntityId()));
+                        ReplayHandler.addKeyframe(new Keyframe<Position>(ReplayHandler.getRealTimelineCursor(), new Position(cam.getEntityId(), true)));
                 }
             }
         }, "replaymod.gui.ingame.menu.addposkeyframe");
@@ -160,12 +159,12 @@ public class GuiReplayOverlay extends Gui {
                 Entity cam = mc.getRenderViewEntity();
                 if (cam != null) {
                     Position position = new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
-                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt());
+                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt(), null);
 
                     if (ReplayHandler.isCamera())
-                        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), position));
+                        ReplayHandler.addKeyframe(new Keyframe<Position>(ReplayHandler.getRealTimelineCursor(), position));
                     else
-                        ReplayHandler.addKeyframe(new PositionKeyframe(ReplayHandler.getRealTimelineCursor(), cam.getEntityId()));
+                        ReplayHandler.addKeyframe(new Keyframe<Position>(ReplayHandler.getRealTimelineCursor(), new Position(cam.getEntityId(), true)));
                 }
             }
         }, "replaymod.gui.ingame.menu.addspeckeyframe");
@@ -179,10 +178,10 @@ public class GuiReplayOverlay extends Gui {
 
         @Override
         public GuiElement delegate() {
-            boolean selected = ReplayHandler.getSelectedKeyframe() instanceof PositionKeyframe;
+            boolean selected = ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe().getValue() instanceof Position;
             boolean camera;
             if(selected) {
-                camera = ((PositionKeyframe)ReplayHandler.getSelectedKeyframe()).getSpectatedEntityID() == null;
+                camera = ((Keyframe<Position>)ReplayHandler.getSelectedKeyframe()).getValue().getSpectatedEntityID() == null;
             } else {
                 camera = ReplayHandler.isCamera();
             }
@@ -200,7 +199,7 @@ public class GuiReplayOverlay extends Gui {
         private final GuiElement buttonNotSelected = texturedButton(BUTTON_TIME_X, BOTTOM_ROW, 0, 80, 20, new Runnable() {
             @Override
             public void run() {
-                ReplayHandler.addKeyframe(new TimeKeyframe(ReplayHandler.getRealTimelineCursor(), ReplayMod.replaySender.currentTimeStamp()));
+                ReplayHandler.addKeyframe(new Keyframe<TimestampValue>(ReplayHandler.getRealTimelineCursor(), new TimestampValue(ReplayMod.replaySender.currentTimeStamp())));
             }
         }, "replaymod.gui.ingame.menu.addtimekeyframe");
 
@@ -213,7 +212,7 @@ public class GuiReplayOverlay extends Gui {
 
         @Override
         public GuiElement delegate() {
-            return ReplayHandler.getSelectedKeyframe() instanceof TimeKeyframe ? buttonSelected : buttonNotSelected;
+            return ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe().getValue() instanceof TimestampValue ? buttonSelected : buttonNotSelected;
         }
     };
 
@@ -233,17 +232,12 @@ public class GuiReplayOverlay extends Gui {
         }
     }, "replaymod.gui.ingame.menu.zoomout");
 
-    private final GuiKeyframeTimeline timeline = new GuiKeyframeTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, false, true, false, false) {
-        @Override
-        public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-            if(!enabled) return;
-            super.mouseClick(mc, mouseX, mouseY, button);
-            if(!(ReplayHandler.getSelectedKeyframe() instanceof MarkerKeyframe))
-                performJump(timeline.getTimeAt(mouseX, mouseY));
-        }
+    //TODO: GuiMarkerKeyframeTimeline
+    private final GuiKeyframeTimeline timeline = new GuiKeyframeTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, false, false, false) {
+
     };
 
-    private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH, true, false, true, true);
+    private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH, true, true, true);
     {
         timelineReal.timelineLength = 10 * 60 * 1000;
     }

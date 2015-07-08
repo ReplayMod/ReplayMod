@@ -5,8 +5,7 @@ import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
-import eu.crushedpixel.replaymod.holders.PositionKeyframe;
-import eu.crushedpixel.replaymod.interpolation.SplinePoint;
+import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -27,11 +26,11 @@ public class PathPreviewRenderer {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
 
-    private SplinePoint spline = new SplinePoint();
+    private GenericSplineInterpolation<Position> spline = new GenericSplineInterpolation<Position>();
 
     private DistanceComparator distanceComparator = new DistanceComparator();
 
-    private List<PositionKeyframe> keyframes = new ArrayList<PositionKeyframe>();
+    private List<Keyframe<Position>> keyframes = new ArrayList<Keyframe<Position>>();
 
     @SubscribeEvent
     public void renderCameraPath(RenderWorldLastEvent event) {
@@ -72,7 +71,8 @@ public class PathPreviewRenderer {
 
                 float max = spline.getPoints().size() * 50;
                 for(int i = 0; i < max; i++) {
-                    Position point = spline.getPoint(i / max);
+                    Position point = new Position();
+                    spline.applyPoint(i / max, point);
 
                     if(prev != null) {
                         drawConnection(doubleX, doubleY, doubleZ, prev, point, Color.RED.getRGB());
@@ -88,7 +88,7 @@ public class PathPreviewRenderer {
 
         Collections.sort(keyframes, distanceComparator);
 
-        for(PositionKeyframe kf : keyframes) {
+        for(Keyframe<Position> kf : keyframes) {
             drawPoint(doubleX, doubleY, doubleZ, kf);
         }
 
@@ -102,15 +102,13 @@ public class PathPreviewRenderer {
 
     @SubscribeEvent
     public void recalcSpline(KeyframesModifyEvent event) {
-        keyframes = new ArrayList<PositionKeyframe>();
-        spline = new SplinePoint();
-        for(Keyframe kf : event.keyframes) {
-            if(kf instanceof PositionKeyframe) {
-                PositionKeyframe pkf = (PositionKeyframe)kf;
-                Position pos = pkf.getPosition();
-                spline.addPoint(pos);
-                keyframes.add(pkf);
-            }
+        keyframes = new ArrayList<Keyframe<Position>>();
+        spline = new GenericSplineInterpolation<Position>();
+        for(Keyframe kf : event.getPositionKeyframes()) {
+            Keyframe<Position> pkf = (Keyframe<Position>)kf;
+            Position pos = pkf.getValue();
+            spline.addPoint(pos);
+            keyframes.add(pkf);
         }
 
         if(spline.getPoints().size() > 1) {
@@ -118,7 +116,7 @@ public class PathPreviewRenderer {
         }
     }
 
-    private class DistanceComparator implements Comparator<PositionKeyframe> {
+    private class DistanceComparator implements Comparator<Keyframe<Position>> {
 
         private double playerX, playerY, playerZ;
 
@@ -129,8 +127,8 @@ public class PathPreviewRenderer {
         }
 
         @Override
-        public int compare(PositionKeyframe o1, PositionKeyframe o2) {
-            return -(new Double(o1.getPosition().distanceSquared(playerX, playerY, playerZ)).compareTo(o2.getPosition().distanceSquared(playerX, playerY, playerZ)));
+        public int compare(Keyframe<Position> o1, Keyframe<Position> o2) {
+            return -(new Double(o1.getValue().distanceSquared(playerX, playerY, playerZ)).compareTo(o2.getValue().distanceSquared(playerX, playerY, playerZ)));
         }
 
         @Override
@@ -162,7 +160,7 @@ public class PathPreviewRenderer {
         renderer.setTranslation(0, 0, 0);
     }
 
-    private void drawPoint(double playerX, double playerY, double playerZ, PositionKeyframe kf) {
+    private void drawPoint(double playerX, double playerY, double playerZ, Keyframe<Position> kf) {
         GlStateManager.pushMatrix();
         GlStateManager.enableTexture2D();
         GlStateManager.enableLighting();
@@ -176,7 +174,7 @@ public class PathPreviewRenderer {
 
         mc.renderEngine.bindTexture(GuiReplayOverlay.replay_gui);
 
-        Position pos1 = kf.getPosition();
+        Position pos1 = kf.getValue();
 
         double x = pos1.getX() - playerX;
         double y = pos1.getY() - playerY;
@@ -205,10 +203,10 @@ public class PathPreviewRenderer {
             posY += size;
         }
 
-        if(kf.getSpectatedEntityID() != null) {
+        if(pos1.getSpectatedEntityID() != null) {
             posX += size;
         }
-        
+
         float minX = -0.5f;
         float minY = -0.5f;
         float maxX = 0.5f;
