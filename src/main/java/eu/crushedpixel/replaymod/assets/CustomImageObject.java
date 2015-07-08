@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.assets;
 
 import eu.crushedpixel.replaymod.holders.*;
-import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -17,7 +16,7 @@ import java.util.UUID;
 
 public class CustomImageObject implements GuiEntryListEntry {
 
-    public CustomImageObject(Transformations transformations, String name, UUID assetUUID) throws IOException {
+    public CustomImageObject(String name, UUID assetUUID) throws IOException {
         this.name = name;
 
         setLinkedAsset(assetUUID);
@@ -90,13 +89,9 @@ public class CustomImageObject implements GuiEntryListEntry {
      * Keyframing Code
      */
 
-    private KeyframeList<Keyframe<Position>> anchorPointKeyframes, positionKeyframes, orientationKeyframes;
-    private KeyframeList<Keyframe<Point>> scaleKeyframes;
-    private KeyframeList<Keyframe<TimestampValue>> opacityKeyframes;
-
-    private GenericSplineInterpolation<Position> anchorSpline, positionSpline, orientationSpline;
-    private GenericSplineInterpolation<Point> scaleSpline;
-    private GenericSplineInterpolation<TimestampValue> opacitySpline;
+    private KeyframeList<Position> anchorPointKeyframes, positionKeyframes, orientationKeyframes;
+    private KeyframeList<Point> scaleKeyframes;
+    private KeyframeList<TimestampValue> opacityKeyframes;
 
     public Transformations getTransformationsForTimestamp(int timestamp) {
         return null; //TODO

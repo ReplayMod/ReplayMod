@@ -59,8 +59,8 @@ public class GuiEditKeyframe extends GuiScreen {
 
         ReplayHandler.selectKeyframe(null);
 
-        KeyframeList<Keyframe<Position>> positionKeyframes = ReplayHandler.getPositionKeyframes();
-        KeyframeList<Keyframe<TimestampValue>> timeKeyframes = ReplayHandler.getTimeKeyframes();
+        KeyframeList<Position> positionKeyframes = ReplayHandler.getPositionKeyframes();
+        KeyframeList<TimestampValue> timeKeyframes = ReplayHandler.getTimeKeyframes();
 
         if(posKeyframe) {
             previous = positionKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);

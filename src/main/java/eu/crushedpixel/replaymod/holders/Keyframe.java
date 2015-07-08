@@ -13,7 +13,7 @@ public class Keyframe<T extends KeyframeValue> {
     private int realTimestamp;
     private T value;
 
-    public Keyframe copy() {
+    public Keyframe<T> copy() {
         return new Keyframe<T>(realTimestamp, value);
     }
 }

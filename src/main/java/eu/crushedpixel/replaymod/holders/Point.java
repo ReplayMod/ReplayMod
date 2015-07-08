@@ -7,9 +7,13 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class Point extends KeyframeValue {
+public class Point implements KeyframeValue {
 
     @Interpolate
     public double x, y;
 
+    @Override
+    public Point newInstance() {
+        return new Point();
+    }
 }

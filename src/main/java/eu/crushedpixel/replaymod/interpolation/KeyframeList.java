@@ -7,26 +7,30 @@ import eu.crushedpixel.replaymod.holders.Position;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KeyframeList<T extends Keyframe> extends ArrayList<T> {
+public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>> {
 
     private static final KeyframeComparator KEYFRAME_COMPARATOR = new KeyframeComparator();
 
+    private Boolean previousCallLinear = null;
+
+    private Interpolation<K> interpolation;
+
     @Override
-    public boolean add(T t) {
+    public boolean add(Keyframe<K> t) {
         boolean success = super.add(t);
         sort();
         return success;
     }
 
     @Override
-    public void add(int index, T element) {
+    public void add(int index, Keyframe<K> element) {
         super.add(index, element);
         sort();
     }
 
     @Override
-    public T remove(int index) {
-        T removed = super.remove(index);
+    public Keyframe<K> remove(int index) {
+        Keyframe<K> removed = super.remove(index);
         sort();
         return removed;
     }
@@ -39,6 +43,7 @@ public class KeyframeList<T extends Keyframe> extends ArrayList<T> {
     }
 
     public void sort() {
+        previousCallLinear = null;
         sort(KEYFRAME_COMPARATOR);
     }
 
@@ -47,14 +52,14 @@ public class KeyframeList<T extends Keyframe> extends ArrayList<T> {
      * @param realTime The value to use
      * @return The first Keyframe prior to the given value
      */
-    public T getPreviousKeyframe(int realTime) {
+    public Keyframe<K> getPreviousKeyframe(int realTime) {
         if(this.isEmpty()) return null;
 
-        T backup = null;
+        Keyframe<K> backup = null;
 
-        List<T> found = new ArrayList<T>();
+        List<Keyframe<K>> found = new ArrayList<Keyframe<K>>();
 
-        for(T kf : this) {
+        for(Keyframe<K> kf : this) {
 
             if(kf.getRealTimestamp() < realTime) {
                 found.add(kf);
@@ -75,12 +80,12 @@ public class KeyframeList<T extends Keyframe> extends ArrayList<T> {
      * @param realTime The value to use
      * @return The first Keyframe after the given value
      */
-    public T getNextKeyframe(int realTime) {
+    public Keyframe<K> getNextKeyframe(int realTime) {
         if(this.isEmpty()) return null;
 
-        T backup = null;
+        Keyframe<K> backup = null;
 
-        for(T kf : this) {
+        for(Keyframe<K> kf : this) {
 
             if(kf.getRealTimestamp() > realTime) {
                 return kf; //first found element is next
@@ -99,18 +104,18 @@ public class KeyframeList<T extends Keyframe> extends ArrayList<T> {
      * @param tolerance The threshold to allow for close Keyframes
      * @return The closest Keyframe, or null if no Keyframe within treshold
      */
-    public T getClosestKeyframeForTimestamp(int realTime, int tolerance) {
-        List<T> found = new ArrayList<T>();
-        for(T kf : this) {
+    public Keyframe<K> getClosestKeyframeForTimestamp(int realTime, int tolerance) {
+        List<Keyframe<K>> found = new ArrayList<Keyframe<K>>();
+        for(Keyframe<K> kf : this) {
             if(!(kf.getValue() instanceof Position)) continue;
             if(Math.abs(kf.getRealTimestamp() - realTime) <= tolerance) {
                 found.add(kf);
             }
         }
 
-        T closest = null;
+        Keyframe<K> closest = null;
 
-        for(T kf : found) {
+        for(Keyframe<K> kf : found) {
             if(closest == null || Math.abs(closest.getRealTimestamp() - realTime) > Math.abs(kf.getRealTimestamp() - realTime)) {
                 closest = kf;
             }
@@ -118,14 +123,36 @@ public class KeyframeList<T extends Keyframe> extends ArrayList<T> {
         return closest;
     }
 
-    public T first() {
+    public Keyframe<K> first() {
         if(isEmpty()) return null;
         return get(0);
     }
 
-    public T last() {
+    public Keyframe<K> last() {
         if(isEmpty()) return null;
         return get(size()-1);
+    }
+
+    public K getInterpolatedValueForTimestamp(int timestamp, boolean linear) {
+        return getInterpolatedValueForPathPosition(getPositionOnPath(timestamp), linear);
+    }
+
+    public K getInterpolatedValueForPathPosition(float pathPosition, boolean linear) {
+        K toApply = (K)first().getValue().newInstance();
+
+        if(previousCallLinear != (Boolean)linear) {
+            interpolation = linear ? new GenericLinearInterpolation<K>() : new GenericSplineInterpolation<K>();
+
+            for(Keyframe<K> keyframe : this) {
+                interpolation.addPoint(keyframe.getValue());
+            }
+
+            interpolation.prepare();
+        }
+
+        interpolation.applyPoint(pathPosition, toApply);
+
+        return toApply;
     }
 
     /**
@@ -134,7 +161,7 @@ public class KeyframeList<T extends Keyframe> extends ArrayList<T> {
      * @param timestamp The value to use
      * @return A value between 0 and 1
      */
-    public float getPositionOnSpline(int timestamp) {
+    private float getPositionOnPath(int timestamp) {
         Keyframe previousKeyframe = getPreviousKeyframe(timestamp);
         Keyframe nextKeyframe = getNextKeyframe(timestamp);
 

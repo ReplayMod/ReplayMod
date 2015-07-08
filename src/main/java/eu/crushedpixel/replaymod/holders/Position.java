@@ -4,7 +4,6 @@ import eu.crushedpixel.replaymod.interpolation.Interpolate;
 import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -12,8 +11,7 @@ import net.minecraft.entity.Entity;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper=true)
-public class Position extends KeyframeValue {
+public class Position implements KeyframeValue {
 
     @Interpolate
     public double x, y, z;
@@ -43,5 +41,10 @@ public class Position extends KeyframeValue {
         double dy = this.y -  y;
         double dz = this.z -  z;
         return dx * dx + dy * dy + dz * dz;
+    }
+
+    @Override
+    public Position newInstance() {
+        return new Position();
     }
 }

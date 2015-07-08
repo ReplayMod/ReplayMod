@@ -7,9 +7,14 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class TimestampValue extends KeyframeValue {
+public class TimestampValue implements KeyframeValue {
 
     @Interpolate
     public double value;
+
+    @Override
+    public TimestampValue newInstance() {
+        return new TimestampValue();
+    }
 
 }

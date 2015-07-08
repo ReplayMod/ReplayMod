@@ -50,8 +50,8 @@ public class ReplayHandler {
     private static boolean inPath = false;
     private static CameraEntity cameraEntity;
 
-    private static KeyframeList<Keyframe<Position>> positionKeyframes = new KeyframeList<Keyframe<Position>>();
-    private static KeyframeList<Keyframe<TimestampValue>> timeKeyframes = new KeyframeList<Keyframe<TimestampValue>>();
+    private static KeyframeList<Position> positionKeyframes = new KeyframeList<Position>();
+    private static KeyframeList<TimestampValue> timeKeyframes = new KeyframeList<TimestampValue>();
 
     private static boolean inReplay = false;
     private static Entity currentEntity = null;
@@ -337,16 +337,16 @@ public class ReplayHandler {
         return backup;
     }
 
-    public static KeyframeList<Keyframe<Position>> getPositionKeyframes() {
+    public static KeyframeList<Position> getPositionKeyframes() {
         return positionKeyframes;
     }
 
-    public static KeyframeList<Keyframe<TimestampValue>> getTimeKeyframes() {
+    public static KeyframeList<TimestampValue> getTimeKeyframes() {
         return timeKeyframes;
     }
 
-    public static KeyframeList<Keyframe> getAllKeyframes() {
-        KeyframeList keyframeList = new KeyframeList();
+    public static ArrayList<Keyframe> getAllKeyframes() {
+        ArrayList<Keyframe> keyframeList = new ArrayList<Keyframe>();
         keyframeList.addAll(positionKeyframes);
         keyframeList.addAll(timeKeyframes);
 

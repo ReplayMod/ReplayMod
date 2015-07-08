@@ -205,7 +205,7 @@ public class VideoRenderer {
     }
 
     private void updateCam() {
-        KeyframeList<Keyframe<Position>> positionKeyframes = ReplayHandler.getPositionKeyframes();
+        KeyframeList<Position> positionKeyframes = ReplayHandler.getPositionKeyframes();
 
         if (ReplayHandler.getCameraEntity() == null) {
             if (mc.theWorld == null) {
@@ -268,7 +268,7 @@ public class VideoRenderer {
     }
 
     private void updateTime(Timer timer, int framesDone) {
-        KeyframeList<Keyframe<TimestampValue>> timeKeyframes = ReplayHandler.getTimeKeyframes();
+        KeyframeList<TimestampValue> timeKeyframes = ReplayHandler.getTimeKeyframes();
 
         int videoTime = framesDone * 1000 / fps;
         int timeCount = timeKeyframes.size();

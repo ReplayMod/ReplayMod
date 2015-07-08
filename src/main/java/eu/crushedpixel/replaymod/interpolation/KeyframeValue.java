@@ -7,6 +7,8 @@ package eu.crushedpixel.replaymod.interpolation;
  * <br><br>
  * It is recommended for KeyframeValue subclasses to have a @NoArgsConstructor annotation.
  */
-public abstract class KeyframeValue {
+public interface KeyframeValue {
+
+    public KeyframeValue newInstance();
 
 }

@@ -5,7 +5,7 @@ import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Position;
-import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
+import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -26,11 +26,9 @@ public class PathPreviewRenderer {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
 
-    private GenericSplineInterpolation<Position> spline = new GenericSplineInterpolation<Position>();
-
     private DistanceComparator distanceComparator = new DistanceComparator();
 
-    private List<Keyframe<Position>> keyframes = new ArrayList<Keyframe<Position>>();
+    private KeyframeList<Position> keyframes;
 
     @SubscribeEvent
     public void renderCameraPath(RenderWorldLastEvent event) {
@@ -51,28 +49,25 @@ public class PathPreviewRenderer {
 
         GlStateManager.disableTexture2D();
 
-        if(spline.getPoints().size() > 1) {
+        if(keyframes.size() > 1) {
 
             Position prev = null;
 
             if(ReplayMod.replaySettings.isLinearMovement()) {
 
-                for(int i = 0; i < spline.getPoints().size(); i++) {
-                    Position point = spline.getPoints().get(i);
-
+                for(Keyframe<Position> point : keyframes) {
                     if(prev != null) {
-                        drawConnection(doubleX, doubleY, doubleZ, prev, point, Color.RED.getRGB());
+                        drawConnection(doubleX, doubleY, doubleZ, prev, point.getValue(), Color.RED.getRGB());
                     }
 
-                    prev = point;
+                    prev = point.getValue();
                 }
 
             } else {
 
-                float max = spline.getPoints().size() * 50;
+                float max = keyframes.size() * 50;
                 for(int i = 0; i < max; i++) {
-                    Position point = new Position();
-                    spline.applyPoint(i / max, point);
+                    Position point = keyframes.getInterpolatedValueForPathPosition(i/max, false);
 
                     if(prev != null) {
                         drawConnection(doubleX, doubleY, doubleZ, prev, point, Color.RED.getRGB());
@@ -83,12 +78,13 @@ public class PathPreviewRenderer {
             }
         }
 
-
         distanceComparator.setPlayerPos(doubleX, doubleY + 1.4, doubleZ);
 
-        Collections.sort(keyframes, distanceComparator);
+        List<Keyframe<Position>> distanceSorted = new ArrayList<Keyframe<Position>>(keyframes);
+        Collections.sort(distanceSorted, distanceComparator);
 
-        for(Keyframe<Position> kf : keyframes) {
+
+        for(Keyframe<Position> kf : distanceSorted) {
             drawPoint(doubleX, doubleY, doubleZ, kf);
         }
 
@@ -102,18 +98,7 @@ public class PathPreviewRenderer {
 
     @SubscribeEvent
     public void recalcSpline(KeyframesModifyEvent event) {
-        keyframes = new ArrayList<Keyframe<Position>>();
-        spline = new GenericSplineInterpolation<Position>();
-        for(Keyframe kf : event.getPositionKeyframes()) {
-            Keyframe<Position> pkf = (Keyframe<Position>)kf;
-            Position pos = pkf.getValue();
-            spline.addPoint(pos);
-            keyframes.add(pkf);
-        }
-
-        if(spline.getPoints().size() > 1) {
-            spline.prepare();
-        }
+        keyframes = event.getPositionKeyframes();
     }
 
     private class DistanceComparator implements Comparator<Keyframe<Position>> {
