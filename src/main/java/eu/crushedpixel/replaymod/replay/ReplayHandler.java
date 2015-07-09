@@ -14,6 +14,7 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.embedded.EmbeddedChannel;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
@@ -41,7 +42,7 @@ public class ReplayHandler {
     public static long lastExit = 0;
     private static NetworkManager networkManager;
     private static Minecraft mc = Minecraft.getMinecraft();
-    private static OpenEmbeddedChannel channel;
+    private static EmbeddedChannel channel;
     private static int realTimelinePosition = 0;
 
     private static Keyframe selectedKeyframe;
@@ -429,7 +430,7 @@ public class ReplayHandler {
         INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
         networkManager.setNetHandler(pc);
 
-        channel = new OpenEmbeddedChannel(networkManager);
+        channel = new EmbeddedChannel(networkManager);
         channel.attr(NetworkDispatcher.FML_DISPATCHER).set(new NetworkDispatcher(networkManager));
 
         // Open replay
@@ -488,7 +489,7 @@ public class ReplayHandler {
         INetHandlerPlayClient pc = new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
         networkManager.setNetHandler(pc);
 
-        channel = new OpenEmbeddedChannel(networkManager);
+        channel = new EmbeddedChannel(networkManager);
         channel.attr(NetworkDispatcher.FML_DISPATCHER).set(new NetworkDispatcher(networkManager));
 
         channel.pipeline().addFirst(ReplayMod.replaySender);
