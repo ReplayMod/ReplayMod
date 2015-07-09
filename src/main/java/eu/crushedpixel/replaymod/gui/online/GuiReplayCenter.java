@@ -284,7 +284,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             if(info != null) {
                 File f = ReplayMod.downloadedFileHandler.getFileForID(info.getId());
                 if(f == null) {
-                    mc.displayGuiScreen(new GuiReplayDownloading(info));
+                    new GuiReplayDownloading(info).display();
                 } else {
                     try {
                         ReplayHandler.startReplay(f);

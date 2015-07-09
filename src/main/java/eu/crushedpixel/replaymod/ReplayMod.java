@@ -391,7 +391,7 @@ public class ReplayMod {
         File file = ReplayMod.downloadedFileHandler.getFileForID(id);
         if (file == null) {
             FileInfo info = new FileInfo(id, null, null, null, 0, 0, 0, String.valueOf(id), false, 0);
-            mc.displayGuiScreen(new GuiReplayDownloading(info));
+            new GuiReplayDownloading(info).display();
         } else {
             try {
                 ReplayHandler.startReplay(file);
