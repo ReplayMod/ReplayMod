@@ -26,8 +26,14 @@ import lombok.NonNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.util.Color;
 import org.lwjgl.util.*;
+
+import static net.minecraft.client.renderer.GlStateManager.*;
+import static org.lwjgl.opengl.GL11.*;
 
 public class MinecraftGuiRenderer implements GuiRenderer {
 
@@ -61,6 +67,46 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     }
 
     @Override
+    public void drawRect(int x, int y, int width, int height, int color) {
+        Gui.drawRect(x, y, x + width, y + height, color);
+    }
+
+    @Override
+    public void drawRect(int x, int y, int width, int height, ReadableColor color) {
+        drawRect(x, y, width, height, color(color));
+    }
+
+    @Override
+    public void drawRect(int x, int y, int width, int height, int topLeftColor, int topRightColor, int bottomLeftColor, int bottomRightColor) {
+        drawRect(x, y, width, height, color(topLeftColor), color(topRightColor), color(bottomLeftColor), color(bottomRightColor));
+    }
+
+    @Override
+    public void drawRect(int x, int y, int width, int height, ReadableColor tl, ReadableColor tr, ReadableColor bl, ReadableColor br) {
+        disableTexture2D();
+        enableBlend();
+        disableAlpha();
+        tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+        shadeModel(GL_SMOOTH);
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer renderer = tessellator.getWorldRenderer();
+        renderer.startDrawingQuads();
+        renderer.setColorRGBA(bl.getRed(), bl.getGreen(), bl.getBlue(), bl.getAlpha());
+        renderer.addVertex(x, y + height, 0);
+        renderer.setColorRGBA(br.getRed(), br.getGreen(), br.getBlue(), br.getAlpha());
+        renderer.addVertex(x + width, y + height, 0);
+        renderer.setColorRGBA(tr.getRed(), tr.getGreen(), tr.getBlue(), tr.getAlpha());
+        renderer.addVertex(x + width, y, 0);
+        renderer.setColorRGBA(tl.getRed(), tl.getGreen(), tl.getBlue(), tl.getAlpha());
+        renderer.addVertex(x, y, 0);
+        tessellator.draw();
+        shadeModel(GL_FLAT);
+        disableBlend();
+        enableAlpha();
+        enableTexture2D();
+    }
+
+    @Override
     public int drawString(int x, int y, int color, String text) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
         return fontRenderer.drawStringWithShadow(text, x, y, color);
@@ -87,5 +133,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
                 | color.getRed() << 16
                 | color.getGreen() << 8
                 | color.getBlue();
+    }
+
+    private ReadableColor color(int color) {
+        return new Color((color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff, (color >> 24) & 0xff);
     }
 }

@@ -47,6 +47,7 @@ public abstract class AbstractComposedGuiElement<T extends AbstractComposedGuiEl
         return (C) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{ofType}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                boolean isGetter = method.getName().startsWith("get");
                 Object handled = null;
                 for (final GuiElement element : getChildren()) {
                     try {
@@ -55,8 +56,14 @@ public abstract class AbstractComposedGuiElement<T extends AbstractComposedGuiEl
                         } else if (ofType.isInstance(element)) {
                             handled = method.invoke(element, args);
                         }
-                        if (Boolean.TRUE.equals(handled)) {
-                            break;
+                        if (handled != null) {
+                            if (handled instanceof Boolean) {
+                                if (Boolean.TRUE.equals(handled)) {
+                                    break;
+                                }
+                            } else if (isGetter) {
+                                return handled;
+                            }
                         }
                     } catch (Exception e) {
                         CrashReport crash = CrashReport.makeCrashReport(e, "Calling Gui method");

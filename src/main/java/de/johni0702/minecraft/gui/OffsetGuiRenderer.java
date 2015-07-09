@@ -72,6 +72,26 @@ public class OffsetGuiRenderer implements GuiRenderer {
     }
 
     @Override
+    public void drawRect(int x, int y, int width, int height, int color) {
+        renderer.drawRect(x + position.getX(), y + position.getY(), width, height, color);
+    }
+
+    @Override
+    public void drawRect(int x, int y, int width, int height, ReadableColor color) {
+        renderer.drawRect(x + position.getX(), y + position.getY(), width, height, color);
+    }
+
+    @Override
+    public void drawRect(int x, int y, int width, int height, int topLeftColor, int topRightColor, int bottomLeftColor, int bottomRightColor) {
+        renderer.drawRect(x + position.getX(), y + position.getY(), width, height, topLeftColor, topRightColor, bottomLeftColor, bottomRightColor);
+    }
+
+    @Override
+    public void drawRect(int x, int y, int width, int height, ReadableColor topLeftColor, ReadableColor topRightColor, ReadableColor bottomLeftColor, ReadableColor bottomRightColor) {
+        renderer.drawRect(x + position.getX(), y + position.getY(), width, height, topLeftColor, topRightColor, bottomLeftColor, bottomRightColor);
+    }
+
+    @Override
     public int drawString(int x, int y, int color, String text) {
         return renderer.drawString(x + position.getX(), y + position.getY(), color, text) - position.getX();
     }

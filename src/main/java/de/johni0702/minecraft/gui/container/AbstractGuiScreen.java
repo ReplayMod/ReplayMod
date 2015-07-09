@@ -26,17 +26,23 @@ import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.MinecraftGuiRenderer;
 import de.johni0702.minecraft.gui.OffsetGuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
+import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.function.*;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.util.ReportedException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
+import org.lwjgl.util.ReadablePoint;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends AbstractGuiContainer<T> {
 
@@ -70,6 +76,59 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
             title.draw(eRenderer, null, null);
         }
         super.draw(renderer, size, renderInfo);
+
+        final GuiElement tooltip = forEach(GuiElement.class).getTooltip(renderInfo);
+        if (tooltip != null) {
+            final ReadableDimension tooltipSize = tooltip.getMinSize();
+            int dx, dy;
+            if (renderInfo.mouseX + 8 + tooltipSize.getWidth() < screenSize.getWidth()) {
+                dx = 8;
+            } else {
+                dx = -8;
+            }
+            if (renderInfo.mouseY + 8 + tooltipSize.getHeight() < screenSize.getHeight()) {
+                dy = 8;
+            } else {
+                dy = -8;
+            }
+            final ReadablePoint position = new Point(renderInfo.mouseX + dx, renderInfo.mouseY + dy);
+            try {
+                OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, position, tooltipSize);
+                tooltip.draw(eRenderer, tooltipSize, renderInfo.offsetMouse(position.getX(), position.getY()));
+            } catch (Exception ex) {
+                CrashReport crashReport = CrashReport.makeCrashReport(ex, "Rendering Gui Tooltip");
+                renderInfo.addTo(crashReport);
+                CrashReportCategory category = crashReport.makeCategory("Gui container details");
+                category.addCrashSectionCallable("Container", new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        return this;
+                    }
+                });
+                category.addCrashSection("Width", size.getWidth());
+                category.addCrashSection("Height", size.getHeight());
+                category = crashReport.makeCategory("Tooltip details");
+                category.addCrashSectionCallable("Element", new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        return tooltip;
+                    }
+                });
+                category.addCrashSectionCallable("Position", new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        return position;
+                    }
+                });
+                category.addCrashSectionCallable("Size", new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        return tooltipSize;
+                    }
+                });
+                throw new ReportedException(crashReport);
+            }
+        }
     }
 
     @Override

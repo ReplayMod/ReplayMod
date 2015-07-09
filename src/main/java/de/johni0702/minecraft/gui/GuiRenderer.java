@@ -37,6 +37,14 @@ public interface GuiRenderer {
 
     void drawTexturedRect(int x, int y, int u, int v, int width, int height);
 
+    void drawRect(int x, int y, int width, int height, int color);
+
+    void drawRect(int x, int y, int width, int height, ReadableColor color);
+
+    void drawRect(int x, int y, int width, int height, int topLeftColor, int topRightColor, int bottomLeftColor, int bottomRightColor);
+
+    void drawRect(int x, int y, int width, int height, ReadableColor topLeftColor, ReadableColor topRightColor, ReadableColor bottomLeftColor, ReadableColor bottomRightColor);
+
     int drawString(int x, int y, int color, String text);
 
     int drawString(int x, int y, ReadableColor color, String text);

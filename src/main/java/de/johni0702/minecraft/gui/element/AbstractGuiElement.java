@@ -22,10 +22,12 @@
 
 package de.johni0702.minecraft.gui.element;
 
+import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.util.Dimension;
+import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
 
 public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implements GuiElement<T> {
@@ -34,6 +36,8 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
 
     @Getter
     private GuiContainer container;
+
+    private GuiElement tooltip;
 
     @Getter
     private boolean enabled = true;
@@ -63,6 +67,30 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
     @Override
     public T setDisabled() {
         return setEnabled(false);
+    }
+
+    @Override
+    public GuiElement getTooltip(RenderInfo renderInfo) {
+        if (tooltip != null) {
+            Point mouse = new Point(renderInfo.mouseX, renderInfo.mouseY);
+            if (container != null) {
+                container.convertFor(this, mouse);
+            }
+            ReadableDimension size = getMinSize();
+            if (mouse.getX() > 0
+                    && mouse.getY() > 0
+                    && mouse.getX() < size.getWidth()
+                    && mouse.getY() < size.getHeight()) {
+                return tooltip;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public T setTooltip(GuiElement tooltip) {
+        this.tooltip = tooltip;
+        return getThis();
     }
 
     @Override

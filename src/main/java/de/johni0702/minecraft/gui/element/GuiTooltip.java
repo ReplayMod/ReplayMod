@@ -22,34 +22,9 @@
 
 package de.johni0702.minecraft.gui.element;
 
-import de.johni0702.minecraft.gui.GuiRenderer;
-import de.johni0702.minecraft.gui.RenderInfo;
-import de.johni0702.minecraft.gui.container.GuiContainer;
-import net.minecraft.client.Minecraft;
-import org.lwjgl.util.ReadableDimension;
-
-public interface GuiElement<T extends GuiElement<T>> {
-
-    Minecraft getMinecraft();
-
-    GuiContainer getContainer();
-    T setContainer(GuiContainer container);
-
-    void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo);
-
-    ReadableDimension getMinSize();
-    ReadableDimension getPreferredSize();
-    ReadableDimension getMaxSize();
-
-    T setPreferredSize(ReadableDimension preferredSize);
-    T setMaxSize(ReadableDimension maxSize);
-
-    boolean isEnabled();
-    T setEnabled(boolean enabled);
-    T setEnabled();
-    T setDisabled();
-
-    GuiElement getTooltip(RenderInfo renderInfo);
-    T setTooltip(GuiElement tooltip);
-
+public class GuiTooltip extends AbstractGuiTooltip<GuiTooltip> {
+    @Override
+    protected GuiTooltip getThis() {
+        return this;
+    }
 }
