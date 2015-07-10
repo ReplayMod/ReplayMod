@@ -26,8 +26,10 @@ import lombok.NonNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Color;
 import org.lwjgl.util.*;
@@ -62,8 +64,19 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     }
 
     @Override
+    public void bindTexture(ITextureObject texture) {
+        GlStateManager.bindTexture(texture.getGlTextureId());
+    }
+
+    @Override
     public void drawTexturedRect(int x, int y, int u, int v, int width, int height) {
         gui.drawTexturedModalRect(x, y, u, v, width, height);
+    }
+
+    @Override
+    public void drawTexturedRect(int x, int y, int u, int v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight) {
+        GlStateManager.color(1, 1, 1);
+        Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, textureWidth, textureHeight);
     }
 
     @Override

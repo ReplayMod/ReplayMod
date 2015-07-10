@@ -23,6 +23,7 @@
 package de.johni0702.minecraft.gui;
 
 import lombok.NonNull;
+import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableColor;
@@ -67,8 +68,18 @@ public class OffsetGuiRenderer implements GuiRenderer {
     }
 
     @Override
+    public void bindTexture(ITextureObject texture) {
+        renderer.bindTexture(texture);
+    }
+
+    @Override
     public void drawTexturedRect(int x, int y, int u, int v, int width, int height) {
         renderer.drawTexturedRect(x + position.getX(), y + position.getY(), u, v, width, height);
+    }
+
+    @Override
+    public void drawTexturedRect(int x, int y, int u, int v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight) {
+        renderer.drawTexturedRect(x + position.getX(), y + position.getY(), u, v, width, height, uWidth, vHeight, textureWidth, textureHeight);
     }
 
     @Override

@@ -22,6 +22,7 @@
 
 package de.johni0702.minecraft.gui;
 
+import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
@@ -35,7 +36,11 @@ public interface GuiRenderer {
 
     void bindTexture(ResourceLocation location);
 
+    void bindTexture(ITextureObject texture);
+
     void drawTexturedRect(int x, int y, int u, int v, int width, int height);
+
+    void drawTexturedRect(int x, int y, int u, int v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight);
 
     void drawRect(int x, int y, int width, int height, int color);
 
