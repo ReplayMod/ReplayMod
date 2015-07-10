@@ -234,9 +234,9 @@ public class GuiReplayOverlay extends Gui {
     }, "replaymod.gui.ingame.menu.zoomout");
 
 
-    private final GuiMarkerTimeline timeline = new GuiMarkerTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, false);
+    private final GuiMarkerTimeline timeline = new GuiMarkerTimeline(TIMELINE_X, TOP_ROW - 1, WIDTH - 14 - TIMELINE_X, 22, false);
 
-    private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH, true, true, true);
+    private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH, 22, true, true, true);
     {
         timelineReal.timelineLength = 10 * 60 * 1000;
     }

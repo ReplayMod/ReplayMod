@@ -3,12 +3,12 @@ package eu.crushedpixel.replaymod.gui;
 import eu.crushedpixel.replaymod.assets.CustomImageObject;
 import eu.crushedpixel.replaymod.assets.ReplayAsset;
 import eu.crushedpixel.replaymod.gui.elements.*;
+import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.gui.elements.timelines.GuiTimeline;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
-import lombok.Getter;
-import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -44,7 +44,7 @@ public class GuiObjectManager extends GuiScreen {
     private GuiTexturedButton zoomInButton, zoomOutButton;
 
     private ComposedElement anchorInputs, positionInputs, scaleInputs, orientationInputs, opacityInputs, numberInputs;
-    private ComposedElement allElements;
+    private ComposedElement disableElements, allElements;
 
     private static final int KEYFRAME_BUTTON_X = 80;
     private static final int KEYFRAME_BUTTON_Y = 40;
@@ -57,11 +57,11 @@ public class GuiObjectManager extends GuiScreen {
             private GuiTexturedButton normal = new GuiTexturedButton(0, x, y, 20, 20,
                     GuiReplayOverlay.replay_gui, KEYFRAME_BUTTON_X, KEYFRAME_BUTTON_Y,
                     GuiReplayOverlay.TEXTURE_SIZE, GuiReplayOverlay.TEXTURE_SIZE, new Runnable() {
-                        @Override
-                            public void run() {
-                                addKeyframe(line);
-                            }
-                        },
+                @Override
+                public void run() {
+                    addKeyframe(line);
+                }
+            },
                     null);
 
             private GuiTexturedButton selected = new GuiTexturedButton(0, x, y, 20, 20,
@@ -83,6 +83,12 @@ public class GuiObjectManager extends GuiScreen {
                 } else {
                     return normal;
                 }
+            }
+
+            @Override
+            public void setEnabled(boolean enabled) {
+                selected.setEnabled(enabled);
+                normal.setEnabled(enabled);
             }
         };
     }
@@ -128,7 +134,7 @@ public class GuiObjectManager extends GuiScreen {
 
             objectList = new GuiEntryList<CustomImageObject>(fontRendererObj, 0, 0, 0, 0);
             objectList.setEmptyMessage(I18n.format("replaymod.gui.objects.empty"));
-            
+
             addButton = new GuiAdvancedButton(0, 0, 0, 20, I18n.format("replaymod.gui.add"), new Runnable() {
                 @Override
                 public void run() {
@@ -147,6 +153,18 @@ public class GuiObjectManager extends GuiScreen {
             nameInput.hint = I18n.format("replaymod.gui.objects.properties.name");
 
             keyframeLists = new KeyframeList[5];
+
+            objectList.addSelectionListener(new SelectionListener() {
+                @Override
+                public void onSelectionChanged(int selectionIndex) {
+                    CustomImageObject selectedObject = objectList.getElement(selectionIndex);
+                    if(selectedObject != null) {
+                        disableElements.setEnabled(true);
+                    } else {
+                        disableElements.setEnabled(false);
+                    }
+                }
+            });
         }
 
         String[] labelStrings = new String[] {
@@ -165,6 +183,7 @@ public class GuiObjectManager extends GuiScreen {
             }
         }
 
+        disableElements = new ComposedElement();
         allElements = new ComposedElement();
 
         int inputWidth = 40;
@@ -194,30 +213,34 @@ public class GuiObjectManager extends GuiScreen {
             child.addPart(button);
             child.addPart(label);
 
-            allElements.addPart(child);
+            disableElements.addPart(child);
         }
 
-        int timelineX = anchorZInput.xPosition + anchorZInput.width + 5;
-        int timelineY = anchorZInput.yPosition;
+        int timelineX = anchorZInput.xPosition + anchorZInput.width + 5 - 1;
+        int timelineY = anchorZInput.yPosition - 1;
 
-        int timelineWidth = this.width-10-timelineX;
-        int timelineHeight = this.height-10-10-timelineY;
+        int timelineWidth = this.width-10-timelineX + 2;
+        int timelineHeight = this.height-10-10-timelineY + 2;
 
         objectKeyframeTimeline = new GuiObjectKeyframeTimeline(timelineX, timelineY, timelineWidth, timelineHeight, keyframeLists);
-        allElements.addPart(objectKeyframeTimeline);
+        disableElements.addPart(objectKeyframeTimeline);
 
-        timelineScrollbar = new GuiScrollbar(timelineX, this.height-15, timelineWidth-19) {
+        timelineScrollbar = new GuiScrollbar(timelineX, this.height-15, timelineWidth-21) {
             @Override
             public void dragged() {
-                objectKeyframeTimeline.setLeftPosition((float)sliderPosition);
+                objectKeyframeTimeline.timeStart = (float)sliderPosition;
             }
         };
-        allElements.addPart(timelineScrollbar);
+
+        timelineScrollbar.size = objectKeyframeTimeline.zoom;
+        timelineScrollbar.sliderPosition = objectKeyframeTimeline.timeStart;
+
+        disableElements.addPart(timelineScrollbar);
 
         zoomInButton = GuiReplayOverlay.texturedButton(width - 28, this.height-15, 40, 20, 9, new Runnable() {
             @Override
             public void run() {
-                objectKeyframeTimeline.setZoomScale(Math.max(0.025f, objectKeyframeTimeline.getZoomScale() - ZOOM_STEPS));
+                objectKeyframeTimeline.zoom = Math.max(0.025f, objectKeyframeTimeline.zoom - ZOOM_STEPS);
             }
         }, "replaymod.gui.ingame.menu.zoomin");
 
@@ -225,13 +248,13 @@ public class GuiObjectManager extends GuiScreen {
 
             @Override
             public void run() {
-                objectKeyframeTimeline.setZoomScale(Math.min(1f, objectKeyframeTimeline.getZoomScale() + ZOOM_STEPS));
-                objectKeyframeTimeline.setLeftPosition(Math.min(objectKeyframeTimeline.getLeftPos(), 1f - objectKeyframeTimeline.getZoomScale()));
+                objectKeyframeTimeline.zoom = Math.min(1f, objectKeyframeTimeline.zoom + ZOOM_STEPS);
+                objectKeyframeTimeline.timeStart = Math.min(objectKeyframeTimeline.timeStart, 1f - objectKeyframeTimeline.zoom);
             }
         }, "replaymod.gui.ingame.menu.zoomout");
 
-        allElements.addPart(zoomInButton);
-        allElements.addPart(zoomOutButton);
+        disableElements.addPart(zoomInButton);
+        disableElements.addPart(zoomOutButton);
 
         objectList.xPosition = 11;
         objectList.yPosition = 11;
@@ -246,7 +269,7 @@ public class GuiObjectManager extends GuiScreen {
         nameInput.yPosition = objectList.yPosition;
         nameInput.width = objectList.width;
 
-        allElements.addPart(nameInput);
+        disableElements.addPart(nameInput);
 
         dropdownLabel.positionX = (width/2)+5;
         int strWidth = fontRendererObj.getStringWidth(I18n.format("replaymod.gui.assets.filechooser")+": ");
@@ -256,8 +279,8 @@ public class GuiObjectManager extends GuiScreen {
         dropdownLabel.positionY = assetDropdown.yPosition + 6;
         assetDropdown.width = (objectList.width-strWidth-5);
 
-        allElements.addPart(dropdownLabel);
-        allElements.addPart(assetDropdown);
+        disableElements.addPart(dropdownLabel);
+        disableElements.addPart(assetDropdown);
 
         addButton.xPosition = nameInput.xPosition;
         addButton.width = removeButton.width = nameInput.width/2 - 2;
@@ -266,6 +289,10 @@ public class GuiObjectManager extends GuiScreen {
 
         allElements.addPart(addButton);
         allElements.addPart(removeButton);
+
+        allElements.addPart(disableElements);
+
+        objectList.setSelectionIndex(objectList.getSelectionIndex()); // trigger an event for the SelectionListener
 
         initialized = true;
     }
@@ -313,93 +340,50 @@ public class GuiObjectManager extends GuiScreen {
         super.mouseReleased(mouseX, mouseY, mouseButton);
     }
 
-    public class GuiObjectKeyframeTimeline implements GuiElement {
+    public class GuiObjectKeyframeTimeline extends GuiTimeline {
 
         private KeyframeList[] keyframeLists;
 
         public int x, y, width, height;
 
-        @Getter @Setter
-        private int timestamp;
-
-        @Getter @Setter
-        private float zoomScale;
-
-        @Getter @Setter
-        private float leftPos;
-
-        private int timelineLength = 10 * 60 * 1000;
+        private boolean dragging = false;
 
         public GuiObjectKeyframeTimeline(int x, int y, int width, int height, KeyframeList... keyframeLists) {
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
+            super(x, y, width, height);
 
             this.keyframeLists = keyframeLists;
-        }
 
-        public void setLeftPosition(float leftPos) {
-            this.leftPos = leftPos;
-        }
-
-        private boolean enabled = true;
-
-        @Override
-        public void draw(Minecraft mc, int mouseX, int mouseY) {
-            drawRect(this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, -6250336);
-            drawRect(this.x, this.y, this.x + this.width, this.y + this.height, -16777216);
-
-            int count = keyframeLists.length;
-            int i = 0;
-            for(KeyframeList list : keyframeLists) {
-                int yPos = (int)(((float)i/count)*(height+2));
-                int h = (int)(1f/count)*(height+2);
-
-                if(i < count)
-                    drawHorizontalLine(x, x+width, y+yPos+h-1, -6250336);
-                i++;
-            }
-        }
-
-        @Override
-        public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
-
-        }
-
-        @Override
-        public boolean isHovering(int mouseX, int mouseY) {
-            return false;
+            this.zoom = 0.1;
+            this.timelineLength = 10 * 60 * 1000;
+            this.showMarkers = true;
         }
 
         @Override
         public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-
+            if(!enabled) return;
+            super.mouseClick(mc, mouseX, mouseY, button);
+            int time = (int) getTimeAt(mouseX, mouseY);
+            if(time != -1)  {
+                cursorPosition = time;
+                dragging = true;
+            }
         }
 
         @Override
         public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
-
+            if(!enabled) return;
+            super.mouseDrag(mc, mouseX, mouseY, button);
+            if(dragging) {
+                int time = (int) getTimeAt(mouseX, mouseY);
+                if(time != -1) cursorPosition = time;
+            }
         }
 
         @Override
         public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
-
-        }
-
-        @Override
-        public void buttonPressed(Minecraft mc, int mouseX, int mouseY, char key, int keyCode) {
-
-        }
-
-        @Override
-        public void tick(Minecraft mc) {
-
-        }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
+            if(!enabled) return;
+            super.mouseRelease(mc, mouseX, mouseY, button);
+            this.dragging = false;
         }
     }
 }

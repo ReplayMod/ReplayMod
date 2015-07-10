@@ -12,6 +12,10 @@ public class TimestampValue implements KeyframeValue {
     @Interpolate
     public double value;
 
+    public int asInt() {
+        return (int)value;
+    }
+
     @Override
     public TimestampValue newInstance() {
         return new TimestampValue();

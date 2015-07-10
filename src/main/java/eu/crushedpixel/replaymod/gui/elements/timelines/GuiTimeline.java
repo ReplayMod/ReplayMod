@@ -16,10 +16,10 @@ import static org.lwjgl.opengl.GL11.glEnable;
 public class GuiTimeline extends Gui implements GuiElement {
 
     protected static final int TEXTURE_WIDTH = 64;
+    protected static final int TEXTURE_HEIGHT = 22;
     protected static final int BORDER_TOP = 4;
     protected static final int BORDER_BOTTOM = 3;
 
-    protected static final int HEIGHT = 22;
     protected static final int TEXTURE_X = 64;
     protected static final int TEXTURE_Y = 106;
 
@@ -57,13 +57,15 @@ public class GuiTimeline extends Gui implements GuiElement {
     protected final int positionX;
     protected final int positionY;
     protected final int width;
+    protected final int height;
 
     protected boolean enabled = true;
 
-    public GuiTimeline(int positionX, int positionY, int width) {
+    public GuiTimeline(int positionX, int positionY, int width, int height) {
         this.positionX = positionX;
         this.positionY = positionY;
         this.width = width;
+        this.height = height;
     }
 
     /**
@@ -76,7 +78,7 @@ public class GuiTimeline extends Gui implements GuiElement {
         int left = positionX + BORDER_LEFT;
         int right = positionX + width - BORDER_RIGHT;
         int bodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
-        if (mouseX >= left && mouseX <= right && mouseY >= positionY && mouseY <= positionY + HEIGHT) {
+        if (mouseX >= left && mouseX <= right && mouseY >= positionY && mouseY <= positionY + height) {
             double segmentLength = timelineLength * zoom;
             double segmentTime =  segmentLength * (mouseX - left) / bodyWidth;
             return Math.round(timeStart * timelineLength + segmentTime);
@@ -96,14 +98,48 @@ public class GuiTimeline extends Gui implements GuiElement {
             int BORDER_LEFT = GuiTimeline.BORDER_LEFT + 1;
             int BODY_WIDTH = GuiTimeline.BODY_WIDTH - 1;
 
-            // Left border
-            rect(positionX, positionY, TEXTURE_X, TEXTURE_Y, BORDER_LEFT, HEIGHT);
-            // Body
-            for (int i = bodyLeft; i < bodyRight; i += BODY_WIDTH) {
-                rect(i, positionY, TEXTURE_X + BORDER_LEFT, TEXTURE_Y, Math.min(BODY_WIDTH, bodyRight - i), HEIGHT);
+            /*
+            // Upper left border
+            rect(positionX, positionY, TEXTURE_X, TEXTURE_Y, BORDER_LEFT, BORDER_TOP);
+
+            // Lower left border
+            rect(positionX, positionY+height-BORDER_BOTTOM, TEXTURE_X, TEXTURE_Y+TEXTURE_HEIGHT-BORDER_BOTTOM, BORDER_LEFT, BORDER_BOTTOM);
+            */
+
+            boolean leftRightDrawn = false;
+
+            for (int i = positionX; i < bodyRight; i += BODY_WIDTH) {
+                int textureX = leftRightDrawn ? TEXTURE_X+BORDER_LEFT : TEXTURE_X;
+
+                // Upper border
+                rect(i, positionY, textureX, TEXTURE_Y, Math.min(BODY_WIDTH, bodyRight - i), BORDER_TOP);
+
+                int remaining = height-BORDER_TOP-BORDER_BOTTOM;
+                int y = positionY + BORDER_TOP;
+                while(remaining > 0) {
+                    int toDraw = Math.min(remaining, TEXTURE_HEIGHT - BORDER_TOP - BORDER_BOTTOM);
+                    rect(i, y, textureX, TEXTURE_Y+BORDER_TOP, Math.min(BODY_WIDTH, bodyRight - i), Math.min(TEXTURE_HEIGHT-BORDER_TOP-BORDER_BOTTOM, toDraw));
+
+                    // Right border
+                    if(!leftRightDrawn) {
+                        rect(bodyLeft+bodyWidth, y, TEXTURE_X+TEXTURE_WIDTH-BORDER_RIGHT, TEXTURE_Y+BORDER_TOP, BORDER_RIGHT, Math.min(TEXTURE_HEIGHT-BORDER_TOP-BORDER_BOTTOM, toDraw));
+                    }
+
+                    y += toDraw;
+                    remaining -= toDraw;
+                }
+
+                // Lower border
+                rect(i, positionY+height-BORDER_BOTTOM, textureX, TEXTURE_Y+TEXTURE_HEIGHT-BORDER_BOTTOM, Math.min(BODY_WIDTH, bodyRight - i), BORDER_BOTTOM);
+
+                leftRightDrawn = true;
             }
-            // Right border
-            rect(bodyRight, positionY, TEXTURE_X + BORDER_LEFT + BODY_WIDTH, TEXTURE_Y, BORDER_RIGHT, HEIGHT);
+
+            // Upper right corner
+            rect(bodyLeft+bodyWidth, positionY, TEXTURE_X+TEXTURE_WIDTH-BORDER_RIGHT, TEXTURE_Y, BORDER_RIGHT, BORDER_TOP);
+
+            // Lower right corner
+            rect(bodyLeft+bodyWidth, positionY+height-BORDER_BOTTOM, TEXTURE_X+TEXTURE_WIDTH-BORDER_RIGHT, TEXTURE_Y+TEXTURE_HEIGHT-BORDER_BOTTOM, BORDER_RIGHT, BORDER_BOTTOM);
         }
 
         long leftTime = Math.round(timeStart * timelineLength);
@@ -111,7 +147,7 @@ public class GuiTimeline extends Gui implements GuiElement {
 
         // Draw markers
         if (showMarkers) {
-            int markerY = positionY + HEIGHT - BORDER_BOTTOM;
+            int markerY = positionY + height - BORDER_BOTTOM;
             MarkerType mt = MarkerType.getMarkerType(zoom, timelineLength);
 
             // Small markers
@@ -152,7 +188,20 @@ public class GuiTimeline extends Gui implements GuiElement {
             double fractionOfSegment = positionInSegment / (zoom * timelineLength);
             int cursorX = (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
 
-            rect(cursorX - 2, positionY + BORDER_TOP, 84, 20, 5, 16);
+            rect(cursorX - 2, positionY + BORDER_TOP-1, 84, 20, 5, 4);
+
+
+            int remaining = height-BORDER_TOP-BORDER_BOTTOM-3;
+            int y = positionY + BORDER_TOP-1 + 4;
+            while(remaining > 0) {
+                int toDraw = Math.min(remaining, 11);
+
+                rect(cursorX - 2, y, 84, 24, 5, toDraw);
+
+                y += toDraw;
+                remaining -= toDraw;
+            }
+
         }
     }
 

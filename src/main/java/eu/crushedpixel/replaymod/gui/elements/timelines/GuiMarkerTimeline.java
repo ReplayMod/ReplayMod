@@ -18,8 +18,8 @@ public class GuiMarkerTimeline extends GuiTimeline {
     private long clickTime;
     private boolean dragging;
 
-    public GuiMarkerTimeline(int positionX, int positionY, int width, boolean showMarkers) {
-        super(positionX, positionY, width);
+    public GuiMarkerTimeline(int positionX, int positionY, int width, int height, boolean showMarkers) {
+        super(positionX, positionY, width, height);
         this.showMarkers = showMarkers;
     }
 

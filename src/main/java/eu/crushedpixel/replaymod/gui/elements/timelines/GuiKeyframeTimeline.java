@@ -23,9 +23,9 @@ public class GuiKeyframeTimeline extends GuiTimeline {
     private boolean timeKeyframes;
     private boolean placeKeyframes;
 
-    public GuiKeyframeTimeline(int positionX, int positionY, int width, boolean showMarkers,
+    public GuiKeyframeTimeline(int positionX, int positionY, int width, int height, boolean showMarkers,
                                boolean showPlaceKeyframes, boolean showTimeKeyframes) {
-        super(positionX, positionY, width);
+        super(positionX, positionY, width, height);
         this.showMarkers = showMarkers;
         this.timeKeyframes = showTimeKeyframes;
         this.placeKeyframes = showPlaceKeyframes;
