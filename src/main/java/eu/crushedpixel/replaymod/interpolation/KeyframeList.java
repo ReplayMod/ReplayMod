@@ -1,10 +1,11 @@
 package eu.crushedpixel.replaymod.interpolation;
 
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeComparator;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>> {
@@ -44,7 +45,7 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
 
     public void sort() {
         previousCallLinear = null;
-        sort(KEYFRAME_COMPARATOR);
+        Collections.sort(this, KEYFRAME_COMPARATOR);
     }
 
     /**
@@ -138,6 +139,8 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     }
 
     public K getInterpolatedValueForPathPosition(float pathPosition, boolean linear) {
+        //as every implementation of KeyframeValue returns a new instance of itself, this warning can be ignored
+        @SuppressWarnings("unchecked")
         K toApply = (K)first().getValue().newInstance();
 
         if(previousCallLinear != (Boolean)linear) {
