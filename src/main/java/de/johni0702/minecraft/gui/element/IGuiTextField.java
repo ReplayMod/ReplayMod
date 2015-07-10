@@ -23,9 +23,11 @@
 package de.johni0702.minecraft.gui.element;
 
 import de.johni0702.minecraft.gui.function.Focusable;
+import org.lwjgl.util.ReadableColor;
 
 public interface IGuiTextField<T extends IGuiTextField<T>> extends GuiElement<T>, Focusable<T> {
     T setText(String text);
+    T setI18nText(String text, Object... args);
     String getText();
 
     int getMaxLength();
@@ -38,4 +40,7 @@ public interface IGuiTextField<T extends IGuiTextField<T>> extends GuiElement<T>
     T setHint(String hint);
 
     T setI18nHint(String hint, Object... args);
+
+    ReadableColor getTextColor();
+    T setTextColor(ReadableColor textColor);
 }

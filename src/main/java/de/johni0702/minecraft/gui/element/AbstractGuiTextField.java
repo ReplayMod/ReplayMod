@@ -34,6 +34,7 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 
@@ -48,6 +49,9 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
 
     @Getter
     private String hint;
+
+    @Getter
+    private ReadableColor textColor;
 
     public AbstractGuiTextField() {
         this.wrapped = new net.minecraft.client.gui.GuiTextField(0, Minecraft.getMinecraft().fontRendererObj, 0, 0, 0, 0);
@@ -126,6 +130,11 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
             wrapped.text = text;
         }
         return getThis();
+    }
+
+    @Override
+    public T setI18nText(String text, Object... args) {
+        return setText(I18n.format(text, args));
     }
 
     @Override
@@ -223,5 +232,12 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     @Override
     public T setI18nHint(String hint, Object... args) {
         return setHint(I18n.format(hint));
+    }
+
+    @Override
+    public T setTextColor(ReadableColor textColor) {
+        this.textColor = textColor;
+        wrapped.setTextColor(textColor.getAlpha() << 24 | textColor.getRed() << 16 | textColor.getGreen() << 8 | textColor.getBlue());
+        return getThis();
     }
 }
