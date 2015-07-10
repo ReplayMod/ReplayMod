@@ -19,6 +19,10 @@ public class AdvancedPosition extends Position {
 
     public AdvancedPosition(double x, double y, double z, double pitch, double yaw, double roll, Integer spectatedEntityID) {
         super(x, y, z);
+        this.pitch = pitch;
+        this.yaw = yaw;
+        this.roll = roll;
+        this.spectatedEntityID = spectatedEntityID;
     }
 
     public AdvancedPosition(int entityID, boolean spectate) {
