@@ -31,9 +31,14 @@ public class RenderInfo {
     public final float partialTick;
     public final int mouseX;
     public final int mouseY;
+    public final int layer;
 
     public RenderInfo offsetMouse(int minusX, int minusY) {
-        return new RenderInfo(partialTick, mouseX - minusX, mouseY - minusY);
+        return new RenderInfo(partialTick, mouseX - minusX, mouseY - minusY, layer);
+    }
+
+    public RenderInfo layer(int layer) {
+        return new RenderInfo(partialTick, mouseX, mouseY, layer);
     }
 
     public void addTo(CrashReport crashReport) {
@@ -41,5 +46,6 @@ public class RenderInfo {
         category.addCrashSection("Partial Tick", partialTick);
         category.addCrashSection("Mouse X", mouseX);
         category.addCrashSection("Mouse Y", mouseY);
+        category.addCrashSection("Layer", layer);
     }
 }

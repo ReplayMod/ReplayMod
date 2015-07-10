@@ -52,4 +52,11 @@ public interface GuiElement<T extends GuiElement<T>> {
     GuiElement getTooltip(RenderInfo renderInfo);
     T setTooltip(GuiElement tooltip);
 
+    /**
+     * Returns the layer this element takes part in.
+     * The standard layer is layer 0. Event handlers will be called for this layer.
+     * @return The layer of this element
+     */
+    int getLayer();
+
 }

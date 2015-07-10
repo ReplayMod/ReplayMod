@@ -147,6 +147,10 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
         return getThis();
     }
 
+    public int getLayer() {
+        return 0;
+    }
+
     @Override
     public ReadableDimension getMaxSize() {
         return maxSize == null ? getPreferredSize() : maxSize;

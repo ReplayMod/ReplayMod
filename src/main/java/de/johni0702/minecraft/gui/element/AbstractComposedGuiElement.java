@@ -30,6 +30,8 @@ import net.minecraft.util.ReportedException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public abstract class AbstractComposedGuiElement<T extends AbstractComposedGuiElement<T>>
@@ -42,18 +44,102 @@ public abstract class AbstractComposedGuiElement<T extends AbstractComposedGuiEl
     }
 
     @Override
+    public int getMaxLayer() {
+        int maxLayer = getLayer();
+        for (GuiElement element : getChildren()) {
+            int elementMaxLayer;
+            if (element instanceof ComposedGuiElement) {
+                elementMaxLayer = ((ComposedGuiElement) element).getMaxLayer();
+            }  else {
+                elementMaxLayer = element.getLayer();
+            }
+            if (elementMaxLayer > maxLayer) {
+                maxLayer = elementMaxLayer;
+            }
+        }
+        return maxLayer;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <C> C forEach(final Class<C> ofType) {
+        int maxLayer = getMaxLayer();
+        final List<C> layers = new ArrayList<C>(maxLayer + 1);
+        for (int i = 0; i <= maxLayer; i++) {
+            layers.add(forEach(i, ofType));
+        }
         return (C) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{ofType}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 boolean isGetter = method.getName().startsWith("get");
-                Object handled = null;
+                Object handled = method.getReturnType().equals(Boolean.class) ? false : null;
+                for (final C layer : layers) {
+                    handled = method.invoke(layer, args);
+                    if (handled != null) {
+                        if (handled instanceof Boolean) {
+                            if (Boolean.TRUE.equals(handled)) {
+                                break;
+                            }
+                        } else if (isGetter) {
+                            return handled;
+                        }
+                    }
+                }
+                return handled;
+            }
+        });
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C> C forEach(final int layer, final Class<C> ofType) {
+        return (C) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{ofType}, new InvocationHandler() {
+
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                boolean isGetter = method.getName().startsWith("get");
+                Object handled = method.getReturnType().equals(boolean.class) ? false : null;
+                final AbstractComposedGuiElement self = AbstractComposedGuiElement.this;
+                if (ofType.isInstance(self) && self.getLayer() == layer) {
+                    try {
+                        handled = method.invoke(self, args);
+                    } catch (Exception e) {
+                        CrashReport crash = CrashReport.makeCrashReport(e, "Calling Gui method");
+                        CrashReportCategory category = crash.makeCategory("Gui");
+                        category.addCrashSection("Method", method);
+                        category.addCrashSectionCallable("ComposedElement", new Callable() {
+                            @Override
+                            public Object call() throws Exception {
+                                return self;
+                            }
+                        });
+                        category.addCrashSectionCallable("Element", new Callable() {
+                            @Override
+                            public Object call() throws Exception {
+                                return self;
+                            }
+                        });
+                        throw new ReportedException(crash);
+                    }
+                    if (handled != null) {
+                        if (handled instanceof Boolean) {
+                            if (Boolean.TRUE.equals(handled)) {
+                                return true;
+                            }
+                        } else if (isGetter) {
+                            return handled;
+                        }
+                    }
+                }
                 for (final GuiElement element : getChildren()) {
                     try {
                         if (element instanceof ComposedGuiElement) {
-                            handled = method.invoke(((ComposedGuiElement) element).forEach(ofType), args);
-                        } else if (ofType.isInstance(element)) {
+                            ComposedGuiElement composed = (ComposedGuiElement) element;
+                            if (layer <= composed.getMaxLayer()) {
+                                Object elementProxy = composed.forEach(layer, ofType);
+                                handled = method.invoke(elementProxy, args);
+                            }
+                        } else if (ofType.isInstance(element) && element.getLayer() == layer) {
                             handled = method.invoke(element, args);
                         }
                         if (handled != null) {

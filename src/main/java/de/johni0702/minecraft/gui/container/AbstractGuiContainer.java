@@ -26,6 +26,7 @@ import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.OffsetGuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.element.AbstractComposedGuiElement;
+import de.johni0702.minecraft.gui.element.ComposedGuiElement;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.layout.Layout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
@@ -129,6 +130,16 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
             throw new ReportedException(crashReport);
         }
         for (final Map.Entry<GuiElement, Pair<ReadablePoint, ReadableDimension>> e : layedOutElements.entrySet()) {
+            GuiElement element = e.getKey();
+            if (element instanceof ComposedGuiElement) {
+                if (((ComposedGuiElement) element).getMaxLayer() < renderInfo.layer) {
+                    continue;
+                }
+            } else {
+                if (element.getLayer() != renderInfo.layer) {
+                    continue;
+                }
+            }
             final ReadablePoint ePosition = e.getValue().getLeft();
             final ReadableDimension eSize = e.getValue().getRight();
             try {

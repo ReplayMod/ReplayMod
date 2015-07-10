@@ -45,10 +45,6 @@ public class OffsetGuiRenderer implements GuiRenderer {
         this.renderer = renderer;
         this.position = position;
         this.size = size;
-        if (size.getHeight() > renderer.getSize().getHeight()
-                || size.getWidth() > renderer.getSize().getWidth()) {
-            throw new IllegalArgumentException("Size must not be larger than size of renderer.");
-        }
     }
 
     @Override

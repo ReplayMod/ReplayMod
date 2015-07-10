@@ -28,4 +28,13 @@ public interface ComposedGuiElement<T extends ComposedGuiElement<T>> extends Gui
     Collection<GuiElement> getChildren();
 
     <C> C forEach(Class<C> ofType);
+    <C> C forEach(int layer, Class<C> ofType);
+
+    /**
+     * Returns the highest layer this element or any of its children take part in.
+     * Events will be called for this composed gui element for all layers between
+     * layer 0 (inclusive) and the returned maximum layer (inclusive).
+     * @return Highest layer relevant to this element
+     */
+    int getMaxLayer();
 }

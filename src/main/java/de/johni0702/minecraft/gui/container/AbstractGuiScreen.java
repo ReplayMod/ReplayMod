@@ -67,67 +67,70 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-        if (drawBackground) {
-            wrapped.drawDefaultBackground();
-        }
-        if (title != null) {
-            ReadableDimension titleSize = title.getMinSize();
-            int x = screenSize.getWidth() / 2 - titleSize.getWidth() / 2;
-            OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, new Point(x, 10), new Dimension(0, 0));
-            title.draw(eRenderer, titleSize, null);
+        if (renderInfo.layer == 0) {
+            if (drawBackground) {
+                wrapped.drawDefaultBackground();
+            }
+            if (title != null) {
+                ReadableDimension titleSize = title.getMinSize();
+                int x = screenSize.getWidth() / 2 - titleSize.getWidth() / 2;
+                OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, new Point(x, 10), new Dimension(0, 0));
+                title.draw(eRenderer, titleSize, null);
+            }
         }
         super.draw(renderer, size, renderInfo);
-
-        final GuiElement tooltip = forEach(GuiElement.class).getTooltip(renderInfo);
-        if (tooltip != null) {
-            final ReadableDimension tooltipSize = tooltip.getMinSize();
-            int dx, dy;
-            if (renderInfo.mouseX + 8 + tooltipSize.getWidth() < screenSize.getWidth()) {
-                dx = 8;
-            } else {
-                dx = -8;
-            }
-            if (renderInfo.mouseY + 8 + tooltipSize.getHeight() < screenSize.getHeight()) {
-                dy = 8;
-            } else {
-                dy = -8;
-            }
-            final ReadablePoint position = new Point(renderInfo.mouseX + dx, renderInfo.mouseY + dy);
-            try {
-                OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, position, tooltipSize);
-                tooltip.draw(eRenderer, tooltipSize, renderInfo.offsetMouse(position.getX(), position.getY()));
-            } catch (Exception ex) {
-                CrashReport crashReport = CrashReport.makeCrashReport(ex, "Rendering Gui Tooltip");
-                renderInfo.addTo(crashReport);
-                CrashReportCategory category = crashReport.makeCategory("Gui container details");
-                category.addCrashSectionCallable("Container", new Callable() {
-                    @Override
-                    public Object call() throws Exception {
-                        return this;
-                    }
-                });
-                category.addCrashSection("Width", size.getWidth());
-                category.addCrashSection("Height", size.getHeight());
-                category = crashReport.makeCategory("Tooltip details");
-                category.addCrashSectionCallable("Element", new Callable() {
-                    @Override
-                    public Object call() throws Exception {
-                        return tooltip;
-                    }
-                });
-                category.addCrashSectionCallable("Position", new Callable() {
-                    @Override
-                    public Object call() throws Exception {
-                        return position;
-                    }
-                });
-                category.addCrashSectionCallable("Size", new Callable() {
-                    @Override
-                    public Object call() throws Exception {
-                        return tooltipSize;
-                    }
-                });
-                throw new ReportedException(crashReport);
+        if (renderInfo.layer == getMaxLayer()) {
+            final GuiElement tooltip = forEach(GuiElement.class).getTooltip(renderInfo);
+            if (tooltip != null) {
+                final ReadableDimension tooltipSize = tooltip.getMinSize();
+                int dx, dy;
+                if (renderInfo.mouseX + 8 + tooltipSize.getWidth() < screenSize.getWidth()) {
+                    dx = 8;
+                } else {
+                    dx = -8;
+                }
+                if (renderInfo.mouseY + 8 + tooltipSize.getHeight() < screenSize.getHeight()) {
+                    dy = 8;
+                } else {
+                    dy = -8;
+                }
+                final ReadablePoint position = new Point(renderInfo.mouseX + dx, renderInfo.mouseY + dy);
+                try {
+                    OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, position, tooltipSize);
+                    tooltip.draw(eRenderer, tooltipSize, renderInfo.offsetMouse(position.getX(), position.getY()));
+                } catch (Exception ex) {
+                    CrashReport crashReport = CrashReport.makeCrashReport(ex, "Rendering Gui Tooltip");
+                    renderInfo.addTo(crashReport);
+                    CrashReportCategory category = crashReport.makeCategory("Gui container details");
+                    category.addCrashSectionCallable("Container", new Callable() {
+                        @Override
+                        public Object call() throws Exception {
+                            return this;
+                        }
+                    });
+                    category.addCrashSection("Width", size.getWidth());
+                    category.addCrashSection("Height", size.getHeight());
+                    category = crashReport.makeCategory("Tooltip details");
+                    category.addCrashSectionCallable("Element", new Callable() {
+                        @Override
+                        public Object call() throws Exception {
+                            return tooltip;
+                        }
+                    });
+                    category.addCrashSectionCallable("Position", new Callable() {
+                        @Override
+                        public Object call() throws Exception {
+                            return position;
+                        }
+                    });
+                    category.addCrashSectionCallable("Size", new Callable() {
+                        @Override
+                        public Object call() throws Exception {
+                            return tooltipSize;
+                        }
+                    });
+                    throw new ReportedException(crashReport);
+                }
             }
         }
     }
@@ -159,7 +162,10 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
         @Override
         public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-            draw(renderer, screenSize, new RenderInfo(partialTicks, mouseX, mouseY));
+            int layers = getMaxLayer();
+            for (int layer = 0; layer <= layers; layer++) {
+                draw(renderer, screenSize, new RenderInfo(partialTicks, mouseX, mouseY, layer));
+            }
         }
 
         @Override
