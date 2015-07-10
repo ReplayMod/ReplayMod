@@ -3,6 +3,9 @@ package eu.crushedpixel.replaymod.gui.elements;
 import net.minecraft.client.Minecraft;
 
 public abstract class DelegatingElement implements GuiElement {
+
+    protected boolean enabled = true;
+
     public static DelegatingElement of(final GuiElement element) {
         return new DelegatingElement() {
             @Override
@@ -55,5 +58,7 @@ public abstract class DelegatingElement implements GuiElement {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {}
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 }

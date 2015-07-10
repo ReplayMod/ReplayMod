@@ -5,6 +5,8 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 
+import java.awt.*;
+
 public class GuiTexturedButton extends GuiAdvancedButton implements GuiElement {
     private final ResourceLocation texture;
     private final int u, v;
@@ -23,11 +25,16 @@ public class GuiTexturedButton extends GuiAdvancedButton implements GuiElement {
     @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY) {
         if (visible) {
-            hovered = isHovering(mouseX, mouseY);
+            hovered = isHovering(mouseX, mouseY) && enabled;
+
+            if(!enabled) {
+                GlStateManager.color(Color.GRAY.getRed() / 255f, Color.GRAY.getGreen() / 255f, Color.GRAY.getBlue() / 255f, 1f);
+            } else {
+                GlStateManager.color(1f, 1f, 1f);
+            }
 
             mc.renderEngine.bindTexture(texture);
 
-            GlStateManager.color(1, 1, 1);
             int u = this.u + (hovered ? width : 0);
             Gui.drawModalRectWithCustomSizedTexture(xPosition, yPosition, u, v, width, height, textureWidth, textureHeight);
         }

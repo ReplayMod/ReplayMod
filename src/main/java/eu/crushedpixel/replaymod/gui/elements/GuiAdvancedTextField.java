@@ -11,7 +11,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
     public String hint;
     public int hintTextColor = Color.DARK_GRAY.getRGB();
 
-    private boolean isEnabled = true;
+    protected boolean isEnabled = true;
     private int disabledTextColor;
 
     public GuiAdvancedTextField(FontRenderer fontRenderer, int x, int y, int width, int height) {

@@ -5,7 +5,6 @@ import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiTextField;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.Point;
 
@@ -140,6 +139,7 @@ public class GuiDropdown<T> extends GuiAdvancedTextField {
 
     public boolean mouseClickedResult(int xPos, int yPos) {
         boolean success = false;
+        if(!isEnabled) return success;
         if(xPos > xPosition + width - height && xPos < xPosition + width && yPos > yPosition && yPos < yPosition + height) {
             open = !open;
         } else {

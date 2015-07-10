@@ -24,7 +24,7 @@ public class GuiDraggingNumberInput extends GuiNumberInputWithText {
 
     @Override
     public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        if(MouseUtils.isMouseWithinBounds(xPosition, yPosition, width, height)) {
+        if(MouseUtils.isMouseWithinBounds(xPosition, yPosition, width, height) && isEnabled) {
             dragging = false;
             clicked = true;
             prevMouseX = mouseX;
