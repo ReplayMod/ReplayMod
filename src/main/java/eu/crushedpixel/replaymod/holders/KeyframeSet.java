@@ -8,7 +8,7 @@ import java.util.List;
 
 public class KeyframeSet implements GuiEntryListEntry {
     private String name;
-    private Keyframe<Position>[] positionKeyframes;
+    private Keyframe<AdvancedPosition>[] positionKeyframes;
     private Keyframe<TimestampValue>[] timeKeyframes;
 
     public KeyframeSet(String name, Keyframe[] keyframes) {
@@ -21,12 +21,12 @@ public class KeyframeSet implements GuiEntryListEntry {
     }
 
     public void setKeyframes(Keyframe[] keyframes) {
-        List<Keyframe<Position>> posKFList = new ArrayList<Keyframe<Position>>();
+        List<Keyframe<AdvancedPosition>> posKFList = new ArrayList<Keyframe<AdvancedPosition>>();
         List<Keyframe<TimestampValue>> timeKFList = new ArrayList<Keyframe<TimestampValue>>();
 
         for(Keyframe kf : keyframes) {
-            if(kf.getValue() instanceof Position)
-                posKFList.add((Keyframe<Position>)kf);
+            if(kf.getValue() instanceof AdvancedPosition)
+                posKFList.add((Keyframe<AdvancedPosition>)kf);
             else if(kf.getValue() instanceof TimestampValue)
                 timeKFList.add((Keyframe<TimestampValue>) kf);
         }

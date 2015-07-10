@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui.replayeditor;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
+import eu.crushedpixel.replaymod.holders.GuiEntryListStringEntry;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.StringUtils;
 import net.minecraft.client.gui.GuiButton;
@@ -22,7 +23,7 @@ public class GuiReplayEditor extends GuiScreen {
     private static final int tabYPos = 110;
     public static GuiReplayEditor instance = null;
     private StudioTab currentTab = StudioTab.TRIM;
-    private GuiDropdown<String> replayDropdown;
+    private GuiDropdown<GuiEntryListStringEntry> replayDropdown;
     private GuiButton saveModeButton;
     private boolean overrideSave = false;
     private boolean initialized = false;
@@ -50,7 +51,7 @@ public class GuiReplayEditor extends GuiScreen {
         }
         for(File file : replayFiles) {
             String name = FilenameUtils.getBaseName(file.getAbsolutePath());
-            replayDropdown.addElement(name);
+            replayDropdown.addElement(new GuiEntryListStringEntry(name));
         }
     }
 
@@ -81,7 +82,7 @@ public class GuiReplayEditor extends GuiScreen {
         int modeWidth = tabButtons.get(0).width;
 
         if(!initialized) {
-            replayDropdown = new GuiDropdown<String>(fontRendererObj, 15 + 2 + 1 + 80, 60, this.width - 30 - 8 - 80 - modeWidth - 4, 5);
+            replayDropdown = new GuiDropdown<GuiEntryListStringEntry>(fontRendererObj, 15 + 2 + 1 + 80, 60, this.width - 30 - 8 - 80 - modeWidth - 4, 5);
             refreshReplayDropdown();
         } else {
             replayDropdown.width = this.width - 30 - 8 - 80 - modeWidth - 4;

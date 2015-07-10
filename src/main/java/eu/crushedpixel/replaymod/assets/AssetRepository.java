@@ -105,4 +105,14 @@ public class AssetRepository {
         return replayAssets.get(uuid);
     }
 
+    public UUID getUUIDForAsset(ReplayAsset asset) {
+        for(Map.Entry<UUID, ReplayAsset> e : replayAssets.entrySet()) {
+            if(e.getValue().equals(asset)) {
+                return e.getKey();
+            }
+        }
+
+        return null;
+    }
+
 }

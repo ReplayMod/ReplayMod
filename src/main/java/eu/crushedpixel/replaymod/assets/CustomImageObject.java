@@ -1,7 +1,7 @@
 package eu.crushedpixel.replaymod.assets;
 
-import eu.crushedpixel.replaymod.holders.*;
-import eu.crushedpixel.replaymod.interpolation.KeyframeList;
+import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
+import eu.crushedpixel.replaymod.holders.Transformations;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import lombok.Getter;
@@ -16,16 +16,27 @@ import java.util.UUID;
 
 public class CustomImageObject implements GuiEntryListEntry {
 
-    public CustomImageObject(String name, UUID assetUUID) throws IOException {
+    public CustomImageObject(String name, UUID assetUUID) {
         this.name = name;
 
-        setLinkedAsset(assetUUID);
+        try {
+            setLinkedAsset(assetUUID);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Getter @Setter private String name;
     @Getter private UUID linkedAsset;
 
     @Getter @Setter private float width, height;
+
+    private ResourceLocation resourceLocation;
+    private DynamicTexture dynamicTexture;
+
+    @Getter private float textureWidth, textureHeight;
+
+    @Getter private Transformations transformations;
 
     public void setLinkedAsset(UUID assetUUID) throws IOException {
         ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(assetUUID);
@@ -65,11 +76,6 @@ public class CustomImageObject implements GuiEntryListEntry {
         });
     }
 
-    private ResourceLocation resourceLocation;
-    private DynamicTexture dynamicTexture;
-
-    @Getter private float textureWidth, textureHeight;
-
     public ResourceLocation getResourceLocation() {
         if(!ResourceHelper.isRegistered(resourceLocation)) {
             ResourceHelper.registerResource(resourceLocation);
@@ -83,18 +89,6 @@ public class CustomImageObject implements GuiEntryListEntry {
     @Override
     public String getDisplayString() {
         return name;
-    }
-
-    /**
-     * Keyframing Code
-     */
-
-    private KeyframeList<Position> anchorPointKeyframes, positionKeyframes, orientationKeyframes;
-    private KeyframeList<Point> scaleKeyframes;
-    private KeyframeList<TimestampValue> opacityKeyframes;
-
-    public Transformations getTransformationsForTimestamp(int timestamp) {
-        return null; //TODO
     }
 
 }

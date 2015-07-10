@@ -51,12 +51,12 @@ public class ReplayHandler {
     private static boolean inPath = false;
     private static CameraEntity cameraEntity;
 
-    private static KeyframeList<Position> positionKeyframes = new KeyframeList<Position>();
+    private static KeyframeList<AdvancedPosition> positionKeyframes = new KeyframeList<AdvancedPosition>();
     private static KeyframeList<TimestampValue> timeKeyframes = new KeyframeList<TimestampValue>();
 
     private static boolean inReplay = false;
     private static Entity currentEntity = null;
-    private static Position lastPosition = null;
+    private static AdvancedPosition lastPosition = null;
 
     private static MarkerKeyframe[] initialMarkers = new MarkerKeyframe[0];
     private static List<MarkerKeyframe> markerKeyframes = new ArrayList<MarkerKeyframe>();
@@ -123,7 +123,7 @@ public class ReplayHandler {
         positionKeyframes.clear();
         timeKeyframes.clear();
         for(Keyframe kf : kfs) {
-            if(kf.getValue() instanceof Position) {
+            if(kf.getValue() instanceof AdvancedPosition) {
                 positionKeyframes.add(kf);
             } else if(kf.getValue() instanceof TimestampValue) {
                 timeKeyframes.add(kf);
@@ -147,7 +147,7 @@ public class ReplayHandler {
 
     public static void spectateCamera() {
         if(currentEntity != null) {
-            Position prev = new Position(currentEntity, false);
+            AdvancedPosition prev = new AdvancedPosition(currentEntity, false);
             cameraEntity.movePath(prev);
         }
         currentEntity = cameraEntity;
@@ -229,7 +229,7 @@ public class ReplayHandler {
     public static void toggleMarker() {
         if(selectedMarkerKeyframe != null) markerKeyframes.remove(selectedMarkerKeyframe);
         else {
-            Position pos = new Position(mc.getRenderViewEntity(), false);
+            AdvancedPosition pos = new AdvancedPosition(mc.getRenderViewEntity(), false);
             int timestamp = ReplayMod.replaySender.currentTimeStamp();
             markerKeyframes.add(new MarkerKeyframe(timestamp, pos, null));
         }
@@ -242,7 +242,7 @@ public class ReplayHandler {
         fireKeyframesModifyEvent();
     }
 
-    public static void addPositionKeyframe(Keyframe<Position> keyframe) {
+    public static void addPositionKeyframe(Keyframe<AdvancedPosition> keyframe) {
         positionKeyframes.add(keyframe);
         selectKeyframe(keyframe);
 
@@ -250,9 +250,9 @@ public class ReplayHandler {
         Float b;
 
         for(Keyframe kf : positionKeyframes) {
-            if(!(kf.getValue() instanceof Position)) continue;
-            Keyframe<Position> pkf = (Keyframe<Position>)kf;
-            Position pos = pkf.getValue();
+            if(!(kf.getValue() instanceof AdvancedPosition)) continue;
+            Keyframe<AdvancedPosition> pkf = (Keyframe<AdvancedPosition>)kf;
+            AdvancedPosition pos = pkf.getValue();
             b = (float)pos.getYaw() % 360;
             if(a != null) {
                 float diff = b-a;
@@ -269,7 +269,7 @@ public class ReplayHandler {
     }
 
     public static void addKeyframe(Keyframe keyframe) {
-        if(keyframe.getValue() instanceof Position) {
+        if(keyframe.getValue() instanceof AdvancedPosition) {
             addPositionKeyframe(keyframe);
         } else if(keyframe.getValue() instanceof TimestampValue) {
             addTimeKeyframe(keyframe);
@@ -277,7 +277,7 @@ public class ReplayHandler {
     }
 
     public static void removeKeyframe(Keyframe keyframe) {
-        if(keyframe.getValue() instanceof Position) {
+        if(keyframe.getValue() instanceof AdvancedPosition) {
             positionKeyframes.remove(keyframe);
         } else if(keyframe.getValue() instanceof TimestampValue) {
             timeKeyframes.remove(keyframe);
@@ -338,7 +338,7 @@ public class ReplayHandler {
         return backup;
     }
 
-    public static KeyframeList<Position> getPositionKeyframes() {
+    public static KeyframeList<AdvancedPosition> getPositionKeyframes() {
         return positionKeyframes;
     }
 
@@ -561,11 +561,11 @@ public class ReplayHandler {
         realTimelinePosition = pos;
     }
 
-    public static Position getLastPosition() {
+    public static AdvancedPosition getLastPosition() {
         return lastPosition;
     }
 
-    public static void setLastPosition(Position position) {
+    public static void setLastPosition(AdvancedPosition position) {
         lastPosition = position;
     }
 

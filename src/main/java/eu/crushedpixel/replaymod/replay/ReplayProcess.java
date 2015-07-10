@@ -3,7 +3,7 @@ package eu.crushedpixel.replaymod.replay;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.GenericLinearInterpolation;
 import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
@@ -26,8 +26,8 @@ public class ReplayProcess {
 
     private static boolean linear = false;
 
-    private static GenericSplineInterpolation<Position> motionSpline = null;
-    private static GenericLinearInterpolation<Position> motionLinear = null;
+    private static GenericSplineInterpolation<AdvancedPosition> motionSpline = null;
+    private static GenericLinearInterpolation<AdvancedPosition> motionLinear = null;
     private static GenericLinearInterpolation<TimestampValue> timeLinear = null;
 
     private static double previousReplaySpeed = 0;
@@ -167,16 +167,16 @@ public class ReplayProcess {
 
         if(!linear && motionSpline == null) {
             //set up spline path
-            motionSpline = new GenericSplineInterpolation<Position>();
-            for(Keyframe<Position> kf : ReplayHandler.getPositionKeyframes()) {
+            motionSpline = new GenericSplineInterpolation<AdvancedPosition>();
+            for(Keyframe<AdvancedPosition> kf : ReplayHandler.getPositionKeyframes()) {
                 motionSpline.addPoint(kf.getValue());
             }
         }
 
         if(linear && motionLinear == null) {
             //set up linear path
-            motionLinear = new GenericLinearInterpolation<Position>();
-            for(Keyframe<Position> kf : ReplayHandler.getPositionKeyframes()) {
+            motionLinear = new GenericLinearInterpolation<AdvancedPosition>();
+            for(Keyframe<AdvancedPosition> kf : ReplayHandler.getPositionKeyframes()) {
                 motionLinear.addPoint(kf.getValue());
             }
         }
@@ -200,8 +200,8 @@ public class ReplayProcess {
 
         int curRealReplayTime = (int) (lastRealReplayTime + timeStep);
 
-        Keyframe<Position> lastPos = ReplayHandler.getPositionKeyframes().getPreviousKeyframe(curRealReplayTime);
-        Keyframe<Position> nextPos = ReplayHandler.getPositionKeyframes().getNextKeyframe(curRealReplayTime);
+        Keyframe<AdvancedPosition> lastPos = ReplayHandler.getPositionKeyframes().getPreviousKeyframe(curRealReplayTime);
+        Keyframe<AdvancedPosition> nextPos = ReplayHandler.getPositionKeyframes().getNextKeyframe(curRealReplayTime);
 
         boolean spectating = false;
 
@@ -285,7 +285,7 @@ public class ReplayProcess {
 
         if(!spectating) {
             ReplayHandler.spectateCamera();
-            Position pos = new Position();
+            AdvancedPosition pos = new AdvancedPosition();
             if(posCount > 1) {
                 if(!linear) {
                     motionSpline.applyPoint(Math.max(0, Math.min(1, splinePos)), pos);
@@ -294,7 +294,7 @@ public class ReplayProcess {
                 }
             } else {
                 if(posCount == 1) {
-                    Keyframe<Position> keyframe = ReplayHandler.getPositionKeyframes().first();
+                    Keyframe<AdvancedPosition> keyframe = ReplayHandler.getPositionKeyframes().first();
                     assert keyframe != null;
                     pos = keyframe.getValue();
                 }

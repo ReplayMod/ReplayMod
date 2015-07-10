@@ -4,7 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.gui.GuiVideoRenderer;
 import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.GenericLinearInterpolation;
 import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
@@ -42,7 +42,7 @@ public class VideoRenderer {
     private boolean mouseWasGrabbed;
 
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
-    private Interpolation<Position> movement;
+    private Interpolation<AdvancedPosition> movement;
     private Interpolation<TimestampValue> time;
 
     private int framesDone;
@@ -135,16 +135,16 @@ public class VideoRenderer {
 
         fps = options.getFps();
         if (options.isLinearMovement()) {
-            movement = new GenericLinearInterpolation<Position>();
+            movement = new GenericLinearInterpolation<AdvancedPosition>();
         } else {
-            movement = new GenericSplineInterpolation<Position>();
+            movement = new GenericSplineInterpolation<AdvancedPosition>();
         }
         time = new GenericLinearInterpolation<TimestampValue>();
 
         int duration = 0;
         int posKeyframes = 0;
 
-        for(Keyframe<Position> keyframe : ReplayHandler.getPositionKeyframes()) {
+        for(Keyframe<AdvancedPosition> keyframe : ReplayHandler.getPositionKeyframes()) {
             if (keyframe.getRealTimestamp() > duration) {
                 duration = keyframe.getRealTimestamp();
             }
@@ -205,7 +205,7 @@ public class VideoRenderer {
     }
 
     private void updateCam() {
-        KeyframeList<Position> positionKeyframes = ReplayHandler.getPositionKeyframes();
+        KeyframeList<AdvancedPosition> positionKeyframes = ReplayHandler.getPositionKeyframes();
 
         if (ReplayHandler.getCameraEntity() == null) {
             if (mc.theWorld == null) {
@@ -216,12 +216,12 @@ public class VideoRenderer {
         int videoTime = framesDone * 1000 / fps;
         int posCount = ReplayHandler.getPositionKeyframes().size();
 
-        Position pos = new Position();
-        Keyframe<Position> lastPos = positionKeyframes.getPreviousKeyframe(videoTime);
-        Keyframe<Position> nextPos = null;
+        AdvancedPosition pos = new AdvancedPosition();
+        Keyframe<AdvancedPosition> lastPos = positionKeyframes.getPreviousKeyframe(videoTime);
+        Keyframe<AdvancedPosition> nextPos = null;
         if (movement == null || lastPos == null) {
             // Stay at one position, no movement
-            Keyframe<Position> keyframe = positionKeyframes.getNextKeyframe(-1);
+            Keyframe<AdvancedPosition> keyframe = positionKeyframes.getNextKeyframe(-1);
             assert keyframe != null;
             pos = keyframe.getValue();
         } else {

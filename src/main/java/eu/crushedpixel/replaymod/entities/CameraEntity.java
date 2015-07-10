@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.entities;
 
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.replay.LesserDataWatcher;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
@@ -158,7 +158,7 @@ public class CameraEntity extends EntityPlayer {
         updateMovement();
     }
 
-    public void moveAbsolute(Position pos) {
+    public void moveAbsolute(AdvancedPosition pos) {
         this.moveAbsolute(pos.getX(), pos.getY(), pos.getZ());
         rotationPitch = (float)pos.getPitch();
         rotationYaw = (float)pos.getYaw();
@@ -180,7 +180,7 @@ public class CameraEntity extends EntityPlayer {
         updateBoundingBox();
     }
 
-    public void movePath(Position pos) {
+    public void movePath(AdvancedPosition pos) {
         this.prevRotationPitch = this.rotationPitch = (float)pos.getPitch();
         this.prevRotationYaw = this.rotationYaw = (float)pos.getYaw();
         this.lastTickPosX = this.prevPosX = this.posX = pos.getX();

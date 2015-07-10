@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.events;
 
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 @EqualsAndHashCode(callSuper=true)
 public class KeyframesModifyEvent extends Event {
 
-    private KeyframeList<Position> positionKeyframes;
+    private KeyframeList<AdvancedPosition> positionKeyframes;
     private KeyframeList<TimestampValue> timeKeyframes;
 
 }

@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.gui.elements.timelines;
 
 import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
 import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
@@ -113,9 +113,9 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
         //iterate over keyframes to find spectator segments
         if(placeKeyframes) {
-            ListIterator<Keyframe<Position>> iterator = ReplayHandler.getPositionKeyframes().listIterator();
+            ListIterator<Keyframe<AdvancedPosition>> iterator = ReplayHandler.getPositionKeyframes().listIterator();
             while(iterator.hasNext()) {
-                Keyframe<Position> kf = iterator.next();
+                Keyframe<AdvancedPosition> kf = iterator.next();
 
                 if(kf.getValue().getSpectatedEntityID() == null)
                     continue;
@@ -124,7 +124,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                 int nextSpectatorKeyframeRealTime = -1;
 
                 while(iterator.hasNext()) {
-                    Keyframe<Position> kf2 = iterator.next();
+                    Keyframe<AdvancedPosition> kf2 = iterator.next();
                     if(kf.getValue().getSpectatedEntityID()
                             .equals(kf2.getValue().getSpectatedEntityID())) {
 
@@ -177,14 +177,14 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
             int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
 
-            if(kf.getValue() instanceof Position) {
+            if(kf.getValue() instanceof AdvancedPosition) {
                 if(!placeKeyframes) return;
                 textureX = KEYFRAME_PLACE_X;
                 textureY = KEYFRAME_PLACE_Y;
                 y += 0;
 
                 //If Spectator Keyframe, use different texture
-                if(((Keyframe<Position>) kf).getValue().getSpectatedEntityID() != null) {
+                if(((Keyframe<AdvancedPosition>) kf).getValue().getSpectatedEntityID() != null) {
                     textureX = KEYFRAME_SPEC_X;
                     textureY = KEYFRAME_SPEC_Y;
                 }

@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.interpolation;
 
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeComparator;
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +107,7 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     public Keyframe<K> getClosestKeyframeForTimestamp(int realTime, int tolerance) {
         List<Keyframe<K>> found = new ArrayList<Keyframe<K>>();
         for(Keyframe<K> kf : this) {
-            if(!(kf.getValue() instanceof Position)) continue;
+            if(!(kf.getValue() instanceof AdvancedPosition)) continue;
             if(Math.abs(kf.getRealTimestamp() - realTime) <= tolerance) {
                 found.add(kf);
             }

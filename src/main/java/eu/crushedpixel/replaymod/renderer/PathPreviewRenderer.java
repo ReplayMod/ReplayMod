@@ -4,7 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
@@ -28,7 +28,7 @@ public class PathPreviewRenderer {
 
     private DistanceComparator distanceComparator = new DistanceComparator();
 
-    private KeyframeList<Position> keyframes;
+    private KeyframeList<AdvancedPosition> keyframes;
 
     @SubscribeEvent
     public void renderCameraPath(RenderWorldLastEvent event) {
@@ -51,11 +51,11 @@ public class PathPreviewRenderer {
 
         if(keyframes.size() > 1) {
 
-            Position prev = null;
+            AdvancedPosition prev = null;
 
             if(ReplayMod.replaySettings.isLinearMovement()) {
 
-                for(Keyframe<Position> point : keyframes) {
+                for(Keyframe<AdvancedPosition> point : keyframes) {
                     if(prev != null) {
                         drawConnection(doubleX, doubleY, doubleZ, prev, point.getValue(), Color.RED.getRGB());
                     }
@@ -67,7 +67,7 @@ public class PathPreviewRenderer {
 
                 float max = keyframes.size() * 50;
                 for(int i = 0; i < max; i++) {
-                    Position point = keyframes.getInterpolatedValueForPathPosition(i/max, false);
+                    AdvancedPosition point = keyframes.getInterpolatedValueForPathPosition(i/max, false);
 
                     if(prev != null) {
                         drawConnection(doubleX, doubleY, doubleZ, prev, point, Color.RED.getRGB());
@@ -80,11 +80,11 @@ public class PathPreviewRenderer {
 
         distanceComparator.setPlayerPos(doubleX, doubleY + 1.4, doubleZ);
 
-        List<Keyframe<Position>> distanceSorted = new ArrayList<Keyframe<Position>>(keyframes);
+        List<Keyframe<AdvancedPosition>> distanceSorted = new ArrayList<Keyframe<AdvancedPosition>>(keyframes);
         Collections.sort(distanceSorted, distanceComparator);
 
 
-        for(Keyframe<Position> kf : distanceSorted) {
+        for(Keyframe<AdvancedPosition> kf : distanceSorted) {
             drawPoint(doubleX, doubleY, doubleZ, kf);
         }
 
@@ -101,7 +101,7 @@ public class PathPreviewRenderer {
         keyframes = event.getPositionKeyframes();
     }
 
-    private class DistanceComparator implements Comparator<Keyframe<Position>> {
+    private class DistanceComparator implements Comparator<Keyframe<AdvancedPosition>> {
 
         private double playerX, playerY, playerZ;
 
@@ -112,7 +112,7 @@ public class PathPreviewRenderer {
         }
 
         @Override
-        public int compare(Keyframe<Position> o1, Keyframe<Position> o2) {
+        public int compare(Keyframe<AdvancedPosition> o1, Keyframe<AdvancedPosition> o2) {
             return -(new Double(o1.getValue().distanceSquared(playerX, playerY, playerZ)).compareTo(o2.getValue().distanceSquared(playerX, playerY, playerZ)));
         }
 
@@ -122,7 +122,7 @@ public class PathPreviewRenderer {
         }
     }
 
-    private void drawConnection(double playerX, double playerY, double playerZ, Position pos1, Position pos2, int color) {
+    private void drawConnection(double playerX, double playerY, double playerZ, AdvancedPosition pos1, AdvancedPosition pos2, int color) {
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer renderer = tessellator.getWorldRenderer();
 
@@ -145,7 +145,7 @@ public class PathPreviewRenderer {
         renderer.setTranslation(0, 0, 0);
     }
 
-    private void drawPoint(double playerX, double playerY, double playerZ, Keyframe<Position> kf) {
+    private void drawPoint(double playerX, double playerY, double playerZ, Keyframe<AdvancedPosition> kf) {
         GlStateManager.pushMatrix();
         GlStateManager.enableTexture2D();
         GlStateManager.enableLighting();
@@ -159,7 +159,7 @@ public class PathPreviewRenderer {
 
         mc.renderEngine.bindTexture(GuiReplayOverlay.replay_gui);
 
-        Position pos1 = kf.getValue();
+        AdvancedPosition pos1 = kf.getValue();
 
         double x = pos1.getX() - playerX;
         double y = pos1.getY() - playerY;

@@ -7,7 +7,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.handlers.RecordingHandler;
 import eu.crushedpixel.replaymod.holders.PacketData;
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -526,7 +526,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                                 if (isHurrying() && lastTimeStamp > desiredTimeStamp && !startFromBeginning) {
                                     desiredTimeStamp = -1;
 
-                                    Position pos = ReplayHandler.getLastPosition();
+                                    AdvancedPosition pos = ReplayHandler.getLastPosition();
                                     CameraEntity cam = ReplayHandler.getCameraEntity();
                                     if (cam != null && pos != null) {
                                         // Move camera back in case we have been respawned

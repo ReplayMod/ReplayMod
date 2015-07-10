@@ -10,7 +10,7 @@ import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.timelines.GuiKeyframeTimeline;
 import eu.crushedpixel.replaymod.gui.elements.timelines.GuiMarkerTimeline;
 import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -137,13 +137,13 @@ public class GuiReplayOverlay extends Gui {
             public void run() {
                 Entity cam = mc.getRenderViewEntity();
                 if (cam != null) {
-                    Position position = new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
+                    AdvancedPosition position = new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
                             cam.rotationYaw % 360, ReplayHandler.getCameraTilt(), null);
 
                     if (ReplayHandler.isCamera())
-                        ReplayHandler.addKeyframe(new Keyframe<Position>(ReplayHandler.getRealTimelineCursor(), position));
+                        ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), position));
                     else
-                        ReplayHandler.addKeyframe(new Keyframe<Position>(ReplayHandler.getRealTimelineCursor(), new Position(cam.getEntityId(), true)));
+                        ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), new AdvancedPosition(cam.getEntityId(), true)));
                 }
             }
         }, "replaymod.gui.ingame.menu.addposkeyframe");
@@ -160,13 +160,13 @@ public class GuiReplayOverlay extends Gui {
             public void run() {
                 Entity cam = mc.getRenderViewEntity();
                 if (cam != null) {
-                    Position position = new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
+                    AdvancedPosition position = new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
                             cam.rotationYaw % 360, ReplayHandler.getCameraTilt(), null);
 
                     if (ReplayHandler.isCamera())
-                        ReplayHandler.addKeyframe(new Keyframe<Position>(ReplayHandler.getRealTimelineCursor(), position));
+                        ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), position));
                     else
-                        ReplayHandler.addKeyframe(new Keyframe<Position>(ReplayHandler.getRealTimelineCursor(), new Position(cam.getEntityId(), true)));
+                        ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), new AdvancedPosition(cam.getEntityId(), true)));
                 }
             }
         }, "replaymod.gui.ingame.menu.addspeckeyframe");
@@ -180,10 +180,10 @@ public class GuiReplayOverlay extends Gui {
 
         @Override
         public GuiElement delegate() {
-            boolean selected = ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe().getValue() instanceof Position;
+            boolean selected = ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe().getValue() instanceof AdvancedPosition;
             boolean camera;
             if(selected) {
-                camera = ((Keyframe<Position>)ReplayHandler.getSelectedKeyframe()).getValue().getSpectatedEntityID() == null;
+                camera = ((Keyframe<AdvancedPosition>)ReplayHandler.getSelectedKeyframe()).getValue().getSpectatedEntityID() == null;
             } else {
                 camera = ReplayHandler.isCamera();
             }
@@ -348,7 +348,7 @@ public class GuiReplayOverlay extends Gui {
 
                 CameraEntity cam = ReplayHandler.getCameraEntity();
                 if(cam != null) {
-                    ReplayHandler.setLastPosition(new Position(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
+                    ReplayHandler.setLastPosition(new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
                 } else {
                     ReplayHandler.setLastPosition(null);
                 }

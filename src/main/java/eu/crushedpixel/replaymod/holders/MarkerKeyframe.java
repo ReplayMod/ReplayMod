@@ -8,7 +8,7 @@ import lombok.Data;
 public class MarkerKeyframe {
 
     private int realTimestamp;
-    private Position position;
+    private AdvancedPosition position;
     private String name;
 
 }

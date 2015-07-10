@@ -6,6 +6,7 @@ import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.gui.elements.timelines.GuiTimeline;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
+import eu.crushedpixel.replaymod.holders.GuiEntryListValueEntry;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
@@ -17,6 +18,7 @@ import org.lwjgl.util.Point;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.UUID;
 
 public class GuiObjectManager extends GuiScreen {
 
@@ -30,7 +32,7 @@ public class GuiObjectManager extends GuiScreen {
     private GuiAdvancedTextField nameInput;
 
     private GuiString dropdownLabel;
-    private GuiDropdown<String> assetDropdown;
+    private GuiDropdown<GuiEntryListValueEntry<UUID>> assetDropdown;
 
     private GuiDraggingNumberInput anchorXInput, anchorYInput, anchorZInput;
     private GuiDraggingNumberInput positionXInput, positionYInput, positionZInput;
@@ -123,12 +125,13 @@ public class GuiObjectManager extends GuiScreen {
             opacityInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, 0d, 100d, 100d, true, "%");
 
             dropdownLabel = new GuiString(0, 0, Color.WHITE, I18n.format("replaymod.gui.assets.filechooser")+": ");
-            assetDropdown = new GuiDropdown<String>(fontRendererObj, 0, 0, 0, 5);
+            assetDropdown = new GuiDropdown<GuiEntryListValueEntry<UUID>>(fontRendererObj, 0, 0, 0, 5);
             if(ReplayHandler.getAssetRepository().getCopyOfReplayAssets().isEmpty()) {
-                assetDropdown.addElement(I18n.format("replaymod.gui.assets.emptylist"));
+                assetDropdown.addElement(new GuiEntryListValueEntry<UUID>(I18n.format("replaymod.gui.assets.emptylist"), null));
             } else {
                 for(ReplayAsset asset : ReplayHandler.getAssetRepository().getCopyOfReplayAssets()) {
-                    assetDropdown.addElement(asset.getDisplayString());
+                    assetDropdown.addElement(new GuiEntryListValueEntry<UUID>(
+                            asset.getDisplayString(), ReplayHandler.getAssetRepository().getUUIDForAsset(asset)));
                 }
             }
 
@@ -138,14 +141,16 @@ public class GuiObjectManager extends GuiScreen {
             addButton = new GuiAdvancedButton(0, 0, 0, 20, I18n.format("replaymod.gui.add"), new Runnable() {
                 @Override
                 public void run() {
-
+                    CustomImageObject customImageObject = new CustomImageObject(I18n.format("replaymod.gui.objects.defaultname"), null);
+                    objectList.addElement(customImageObject);
                 }
             }, null);
 
             removeButton = new GuiAdvancedButton(0, 0, 0, 20, I18n.format("replaymod.gui.remove"), new Runnable() {
                 @Override
                 public void run() {
-
+                    if(objectList.getElement(objectList.getSelectionIndex()) != null)
+                        objectList.removeElement(objectList.getSelectionIndex());
                 }
             }, null);
 
@@ -288,7 +293,7 @@ public class GuiObjectManager extends GuiScreen {
         addButton.yPosition = removeButton.yPosition = objectList.yPosition+objectList.height-20;
 
         allElements.addPart(addButton);
-        allElements.addPart(removeButton);
+        disableElements.addPart(removeButton);
 
         allElements.addPart(disableElements);
 

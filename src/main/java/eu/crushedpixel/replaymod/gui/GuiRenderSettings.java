@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.StringUtils;
@@ -391,7 +392,7 @@ public class GuiRenderSettings extends GuiScreen {
         }
     }
 
-    private enum RendererSettings {
+    private enum RendererSettings implements GuiEntryListEntry {
         DEFAULT("default"),
         STEREOSCOPIC("stereoscopic"),
         CUBIC("cubic"),
@@ -410,6 +411,11 @@ public class GuiRenderSettings extends GuiScreen {
         }
 
         public String getDescription() { return I18n.format(desc); }
+
+        @Override
+        public String getDisplayString() {
+            return toString();
+        }
     }
 
     private void startRendering() {

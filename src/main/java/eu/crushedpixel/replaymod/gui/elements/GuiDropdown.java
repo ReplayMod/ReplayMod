@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.gui.elements;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class GuiDropdown<T> extends GuiAdvancedTextField {
+public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextField {
 
     private final int visibleDropout;
     private final int dropoutElementHeight = 14;
@@ -38,7 +39,7 @@ public class GuiDropdown<T> extends GuiAdvancedTextField {
     public void drawTextBox() {
         if(elements.size() > selectionIndex && selectionIndex >= 0) {
             setText(mc.fontRendererObj.trimStringToWidth(
-                    elements.get(selectionIndex).toString(), width - 8));
+                    elements.get(selectionIndex).getDisplayString(), width - 8));
         } else {
             setText("");
         }
@@ -83,7 +84,7 @@ public class GuiDropdown<T> extends GuiAdvancedTextField {
                     continue;
                 }
                 drawHorizontalLine(xPosition, xPosition + width, yPosition + height + y, -6250336);
-                String toWrite = mc.fontRendererObj.trimStringToWidth(obj.toString(), width - 8);
+                String toWrite = mc.fontRendererObj.trimStringToWidth(obj.getDisplayString(), width - 8);
                 drawString(mc.fontRendererObj, toWrite, xPosition + 4, yPosition + height + y + 4, Color.WHITE.getRGB());
 
                 if(MouseUtils.isMouseWithinBounds(xPosition, yPosition + height + y, width, dropoutElementHeight)) {

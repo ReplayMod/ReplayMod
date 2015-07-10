@@ -1,20 +1,19 @@
 package eu.crushedpixel.replaymod.holders;
 
+import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.awt.*;
 
 @Data
 @AllArgsConstructor
 public class Transformations {
 
-    private Position anchor;
-    private Position position;
-    private Position orientation;
-    private Point scale;
-    private float opacity;
+    private KeyframeList<Position> anchorKeyframes, positionKeyframes,
+            orientationKeyframes, scaleKeyframes;
+    private KeyframeList<NumberValue> opacityKeyframes;
 
-    private float width, height;
+    public Transformation getTransformationForTimestamp(int timestamp) {
+        return null;
+    }
 
 }

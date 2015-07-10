@@ -3,20 +3,18 @@ package eu.crushedpixel.replaymod.holders;
 import eu.crushedpixel.replaymod.interpolation.Interpolate;
 import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Position implements KeyframeValue {
+public class NumberValue implements KeyframeValue {
 
     @Interpolate
-    public double x, y, z;
+    public double value;
 
     @Override
-    public Position newInstance() {
-        return new Position();
+    public NumberValue newInstance() {
+        return new NumberValue();
     }
 
 }

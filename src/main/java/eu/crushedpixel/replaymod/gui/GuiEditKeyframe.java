@@ -4,7 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
 import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -54,12 +54,12 @@ public class GuiEditKeyframe extends GuiScreen {
     public GuiEditKeyframe(Keyframe keyframe) {
         this.keyframe = keyframe;
         this.keyframeBackup = keyframe.copy();
-        this.posKeyframe = keyframe.getValue() instanceof Position;
+        this.posKeyframe = keyframe.getValue() instanceof AdvancedPosition;
         boolean timeKeyframe = keyframe.getValue() instanceof TimestampValue;
 
         ReplayHandler.selectKeyframe(null);
 
-        KeyframeList<Position> positionKeyframes = ReplayHandler.getPositionKeyframes();
+        KeyframeList<AdvancedPosition> positionKeyframes = ReplayHandler.getPositionKeyframes();
         KeyframeList<TimestampValue> timeKeyframes = ReplayHandler.getTimeKeyframes();
 
         if(posKeyframe) {
@@ -107,7 +107,7 @@ public class GuiEditKeyframe extends GuiScreen {
 
             //Position/Virtual Time Input
             if(posKeyframe) {
-                Position pos = ((Keyframe<Position>)keyframe).getValue();
+                AdvancedPosition pos = ((Keyframe<AdvancedPosition>)keyframe).getValue();
                 xCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getX()), true);
                 yCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getY()), true);
                 zCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getZ()), true);
@@ -190,7 +190,7 @@ public class GuiEditKeyframe extends GuiScreen {
         } else {
             keyframe.setRealTimestamp(TimestampUtils.calculateTimestamp(min.getIntValue(), sec.getIntValue(), ms.getIntValue()));
             if(posKeyframe) {
-                ((Keyframe<Position>)keyframe).setValue(new Position(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
+                ((Keyframe<AdvancedPosition>)keyframe).setValue(new AdvancedPosition(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
                         zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float) yaw.getPreciseValue(),
                         (float) roll.getPreciseValue(), null));
             }
