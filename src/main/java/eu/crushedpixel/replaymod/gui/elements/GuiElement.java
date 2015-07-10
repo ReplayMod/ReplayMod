@@ -9,7 +9,7 @@ public interface GuiElement {
 
     boolean isHovering(int mouseX, int mouseY);
 
-    void mouseClick(Minecraft mc, int mouseX, int mouseY, int button);
+    boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button);
     void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button);
     void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button);
 

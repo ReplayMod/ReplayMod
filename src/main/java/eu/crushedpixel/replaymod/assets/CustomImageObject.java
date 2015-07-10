@@ -16,14 +16,10 @@ import java.util.UUID;
 
 public class CustomImageObject implements GuiEntryListEntry {
 
-    public CustomImageObject(String name, UUID assetUUID) {
+    public CustomImageObject(String name, UUID assetUUID) throws IOException {
         this.name = name;
 
-        try {
-            setLinkedAsset(assetUUID);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        setLinkedAsset(assetUUID);
     }
 
     @Getter @Setter private String name;
@@ -43,7 +39,7 @@ public class CustomImageObject implements GuiEntryListEntry {
 
         if(asset instanceof ReplayImageAsset) {
             setImage(((ReplayImageAsset)asset).getObject());
-        } else {
+        } else if(asset != null) {
             throw new UnsupportedOperationException("A CustomImageObject requires a ReplayImageAsset");
         }
     }

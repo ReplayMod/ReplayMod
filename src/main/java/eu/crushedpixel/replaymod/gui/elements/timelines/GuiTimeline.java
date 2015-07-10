@@ -222,8 +222,8 @@ public class GuiTimeline extends Gui implements GuiElement {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        return isHovering(mouseX, mouseY);
     }
 
     @Override

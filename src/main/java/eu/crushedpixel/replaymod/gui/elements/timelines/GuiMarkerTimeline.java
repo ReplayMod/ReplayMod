@@ -24,14 +24,14 @@ public class GuiMarkerTimeline extends GuiTimeline {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        if(!enabled) return;
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        if(!enabled) return false;
 
         //left mouse button
         if(button == 0) {
             long time = getTimeAt(mouseX, mouseY);
             if(time == -1) {
-                return;
+                return false;
             }
 
             int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
@@ -66,7 +66,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
 
             long time = getTimeAt(mouseX, mouseY);
             if(time == -1) {
-                return;
+                return false;
             }
 
             int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
@@ -82,6 +82,8 @@ public class GuiMarkerTimeline extends GuiTimeline {
                 ReplayMod.replaySender.jumpToTime(closest.getRealTimestamp());
             }
         }
+
+        return isHovering(mouseX, mouseY);
     }
 
     @Override

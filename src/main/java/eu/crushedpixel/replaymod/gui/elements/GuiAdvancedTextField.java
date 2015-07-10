@@ -67,8 +67,9 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
         mouseClicked(mouseX, mouseY, button);
+        return isHovering(mouseX, mouseY);
     }
 
     @Override

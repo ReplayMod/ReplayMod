@@ -52,10 +52,12 @@ public class GuiAdvancedButton extends GuiButton implements GuiElement {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
         if (isHovering(mouseX, mouseY)) {
             performAction();
+            return true;
         }
+        return false;
     }
 
     @Override

@@ -141,8 +141,12 @@ public class GuiObjectManager extends GuiScreen {
             addButton = new GuiAdvancedButton(0, 0, 0, 20, I18n.format("replaymod.gui.add"), new Runnable() {
                 @Override
                 public void run() {
-                    CustomImageObject customImageObject = new CustomImageObject(I18n.format("replaymod.gui.objects.defaultname"), null);
-                    objectList.addElement(customImageObject);
+                    try {
+                        CustomImageObject customImageObject = new CustomImageObject(I18n.format("replaymod.gui.objects.defaultname"), null);
+                        objectList.addElement(customImageObject);
+                    } catch(IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }, null);
 
@@ -165,8 +169,41 @@ public class GuiObjectManager extends GuiScreen {
                     CustomImageObject selectedObject = objectList.getElement(selectionIndex);
                     if(selectedObject != null) {
                         disableElements.setEnabled(true);
+
+                        nameInput.setText(selectedObject.getName());
+
+                        //setting the dropdown value
+                        int sel = 0;
+                        if(selectedObject.getLinkedAsset() != null) {
+                            int i = 0;
+                            for(GuiEntryListValueEntry<UUID> entry : assetDropdown.getAllElements()) {
+                                if(selectedObject.getLinkedAsset().equals(entry.getValue())) {
+                                    sel = i;
+                                    break;
+                                }
+                                i++;
+                            }
+                        }
+
+                        assetDropdown.setSelectionIndexQuietly(sel);
+
                     } else {
                         disableElements.setEnabled(false);
+                    }
+                }
+            });
+
+            assetDropdown.addSelectionListener(new SelectionListener() {
+                @Override
+                public void onSelectionChanged(int selectionIndex) {
+                    CustomImageObject selectedObject = objectList.getElement(objectList.getSelectionIndex());
+                    GuiEntryListValueEntry<UUID> entry = assetDropdown.getElement(selectionIndex);
+                    if(selectedObject != null && entry != null) {
+                        try {
+                            selectedObject.setLinkedAsset(entry.getValue());
+                        } catch(IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             });
@@ -200,12 +237,12 @@ public class GuiObjectManager extends GuiScreen {
         opacityInputs = new ComposedElement(opacityInput);
         numberInputs = new ComposedElement(anchorInputs, positionInputs, scaleInputs, orientationInputs, opacityInputs);
 
-        for(int i = numberInputs.getParts().length-1; i >= 0; i--) {
-            int yPos = this.height-5-10-(25*(numberInputs.getParts().length-i));
+        for(int i = numberInputs.getParts().size()-1; i >= 0; i--) {
+            int yPos = this.height-5-10-(25*(numberInputs.getParts().size()-i));
             DelegatingElement button = keyframeButton(10, yPos, i);
             GuiString label = new GuiString(35, yPos + 6, Color.WHITE, labelStrings[i]);
 
-            ComposedElement child = (ComposedElement)numberInputs.getParts()[i];
+            ComposedElement child = (ComposedElement)numberInputs.getParts().get(i);
             int x = 0;
             for(GuiElement el : child.getParts()) {
                 GuiDraggingNumberInput dni = (GuiDraggingNumberInput)el;
@@ -318,6 +355,11 @@ public class GuiObjectManager extends GuiScreen {
         Point mousePos = MouseUtils.getMousePos();
         allElements.buttonPressed(mc, mousePos.getX(), mousePos.getY(), typedChar, keyCode);
 
+        CustomImageObject selectedObject = objectList.getElement(objectList.getSelectionIndex());
+        if(selectedObject != null) {
+            selectedObject.setName(nameInput.getText().trim());
+        }
+
         super.keyTyped(typedChar, keyCode);
     }
 
@@ -364,14 +406,17 @@ public class GuiObjectManager extends GuiScreen {
         }
 
         @Override
-        public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-            if(!enabled) return;
+        public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+            if(!enabled) return false;
             super.mouseClick(mc, mouseX, mouseY, button);
             int time = (int) getTimeAt(mouseX, mouseY);
             if(time != -1)  {
                 cursorPosition = time;
                 dragging = true;
+                return true;
             }
+
+            return false;
         }
 
         @Override

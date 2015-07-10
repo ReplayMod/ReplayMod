@@ -50,8 +50,8 @@ public class GuiString extends Gui implements GuiElement {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        return false;
     }
 
     @Override

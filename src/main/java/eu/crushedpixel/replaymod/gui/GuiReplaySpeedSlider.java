@@ -179,8 +179,8 @@ public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        mousePressed(mc, mouseX, mouseY);
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        return mousePressed(mc, mouseX, mouseY);
     }
 
     @Override

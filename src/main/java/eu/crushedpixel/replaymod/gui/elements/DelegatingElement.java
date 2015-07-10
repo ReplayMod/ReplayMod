@@ -33,8 +33,8 @@ public abstract class DelegatingElement implements GuiElement {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        delegate().mouseClick(mc, mouseX, mouseY, button);
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        return delegate().mouseClick(mc, mouseX, mouseY, button);
     }
 
     @Override

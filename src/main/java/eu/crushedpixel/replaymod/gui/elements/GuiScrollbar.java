@@ -61,12 +61,14 @@ public class GuiScrollbar extends Gui implements GuiElement {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        if(!enabled) return;
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        if(!enabled) return false;
         if (isHovering(mouseX, mouseY)) {
             draggingStart = mouseX;
             draggingStartPosition = sliderPosition;
+            return true;
         }
+        return false;
     }
 
     @Override

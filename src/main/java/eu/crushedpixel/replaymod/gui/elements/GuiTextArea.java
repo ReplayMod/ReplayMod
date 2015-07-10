@@ -470,7 +470,7 @@ public class GuiTextArea extends Gui implements GuiElement {
     }
 
     @Override
-    public void mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
         boolean hovering = isHovering(mouseX, mouseY);
 
         if (hovering && isFocused() && button == 0) {
@@ -486,6 +486,7 @@ public class GuiTextArea extends Gui implements GuiElement {
         }
 
         setFocused(hovering);
+        return hovering;
     }
 
     @Override

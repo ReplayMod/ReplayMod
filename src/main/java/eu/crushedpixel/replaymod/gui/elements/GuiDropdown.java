@@ -133,10 +133,9 @@ public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextFie
     }
 
     @Override
-    public void mouseClicked(int xPos, int yPos, int mouseButton) {
-        mouseClickedResult(xPos, yPos);
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        return mouseClickedResult(mouseX, mouseY);
     }
-
 
     public boolean mouseClickedResult(int xPos, int yPos) {
         boolean success = false;
@@ -202,9 +201,18 @@ public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextFie
     }
 
     public void setSelectionIndex(int index) {
+        setSelectionIndexQuietly(index);
+        fireSelectionChangeEvent();
+    }
+
+    /**
+     * Sets the selection index without notifying SelectionChangeListeners.
+     * @param index The Selection Index
+     */
+    public void setSelectionIndexQuietly(int index) {
         this.selectionIndex = index;
         if(selectionIndex < 0) selectionIndex = -1;
-        fireSelectionChangeEvent();
+        if(selectionIndex >= elements.size()) selectionIndex = elements.size()-1;
     }
 
     private void fireSelectionChangeEvent() {
