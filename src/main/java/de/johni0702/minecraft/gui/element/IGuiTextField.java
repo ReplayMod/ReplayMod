@@ -33,4 +33,9 @@ public interface IGuiTextField<T extends IGuiTextField<T>> extends GuiElement<T>
 
     T onEnter(Runnable onEnter);
     T onTextChanged(Runnable textChanged);
+
+    String getHint();
+    T setHint(String hint);
+
+    T setI18nHint(String hint, Object... args);
 }

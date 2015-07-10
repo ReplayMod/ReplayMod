@@ -22,6 +22,7 @@
 
 package de.johni0702.minecraft.gui.element;
 
+import com.google.common.base.Strings;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -29,7 +30,9 @@ import de.johni0702.minecraft.gui.function.Clickable;
 import de.johni0702.minecraft.gui.function.Focusable;
 import de.johni0702.minecraft.gui.function.Tickable;
 import de.johni0702.minecraft.gui.function.Typeable;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
@@ -42,6 +45,9 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     private Runnable onEnter;
 
     private Focusable next, previous;
+
+    @Getter
+    private String hint;
 
     public AbstractGuiTextField() {
         this.wrapped = new net.minecraft.client.gui.GuiTextField(0, Minecraft.getMinecraft().fontRendererObj, 0, 0, 0, 0);
@@ -59,7 +65,18 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
         wrapped.yPosition = position.getY();
         wrapped.width = size.getWidth();
         wrapped.height = size.getHeight();
-        wrapped.drawTextBox();
+
+        if (wrapped.text.isEmpty() && !isFocused() && !Strings.isNullOrEmpty(hint)) {
+            wrapped.setEnabled(false);
+            wrapped.setDisabledTextColour(0xff404040);
+            wrapped.text = hint;
+            wrapped.drawTextBox();
+            wrapped.text = "";
+            wrapped.setDisabledTextColour(0xff707070);
+            wrapped.setEnabled(isEnabled());
+        } else {
+            wrapped.drawTextBox();
+        }
     }
 
     @Override
@@ -195,5 +212,16 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     public T onTextChanged(Runnable textChanged) {
         this.textChanged = textChanged;
         return getThis();
+    }
+
+    @Override
+    public T setHint(String hint) {
+        this.hint = hint;
+        return getThis();
+    }
+
+    @Override
+    public T setI18nHint(String hint, Object... args) {
+        return setHint(I18n.format(hint));
     }
 }
