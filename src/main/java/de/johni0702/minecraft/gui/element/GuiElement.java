@@ -38,10 +38,8 @@ public interface GuiElement<T extends GuiElement<T>> {
     void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo);
 
     ReadableDimension getMinSize();
-    ReadableDimension getPreferredSize();
     ReadableDimension getMaxSize();
 
-    T setPreferredSize(ReadableDimension preferredSize);
     T setMaxSize(ReadableDimension maxSize);
 
     boolean isEnabled();

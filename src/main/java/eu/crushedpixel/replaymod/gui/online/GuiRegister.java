@@ -16,14 +16,14 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
     private final GuiPanel inputs;
     private final GuiTextField usernameInput, mailInput;
     private final GuiPasswordField passwordInput, passwordConfirmation;
-    private final GuiButton registerButton = new GuiButton(this).setI18nLabel("replaymod.gui.register").setWidth(150).setDisabled();
-    private final GuiButton cancelButton = new GuiButton(this).setI18nLabel("replaymod.gui.cancel").setWidth(150);
+    private final GuiButton registerButton = new GuiButton(this).setI18nLabel("replaymod.gui.register").setSize(150, 20).setDisabled();
+    private final GuiButton cancelButton = new GuiButton(this).setI18nLabel("replaymod.gui.cancel").setSize(150, 20);
     private final GuiLabel statusLabel = new GuiLabel(this).setColor(ReadableColor.RED);
 
     {
         inputs = new GuiPanel(this).setLayout(new VerticalLayout().setSpacing(10));
-        HorizontalLayout.Data data = new HorizontalLayout.Data(0, VerticalLayout.Alignment.CENTER);
-        inputs.addElements(new VerticalLayout.Data(0, HorizontalLayout.Alignment.RIGHT),
+        HorizontalLayout.Data data = new HorizontalLayout.Data(0.5);
+        inputs.addElements(new VerticalLayout.Data(1),
                 new GuiPanel().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(10))
                         .addElements(data, new GuiLabel().setI18nText("replaymod.gui.username"))
                         .addElements(data, usernameInput = new GuiTextField().setMaxLength(16).setSize(145, 20)),

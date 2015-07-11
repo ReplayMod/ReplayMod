@@ -28,6 +28,7 @@ import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.function.Clickable;
 import lombok.Getter;
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
@@ -46,12 +47,10 @@ public abstract class AbstractGuiButton<T extends AbstractGuiButton<T>> extends 
     private String label;
 
     public AbstractGuiButton() {
-        setSize(new Dimension(200, 20));
     }
 
     public AbstractGuiButton(GuiContainer container) {
         super(container);
-        setSize(new Dimension(200, 20));
     }
 
     @Override
@@ -84,8 +83,9 @@ public abstract class AbstractGuiButton<T extends AbstractGuiButton<T>> extends 
     }
 
     @Override
-    public ReadableDimension getMinSize() {
-        return getPreferredSize();
+    public ReadableDimension calcMinSize() {
+        FontRenderer fontRenderer = getMinecraft().fontRendererObj;
+        return new Dimension(fontRenderer.getStringWidth(label), 20);
     }
 
     @Override

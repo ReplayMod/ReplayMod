@@ -196,7 +196,7 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
     }
 
     @Override
-    public ReadableDimension getMinSize() {
+    public ReadableDimension calcMinSize() {
         return layout.calcMinSize(this);
     }
 }

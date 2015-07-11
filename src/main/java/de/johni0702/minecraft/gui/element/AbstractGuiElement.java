@@ -42,7 +42,7 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
     @Getter
     private boolean enabled = true;
 
-    private Dimension maxSize, preferredSize;
+    protected Dimension minSize, maxSize;
 
     public AbstractGuiElement() {
     }
@@ -99,20 +99,19 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
         return getThis();
     }
 
+    public T setMinSize(ReadableDimension minSize) {
+        this.minSize = new Dimension(minSize);
+        return getThis();
+    }
+
     public T setMaxSize(ReadableDimension maxSize) {
         this.maxSize = new Dimension(maxSize);
         return getThis();
     }
 
-    public T setPreferredSize(ReadableDimension preferredSize) {
-        this.preferredSize = new Dimension(preferredSize);
-        return getThis();
-    }
-
     public T setSize(ReadableDimension size) {
-        Dimension dimension = new Dimension(size);
-        maxSize = preferredSize = dimension;
-        return getThis();
+        setMinSize(size);
+        return setMaxSize(size);
     }
 
     public T setSize(int width, int height) {
@@ -120,29 +119,29 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
     }
 
     public T setWidth(int width) {
+        if (minSize == null) {
+            minSize = new Dimension(width, 0);
+        } else {
+            minSize.setWidth(width);
+        }
         if (maxSize == null) {
-            maxSize = new Dimension(width, 0);
+            maxSize = new Dimension(width, Integer.MAX_VALUE);
         } else {
             maxSize.setWidth(width);
-        }
-        if (preferredSize == null) {
-            preferredSize = new Dimension(width, 0);
-        } else {
-            preferredSize.setWidth(width);
         }
         return getThis();
     }
 
     public T setHeight(int height) {
+        if (minSize == null) {
+            minSize = new Dimension(0, height);
+        } else {
+            minSize.setHeight(height);
+        }
         if (maxSize == null) {
-            maxSize = new Dimension(0, height);
+            maxSize = new Dimension(Integer.MAX_VALUE, height);
         } else {
             maxSize.setHeight(height);
-        }
-        if (preferredSize == null) {
-            preferredSize = new Dimension(0, height);
-        } else {
-            preferredSize.setHeight(height);
         }
         return getThis();
     }
@@ -152,12 +151,14 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
     }
 
     @Override
-    public ReadableDimension getMaxSize() {
-        return maxSize == null ? getPreferredSize() : maxSize;
+    public ReadableDimension getMinSize() {
+        return minSize == null ? calcMinSize() : minSize;
     }
 
+    protected abstract ReadableDimension calcMinSize();
+
     @Override
-    public ReadableDimension getPreferredSize() {
-        return preferredSize == null ? getMinSize() : preferredSize;
+    public ReadableDimension getMaxSize() {
+        return maxSize == null ? new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE) : maxSize;
     }
 }

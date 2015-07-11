@@ -61,9 +61,14 @@ public abstract class AbstractGuiLabel<T extends AbstractGuiLabel<T>> extends Ab
     }
 
     @Override
-    public ReadableDimension getMinSize() {
+    public ReadableDimension calcMinSize() {
         FontRenderer fontRenderer = getMinecraft().fontRendererObj;
         return new Dimension(fontRenderer.getStringWidth(text), fontRenderer.FONT_HEIGHT);
+    }
+
+    @Override
+    public ReadableDimension getMaxSize() {
+        return getMinSize();
     }
 
     @Override

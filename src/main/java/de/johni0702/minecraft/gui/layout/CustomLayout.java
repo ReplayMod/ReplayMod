@@ -43,7 +43,7 @@ public abstract class CustomLayout<T extends GuiContainer<T>> implements Layout 
         result.clear();
         Collection<GuiElement> elements = container.getChildren();
         for (GuiElement element : elements) {
-            result.put(element, Pair.of(new Point(0, 0), new Dimension(element.getPreferredSize())));
+            result.put(element, Pair.of(new Point(0, 0), new Dimension(element.getMinSize())));
         }
 
         layout((T) container, size.getWidth(), size.getHeight());
@@ -63,6 +63,10 @@ public abstract class CustomLayout<T extends GuiContainer<T>> implements Layout 
 
     protected void pos(GuiElement element, int x, int y) {
         entry(element).getLeft().setLocation(x, y);
+    }
+
+    protected void size(GuiElement element, ReadableDimension size) {
+        size.getSize(entry(element).getRight());
     }
 
     protected void size(GuiElement element, int width, int height) {
@@ -105,6 +109,6 @@ public abstract class CustomLayout<T extends GuiContainer<T>> implements Layout 
 
     @Override
     public ReadableDimension calcMinSize(GuiContainer<?> container) {
-        return container.getPreferredSize();
+        return new Dimension(0, 0);
     }
 }

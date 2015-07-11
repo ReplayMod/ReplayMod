@@ -66,20 +66,12 @@ public class HorizontalLayout implements Layout {
 
             GuiElement element  = entry.getKey();
             Data data = entry.getValue() instanceof Data ? (Data) entry.getValue() : DEFAULT_DATA;
-            Dimension minSize = new Dimension(element.getMinSize());
-            if (minSize.getHeight() < data.minHeight) {
-                minSize.setHeight(data.minHeight);
-            }
-            int y;
-            if (data.alignment == VerticalLayout.Alignment.BOTTOM) {
-                y = size.getHeight() - minSize.getHeight() - data.yOffset;
-            } else if (data.alignment == VerticalLayout.Alignment.CENTER) {
-                y = (size.getHeight() - minSize.getHeight()) / 2 + data.yOffset;
-            } else {
-                y = data.yOffset;
-            }
-            map.put(element, Pair.<ReadablePoint, ReadableDimension>of(new Point(x, y), minSize));
-            x += minSize.getWidth();
+            Dimension elementSize = new Dimension(element.getMinSize());
+            elementSize.setHeight(Math.min(size.getHeight(), element.getMaxSize().getHeight()));
+            int remainingHeight = size.getHeight() - elementSize.getHeight();
+            int y = (int) (data.alignment * remainingHeight);
+            map.put(element, Pair.<ReadablePoint, ReadableDimension>of(new Point(x, y), elementSize));
+            x += elementSize.getWidth();
         }
         if (alignment != Alignment.LEFT) {
             int remaining = size.getWidth() - x;
@@ -103,9 +95,8 @@ public class HorizontalLayout implements Layout {
             spacing = this.spacing;
 
             GuiElement element = entry.getKey();
-            Data data = entry.getValue() instanceof Data ? (Data) entry.getValue() : DEFAULT_DATA;
             ReadableDimension minSize = element.getMinSize();
-            int height = Math.max(minSize.getHeight(), data.getMinHeight()) + data.yOffset;
+            int height = minSize.getHeight();
             if (height > maxHeight) {
                 maxHeight = height;
             }
@@ -117,15 +108,10 @@ public class HorizontalLayout implements Layout {
     @lombok.Data
     @AllArgsConstructor
     public static class Data implements LayoutData {
-        private int yOffset;
-        private VerticalLayout.Alignment alignment;
-        private int minHeight;
+        private double alignment;
 
-        public Data(int yOffset) {
-            this(yOffset, VerticalLayout.Alignment.TOP, 0);
-        }
-        public Data(int yOffset, VerticalLayout.Alignment alignment) {
-            this(yOffset, alignment, 0);
+        public Data() {
+            this(0);
         }
     }
 

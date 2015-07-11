@@ -27,6 +27,7 @@ import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
 import java.awt.image.BufferedImage;
@@ -60,8 +61,8 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
     }
 
     @Override
-    public ReadableDimension getMinSize() {
-        return getPreferredSize();
+    public ReadableDimension calcMinSize() {
+        return new Dimension(0, 0);
     }
 
     @Override

@@ -16,9 +16,9 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
     private GuiLabel passwordLabel = new GuiLabel(this).setI18nText("replaymod.gui.password");
     private GuiLabel noAccountLabel = new GuiLabel(this).setI18nText("replaymod.gui.login.noacc");
     private GuiLabel statusLabel = new GuiLabel(this);
-    private GuiButton loginButton = new GuiButton(this).setI18nLabel("replaymod.gui.login").setWidth(150).setEnabled(false);
-    private GuiButton cancelButton = new GuiButton(this).setI18nLabel("replaymod.gui.cancel").setWidth(150);
-    private GuiButton registerButton = new GuiButton(this).setI18nLabel("replaymod.gui.register").setWidth(150);
+    private GuiButton loginButton = new GuiButton(this).setI18nLabel("replaymod.gui.login").setSize(150, 20).setEnabled(false);
+    private GuiButton cancelButton = new GuiButton(this).setI18nLabel("replaymod.gui.cancel").setSize(150, 20);
+    private GuiButton registerButton = new GuiButton(this).setI18nLabel("replaymod.gui.register").setSize(150, 20);
     private GuiTextField username = new GuiTextField(this).setSize(145, 20).setMaxLength(16).setFocused(true);
     private GuiPasswordField password = new GuiPasswordField(this).setSize(145, 20).setNext(username).setPrevious(username);
 
@@ -95,7 +95,7 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
                 pos(statusLabel, width / 2 - statusLabel.getMinSize().getWidth() / 2, 92);
 
                 int labelWidth = noAccountLabel.getMinSize().getWidth();
-                int buttonWidth = registerButton.getPreferredSize().getWidth();
+                int buttonWidth = registerButton.getMaxSize().getWidth();
                 int lineWidth = labelWidth + 5 + buttonWidth;
                 int lineStart = width / 2 - lineWidth / 2;
                 pos(noAccountLabel, lineStart, height - 22);

@@ -32,8 +32,10 @@ import de.johni0702.minecraft.gui.function.Tickable;
 import de.johni0702.minecraft.gui.function.Typeable;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
@@ -84,8 +86,9 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     }
 
     @Override
-    public ReadableDimension getMinSize() {
-        return getPreferredSize();
+    public ReadableDimension calcMinSize() {
+        FontRenderer fontRenderer = getMinecraft().fontRendererObj;
+        return new Dimension(0, fontRenderer.FONT_HEIGHT);
     }
 
     @Override

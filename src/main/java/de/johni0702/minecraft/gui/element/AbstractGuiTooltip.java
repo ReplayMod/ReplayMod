@@ -70,7 +70,7 @@ public abstract class AbstractGuiTooltip<T extends AbstractGuiTooltip<T>> extend
     }
 
     @Override
-    public ReadableDimension getMinSize() {
+    public ReadableDimension calcMinSize() {
         FontRenderer fontRenderer = getMinecraft().fontRendererObj;
         int height = 1 + LINE_SPACING + text.length * (fontRenderer.FONT_HEIGHT + LINE_SPACING);
         int width = 0;
@@ -82,6 +82,11 @@ public abstract class AbstractGuiTooltip<T extends AbstractGuiTooltip<T>> extend
         }
         width+=4 * 2;
         return new Dimension(width, height);
+    }
+
+    @Override
+    public ReadableDimension getMaxSize() {
+        return getMinSize();
     }
 
     public T setText(String[]text) {

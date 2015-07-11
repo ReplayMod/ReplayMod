@@ -74,11 +74,16 @@ public abstract class AbstractGuiCheckbox<T extends AbstractGuiCheckbox<T>>
     }
 
     @Override
-    public ReadableDimension getMinSize() {
+    public ReadableDimension calcMinSize() {
         FontRenderer fontRenderer = getMinecraft().fontRendererObj;
         int height = fontRenderer.FONT_HEIGHT + 2;
         int width = height + 2 + fontRenderer.getStringWidth(label);
         return new Dimension(width, height);
+    }
+
+    @Override
+    public ReadableDimension getMaxSize() {
+        return getMinSize();
     }
 
     @Override

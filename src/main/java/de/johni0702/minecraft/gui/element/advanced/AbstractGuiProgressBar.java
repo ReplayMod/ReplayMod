@@ -29,6 +29,7 @@ import de.johni0702.minecraft.gui.element.AbstractGuiElement;
 import lombok.Getter;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.resources.I18n;
+import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 
@@ -82,7 +83,7 @@ public abstract class AbstractGuiProgressBar<T extends AbstractGuiElement<T>> ex
     }
 
     @Override
-    public ReadableDimension getMinSize() {
-        return getPreferredSize();
+    public ReadableDimension calcMinSize() {
+        return new Dimension(0, 0);
     }
 }
