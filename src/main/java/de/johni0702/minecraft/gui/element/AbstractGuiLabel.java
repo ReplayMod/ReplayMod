@@ -32,6 +32,8 @@ import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 
+import java.util.List;
+
 public abstract class AbstractGuiLabel<T extends AbstractGuiLabel<T>> extends AbstractGuiElement<T> implements IGuiLabel<T> {
     @Getter
     private String text = "";
@@ -48,7 +50,14 @@ public abstract class AbstractGuiLabel<T extends AbstractGuiLabel<T>> extends Ab
 
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-        renderer.drawString(0, 0, isEnabled() ? color : disabledColor, text);
+        FontRenderer fontRenderer = getMinecraft().fontRendererObj;
+        @SuppressWarnings("unchecked")
+        List<String> lines = fontRenderer.listFormattedStringToWidth(text, size.getWidth());
+        int y = 0;
+        for (String line : lines) {
+            renderer.drawString(0, y, isEnabled() ? color : disabledColor, line);
+            y+=fontRenderer.FONT_HEIGHT;
+        }
     }
 
     @Override

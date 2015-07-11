@@ -71,9 +71,10 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
             wrapped.drawDefaultBackground();
         }
         if (title != null) {
-            int x = screenSize.getWidth() / 2 - title.getMinSize().getWidth() / 2;
+            ReadableDimension titleSize = title.getMinSize();
+            int x = screenSize.getWidth() / 2 - titleSize.getWidth() / 2;
             OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, new Point(x, 10), new Dimension(0, 0));
-            title.draw(eRenderer, null, null);
+            title.draw(eRenderer, titleSize, null);
         }
         super.draw(renderer, size, renderInfo);
 
@@ -133,11 +134,6 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
     @Override
     public ReadableDimension getMinSize() {
-        return screenSize;
-    }
-
-    @Override
-    public ReadableDimension getPreferredSize() {
         return screenSize;
     }
 
