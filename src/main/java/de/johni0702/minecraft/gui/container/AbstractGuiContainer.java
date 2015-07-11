@@ -146,6 +146,12 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
                 });
                 category.addCrashSection("Width", size.getWidth());
                 category.addCrashSection("Height", size.getHeight());
+                category.addCrashSectionCallable("Layout", new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        return layout;
+                    }
+                });
                 category = crashReport.makeCategory("Gui element details");
                 category.addCrashSectionCallable("Element", new Callable() {
                     @Override
@@ -165,6 +171,14 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
                         return eSize;
                     }
                 });
+                if (e.getKey() instanceof GuiContainer) {
+                    category.addCrashSectionCallable("Layout", new Callable() {
+                        @Override
+                        public Object call() throws Exception {
+                            return ((GuiContainer) e.getKey()).getLayout();
+                        }
+                    });
+                }
                 throw new ReportedException(crashReport);
             }
         }
