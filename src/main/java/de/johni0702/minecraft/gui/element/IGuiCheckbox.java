@@ -22,7 +22,7 @@
 
 package de.johni0702.minecraft.gui.element;
 
-public interface IGuiCheckbox<T extends AbstractGuiCheckbox<T>> extends IGuiClickable<T> {
+public interface IGuiCheckbox<T extends IGuiCheckbox<T>> extends IGuiClickable<T> {
     T setLabel(String label);
 
     T setI18nLabel(String label, Object... args);

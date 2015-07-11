@@ -33,7 +33,7 @@ import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 
-public abstract class AbstractGuiProgressBar<T extends AbstractGuiElement<T>> extends AbstractGuiElement<T> implements IGuiProgressBar<T> {
+public abstract class AbstractGuiProgressBar<T extends AbstractGuiProgressBar<T>> extends AbstractGuiElement<T> implements IGuiProgressBar<T> {
     private static final int BORDER = 2;
 
     @Getter

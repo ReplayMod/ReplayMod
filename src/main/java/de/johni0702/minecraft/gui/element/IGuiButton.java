@@ -22,7 +22,7 @@
 
 package de.johni0702.minecraft.gui.element;
 
-public interface IGuiButton<T extends AbstractGuiButton<T>> extends IGuiClickable<T> {
+public interface IGuiButton<T extends IGuiButton<T>> extends IGuiClickable<T> {
     T setLabel(String label);
 
     T setI18nLabel(String label, Object... args);

@@ -24,7 +24,7 @@ package de.johni0702.minecraft.gui.element;
 
 import org.lwjgl.util.ReadableColor;
 
-public interface IGuiLabel<T extends AbstractGuiLabel<T>> extends GuiElement<T> {
+public interface IGuiLabel<T extends IGuiLabel<T>> extends GuiElement<T> {
     T setText(String text);
 
     T setI18nText(String text, Object... args);

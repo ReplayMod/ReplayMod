@@ -24,6 +24,6 @@ package de.johni0702.minecraft.gui.element;
 
 import java.awt.image.BufferedImage;
 
-public interface IGuiImage<T extends AbstractGuiImage<T>> extends GuiElement<T> {
+public interface IGuiImage<T extends IGuiImage<T>> extends GuiElement<T> {
     T setTexture(BufferedImage img);
 }

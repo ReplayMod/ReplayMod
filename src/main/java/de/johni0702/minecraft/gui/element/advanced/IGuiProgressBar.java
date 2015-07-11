@@ -22,10 +22,9 @@
 
 package de.johni0702.minecraft.gui.element.advanced;
 
-import de.johni0702.minecraft.gui.element.AbstractGuiElement;
 import de.johni0702.minecraft.gui.element.GuiElement;
 
-public interface IGuiProgressBar<T extends AbstractGuiElement<T>> extends GuiElement<T> {
+public interface IGuiProgressBar<T extends IGuiProgressBar<T>> extends GuiElement<T> {
     T setProgress(float progress);
 
     T setLabel(String label);
