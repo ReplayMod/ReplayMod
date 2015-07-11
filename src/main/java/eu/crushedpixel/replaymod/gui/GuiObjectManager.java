@@ -6,10 +6,12 @@ import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.gui.elements.timelines.GuiTimeline;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
-import eu.crushedpixel.replaymod.holders.GuiEntryListValueEntry;
+import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -18,13 +20,12 @@ import org.lwjgl.util.Point;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 public class GuiObjectManager extends GuiScreen {
 
     private boolean initialized = false;
-
-    private KeyframeList[] keyframeLists;
 
     private GuiEntryList<CustomImageObject> objectList;
     private GuiAdvancedButton addButton, removeButton;
@@ -61,7 +62,7 @@ public class GuiObjectManager extends GuiScreen {
                     GuiReplayOverlay.TEXTURE_SIZE, GuiReplayOverlay.TEXTURE_SIZE, new Runnable() {
                 @Override
                 public void run() {
-                    addKeyframe(line);
+                    objectKeyframeTimeline.addKeyframe(line);
                 }
             },
                     null);
@@ -71,16 +72,14 @@ public class GuiObjectManager extends GuiScreen {
                     GuiReplayOverlay.TEXTURE_SIZE, GuiReplayOverlay.TEXTURE_SIZE, new Runnable() {
                 @Override
                 public void run() {
-                    removeKeyframe(line);
+                    objectKeyframeTimeline.removeKeyframe(line);
                 }
             },
                     null);
 
             @Override
             public GuiElement delegate() {
-                boolean sel = false; //TODO
-
-                if(sel) {
+                if(objectKeyframeTimeline.getSelectedKeyframeRow() == line) {
                     return selected;
                 } else {
                     return normal;
@@ -93,14 +92,6 @@ public class GuiObjectManager extends GuiScreen {
                 normal.setEnabled(enabled);
             }
         };
-    }
-
-    private void addKeyframe(int line) {
-
-    }
-
-    private void removeKeyframe(int line) {
-
     }
 
     @Override
@@ -161,8 +152,6 @@ public class GuiObjectManager extends GuiScreen {
             nameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 0, 20);
             nameInput.hint = I18n.format("replaymod.gui.objects.properties.name");
 
-            keyframeLists = new KeyframeList[5];
-
             objectList.addSelectionListener(new SelectionListener() {
                 @Override
                 public void onSelectionChanged(int selectionIndex) {
@@ -187,6 +176,7 @@ public class GuiObjectManager extends GuiScreen {
 
                         assetDropdown.setSelectionIndexQuietly(sel);
 
+                        objectKeyframeTimeline.setTransformations(selectedObject.getTransformations());
                     } else {
                         disableElements.setEnabled(false);
                     }
@@ -264,7 +254,7 @@ public class GuiObjectManager extends GuiScreen {
         int timelineWidth = this.width-10-timelineX + 2;
         int timelineHeight = this.height-10-10-timelineY + 2;
 
-        objectKeyframeTimeline = new GuiObjectKeyframeTimeline(timelineX, timelineY, timelineWidth, timelineHeight, keyframeLists);
+        objectKeyframeTimeline = new GuiObjectKeyframeTimeline(timelineX, timelineY, timelineWidth, timelineHeight);
         disableElements.addPart(objectKeyframeTimeline);
 
         timelineScrollbar = new GuiScrollbar(timelineX, this.height-15, timelineWidth-21) {
@@ -389,20 +379,69 @@ public class GuiObjectManager extends GuiScreen {
 
     public class GuiObjectKeyframeTimeline extends GuiTimeline {
 
-        private KeyframeList[] keyframeLists;
+        private static final int KEYFRAME_X = 74;
+        private static final int KEYFRAME_Y = 35;
+        private static final int KEYFRAME_SIZE = 5;
 
-        public int x, y, width, height;
+        @Getter @Setter
+        private Transformations transformations;
+
+        @Getter private int selectedKeyframeRow = -1;
+        @Getter private Keyframe selectedKeyframe = null;
 
         private boolean dragging = false;
 
-        public GuiObjectKeyframeTimeline(int x, int y, int width, int height, KeyframeList... keyframeLists) {
+        public GuiObjectKeyframeTimeline(int x, int y, int width, int height) {
             super(x, y, width, height);
-
-            this.keyframeLists = keyframeLists;
 
             this.zoom = 0.1;
             this.timelineLength = 10 * 60 * 1000;
             this.showMarkers = true;
+        }
+
+        @Override
+        public void draw(Minecraft mc, int mouseX, int mouseY) {
+            super.draw(mc, mouseX, mouseY);
+
+            int bodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
+
+            long leftTime = Math.round(timeStart * timelineLength);
+            long rightTime = Math.round((timeStart + zoom) * timelineLength);
+
+            double segmentLength = timelineLength * zoom;
+
+            if(transformations != null) {
+                for(int i = 0; i < 5; i++) {
+                    KeyframeList keyframes = transformations.getKeyframeListByID(i);
+
+                    //Draw Keyframe logos
+                    for(Keyframe kf : (List<Keyframe>) keyframes) {
+                        drawKeyframe(kf, (int)(i * (height / 5f)) + 10, bodyWidth, leftTime, rightTime, segmentLength);
+                    }
+                }
+            }
+        }
+
+        private int getKeyframeX(int timestamp, long leftTime, int bodyWidth, double segmentLength) {
+            long positionInSegment = timestamp - leftTime;
+            double fractionOfSegment = positionInSegment / segmentLength;
+            return (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
+        }
+
+        private void drawKeyframe(Keyframe kf, int y, int bodyWidth, long leftTime, long rightTime, double segmentLength) {
+            if (kf.getRealTimestamp() <= rightTime && kf.getRealTimestamp() >= leftTime) {
+                int textureX = KEYFRAME_X;
+                int textureY = KEYFRAME_Y;
+                y = positionY+y;
+
+                int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
+
+                if (kf == selectedKeyframe) {
+                    textureX += KEYFRAME_SIZE;
+                }
+
+                rect(keyframeX - 2, y, textureX, textureY, 5, 5);
+            }
         }
 
         @Override
@@ -411,6 +450,36 @@ public class GuiObjectManager extends GuiScreen {
             super.mouseClick(mc, mouseX, mouseY, button);
             int time = (int) getTimeAt(mouseX, mouseY);
             if(time != -1)  {
+                boolean clicked = false;
+                
+                int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
+
+                if(transformations != null) {
+                    for(int i = 0; i < 5; i++) {
+                        int upper = positionY + (int)(i * (height / 5f)) + 10;
+                        int lower = upper + KEYFRAME_SIZE;
+                        if(mouseY >= upper && mouseY <= lower) {
+                            KeyframeList keyframes = transformations.getKeyframeListByID(i);
+                            Keyframe closest = keyframes.getClosestKeyframeForTimestamp(time, tolerance);
+
+                            selectedKeyframe = closest;
+
+                            if(selectedKeyframe != null) {
+                                selectedKeyframeRow = i;
+                            } else {
+                                selectedKeyframeRow = -1;
+                            }
+
+                            clicked = true;
+                        }
+                    }
+                }
+
+                if(!clicked) {
+                    selectedKeyframe = null;
+                    selectedKeyframeRow = -1;
+                }
+
                 cursorPosition = time;
                 dragging = true;
                 return true;
@@ -434,6 +503,66 @@ public class GuiObjectManager extends GuiScreen {
             if(!enabled) return;
             super.mouseRelease(mc, mouseX, mouseY, button);
             this.dragging = false;
+        }
+
+        public void addKeyframe(int line) {
+            CustomImageObject currentObject = objectList.getElement(objectList.getSelectionIndex());
+            if(currentObject != null) {
+                KeyframeList list = currentObject.getTransformations().getKeyframeListByID(line);
+                int timestamp = objectKeyframeTimeline.cursorPosition;
+
+                Keyframe kf = null;
+                
+                switch(line) {
+                    case 0:
+                        
+                        kf = new Keyframe(timestamp, new Position(
+                                anchorXInput.getPreciseValue(),
+                                anchorYInput.getPreciseValue(),
+                                anchorZInput.getPreciseValue()));
+                        break;
+                    case 1:
+                        kf = new Keyframe(timestamp, new Position(
+                                positionXInput.getPreciseValue(),
+                                positionYInput.getPreciseValue(),
+                                positionZInput.getPreciseValue()));
+                        break;
+                    case 2:
+                        kf = new Keyframe(timestamp, new Position(
+                                orientationXInput.getPreciseValue(),
+                                orientationYInput.getPreciseValue(),
+                                orientationZInput.getPreciseValue()));
+                        break;
+                    case 3:
+                        kf = new Keyframe(timestamp, new Position(
+                                scaleXInput.getPreciseValue(),
+                                scaleYInput.getPreciseValue(),
+                                scaleZInput.getPreciseValue()));
+                        break;
+                    case 4:
+                        kf = new Keyframe(timestamp, new NumberValue(
+                                opacityInput.getPreciseValue()
+                        ));
+                        break;
+                }
+
+                list.add(kf);
+
+                selectedKeyframe = kf;
+                selectedKeyframeRow = line;
+            }
+        }
+
+        public void removeKeyframe(int line) {
+            if(selectedKeyframeRow == line) {
+                CustomImageObject currentObject = objectList.getElement(objectList.getSelectionIndex());
+                if(currentObject != null) {
+                    KeyframeList list = currentObject.getTransformations().getKeyframeListByID(line);
+                    list.remove(selectedKeyframe);
+                    selectedKeyframe = null;
+                    selectedKeyframeRow = -1;
+                }
+            }
         }
     }
 }

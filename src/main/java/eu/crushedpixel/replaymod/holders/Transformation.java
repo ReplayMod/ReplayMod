@@ -13,6 +13,4 @@ public class Transformation {
     private Position scale;
     private double opacity;
 
-    private float width, height;
-
 }

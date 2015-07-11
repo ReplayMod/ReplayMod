@@ -32,7 +32,7 @@ public class CustomImageObject implements GuiEntryListEntry {
 
     @Getter private float textureWidth, textureHeight;
 
-    @Getter private Transformations transformations;
+    @Getter private Transformations transformations = new Transformations();
 
     public void setLinkedAsset(UUID assetUUID) throws IOException {
         ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(assetUUID);
