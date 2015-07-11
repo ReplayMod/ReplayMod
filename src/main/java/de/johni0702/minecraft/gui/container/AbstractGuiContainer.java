@@ -37,7 +37,10 @@ import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -77,7 +80,7 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
         ReadablePoint pos = pair.getKey();
         point.translate(-pos.getX(), -pos.getY());
         if (getContainer() != null) {
-            getContainer().convertFor(element, point);
+            getContainer().convertFor(this, point);
         }
     }
 
