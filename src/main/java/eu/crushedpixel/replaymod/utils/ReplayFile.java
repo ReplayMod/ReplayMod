@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import eu.crushedpixel.replaymod.assets.AssetRepository;
+import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
@@ -31,11 +32,12 @@ public class ReplayFile extends ZipFile {
     public static final String ENTRY_PATHS = "paths" + JSON_FILE_EXTENSION;
     public static final String ENTRY_THUMB = "thumb";
     public static final String ENTRY_RESOURCE_PACK = "resourcepack/%s.zip";
-    public static final String ENTRY_RESOURCE_PACK_INDEX = "resourcepack/index.json";
+    public static final String ENTRY_RESOURCE_PACK_INDEX = "resourcepack/index"+JSON_FILE_EXTENSION;
     public static final String ENTRY_VISIBILITY_OLD = "visibility";
     public static final String ENTRY_VISIBILITY = "visibility" + JSON_FILE_EXTENSION;
     public static final String ENTRY_MARKERS = "markers" + JSON_FILE_EXTENSION;
     public static final String ENTRY_ASSET_FOLDER = "asset/";
+    public static final String ENTRY_CUSTOM_OBJECTS = "objects"+JSON_FILE_EXTENSION;
 
     private final File file;
 
@@ -255,6 +257,29 @@ public class ReplayFile extends ZipFile {
                 }
 
                 return assetRepository;
+            }
+        };
+    }
+
+    public ZipArchiveEntry customObjectsEntry() {
+        return getEntry(ENTRY_CUSTOM_OBJECTS);
+    }
+
+    public Supplier<CustomObjectRepository> customImageObjects() {
+        return new Supplier<CustomObjectRepository>() {
+            @Override
+            public CustomObjectRepository get() {
+                try {
+                    ZipArchiveEntry entry = customObjectsEntry();
+                    if(entry == null) return null;
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(entry)));
+                    return new Gson().fromJson(reader, CustomObjectRepository.class);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+
+                return null;
             }
         };
     }

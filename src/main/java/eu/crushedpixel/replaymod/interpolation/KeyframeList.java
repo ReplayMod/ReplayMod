@@ -17,6 +17,13 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
 
     @Override
     public boolean add(Keyframe<K> t) {
+        //remove keyframes that have same timestamp
+        for(Keyframe kf : new ArrayList<Keyframe>(this)) {
+            if(kf.getRealTimestamp() == t.getRealTimestamp()) {
+                super.remove(kf);
+            }
+        }
+
         boolean success = super.add(t);
         sort();
         return success;
@@ -137,6 +144,9 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     }
 
     public K getInterpolatedValueForPathPosition(float pathPosition, boolean linear) {
+        if(first() == null) return null;
+        if(size() == 1) return first().getValue();
+
         K toApply = (K)first().getValue().newInstance();
 
         if(previousCallLinear != (Boolean)linear) {

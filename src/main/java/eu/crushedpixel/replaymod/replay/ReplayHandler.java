@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.assets.AssetRepository;
 import eu.crushedpixel.replaymod.assets.CustomImageObject;
+import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.events.ReplayExitEvent;
@@ -68,7 +69,7 @@ public class ReplayHandler {
     @Getter @Setter
     private static AssetRepository assetRepository;
 
-    private static List<CustomImageObject> customImageObjects = new ArrayList<CustomImageObject>();
+    private static CustomObjectRepository customImageObjects = new CustomObjectRepository();
 
     /**
      * The file currently being played.
@@ -455,6 +456,11 @@ public class ReplayHandler {
         AssetRepository assets = currentReplayFile.assetRepository().get();
         assetRepository = assets;
 
+        //load custom image objects
+        CustomObjectRepository objectRepository = currentReplayFile.customImageObjects().get();
+        customImageObjects = objectRepository;
+        if(customImageObjects == null) customImageObjects = new CustomObjectRepository();
+
         ReplayMod.replaySender = new ReplaySender(currentReplayFile, asyncMode);
         channel.pipeline().addFirst(ReplayMod.replaySender);
         channel.pipeline().fireChannelActive();
@@ -604,15 +610,15 @@ public class ReplayHandler {
     }
 
     public static List<CustomImageObject> getCustomImageObjects() {
-        return customImageObjects;
+        return customImageObjects.getObjects();
     }
 
     public static void addCustomImageObject(CustomImageObject object) {
-        customImageObjects.add(object);
+        customImageObjects.getObjects().add(object);
     }
 
-    public static void setCustomImageObjects(List<CustomImageObject> objects) {
-        customImageObjects = objects;
+    public static void setCustomImageObjects(ArrayList<CustomImageObject> objects) {
+        customImageObjects.setObjects(objects);
     }
 
     public static void fireKeyframesModifyEvent() {

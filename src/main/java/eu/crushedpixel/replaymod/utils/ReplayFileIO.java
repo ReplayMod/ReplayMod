@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.utils;
 
 import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
 import eu.crushedpixel.replaymod.holders.PacketData;
@@ -167,6 +168,10 @@ public class ReplayFileIO {
 
     public static void write(MarkerKeyframe[] markers, File file) throws IOException {
         write((Object) markers, file);
+    }
+
+    public static void write(CustomObjectRepository repository, File file) throws IOException {
+        write((Object) repository, file);
     }
 
     /**

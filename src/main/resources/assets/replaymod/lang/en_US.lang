@@ -365,6 +365,7 @@ replaymod.gui.assets.defaultname=New Asset
 replaymod.gui.assets.emptylist=No Assets available
 replaymod.gui.assets.namehint=Asset Name
 replaymod.gui.assets.changefile=Change Asset File
+replaymod.gui.assets.noselection=No Asset selected
 
 #Object Manager Gui
 replaymod.gui.objects.properties.anchor=Anchor Point

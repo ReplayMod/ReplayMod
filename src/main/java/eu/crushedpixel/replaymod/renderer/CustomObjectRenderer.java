@@ -1,12 +1,18 @@
 package eu.crushedpixel.replaymod.renderer;
 
 import eu.crushedpixel.replaymod.assets.CustomImageObject;
+import eu.crushedpixel.replaymod.gui.GuiObjectManager;
+import eu.crushedpixel.replaymod.holders.Position;
+import eu.crushedpixel.replaymod.holders.Transformation;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Allows users to render custom images in the World.
@@ -19,12 +25,9 @@ public class CustomObjectRenderer {
     public void renderCustomObjects(RenderWorldLastEvent event) {
         if(!ReplayHandler.isInReplay()) return;
 
-        Entity entity = ReplayHandler.getCameraEntity();
-        if(entity == null) return;
-
-        double doubleX = entity.posX;
-        double doubleY = entity.posY;
-        double doubleZ = entity.posZ;
+        double dX = mc.getRenderViewEntity().lastTickPosX + (mc.getRenderViewEntity().posX - mc.getRenderViewEntity().lastTickPosX) * (double)event.partialTicks;
+        double dY = mc.getRenderViewEntity().lastTickPosY + (mc.getRenderViewEntity().posY - mc.getRenderViewEntity().lastTickPosY) * (double)event.partialTicks;
+        double dZ = mc.getRenderViewEntity().lastTickPosZ + (mc.getRenderViewEntity().posZ - mc.getRenderViewEntity().lastTickPosZ) * (double)event.partialTicks;
 
         GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
@@ -35,7 +38,7 @@ public class CustomObjectRenderer {
         GlStateManager.disableTexture2D();
 
         for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
-            drawCustomImageObject(doubleX, doubleY, doubleZ, object);
+            drawCustomImageObject(dX, dY, dZ, object);
         }
 
         GlStateManager.enableTexture2D();
@@ -47,8 +50,12 @@ public class CustomObjectRenderer {
     }
 
     private void drawCustomImageObject(double playerX, double playerY, double playerZ, CustomImageObject customImageObject) {
-        //TODO: Get current Transformations for given Timestamp
-        /*
+        ResourceLocation resourceLocation = customImageObject.getResourceLocation();
+
+        if(customImageObject.getLinkedAsset() == null
+                || ReplayHandler.getAssetRepository().getAssetByUUID(customImageObject.getLinkedAsset()) == null
+                || resourceLocation == null) return;
+
         GlStateManager.pushMatrix();
         GlStateManager.enableTexture2D();
         GlStateManager.enableLighting();
@@ -60,9 +67,20 @@ public class CustomObjectRenderer {
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer renderer = tessellator.getWorldRenderer();
 
-        mc.renderEngine.bindTexture(customImageObject.getResourceLocation());
+        mc.renderEngine.bindTexture(resourceLocation);
 
-        Transformations objectPosition = customImageObject.getPosition();
+        int renderTimestamp;
+        if(mc.currentScreen instanceof GuiObjectManager) {
+            renderTimestamp = ((GuiObjectManager)mc.currentScreen).getObjectKeyframeTimeline().cursorPosition;
+        } else {
+            renderTimestamp = ReplayHandler.getRealTimelineCursor();
+        }
+
+        Transformation transformation = customImageObject.getTransformations().getTransformationForTimestamp(renderTimestamp);
+
+        Position objectAnchor = transformation.getAnchor();
+        Position objectPosition = transformation.getPosition();
+        Position objectOrientation = transformation.getOrientation();
 
         double x = objectPosition.getX() - playerX;
         double y = objectPosition.getY() - playerY;
@@ -72,23 +90,23 @@ public class CustomObjectRenderer {
 
         GlStateManager.translate(x, y + 1.4, z);
 
-        GlStateManager.rotate(-objectPosition.getYaw(), 0, 1, 0);
-        GlStateManager.rotate(objectPosition.getRoll(), 0, 0, 1);
-        GlStateManager.rotate(objectPosition.getPitch(), 1, 0, 0);
+        GlStateManager.rotate((float)-objectOrientation.getX(), 0, 1, 0);
+        GlStateManager.rotate((float)objectOrientation.getY(), 0, 0, 1);
+        GlStateManager.rotate((float) objectOrientation.getZ(), 1, 0, 0);
 
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-        float opacity = objectPosition.getOpacity();
+        float opacity = (float)transformation.getOpacity() / 100;
         GlStateManager.color(1, 1, 1, opacity);
 
-        float width = objectPosition.getWidth() * objectPosition.getScale();
-        float height = objectPosition.getHeight() * objectPosition.getScale();
+        float width = (float)(customImageObject.getWidth() * transformation.getScale().getX() / 100f);
+        float height = (float)(customImageObject.getHeight() * transformation.getScale().getY() / 100f);
 
-        float minX = -width/2 + objectPosition.getAnchorX();
-        float maxX = width/2 + objectPosition.getAnchorX();
-        float minY = -height/2 + objectPosition.getAnchorY();
-        float maxY = height/2 + objectPosition.getAnchorY();
+        float minX = (float)(-width/2 + objectAnchor.getX());
+        float maxX = (float)(width/2 + objectAnchor.getX());
+        float minY = (float)(-height/2 + objectAnchor.getY());
+        float maxY = (float)(height/2 + objectAnchor.getY());
 
         renderer.startDrawingQuads();
 
@@ -109,6 +127,5 @@ public class CustomObjectRenderer {
         GlStateManager.disableTexture2D();
         GlStateManager.enableLighting();
         GlStateManager.popMatrix();
-        */
     }
 }

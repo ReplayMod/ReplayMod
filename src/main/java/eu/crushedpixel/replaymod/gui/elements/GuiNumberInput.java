@@ -1,8 +1,14 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import eu.crushedpixel.replaymod.gui.elements.listeners.NumberValueChangeListener;
 import net.minecraft.client.gui.FontRenderer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GuiNumberInput extends GuiAdvancedTextField {
+
+    private List<NumberValueChangeListener> valueChangeListeners = new ArrayList<NumberValueChangeListener>();
 
     protected Double minimum, maximum;
 
@@ -25,7 +31,11 @@ public class GuiNumberInput extends GuiAdvancedTextField {
         this(fontRenderer, xPos, yPos, width, (double) minimum, (double) maximum, (double) defaultValue, acceptFloats);
     }
 
-    public void setValue(double value) {
+    /**
+     * Sets this GuiNumberInput's value without notifying the listeners.
+     * @param value The value to set
+     */
+    public void setValueQuietly(double value) {
         if(minimum != null && value < minimum) {
             setText(acceptFloats ? minimum.toString() : Integer.toString((int) Math.round(minimum)));
         } else if(maximum != null && value > maximum) {
@@ -38,6 +48,22 @@ public class GuiNumberInput extends GuiAdvancedTextField {
             }
         }
         setCursorPositionZero();
+    }
+
+    public void setValue(double value) {
+        setValueQuietly(value);
+        fireValueChangeEvent();
+    }
+
+    public void addValueChangeListener(NumberValueChangeListener listener) {
+        this.valueChangeListeners.add(listener);
+    }
+
+    private void fireValueChangeEvent() {
+        double val = acceptFloats ? getPreciseValue() : getIntValue();
+        for(NumberValueChangeListener listener : valueChangeListeners) {
+            listener.onValueChange(val);
+        }
     }
 
     @Override
@@ -59,6 +85,8 @@ public class GuiNumberInput extends GuiAdvancedTextField {
             } else if(maximum != null && val > maximum) {
                 setText(acceptFloats ? maximum.toString() : Integer.toString((int) Math.round(maximum)));
             }
+
+            fireValueChangeEvent();
         } catch(NumberFormatException e) {
             setText(textBefore);
             setCursorPosition(cursorPositionBefore);

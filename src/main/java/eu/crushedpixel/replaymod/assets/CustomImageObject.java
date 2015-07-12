@@ -27,8 +27,8 @@ public class CustomImageObject implements GuiEntryListEntry {
 
     @Getter @Setter private float width, height;
 
-    private ResourceLocation resourceLocation;
-    private DynamicTexture dynamicTexture;
+    private transient ResourceLocation resourceLocation;
+    private transient DynamicTexture dynamicTexture;
 
     @Getter private float textureWidth, textureHeight;
 
@@ -38,6 +38,7 @@ public class CustomImageObject implements GuiEntryListEntry {
         ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(assetUUID);
 
         if(asset instanceof ReplayImageAsset) {
+            this.linkedAsset = assetUUID;
             setImage(((ReplayImageAsset)asset).getObject());
         } else if(asset != null) {
             throw new UnsupportedOperationException("A CustomImageObject requires a ReplayImageAsset");
@@ -63,16 +64,30 @@ public class CustomImageObject implements GuiEntryListEntry {
         this.setWidth(w);
         this.setHeight(h);
 
+        resourceLocation = new ResourceLocation(linkedAsset.toString());
+
         Minecraft.getMinecraft().addScheduledTask(new Runnable() {
             @Override
             public void run() {
-                resourceLocation = new ResourceLocation("customImages/"+linkedAsset.toString());
                 dynamicTexture = new DynamicTexture(bufferedImage);
+
+                ResourceHelper.freeResource(resourceLocation);
             }
         });
     }
 
     public ResourceLocation getResourceLocation() {
+        if(resourceLocation == null) {
+            ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(linkedAsset);
+            if(asset instanceof ReplayImageAsset) {
+                try {
+                    setImage(((ReplayImageAsset) asset).getObject());
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         if(!ResourceHelper.isRegistered(resourceLocation)) {
             ResourceHelper.registerResource(resourceLocation);
             Minecraft.getMinecraft().getTextureManager().loadTexture(resourceLocation, dynamicTexture);

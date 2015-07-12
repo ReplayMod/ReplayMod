@@ -10,6 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Transformations {
 
+    private Position defaultAnchor = new Position(0, 0, 0),
+            defaultPosition = new Position(0, 0, 0),
+            defaultOrientation = new Position(0, 0, 0),
+            defaultScale = new Position(100, 100, 100);
+    private NumberValue defaultOpacity = new NumberValue(100);
+
     private KeyframeList<Position> anchorKeyframes = new KeyframeList<Position>();
     private KeyframeList<Position> positionKeyframes = new KeyframeList<Position>();
     private KeyframeList<Position> orientationKeyframes = new KeyframeList<Position>();
@@ -34,12 +40,22 @@ public class Transformations {
     }
 
     public Transformation getTransformationForTimestamp(int timestamp) {
-        return new Transformation(
-                anchorKeyframes.getInterpolatedValueForTimestamp(timestamp, true),
-                positionKeyframes.getInterpolatedValueForTimestamp(timestamp, true),
-                orientationKeyframes.getInterpolatedValueForTimestamp(timestamp, true),
-                scaleKeyframes.getInterpolatedValueForTimestamp(timestamp, true),
-                opacityKeyframes.getInterpolatedValueForTimestamp(timestamp, true).value);
+        Position anchor = anchorKeyframes.getInterpolatedValueForTimestamp(timestamp, true);
+        if(anchor == null) anchor = defaultAnchor;
+
+        Position position = positionKeyframes.getInterpolatedValueForTimestamp(timestamp, true);
+        if(position == null) position = defaultPosition;
+
+        Position orientation = orientationKeyframes.getInterpolatedValueForTimestamp(timestamp, true);
+        if(orientation == null) orientation = defaultOrientation;
+
+        Position scale = scaleKeyframes.getInterpolatedValueForTimestamp(timestamp, true);
+        if(scale == null) scale = defaultScale;
+
+        NumberValue opacity = opacityKeyframes.getInterpolatedValueForTimestamp(timestamp, true);
+        if(opacity == null) opacity = defaultOpacity;
+
+        return new Transformation(anchor, position, orientation, scale, opacity.value);
     }
 
 }

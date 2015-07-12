@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.assets;
 
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
+import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.BoundingUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -46,6 +47,12 @@ public class ReplayImageAsset implements ReplayAsset<BufferedImage> {
     public void loadFromStream(InputStream inputStream) throws IOException {
         this.object = ImageIO.read(inputStream);
         ResourceHelper.freeResource(previewResource);
+
+        for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
+            if(object.getLinkedAsset().equals(ReplayHandler.getAssetRepository().getUUIDForAsset(this))) {
+                object.setImage(this.object);
+            }
+        }
     }
 
     @Override

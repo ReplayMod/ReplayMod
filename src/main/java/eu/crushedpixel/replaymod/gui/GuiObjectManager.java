@@ -1,8 +1,11 @@
 package eu.crushedpixel.replaymod.gui;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.assets.CustomImageObject;
+import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
 import eu.crushedpixel.replaymod.assets.ReplayAsset;
 import eu.crushedpixel.replaymod.gui.elements.*;
+import eu.crushedpixel.replaymod.gui.elements.listeners.NumberValueChangeListener;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.gui.elements.timelines.GuiTimeline;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
@@ -10,6 +13,8 @@ import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
+import eu.crushedpixel.replaymod.utils.ReplayFile;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
@@ -19,9 +24,13 @@ import net.minecraft.client.resources.I18n;
 import org.lwjgl.util.Point;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.lwjgl.util.Point;
 
 public class GuiObjectManager extends GuiScreen {
 
@@ -37,11 +46,15 @@ public class GuiObjectManager extends GuiScreen {
 
     private GuiDraggingNumberInput anchorXInput, anchorYInput, anchorZInput;
     private GuiDraggingNumberInput positionXInput, positionYInput, positionZInput;
-    private GuiDraggingNumberInput scaleXInput, scaleYInput, scaleZInput;
     private GuiDraggingNumberInput orientationXInput, orientationYInput, orientationZInput;
+    private GuiDraggingNumberInput scaleXInput, scaleYInput, scaleZInput;
     private GuiDraggingNumberInput opacityInput;
+    
+    private NumberInputGroup anchorNumberInputs, positionNumberInputs, orientationNumberInputs, scaleNumberInputs, opacityNumberInputs;
 
+    @Getter
     private GuiObjectKeyframeTimeline objectKeyframeTimeline;
+
     private GuiScrollbar timelineScrollbar;
 
     private GuiTexturedButton zoomInButton, zoomOutButton;
@@ -97,29 +110,35 @@ public class GuiObjectManager extends GuiScreen {
     @Override
     public void initGui() {
         if(!initialized) {
-            anchorXInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
-            anchorYInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
-            anchorZInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
+            anchorXInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true, "", 0.1);
+            anchorYInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true, "", 0.1);
+            anchorZInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true, "", 0.1);
+            anchorNumberInputs = new NumberPositionInputGroup(null, anchorXInput, anchorYInput, anchorZInput);
 
             positionXInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
             positionYInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
             positionZInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
-
-            scaleXInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 100d, true, "%");
-            scaleYInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 100d, true, "%");
-            scaleZInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 100d, true, "%");
+            positionNumberInputs = new NumberPositionInputGroup(null, positionXInput, positionYInput, positionZInput);
 
             orientationXInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
             orientationYInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
             orientationZInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 0d, true);
+            orientationNumberInputs = new NumberPositionInputGroup(null, orientationXInput, orientationYInput, orientationZInput);
 
-            opacityInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, 0d, 100d, 100d, true, "%");
+            scaleXInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 100d, true, "%", 0.5);
+            scaleYInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 100d, true, "%", 0.5);
+            scaleZInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, null, null, 100d, true, "%", 0.5);
+            scaleNumberInputs = new NumberPositionInputGroup(null, scaleXInput, scaleYInput, scaleZInput);
+
+            opacityInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 50, 0d, 100d, 100d, true, "%", 0.5);
+            opacityNumberInputs = new NumberValueInputGroup(null, opacityInput);
 
             dropdownLabel = new GuiString(0, 0, Color.WHITE, I18n.format("replaymod.gui.assets.filechooser")+": ");
             assetDropdown = new GuiDropdown<GuiEntryListValueEntry<UUID>>(fontRendererObj, 0, 0, 0, 5);
             if(ReplayHandler.getAssetRepository().getCopyOfReplayAssets().isEmpty()) {
                 assetDropdown.addElement(new GuiEntryListValueEntry<UUID>(I18n.format("replaymod.gui.assets.emptylist"), null));
             } else {
+                assetDropdown.addElement(new GuiEntryListValueEntry<UUID>(I18n.format("replaymod.gui.assets.noselection"), null));
                 for(ReplayAsset asset : ReplayHandler.getAssetRepository().getCopyOfReplayAssets()) {
                     assetDropdown.addElement(new GuiEntryListValueEntry<UUID>(
                             asset.getDisplayString(), ReplayHandler.getAssetRepository().getUUIDForAsset(asset)));
@@ -152,6 +171,10 @@ public class GuiObjectManager extends GuiScreen {
             nameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 0, 20);
             nameInput.hint = I18n.format("replaymod.gui.objects.properties.name");
 
+            for(CustomImageObject customImageObject : ReplayHandler.getCustomImageObjects()) {
+                objectList.addElement(customImageObject);
+            }
+
             objectList.addSelectionListener(new SelectionListener() {
                 @Override
                 public void onSelectionChanged(int selectionIndex) {
@@ -176,7 +199,17 @@ public class GuiObjectManager extends GuiScreen {
 
                         assetDropdown.setSelectionIndexQuietly(sel);
 
-                        objectKeyframeTimeline.setTransformations(selectedObject.getTransformations());
+                        Transformations transformations = selectedObject.getTransformations();
+                        
+                        objectKeyframeTimeline.setTransformations(transformations);
+                        
+                        anchorNumberInputs.setUnderlyingKeyframeList(transformations.getAnchorKeyframes());
+                        positionNumberInputs.setUnderlyingKeyframeList(transformations.getPositionKeyframes());
+                        orientationNumberInputs.setUnderlyingKeyframeList(transformations.getOrientationKeyframes());
+                        scaleNumberInputs.setUnderlyingKeyframeList(transformations.getScaleKeyframes());
+                        opacityNumberInputs.setUnderlyingKeyframeList(transformations.getOpacityKeyframes());
+
+                        updateValuesForTransformation(objectKeyframeTimeline.getTransformations().getTransformationForTimestamp(objectKeyframeTimeline.cursorPosition));
                     } else {
                         disableElements.setEnabled(false);
                     }
@@ -202,8 +235,8 @@ public class GuiObjectManager extends GuiScreen {
         String[] labelStrings = new String[] {
                 I18n.format("replaymod.gui.objects.properties.anchor"),
                 I18n.format("replaymod.gui.objects.properties.position"),
-                I18n.format("replaymod.gui.objects.properties.scale"),
                 I18n.format("replaymod.gui.objects.properties.orientation"),
+                I18n.format("replaymod.gui.objects.properties.scale"),
                 I18n.format("replaymod.gui.objects.properties.opacity"),
         };
 
@@ -222,10 +255,10 @@ public class GuiObjectManager extends GuiScreen {
 
         anchorInputs = new ComposedElement(anchorXInput, anchorYInput, anchorZInput);
         positionInputs = new ComposedElement(positionXInput, positionYInput, positionZInput);
-        scaleInputs = new ComposedElement(scaleXInput, scaleYInput, scaleZInput);
         orientationInputs = new ComposedElement(orientationXInput, orientationYInput, orientationZInput);
+        scaleInputs = new ComposedElement(scaleXInput, scaleYInput, scaleZInput);
         opacityInputs = new ComposedElement(opacityInput);
-        numberInputs = new ComposedElement(anchorInputs, positionInputs, scaleInputs, orientationInputs, opacityInputs);
+        numberInputs = new ComposedElement(anchorInputs, positionInputs, orientationInputs, scaleInputs, opacityInputs);
 
         for(int i = numberInputs.getParts().size()-1; i >= 0; i--) {
             int yPos = this.height-5-10-(25*(numberInputs.getParts().size()-i));
@@ -329,6 +362,43 @@ public class GuiObjectManager extends GuiScreen {
         initialized = true;
     }
 
+    private void saveOnQuit() {
+        ArrayList<CustomImageObject> objects = objectList.getCopyOfElements();
+        ReplayHandler.setCustomImageObjects(objects);
+
+        if(objects.size() > 0) {
+            try {
+                File f = File.createTempFile(ReplayFile.ENTRY_CUSTOM_OBJECTS, "json");
+                ReplayFileIO.write(new CustomObjectRepository(objects), f);
+                ReplayMod.replayFileAppender.registerModifiedFile(f, ReplayFile.ENTRY_CUSTOM_OBJECTS, ReplayHandler.getReplayFile());
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            ReplayMod.replayFileAppender.registerModifiedFile(null, ReplayFile.ENTRY_CUSTOM_OBJECTS, ReplayHandler.getReplayFile());
+        }
+    }
+
+    private void updateValuesForTransformation(Transformation transformation) {
+        anchorXInput.setValueQuietly(transformation.getAnchor().getX());
+        anchorYInput.setValueQuietly(transformation.getAnchor().getY());
+        anchorZInput.setValueQuietly(transformation.getAnchor().getZ());
+
+        positionXInput.setValueQuietly(transformation.getPosition().getX());
+        positionYInput.setValueQuietly(transformation.getPosition().getY());
+        positionZInput.setValueQuietly(transformation.getPosition().getZ());
+        
+        orientationXInput.setValueQuietly(transformation.getOrientation().getX());
+        orientationYInput.setValueQuietly(transformation.getOrientation().getY());
+        orientationZInput.setValueQuietly(transformation.getOrientation().getZ());
+
+        scaleXInput.setValueQuietly(transformation.getScale().getX());
+        scaleYInput.setValueQuietly(transformation.getScale().getY());
+        scaleZInput.setValueQuietly(transformation.getScale().getZ());
+
+        opacityInput.setValueQuietly(transformation.getOpacity());
+    }
+
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
@@ -375,6 +445,70 @@ public class GuiObjectManager extends GuiScreen {
     protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
         allElements.mouseRelease(mc, mouseX, mouseY, mouseButton);
         super.mouseReleased(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public void onGuiClosed() {
+        saveOnQuit();
+    }
+
+    public abstract class NumberInputGroup implements NumberValueChangeListener {
+
+        KeyframeList toModify;
+
+        public void setUnderlyingKeyframeList(KeyframeList toModify) {
+            this.toModify = toModify;
+        }
+
+    }
+
+    public class NumberValueInputGroup extends NumberInputGroup {
+
+        public NumberValueInputGroup(KeyframeList<NumberValue> toModify, GuiNumberInput input) {
+            this.toModify = toModify;
+
+            input.addValueChangeListener(this);
+        }
+
+        @Override
+        public void onValueChange(double value) {
+            NumberValue numberValue = new NumberValue(value);
+
+            //if keyframe selected, overwrite its value
+            if(toModify.contains(objectKeyframeTimeline.getSelectedKeyframe())) {
+                objectKeyframeTimeline.getSelectedKeyframe().setValue(numberValue);
+            } else {
+                toModify.add(new Keyframe<NumberValue>(objectKeyframeTimeline.cursorPosition, numberValue));
+            }
+        }
+    }
+
+    public class NumberPositionInputGroup extends NumberInputGroup {
+
+        public NumberPositionInputGroup(KeyframeList<Position> toModify, GuiNumberInput xInput, GuiNumberInput yInput, GuiNumberInput zInput) {
+            this.toModify = toModify;
+            this.xInput = xInput;
+            this.yInput = yInput;
+            this.zInput = zInput;
+
+            xInput.addValueChangeListener(this);
+            yInput.addValueChangeListener(this);
+            zInput.addValueChangeListener(this);
+        }
+
+        private GuiNumberInput xInput, yInput, zInput;
+
+        @Override
+        public void onValueChange(double value) {
+            Position position = new Position(xInput.getPreciseValue(), yInput.getPreciseValue(), zInput.getPreciseValue());
+
+            //if keyframe selected, overwrite its value
+            if(toModify.contains(objectKeyframeTimeline.getSelectedKeyframe())) {
+                objectKeyframeTimeline.getSelectedKeyframe().setValue(position);
+            } else {
+                toModify.add(new Keyframe<Position>(objectKeyframeTimeline.cursorPosition, position));
+            }
+        }
     }
 
     public class GuiObjectKeyframeTimeline extends GuiTimeline {
@@ -481,6 +615,8 @@ public class GuiObjectManager extends GuiScreen {
                 }
 
                 cursorPosition = time;
+                updateValuesForTransformation(getTransformations().getTransformationForTimestamp(cursorPosition));
+                
                 dragging = true;
                 return true;
             }
@@ -494,7 +630,10 @@ public class GuiObjectManager extends GuiScreen {
             super.mouseDrag(mc, mouseX, mouseY, button);
             if(dragging) {
                 int time = (int) getTimeAt(mouseX, mouseY);
-                if(time != -1) cursorPosition = time;
+                if(time != -1) {
+                    cursorPosition = time;
+                    updateValuesForTransformation(getTransformations().getTransformationForTimestamp(cursorPosition));
+                }
             }
         }
 

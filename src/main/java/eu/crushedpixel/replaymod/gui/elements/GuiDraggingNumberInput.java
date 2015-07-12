@@ -9,18 +9,22 @@ public class GuiDraggingNumberInput extends GuiNumberInputWithText {
 
     public GuiDraggingNumberInput(FontRenderer fontRenderer,
                           int xPos, int yPos, int width, Double minimum, Double maximum, Double defaultValue, boolean acceptFloats) {
-        this(fontRenderer, xPos, yPos, width, minimum, maximum, defaultValue, acceptFloats, "");
+        this(fontRenderer, xPos, yPos, width, minimum, maximum, defaultValue, acceptFloats, "", 0.5f);
     }
 
     public GuiDraggingNumberInput(FontRenderer fontRenderer,
                                   int xPos, int yPos, int width, Double minimum,
-                                  Double maximum, Double defaultValue, boolean acceptFloats, String suffix) {
+                                  Double maximum, Double defaultValue, boolean acceptFloats, String suffix, double stepSize) {
         super(fontRenderer, xPos, yPos, width, minimum, maximum, defaultValue, acceptFloats, suffix);
+
+        this.stepSize = stepSize;
     }
 
     private int prevMouseX;
     private boolean dragging;
     private boolean clicked;
+
+    private double stepSize;
 
     @Override
     public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
@@ -40,16 +44,10 @@ public class GuiDraggingNumberInput extends GuiNumberInputWithText {
             int diff = mouseX - prevMouseX;
             prevMouseX = mouseX;
 
-            int bounds = 100;
-
-            if(minimum != null && maximum != null) {
-                bounds = (int)(maximum-minimum);
-            }
-
             double value = getPreciseValue();
-            double valueDiff = RoundUtils.round2Decimals((diff / 200f) * bounds);
+            double valueDiff = diff * stepSize;
 
-            this.setValue(value+valueDiff);
+            this.setValue(RoundUtils.round2Decimals(value + valueDiff));
         }
         super.mouseDrag(mc, mouseX, mouseY, button);
     }
