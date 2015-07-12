@@ -122,7 +122,7 @@ public abstract class FrameRenderer {
      * @param height Height of the box
      */
     public void renderPreview(int x, int y, int width, int height) {
-        Dimension dimension = BoundingUtils.fitIntoBounds(new Dimension(x, y), new Dimension(width, height));
+        Dimension dimension = BoundingUtils.fitIntoBounds(new Dimension(getVideoWidth(), getVideoHeight()), new Dimension(width, height));
 
         x += (width - dimension.getWidth()) / 2;
         y += (height - dimension.getHeight()) / 2;
