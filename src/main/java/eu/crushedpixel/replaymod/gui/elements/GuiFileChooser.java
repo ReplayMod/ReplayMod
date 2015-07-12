@@ -62,8 +62,10 @@ public class GuiFileChooser extends GuiAdvancedButton {
 
                 fileDialog.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
 
-                fileDialog.setDirectory(selectedFile.getParentFile().getAbsolutePath());
-                fileDialog.setFile(selectedFile.getName());
+                if(selectedFile != null) {
+                    fileDialog.setDirectory(selectedFile.getParentFile().getAbsolutePath());
+                    fileDialog.setFile(selectedFile.getName());
+                }
 
                 fileDialog.setFilenameFilter(new FilenameFilter() {
                     @Override
