@@ -49,7 +49,7 @@ public class ReplayImageAsset implements ReplayAsset<BufferedImage> {
         ResourceHelper.freeResource(previewResource);
 
         for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
-            if(object.getLinkedAsset().equals(ReplayHandler.getAssetRepository().getUUIDForAsset(this))) {
+            if(object.getLinkedAsset() != null && object.getLinkedAsset().equals(ReplayHandler.getAssetRepository().getUUIDForAsset(this))) {
                 object.setImage(this.object);
             }
         }
