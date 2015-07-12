@@ -2,11 +2,13 @@ package eu.crushedpixel.replaymod.interpolation;
 
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeComparator;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@NoArgsConstructor
 public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>> {
 
     private static final KeyframeComparator KEYFRAME_COMPARATOR = new KeyframeComparator();
@@ -14,6 +16,12 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     private Boolean previousCallLinear = null;
 
     private Interpolation<K> interpolation;
+
+    public KeyframeList(List<Keyframe<K>> initial) {
+        for(Keyframe<K> kf : initial) {
+            add(kf);
+        }
+    }
 
     @Override
     public boolean add(Keyframe<K> t) {

@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.gui.elements.timelines;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -51,7 +52,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
                 long currentTime = System.currentTimeMillis();
                 if(closest != null) {
                     if(currentTime - clickTime < 500) { // if double clicked then open GUI instead
-                        //TODO: Make Marker Name editable
+                        mc.displayGuiScreen(new GuiEditKeyframe(closest));
                         this.clickedKeyFrame = null;
                     } else {
                         this.clickedKeyFrame = closest;
@@ -155,7 +156,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
             if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
                 Point mouse = MouseUtils.getMousePos();
                 String markerName = marker.getValue().getName();
-                if(markerName == null) markerName = I18n.format("replaymod.gui.ingame.unnamedmarker");
+                if(markerName == null || markerName.isEmpty()) markerName = I18n.format("replaymod.gui.ingame.unnamedmarker");
                 ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), markerName, null, Color.WHITE);
 
                 drawn = true;

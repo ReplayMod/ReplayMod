@@ -1,10 +1,13 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.gui.elements.GuiAdvancedTextField;
 import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
+import eu.crushedpixel.replaymod.gui.elements.GuiDraggingNumberInput;
 import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
-import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
+import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -31,6 +34,8 @@ public class GuiEditKeyframe extends GuiScreen {
     private GuiNumberInput xCoord, yCoord, zCoord, pitch, yaw, roll;
     private GuiNumberInput min, sec, ms;
 
+    private GuiAdvancedTextField markerNameInput;
+
     private List<GuiTextField> inputs = new ArrayList<GuiTextField>();
     private List<GuiTextField> posInputs = new ArrayList<GuiTextField>();
 
@@ -41,6 +46,7 @@ public class GuiEditKeyframe extends GuiScreen {
     private Keyframe keyframeBackup;
     private boolean save;
     private boolean posKeyframe;
+    private boolean markerKeyframe;
 
     private Keyframe previous, next;
 
@@ -55,12 +61,12 @@ public class GuiEditKeyframe extends GuiScreen {
         this.keyframe = keyframe;
         this.keyframeBackup = keyframe.copy();
         this.posKeyframe = keyframe.getValue() instanceof AdvancedPosition;
+        this.markerKeyframe = keyframe.getValue() instanceof Marker;
         boolean timeKeyframe = keyframe.getValue() instanceof TimestampValue;
-
-        ReplayHandler.selectKeyframe(null);
 
         KeyframeList<AdvancedPosition> positionKeyframes = ReplayHandler.getPositionKeyframes();
         KeyframeList<TimestampValue> timeKeyframes = ReplayHandler.getTimeKeyframes();
+        KeyframeList<Marker> markerKeyframes = ReplayHandler.getMarkers();
 
         if(posKeyframe) {
             previous = positionKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);
@@ -72,9 +78,10 @@ public class GuiEditKeyframe extends GuiScreen {
             next = timeKeyframes.getNextKeyframe(keyframe.getRealTimestamp() + 1);
 
             screenTitle = I18n.format("replaymod.gui.editkeyframe.title.time");
+        } else if(markerKeyframe) {
+            previous = markerKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);
+            next = markerKeyframes.getNextKeyframe(keyframe.getRealTimestamp() + 1);
         }
-
-        ReplayHandler.selectKeyframe(keyframe);
 
         ReplayMod.replaySender.setReplaySpeed(0);
     }
@@ -97,9 +104,9 @@ public class GuiEditKeyframe extends GuiScreen {
 
             //Real Time Input
             int timestamp = keyframe.getRealTimestamp();
-            min = new GuiNumberInput(fontRendererObj, 0, 0, 30, 0, 9, TimestampUtils.getMinutesFromTimestamp(timestamp), false);
-            sec = new GuiNumberInput(fontRendererObj, 0, 0, 25, 0, 59, TimestampUtils.getSecondsFromTimestamp(timestamp), false);
-            ms = new GuiNumberInput(fontRendererObj, 0, 0, 35, 0, 999, TimestampUtils.getMillisecondsFromTimestamp(timestamp), false);
+            min = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, 9d, (double)TimestampUtils.getMinutesFromTimestamp(timestamp), false);
+            sec = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 25, 0d, 59d, (double)TimestampUtils.getSecondsFromTimestamp(timestamp), false);
+            ms = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 35, 0d, 999d, (double)TimestampUtils.getMillisecondsFromTimestamp(timestamp), false);
 
             inputs.add(min);
             inputs.add(sec);
@@ -108,12 +115,12 @@ public class GuiEditKeyframe extends GuiScreen {
             //Position/Virtual Time Input
             if(posKeyframe) {
                 AdvancedPosition pos = ((Keyframe<AdvancedPosition>)keyframe).getValue();
-                xCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getX()), true);
-                yCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getY()), true);
-                zCoord = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getZ()), true);
-                yaw = new GuiNumberInput(fontRendererObj, 0, 0, 100, -90d, 90d, RoundUtils.round2Decimals(pos.getYaw()), true);
-                pitch = new GuiNumberInput(fontRendererObj, 0, 0, 100, -180d, 180d, RoundUtils.round2Decimals(pos.getPitch()), true);
-                roll = new GuiNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getRoll()), true);
+                xCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getX()), true);
+                yCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getY()), true);
+                zCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getZ()), true);
+                yaw = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, -90d, 90d, RoundUtils.round2Decimals(pos.getYaw()), true);
+                pitch = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, -180d, 180d, RoundUtils.round2Decimals(pos.getPitch()), true);
+                roll = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getRoll()), true);
 
                 posInputs.add(xCoord);
                 posInputs.add(yCoord);
@@ -123,6 +130,14 @@ public class GuiEditKeyframe extends GuiScreen {
                 posInputs.add(roll);
 
                 inputs.addAll(posInputs);
+            } else if(markerKeyframe) {
+                String name = ((Keyframe<Marker>)keyframe).getValue().getName();
+                if(name == null) name = "";
+                markerNameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 200, 20);
+                markerNameInput.hint = I18n.format("replaymod.gui.editkeyframe.markername");
+                markerNameInput.setText(name);
+
+                inputs.add(markerNameInput);
             }
         }
 
@@ -159,6 +174,9 @@ public class GuiEditKeyframe extends GuiScreen {
                 input.yPosition = i < 3 ? virtualY + 20 + i*30 : virtualY + 20 + (i-3)*30;
                 i++;
             }
+        } else if(markerKeyframe) {
+            markerNameInput.xPosition = width/2 - 100;
+            markerNameInput.yPosition = height/2-10;
         }
 
         saveButton.yPosition = cancelButton.yPosition = virtualY + virtualHeight - 20 - 5;
@@ -184,15 +202,23 @@ public class GuiEditKeyframe extends GuiScreen {
     @Override
     public void onGuiClosed() {
         if(!save) {
-            ReplayHandler.removeKeyframe(keyframe);
-            ReplayHandler.addKeyframe(keyframeBackup);
-            ReplayHandler.selectKeyframe(keyframeBackup);
+            if(!markerKeyframe) {
+                ReplayHandler.removeKeyframe(keyframe);
+                ReplayHandler.addKeyframe(keyframeBackup);
+                ReplayHandler.selectKeyframe(keyframeBackup);
+            } else {
+                ReplayHandler.getMarkers().remove(keyframe);
+                ReplayHandler.getMarkers().add(keyframeBackup);
+                ReplayHandler.selectMarkerKeyframe(keyframeBackup);
+            }
         } else {
             keyframe.setRealTimestamp(TimestampUtils.calculateTimestamp(min.getIntValue(), sec.getIntValue(), ms.getIntValue()));
             if(posKeyframe) {
                 ((Keyframe<AdvancedPosition>)keyframe).setValue(new AdvancedPosition(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
                         zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float) yaw.getPreciseValue(),
                         (float) roll.getPreciseValue(), null));
+            } else if(markerKeyframe) {
+                ((Keyframe<Marker>)keyframe).getValue().setName(markerNameInput.getText().trim());
             }
         }
         ReplayHandler.fireKeyframesModifyEvent();

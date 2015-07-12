@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
 import eu.crushedpixel.replaymod.holders.*;
+import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.recording.PacketSerializer;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import io.netty.buffer.ByteBuf;
@@ -163,7 +164,7 @@ public class ReplayFileIO {
         write((Object) metaData, file);
     }
 
-    public static void write(Keyframe<Marker>[] markers, File file) throws IOException {
+    public static void write(KeyframeList<Marker> markers, File file) throws IOException {
         write((Object) markers, file);
     }
 

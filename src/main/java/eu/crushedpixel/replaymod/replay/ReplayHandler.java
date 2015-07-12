@@ -59,8 +59,8 @@ public class ReplayHandler {
     private static Entity currentEntity = null;
     private static AdvancedPosition lastPosition = null;
 
-    private static Keyframe<Marker>[] initialMarkers = new Keyframe[0];
-    private static List<Keyframe<Marker>> markerKeyframes = new ArrayList<Keyframe<Marker>>();
+    private static KeyframeList<Marker> initialMarkers = new KeyframeList<Marker>();
+    private static KeyframeList<Marker> markerKeyframes = new KeyframeList<Marker>();
 
     private static float cameraTilt = 0;
 
@@ -95,13 +95,13 @@ public class ReplayHandler {
         }
     }
 
-    public static Keyframe<Marker>[] getMarkers() {
-        return markerKeyframes.toArray(new Keyframe[markerKeyframes.size()]);
+    public static KeyframeList<Marker> getMarkers() {
+        return markerKeyframes;
     }
 
-    public static void setMarkers(Keyframe<Marker>[] m, boolean write) {
+    public static void setMarkers(KeyframeList<Marker> m, boolean write) {
         markerKeyframes.clear();
-        Collections.addAll(markerKeyframes, m);
+        markerKeyframes.addAll(m);
 
         if(write) {
             try {
@@ -440,12 +440,9 @@ public class ReplayHandler {
         KeyframeSet[] paths = currentReplayFile.paths().get();
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
 
-        List<Keyframe<Marker>> markerList = currentReplayFile.markers().get();
-        Keyframe<Marker>[] markers;
-        if(markerList == null) markers = new Keyframe[0];
-        else markers = markerList.toArray(new Keyframe[markerList.size()]);
-        ReplayHandler.setMarkers(markers, false);
-        ReplayHandler.initialMarkers = markers;
+        KeyframeList<Marker> markerList = new KeyframeList<Marker>(currentReplayFile.markers().get());
+        ReplayHandler.setMarkers(markerList, false);
+        ReplayHandler.initialMarkers = markerList;
 
         PlayerVisibility visibility = currentReplayFile.visibility().get();
         PlayerHandler.loadPlayerVisibilityConfiguration(visibility);
@@ -522,7 +519,7 @@ public class ReplayHandler {
             try {
 
                 //only if Marker keyframes changed, rewrite them
-                if(!Arrays.equals(getMarkers(), initialMarkers)) {
+                if(!initialMarkers.equals(markerKeyframes)) {
                     File markerFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
                     ReplayFileIO.write(getMarkers(), markerFile);
                     ReplayMod.replayFileAppender.registerModifiedFile(markerFile, ReplayFile.ENTRY_MARKERS, ReplayHandler.getReplayFile());
