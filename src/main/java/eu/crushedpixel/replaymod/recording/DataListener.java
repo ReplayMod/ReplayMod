@@ -3,7 +3,8 @@ package eu.crushedpixel.replaymod.recording;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
+import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -35,7 +36,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
     protected boolean alive = true;
     protected DataWriter dataWriter;
     protected Set<String> players = new HashSet<String>();
-    protected Set<MarkerKeyframe> markers = new HashSet<MarkerKeyframe>();
+    protected Set<Keyframe<Marker>> markers = new HashSet<Keyframe<Marker>>();
     private boolean singleplayer;
 
     private int saveState = 0; //0: Idle, 1: Saving, 2: Saved
@@ -161,7 +162,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             queue.add(new PacketData(bytes, timestamp));
         }
 
-        public void requestFinish(Set<String> players, Set<MarkerKeyframe> markers) {
+        public void requestFinish(Set<String> players, Set<Keyframe<Marker>> markers) {
             active = false;
 
             try {

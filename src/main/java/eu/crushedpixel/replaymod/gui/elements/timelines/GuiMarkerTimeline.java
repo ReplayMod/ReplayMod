@@ -1,7 +1,8 @@
 package eu.crushedpixel.replaymod.gui.elements.timelines;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
+import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
@@ -14,7 +15,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
     private static final int KEYFRAME_MARKER_X = 109;
     private static final int KEYFRAME_MARKER_Y = 20;
 
-    private MarkerKeyframe clickedKeyFrame;
+    private Keyframe<Marker> clickedKeyFrame;
     private long clickTime;
     private boolean dragging;
 
@@ -36,7 +37,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
 
             int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
 
-            MarkerKeyframe closest = null;
+            Keyframe<Marker> closest = null;
             if(mouseY >= positionY + BORDER_TOP + 10) {
                 closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
             }
@@ -71,14 +72,14 @@ public class GuiMarkerTimeline extends GuiTimeline {
 
             int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
 
-            MarkerKeyframe closest = null;
+            Keyframe<Marker> closest = null;
             if(mouseY >= positionY + BORDER_TOP + 10) {
                 closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
             }
 
             if(closest != null) {
                 //Jump to clicked Marker Keyframe
-                ReplayHandler.setLastPosition(closest.getPosition());
+                ReplayHandler.setLastPosition(closest.getValue().getPosition());
                 ReplayMod.replaySender.jumpToTime(closest.getRealTimestamp());
             }
         }
@@ -123,7 +124,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
         drawTimelineCursor(leftTime, rightTime, bodyWidth);
 
         //Draw Keyframe logos
-        for (MarkerKeyframe kf : ReplayHandler.getMarkers()) {
+        for(Keyframe<Marker> kf : ReplayHandler.getMarkers()) {
             if (kf != null && !kf.equals(ReplayHandler.getSelectedMarkerKeyframe()))
                 drawKeyframe(kf, bodyWidth, leftTime, rightTime, segmentLength);
         }
@@ -148,12 +149,12 @@ public class GuiMarkerTimeline extends GuiTimeline {
         long leftTime = Math.round(timeStart * timelineLength);
         double segmentLength = timelineLength * zoom;
 
-        for(MarkerKeyframe marker : ReplayHandler.getMarkers()) {
+        for(Keyframe<Marker> marker : ReplayHandler.getMarkers()) {
             int keyframeX = getKeyframeX(marker.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
 
             if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
                 Point mouse = MouseUtils.getMousePos();
-                String markerName = marker.getName();
+                String markerName = marker.getValue().getName();
                 if(markerName == null) markerName = I18n.format("replaymod.gui.ingame.unnamedmarker");
                 ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), markerName, null, Color.WHITE);
 
@@ -166,7 +167,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
         }
     }
 
-    private void drawKeyframe(MarkerKeyframe kf, int bodyWidth, long leftTime, long rightTime, double segmentLength) {
+    private void drawKeyframe(Keyframe kf, int bodyWidth, long leftTime, long rightTime, double segmentLength) {
         if (kf.getRealTimestamp() <= rightTime && kf.getRealTimestamp() >= leftTime) {
             int textureX = KEYFRAME_MARKER_X;
             int textureY = KEYFRAME_MARKER_Y;

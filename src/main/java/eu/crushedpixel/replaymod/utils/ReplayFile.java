@@ -1,13 +1,15 @@
 package eu.crushedpixel.replaymod.utils;
 
 import com.google.common.base.Supplier;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import eu.crushedpixel.replaymod.assets.AssetRepository;
 import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
+import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
-import eu.crushedpixel.replaymod.holders.MarkerKeyframe;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -16,10 +18,8 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class ReplayFile extends ZipFile {
 
@@ -135,17 +135,20 @@ public class ReplayFile extends ZipFile {
         return getEntry(ENTRY_MARKERS);
     }
 
-    public Supplier<MarkerKeyframe[]> markers() {
-        return new Supplier<MarkerKeyframe[]>() {
+    public Supplier<List<Keyframe<Marker>>> markers() {
+        return new Supplier<List<Keyframe<Marker>>>() {
             @Override
-            public MarkerKeyframe[] get() {
+            public List<Keyframe<Marker>> get() {
                 try {
                     ZipArchiveEntry entry = markersEntry();
                     if (entry == null) {
                         return null;
                     }
                     BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(entry)));
-                    return new Gson().fromJson(reader, MarkerKeyframe[].class);
+
+                    Type keyframeType = new TypeToken<ArrayList<Keyframe<Marker>>>(){}.getType();
+
+                    return new Gson().fromJson(reader, keyframeType);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

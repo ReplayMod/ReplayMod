@@ -47,7 +47,7 @@ public class ReplayHandler {
     private static int realTimelinePosition = 0;
 
     private static Keyframe selectedKeyframe;
-    private static MarkerKeyframe selectedMarkerKeyframe;
+    private static Keyframe<Marker> selectedMarkerKeyframe;
 
     private static boolean inPath = false;
     private static CameraEntity cameraEntity;
@@ -59,8 +59,8 @@ public class ReplayHandler {
     private static Entity currentEntity = null;
     private static AdvancedPosition lastPosition = null;
 
-    private static MarkerKeyframe[] initialMarkers = new MarkerKeyframe[0];
-    private static List<MarkerKeyframe> markerKeyframes = new ArrayList<MarkerKeyframe>();
+    private static Keyframe<Marker>[] initialMarkers = new Keyframe[0];
+    private static List<Keyframe<Marker>> markerKeyframes = new ArrayList<Keyframe<Marker>>();
 
     private static float cameraTilt = 0;
 
@@ -95,11 +95,11 @@ public class ReplayHandler {
         }
     }
 
-    public static MarkerKeyframe[] getMarkers() {
-        return markerKeyframes.toArray(new MarkerKeyframe[markerKeyframes.size()]);
+    public static Keyframe<Marker>[] getMarkers() {
+        return markerKeyframes.toArray(new Keyframe[markerKeyframes.size()]);
     }
 
-    public static void setMarkers(MarkerKeyframe[] m, boolean write) {
+    public static void setMarkers(Keyframe<Marker>[] m, boolean write) {
         markerKeyframes.clear();
         Collections.addAll(markerKeyframes, m);
 
@@ -232,7 +232,7 @@ public class ReplayHandler {
         else {
             AdvancedPosition pos = new AdvancedPosition(mc.getRenderViewEntity(), false);
             int timestamp = ReplayMod.replaySender.currentTimeStamp();
-            markerKeyframes.add(new MarkerKeyframe(timestamp, pos, null));
+            markerKeyframes.add(new Keyframe<Marker>(timestamp, new Marker(null, pos)));
         }
     }
 
@@ -291,17 +291,17 @@ public class ReplayHandler {
         fireKeyframesModifyEvent();
     }
 
-    public static MarkerKeyframe getClosestMarkerForRealTime(int realTime, int tolerance) {
-        List<MarkerKeyframe> found = new ArrayList<MarkerKeyframe>();
-        for(MarkerKeyframe kf : markerKeyframes) {
+    public static Keyframe<Marker> getClosestMarkerForRealTime(int realTime, int tolerance) {
+        List<Keyframe<Marker>> found = new ArrayList<Keyframe<Marker>>();
+        for(Keyframe<Marker> kf : markerKeyframes) {
             if(Math.abs(kf.getRealTimestamp() - realTime) <= tolerance) {
                 found.add(kf);
             }
         }
 
-        MarkerKeyframe closest = null;
+        Keyframe<Marker> closest = null;
 
-        for(MarkerKeyframe kf : found) {
+        for(Keyframe<Marker> kf : found) {
             if(closest == null || Math.abs(closest.getRealTimestamp() - realTime) > Math.abs(kf.getRealTimestamp() - realTime)) {
                 closest = kf;
             }
@@ -309,15 +309,15 @@ public class ReplayHandler {
         return closest;
     }
 
-    public static MarkerKeyframe getPreviousMarkerKeyframe(int realTime) {
+    public static Keyframe<Marker> getPreviousMarkerKeyframe(int realTime) {
         if(markerKeyframes.isEmpty()) return null;
-        MarkerKeyframe backup = null;
-        List<MarkerKeyframe> found = new ArrayList<MarkerKeyframe>();
-        for(MarkerKeyframe kf : markerKeyframes) {
+        Keyframe<Marker> backup = null;
+        List<Keyframe<Marker>> found = new ArrayList<Keyframe<Marker>>();
+        for(Keyframe<Marker> kf : markerKeyframes) {
             if(kf.getRealTimestamp() < realTime) {
-                found.add((MarkerKeyframe)kf);
+                found.add((Keyframe<Marker>)kf);
             } else if(kf.getRealTimestamp() == realTime) {
-                backup = (MarkerKeyframe)kf;
+                backup = (Keyframe<Marker>)kf;
             }
         }
 
@@ -326,10 +326,10 @@ public class ReplayHandler {
         else return backup;
     }
 
-    public static MarkerKeyframe getNextMarkerKeyframe(int realTime) {
+    public static Keyframe<Marker> getNextMarkerKeyframe(int realTime) {
         if(markerKeyframes.isEmpty()) return null;
-        MarkerKeyframe backup = null;
-        for(MarkerKeyframe kf : markerKeyframes) {
+        Keyframe<Marker> backup = null;
+        for(Keyframe<Marker> kf : markerKeyframes) {
             if(kf.getRealTimestamp() > realTime) {
                 return kf; //first found element is next
             } else if(kf.getRealTimestamp() == realTime) {
@@ -384,19 +384,15 @@ public class ReplayHandler {
         fireKeyframesModifyEvent();
     }
 
-    public static boolean isSelected(Keyframe kf) {
-        return kf == selectedKeyframe;
-    }
-
     public static void selectKeyframe(Keyframe kf) {
         selectedKeyframe = kf;
     }
 
-    public static boolean isSelected(MarkerKeyframe kf) {
-        return kf == selectedMarkerKeyframe;
+    public static boolean isSelected(Keyframe<Marker> kf) {
+        return kf == selectedMarkerKeyframe || kf == selectedMarkerKeyframe;
     }
 
-    public static void selectMarkerKeyframe(MarkerKeyframe kf) { selectedMarkerKeyframe = kf; }
+    public static void selectMarkerKeyframe(Keyframe<Marker> kf) { selectedMarkerKeyframe = kf; }
 
     public static boolean isInReplay() {
         return inReplay;
@@ -444,8 +440,10 @@ public class ReplayHandler {
         KeyframeSet[] paths = currentReplayFile.paths().get();
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
 
-        MarkerKeyframe[] markers = currentReplayFile.markers().get();
-        if(markers == null) markers = new MarkerKeyframe[0];
+        List<Keyframe<Marker>> markerList = currentReplayFile.markers().get();
+        Keyframe<Marker>[] markers;
+        if(markerList == null) markers = new Keyframe[0];
+        else markers = markerList.toArray(new Keyframe[markerList.size()]);
         ReplayHandler.setMarkers(markers, false);
         ReplayHandler.initialMarkers = markers;
 
@@ -557,7 +555,7 @@ public class ReplayHandler {
         return selectedKeyframe;
     }
 
-    public static MarkerKeyframe getSelectedMarkerKeyframe() { return selectedMarkerKeyframe; }
+    public static Keyframe<Marker> getSelectedMarkerKeyframe() { return selectedMarkerKeyframe; }
 
     public static int getRealTimelineCursor() {
         return realTimelinePosition;
