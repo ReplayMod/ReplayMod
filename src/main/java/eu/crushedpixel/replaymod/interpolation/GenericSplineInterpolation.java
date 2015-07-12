@@ -1,7 +1,8 @@
 package eu.crushedpixel.replaymod.interpolation;
 
+import eu.crushedpixel.replaymod.utils.ReflectionUtils;
+
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -19,12 +20,7 @@ public class GenericSplineInterpolation<T extends KeyframeValue> extends BasicSp
     public void addPoint(T point) {
         this.points.add(point);
 
-        List<Field> fields = new ArrayList<Field>();
-        for(Field f : point.getClass().getDeclaredFields()) {
-            if(f.isAnnotationPresent(Interpolate.class)) {
-                fields.add(f);
-            }
-        }
+        List<Field> fields = ReflectionUtils.getFieldsToInterpolate(point.getClass());
         this.fields = fields.toArray(new Field[fields.size()]);
     }
 

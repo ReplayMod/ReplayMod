@@ -1,5 +1,7 @@
 package eu.crushedpixel.replaymod.interpolation;
 
+import eu.crushedpixel.replaymod.utils.ReflectionUtils;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +22,7 @@ public class GenericLinearInterpolation<T extends KeyframeValue> implements Inte
     public void addPoint(T point) {
         points.add(point);
 
-        List<Field> fields = new ArrayList<Field>();
-        for(Field f : point.getClass().getDeclaredFields()) {
-            if(f.isAnnotationPresent(Interpolate.class)) {
-                fields.add(f);
-            }
-        }
+        List<Field> fields = ReflectionUtils.getFieldsToInterpolate(point.getClass());
         this.fields = fields.toArray(new Field[fields.size()]);
     }
 
