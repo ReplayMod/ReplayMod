@@ -6,6 +6,8 @@ import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
+import eu.crushedpixel.replaymod.utils.MouseUtils;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.StringUtils;
 import eu.crushedpixel.replaymod.video.frame.*;
 import net.minecraft.client.Minecraft;
@@ -16,13 +18,23 @@ import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.Point;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class GuiRenderSettings extends GuiScreen {
+
+    //for default file
+    private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
+    private static final SimpleDateFormat FILE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
+    private static final String WEBM_EXTENSION = ".webm";
+
     private static final int LEFT_BORDER = 10;
 
     private GuiButton renderButton, cancelButton, advancedButton;
@@ -37,6 +49,7 @@ public class GuiRenderSettings extends GuiScreen {
     private GuiNumberInput bitrateInput;
     private GuiColorPicker colorPicker;
     private GuiAdvancedTextField commandInput, ffmpegArguments;
+    private GuiFileChooser outputFileChooser;
 
     private List<GuiButton> permanentButtons = new ArrayList<GuiButton>();
     private List<GuiButton> defaultButtons = new ArrayList<GuiButton>();
@@ -115,6 +128,15 @@ public class GuiRenderSettings extends GuiScreen {
             framerateSlider = new GuiVideoFramerateSlider(GuiConstants.RENDER_SETTINGS_FRAMERATE_SLIDER, 0, 0, ReplayMod.replaySettings.getVideoFramerate(),
                     I18n.format("replaymod.gui.rendersettings.framerate"));
 
+            File defaultFile = null;
+            try {
+                defaultFile = new File(ReplayFileIO.getRenderFolder(), FILE_FORMAT.format(Calendar.getInstance().getTime())+WEBM_EXTENSION);
+            } catch(IOException ioe) {
+                ioe.printStackTrace();
+            }
+
+            outputFileChooser = new GuiFileChooser(GuiConstants.RENDER_SETTINGS_OUTPUT_CHOOSER, 0, 0, I18n.format("replaymod.gui.rendersettings.outputfile")+": ", defaultFile, new String[]{"webm"}, true);
+
             interpolation = new GuiToggleButton(GuiConstants.RENDER_SETTINGS_INTERPOLATION_BUTTON, 0, 0,
                     I18n.format("replaymod.gui.rendersettings.interpolation")+": ",
                     new String[]{I18n.format("replaymod.gui.settings.interpolation.cubic"),
@@ -153,6 +175,7 @@ public class GuiRenderSettings extends GuiScreen {
             defaultButtons.add(customResolution);
             defaultButtons.add(framerateSlider);
             defaultButtons.add(ignoreCamDir);
+            defaultButtons.add(outputFileChooser);
 
             advancedButtons.add(interpolation);
             advancedButtons.add(forceChunks);
@@ -197,12 +220,15 @@ public class GuiRenderSettings extends GuiScreen {
         bitrateInput.xPosition = forceChunks.xPosition + bsw;
         bitrateInput.width = forceChunks.width - bsw;
 
-        framerateSlider.xPosition = interpolation.xPosition;
-        framerateSlider.yPosition = bitrateInput.yPosition = interpolation.yPosition + 20 + 10;
+        framerateSlider.xPosition = outputFileChooser.xPosition = interpolation.xPosition;
+        framerateSlider.yPosition = bitrateInput.yPosition = xRes.yPosition + 20 + 10;
 
         ignoreCamDir.xPosition = framerateSlider.xPosition + (framerateSlider.width - ignoreCamDir.width)/2;
 
         ignoreCamDir.yPosition = framerateSlider.yPosition+20+10;
+
+        outputFileChooser.yPosition = framerateSlider.yPosition+20+10;
+        outputFileChooser.width = 312;
 
         //align all advanced buttons
 
@@ -373,6 +399,9 @@ public class GuiRenderSettings extends GuiScreen {
                 boolean enabled = customResolution.isChecked();
                 xRes.setEnabled(enabled);
                 yRes.setEnabled(enabled);
+            } else if(button.id == GuiConstants.RENDER_SETTINGS_OUTPUT_CHOOSER) {
+                Point mouse = MouseUtils.getMousePos();
+                outputFileChooser.mouseClick(mc, mouse.getX(), mouse.getY(), 0);
             }
 
         } else if(advancedButtons.contains(button) && advancedTab) {
@@ -435,6 +464,8 @@ public class GuiRenderSettings extends GuiScreen {
         ReplayMod.replaySettings.setVideoFramerate(framerateSlider.getFPS());
 
         options.setBitrate(bitrateInput.getIntValue() + "K"); //Bitrate value is in Kilobytes
+
+        options.setOutputFile(outputFileChooser.getSelectedFile());
 
         if(enableGreenscreen.isChecked()) {
             options.setSkyColor(colorPicker.getPickedColor());

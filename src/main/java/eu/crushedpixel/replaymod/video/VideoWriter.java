@@ -2,7 +2,6 @@ package eu.crushedpixel.replaymod.video;
 
 import com.google.common.base.Preconditions;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.StreamPipe;
 import eu.crushedpixel.replaymod.utils.StringUtils;
 import net.minecraft.client.Minecraft;
@@ -21,8 +20,10 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,9 +31,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.commons.lang3.Validate.isTrue;
 
 public class VideoWriter {
-
-    private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
-    private static final SimpleDateFormat FILE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
 
     private final RenderOptions options;
     private final Process process;
@@ -56,8 +54,8 @@ public class VideoWriter {
         this.queueLimit = options.getWriterQueueSize();
         this.toWrite = new LinkedList<BufferedImage>();
 
-        File folder = ReplayFileIO.getRenderFolder();
-        String fileName = FILE_FORMAT.format(Calendar.getInstance().getTime());
+        File outputFolder = options.getOutputFile().getParentFile();
+        String fileName = options.getOutputFile().getName();
 
         final String args = options.getExportCommandArgs()
                     .replace("%WIDTH%", String.valueOf(options.getWidth()))
@@ -70,7 +68,7 @@ public class VideoWriter {
         command.add(options.getExportCommand());
         command.addAll(StringUtils.translateCommandline(args));
         System.out.println("Starting " + options.getExportCommand() + " with args: " + args);
-        process = new ProcessBuilder(command).directory(folder).start();
+        process = new ProcessBuilder(command).directory(outputFolder).start();
         OutputStream exportLogOut = new FileOutputStream("export.log");
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();

@@ -310,6 +310,7 @@ replaymod.gui.rendersettings.framerate=Video Framerate
 replaymod.gui.rendersettings.quality=Video Quality
 replaymod.gui.rendersettings.chromakey=Chroma Keying
 replaymod.gui.rendersettings.skycolor=Sky Color
+replaymod.gui.rendersettings.outputfile=Output File
 
 replaymod.gui.rendersettings.command=Command
 replaymod.gui.rendersettings.arguments=Command Line Arguments

@@ -82,6 +82,7 @@ public class GuiConstants {
     public static final int RENDER_SETTINGS_ADVANCED_BUTTON = 9013;
     public static final int RENDER_SETTINGS_COLOR_PICKER = 9014;
     public static final int RENDER_SETTINGS_ENABLE_GREENSCREEN = 9015;
+    public static final int RENDER_SETTINGS_OUTPUT_CHOOSER = 9016;
 
     public static final int REPLAY_SETTINGS_RECORDSERVER_ID = 9004;
     public static final int REPLAY_SETTINGS_RECORDSP_ID = 9005;

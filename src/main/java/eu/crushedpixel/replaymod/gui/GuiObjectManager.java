@@ -155,7 +155,7 @@ public class GuiObjectManager extends GuiScreen {
 
                         Position defaultPosition = new Position(mc.getRenderViewEntity().getPosition());
                         customImageObject.getTransformations().setDefaultPosition(defaultPosition);
-                        
+
                         objectList.addElement(customImageObject);
                     } catch(IOException e) {
                         e.printStackTrace();

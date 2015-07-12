@@ -1,16 +1,24 @@
 package eu.crushedpixel.replaymod.settings;
 
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
 import lombok.Data;
 import net.minecraft.client.Minecraft;
 
-import static org.apache.commons.lang3.Validate.*;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notNull;
 
 @Data
 public final class RenderOptions {
     private FrameRenderer renderer;
     private String bitrate = "10M";
     private int fps = 30;
+
+    private File outputFile;
 
     // Advanced
     private boolean waitForChunks = true;
@@ -23,7 +31,7 @@ public final class RenderOptions {
     private String exportCommand = "ffmpeg";
     private String exportCommandArgs = "-f rawvideo -pix_fmt argb -s %WIDTH%x%HEIGHT% -r %FPS% -i - " +
             "-an " +
-            "-c:v libvpx -b:v %BITRATE% %FILENAME%.webm";
+            "-c:v libvpx -b:v %BITRATE% %FILENAME%";
     private int writerQueueSize = Integer.parseInt(System.getProperty("replaymod.render.writerQueueSize", "1"));
 
     public void setRenderer(FrameRenderer renderer) {
