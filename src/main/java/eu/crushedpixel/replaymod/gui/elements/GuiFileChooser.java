@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui.elements;
 import eu.crushedpixel.replaymod.gui.elements.listeners.FileChooseListener;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.io.FilenameUtils;
 
 import java.awt.*;
 import java.io.File;
@@ -21,6 +22,7 @@ public class GuiFileChooser extends GuiAdvancedButton {
     }
 
     protected String baseString;
+    private boolean save = false;
 
     @Setter
     private String[] allowedExtensions = null;
@@ -28,8 +30,13 @@ public class GuiFileChooser extends GuiAdvancedButton {
     private List<FileChooseListener> listeners = new ArrayList<FileChooseListener>();
 
     public GuiFileChooser(int buttonId, int x, int y, String buttonText, File selectedFile, String[] allowedExtensions) {
+        this(buttonId, x, y, buttonText, selectedFile, allowedExtensions, false);
+    }
+
+    public GuiFileChooser(int buttonId, int x, int y, String buttonText, File selectedFile, String[] allowedExtensions, boolean save) {
         super(buttonId, x, y, buttonText);
         this.selectedFile = selectedFile;
+        this.save = save;
 
         this.baseString = buttonText;
         updateDisplayString();
@@ -53,13 +60,18 @@ public class GuiFileChooser extends GuiAdvancedButton {
                 Frame frame = new Frame();
                 FileDialog fileDialog = new FileDialog(frame);
 
+                fileDialog.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
+
+                fileDialog.setDirectory(selectedFile.getParentFile().getAbsolutePath());
+                fileDialog.setFile(selectedFile.getName());
+
                 fileDialog.setFilenameFilter(new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
                         if(allowedExtensions == null) return true;
                         for(String extension : allowedExtensions) {
                             String[] split = name.split("\\.");
-                            String ext = split[split.length-1];
+                            String ext = split[split.length - 1];
                             if(extension.equalsIgnoreCase(ext)) return true;
                         }
 
@@ -67,10 +79,14 @@ public class GuiFileChooser extends GuiAdvancedButton {
                     }
                 });
 
-                //frame.setVisible(true);
+
                 fileDialog.setVisible(true);
 
                 String filename = fileDialog.getFile();
+                if(filename != null && FilenameUtils.getExtension(filename).isEmpty() && allowedExtensions.length > 0) {
+                    filename += "."+allowedExtensions[0];
+                }
+
                 String directory = fileDialog.getDirectory();
                 if(filename != null) {
                     selectedFile = new File(directory, filename);
