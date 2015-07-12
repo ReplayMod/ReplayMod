@@ -11,6 +11,7 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
@@ -33,6 +34,9 @@ public class ReplayProcess {
     private static double previousReplaySpeed = 0;
 
     private static boolean calculated = false;
+
+    @Getter
+    private static VideoRenderer videoRenderer = null;
 
     private static boolean isVideoRecording = false;
     private static boolean blocked = false;
@@ -100,7 +104,7 @@ public class ReplayProcess {
             boolean success = false;
             try {
                 isVideoRecording = true;
-                VideoRenderer videoRenderer = new VideoRenderer(renderOptions);
+                videoRenderer = new VideoRenderer(renderOptions);
                 success = videoRenderer.renderVideo();
             } catch (IOException e) {
                 e.printStackTrace();

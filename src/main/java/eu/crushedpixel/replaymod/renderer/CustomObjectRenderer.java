@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.gui.GuiObjectManager;
 import eu.crushedpixel.replaymod.holders.Position;
 import eu.crushedpixel.replaymod.holders.Transformation;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -71,7 +72,9 @@ public class CustomObjectRenderer {
 
         int renderTimestamp;
         if(mc.currentScreen instanceof GuiObjectManager) {
-            renderTimestamp = ((GuiObjectManager)mc.currentScreen).getObjectKeyframeTimeline().cursorPosition;
+            renderTimestamp = ((GuiObjectManager) mc.currentScreen).getObjectKeyframeTimeline().cursorPosition;
+        } else if(ReplayProcess.isVideoRecording()) {
+            renderTimestamp = ReplayProcess.getVideoRenderer().getVideoTime();
         } else {
             renderTimestamp = ReplayHandler.getRealTimelineCursor();
         }

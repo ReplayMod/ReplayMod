@@ -422,6 +422,8 @@ public class VideoRenderer {
         return totalFrames;
     }
 
+    public int getVideoTime() { return framesDone * 1000 / fps; }
+
     public FrameRenderer getFrameRenderer() {
         return frameRenderer;
     }
