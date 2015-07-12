@@ -26,7 +26,6 @@ import org.lwjgl.util.Point;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -363,7 +362,7 @@ public class GuiObjectManager extends GuiScreen {
     }
 
     private void saveOnQuit() {
-        ArrayList<CustomImageObject> objects = objectList.getCopyOfElements();
+        List<CustomImageObject> objects = objectList.getCopyOfElements();
         ReplayHandler.setCustomImageObjects(objects);
 
         if(objects.size() > 0) {

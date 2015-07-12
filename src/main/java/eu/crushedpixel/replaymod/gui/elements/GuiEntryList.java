@@ -150,7 +150,7 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiAdvancedTextFi
         fireSelectionChangeEvent();
     }
 
-    public ArrayList<T> getCopyOfElements() {
+    public List<T> getCopyOfElements() {
         return new ArrayList<T>(elements);
     }
 

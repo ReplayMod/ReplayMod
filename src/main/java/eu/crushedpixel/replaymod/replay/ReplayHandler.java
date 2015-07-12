@@ -617,8 +617,8 @@ public class ReplayHandler {
         customImageObjects.getObjects().add(object);
     }
 
-    public static void setCustomImageObjects(ArrayList<CustomImageObject> objects) {
-        customImageObjects.setObjects(objects);
+    public static void setCustomImageObjects(List<CustomImageObject> objects) {
+        customImageObjects.setObjects(new ArrayList<CustomImageObject>(objects));
     }
 
     public static void fireKeyframesModifyEvent() {
