@@ -25,6 +25,6 @@ package de.johni0702.minecraft.gui.function;
 import org.lwjgl.util.ReadablePoint;
 
 public interface Draggable extends Clickable {
-    void mouseDrag(ReadablePoint position, int button, long timeSinceLastCall);
-    void mouseRelease(ReadablePoint position, int button);
+    boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall);
+    boolean mouseRelease(ReadablePoint position, int button);
 }

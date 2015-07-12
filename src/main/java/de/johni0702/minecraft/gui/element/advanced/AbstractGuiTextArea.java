@@ -394,7 +394,7 @@ public abstract class AbstractGuiTextArea<T extends AbstractGuiTextArea<T>>
     }
 
     @Override
-    public void mouseClick(ReadablePoint position, int button) {
+    public boolean mouseClick(ReadablePoint position, int button) {
         if (getContainer() != null) {
             getContainer().convertFor(this, (Point) (position = new Point(position)));
         }
@@ -414,6 +414,7 @@ public abstract class AbstractGuiTextArea<T extends AbstractGuiTextArea<T>>
         }
 
         setFocused(hovering);
+        return hovering;
     }
 
     protected boolean isMouseHovering(ReadablePoint pos) {

@@ -42,7 +42,7 @@ public abstract class AbstractGuiClickable<T extends AbstractGuiClickable<T>> ex
     }
 
     @Override
-    public void mouseClick(ReadablePoint position, int button) {
+    public boolean mouseClick(ReadablePoint position, int button) {
         Point pos = new Point(position);
         if (getContainer() != null) {
             getContainer().convertFor(this, pos);
@@ -50,7 +50,9 @@ public abstract class AbstractGuiClickable<T extends AbstractGuiClickable<T>> ex
 
         if (isMouseHovering(pos) && isEnabled()) {
             onClick();
+            return true;
         }
+        return false;
     }
 
     protected boolean isMouseHovering(ReadablePoint pos) {

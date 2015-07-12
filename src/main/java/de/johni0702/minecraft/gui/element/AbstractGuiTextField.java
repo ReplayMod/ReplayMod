@@ -92,8 +92,9 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     }
 
     @Override
-    public void mouseClick(ReadablePoint position, int button) {
+    public boolean mouseClick(ReadablePoint position, int button) {
         wrapped.mouseClicked(position.getX(), position.getY(), button);
+        return false;
     }
 
     @Override

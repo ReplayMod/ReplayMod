@@ -25,5 +25,5 @@ package de.johni0702.minecraft.gui.function;
 import org.lwjgl.util.ReadablePoint;
 
 public interface Clickable {
-    void mouseClick(ReadablePoint position, int button);
+    boolean mouseClick(ReadablePoint position, int button);
 }
