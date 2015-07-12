@@ -33,18 +33,21 @@ public class CustomObjectRenderer {
         GlStateManager.pushAttrib();
         GlStateManager.pushMatrix();
 
+        GlStateManager.enableTexture2D();
         GlStateManager.disableLighting();
-        GlStateManager.enableBlend();
+        //GlStateManager.disableAlpha();
+        GlStateManager.enableAlpha();
+        GlStateManager.enableDepth();
 
-        GlStateManager.disableTexture2D();
+        GlStateManager.disableDepth();
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
             drawCustomImageObject(dX, dY, dZ, object);
         }
 
-        GlStateManager.enableTexture2D();
         GlStateManager.enableLighting();
-
         GlStateManager.disableBlend();
         GlStateManager.popAttrib();
         GlStateManager.popMatrix();
@@ -58,12 +61,6 @@ public class CustomObjectRenderer {
                 || resourceLocation == null) return;
 
         GlStateManager.pushMatrix();
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableLighting();
-        GlStateManager.disableLighting();
-        GlStateManager.enableAlpha();
-
-        GlStateManager.disableBlend();
 
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer renderer = tessellator.getWorldRenderer();
@@ -93,12 +90,9 @@ public class CustomObjectRenderer {
 
         GlStateManager.translate(x, y + 1.4, z);
 
-        GlStateManager.rotate((float)-objectOrientation.getX(), 0, 1, 0);
-        GlStateManager.rotate((float)objectOrientation.getY(), 0, 0, 1);
+        GlStateManager.rotate((float) -objectOrientation.getX(), 0, 1, 0);
+        GlStateManager.rotate((float) objectOrientation.getY(), 0, 0, 1);
         GlStateManager.rotate((float) objectOrientation.getZ(), 1, 0, 0);
-
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         float opacity = (float)transformation.getOpacity() / 100;
         GlStateManager.color(1, 1, 1, opacity);
@@ -126,9 +120,6 @@ public class CustomObjectRenderer {
         tessellator.draw();
         renderer.setTranslation(0, 0, 0);
 
-        GlStateManager.disableAlpha();
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableLighting();
         GlStateManager.popMatrix();
     }
 }

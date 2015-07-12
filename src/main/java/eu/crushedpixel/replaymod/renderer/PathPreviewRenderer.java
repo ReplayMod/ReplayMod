@@ -45,9 +45,8 @@ public class PathPreviewRenderer {
         GlStateManager.pushMatrix();
 
         GlStateManager.disableLighting();
-        GlStateManager.enableBlend();
-
         GlStateManager.disableTexture2D();
+        GlStateManager.enableBlend();
 
         if(keyframes.size() > 1) {
 
@@ -83,15 +82,19 @@ public class PathPreviewRenderer {
         List<Keyframe<AdvancedPosition>> distanceSorted = new ArrayList<Keyframe<AdvancedPosition>>(keyframes);
         Collections.sort(distanceSorted, distanceComparator);
 
+        GlStateManager.enableTexture2D();
+        GlStateManager.blendFunc(GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR);
+        GlStateManager.disableDepth();
 
         for(Keyframe<AdvancedPosition> kf : distanceSorted) {
             drawPoint(doubleX, doubleY, doubleZ, kf);
         }
 
-        GlStateManager.enableTexture2D();
+        GlStateManager.disableAlpha();
+        GlStateManager.disableTexture2D();
+        GlStateManager.disableBlend();
         GlStateManager.enableLighting();
 
-        GlStateManager.disableBlend();
         GlStateManager.popAttrib();
         GlStateManager.popMatrix();
     }
@@ -136,7 +139,7 @@ public class PathPreviewRenderer {
 
         renderer.startDrawing(1);
 
-        renderer.setColorRGBA_I(color, 50);
+        renderer.setColorRGBA_I(color, 255);
 
         renderer.addVertex(pos2.getX() - pos1.getX(), pos2.getY() - pos1.getY(), pos2.getZ() - pos1.getZ());
         renderer.addVertex(0, 0, 0);
@@ -147,12 +150,6 @@ public class PathPreviewRenderer {
 
     private void drawPoint(double playerX, double playerY, double playerZ, Keyframe<AdvancedPosition> kf) {
         GlStateManager.pushMatrix();
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableLighting();
-        GlStateManager.disableLighting();
-        GlStateManager.enableAlpha();
-
-        GlStateManager.enableBlend();
 
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer renderer = tessellator.getWorldRenderer();
@@ -174,8 +171,6 @@ public class PathPreviewRenderer {
 
         GlStateManager.rotate(-yaw, 0, 1, 0);
         GlStateManager.rotate(pitch, 1, 0, 0);
-
-        renderer.setColorRGBA_F(1, 1, 1, 0.5f);
 
         renderer.startDrawingQuads();
 
@@ -205,10 +200,6 @@ public class PathPreviewRenderer {
         tessellator.draw();
         renderer.setTranslation(0, 0, 0);
 
-        GlStateManager.disableAlpha();
-        GlStateManager.disableTexture2D();
-        GlStateManager.disableBlend();
-        GlStateManager.enableLighting();
         GlStateManager.popMatrix();
     }
 }
