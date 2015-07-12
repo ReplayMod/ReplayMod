@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.minecraft.util.BlockPos;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +18,12 @@ public class Position implements KeyframeValue {
     @Override
     public Position newInstance() {
         return new Position();
+    }
+
+    public Position(BlockPos pos) {
+        this.x = pos.getX();
+        this.y = pos.getY();
+        this.z = pos.getZ();
     }
 
 }
