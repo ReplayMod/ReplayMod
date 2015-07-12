@@ -152,6 +152,10 @@ public class GuiObjectManager extends GuiScreen {
                 public void run() {
                     try {
                         CustomImageObject customImageObject = new CustomImageObject(I18n.format("replaymod.gui.objects.defaultname"), null);
+
+                        Position defaultPosition = new Position(mc.getRenderViewEntity().getPosition());
+                        customImageObject.getTransformations().setDefaultPosition(defaultPosition);
+                        
                         objectList.addElement(customImageObject);
                     } catch(IOException e) {
                         e.printStackTrace();
