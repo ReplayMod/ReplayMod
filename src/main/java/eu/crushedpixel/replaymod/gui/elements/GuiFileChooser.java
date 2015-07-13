@@ -3,11 +3,10 @@ package eu.crushedpixel.replaymod.gui.elements;
 import eu.crushedpixel.replaymod.gui.elements.listeners.FileChooseListener;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.io.FilenameUtils;
 
-import java.awt.*;
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,41 +56,31 @@ public class GuiFileChooser extends GuiAdvancedButton {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Frame frame = new Frame();
-                FileDialog fileDialog = new FileDialog(frame);
+                try {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
 
-                fileDialog.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
+                JFrame frame = new JFrame();
+
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileFilter(new FileNameExtensionFilter("Image Files", allowedExtensions));
 
                 if(selectedFile != null) {
-                    fileDialog.setDirectory(selectedFile.getParentFile().getAbsolutePath());
-                    fileDialog.setFile(selectedFile.getName());
+                    fileChooser.setCurrentDirectory(selectedFile.getParentFile());
+                    fileChooser.setSelectedFile(selectedFile);
                 }
 
-                fileDialog.setFilenameFilter(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        if(allowedExtensions == null) return true;
-                        for(String extension : allowedExtensions) {
-                            String[] split = name.split("\\.");
-                            String ext = split[split.length - 1];
-                            if(extension.equalsIgnoreCase(ext)) return true;
-                        }
+                fileChooser.setFileSelectionMode(save ? JFileChooser.SAVE_DIALOG : JFileChooser.OPEN_DIALOG);
+                fileChooser.setVisible(true);
+                fileChooser.grabFocus();
+                fileChooser.showOpenDialog(frame);
 
-                        return false;
-                    }
-                });
+                File file = fileChooser.getSelectedFile();
 
-
-                fileDialog.setVisible(true);
-
-                String filename = fileDialog.getFile();
-                if(filename != null && FilenameUtils.getExtension(filename).isEmpty() && allowedExtensions.length > 0) {
-                    filename += "."+allowedExtensions[0];
-                }
-
-                String directory = fileDialog.getDirectory();
-                if(filename != null) {
-                    selectedFile = new File(directory, filename);
+                if(file != null) {
+                    selectedFile = file;
 
                     updateDisplayString();
 
