@@ -1,7 +1,8 @@
-package eu.crushedpixel.replaymod.events.handlers;
+package eu.crushedpixel.replaymod.events.handlers.keyboard;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity.MoveDirection;
+import eu.crushedpixel.replaymod.events.handlers.TickAndRenderListener;
 import eu.crushedpixel.replaymod.gui.GuiAssetManager;
 import eu.crushedpixel.replaymod.gui.GuiKeyframeRepository;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
@@ -120,6 +121,24 @@ public class KeyInputHandler {
             handleCustomKeybindings(kb, found, -1);
             found = true;
         }
+
+        if(!ReplayHandler.isInReplay() || (mc.currentScreen != null && !(mc.currentScreen instanceof GuiMouseInput))) return;
+
+        for(StaticKeybinding staticKeybinding : KeybindRegistry.staticKeybindings) {
+            if(!Keyboard.isKeyDown(staticKeybinding.getKeyCode())) {
+                staticKeybinding.setDown(false);
+                return;
+            }
+
+            if(staticKeybinding.isDown()) return;
+            staticKeybinding.setDown(true);
+
+            switch(staticKeybinding.getId()) {
+                case KeybindRegistry.STATIC_DELETE_KEYFRAME:
+                    if(ReplayHandler.getSelectedKeyframe() != null) ReplayHandler.removeKeyframe(ReplayHandler.getSelectedKeyframe());
+                    break;
+            }
+        }
     }
 
     private void forwardCameraMovement(boolean forward, boolean backward, boolean left, boolean right, boolean up, boolean down) {
@@ -154,12 +173,6 @@ public class KeyInputHandler {
         }
 
         if(!ReplayHandler.isInReplay() || (mc.currentScreen != null && !(mc.currentScreen instanceof GuiMouseInput))) return;
-
-        if(kb.getKeyCode() == Keyboard.KEY_DELETE) {
-            if(ReplayHandler.getSelectedKeyframe() != null) {
-
-            }
-        }
 
         if(kb.getKeyDescription().equals("key.chat") && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
             mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));

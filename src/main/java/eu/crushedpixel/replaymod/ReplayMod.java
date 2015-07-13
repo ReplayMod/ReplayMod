@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.api.ApiClient;
 import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.handlers.*;
+import eu.crushedpixel.replaymod.events.handlers.keyboard.KeyInputHandler;
 import eu.crushedpixel.replaymod.gui.online.GuiReplayDownloading;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;

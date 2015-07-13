@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.registry;
 
+import eu.crushedpixel.replaymod.events.handlers.keyboard.StaticKeybinding;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
@@ -57,4 +58,8 @@ public class KeybindRegistry {
         }
         return null;
     }
+
+    public static final int STATIC_DELETE_KEYFRAME = 0;
+
+    public static final StaticKeybinding[] staticKeybindings = new StaticKeybinding[]{new StaticKeybinding(STATIC_DELETE_KEYFRAME, Keyboard.KEY_DELETE)};
 }

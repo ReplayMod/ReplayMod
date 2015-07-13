@@ -227,7 +227,7 @@ public class ReplayHandler {
     }
 
     public static void toggleMarker() {
-        if(selectedKeyframe.getValue() instanceof Marker) markerKeyframes.remove(selectedKeyframe);
+        if(selectedKeyframe != null && selectedKeyframe.getValue() instanceof Marker) markerKeyframes.remove(selectedKeyframe);
         else {
             AdvancedPosition pos = new AdvancedPosition(mc.getRenderViewEntity(), false);
             int timestamp = ReplayMod.replaySender.currentTimeStamp();
@@ -281,6 +281,8 @@ public class ReplayHandler {
             positionKeyframes.remove(keyframe);
         } else if(keyframe.getValue() instanceof TimestampValue) {
             timeKeyframes.remove(keyframe);
+        } else if(keyframe.getValue() instanceof Marker) {
+            markerKeyframes.remove(keyframe);
         }
 
         if(keyframe == selectedKeyframe) {
