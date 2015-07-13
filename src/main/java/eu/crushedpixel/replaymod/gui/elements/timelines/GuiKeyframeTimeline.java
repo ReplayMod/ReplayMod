@@ -146,7 +146,42 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                     int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
                     int nextX = getKeyframeX(nextSpectatorKeyframeRealTime, leftTime, bodyWidth, segmentLength);
 
-                    drawGradientRect(Math.max(keyframeX + 2, positionX+BORDER_LEFT), positionY + BORDER_TOP + 1, Math.min(nextX - 2, positionX+width-BORDER_RIGHT+1), positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
+                    drawGradientRect(Math.max(keyframeX + 2, positionX+BORDER_LEFT), positionY + BORDER_TOP + 1, Math.min(nextX - 2, positionX+width-BORDER_RIGHT+1),
+                            positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
+                }
+            }
+        }
+
+        //iterate over time keyframes to find negative replay speeds
+        if(timeKeyframes) {
+            ListIterator<Keyframe<TimestampValue>> iterator = ReplayHandler.getTimeKeyframes().listIterator();
+            while(iterator.hasNext()) {
+                Keyframe<TimestampValue> kf = iterator.next();
+
+                int i = iterator.nextIndex();
+                int nextTimeKeyframeRealTime = -1;
+
+                while(iterator.hasNext()) {
+                    Keyframe<TimestampValue> kf2 = iterator.next();
+                    if(kf.getValue().asInt() > kf2.getValue().asInt()) {
+                        nextTimeKeyframeRealTime = kf2.getRealTimestamp();
+                    }
+                    break;
+                }
+
+                int i2 = iterator.previousIndex();
+
+                while(i2 >= i) {
+                    iterator.previous();
+                    i2--;
+                }
+
+                if(nextTimeKeyframeRealTime != -1) {
+                    int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
+                    int nextX = getKeyframeX(nextTimeKeyframeRealTime, leftTime, bodyWidth, segmentLength);
+
+                    drawGradientRect(Math.max(keyframeX + 2, positionX+BORDER_LEFT), positionY + BORDER_TOP + 6, Math.min(nextX - 2, positionX+width-BORDER_RIGHT+1),
+                            positionY + BORDER_TOP + 9, 0xFFFF0000, 0xFFFF0000);
                 }
             }
         }
