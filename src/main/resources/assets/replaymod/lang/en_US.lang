@@ -42,6 +42,7 @@ replaymod.chat.addedmarker=Event Marker has been added
 
 #Chat messages displayed in Replay Viewer
 replaymod.chat.morekeyframes=At least 2 position keyframes and 1 time keyframe required
+replaymod.chat.negativetime=Camera Paths can't play time backwards. Please consult your nearest time lord for assistance.
 replaymod.chat.pathstarted=Camera Path started
 replaymod.chat.pathfinished=Camera Path finished
 replaymod.chat.pathinterrupted=Camera Path canceled

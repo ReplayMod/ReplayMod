@@ -10,6 +10,7 @@ import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
+import eu.crushedpixel.replaymod.utils.CameraPathValidator;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -78,9 +79,10 @@ public class ReplayProcess {
 
         ReplayMod.chatMessageHandler.initialize();
 
-        //if not enough keyframes, abort and leave chat message
-        if(ReplayHandler.getPositionKeyframes().size() < 2 || ReplayHandler.getTimeKeyframes().size() < 1) {
-            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.morekeyframes", ChatMessageType.WARNING);
+        try {
+            CameraPathValidator.validateCameraPath(ReplayHandler.getPositionKeyframes(), ReplayHandler.getTimeKeyframes());
+        } catch(CameraPathValidator.InvalidCameraPathException e) {
+            e.printToChat();
             return;
         }
 

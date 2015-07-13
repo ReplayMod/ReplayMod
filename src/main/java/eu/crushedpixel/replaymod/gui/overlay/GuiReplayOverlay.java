@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.gui.overlay;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.gui.GuiMouseInput;
 import eu.crushedpixel.replaymod.gui.GuiRenderSettings;
@@ -9,11 +8,12 @@ import eu.crushedpixel.replaymod.gui.GuiReplaySpeedSlider;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.timelines.GuiKeyframeTimeline;
 import eu.crushedpixel.replaymod.gui.elements.timelines.GuiMarkerTimeline;
-import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
+import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.utils.CameraPathValidator;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
@@ -98,12 +98,14 @@ public class GuiReplayOverlay extends Gui {
     private final GuiElement buttonExport = texturedButton(BUTTON_EXPORT_X, BOTTOM_ROW, 40, 0, 20, new Runnable() {
         @Override
         public void run() {
-            //if not enough keyframes, abort and leave chat message
-            if(ReplayHandler.getPositionKeyframes().size() < 2 || ReplayHandler.getTimeKeyframes().size() < 1) {
-                ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.morekeyframes", ChatMessageHandler.ChatMessageType.WARNING);
-            } else {
-                mc.displayGuiScreen(new GuiRenderSettings());
+            try {
+                CameraPathValidator.validateCameraPath(ReplayHandler.getPositionKeyframes(), ReplayHandler.getTimeKeyframes());
+            } catch(CameraPathValidator.InvalidCameraPathException e) {
+                e.printToChat();
+                return;
             }
+            mc.displayGuiScreen(new GuiRenderSettings());
+
         }
     }, "replaymod.gui.ingame.menu.renderpath");
 

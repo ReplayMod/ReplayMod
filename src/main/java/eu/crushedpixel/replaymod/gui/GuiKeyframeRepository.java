@@ -7,6 +7,7 @@ import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.utils.CameraPathValidator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -135,10 +136,15 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
                 Keyframe[] keyframes = kfs.toArray(new Keyframe[ReplayHandler.getAllKeyframes().size()]);
                 KeyframeSet newSet = new KeyframeSet(I18n.format("replaymod.gui.keyframerepository.preset.defaultname"), keyframes);
-                if(newSet.getPositionKeyframeCount() < 2 || newSet.getTimeKeyframeCount() < 1) {
-                    message = I18n.format("replaymod.chat.morekeyframes");
+
+                try {
+                    CameraPathValidator.validateCameraPath(ReplayHandler.getPositionKeyframes(), ReplayHandler.getTimeKeyframes());
+                } catch(CameraPathValidator.InvalidCameraPathException e) {
+                    message = e.getLocalizedMessage();
                     break;
-                } else if(keyframeSetList.getCopyOfElements().contains(newSet)) {
+                }
+
+                if(keyframeSetList.getCopyOfElements().contains(newSet)) {
                     message = I18n.format("replaymod.gui.keyframerepository.duplicate");
                     break;
                 }
