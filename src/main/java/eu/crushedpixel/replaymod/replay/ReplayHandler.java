@@ -95,7 +95,7 @@ public class ReplayHandler {
         }
     }
 
-    public static KeyframeList<Marker> getMarkers() {
+    public static KeyframeList<Marker> getMarkerKeyframes() {
         return markerKeyframes;
     }
 
@@ -291,54 +291,6 @@ public class ReplayHandler {
         fireKeyframesModifyEvent();
     }
 
-    public static Keyframe<Marker> getClosestMarkerForRealTime(int realTime, int tolerance) {
-        List<Keyframe<Marker>> found = new ArrayList<Keyframe<Marker>>();
-        for(Keyframe<Marker> kf : markerKeyframes) {
-            if(Math.abs(kf.getRealTimestamp() - realTime) <= tolerance) {
-                found.add(kf);
-            }
-        }
-
-        Keyframe<Marker> closest = null;
-
-        for(Keyframe<Marker> kf : found) {
-            if(closest == null || Math.abs(closest.getRealTimestamp() - realTime) > Math.abs(kf.getRealTimestamp() - realTime)) {
-                closest = kf;
-            }
-        }
-        return closest;
-    }
-
-    public static Keyframe<Marker> getPreviousMarkerKeyframe(int realTime) {
-        if(markerKeyframes.isEmpty()) return null;
-        Keyframe<Marker> backup = null;
-        List<Keyframe<Marker>> found = new ArrayList<Keyframe<Marker>>();
-        for(Keyframe<Marker> kf : markerKeyframes) {
-            if(kf.getRealTimestamp() < realTime) {
-                found.add((Keyframe<Marker>)kf);
-            } else if(kf.getRealTimestamp() == realTime) {
-                backup = (Keyframe<Marker>)kf;
-            }
-        }
-
-        if(found.size() > 0)
-            return found.get(found.size() - 1); //last element is nearest
-        else return backup;
-    }
-
-    public static Keyframe<Marker> getNextMarkerKeyframe(int realTime) {
-        if(markerKeyframes.isEmpty()) return null;
-        Keyframe<Marker> backup = null;
-        for(Keyframe<Marker> kf : markerKeyframes) {
-            if(kf.getRealTimestamp() > realTime) {
-                return kf; //first found element is next
-            } else if(kf.getRealTimestamp() == realTime) {
-                backup = kf;
-            }
-        }
-        return backup;
-    }
-
     public static KeyframeList<AdvancedPosition> getPositionKeyframes() {
         return positionKeyframes;
     }
@@ -388,8 +340,8 @@ public class ReplayHandler {
         selectedKeyframe = kf;
     }
 
-    public static boolean isSelected(Keyframe<Marker> kf) {
-        return kf == selectedMarkerKeyframe || kf == selectedMarkerKeyframe;
+    public static boolean isSelected(Keyframe kf) {
+        return kf == selectedKeyframe || kf == selectedMarkerKeyframe;
     }
 
     public static void selectMarkerKeyframe(Keyframe<Marker> kf) { selectedMarkerKeyframe = kf; }
@@ -521,7 +473,7 @@ public class ReplayHandler {
                 //only if Marker keyframes changed, rewrite them
                 if(!initialMarkers.equals(markerKeyframes)) {
                     File markerFile = File.createTempFile(ReplayFile.ENTRY_MARKERS, "json");
-                    ReplayFileIO.write(getMarkers(), markerFile);
+                    ReplayFileIO.write(getMarkerKeyframes(), markerFile);
                     ReplayMod.replayFileAppender.registerModifiedFile(markerFile, ReplayFile.ENTRY_MARKERS, ReplayHandler.getReplayFile());
                 }
             } catch (IOException e) {

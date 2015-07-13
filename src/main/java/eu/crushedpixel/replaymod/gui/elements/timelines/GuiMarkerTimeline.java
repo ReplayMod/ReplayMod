@@ -40,7 +40,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
 
             Keyframe<Marker> closest = null;
             if(mouseY >= positionY + BORDER_TOP + 10) {
-                closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
+                closest = ReplayHandler.getMarkerKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
             }
 
             ReplayHandler.selectMarkerKeyframe(closest);
@@ -75,7 +75,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
 
             Keyframe<Marker> closest = null;
             if(mouseY >= positionY + BORDER_TOP + 10) {
-                closest = ReplayHandler.getClosestMarkerForRealTime((int) time, tolerance);
+                closest = ReplayHandler.getMarkerKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
             }
 
             if(closest != null) {
@@ -125,7 +125,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
         drawTimelineCursor(leftTime, rightTime, bodyWidth);
 
         //Draw Keyframe logos
-        for(Keyframe<Marker> kf : ReplayHandler.getMarkers()) {
+        for(Keyframe<Marker> kf : ReplayHandler.getMarkerKeyframes()) {
             if (kf != null && !kf.equals(ReplayHandler.getSelectedMarkerKeyframe()))
                 drawKeyframe(kf, bodyWidth, leftTime, rightTime, segmentLength);
         }
@@ -150,7 +150,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
         long leftTime = Math.round(timeStart * timelineLength);
         double segmentLength = timelineLength * zoom;
 
-        for(Keyframe<Marker> marker : ReplayHandler.getMarkers()) {
+        for(Keyframe<Marker> marker : ReplayHandler.getMarkerKeyframes()) {
             int keyframeX = getKeyframeX(marker.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
 
             if(MouseUtils.isMouseWithinBounds(keyframeX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {

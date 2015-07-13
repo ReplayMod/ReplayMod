@@ -1,11 +1,10 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 
 import java.awt.*;
 
-public class GuiArrowButton extends GuiButton {
+public class GuiArrowButton extends GuiAdvancedButton {
 
     public enum Direction {
         UP, DOWN, RIGHT, LEFT

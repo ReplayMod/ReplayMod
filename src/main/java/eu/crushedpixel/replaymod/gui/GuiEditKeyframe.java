@@ -1,16 +1,14 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.gui.elements.GuiAdvancedTextField;
-import eu.crushedpixel.replaymod.gui.elements.GuiArrowButton;
-import eu.crushedpixel.replaymod.gui.elements.GuiDraggingNumberInput;
-import eu.crushedpixel.replaymod.gui.elements.GuiNumberInput;
+import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.RoundUtils;
 import eu.crushedpixel.replaymod.utils.TimestampUtils;
 import net.minecraft.client.gui.GuiButton;
@@ -18,17 +16,17 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.Point;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GuiEditKeyframe extends GuiScreen {
 
     private boolean initialized = false;
 
-    private GuiButton saveButton, cancelButton;
+    private GuiAdvancedButton saveButton, cancelButton;
     private GuiArrowButton leftButton, rightButton;
 
     private GuiNumberInput xCoord, yCoord, zCoord, pitch, yaw, roll;
@@ -36,8 +34,8 @@ public class GuiEditKeyframe extends GuiScreen {
 
     private GuiAdvancedTextField markerNameInput;
 
-    private List<GuiTextField> inputs = new ArrayList<GuiTextField>();
-    private List<GuiTextField> posInputs = new ArrayList<GuiTextField>();
+    private ComposedElement inputs;
+    private ComposedElement posInputs;
 
     private int virtualHeight = 200;
     private int virtualY;
@@ -66,7 +64,7 @@ public class GuiEditKeyframe extends GuiScreen {
 
         KeyframeList<AdvancedPosition> positionKeyframes = ReplayHandler.getPositionKeyframes();
         KeyframeList<TimestampValue> timeKeyframes = ReplayHandler.getTimeKeyframes();
-        KeyframeList<Marker> markerKeyframes = ReplayHandler.getMarkers();
+        KeyframeList<Marker> markerKeyframes = ReplayHandler.getMarkerKeyframes();
 
         if(posKeyframe) {
             previous = positionKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);
@@ -93,24 +91,50 @@ public class GuiEditKeyframe extends GuiScreen {
         virtualY = this.height - virtualHeight - 10;
 
         if(!initialized) {
-            saveButton = new GuiButton(GuiConstants.KEYFRAME_EDITOR_SAVE_BUTTON, 0, 0, 100, 20, I18n.format("replaymod.gui.save"));
-            cancelButton = new GuiButton(GuiConstants.KEYFRAME_EDITOR_CANCEL_BUTTON, 0, 0, 100, 20, I18n.format("replaymod.gui.cancel"));
+            saveButton = new GuiAdvancedButton(GuiConstants.KEYFRAME_EDITOR_SAVE_BUTTON, 0, 0, I18n.format("replaymod.gui.save")) {
+                @Override
+                public void performAction() {
+                    save = true;
+                    mc.displayGuiScreen(null);
+                }
+            };
 
-            leftButton = new GuiArrowButton(GuiConstants.KEYFRAME_EDITOR_LEFT_BUTTON, 0, 0, "", GuiArrowButton.Direction.LEFT);
-            rightButton = new GuiArrowButton(GuiConstants.KEYFRAME_EDITOR_RIGHT_BUTTON, 0, 0, "", GuiArrowButton.Direction.RIGHT);
+            cancelButton = new GuiAdvancedButton(GuiConstants.KEYFRAME_EDITOR_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.cancel")) {
+                @Override
+                public void performAction() {
+                    save = false;
+                    mc.displayGuiScreen(null);
+                }
+            };
+
+            leftButton = new GuiArrowButton(GuiConstants.KEYFRAME_EDITOR_LEFT_BUTTON, 0, 0, "", GuiArrowButton.Direction.LEFT) {
+                @Override
+                public void performAction() {
+                    save = true;
+                    mc.displayGuiScreen(new GuiEditKeyframe(previous));
+                }
+            };
+
+            rightButton = new GuiArrowButton(GuiConstants.KEYFRAME_EDITOR_RIGHT_BUTTON, 0, 0, "", GuiArrowButton.Direction.RIGHT){
+                @Override
+                public void performAction() {
+                    save = true;
+                    mc.displayGuiScreen(new GuiEditKeyframe(next));
+                }
+            };
+
+            saveButton.width = cancelButton.width = 100;
 
             leftButton.enabled = previous != null;
             rightButton.enabled = next != null;
 
             //Real Time Input
             int timestamp = keyframe.getRealTimestamp();
-            min = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, 9d, (double)TimestampUtils.getMinutesFromTimestamp(timestamp), false);
-            sec = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 25, 0d, 59d, (double)TimestampUtils.getSecondsFromTimestamp(timestamp), false);
-            ms = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 35, 0d, 999d, (double)TimestampUtils.getMillisecondsFromTimestamp(timestamp), false);
+            min = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, 9d, (double)TimestampUtils.getMinutesFromTimestamp(timestamp), false, "", 1);
+            sec = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 25, 0d, 59d, (double)TimestampUtils.getSecondsFromTimestamp(timestamp), false, "", 1);
+            ms = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 35, 0d, 999d, (double)TimestampUtils.getMillisecondsFromTimestamp(timestamp), false, "", 1);
 
-            inputs.add(min);
-            inputs.add(sec);
-            inputs.add(ms);
+            inputs = new ComposedElement(min, sec, ms, saveButton, cancelButton, leftButton, rightButton);
 
             //Position/Virtual Time Input
             if(posKeyframe) {
@@ -122,14 +146,8 @@ public class GuiEditKeyframe extends GuiScreen {
                 pitch = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, -180d, 180d, RoundUtils.round2Decimals(pos.getPitch()), true);
                 roll = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getRoll()), true);
 
-                posInputs.add(xCoord);
-                posInputs.add(yCoord);
-                posInputs.add(zCoord);
-                posInputs.add(yaw);
-                posInputs.add(pitch);
-                posInputs.add(roll);
-
-                inputs.addAll(posInputs);
+                posInputs = new ComposedElement(xCoord, yCoord, zCoord, yaw, pitch, roll);
+                inputs.addPart(posInputs);
             } else if(markerKeyframe) {
                 String name = ((Keyframe<Marker>)keyframe).getValue().getName();
                 if(name == null) name = "";
@@ -137,7 +155,7 @@ public class GuiEditKeyframe extends GuiScreen {
                 markerNameInput.hint = I18n.format("replaymod.gui.editkeyframe.markername");
                 markerNameInput.setText(name);
 
-                inputs.add(markerNameInput);
+                inputs.addPart(markerNameInput);
             }
         }
 
@@ -169,10 +187,13 @@ public class GuiEditKeyframe extends GuiScreen {
 
             int x = w + left + 5;
             int i = 0;
-            for(GuiTextField input : posInputs) {
-                input.xPosition = i < 3 ? x : left+totalWidth-100;
-                input.yPosition = i < 3 ? virtualY + 20 + i*30 : virtualY + 20 + (i-3)*30;
-                i++;
+            for(GuiElement input : posInputs.getParts()) {
+                if(input instanceof GuiTextField) {
+                    GuiTextField textField = (GuiTextField)input;
+                    textField.xPosition = i < 3 ? x : left+totalWidth-100;
+                    textField.yPosition = i < 3 ? virtualY + 20 + i*30 : virtualY + 20 + (i-3)*30;
+                    i++;
+                }
             }
         } else if(markerKeyframe) {
             markerNameInput.xPosition = width/2 - 100;
@@ -207,8 +228,8 @@ public class GuiEditKeyframe extends GuiScreen {
                 ReplayHandler.addKeyframe(keyframeBackup);
                 ReplayHandler.selectKeyframe(keyframeBackup);
             } else {
-                ReplayHandler.getMarkers().remove(keyframe);
-                ReplayHandler.getMarkers().add(keyframeBackup);
+                ReplayHandler.getMarkerKeyframes().remove(keyframe);
+                ReplayHandler.getMarkerKeyframes().add(keyframeBackup);
                 ReplayHandler.selectMarkerKeyframe(keyframeBackup);
             }
         } else {
@@ -227,9 +248,8 @@ public class GuiEditKeyframe extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        for(GuiTextField input : inputs) {
-            if(input != null) input.textboxKeyTyped(typedChar, keyCode);
-        }
+        Point mousePos = MouseUtils.getMousePos();
+        inputs.buttonPressed(mc, mousePos.getX(), mousePos.getY(), typedChar, keyCode);
 
         if(keyCode == Keyboard.KEY_ESCAPE) {
             save = false;
@@ -239,17 +259,25 @@ public class GuiEditKeyframe extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        for(GuiTextField input : inputs) {
-            if(input != null) input.mouseClicked(mouseX, mouseY, mouseButton);
-        }
+        inputs.mouseClick(mc, mouseX, mouseY, mouseButton);
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
+    protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
+        inputs.mouseDrag(mc, mouseX, mouseY, clickedMouseButton);
+        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+    }
+
+    @Override
+    protected void mouseReleased(int mouseX, int mouseY, int state) {
+        inputs.mouseRelease(mc, mouseX, mouseY, state);
+        super.mouseReleased(mouseX, mouseY, state);
+    }
+
+    @Override
     public void updateScreen() {
-        for(GuiTextField input : inputs) {
-            if(input != null) input.updateCursorCounter();
-        }
+        inputs.tick(mc);
     }
 
     @Override
@@ -271,28 +299,8 @@ public class GuiEditKeyframe extends GuiScreen {
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.camroll"), left+totalWidth-100-5-w2, virtualY + 87, Color.WHITE.getRGB());
         }
 
-        for(GuiTextField input : inputs) {
-            if(input != null) input.drawTextBox();
-        }
+        inputs.draw(mc, mouseX, mouseY);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button) throws IOException {
-        if(!button.enabled) return;
-        if(button.id == GuiConstants.KEYFRAME_EDITOR_SAVE_BUTTON) {
-            save = true;
-            mc.displayGuiScreen(null);
-        } else if(button.id == GuiConstants.KEYFRAME_EDITOR_CANCEL_BUTTON) {
-            save = false;
-            mc.displayGuiScreen(null);
-        } else if(button.id == GuiConstants.KEYFRAME_EDITOR_LEFT_BUTTON) {
-            save = false;
-            mc.displayGuiScreen(new GuiEditKeyframe(previous));
-        } else if(button.id == GuiConstants.KEYFRAME_EDITOR_RIGHT_BUTTON) {
-            save = false;
-            mc.displayGuiScreen(new GuiEditKeyframe(next));
-        }
     }
 }
