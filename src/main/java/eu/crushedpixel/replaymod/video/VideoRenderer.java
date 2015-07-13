@@ -3,8 +3,8 @@ package eu.crushedpixel.replaymod.video;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.gui.GuiVideoRenderer;
-import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
+import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.GenericLinearInterpolation;
 import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
@@ -324,7 +324,7 @@ public class VideoRenderer {
             replaySender.sendPacketsTill(replayTime);
         }
 
-        if(curSpeed > 0) {
+        if (curSpeed >= 0) {
             replaySender.setReplaySpeed(curSpeed);
         }
 
