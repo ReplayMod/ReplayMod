@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.utils;
 import com.google.common.base.Supplier;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import eu.crushedpixel.replaymod.assets.AssetRepository;
@@ -100,7 +101,11 @@ public class ReplayFile extends ZipFile {
                         return null;
                     }
                     BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(entry)));
-                    return new Gson().fromJson(reader, KeyframeSet[].class);
+
+                    GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(KeyframeSet[].class, new LegacyKeyframeSetAdapter());
+                    Gson gson = gsonBuilder.create();
+
+                    return gson.fromJson(reader, KeyframeSet[].class);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

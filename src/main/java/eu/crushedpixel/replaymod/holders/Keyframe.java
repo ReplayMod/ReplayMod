@@ -4,10 +4,12 @@ import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
 @EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor
 public class Keyframe<T extends KeyframeValue> {
 
     private int realTimestamp;

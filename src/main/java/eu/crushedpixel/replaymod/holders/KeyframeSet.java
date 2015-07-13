@@ -1,11 +1,13 @@
 package eu.crushedpixel.replaymod.holders;
 
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@NoArgsConstructor
 public class KeyframeSet implements GuiEntryListEntry {
     private String name;
     private Keyframe<AdvancedPosition>[] positionKeyframes;
