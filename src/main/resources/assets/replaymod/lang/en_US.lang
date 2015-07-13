@@ -286,6 +286,7 @@ replaymod.gui.editkeyframe.camyaw=Camera Yaw
 replaymod.gui.editkeyframe.camroll=Camera Roll
 replaymod.gui.editkeyframe.timelineposition=Timeline Position
 replaymod.gui.editkeyframe.markername=Event Marker Name
+replaymod.gui.editkeyframe.timestamp=Time Index
 
 #Render Settings GUI
 replaymod.gui.rendersettings.title=Rendering Options
