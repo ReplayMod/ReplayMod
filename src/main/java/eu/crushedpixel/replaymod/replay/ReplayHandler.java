@@ -314,7 +314,7 @@ public class ReplayHandler {
             mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
                 @Override
                 public void confirmClicked(boolean result, int id) {
-                    if(result) {
+                    if (result) {
                         resetKeyframes(resetMarkers);
                     }
 
@@ -392,7 +392,11 @@ public class ReplayHandler {
         KeyframeSet[] paths = currentReplayFile.paths().get();
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
 
-        KeyframeList<Marker> markerList = new KeyframeList<Marker>(currentReplayFile.markers().get());
+        List<Keyframe<Marker>> rawMarkerList = currentReplayFile.markers().get();
+        if (rawMarkerList == null) {
+            rawMarkerList = Collections.emptyList();
+        }
+        KeyframeList<Marker> markerList = new KeyframeList<Marker>(rawMarkerList);
         ReplayHandler.setMarkers(markerList, false);
         ReplayHandler.initialMarkers = markerList;
 
