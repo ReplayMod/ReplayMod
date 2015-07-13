@@ -72,6 +72,7 @@ public class GuiAssetManager extends GuiScreen {
                     assetGuiEntryList.removeElement(assetGuiEntryList.getSelectionIndex());
                 }
             };
+            removeButton.setElementEnabled(false);
 
             assetNameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 150, 20);
             assetNameInput.hint = I18n.format("replaymod.gui.assets.namehint");
@@ -108,6 +109,7 @@ public class GuiAssetManager extends GuiScreen {
                     inputElements.setElementEnabled(currentAsset != null);
 
                     assetNameInput.setText(currentAsset != null ? currentAsset.getDisplayString() : "");
+                    removeButton.setElementEnabled(currentAsset != null);
                     fileChooser.setAllowedExtensions(currentAsset != null ? AssetFileUtils.fileExtensionsForAssetClass(currentAsset.getClass()) : new String[0]);
                 }
             });
