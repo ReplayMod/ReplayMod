@@ -64,7 +64,7 @@ public abstract class AbstractGuiTooltip<T extends AbstractGuiTooltip<T>> extend
         FontRenderer fontRenderer = getMinecraft().fontRendererObj;
         int y = LINE_SPACING + 1;
         for (String line : text) {
-            renderer.drawString(LINE_SPACING + 1, y, color, line);
+            renderer.drawString(LINE_SPACING + 1, y, color, line, true);
             y += fontRenderer.FONT_HEIGHT + LINE_SPACING;
         }
     }

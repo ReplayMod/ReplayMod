@@ -58,4 +58,12 @@ public interface GuiRenderer {
 
     int drawCenteredString(int x, int y, ReadableColor color, String text);
 
+    int drawString(int x, int y, int color, String text, boolean shadow);
+
+    int drawString(int x, int y, ReadableColor color, String text, boolean shadow);
+
+    int drawCenteredString(int x, int y, int color, String text, boolean shadow);
+
+    int drawCenteredString(int x, int y, ReadableColor color, String text, boolean shadow);
+
 }

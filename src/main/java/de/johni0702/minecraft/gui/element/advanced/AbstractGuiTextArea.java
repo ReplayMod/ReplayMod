@@ -474,7 +474,7 @@ public abstract class AbstractGuiTextArea<T extends AbstractGuiTextArea<T>>
 
             // Draw line
             int posY = BORDER + i * lineHeight;
-            int lineEnd = renderer.drawString(BORDER, posY, textColor, line);
+            int lineEnd = renderer.drawString(BORDER, posY, textColor, line, true);
 
             // Draw selection
             int fromX = getSelectionFromX();
@@ -503,7 +503,7 @@ public abstract class AbstractGuiTextArea<T extends AbstractGuiTextArea<T>>
                 String beforeCursor = line.substring(0, cursorX - leftTrimmed);
                 int posX = BORDER + fontRenderer.getStringWidth(beforeCursor);
                 if (cursorX == text[lineY].length()) {
-                    renderer.drawString(posX, posY, CURSOR_COLOR, "_");
+                    renderer.drawString(posX, posY, CURSOR_COLOR, "_", true);
                 } else {
                     renderer.drawRect(posX, posY - 1, 1, 1 + fontRenderer.FONT_HEIGHT, CURSOR_COLOR);
                 }

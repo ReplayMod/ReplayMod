@@ -121,8 +121,7 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     @Override
     public int drawString(int x, int y, int color, String text) {
-        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
-        return fontRenderer.drawStringWithShadow(text, x, y, color);
+        return drawString(x, y, color, text, false);
     }
 
     @Override
@@ -132,13 +131,35 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     @Override
     public int drawCenteredString(int x, int y, int color, String text) {
-        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
-        return fontRenderer.drawStringWithShadow(text, x - fontRenderer.getStringWidth(text) / 2, y, color);
+        return drawCenteredString(x, y, color, text, false);
     }
 
     @Override
     public int drawCenteredString(int x, int y, ReadableColor color, String text) {
         return drawCenteredString(x, y, color(color), text);
+    }
+
+    @Override
+    public int drawString(int x, int y, int color, String text, boolean shadow) {
+        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
+        return shadow ? fontRenderer.drawStringWithShadow(text, x, y, color) : fontRenderer.drawString(text, x, y, color);
+    }
+
+    @Override
+    public int drawString(int x, int y, ReadableColor color, String text, boolean shadow) {
+        return drawString(x, y, color(color), text, shadow);
+    }
+
+    @Override
+    public int drawCenteredString(int x, int y, int color, String text, boolean shadow) {
+        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
+        x-=fontRenderer.getStringWidth(text) / 2;
+        return drawString(x, y, color, text, shadow);
+    }
+
+    @Override
+    public int drawCenteredString(int x, int y, ReadableColor color, String text, boolean shadow) {
+        return drawCenteredString(x, y, color(color), text, shadow);
     }
 
     private int color(ReadableColor color) {
