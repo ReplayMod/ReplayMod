@@ -85,9 +85,9 @@ public class ComposedElement implements GuiElement {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
         for(GuiElement part : parts) {
-            part.setEnabled(enabled);
+            part.setElementEnabled(enabled);
         }
     }
 

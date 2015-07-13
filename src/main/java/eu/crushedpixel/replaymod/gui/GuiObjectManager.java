@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.lwjgl.util.Point;
-
 public class GuiObjectManager extends GuiScreen {
 
     private boolean initialized = false;
@@ -99,9 +97,9 @@ public class GuiObjectManager extends GuiScreen {
             }
 
             @Override
-            public void setEnabled(boolean enabled) {
-                selected.setEnabled(enabled);
-                normal.setEnabled(enabled);
+            public void setElementEnabled(boolean enabled) {
+                selected.setElementEnabled(enabled);
+                normal.setElementEnabled(enabled);
             }
         };
     }
@@ -183,7 +181,7 @@ public class GuiObjectManager extends GuiScreen {
                 public void onSelectionChanged(int selectionIndex) {
                     CustomImageObject selectedObject = objectList.getElement(selectionIndex);
                     if(selectedObject != null) {
-                        disableElements.setEnabled(true);
+                        disableElements.setElementEnabled(true);
 
                         nameInput.setText(selectedObject.getName());
 
@@ -214,7 +212,7 @@ public class GuiObjectManager extends GuiScreen {
 
                         updateValuesForTransformation(objectKeyframeTimeline.getTransformations().getTransformationForTimestamp(objectKeyframeTimeline.cursorPosition));
                     } else {
-                        disableElements.setEnabled(false);
+                        disableElements.setElementEnabled(false);
                     }
                 }
             });

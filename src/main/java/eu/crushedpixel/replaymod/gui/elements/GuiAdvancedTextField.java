@@ -19,7 +19,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
     }
 
     @Override
-    public void setEnabled(boolean isEnabled) {
+    public void setElementEnabled(boolean isEnabled) {
         this.isEnabled = isEnabled;
         if(!isEnabled) setFocused(false);
         super.setEnabled(isEnabled);

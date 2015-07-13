@@ -75,7 +75,7 @@ public class GuiString extends Gui implements GuiElement {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 }

@@ -81,7 +81,7 @@ public class GuiAdvancedButton extends GuiButton implements GuiElement {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 

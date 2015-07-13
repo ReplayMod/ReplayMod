@@ -17,6 +17,6 @@ public interface GuiElement {
 
     void tick(Minecraft mc);
 
-    void setEnabled(boolean enabled);
+    void setElementEnabled(boolean enabled);
 
 }

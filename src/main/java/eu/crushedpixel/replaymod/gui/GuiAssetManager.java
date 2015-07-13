@@ -99,13 +99,13 @@ public class GuiAssetManager extends GuiScreen {
             inputElements = new ComposedElement(assetNameInput, fileChooser);
             composedElement = new ComposedElement(assetGuiEntryList, addButton, removeButton, inputElements);
 
-            inputElements.setEnabled(false);
+            inputElements.setElementEnabled(false);
 
             assetGuiEntryList.addSelectionListener(new SelectionListener() {
                 @Override
                 public void onSelectionChanged(int selectionIndex) {
                     currentAsset = assetGuiEntryList.getElement(selectionIndex);
-                    inputElements.setEnabled(currentAsset != null);
+                    inputElements.setElementEnabled(currentAsset != null);
 
                     assetNameInput.setText(currentAsset != null ? currentAsset.getDisplayString() : "");
                     fileChooser.setAllowedExtensions(currentAsset != null ? AssetFileUtils.fileExtensionsForAssetClass(currentAsset.getClass()) : new String[0]);

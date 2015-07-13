@@ -122,9 +122,9 @@ public class GuiRenderSettings extends GuiScreen {
 
             bitrateInput = new GuiNumberInputWithText(fontRendererObj, 0, 0, 50, 1D, null, 10000D, false, " kbps");
 
-            xRes.setEnabled(false);
-            yRes.setEnabled(false);
-            bitrateInput.setEnabled(true);
+            xRes.setElementEnabled(false);
+            yRes.setElementEnabled(false);
+            bitrateInput.setElementEnabled(true);
 
             framerateSlider = new GuiVideoFramerateSlider(GuiConstants.RENDER_SETTINGS_FRAMERATE_SLIDER, 0, 0, ReplayMod.replaySettings.getVideoFramerate(),
                     I18n.format("replaymod.gui.rendersettings.framerate"));
@@ -398,8 +398,8 @@ public class GuiRenderSettings extends GuiScreen {
                 ((GuiCheckBox)button).setIsChecked(!((GuiCheckBox)button).isChecked());
             if(button.id == GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX) {
                 boolean enabled = customResolution.isChecked();
-                xRes.setEnabled(enabled);
-                yRes.setEnabled(enabled);
+                xRes.setElementEnabled(enabled);
+                yRes.setElementEnabled(enabled);
             } else if(button.id == GuiConstants.RENDER_SETTINGS_OUTPUT_CHOOSER) {
                 Point mouse = MouseUtils.getMousePos();
                 outputFileChooser.mouseClick(mc, mouse.getX(), mouse.getY(), 0);

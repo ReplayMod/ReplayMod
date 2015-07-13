@@ -440,7 +440,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
         cancelUploadButton.enabled = true;
         backButton.enabled = false;
         category.enabled = false;
-        name.setEnabled(false);
+        name.setElementEnabled(false);
         description.enabled = false;
         messageTextField.setText(I18n.format("replaymod.gui.upload.uploading"));
         messageTextField.setTextColor(Color.WHITE.getRGB());
@@ -451,7 +451,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
         cancelUploadButton.enabled = false;
         backButton.enabled = true;
         category.enabled = true;
-        name.setEnabled(true);
+        name.setElementEnabled(true);
         description.enabled = true;
         if(success) {
             messageTextField.setText(I18n.format("replaymod.gui.upload.success"));

@@ -52,7 +52,7 @@ public class GuiAdvancedCheckBox extends GuiCheckBox implements GuiElement {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 }
