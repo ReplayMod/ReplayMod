@@ -146,7 +146,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                     int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
                     int nextX = getKeyframeX(nextSpectatorKeyframeRealTime, leftTime, bodyWidth, segmentLength);
 
-                    drawGradientRect(keyframeX + 2, positionY + BORDER_TOP + 1, nextX - 2, positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
+                    drawGradientRect(Math.max(keyframeX + 2, positionX+BORDER_LEFT), positionY + BORDER_TOP + 1, Math.min(nextX - 2, positionX+width-BORDER_RIGHT+1), positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
                 }
             }
         }
