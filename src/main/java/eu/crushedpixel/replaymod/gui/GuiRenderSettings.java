@@ -17,6 +17,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
+import org.apache.commons.io.FileUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Point;
 
@@ -465,7 +466,9 @@ public class GuiRenderSettings extends GuiScreen {
 
         options.setBitrate(bitrateInput.getIntValue() + "K"); //Bitrate value is in Kilobytes
 
-        options.setOutputFile(outputFileChooser.getSelectedFile());
+        File outputFile = outputFileChooser.getSelectedFile();
+        if(outputFile.exists()) FileUtils.deleteQuietly(outputFile);
+        options.setOutputFile(outputFile);
 
         if(enableGreenscreen.isChecked()) {
             options.setSkyColor(colorPicker.getPickedColor());
