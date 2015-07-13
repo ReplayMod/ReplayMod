@@ -1,8 +1,9 @@
 package eu.crushedpixel.replaymod.gui.elements.timelines;
 
 import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
-import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
+import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
@@ -195,7 +196,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                 drawKeyframe(kf, bodyWidth, leftTime, rightTime, segmentLength);
         }
 
-        if(ReplayHandler.getSelectedKeyframe() != null) {
+        if(ReplayHandler.getSelectedKeyframe() != null && !(ReplayHandler.getSelectedKeyframe().getValue() instanceof Marker)) {
             drawKeyframe(ReplayHandler.getSelectedKeyframe(), bodyWidth, leftTime, rightTime, segmentLength);
         }
     }

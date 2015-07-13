@@ -47,7 +47,6 @@ public class ReplayHandler {
     private static int realTimelinePosition = 0;
 
     private static Keyframe selectedKeyframe;
-    private static Keyframe<Marker> selectedMarkerKeyframe;
 
     private static boolean inPath = false;
     private static CameraEntity cameraEntity;
@@ -228,7 +227,7 @@ public class ReplayHandler {
     }
 
     public static void toggleMarker() {
-        if(selectedMarkerKeyframe != null) markerKeyframes.remove(selectedMarkerKeyframe);
+        if(selectedKeyframe.getValue() instanceof Marker) markerKeyframes.remove(selectedKeyframe);
         else {
             AdvancedPosition pos = new AdvancedPosition(mc.getRenderViewEntity(), false);
             int timestamp = ReplayMod.replaySender.currentTimeStamp();
@@ -314,7 +313,7 @@ public class ReplayHandler {
             mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
                 @Override
                 public void confirmClicked(boolean result, int id) {
-                    if (result) {
+                    if(result) {
                         resetKeyframes(resetMarkers);
                     }
 
@@ -341,10 +340,8 @@ public class ReplayHandler {
     }
 
     public static boolean isSelected(Keyframe kf) {
-        return kf == selectedKeyframe || kf == selectedMarkerKeyframe;
+        return kf == selectedKeyframe;
     }
-
-    public static void selectMarkerKeyframe(Keyframe<Marker> kf) { selectedMarkerKeyframe = kf; }
 
     public static boolean isInReplay() {
         return inReplay;
@@ -507,8 +504,6 @@ public class ReplayHandler {
     public static Keyframe getSelectedKeyframe() {
         return selectedKeyframe;
     }
-
-    public static Keyframe<Marker> getSelectedMarkerKeyframe() { return selectedMarkerKeyframe; }
 
     public static int getRealTimelineCursor() {
         return realTimelinePosition;

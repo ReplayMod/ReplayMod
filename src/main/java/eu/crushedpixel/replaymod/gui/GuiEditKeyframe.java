@@ -258,12 +258,12 @@ public class GuiEditKeyframe extends GuiScreen {
             if(keyframeType != KeyframeType.MARKER) {
                 ReplayHandler.removeKeyframe(keyframe);
                 ReplayHandler.addKeyframe(keyframeBackup);
-                ReplayHandler.selectKeyframe(keyframeBackup);
             } else {
                 ReplayHandler.getMarkerKeyframes().remove(keyframe);
                 ReplayHandler.getMarkerKeyframes().add(keyframeBackup);
-                ReplayHandler.selectMarkerKeyframe(keyframeBackup);
             }
+
+            ReplayHandler.selectKeyframe(keyframeBackup);
         } else {
             keyframe.setRealTimestamp(TimestampUtils.calculateTimestamp(min.getIntValue(), sec.getIntValue(), ms.getIntValue()));
             if(keyframeType == KeyframeType.POSITION) {

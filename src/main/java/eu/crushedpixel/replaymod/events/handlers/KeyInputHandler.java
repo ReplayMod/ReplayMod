@@ -155,6 +155,12 @@ public class KeyInputHandler {
 
         if(!ReplayHandler.isInReplay() || (mc.currentScreen != null && !(mc.currentScreen instanceof GuiMouseInput))) return;
 
+        if(kb.getKeyCode() == Keyboard.KEY_DELETE) {
+            if(ReplayHandler.getSelectedKeyframe() != null) {
+
+            }
+        }
+
         if(kb.getKeyDescription().equals("key.chat") && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
             mc.displayGuiScreen(new GuiMouseInput(ReplayMod.overlay));
         }

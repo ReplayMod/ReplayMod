@@ -43,7 +43,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
                 closest = ReplayHandler.getMarkerKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
             }
 
-            ReplayHandler.selectMarkerKeyframe(closest);
+            ReplayHandler.selectKeyframe(closest);
 
             if(closest == null) { //if no keyframe clicked, jump in time
                 ReplayMod.overlay.performJump(getTimeAt(mouseX, mouseY));
@@ -126,12 +126,12 @@ public class GuiMarkerTimeline extends GuiTimeline {
 
         //Draw Keyframe logos
         for(Keyframe<Marker> kf : ReplayHandler.getMarkerKeyframes()) {
-            if (kf != null && !kf.equals(ReplayHandler.getSelectedMarkerKeyframe()))
+            if (kf != null && !kf.equals(ReplayHandler.getSelectedKeyframe()))
                 drawKeyframe(kf, bodyWidth, leftTime, rightTime, segmentLength);
         }
 
-        if(ReplayHandler.getSelectedMarkerKeyframe() != null) {
-            drawKeyframe(ReplayHandler.getSelectedMarkerKeyframe(), bodyWidth, leftTime, rightTime, segmentLength);
+        if(ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe().getValue() instanceof Marker) {
+            drawKeyframe(ReplayHandler.getSelectedKeyframe(), bodyWidth, leftTime, rightTime, segmentLength);
         }
     }
 
