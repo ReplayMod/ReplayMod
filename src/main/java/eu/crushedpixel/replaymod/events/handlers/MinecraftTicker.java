@@ -93,7 +93,9 @@ public class MinecraftTicker {
                     mc.debugCrashKeyPressTime = Minecraft.getSystemTime();
                 }
 
-                mc.dispatchKeypresses();
+                if(mc.currentScreen == null) {
+                    mc.dispatchKeypresses();
+                }
 
                 if(Keyboard.getEventKeyState()) {
                     if(i == 62 && mc.entityRenderer != null) {
