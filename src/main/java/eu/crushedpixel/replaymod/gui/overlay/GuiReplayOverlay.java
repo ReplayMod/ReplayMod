@@ -119,7 +119,7 @@ public class GuiReplayOverlay extends Gui {
             }
         }, "replaymod.gui.ingame.menu.playpath");
 
-        private final GuiElement buttonPause = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 0, 20, new Runnable() {
+        private final GuiElement buttonPause = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 20, 20, new Runnable() {
             @Override
             public void run() {
                 ReplayHandler.interruptReplay();
