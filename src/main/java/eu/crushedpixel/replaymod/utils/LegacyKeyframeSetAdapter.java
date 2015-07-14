@@ -40,7 +40,7 @@ public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
                     in.beginArray();
                     while(in.hasNext()) {
                         Keyframe<AdvancedPosition> newKeyframe = new Keyframe<AdvancedPosition>();
-
+                        Integer spectatedEntityID = null;
                         in.beginObject();
                         while(in.hasNext()) {
                             String jsonKeyframeTag = in.nextName();
@@ -49,8 +49,11 @@ public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
                                 newKeyframe.setValue(position);
                             } else if("realTimestamp".equals(jsonKeyframeTag)) {
                                 newKeyframe.setRealTimestamp(in.nextInt());
+                            } else if("spectatedEntityID".equals(jsonKeyframeTag)) {
+                                spectatedEntityID = in.nextInt();
                             }
                         }
+                        newKeyframe.getValue().setSpectatedEntityID(spectatedEntityID);
                         in.endObject();
 
                         keyframes.add(newKeyframe);
