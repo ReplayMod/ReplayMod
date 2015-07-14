@@ -62,7 +62,7 @@ public class AdvancedPosition extends Position {
 
         Vector3d position = new Vector3d(x, y, z);
         position.add(direction);
-        return new AdvancedPosition(position.getX(), position.getY(), position.getZ(), pitch, yaw, roll, null);
+        return new AdvancedPosition(position.x, position.y, position.z, pitch, yaw, roll, null);
     }
 
     @Override
