@@ -35,11 +35,9 @@ public class CustomObjectRenderer {
 
         GlStateManager.enableTexture2D();
         GlStateManager.disableLighting();
-        //GlStateManager.disableAlpha();
         GlStateManager.enableAlpha();
         GlStateManager.enableDepth();
-
-        GlStateManager.disableDepth();
+        
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 

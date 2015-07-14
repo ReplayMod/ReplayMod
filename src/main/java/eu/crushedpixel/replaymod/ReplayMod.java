@@ -153,13 +153,13 @@ public class ReplayMod {
 
         spectatorRenderer = new SpectatorRenderer();
 
-        pathPreviewRenderer = new PathPreviewRenderer();
-        FMLCommonHandler.instance().bus().register(pathPreviewRenderer);
-        MinecraftForge.EVENT_BUS.register(pathPreviewRenderer);
-
         customObjectRenderer = new CustomObjectRenderer();
         FMLCommonHandler.instance().bus().register(customObjectRenderer);
         MinecraftForge.EVENT_BUS.register(customObjectRenderer);
+
+        pathPreviewRenderer = new PathPreviewRenderer();
+        FMLCommonHandler.instance().bus().register(pathPreviewRenderer);
+        MinecraftForge.EVENT_BUS.register(pathPreviewRenderer);
 
         crosshairRenderHandler = new CrosshairRenderHandler();
         FMLCommonHandler.instance().bus().register(crosshairRenderHandler);
