@@ -539,7 +539,7 @@ public class ReplayHandler {
         //if shift is down, it will refer to the previous Time Keyframe instead of the last one
         if(shiftMode) {
             int realTime = getRealTimelineCursor();
-            keyframe = timeKeyframes.getPreviousKeyframe(realTime);
+            keyframe = timeKeyframes.getPreviousKeyframe(realTime, false);
         } else {
             keyframe = timeKeyframes.last();
         }

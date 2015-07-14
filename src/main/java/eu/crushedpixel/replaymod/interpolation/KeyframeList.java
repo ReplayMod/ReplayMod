@@ -65,9 +65,10 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     /**
      * Returns the first Keyframe that comes before a given value.
      * @param realTime The value to use
+     * @param inclusive Whether the previous Keyframe might have the same timestamp as <b>realTime</b>
      * @return The first Keyframe prior to the given value
      */
-    public Keyframe<K> getPreviousKeyframe(int realTime) {
+    public Keyframe<K> getPreviousKeyframe(int realTime, boolean inclusive) {
         if(this.isEmpty()) return null;
 
         Keyframe<K> backup = null;
@@ -76,7 +77,7 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
 
         for(Keyframe<K> kf : this) {
 
-            if(kf.getRealTimestamp() < realTime) {
+            if((inclusive && kf.getRealTimestamp() <= realTime) || (!inclusive && kf.getRealTimestamp() < realTime)) {
                 found.add(kf);
             } else if(kf.getRealTimestamp() == realTime) {
                 backup = kf;
@@ -93,16 +94,17 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     /**
      * Returns the first Keyframe that comes after a given value.
      * @param realTime The value to use
+     * @param inclusive Whether the next Keyframe might have the same timestamp as <b>realTime</b>
      * @return The first Keyframe after the given value
      */
-    public Keyframe<K> getNextKeyframe(int realTime) {
+    public Keyframe<K> getNextKeyframe(int realTime, boolean inclusive) {
         if(this.isEmpty()) return null;
 
         Keyframe<K> backup = null;
 
         for(Keyframe<K> kf : this) {
 
-            if(kf.getRealTimestamp() > realTime) {
+            if((inclusive && kf.getRealTimestamp() >= realTime) || (!inclusive && kf.getRealTimestamp() > realTime)) {
                 return kf; //first found element is next
             } else if(kf.getRealTimestamp() == realTime) {
                 backup = kf;
@@ -179,8 +181,8 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
      * @return A value between 0 and 1
      */
     private float getPositionOnPath(int timestamp) {
-        Keyframe previousKeyframe = getPreviousKeyframe(timestamp);
-        Keyframe nextKeyframe = getNextKeyframe(timestamp);
+        Keyframe previousKeyframe = getPreviousKeyframe(timestamp, true);
+        Keyframe nextKeyframe = getNextKeyframe(timestamp, true);
 
         int previousTimestamp = 0;
         int nextTimestamp = 0;
@@ -203,7 +205,7 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
         int currentPos = timestamp - previousTimestamp;
 
         float currentStepPercentage = (float) currentPos / (float) currentPosDiff;
-        if(Float.isInfinite(currentStepPercentage)) currentStepPercentage = 0;
+        if(Float.isInfinite(currentStepPercentage) || Float.isNaN(currentStepPercentage)) currentStepPercentage = 0;
 
         float value = (indexOf(previousKeyframe) + currentStepPercentage) /
                 (float)(size() - 1);

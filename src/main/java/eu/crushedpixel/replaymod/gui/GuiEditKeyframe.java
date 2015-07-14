@@ -83,18 +83,18 @@ public class GuiEditKeyframe extends GuiScreen {
         KeyframeList<Marker> markerKeyframes = ReplayHandler.getMarkerKeyframes();
 
         if(keyframeType == KeyframeType.POSITION) {
-            previous = positionKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);
-            next = positionKeyframes.getNextKeyframe(keyframe.getRealTimestamp() + 1);
+            previous = positionKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp(), false);
+            next = positionKeyframes.getNextKeyframe(keyframe.getRealTimestamp(), false);
 
             screenTitle = I18n.format("replaymod.gui.editkeyframe.title.pos");
         } else if(keyframeType == KeyframeType.TIME) {
-            previous = timeKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);
-            next = timeKeyframes.getNextKeyframe(keyframe.getRealTimestamp() + 1);
+            previous = timeKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp(), false);
+            next = timeKeyframes.getNextKeyframe(keyframe.getRealTimestamp(), false);
 
             screenTitle = I18n.format("replaymod.gui.editkeyframe.title.time");
         } else if(keyframeType == KeyframeType.MARKER) {
-            previous = markerKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp() - 1);
-            next = markerKeyframes.getNextKeyframe(keyframe.getRealTimestamp() + 1);
+            previous = markerKeyframes.getPreviousKeyframe(keyframe.getRealTimestamp(), false);
+            next = markerKeyframes.getNextKeyframe(keyframe.getRealTimestamp(), false);
         }
 
         ReplayMod.replaySender.setReplaySpeed(0);

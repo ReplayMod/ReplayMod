@@ -206,8 +206,8 @@ public class ReplayProcess {
 
         int curRealReplayTime = (int) (lastRealReplayTime + timeStep);
 
-        Keyframe<AdvancedPosition> lastPos = ReplayHandler.getPositionKeyframes().getPreviousKeyframe(curRealReplayTime);
-        Keyframe<AdvancedPosition> nextPos = ReplayHandler.getPositionKeyframes().getNextKeyframe(curRealReplayTime);
+        Keyframe<AdvancedPosition> lastPos = ReplayHandler.getPositionKeyframes().getPreviousKeyframe(curRealReplayTime, true);
+        Keyframe<AdvancedPosition> nextPos = ReplayHandler.getPositionKeyframes().getNextKeyframe(curRealReplayTime, true);
 
         boolean spectating = false;
 
@@ -239,8 +239,8 @@ public class ReplayProcess {
             }
         }
 
-        Keyframe<TimestampValue> lastTime = ReplayHandler.getTimeKeyframes().getPreviousKeyframe(curRealReplayTime);
-        Keyframe<TimestampValue> nextTime = ReplayHandler.getTimeKeyframes().getNextKeyframe(curRealReplayTime);
+        Keyframe<TimestampValue> lastTime = ReplayHandler.getTimeKeyframes().getPreviousKeyframe(curRealReplayTime, true);
+        Keyframe<TimestampValue> nextTime = ReplayHandler.getTimeKeyframes().getNextKeyframe(curRealReplayTime, true);
 
         int lastTimeStamp = 0;
         int nextTimeStamp = 0;

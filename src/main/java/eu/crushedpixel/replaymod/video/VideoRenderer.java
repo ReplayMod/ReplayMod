@@ -217,16 +217,16 @@ public class VideoRenderer {
         int posCount = ReplayHandler.getPositionKeyframes().size();
 
         AdvancedPosition pos = new AdvancedPosition();
-        Keyframe<AdvancedPosition> lastPos = positionKeyframes.getPreviousKeyframe(videoTime);
+        Keyframe<AdvancedPosition> lastPos = positionKeyframes.getPreviousKeyframe(videoTime, true);
         Keyframe<AdvancedPosition> nextPos = null;
         if (movement == null || lastPos == null) {
             // Stay at one position, no movement
-            Keyframe<AdvancedPosition> keyframe = positionKeyframes.getNextKeyframe(-1);
+            Keyframe<AdvancedPosition> keyframe = positionKeyframes.getNextKeyframe(-1, true);
             assert keyframe != null;
             pos = keyframe.getValue();
         } else {
             // Position interpolation
-            nextPos = positionKeyframes.getNextKeyframe(videoTime);
+            nextPos = positionKeyframes.getNextKeyframe(videoTime, true);
 
             int lastPosStamp = lastPos.getRealTimestamp();
             int nextPosStamp = (nextPos == null ? lastPos : nextPos).getRealTimestamp();
@@ -275,8 +275,8 @@ public class VideoRenderer {
 
         // WARNING: The rest of this method contains some magic for which Marius is responsible
         // Time interpolation
-        Keyframe<TimestampValue> lastTime = timeKeyframes.getPreviousKeyframe(videoTime);
-        Keyframe<TimestampValue> nextTime = timeKeyframes.getNextKeyframe(videoTime);
+        Keyframe<TimestampValue> lastTime = timeKeyframes.getPreviousKeyframe(videoTime, false);
+        Keyframe<TimestampValue> nextTime = timeKeyframes.getNextKeyframe(videoTime, false);
 
         int lastTimeStamp = 0;
         int nextTimeStamp = 0;

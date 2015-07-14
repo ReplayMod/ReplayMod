@@ -36,7 +36,7 @@ public class PathPreviewRenderer {
     @SubscribeEvent
     public void renderCameraPath(RenderWorldLastEvent event) {
         if(!ReplayHandler.isInReplay() || ReplayHandler.isInPath() || !ReplayMod.replaySettings.showPathPreview() || mc.gameSettings.hideGUI) return;
-        
+
         Entity entity = ReplayHandler.getCameraEntity();
         if(entity == null) return;
 
