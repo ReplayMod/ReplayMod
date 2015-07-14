@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
@@ -30,9 +31,12 @@ public class PathPreviewRenderer {
 
     private KeyframeList<AdvancedPosition> keyframes;
 
+    private final ResourceLocation cameraHeadResource = new ResourceLocation("replaymod", "camera_head.png");
+
     @SubscribeEvent
     public void renderCameraPath(RenderWorldLastEvent event) {
-        if(!ReplayHandler.isInReplay() || ReplayHandler.isInPath() || !ReplayMod.replaySettings.showPathPreview() || mc.gameSettings.hideGUI) return;
+        //if(!ReplayHandler.isInReplay() || ReplayHandler.isInPath() || !ReplayMod.replaySettings.showPathPreview() || mc.gameSettings.hideGUI) return;
+        if(!ReplayHandler.isInReplay() || !ReplayMod.replaySettings.showPathPreview() || mc.gameSettings.hideGUI) return;
 
         Entity entity = ReplayHandler.getCameraEntity();
         if(entity == null) return;
@@ -88,6 +92,15 @@ public class PathPreviewRenderer {
 
         for(Keyframe<AdvancedPosition> kf : distanceSorted) {
             drawPoint(doubleX, doubleY, doubleZ, kf);
+        }
+
+        if(ReplayHandler.getPositionKeyframes().size() > 1) {
+            AdvancedPosition cameraPosition = ReplayHandler.getPositionKeyframes().getInterpolatedValueForTimestamp(ReplayHandler.getRealTimelineCursor(),
+                    ReplayMod.replaySettings.isLinearMovement());
+            if(cameraPosition != null) {
+                GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                drawCamera(doubleX, doubleY, doubleZ, cameraPosition);
+            }
         }
 
         GlStateManager.disableAlpha();
@@ -198,6 +211,95 @@ public class PathPreviewRenderer {
         renderer.addVertexWithUV(maxX, minY, 0, posX, posY + size);
 
         tessellator.draw();
+        renderer.setTranslation(0, 0, 0);
+
+        GlStateManager.popMatrix();
+    }
+
+    private void drawCamera(double playerX, double playerY, double playerZ, AdvancedPosition pos) {
+        GlStateManager.pushMatrix();
+
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer renderer = tessellator.getWorldRenderer();
+
+        mc.renderEngine.bindTexture(cameraHeadResource);
+
+        double x = pos.getX() - playerX;
+        double y = pos.getY() - playerY;
+        double z = pos.getZ() - playerZ;
+
+        GlStateManager.translate(x, y + 1.4, z);
+
+        GL11.glNormal3f(0, 1, 0);
+
+        //draw the position line
+        AdvancedPosition pos2 = pos.getDestination(2);
+
+        GlStateManager.enableDepth();
+        GlStateManager.disableLighting();
+        GlStateManager.disableTexture2D();
+        GlStateManager.enableBlend();
+        renderer.startDrawing(1);
+
+        renderer.setColorRGBA_I(Color.GREEN.getRGB(), 170);
+
+        renderer.addVertex(pos2.getX() - pos.getX(), pos2.getY() - pos.getY(), pos2.getZ() - pos.getZ());
+        renderer.addVertex(0, 0, 0);
+
+        Tessellator.getInstance().draw();
+
+        GlStateManager.enableTexture2D();
+
+        GlStateManager.rotate((float) -pos.getYaw(), 0, 1, 0);
+        GlStateManager.rotate((float) pos.getPitch(), 1, 0, 0);
+        GlStateManager.rotate((float) pos.getRoll(), 0, 0, 1);
+
+        float cubeSize = 0.5f;
+        
+        x = y = z = -cubeSize/2;
+        
+        renderer.startDrawingQuads();
+
+        renderer.setColorRGBA_I(Color.WHITE.getRGB(), 200);
+
+        //back
+        renderer.addVertexWithUV(x, y + cubeSize, z, 3 * 8 / 64f, 8 / 64f);
+        renderer.addVertexWithUV(x + cubeSize, y + cubeSize, z, 4*8/64f, 8/64f);
+        renderer.addVertexWithUV(x + cubeSize, y, z, 4*8/64f, 2*8/64f);
+        renderer.addVertexWithUV(x, y, z, 3*8/64f, 2*8/64f);
+
+        //front
+        renderer.addVertexWithUV(x + cubeSize, y, z + cubeSize, 2 * 8 / 64f, 2*8/64f);
+        renderer.addVertexWithUV(x + cubeSize, y + cubeSize, z + cubeSize, 2 * 8 / 64f, 8/64f);
+        renderer.addVertexWithUV(x, y + cubeSize, z + cubeSize, 8 / 64f, 8 / 64f);
+        renderer.addVertexWithUV(x, y, z + cubeSize, 8 / 64f, 2*8/64f);
+
+        //left
+        renderer.addVertexWithUV(x + cubeSize, y + cubeSize, z, 0, 8/64f);
+        renderer.addVertexWithUV(x + cubeSize, y + cubeSize, z + cubeSize, 8/64f, 8/64f);
+        renderer.addVertexWithUV(x + cubeSize, y, z + cubeSize, 8/64f, 2*8/64f);
+        renderer.addVertexWithUV(x+cubeSize,y,z, 0, 2*8/64f);
+
+        //right
+        renderer.addVertexWithUV(x, y + cubeSize, z + cubeSize, 2*8/64f, 8/64f);
+        renderer.addVertexWithUV(x, y + cubeSize, z, 3*8/64f, 8/64f);
+        renderer.addVertexWithUV(x, y, z, 3*8/64f, 2*8/64f);
+        renderer.addVertexWithUV(x, y, z + cubeSize, 2 * 8 / 64f, 2 * 8 / 64f);
+
+        //bottom
+        renderer.addVertexWithUV(x + cubeSize, y, z, 3*8/64f, 0);
+        renderer.addVertexWithUV(x + cubeSize, y, z + cubeSize, 3*8/64f, 8/64f);
+        renderer.addVertexWithUV(x, y, z + cubeSize, 2*8/64f, 8/64f);
+        renderer.addVertexWithUV(x, y, z, 2 * 8 / 64f, 0);
+
+        //top
+        renderer.addVertexWithUV(x, y + cubeSize, z, 8/64f, 0);
+        renderer.addVertexWithUV(x, y + cubeSize, z + cubeSize, 8/64f, 8/64f);
+        renderer.addVertexWithUV(x + cubeSize, y + cubeSize, z + cubeSize, 2*8/64f, 8/64f);
+        renderer.addVertexWithUV(x + cubeSize, y + cubeSize, z, 2 * 8 / 64f, 0);
+
+        Tessellator.getInstance().draw();
+
         renderer.setTranslation(0, 0, 0);
 
         GlStateManager.popMatrix();

@@ -6,6 +6,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.MathHelper;
+
+import javax.vecmath.Vector3d;
 
 @Data
 @NoArgsConstructor
@@ -46,6 +49,20 @@ public class AdvancedPosition extends Position {
         double dy = this.y -  y;
         double dz = this.z -  z;
         return dx * dx + dy * dy + dz * dz;
+    }
+
+    public AdvancedPosition getDestination(double stepSize) {
+        float f2 = MathHelper.cos((float) (Math.toRadians(-yaw) - (float)Math.PI));
+        float f3 = MathHelper.sin((float) (Math.toRadians(-yaw) - (float) Math.PI));
+        float f4 = -MathHelper.cos((float) (Math.toRadians(-pitch)));
+        float f5 = MathHelper.sin((float) (Math.toRadians(-pitch)));
+        Vector3d direction = new Vector3d((double)(f3 * f4), (double)f5, (double)(f2 * f4));
+        direction.normalize();
+        direction.scale(stepSize);
+
+        Vector3d position = new Vector3d(x, y, z);
+        position.add(direction);
+        return new AdvancedPosition(position.getX(), position.getY(), position.getZ(), pitch, yaw, roll, null);
     }
 
     @Override
