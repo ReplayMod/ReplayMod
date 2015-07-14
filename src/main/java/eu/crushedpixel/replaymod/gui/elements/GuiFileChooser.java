@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui.elements;
 import eu.crushedpixel.replaymod.gui.elements.listeners.FileChooseListener;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.client.Minecraft;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -11,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GuiFileChooser extends GuiAdvancedButton {
+
+    private final Minecraft mc = Minecraft.getMinecraft();
+
+    private final JFrame jFrame = new JFrame();
 
     @Getter
     private File selectedFile;
@@ -62,35 +67,48 @@ public class GuiFileChooser extends GuiAdvancedButton {
                     e.printStackTrace();
                 }
 
-                JFrame frame = new JFrame();
+                if(mc.isFullScreen()) mc.toggleFullscreen();
 
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileFilter(new FileNameExtensionFilter("Image Files", allowedExtensions));
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JFileChooser fileChooser = new JFileChooser();
 
-                if(selectedFile != null) {
-                    fileChooser.setCurrentDirectory(selectedFile.getParentFile());
-                    fileChooser.setSelectedFile(selectedFile);
-                }
+                        fileChooser.setFileFilter(new FileNameExtensionFilter(null, allowedExtensions));
 
-                fileChooser.setFileSelectionMode(save ? JFileChooser.SAVE_DIALOG : JFileChooser.OPEN_DIALOG);
-                fileChooser.setVisible(true);
-                fileChooser.grabFocus();
-                fileChooser.showOpenDialog(frame);
+                        if(selectedFile != null) {
+                            fileChooser.setCurrentDirectory(selectedFile.getParentFile());
+                            fileChooser.setSelectedFile(selectedFile);
+                        }
 
-                File file = fileChooser.getSelectedFile();
+                        fileChooser.setFileSelectionMode(save ? JFileChooser.SAVE_DIALOG : JFileChooser.OPEN_DIALOG);
+                        fileChooser.setVisible(true);
+                        //fileChooser.grabFocus();
+                        fileChooser.showOpenDialog(jFrame);
 
-                if(file != null) {
-                    selectedFile = file;
+                        File file = fileChooser.getSelectedFile();
 
-                    updateDisplayString();
+                        if(file != null) {
+                            selectedFile = file;
 
-                    for(FileChooseListener listener : listeners) {
-                        listener.onFileChosen(selectedFile);
+                            updateDisplayString();
+
+                            for(FileChooseListener listener : listeners) {
+                                listener.onFileChosen(selectedFile);
+                            }
+                        }
+
+                        fileChooser.invalidate();
                     }
-                }
+                });
 
-                frame.dispose();
             }
         }, "replaymod-file-chooser").start();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        jFrame.dispose();
+        super.finalize();
     }
 }
