@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui.elements;
 import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
 
@@ -38,7 +39,7 @@ public class GuiAdvancedButton extends GuiButton implements GuiElement {
     @Override
     public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
         hovered = isHovering(mouseX, mouseY);
-        if(hovered && hoverText != null) {
+        if(hovered && !StringUtils.isEmpty(hoverText)) {
             ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, hoverText, null, Color.WHITE);
         }
     }
