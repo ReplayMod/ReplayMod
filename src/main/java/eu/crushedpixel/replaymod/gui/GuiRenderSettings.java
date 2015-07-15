@@ -176,7 +176,7 @@ public class GuiRenderSettings extends GuiScreen {
             ignoreCamDir = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_STATIC_CAMERA, 0, 0, I18n.format("replaymod.gui.rendersettings.stablecamera"), false);
             ignoreCamDir.enabled = false;
 
-            encodingPresetDropdown.setSelectionIndex(0);
+            encodingPresetDropdown.setSelectionIndex(2);
 
             permanentButtons.add(advancedButton);
             permanentButtons.add(renderButton);
