@@ -21,6 +21,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Point;
 
 import java.awt.*;
@@ -419,6 +420,12 @@ public class GuiObjectManager extends GuiScreen {
         CustomImageObject selectedObject = objectList.getElement(objectList.getSelectionIndex());
         if(selectedObject != null) {
             selectedObject.setName(nameInput.getText().trim());
+        }
+
+        if(keyCode == Keyboard.KEY_DELETE) {
+            if(objectKeyframeTimeline.getSelectedKeyframe() != null) {
+                objectKeyframeTimeline.removeKeyframe(objectKeyframeTimeline.getSelectedKeyframeRow());
+            }
         }
 
         super.keyTyped(typedChar, keyCode);
