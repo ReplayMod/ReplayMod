@@ -74,27 +74,43 @@ public class GuiFileChooser extends GuiAdvancedButton {
                     public void run() {
                         JFileChooser fileChooser = new JFileChooser();
 
-                        fileChooser.setFileFilter(new FileNameExtensionFilter(null, allowedExtensions));
+                        StringBuilder sb = new StringBuilder();
+
+                        int i = 0;
+                        for(String extension : allowedExtensions) {
+                            sb.append(".").append(extension);
+                            if(i < allowedExtensions.length - 1) sb.append(",");
+                            i++;
+                        }
+
+                        fileChooser.setFileFilter(new FileNameExtensionFilter(sb.toString(), allowedExtensions));
 
                         if(selectedFile != null) {
                             fileChooser.setCurrentDirectory(selectedFile.getParentFile());
                             fileChooser.setSelectedFile(selectedFile);
                         }
 
-                        fileChooser.setFileSelectionMode(save ? JFileChooser.SAVE_DIALOG : JFileChooser.OPEN_DIALOG);
                         fileChooser.setVisible(true);
-                        //fileChooser.grabFocus();
-                        fileChooser.showOpenDialog(jFrame);
 
-                        File file = fileChooser.getSelectedFile();
+                        int result;
 
-                        if(file != null) {
-                            selectedFile = file;
+                        if(save) {
+                            result = fileChooser.showSaveDialog(jFrame);
+                        } else {
+                            result = fileChooser.showOpenDialog(jFrame);
+                        }
 
-                            updateDisplayString();
+                        if(result == JFileChooser.APPROVE_OPTION) {
+                            File file = fileChooser.getSelectedFile();
 
-                            for(FileChooseListener listener : listeners) {
-                                listener.onFileChosen(selectedFile);
+                            if(file != null) {
+                                selectedFile = file;
+
+                                updateDisplayString();
+
+                                for(FileChooseListener listener : listeners) {
+                                    listener.onFileChosen(selectedFile);
+                                }
                             }
                         }
 
