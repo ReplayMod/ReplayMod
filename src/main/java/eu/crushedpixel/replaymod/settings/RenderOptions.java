@@ -27,9 +27,7 @@ public final class RenderOptions {
 
     // Highly advanced
     private String exportCommand = "ffmpeg";
-    private String exportCommandArgs = "-f rawvideo -pix_fmt argb -s %WIDTH%x%HEIGHT% -r %FPS% -i - " +
-            "-an " +
-            "-c:v libvpx -b:v %BITRATE% %FILENAME%";
+    private String exportCommandArgs = "";
 
     public int getFps() {
         return fps;

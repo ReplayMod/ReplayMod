@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import eu.crushedpixel.replaymod.settings.EncodingPreset;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -18,6 +19,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Point;
 
@@ -34,16 +36,16 @@ public class GuiRenderSettings extends GuiScreen {
     //for default file
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
     private static final SimpleDateFormat FILE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
-    private static final String WEBM_EXTENSION = ".webm";
 
     private static final int LEFT_BORDER = 10;
 
     private GuiAdvancedButton renderButton, cancelButton, advancedButton;
     private GuiDropdown<RendererSettings> rendererDropdown;
+    private GuiDropdown<EncodingPreset> encodingPresetDropdown;
 
     private int virtualY, virtualHeight;
 
-    private GuiCheckBox customResolution, ignoreCamDir, enableGreenscreen;
+    private GuiCheckBox ignoreCamDir, enableGreenscreen;
     private GuiNumberInput xRes, yRes;
     private GuiToggleButton interpolation, forceChunks;
     private GuiVideoFramerateSlider framerateSlider;
@@ -79,11 +81,16 @@ public class GuiRenderSettings extends GuiScreen {
                 i++;
             }
 
+            encodingPresetDropdown = new GuiDropdown<EncodingPreset>(fontRendererObj, 0, 0, 200, 5);
+            encodingPresetDropdown.addSelectionListener(new EncodingDropdownListener());
+
+            for (EncodingPreset preset : EncodingPreset.values()) {
+                encodingPresetDropdown.addElement(preset);
+            }
+
             renderButton = new GuiAdvancedButton(GuiConstants.RENDER_SETTINGS_RENDER_BUTTON, 0, 0, I18n.format("replaymod.gui.render"));
             cancelButton = new GuiAdvancedButton(GuiConstants.RENDER_SETTINGS_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.cancel"));
             advancedButton = new GuiAdvancedButton(GuiConstants.RENDER_SETTINGS_ADVANCED_BUTTON, 0, 0, I18n.format("replaymod.gui.rendersettings.advanced"));
-
-            customResolution = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX, 0, 0, I18n.format("replaymod.gui.rendersettings.customresolution"), false);
 
             xRes = new GuiNumberInput(fontRendererObj, 0, 0, 50, 1, 100000, mc.displayWidth, false) {
                 @Override
@@ -124,8 +131,6 @@ public class GuiRenderSettings extends GuiScreen {
 
             bitrateInput = new GuiNumberInputWithText(fontRendererObj, 0, 0, 50, 1D, null, 10000D, false, " kbps");
 
-            xRes.setElementEnabled(false);
-            yRes.setElementEnabled(false);
             bitrateInput.setElementEnabled(true);
 
             framerateSlider = new GuiVideoFramerateSlider(GuiConstants.RENDER_SETTINGS_FRAMERATE_SLIDER, 0, 0, ReplayMod.replaySettings.getVideoFramerate(),
@@ -133,7 +138,7 @@ public class GuiRenderSettings extends GuiScreen {
 
             File defaultFile = null;
             try {
-                defaultFile = new File(ReplayFileIO.getRenderFolder(), FILE_FORMAT.format(Calendar.getInstance().getTime())+WEBM_EXTENSION);
+                defaultFile = new File(ReplayFileIO.getRenderFolder(), FILE_FORMAT.format(Calendar.getInstance().getTime())+"."+ EncodingPreset.MP4DEFAULT.getFileExtension());
             } catch(IOException ioe) {
                 ioe.printStackTrace();
             }
@@ -171,11 +176,12 @@ public class GuiRenderSettings extends GuiScreen {
             ignoreCamDir = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_STATIC_CAMERA, 0, 0, I18n.format("replaymod.gui.rendersettings.stablecamera"), false);
             ignoreCamDir.enabled = false;
 
+            encodingPresetDropdown.setSelectionIndex(0);
+
             permanentButtons.add(advancedButton);
             permanentButtons.add(renderButton);
             permanentButtons.add(cancelButton);
 
-            defaultButtons.add(customResolution);
             defaultButtons.add(framerateSlider);
             defaultButtons.add(ignoreCamDir);
             defaultButtons.add(outputFileChooser);
@@ -199,16 +205,22 @@ public class GuiRenderSettings extends GuiScreen {
 
         w1 = rendererDropdown.width + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.renderer") + ":")+10;
         rendererDropdown.yPosition = virtualY + 15 + 15;
-        rendererDropdown.xPosition = (width-w1)/2 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.renderer") + ":")+10;
+        rendererDropdown.xPosition = encodingPresetDropdown.xPosition =
+                (width-w1)/2 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.rendersettings.renderer") + ":")+10;
 
-        int w2 = customResolution.width + 5 + xRes.width + 5 + fontRendererObj.getStringWidth("*") + 5 + yRes.width;
+        encodingPresetDropdown.yPosition = rendererDropdown.yPosition + 20 + 10;
 
-        customResolution.yPosition = virtualY + 15 + 5 + 20 + 10 +5+fontRendererObj.getStringWidth("*")+5;
-        customResolution.xPosition = (width- w2)/2;
+        String customResString = I18n.format("replaymod.gui.rendersettings.customresolution");
+        int customResWidth = fontRendererObj.getStringWidth(customResString);
 
-        xRes.xPosition = customResolution.xPosition + customResolution.width + 5;
+        int w2 = customResWidth + 5 + xRes.width + 5 + fontRendererObj.getStringWidth("*") + 5 + yRes.width;
+
+        int yPos = virtualY + 15 + 5 + 50 + 10 + 5+fontRendererObj.getStringWidth("*")+5;
+        int xPos = (width- w2)/2;
+
+        xRes.xPosition = xPos + customResWidth + 5;
         yRes.xPosition = xRes.xPosition+xRes.width+5+fontRendererObj.getStringWidth("*")+5;
-        xRes.yPosition = yRes.yPosition = customResolution.yPosition-3;
+        xRes.yPosition = yRes.yPosition = yPos-3;
 
         int w3 = interpolation.width + 10 + forceChunks.width;
 
@@ -281,16 +293,26 @@ public class GuiRenderSettings extends GuiScreen {
 
         if(!advancedTab) {
             this.drawString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.renderer") + ":",
-                    (width - w1) / 2, rendererDropdown.yPosition + 8, Color.WHITE.getRGB());
+                    (width - w1) / 2, rendererDropdown.yPosition + 6, Color.WHITE.getRGB());
+
+            this.drawString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.presets") + ":",
+                    (width - w1) / 2, encodingPresetDropdown.yPosition + 6, Color.WHITE.getRGB());
+
+            String resString = I18n.format("replaymod.gui.rendersettings.customresolution")+":";
+            int strWidth = fontRendererObj.getStringWidth(resString);
+
+            this.drawString(fontRendererObj, resString,
+                    xRes.xPosition - strWidth - 5, xRes.yPosition+6, Color.WHITE.getRGB());
 
             xRes.drawTextBox();
             yRes.drawTextBox();
             bitrateInput.drawTextBox();
-            this.drawString(fontRendererObj, "*", xRes.xPosition + xRes.width + 5, xRes.yPosition + 3, Color.WHITE.getRGB());
+            this.drawString(fontRendererObj, "*", xRes.xPosition + xRes.width + 5, xRes.yPosition + 6, Color.WHITE.getRGB());
 
             String bitrateString = I18n.format("replaymod.gui.settings.bitrate")+": ";
             this.drawString(fontRendererObj, bitrateString, forceChunks.xPosition, bitrateInput.yPosition + 6, Color.WHITE.getRGB());
 
+            encodingPresetDropdown.drawTextBox();
             rendererDropdown.drawTextBox();
         } else {
             commandInput.drawTextBox();
@@ -310,25 +332,27 @@ public class GuiRenderSettings extends GuiScreen {
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         if(!rendererDropdown.mouseClickedResult(mouseX, mouseY)) {
-            if(!advancedTab) {
-                xRes.mouseClicked(mouseX, mouseY, mouseButton);
-                yRes.mouseClicked(mouseX, mouseY, mouseButton);
-                bitrateInput.mouseClicked(mouseX, mouseY, mouseButton);
-            } else {
-                commandInput.mouseClicked(mouseX, mouseY, mouseButton);
-                ffmpegArguments.mouseClicked(mouseX, mouseY, mouseButton);
-            }
+            if(!encodingPresetDropdown.mouseClickedResult(mouseX, mouseY)) {
+                if(!advancedTab) {
+                    xRes.mouseClicked(mouseX, mouseY, mouseButton);
+                    yRes.mouseClicked(mouseX, mouseY, mouseButton);
+                    bitrateInput.mouseClicked(mouseX, mouseY, mouseButton);
+                } else {
+                    commandInput.mouseClicked(mouseX, mouseY, mouseButton);
+                    ffmpegArguments.mouseClicked(mouseX, mouseY, mouseButton);
+                }
 
-            if(mouseButton == 0) {
-                List<GuiButton> toHandle = new ArrayList<GuiButton>();
-                toHandle.addAll(permanentButtons);
-                toHandle.addAll(advancedTab ? advancedButtons : defaultButtons);
+                if(mouseButton == 0) {
+                    List<GuiButton> toHandle = new ArrayList<GuiButton>();
+                    toHandle.addAll(permanentButtons);
+                    toHandle.addAll(advancedTab ? advancedButtons : defaultButtons);
 
-                for(GuiButton b : toHandle) {
-                    b.mousePressed(this.mc, mouseX, mouseY);
-                    if(b.mousePressed(this.mc, mouseX, mouseY)) {
-                        b.playPressSound(this.mc.getSoundHandler());
-                        actionPerformed(b);
+                    for(GuiButton b : toHandle) {
+                        b.mousePressed(this.mc, mouseX, mouseY);
+                        if(b.mousePressed(this.mc, mouseX, mouseY)) {
+                            b.playPressSound(this.mc.getSoundHandler());
+                            actionPerformed(b);
+                        }
                     }
                 }
             }
@@ -350,10 +374,10 @@ public class GuiRenderSettings extends GuiScreen {
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
         if(!advancedTab) {
             if(keyCode == Keyboard.KEY_TAB) {
-                if(xRes.isFocused() && customResolution.isChecked()) {
+                if(xRes.isFocused()) {
                     xRes.setFocused(false);
                     yRes.setFocused(true);
-                } else if(yRes.isFocused() && customResolution.isChecked()) {
+                } else if(yRes.isFocused()) {
                     yRes.setFocused(false);
                     xRes.setFocused(true);
                 }
@@ -400,11 +424,7 @@ public class GuiRenderSettings extends GuiScreen {
         } else if(defaultButtons.contains(button) && !advancedTab) {
             if(button instanceof GuiCheckBox)
                 ((GuiCheckBox)button).setIsChecked(!((GuiCheckBox)button).isChecked());
-            if(button.id == GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX) {
-                boolean enabled = customResolution.isChecked();
-                xRes.setElementEnabled(enabled);
-                yRes.setElementEnabled(enabled);
-            } else if(button.id == GuiConstants.RENDER_SETTINGS_OUTPUT_CHOOSER) {
+            else if(button.id == GuiConstants.RENDER_SETTINGS_OUTPUT_CHOOSER) {
                 Point mouse = MouseUtils.getMousePos();
                 outputFileChooser.mouseClick(mc, mouse.getX(), mouse.getY(), 0);
             }
@@ -468,7 +488,10 @@ public class GuiRenderSettings extends GuiScreen {
 
         options.setBitrate(bitrateInput.getIntValue() + "K"); //Bitrate value is in Kilobytes
 
+        //remove the extension from the output file
         File outputFile = outputFileChooser.getSelectedFile();
+        outputFile = new File(outputFile.getParent(), FilenameUtils.getBaseName(outputFile.getAbsolutePath()));
+
         if(outputFile.exists()) FileUtils.deleteQuietly(outputFile);
         options.setOutputFile(outputFile);
 
@@ -543,6 +566,24 @@ public class GuiRenderSettings extends GuiScreen {
             yRes.moveCursorBy(0); //This causes the Aspect Ratio to be recalculated based on the Y Resolution
 
             validateInputs();
+        }
+    }
+
+    private class EncodingDropdownListener implements SelectionListener {
+        @Override
+        public void onSelectionChanged(int selectionIndex) {
+            EncodingPreset preset = encodingPresetDropdown.getElement(selectionIndex);
+
+            bitrateInput.setEnabled(preset.hasBitrateSetting());
+            ffmpegArguments.setText(preset.getCommandLineArgs());
+
+            outputFileChooser.setAllowedExtensions(new String[]{preset.getFileExtension()});
+
+            File selectedFile = outputFileChooser.getSelectedFile();
+            if(selectedFile != null) {
+                String newName = FilenameUtils.getBaseName(selectedFile.getAbsolutePath())+"."+preset.getFileExtension();
+                outputFileChooser.setSelectedFile(new File(selectedFile.getParent(), newName));
+            }
         }
     }
 

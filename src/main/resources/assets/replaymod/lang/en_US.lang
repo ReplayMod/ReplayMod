@@ -306,7 +306,7 @@ replaymod.gui.rendersettings.renderer.stereoscopic.description=Renders the video
 replaymod.gui.rendersettings.renderer.cubic.description=Renders the video with a 360 degree panoramic view, using Cubic Projection. This is useable by several 360 degree video players (and the Oculus Rift), for example VR Player.
 replaymod.gui.rendersettings.renderer.equirectangular.description=Renders the video with a 360 degree panoramic view, using Equirectangular Projection. This is useable by YouTube's new 360 degree video function, and several video players (and the Oculus Rift), for example VR Player.
 
-replaymod.gui.rendersettings.customresolution=Custom Video Resolution
+replaymod.gui.rendersettings.customresolution=Video Resolution
 replaymod.gui.rendersettings.customresolution.warning.cubic=Cubic Rendering requires an aspect ratio of 4:3
 replaymod.gui.rendersettings.customresolution.warning.equirectangular=Equirectangular Rendering requires an aspect ratio of 2:1
 replaymod.gui.rendersettings.resolution=Video Resolution
@@ -327,6 +327,13 @@ replaymod.gui.rendersettings.exportyoutube=Export for YouTube
 
 replaymod.gui.rendersettings.basic=Basic Settings
 replaymod.gui.rendersettings.advanced=Advanced Settings
+
+replaymod.gui.rendersettings.presets=Encoding Presets
+replaymod.gui.rendersettings.presets.mp4.default=MP4 - Default
+replaymod.gui.rendersettings.presets.mp4.custom=MP4 - Custom Bitrate
+replaymod.gui.rendersettings.presets.mp4.potato=MP4 - Potato
+replaymod.gui.rendersettings.presets.mkv.lossless=MKV - Lossless
+replaymod.gui.rendersettings.presets.webm.custom=WEBM - Custom Bitrate
 
 #Rendering GUI
 replaymod.gui.rendering.title=Rendering Video

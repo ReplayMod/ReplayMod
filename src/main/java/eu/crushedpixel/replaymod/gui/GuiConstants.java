@@ -63,7 +63,6 @@ public class GuiConstants {
 
     public static final int RENDER_SETTINGS_RENDER_BUTTON = 9002;
     public static final int RENDER_SETTINGS_CANCEL_BUTTON = 9003;
-    public static final int RENDER_SETTINGS_RESOLUTION_CHECKBOX = 9004;
     public static final int RENDER_SETTINGS_INTERPOLATION_BUTTON = 9007;
     public static final int RENDER_SETTINGS_FORCECHUNKS_BUTTON = 9008;
     public static final int RENDER_SETTINGS_FRAMERATE_SLIDER = 9009;
