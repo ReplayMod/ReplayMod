@@ -639,6 +639,9 @@ public class GuiObjectManager extends GuiScreen {
             if(dragging) {
                 int time = (int) getTimeAt(mouseX, mouseY);
                 if(time != -1) {
+                    if(selectedKeyframe != null) {
+                        selectedKeyframe.setRealTimestamp(time);
+                    }
                     cursorPosition = time;
                     updateValuesForTransformation(getTransformations().getTransformationForTimestamp(cursorPosition));
                 }
