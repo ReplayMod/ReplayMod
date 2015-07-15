@@ -1,32 +1,20 @@
 package eu.crushedpixel.replaymod.video.entity;
 
 import eu.crushedpixel.replaymod.settings.RenderOptions;
+import eu.crushedpixel.replaymod.video.capturer.StereoscopicOpenGlFrameCapturer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-
-import java.awt.image.BufferedImage;
 
 import static net.minecraft.client.renderer.GlStateManager.loadIdentity;
 import static net.minecraft.client.renderer.GlStateManager.matrixMode;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
 
-public class StereoscopicEntityRenderer extends CustomEntityRenderer {
-
-    private boolean leftEye;
+public class StereoscopicEntityRenderer extends CustomEntityRenderer<StereoscopicOpenGlFrameCapturer.Data> {
 
     public StereoscopicEntityRenderer(RenderOptions options) {
-        super(options, options.getWidth() / 2, options.getHeight());
-    }
-
-    public void setEye(boolean leftEye) {
-        this.leftEye = leftEye;
-    }
-
-    @Override
-    public void renderFrame(float partialTicks, BufferedImage into, int x, int y) {
-        super.renderFrame(partialTicks, into, x, y);
+        super(options);
     }
 
     @Override
@@ -39,7 +27,7 @@ public class StereoscopicEntityRenderer extends CustomEntityRenderer {
     }
 
     protected void translateStereoscopic() {
-        GlStateManager.translate(leftEye ? 0.07 : -0.07, 0, 0);
+        GlStateManager.translate(data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE ? 0.07 : -0.07, 0, 0);
     }
 
     @Override
@@ -61,6 +49,6 @@ public class StereoscopicEntityRenderer extends CustomEntityRenderer {
 
     @Override
     protected void renderSpectatorHand(float partialTicks, int renderPass) {
-        super.renderSpectatorHand(partialTicks, leftEye ? 1 : 0);
+        super.renderSpectatorHand(partialTicks, data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE ? 1 : 0);
     }
 }

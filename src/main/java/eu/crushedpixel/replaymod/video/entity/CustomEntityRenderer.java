@@ -3,8 +3,7 @@ package eu.crushedpixel.replaymod.video.entity;
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
-import eu.crushedpixel.replaymod.utils.OpenGLUtils;
-import eu.crushedpixel.replaymod.video.entity.strategy.*;
+import eu.crushedpixel.replaymod.video.capturer.CaptureData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.particle.EntityFX;
@@ -19,16 +18,17 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.glu.Project;
 
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.*;
 
-public abstract class CustomEntityRenderer {
+public class CustomEntityRenderer<D extends CaptureData> implements eu.crushedpixel.replaymod.video.capturer.WorldRenderer<D> {
     public final Minecraft mc = Minecraft.getMinecraft();
     public final EntityRenderer proxied = mc.entityRenderer;
     protected final SpectatorRenderer spectatorRenderer = new SpectatorRenderer(){
@@ -37,43 +37,18 @@ public abstract class CustomEntityRenderer {
             CustomEntityRenderer.this.gluPerspective(fovY, aspect, zNear, zFar);
         }
     };
-    protected final FrameRenderingStrategy renderingStrategy;
+
     public GluPerspectiveHook gluPerspectiveHook;
     public LoadShaderHook loadShaderHook;
     protected int frameCount;
 
+    protected D data;
+
     protected final RenderOptions options;
 
-    public final int resultWidth;
-    public final int resultHeight;
 
     public CustomEntityRenderer(RenderOptions options) {
-        this(options, options.getWidth(), options.getHeight());
-    }
-
-    public CustomEntityRenderer(RenderOptions options, int resultWidth, int resultHeight) {
         this.options = options;
-        this.resultWidth = resultWidth;
-        this.resultHeight = resultHeight;
-
-        if (OpenGlHelper.isFramebufferEnabled()) {
-            if (resultWidth > OpenGLUtils.VIEWPORT_MAX_WIDTH || resultHeight > OpenGLUtils.VIEWPORT_MAX_HEIGHT) {
-                // Video resolution only limited by available RAM and disk size
-                renderingStrategy = new TiledFrameBufferRenderingStrategy(this);
-            } else {
-                // This strategy supports shader
-                renderingStrategy = new VanillaFrameBufferRenderingStrategy(this);
-            }
-        } else {
-            if (resultWidth > mc.displayHeight || resultHeight > mc.displayHeight) {
-                // Video resolution only limited by available RAM and disk size
-                renderingStrategy = new TiledReadPixelsRenderingStrategy(this);
-            } else {
-                // Simplest and fastest strategy if frame buffers aren't supported
-                renderingStrategy = new VanillaReadPixelsRenderingStrategy(this);
-            }
-        }
-        System.out.println("CustomEntityRenderer using " + renderingStrategy);
 
         // Install entity renderer hooks
         try {
@@ -105,12 +80,6 @@ public abstract class CustomEntityRenderer {
             Project.gluPerspective(fovY, aspect, zNear, zFar);
         } else {
             gluPerspectiveHook.gluPerspective(fovY, aspect, zNear, zFar);
-        }
-    }
-
-    public void renderFrame(float partialTicks, BufferedImage into, int x, int y) {
-        if (mc.theWorld != null) {
-            renderingStrategy.renderFrame(partialTicks, into, x, y);
         }
     }
 
@@ -366,6 +335,13 @@ public abstract class CustomEntityRenderer {
     }
 
     protected void setupCameraTransform(float partialTicks) {
+        Entity entity = mc.getRenderViewEntity();
+        float orgYaw = entity.rotationYaw;
+        float orgPitch = entity.rotationPitch;
+        float orgPrevYaw = entity.prevRotationYaw;
+        float orgPrevPitch = entity.prevRotationPitch;
+        float orgRoll = ReplayHandler.getCameraTilt();
+
         proxied.farPlaneDistance = (float)(this.mc.gameSettings.renderDistanceChunks * 16);
 
         matrixMode(GL_PROJECTION);
@@ -377,6 +353,12 @@ public abstract class CustomEntityRenderer {
         loadIdentity();
 
         orientCamera(partialTicks);
+
+        entity.rotationYaw = orgYaw;
+        entity.rotationPitch = orgPitch;
+        entity.prevRotationYaw = orgPrevYaw;
+        entity.prevRotationPitch = orgPrevPitch;
+        ReplayHandler.setCameraTilt(orgRoll);
     }
 
     protected void setupFog(int fogDistanceFlag, float partialTicks) {
@@ -386,6 +368,14 @@ public abstract class CustomEntityRenderer {
     }
 
     protected void orientCamera(float partialTicks) {
+        if (options.isIgnoreCameraRotation()) {
+            Entity entity = mc.getRenderViewEntity();
+            // Stop the minecraft code from doing any rotation
+            entity.prevRotationPitch = entity.rotationPitch = 0;
+            entity.prevRotationYaw = entity.rotationYaw = 0;
+            ReplayHandler.setCameraTilt(0);
+        }
+
         proxied.orientCamera(partialTicks);
     }
 
@@ -407,7 +397,8 @@ public abstract class CustomEntityRenderer {
         }
     }
 
-    public void cleanup() {
+    @Override
+    public void close() throws IOException {
         try {
             Field hookField = EntityRenderer.class.getField("hook");
             hookField.set(proxied, null);
@@ -417,8 +408,28 @@ public abstract class CustomEntityRenderer {
             throw new Error(e);
         }
 
-        renderingStrategy.cleanup();
         spectatorRenderer.cleanup();
+    }
+
+    @Override
+    public void renderWorld(ReadableDimension displaySize, final float partialTicks, D data) {
+        this.data = data;
+        withDisplaySize(displaySize.getWidth(), displaySize.getHeight(), new Runnable() {
+            @Override
+            public void run() {
+                renderWorld(partialTicks, 0);
+                if (OpenGlHelper.shadersSupported) {
+                    if (proxied.theShaderGroup != null && proxied.useShader) {
+                        matrixMode(GL_TEXTURE);
+
+                        pushMatrix();
+                        loadIdentity();
+                        proxied.theShaderGroup.loadShaderGroup(partialTicks);
+                        popMatrix();
+                    }
+                }
+            }
+        });
     }
 
     public static final class NoCullingCamera implements ICamera {

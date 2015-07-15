@@ -1,24 +1,22 @@
 package eu.crushedpixel.replaymod.settings;
 
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
-import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
+import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import lombok.Data;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import static org.apache.commons.lang3.Validate.isTrue;
-import static org.apache.commons.lang3.Validate.notNull;
 
 @Data
 public final class RenderOptions {
-    private FrameRenderer renderer;
+    private Pipelines.Preset mode = Pipelines.Preset.DEFAULT;
     private String bitrate = "10M";
     private int fps = 30;
 
     private File outputFile;
+
+    private boolean ignoreCameraRotation;
 
     // Advanced
     private boolean waitForChunks = true;
@@ -32,11 +30,6 @@ public final class RenderOptions {
     private String exportCommandArgs = "-f rawvideo -pix_fmt argb -s %WIDTH%x%HEIGHT% -r %FPS% -i - " +
             "-an " +
             "-c:v libvpx -b:v %BITRATE% %FILENAME%";
-    private int writerQueueSize = Integer.parseInt(System.getProperty("replaymod.render.writerQueueSize", "1"));
-
-    public void setRenderer(FrameRenderer renderer) {
-        this.renderer = notNull(renderer);
-    }
 
     public int getFps() {
         return fps;
@@ -53,9 +46,10 @@ public final class RenderOptions {
 
     public RenderOptions copy() {
         RenderOptions copy = new RenderOptions();
-        copy.renderer = this.renderer;
+        copy.mode = this.mode;
         copy.bitrate = this.bitrate;
         copy.fps = this.fps;
+        copy.ignoreCameraRotation = this.ignoreCameraRotation;
         copy.waitForChunks = this.waitForChunks;
         copy.isLinearMovement = this.isLinearMovement;
         copy.skyColor = this.skyColor;
@@ -63,7 +57,6 @@ public final class RenderOptions {
         copy.height = this.height;
         copy.exportCommand = this.exportCommand;
         copy.exportCommandArgs = this.exportCommandArgs;
-        copy.writerQueueSize = this.writerQueueSize;
         return copy;
     }
 }

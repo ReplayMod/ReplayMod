@@ -22,11 +22,12 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.sound.SoundHandler;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
+import eu.crushedpixel.replaymod.utils.OpenGLUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
-import eu.crushedpixel.replaymod.video.frame.*;
 import lombok.Getter;
+import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.IResourcePack;
@@ -109,6 +110,10 @@ public class ReplayMod {
             System.err.println("Failed to install UriScheme handler:");
             e.printStackTrace();
         }
+
+        // Initialize the static OpenGL info field from the minecraft main thread
+        // Unfortunately lwjgl uses static methods so we have to make use of magic init calls as well
+        OpenGLUtils.init();
 
         config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
@@ -280,31 +285,29 @@ public class ReplayMod {
                 options.setExportCommandArgs(exportCommandArgs);
             }
 
-            FrameRenderer renderer;
+            Pipelines.Preset pipelinePreset = Pipelines.Preset.DEFAULT;
             if (type != null) {
                 String[] parts = type.split(":");
                 type = parts[0].toUpperCase();
                 if ("NORMAL".equals(type) || "DEFAULT".equals(type)) {
-                    renderer = new DefaultFrameRenderer(options);
+                    pipelinePreset = Pipelines.Preset.DEFAULT;
                 } else if ("STEREO".equals(type) || "STEREOSCOPIC".equals(type)) {
-                    renderer = new StereoscopicFrameRenderer(options);
+                    pipelinePreset = Pipelines.Preset.STEREOSCOPIC;
                 } else if ("CUBIC".equals(type)) {
                     if (parts.length < 2) {
                         throw new IllegalArgumentException("Cubic renderer requires boolean for whether it's stable.");
                     }
-                    renderer = new CubicFrameRenderer(options, Boolean.parseBoolean(parts[1]));
+                    pipelinePreset = Pipelines.Preset.CUBIC;
                 } else if ("EQUIRECTANGULAR".equals(type)) {
                     if (parts.length < 2) {
                         throw new IllegalArgumentException("Equirectangular renderer requires boolean for whether it's stable.");
                     }
-                    renderer = new EquirectangularFrameRenderer(options, Boolean.parseBoolean(parts[1]));
+                    pipelinePreset = Pipelines.Preset.EQUIRECTANGULAR;
                 } else {
                     throw new IllegalArgumentException("Unknown type: " + parts[0]);
                 }
-            } else {
-                renderer = new DefaultFrameRenderer(options);
             }
-            options.setRenderer(renderer);
+            options.setMode(pipelinePreset);
 
             @SuppressWarnings("unchecked")
             Queue<ListenableFutureTask> tasks = mc.scheduledTasks;

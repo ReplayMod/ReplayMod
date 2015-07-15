@@ -9,7 +9,7 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.StringUtils;
-import eu.crushedpixel.replaymod.video.frame.*;
+import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiErrorScreen;
@@ -449,8 +449,6 @@ public class GuiRenderSettings extends GuiScreen {
     }
 
     private void startRendering() {
-        FrameRenderer renderer = null;
-
         RendererSettings r = rendererDropdown.getElement(rendererDropdown.getSelectionIndex());
 
         RenderOptions options = new RenderOptions();
@@ -477,16 +475,19 @@ public class GuiRenderSettings extends GuiScreen {
         options.setWidth(getWidthSetting());
         options.setHeight(getHeightSetting());
 
+        Pipelines.Preset pipePreset = Pipelines.Preset.DEFAULT;
         if(r == RendererSettings.DEFAULT) {
-            renderer = new DefaultFrameRenderer(options);
+            pipePreset = Pipelines.Preset.DEFAULT;
         } else if(r == RendererSettings.STEREOSCOPIC) {
-            renderer = new StereoscopicFrameRenderer(options);
+            pipePreset = Pipelines.Preset.STEREOSCOPIC;
         } else if(r == RendererSettings.CUBIC) {
-            renderer = new CubicFrameRenderer(options, ignoreCamDir.isChecked());
+            pipePreset = Pipelines.Preset.CUBIC;
         } else if(r == RendererSettings.EQUIRECTANGULAR) {
-            renderer = new EquirectangularFrameRenderer(options, ignoreCamDir.isChecked());
+            pipePreset = Pipelines.Preset.EQUIRECTANGULAR;
         }
-        options.setRenderer(renderer);
+        options.setMode(pipePreset);
+
+        options.setIgnoreCameraRotation(ignoreCamDir.isChecked());
 
         if(commandInput.getText().trim().length() > 0) {
             options.setExportCommand(commandInput.getText().trim());
@@ -525,6 +526,9 @@ public class GuiRenderSettings extends GuiScreen {
                 ignoreCamDir.enabled = true;
             }
 
+            if (!ignoreCamDir.enabled) {
+                ignoreCamDir.setIsChecked(false);
+            }
 
             xRes.setCursorPositionEnd();
             xRes.setSelectionPos(xRes.getCursorPosition());

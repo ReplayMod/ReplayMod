@@ -3,8 +3,6 @@ package eu.crushedpixel.replaymod.utils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
@@ -19,23 +17,28 @@ public class OpenGLUtils {
         VIEWPORT_MAX_HEIGHT = buffer.get();
     }
 
-    public static void openGlBytesToBufferedImage(ByteBuffer buffer, int bufferWidth, BufferedImage image, int offsetX, int offsetY) {
-        int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-        int imageWidth = image.getWidth();
+    /**
+     * Magic init method which has to be called from the OpenGL thread so the variables in this class
+     * can be initialized successfully.
+     * Does not perform any work on its own.
+     */
+    public static void init() {
+    }
+
+    public static void openGlBytesToARBG(ByteBuffer buffer, int bufferWidth, int xOffset, int yOffset, ByteBuffer to, int width) {
+        byte[] pixel = new byte[4];
+        pixel[0] = (byte) 0xff;
         int bufferSize = buffer.remaining() / 3;
         // Read the OpenGL image row by row from right to left (flipped horizontally)
         for (int i = bufferSize - 1; i >= 0; i--) {
             // Coordinates in the final image
-            int x = offsetX + bufferWidth - i % bufferWidth - 1; // X coord of OpenGL image has to be flipped first
-            int y = offsetY + i / bufferWidth;
-            if (x >= imageWidth || y * imageWidth >= pixels.length) {
-                buffer.position(buffer.position() + 3); // Pixel would end up outside of image
-                continue;
-            }
+            int x = xOffset + bufferWidth - i % bufferWidth - 1; // X coord of OpenGL image has to be flipped first
+            int y = yOffset + i / bufferWidth;
             // Write to image (row by row, left to right)
-            pixels[y * imageWidth + x] = 0xff << 24 | (buffer.get() & 0xff) << 16 | (buffer.get() & 0xff) << 8 | buffer.get() & 0xff;
+            buffer.get(pixel, 1, 3);
+            to.position((y * width + x) * 4);
+            to.put(pixel);
         }
-        buffer.rewind();
+        to.rewind();
     }
-
 }

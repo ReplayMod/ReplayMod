@@ -16,14 +16,18 @@ import eu.crushedpixel.replaymod.replay.ReplaySender;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
-import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
+import eu.crushedpixel.replaymod.video.capturer.RenderInfo;
+import eu.crushedpixel.replaymod.video.frame.ARGBFrame;
+import eu.crushedpixel.replaymod.video.rendering.Pipeline;
+import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.Timer;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.util.Dimension;
+import org.lwjgl.util.ReadableDimension;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.concurrent.FutureTask;
 
@@ -31,10 +35,8 @@ import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
-public class VideoRenderer {
+public class VideoRenderer implements RenderInfo {
     private final Minecraft mc = Minecraft.getMinecraft();
-    private final FrameRenderer frameRenderer;
-    private final VideoWriter videoWriter;
     private final ReplaySender replaySender;
     private final RenderOptions options;
 
@@ -52,12 +54,19 @@ public class VideoRenderer {
     private boolean paused;
     private boolean cancelled;
 
+    private final Pipeline renderingPipeline;
+
     public VideoRenderer(RenderOptions options) throws IOException {
-        this.frameRenderer = options.getRenderer();
-        this.videoWriter = new VideoWriter(this, options);
         this.gui = new GuiVideoRenderer(this);
         this.replaySender = ReplayMod.replaySender;
         this.options = options;
+        this.renderingPipeline = Pipelines.newPipeline(options.getMode(), this, new VideoWriter(options) {
+            @Override
+            public void consume(ARGBFrame frame) {
+                gui.updatePreview(frame);
+                super.consume(frame);
+            }
+        });
     }
 
     /**
@@ -98,31 +107,31 @@ public class VideoRenderer {
 
         mc.renderGlobal.renderEntitiesStartupCounter = 0;
 
-        framesDone = 0;
-        while (framesDone < totalFrames && !cancelled) {
-            pauseIfNeeded();
-
-            if (Display.isActive() && Display.isCloseRequested()) {
-                mc.shutdown();
-                return false;
-            }
-
-            updateTime(timer, framesDone);
-
-            int elapsedTicks = timer.elapsedTicks;
-            while (elapsedTicks-- > 0) {
-                tick();
-            }
-
-            frame(timer);
-            framesDone++;
-
-            drawGui();
-            System.gc();
-        }
+        renderingPipeline.run();
 
         finish();
         return !cancelled;
+    }
+
+    @Override
+    public float updateForNextFrame() {
+        drawGui();
+
+        updateTime(mc.timer, framesDone);
+
+        int elapsedTicks = mc.timer.elapsedTicks;
+        while (elapsedTicks-- > 0) {
+            tick();
+        }
+
+        updateCam();
+        framesDone++;
+        return mc.timer.renderPartialTicks;
+    }
+
+    @Override
+    public RenderOptions getRenderOptions() {
+        return options;
     }
 
     private void setup() {
@@ -171,7 +180,6 @@ public class VideoRenderer {
         }
         time.prepare();
 
-        frameRenderer.setup();
 
         ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
         gui.setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
@@ -182,18 +190,8 @@ public class VideoRenderer {
     }
 
     private void finish() {
-        if (cancelled) {
-            videoWriter.abortRecording();
-        } else {
-            videoWriter.endRecording();
-        }
-        try {
-            videoWriter.waitForFinish();
-        } catch (InterruptedException ignored) { }
-
-        frameRenderer.tearDown();
         if (mouseWasGrabbed) {
-            Mouse.setGrabbed(true);
+            mc.mouseHelper.grabMouseCursor();
         }
         ReplayTimer.get(mc).passive = false;
         mc.displayGuiScreen(null);
@@ -202,6 +200,8 @@ public class VideoRenderer {
         }
 
         ReplayMod.soundHandler.playRenderSuccessSound();
+
+        mc.displayGuiScreen(null);
     }
 
     private void updateCam() {
@@ -320,9 +320,7 @@ public class VideoRenderer {
         TimestampValue timestampValue = new TimestampValue();
         time.applyPoint(Math.max(0, Math.min(1, timePos)), timestampValue);
         Integer replayTime = (int) timestampValue.value;
-        if(replayTime != null) {
-            replaySender.sendPacketsTill(replayTime);
-        }
+        replaySender.sendPacketsTill(replayTime);
 
         if (curSpeed >= 0) {
             replaySender.setReplaySpeed(curSpeed);
@@ -337,7 +335,7 @@ public class VideoRenderer {
         timer.renderPartialTicks = timer.elapsedPartialTicks;
     }
 
-    private void tick() throws IOException {
+    private void tick() {
         synchronized (mc.scheduledTasks) {
             while (!mc.scheduledTasks.isEmpty()) {
                 ((FutureTask) mc.scheduledTasks.poll()).run();
@@ -345,77 +343,62 @@ public class VideoRenderer {
         }
 
         mc.currentScreen = gui;
-        mc.runTick();
-    }
-
-    private void frame(Timer timer) {
-        updateCam();
-
-        BufferedImage frame = null;
-        while (frame == null) {
-            try {
-                frame = frameRenderer.captureFrame(timer);
-            } catch (OutOfMemoryError e) {
-                System.out.println("Caught oom error-> calling garbage collector, decreasing queue size and waiting for video writer");
-                System.gc();
-                videoWriter.waitTillQueueEmpty();
-            }
-        }
-        while (!videoWriter.writeImage(frame, false)) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                return;
-            }
-            drawGui();
-        }
-    }
-
-    private void pauseIfNeeded() {
-        while (paused && !cancelled && !Display.isCloseRequested()) {
-            drawGui();
-            try {
-                Thread.sleep(20);
-            } catch (InterruptedException e) {
-                return;
-            }
+        try {
+            mc.runTick();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     public void drawGui() {
-        pushMatrix();
-        clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        enableTexture2D();
-        mc.getFramebuffer().bindFramebuffer(true);
-        mc.entityRenderer.setupOverlayRendering();
+        do {
+            pushMatrix();
+            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            enableTexture2D();
+            mc.getFramebuffer().bindFramebuffer(true);
+            mc.entityRenderer.setupOverlayRendering();
 
-        try {
-            gui.handleInput();
-        } catch (IOException e) {
-            // That's a strange exception from this kind of method O_o
-            // It isn't actually thrown here, so we'll deal with it the easy way
-            throw new RuntimeException(e);
-        }
+            try {
+                gui.handleInput();
+            } catch (IOException e) {
+                // That's a strange exception from this kind of method O_o
+                // It isn't actually thrown here, so we'll deal with it the easy way
+                throw new RuntimeException(e);
+            }
 
-        ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-        int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
-        int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
-        gui.drawScreen(mouseX, mouseY, 0);
+            ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+            int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
+            int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
+            gui.drawScreen(mouseX, mouseY, 0);
 
-        mc.getFramebuffer().unbindFramebuffer();
-        popMatrix();
-        pushMatrix();
-        mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
-        popMatrix();
+            mc.getFramebuffer().unbindFramebuffer();
+            popMatrix();
+            pushMatrix();
+            mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
+            popMatrix();
 
-        Display.update();
-        if (Mouse.isGrabbed()) {
-            Mouse.setGrabbed(false);
-        }
+            Display.update();
+            if (Mouse.isGrabbed()) {
+                Mouse.setGrabbed(false);
+            }
+            if (paused) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        } while (paused);
     }
 
     public int getFramesDone() {
         return framesDone;
+    }
+
+    @Override
+    public ReadableDimension getFrameSize() {
+        return new Dimension(options.getWidth(), options.getHeight());
     }
 
     public int getTotalFrames() {
@@ -423,10 +406,6 @@ public class VideoRenderer {
     }
 
     public int getVideoTime() { return framesDone * 1000 / fps; }
-
-    public FrameRenderer getFrameRenderer() {
-        return frameRenderer;
-    }
 
     public void setPaused(boolean paused) {
         this.paused = paused;
@@ -438,5 +417,6 @@ public class VideoRenderer {
 
     public void cancel() {
         this.cancelled = true;
+        renderingPipeline.cancel();
     }
 }

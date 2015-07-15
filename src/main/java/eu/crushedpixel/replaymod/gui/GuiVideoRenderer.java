@@ -1,18 +1,32 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.gui.elements.GuiProgressBar;
+import eu.crushedpixel.replaymod.utils.BoundingUtils;
 import eu.crushedpixel.replaymod.utils.DurationUtils;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
-import eu.crushedpixel.replaymod.video.frame.FrameRenderer;
+import eu.crushedpixel.replaymod.video.frame.ARGBFrame;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
+import org.lwjgl.util.Dimension;
+import org.lwjgl.util.ReadableDimension;
 
 import java.awt.*;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+import static net.minecraft.client.renderer.GlStateManager.bindTexture;
+import static net.minecraft.client.renderer.GlStateManager.color;
 
 public class GuiVideoRenderer extends GuiScreen {
+    private static final ResourceLocation noPreviewTexture = new ResourceLocation("replaymod", "logo.jpg");
+
     private final VideoRenderer renderer;
 
     private final String SCREEN_TITLE = I18n.format("replaymod.gui.rendering.title");
@@ -26,6 +40,9 @@ public class GuiVideoRenderer extends GuiScreen {
     private GuiButton cancelButton;
     private GuiCheckBox previewCheckBox;
     private GuiProgressBar progressBar;
+
+    private DynamicTexture previewTexture;
+    private boolean previewTextureDirty;
 
     private int renderTimeTaken = 0;
     private long prevTime = -1;
@@ -87,8 +104,6 @@ public class GuiVideoRenderer extends GuiScreen {
             } else if (CANCEL_CONFIRM.equals(cancelButton.displayString)) {
                 renderer.cancel();
             }
-        } else if (button == previewCheckBox) {
-            renderer.getFrameRenderer().setPreviewActive(previewCheckBox.isChecked());
         }
     }
 
@@ -139,7 +154,6 @@ public class GuiVideoRenderer extends GuiScreen {
         String takenString = I18n.format("replaymod.gui.rendering.timetaken")+": "+DurationUtils.convertSecondsToString(renderTimeTaken/1000);
         String leftString = I18n.format("replaymod.gui.rendering.timeleft")+": "+DurationUtils.convertSecondsToString(renderTimeLeft);
 
-        FrameRenderer frameRenderer = renderer.getFrameRenderer();
         int centerX = width / 2;
 
         drawBackground(0);
@@ -159,9 +173,9 @@ public class GuiVideoRenderer extends GuiScreen {
         int previewY = previewCheckBox.yPosition - 10 - previewHeight;
 
         if(previewCheckBox.isChecked()) {
-            frameRenderer.renderPreview(previewX, previewY, previewWidth, previewHeight);
+            renderPreview(previewX, previewY, previewWidth, previewHeight);
         } else {
-            FrameRenderer.renderNoPreview(previewX, previewY, previewWidth, previewHeight);
+            renderNoPreview(previewX, previewY, previewWidth, previewHeight);
         }
 
         drawString(fontRendererObj, takenString, 12, previewCheckBox.yPosition + 5 + 20, Color.WHITE.getRGB());
@@ -169,5 +183,76 @@ public class GuiVideoRenderer extends GuiScreen {
                 previewCheckBox.yPosition + 5 + 20, Color.WHITE.getRGB());
 
         super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    private synchronized void renderPreview(int x, int y, int width, int height) {
+        ReadableDimension videoSize = renderer.getFrameSize();
+        final int videoWidth = videoSize.getWidth();
+        final int videoHeight = videoSize.getHeight();
+
+        if (previewTexture == null) {
+            previewTexture = new DynamicTexture(videoWidth, videoHeight) {
+                @Override
+                public void updateDynamicTexture() {
+                    bindTexture(getGlTextureId());
+                    TextureUtil.uploadTextureSub(0, getTextureData(), videoWidth, videoHeight, 0, 0, true, false, false);
+                }
+            };
+        }
+
+        if (previewTextureDirty) {
+            previewTexture.updateDynamicTexture();
+            previewTextureDirty = false;
+        }
+
+        Dimension dimension = BoundingUtils.fitIntoBounds(new Dimension(videoSize), new Dimension(width, height));
+
+        x += (width - dimension.getWidth()) / 2;
+        y += (height - dimension.getHeight()) / 2;
+        width = dimension.getWidth();
+        height = dimension.getHeight();
+
+        color(1, 1, 1, 1);
+        bindTexture(previewTexture.getGlTextureId());
+        drawScaledCustomSizeModalRect(x, y, 0, 0, videoWidth, videoHeight, width, height, videoWidth, videoHeight);
+    }
+
+    private void renderNoPreview(int x, int y, int width, int height) {
+        int actualWidth = width;
+        int actualHeight = height;
+        if (width / height > 1280 / 720) {
+            actualWidth = height * 1280 / 720;
+        } else {
+            actualHeight = width * 720 / 1280;
+        }
+
+        x += (width - actualWidth) / 2;
+        y += (height - actualHeight) / 2;
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(noPreviewTexture);
+        color(1, 1, 1, 1);
+        drawScaledCustomSizeModalRect(x, y, 0, 0, 1280, 720, actualWidth, actualHeight, 1280, 720);
+    }
+
+    public void updatePreview(ARGBFrame frame) {
+        if (previewCheckBox.isChecked() && previewTexture != null) {
+            ByteBuffer buffer = frame.getByteBuffer();
+            buffer.mark();
+            synchronized (this) {
+                swapEndianness(buffer);
+                buffer.asIntBuffer().get(previewTexture.getTextureData());
+                swapEndianness(buffer);
+                previewTextureDirty = true;
+            }
+            buffer.reset();
+        }
+    }
+
+    private void swapEndianness(ByteBuffer buffer) {
+        if (buffer.order() == ByteOrder.BIG_ENDIAN) {
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+        } else {
+            buffer.order(ByteOrder.BIG_ENDIAN);
+        }
     }
 }
