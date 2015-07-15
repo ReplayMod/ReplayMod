@@ -26,6 +26,7 @@ import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
 import eu.crushedpixel.replaymod.video.frame.*;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.IResourcePack;
@@ -89,6 +90,9 @@ public class ReplayMod {
     public static SoundHandler soundHandler = new SoundHandler();
     public static CrosshairRenderHandler crosshairRenderHandler;
 
+    @Getter
+    private static boolean latestModVersion = false;
+
     // The instance of your mod that Forge uses.
     @Instance(value = "ReplayModID")
     public static ReplayMod instance;
@@ -121,6 +125,13 @@ public class ReplayMod {
 
         replayFileAppender = new ReplayFileAppender();
         FMLCommonHandler.instance().bus().register(replayFileAppender);
+
+        //check if latest mod version
+        try {
+            latestModVersion = apiClient.isVersionUpToDate(getContainer().getVersion());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @EventHandler

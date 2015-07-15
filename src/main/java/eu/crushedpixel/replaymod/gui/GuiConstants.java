@@ -2,6 +2,8 @@ package eu.crushedpixel.replaymod.gui;
 
 public class GuiConstants {
 
+    public static final int MAIN_MENU_UPDATE_BUTTON = 8765;
+
     public static final int CENTER_DOWNLOADED_REPLAYS_BUTTON = 2001;
     public static final int CENTER_SEARCH_BUTTON = 2002;
     public static final int CENTER_BACK_BUTTON = 2003;
@@ -30,19 +32,6 @@ public class GuiConstants {
     public static final int REPLAY_MANAGER_BUTTON_ID = 9001;
     public static final int REPLAY_EDITOR_BUTTON_ID = 9002;
     public static final int REPLAY_CENTER_BUTTON_ID = 9003;
-
-    public static final int LOGIN_OKAY_BUTTON = 1100;
-    public static final int LOGIN_CANCEL_BUTTON = 1101;
-    public static final int LOGIN_REGISTER_BUTTON = 1102;
-    public static final int LOGIN_USERNAME_FIELD = 1103;
-    public static final int LOGIN_PASSWORD_FIELD = 1104;
-
-    public static final int REGISTER_USERNAME_FIELD = 2000;
-    public static final int REGISTER_PASSWORD_FIELD = 2001;
-    public static final int REGISTER_PASSWORD_CONFIRM_FIELD = 2002;
-    public static final int REGISTER_CANCEL_BUTTON = 2003;
-    public static final int REGISTER_OKAY_BUTTON = 2004;
-    public static final int REGISTER_MAIL_FIELD = 2005;
 
     public static final int REPLAY_EDITOR_TRIM_TAB = 5000;
     public static final int REPLAY_EDITOR_CONNECT_TAB = 5001;

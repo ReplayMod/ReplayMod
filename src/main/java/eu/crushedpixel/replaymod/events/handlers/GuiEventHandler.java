@@ -15,6 +15,7 @@ import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import eu.crushedpixel.replaymod.utils.StringUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.inventory.GuiInventory;
@@ -79,6 +80,29 @@ public class GuiEventHandler {
                 e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedin").toUpperCase(), 5, 15, DARK_GREEN.getRGB());
             } else {
                 e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedout").toUpperCase(), 5, 15, DARK_RED.getRGB());
+            }
+
+            //if version not up to date, display info string
+            if(!ReplayMod.isLatestModVersion()) {
+                int width = Math.max(100, e.gui.width / 2 - 100 - 10);
+
+                String[] lines = StringUtils.splitStringInMultipleRows(I18n.format("replaymod.gui.outdated"), width);
+
+                int maxLineWidth = 0;
+                for(String line : lines) {
+                    int lineWidth = mc.fontRendererObj.getStringWidth(line);
+                    if(lineWidth > maxLineWidth) {
+                        maxLineWidth = lineWidth;
+                    }
+                }
+
+                Gui.drawRect(2, 77, 5+maxLineWidth+3, 80+(lines.length * 10), 0x80FF0000);
+
+                int i = 0;
+                for(String line : lines) {
+                    mc.fontRendererObj.drawStringWithShadow(line, 5, 80 + (i * 10), Color.WHITE.getRGB());
+                    i++;
+                }
             }
 
             if(replayCount == 0) {

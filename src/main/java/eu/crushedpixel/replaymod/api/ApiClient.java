@@ -202,6 +202,12 @@ public class ApiClient {
         invokeAndReturn(builder, Success.class);
     }
 
+    public boolean isVersionUpToDate(String versionIdentifier) throws IOException, ApiException {
+        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.up_to_date);
+        builder.put("version", versionIdentifier);
+        return invokeAndReturn(builder, Success.class).isSuccess();
+    }
+
     private <T> T invokeAndReturn(QueryBuilder builder, Class<T> classOfT) throws IOException, ApiException {
         return invokeAndReturn(builder.toString(), classOfT);
     }

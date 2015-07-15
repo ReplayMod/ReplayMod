@@ -20,4 +20,5 @@ public class ReplayModApiMethods {
     public static final String check_auth = REPLAYMOD_BASE_URL+"check_auth";
     public static final String get_language = REPLAYMOD_BASE_URL+"get_language";
     public static final String search = REPLAYMOD_BASE_URL+"search";
+    public static final String up_to_date = REPLAYMOD_BASE_URL+"up_to_date";
 }

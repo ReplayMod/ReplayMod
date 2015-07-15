@@ -86,6 +86,8 @@ replaymod.gui.pleasewait=Please wait
 replaymod.gui.render=Render
 replaymod.gui.iphidden=Server IP Hidden
 
+replaymod.gui.outdated=There is a newer Replay Mod version available. Please download it from replaymod.com
+
 replaymod.gui.hours=h
 replaymod.gui.minutes=min
 replaymod.gui.seconds=sec
