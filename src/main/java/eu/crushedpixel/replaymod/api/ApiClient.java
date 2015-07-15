@@ -203,6 +203,8 @@ public class ApiClient {
     }
 
     public boolean isVersionUpToDate(String versionIdentifier) throws IOException, ApiException {
+        //in a development environment, getContainer().getVersion() will return ${version}
+        if(versionIdentifier.equals("${version}")) return true;
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.up_to_date);
         builder.put("version", versionIdentifier);
         return invokeAndReturn(builder, Success.class).isSuccess();

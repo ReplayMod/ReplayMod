@@ -92,7 +92,7 @@ public class ReplayMod {
     public static CrosshairRenderHandler crosshairRenderHandler;
 
     @Getter
-    private static boolean latestModVersion = false;
+    private static boolean latestModVersion = true;
 
     // The instance of your mod that Forge uses.
     @Instance(value = "ReplayModID")
