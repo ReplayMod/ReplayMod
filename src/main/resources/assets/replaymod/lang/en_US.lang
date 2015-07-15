@@ -307,6 +307,8 @@ replaymod.gui.rendersettings.renderer.cubic.description=Renders the video with a
 replaymod.gui.rendersettings.renderer.equirectangular.description=Renders the video with a 360 degree panoramic view, using Equirectangular Projection. This is useable by YouTube's new 360 degree video function, and several video players (and the Oculus Rift), for example VR Player.
 
 replaymod.gui.rendersettings.customresolution=Custom Video Resolution
+replaymod.gui.rendersettings.customresolution.warning.cubic=Cubic Rendering requires an aspect ratio of 4:3
+replaymod.gui.rendersettings.customresolution.warning.equirectangular=Equirectangular Rendering requires an aspect ratio of 2:1
 replaymod.gui.rendersettings.resolution=Video Resolution
 replaymod.gui.rendersettings.interpolation=Path Interpolation
 replaymod.gui.rendersettings.forcechunks=Force Render Chunks

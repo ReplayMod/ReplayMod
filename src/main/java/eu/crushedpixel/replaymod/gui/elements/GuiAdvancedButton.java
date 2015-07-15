@@ -8,7 +8,7 @@ import java.awt.*;
 
 public class GuiAdvancedButton extends GuiButton implements GuiElement {
     private final Runnable action;
-    private final String hoverText;
+    public String hoverText;
 
     public GuiAdvancedButton(int id, int x, int y, String buttonText) {
         this(id, x, y, buttonText, null, null);

@@ -38,7 +38,7 @@ public class GuiRenderSettings extends GuiScreen {
 
     private static final int LEFT_BORDER = 10;
 
-    private GuiButton renderButton, cancelButton, advancedButton;
+    private GuiAdvancedButton renderButton, cancelButton, advancedButton;
     private GuiDropdown<RendererSettings> rendererDropdown;
 
     private int virtualY, virtualHeight;
@@ -79,9 +79,9 @@ public class GuiRenderSettings extends GuiScreen {
                 i++;
             }
 
-            renderButton = new GuiButton(GuiConstants.RENDER_SETTINGS_RENDER_BUTTON, 0, 0, I18n.format("replaymod.gui.render"));
-            cancelButton = new GuiButton(GuiConstants.RENDER_SETTINGS_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.cancel"));
-            advancedButton = new GuiButton(GuiConstants.RENDER_SETTINGS_ADVANCED_BUTTON, 0, 0, I18n.format("replaymod.gui.rendersettings.advanced"));
+            renderButton = new GuiAdvancedButton(GuiConstants.RENDER_SETTINGS_RENDER_BUTTON, 0, 0, I18n.format("replaymod.gui.render"));
+            cancelButton = new GuiAdvancedButton(GuiConstants.RENDER_SETTINGS_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.cancel"));
+            advancedButton = new GuiAdvancedButton(GuiConstants.RENDER_SETTINGS_ADVANCED_BUTTON, 0, 0, I18n.format("replaymod.gui.rendersettings.advanced"));
 
             customResolution = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_RESOLUTION_CHECKBOX, 0, 0, I18n.format("replaymod.gui.rendersettings.customresolution"), false);
 
@@ -100,6 +100,7 @@ public class GuiRenderSettings extends GuiScreen {
                         }
                     }
                     yRes.setCursorPositionEnd();
+                    validateInputs();
                 }
             };
             yRes = new GuiNumberInput(fontRendererObj, 0, 0, 50, 1, 10000, mc.displayHeight, false) {
@@ -117,6 +118,7 @@ public class GuiRenderSettings extends GuiScreen {
                         }
                     }
                     xRes.setCursorPositionEnd();
+                    validateInputs();
                 }
             };
 
@@ -301,6 +303,8 @@ public class GuiRenderSettings extends GuiScreen {
                 i++;
             }
         }
+
+        renderButton.drawOverlay(mc, mouseX, mouseY);
     }
 
     @Override
@@ -537,6 +541,8 @@ public class GuiRenderSettings extends GuiScreen {
             yRes.setSelectionPos(yRes.getCursorPosition());
 
             yRes.moveCursorBy(0); //This causes the Aspect Ratio to be recalculated based on the Y Resolution
+
+            validateInputs();
         }
     }
 
@@ -544,5 +550,39 @@ public class GuiRenderSettings extends GuiScreen {
     public void onGuiClosed() {
         Keyboard.enableRepeatEvents(false);
         super.onGuiClosed();
+    }
+
+    private void validateInputs() {
+        boolean valid = true;
+        switch (rendererDropdown.getElement(rendererDropdown.getSelectionIndex())) {
+            case CUBIC:
+                if (getWidthSetting() * 3 / 4 != getHeightSetting()
+                        || getWidthSetting() * 3 % 4 != 0) {
+                    valid = false;
+                    renderButton.hoverText = I18n.format("replaymod.gui.rendersettings.customresolution.warning.cubic");
+                }
+                break;
+            case EQUIRECTANGULAR:
+                if (getWidthSetting() / 2 != getHeightSetting()
+                        || getWidthSetting() % 2 != 0) {
+                    valid = false;
+                    renderButton.hoverText = I18n.format("replaymod.gui.rendersettings.customresolution.warning.equirectangular");
+                }
+                break;
+        }
+        if (valid) {
+            renderButton.enabled = true;
+            renderButton.hoverText = "";
+            xRes.setTextColor(0xffffffff);
+            yRes.setTextColor(0xffffffff);
+            xRes.setDisabledTextColour(0xff707070);
+            yRes.setDisabledTextColour(0xff707070);
+        } else {
+            renderButton.enabled = false;
+            xRes.setTextColor(0xffff0000);
+            yRes.setTextColor(0xffff0000);
+            xRes.setDisabledTextColour(0xffff0000);
+            yRes.setDisabledTextColour(0xffff0000);
+        }
     }
 }
