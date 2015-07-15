@@ -67,7 +67,7 @@ public abstract class AbstractGuiCheckbox<T extends AbstractGuiCheckbox<T>>
         renderer.drawRect(1, 1, boxSize - 2, boxSize - 2, BOX_BACKGROUND_COLOR);
 
         if(isChecked()) {
-            renderer.drawCenteredString(boxSize / 2 + 1, 1, color, "x");
+            renderer.drawCenteredString(boxSize / 2 + 1, 1, color, "x", true);
         }
 
         renderer.drawString(boxSize + 2, 2, color, label);
