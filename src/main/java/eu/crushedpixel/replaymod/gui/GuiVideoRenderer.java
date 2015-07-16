@@ -19,7 +19,6 @@ import org.lwjgl.util.ReadableDimension;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import static net.minecraft.client.renderer.GlStateManager.bindTexture;
 import static net.minecraft.client.renderer.GlStateManager.color;
@@ -239,20 +238,13 @@ public class GuiVideoRenderer extends GuiScreen {
             ByteBuffer buffer = frame.getByteBuffer();
             buffer.mark();
             synchronized (this) {
-                swapEndianness(buffer);
-                buffer.asIntBuffer().get(previewTexture.getTextureData());
-                swapEndianness(buffer);
+                int[] data = previewTexture.getTextureData();
+                for (int i = 0; i < data.length; i++) {
+                    data[i] = 0xff << 24 | (buffer.get() & 0xff) << 16 | (buffer.get() & 0xff) << 8 |  (buffer.get() & 0xff);
+                }
                 previewTextureDirty = true;
             }
             buffer.reset();
-        }
-    }
-
-    private void swapEndianness(ByteBuffer buffer) {
-        if (buffer.order() == ByteOrder.BIG_ENDIAN) {
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-        } else {
-            buffer.order(ByteOrder.BIG_ENDIAN);
         }
     }
 }
