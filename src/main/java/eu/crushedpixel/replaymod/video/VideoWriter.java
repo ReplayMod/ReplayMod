@@ -4,7 +4,7 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ByteBufferPool;
 import eu.crushedpixel.replaymod.utils.StreamPipe;
 import eu.crushedpixel.replaymod.utils.StringUtils;
-import eu.crushedpixel.replaymod.video.frame.ARGBFrame;
+import eu.crushedpixel.replaymod.video.frame.RGBFrame;
 import eu.crushedpixel.replaymod.video.rendering.FrameConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.Validate.isTrue;
 
-public class VideoWriter implements FrameConsumer<ARGBFrame> {
+public class VideoWriter implements FrameConsumer<RGBFrame> {
 
     private final RenderOptions options;
     private final Process process;
@@ -84,7 +84,7 @@ public class VideoWriter implements FrameConsumer<ARGBFrame> {
     }
 
     @Override
-    public void consume(ARGBFrame frame) {
+    public void consume(RGBFrame frame) {
         try {
             checkSize(frame.getSize());
             channel.write(frame.getByteBuffer());

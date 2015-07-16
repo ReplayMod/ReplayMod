@@ -6,14 +6,14 @@ import eu.crushedpixel.replaymod.video.capturer.*;
 import eu.crushedpixel.replaymod.video.entity.CubicEntityRenderer;
 import eu.crushedpixel.replaymod.video.entity.CustomEntityRenderer;
 import eu.crushedpixel.replaymod.video.entity.StereoscopicEntityRenderer;
-import eu.crushedpixel.replaymod.video.frame.ARGBFrame;
 import eu.crushedpixel.replaymod.video.frame.CubicOpenGlFrame;
 import eu.crushedpixel.replaymod.video.frame.OpenGlFrame;
+import eu.crushedpixel.replaymod.video.frame.RGBFrame;
 import eu.crushedpixel.replaymod.video.frame.StereoscopicOpenGlFrame;
-import eu.crushedpixel.replaymod.video.processor.CubicToARGBProcessor;
-import eu.crushedpixel.replaymod.video.processor.EquirectangularToARGBProcessor;
-import eu.crushedpixel.replaymod.video.processor.OpenGlToARGBProcessor;
-import eu.crushedpixel.replaymod.video.processor.StereoscopicToARGBProcessor;
+import eu.crushedpixel.replaymod.video.processor.CubicToRGBProcessor;
+import eu.crushedpixel.replaymod.video.processor.EquirectangularToRGBProcessor;
+import eu.crushedpixel.replaymod.video.processor.OpenGlToRGBProcessor;
+import eu.crushedpixel.replaymod.video.processor.StereoscopicToRGBProcessor;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -22,7 +22,7 @@ public class Pipelines {
         DEFAULT, STEREOSCOPIC, CUBIC, EQUIRECTANGULAR
     }
 
-    public static Pipeline newPipeline(Preset preset, RenderInfo renderInfo, FrameConsumer<ARGBFrame> consumer) {
+    public static Pipeline newPipeline(Preset preset, RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         switch (preset) {
             case DEFAULT:
                 return newDefaultPipeline(renderInfo, consumer);
@@ -36,7 +36,7 @@ public class Pipelines {
         throw new UnsupportedOperationException("Unknown preset: " + preset);
     }
 
-    public static Pipeline<OpenGlFrame, ARGBFrame> newDefaultPipeline(RenderInfo renderInfo, FrameConsumer<ARGBFrame> consumer) {
+    public static Pipeline<OpenGlFrame, RGBFrame> newDefaultPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderOptions options = renderInfo.getRenderOptions();
         FrameCapturer<OpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
@@ -44,32 +44,32 @@ public class Pipelines {
         } else {
             capturer = new SimpleOpenGlFrameCapturer(new CustomEntityRenderer<CaptureData>(options), renderInfo);
         }
-        return new Pipeline<OpenGlFrame, ARGBFrame>(capturer, new OpenGlToARGBProcessor(), consumer);
+        return new Pipeline<OpenGlFrame, RGBFrame>(capturer, new OpenGlToRGBProcessor(), consumer);
     }
 
-    public static Pipeline<StereoscopicOpenGlFrame, ARGBFrame> newStereoscopicPipeline(RenderInfo renderInfo, FrameConsumer<ARGBFrame> consumer) {
+    public static Pipeline<StereoscopicOpenGlFrame, RGBFrame> newStereoscopicPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderOptions options = renderInfo.getRenderOptions();
-        return new Pipeline<StereoscopicOpenGlFrame, ARGBFrame>(
+        return new Pipeline<StereoscopicOpenGlFrame, RGBFrame>(
                 new StereoscopicOpenGlFrameCapturer(new StereoscopicEntityRenderer(options), renderInfo),
-                new StereoscopicToARGBProcessor(),
+                new StereoscopicToRGBProcessor(),
                 consumer
         );
     }
 
-    public static Pipeline<CubicOpenGlFrame, ARGBFrame> newCubicPipeline(RenderInfo renderInfo, FrameConsumer<ARGBFrame> consumer) {
+    public static Pipeline<CubicOpenGlFrame, RGBFrame> newCubicPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderOptions options = renderInfo.getRenderOptions();
-        return new Pipeline<CubicOpenGlFrame, ARGBFrame>(
+        return new Pipeline<CubicOpenGlFrame, RGBFrame>(
                 new CubicOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4),
-                new CubicToARGBProcessor(),
+                new CubicToRGBProcessor(),
                 consumer
         );
     }
 
-    public static Pipeline<CubicOpenGlFrame, ARGBFrame> newEquirectangularPipeline(RenderInfo renderInfo, FrameConsumer<ARGBFrame> consumer) {
+    public static Pipeline<CubicOpenGlFrame, RGBFrame> newEquirectangularPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderOptions options = renderInfo.getRenderOptions();
-        return new Pipeline<CubicOpenGlFrame, ARGBFrame>(
+        return new Pipeline<CubicOpenGlFrame, RGBFrame>(
                 new CubicOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4),
-                new EquirectangularToARGBProcessor(options.getWidth() / 4),
+                new EquirectangularToRGBProcessor(options.getWidth() / 4),
                 consumer
         );
     }

@@ -7,7 +7,7 @@ import org.lwjgl.util.ReadableDimension;
 
 import java.nio.ByteBuffer;
 
-public class ARGBFrame implements Frame {
+public class RGBFrame implements Frame {
     @Getter
     private final int frameId;
 
@@ -17,8 +17,8 @@ public class ARGBFrame implements Frame {
     @Getter
     private final ByteBuffer byteBuffer;
 
-    public ARGBFrame(int frameId, ReadableDimension size, ByteBuffer byteBuffer) {
-        Validate.isTrue(size.getWidth() * size.getHeight() * 4 == byteBuffer.remaining(),
+    public RGBFrame(int frameId, ReadableDimension size, ByteBuffer byteBuffer) {
+        Validate.isTrue(size.getWidth() * size.getHeight() * 3 == byteBuffer.remaining(),
                 "Buffer size is %d (cap: %d) but should be %d",
                 byteBuffer.remaining(), byteBuffer.capacity(), size.getWidth() * size.getHeight() * 4);
         this.frameId = frameId;

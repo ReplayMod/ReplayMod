@@ -17,7 +17,7 @@ import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.video.capturer.RenderInfo;
-import eu.crushedpixel.replaymod.video.frame.ARGBFrame;
+import eu.crushedpixel.replaymod.video.frame.RGBFrame;
 import eu.crushedpixel.replaymod.video.rendering.Pipeline;
 import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import net.minecraft.client.Minecraft;
@@ -62,7 +62,7 @@ public class VideoRenderer implements RenderInfo {
         this.options = options;
         this.renderingPipeline = Pipelines.newPipeline(options.getMode(), this, new VideoWriter(options) {
             @Override
-            public void consume(ARGBFrame frame) {
+            public void consume(RGBFrame frame) {
                 gui.updatePreview(frame);
                 super.consume(frame);
             }

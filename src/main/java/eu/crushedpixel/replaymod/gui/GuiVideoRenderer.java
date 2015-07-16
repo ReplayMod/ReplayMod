@@ -4,7 +4,7 @@ import eu.crushedpixel.replaymod.gui.elements.GuiProgressBar;
 import eu.crushedpixel.replaymod.utils.BoundingUtils;
 import eu.crushedpixel.replaymod.utils.DurationUtils;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
-import eu.crushedpixel.replaymod.video.frame.ARGBFrame;
+import eu.crushedpixel.replaymod.video.frame.RGBFrame;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -234,7 +234,7 @@ public class GuiVideoRenderer extends GuiScreen {
         drawScaledCustomSizeModalRect(x, y, 0, 0, 1280, 720, actualWidth, actualHeight, 1280, 720);
     }
 
-    public void updatePreview(ARGBFrame frame) {
+    public void updatePreview(RGBFrame frame) {
         if (previewCheckBox.isChecked() && previewTexture != null) {
             ByteBuffer buffer = frame.getByteBuffer();
             buffer.mark();

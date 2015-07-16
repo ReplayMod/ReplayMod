@@ -25,19 +25,14 @@ public class OpenGLUtils {
     public static void init() {
     }
 
-    public static void openGlBytesToARBG(ByteBuffer buffer, int bufferWidth, int xOffset, int yOffset, ByteBuffer to, int width) {
-        byte[] pixel = new byte[4];
-        pixel[0] = (byte) 0xff;
-        int bufferSize = buffer.remaining() / 3;
-        // Read the OpenGL image row by row from right to left (flipped horizontally)
-        for (int i = bufferSize - 1; i >= 0; i--) {
-            // Coordinates in the final image
-            int x = xOffset + bufferWidth - i % bufferWidth - 1; // X coord of OpenGL image has to be flipped first
-            int y = yOffset + i / bufferWidth;
-            // Write to image (row by row, left to right)
-            buffer.get(pixel, 1, 3);
-            to.position((y * width + x) * 4);
-            to.put(pixel);
+    public static void openGlBytesToRBG(ByteBuffer buffer, int bufferWidth, int xOffset, int yOffset, ByteBuffer to, int width) {
+        byte[] rowBuf = new byte[bufferWidth * 3];
+        // Copy image flipped vertically to target buffer
+        int rows = buffer.remaining() / 3 / bufferWidth;
+        for (int i = 0; i < rows; i++) {
+            buffer.get(rowBuf);
+            to.position(((yOffset + rows - i - 1) * width + xOffset) * 3);
+            to.put(rowBuf);
         }
         to.rewind();
     }
