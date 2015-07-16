@@ -290,6 +290,11 @@ public class GuiRenderSettings extends GuiScreen {
         toHandle.addAll(permanentButtons);
         toHandle.addAll(advancedTab ? advancedButtons : defaultButtons);
 
+        for(GuiButton b : toHandle) {
+            b.drawButton(mc, mouseX, mouseY);
+            GlStateManager.enableBlend();
+        }
+
         if(!advancedTab) {
             this.drawString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.renderer") + ":",
                     (width - w1) / 2, rendererDropdown.yPosition + 6, Color.WHITE.getRGB());
@@ -313,7 +318,7 @@ public class GuiRenderSettings extends GuiScreen {
 
             encodingPresetDropdown.drawTextBox();
             rendererDropdown.drawTextBox();
-        } else {
+        } else if(advancedTab) {
             commandInput.drawTextBox();
             ffmpegArguments.drawTextBox();
             String[] rows = StringUtils.splitStringInMultipleRows(I18n.format("replaymod.gui.rendersettings.ffmpeg.description"), 305);
@@ -323,11 +328,6 @@ public class GuiRenderSettings extends GuiScreen {
                 drawString(fontRendererObj, row, commandInput.xPosition, commandInput.yPosition + 30 + (15 * i), Color.WHITE.getRGB());
                 i++;
             }
-        }
-
-        for(GuiButton b : toHandle) {
-            b.drawButton(mc, mouseX, mouseY);
-            GlStateManager.enableBlend();
         }
 
         renderButton.drawOverlay(mc, mouseX, mouseY);
