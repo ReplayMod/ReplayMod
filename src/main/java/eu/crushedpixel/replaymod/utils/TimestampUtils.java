@@ -3,7 +3,7 @@ package eu.crushedpixel.replaymod.utils;
 public class TimestampUtils {
 
     public static int getMinutesFromTimestamp(long timestamp) {
-        return (int)((timestamp / (1000*60)) % 60);
+        return (int)(timestamp / (1000*60));
     }
 
     public static int getSecondsFromTimestamp(long timestamp) {
