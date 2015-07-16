@@ -309,6 +309,8 @@ public class ReplayHandler {
     }
 
     public static void resetKeyframes(final boolean resetMarkers, boolean callback) {
+        if(getPositionKeyframes().isEmpty() && getTimeKeyframes().isEmpty()) return;
+
         if(!callback) {
             resetKeyframes(resetMarkers);
         } else {
