@@ -120,21 +120,21 @@ public class OffsetGuiRenderer implements GuiRenderer {
 
     @Override
     public int drawString(int x, int y, int color, String text, boolean shadow) {
-        return renderer.drawString(x + position.getX(), y + position.getY(), color, text) - position.getX();
+        return renderer.drawString(x + position.getX(), y + position.getY(), color, text, shadow) - position.getX();
     }
 
     @Override
     public int drawString(int x, int y, ReadableColor color, String text, boolean shadow) {
-        return renderer.drawString(x + position.getX(), y + position.getY(), color, text) - position.getX();
+        return renderer.drawString(x + position.getX(), y + position.getY(), color, text, shadow) - position.getX();
     }
 
     @Override
     public int drawCenteredString(int x, int y, int color, String text, boolean shadow) {
-        return renderer.drawCenteredString(x + position.getX(), y + position.getY(), color, text) - position.getX();
+        return renderer.drawCenteredString(x + position.getX(), y + position.getY(), color, text, shadow) - position.getX();
     }
 
     @Override
     public int drawCenteredString(int x, int y, ReadableColor color, String text, boolean shadow) {
-        return renderer.drawCenteredString(x + position.getX(), y + position.getY(), color, text) - position.getX();
+        return renderer.drawCenteredString(x + position.getX(), y + position.getY(), color, text, shadow) - position.getX();
     }
 }
