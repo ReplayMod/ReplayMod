@@ -21,7 +21,10 @@ public enum EncodingPreset implements GuiEntryListEntry {
             "-f rawvideo -pix_fmt argb -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -crf 51 -pix_fmt yuv420p %FILENAME%.mp4", "mp4"),
 
     WEBMCUSTOM("replaymod.gui.rendersettings.presets.webm.custom",
-            "-f rawvideo -pix_fmt argb -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libvpx -b:v %BITRATE% %FILENAME%.webm", "webm");
+            "-f rawvideo -pix_fmt argb -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libvpx -b:v %BITRATE% %FILENAME%.webm", "webm"),
+
+    MKVLOSSLESS("replaymod.gui.rendersettings.presets.mkv.lossless",
+            "-f rawvideo -pix_fmt argb -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -qp 0 %FILENAME%.mkv", "mkv");
 
     private String name;
 

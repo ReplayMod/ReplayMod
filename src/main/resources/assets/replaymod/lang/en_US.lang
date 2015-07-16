@@ -334,6 +334,7 @@ replaymod.gui.rendersettings.presets.mp4.high=MP4 - High Quality
 replaymod.gui.rendersettings.presets.mp4.default=MP4 - Default Quality
 replaymod.gui.rendersettings.presets.mp4.potato=MP4 - Potato Quality
 replaymod.gui.rendersettings.presets.webm.custom=WEBM - Custom Bitrate
+replaymod.gui.rendersettings.presets.mkv.lossless=MKV - Lossless
 
 #Rendering GUI
 replaymod.gui.rendering.title=Rendering Video
