@@ -33,16 +33,16 @@ public class GuiReplayInstanceChooser extends GuiScreen {
     private List<File> filesToChooseFrom = new ArrayList<File>();
 
     private final String TITLE = I18n.format("replaymod.gui.viewer.chooser.title");
-    private final String REPLAYFILE = I18n.format("replaymod.gui.editor.replayfile")+":";
+    private final String REPLAYFILE = ChatFormatting.UNDERLINE+I18n.format("replaymod.gui.editor.replayfile")+":"+ChatFormatting.RESET;
     private final String MESSAGE;
 
-    private final String ORIGINAL = I18n.format("replaymod.gui.original");
-    private final String MODIFIED = I18n.format("replaymod.gui.modified");
+    private final String ORIGINAL = ChatFormatting.GREEN+I18n.format("replaymod.gui.original")+ChatFormatting.RESET;
+    private final String MODIFIED = ChatFormatting.RED+I18n.format("replaymod.gui.modified")+ChatFormatting.RESET;
 
     public GuiReplayInstanceChooser(final FileInfo fileInfo, File downloadedFile) {
         int id = fileInfo.getId();
 
-        this.MESSAGE = I18n.format("replaymod.gui.viewer.chooser.message", ChatFormatting.UNDERLINE+fileInfo.getName()+ChatFormatting.RESET);
+        this.MESSAGE = I18n.format("replaymod.gui.viewer.chooser.message", fileInfo.getName());
 
         //gather all applicable replay files
         try {
