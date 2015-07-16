@@ -86,6 +86,9 @@ replaymod.gui.pleasewait=Please wait
 replaymod.gui.render=Render
 replaymod.gui.iphidden=Server IP Hidden
 
+replaymod.gui.original=Original
+replaymod.gui.modified=Modified
+
 replaymod.gui.outdated=There is a newer Replay Mod version available. Please download it from replaymod.com
 
 replaymod.gui.hours=h
@@ -139,7 +142,10 @@ replaymod.gui.viewer.delete.linea=Are you sure you want to delete this replay?
 replaymod.gui.viewer.delete.lineb=will be lost forever! (a long time!)
 
 replaymod.gui.viewer.download.title=Downloading Replay File...
-replaymod.gui.viewer.download.message=Please wait while %1$s is being downloaded.
+replaymod.gui.viewer.download.message=Please wait while "%1$s" is being downloaded.
+
+replaymod.gui.viewer.chooser.title=Choose Replay File
+replaymod.gui.viewer.chooser.message=You have a modified version of "%1$s" on your computer. Which Replay do you want to load?
 
 replaymod.gui.login.noacc=Don't have an account yet?
 
@@ -160,7 +166,6 @@ replaymod.gui.center.search.name=Replay Name
 replaymod.gui.center.search.server=Server IP (Multiplayer only)
 replaymod.gui.center.search.category=Filter by Category
 replaymod.gui.center.search.version=Filter by Version
-
 
 replaymod.gui.center.downloadrequired=Download the Replay to rate or favorite it
 

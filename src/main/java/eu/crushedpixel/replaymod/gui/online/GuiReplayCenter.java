@@ -15,7 +15,6 @@ import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.holders.GuiEntryListStringEntry;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
@@ -287,11 +286,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 if(f == null) {
                     new GuiReplayDownloading(info).display();
                 } else {
-                    try {
-                        ReplayHandler.startReplay(f);
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
+                    mc.displayGuiScreen(new GuiReplayInstanceChooser(info, f));
                 }
             }
         } else if(button.id == GuiConstants.CENTER_FAV_REPLAY_BUTTON) {
