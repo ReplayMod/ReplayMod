@@ -11,6 +11,7 @@ import eu.crushedpixel.replaymod.gui.elements.timelines.GuiMarkerTimeline;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
+import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.CameraPathValidator;
@@ -23,6 +24,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -30,9 +32,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Point;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -252,8 +256,93 @@ public class GuiReplayOverlay extends Gui {
 
     private final GuiReplaySpeedSlider speedSlider = new GuiReplaySpeedSlider(1, SPEED_X, TOP_ROW, I18n.format("replaymod.gui.speed"));
 
+    private final DelegatingElement toolbar = new DelegatingElement() {
+
+        private boolean open = false;
+
+        private void toggleOpen() {
+            open = !open;
+        }
+
+        private GuiElement buttonOpenToolbar = new GuiArrowButton(-1, 10, HEIGHT-10-20, "", GuiArrowButton.Direction.UP) {
+            @Override
+            public void performAction() {
+                toggleOpen();
+            }
+        };
+
+        private GuiElement buttonCloseToolbar = new GuiArrowButton(-1, 10, HEIGHT-10-20, "", GuiArrowButton.Direction.DOWN) {
+            @Override
+            public void performAction() {
+                toggleOpen();
+            }
+        };
+
+        private ComposedElement openElements = new ComposedElement(buttonCloseToolbar);
+
+        private int maxButtonY = -1;
+
+        {
+            int buttonX = 10;
+            int maxWidth = 0;
+            int i = 0;
+
+            for(final KeyBinding kb : KeybindRegistry.getReplayModKeyBindings()) {
+                int buttonY = HEIGHT-55-(i*25);
+
+                if(buttonY < 80) {
+                    buttonX += 25 + maxWidth + 5;
+                    maxWidth = 0;
+
+                    i = 0;
+                    buttonY = HEIGHT-55-(i*25);
+                }
+
+                if(buttonY < maxButtonY || maxButtonY == -1) maxButtonY = buttonY;
+
+                GuiElement button = new GuiAdvancedButton(buttonX, buttonY, 20, 20, Keyboard.getKeyName(kb.getKeyCode()), new Runnable() {
+                    @Override
+                    public void run() {
+                        ReplayMod.keyInputHandler.handleCustomKeybindings(kb, false, kb.getKeyCode());
+                    }
+                }, null);
+
+                String stringText = I18n.format(kb.getKeyDescription());
+                int stringWidth = mc.fontRendererObj.getStringWidth(stringText);
+
+                if(stringWidth > maxWidth) {
+                    maxWidth = stringWidth;
+                }
+
+                GuiString string = new GuiString(buttonX+25, buttonY+6, Color.WHITE, stringText);
+
+                openElements.addPart(button);
+                openElements.addPart(string);
+
+                i++;
+            }
+        }
+
+        @Override
+        public GuiElement delegate() {
+            if(open) {
+                return openElements;
+            } else {
+                return buttonOpenToolbar;
+            }
+        }
+
+        @Override
+        public void draw(Minecraft mc, int mouseX, int mouseY) {
+            if(open) {
+                drawGradientRect(0, maxButtonY - 10, WIDTH, HEIGHT, -1072689136, -804253680);
+            }
+            super.draw(mc, mouseX, mouseY);
+        }
+    };
+
     private final GuiElement content = new ComposedElement(buttonPlayPause, buttonExport, buttonPlace, buttonTime,
-            buttonPlayPausePath, buttonZoomIn, buttonZoomOut, timeline, timelineReal, scrollbar, speedSlider);
+            buttonPlayPausePath, buttonZoomIn, buttonZoomOut, timeline, timelineReal, scrollbar, speedSlider, toolbar);
 
     private float zoom_scale = 0.1f; //can see 1/10th of the timeline
     private double pos_left = 0f; //left border of timeline is at 0%
