@@ -158,8 +158,8 @@ public class GuiEditKeyframe extends GuiScreen {
                 xCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getX()), true);
                 yCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getY()), true);
                 zCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getZ()), true);
-                yaw = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, -90d, 90d, RoundUtils.round2Decimals(pos.getYaw()), true);
-                pitch = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, -180d, 180d, RoundUtils.round2Decimals(pos.getPitch()), true);
+                yaw = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, -180d, 180d, RoundUtils.round2Decimals(pos.getYaw()), true);
+                pitch = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, -90d, 90d, RoundUtils.round2Decimals(pos.getPitch()), true);
                 roll = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getRoll()), true);
 
                 posInputs = new ComposedElement(xCoord, yCoord, zCoord, yaw, pitch, roll);
