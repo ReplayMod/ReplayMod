@@ -12,6 +12,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.Sys;
@@ -53,6 +54,7 @@ public class CameraEntity extends EntityPlayer {
 
     public CameraEntity(World worldIn) {
         super(worldIn, Minecraft.getMinecraft().getSession().getProfile());
+        FMLCommonHandler.instance().bus().register(this);
     }
 
     @SubscribeEvent

@@ -204,16 +204,13 @@ public class ReplayHandler {
     }
 
     public static CameraEntity getCameraEntity() {
+        if(cameraEntity == null && mc.theWorld != null) cameraEntity = new CameraEntity(mc.theWorld);
         return cameraEntity;
     }
 
     public static void setCameraEntity(CameraEntity entity) {
         if(entity == null) return;
-        if (cameraEntity != null) {
-            FMLCommonHandler.instance().bus().unregister(cameraEntity);
-        }
         cameraEntity = entity;
-        FMLCommonHandler.instance().bus().register(cameraEntity);
         spectateCamera();
     }
 
