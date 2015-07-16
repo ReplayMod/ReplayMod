@@ -276,6 +276,8 @@ public class GuiRenderSettings extends GuiScreen {
         ffmpegArguments.xPosition = commandInput.xPosition+commandInput.width+5;
 
         initialized = true;
+
+        validateInputs();
     }
 
     @Override
