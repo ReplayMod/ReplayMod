@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.rendering;
 
+import eu.crushedpixel.replaymod.opengl.PixelBufferObject;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.capturer.*;
 import eu.crushedpixel.replaymod.video.entity.CubicEntityRenderer;
@@ -37,11 +38,13 @@ public class Pipelines {
 
     public static Pipeline<OpenGlFrame, ARGBFrame> newDefaultPipeline(RenderInfo renderInfo, FrameConsumer<ARGBFrame> consumer) {
         RenderOptions options = renderInfo.getRenderOptions();
-        return new Pipeline<OpenGlFrame, ARGBFrame>(
-                new SimpleOpenGlFrameCapturer(new CustomEntityRenderer<CaptureData>(options), renderInfo),
-                new OpenGlToARGBProcessor(),
-                consumer
-        );
+        FrameCapturer<OpenGlFrame> capturer;
+        if (PixelBufferObject.SUPPORTED) {
+            capturer = new SimplePboOpenGlFrameCapturer(new CustomEntityRenderer<CaptureData>(options), renderInfo);
+        } else {
+            capturer = new SimpleOpenGlFrameCapturer(new CustomEntityRenderer<CaptureData>(options), renderInfo);
+        }
+        return new Pipeline<OpenGlFrame, ARGBFrame>(capturer, new OpenGlToARGBProcessor(), consumer);
     }
 
     public static Pipeline<StereoscopicOpenGlFrame, ARGBFrame> newStereoscopicPipeline(RenderInfo renderInfo, FrameConsumer<ARGBFrame> consumer) {

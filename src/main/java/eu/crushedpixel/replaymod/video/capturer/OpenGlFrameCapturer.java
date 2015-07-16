@@ -54,7 +54,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         return renderInfo.getFrameSize().getHeight();
     }
 
-    private Framebuffer frameBuffer() {
+    protected Framebuffer frameBuffer() {
         if (frameBuffer == null) {
             frameBuffer = new Framebuffer(getFrameWidth(), getFrameHeight(), true);
         }
@@ -82,6 +82,10 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         frameBuffer().unbindFramebuffer();
         popMatrix();
 
+        return captureFrame(frameId);
+    }
+
+    protected OpenGlFrame captureFrame(int frameId) {
         GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
         GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
 
