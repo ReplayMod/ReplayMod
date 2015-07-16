@@ -42,7 +42,7 @@ public class GuiReplayInstanceChooser extends GuiScreen {
     public GuiReplayInstanceChooser(final FileInfo fileInfo, File downloadedFile) {
         int id = fileInfo.getId();
 
-        this.MESSAGE = ChatFormatting.UNDERLINE+I18n.format("replaymod.gui.viewer.chooser.message", fileInfo.getName())+ChatFormatting.RESET;
+        this.MESSAGE = I18n.format("replaymod.gui.viewer.chooser.message", ChatFormatting.UNDERLINE+fileInfo.getName()+ChatFormatting.RESET);
 
         //gather all applicable replay files
         try {
