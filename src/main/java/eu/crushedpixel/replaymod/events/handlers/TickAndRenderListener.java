@@ -54,7 +54,7 @@ public class TickAndRenderListener {
 
         if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick(false);
         if(ReplayHandler.isCamera()) mc.setRenderViewEntity(ReplayHandler.getCameraEntity());
-        if((mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive())
+        if(mc.getRenderViewEntity() != null && (mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive())
                 && ReplayHandler.getCameraEntity() != null && !ReplayHandler.isInPath()) {
             ReplayHandler.spectateCamera();
         }
