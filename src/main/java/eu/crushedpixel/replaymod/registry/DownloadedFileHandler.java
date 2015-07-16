@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
+import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -18,9 +19,8 @@ public class DownloadedFileHandler {
     private File downloadFolder;
 
     public DownloadedFileHandler() {
-        downloadFolder = new File(ReplayMod.replaySettings.getDownloadPath());
         try {
-            FileUtils.forceMkdir(downloadFolder);
+            downloadFolder = ReplayFileIO.getReplayDownloadFolder();
 
             for(File f : FileUtils.listFiles(downloadFolder, new String[]{"mcpr"}, false)) {
                 try {

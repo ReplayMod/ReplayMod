@@ -29,13 +29,18 @@ public class ReplayFileIO {
     private static final byte[] uniqueBytes = new byte[]{0, 1, 1, 2, 3, 5, 8};
 
     public static File getRenderFolder() throws IOException {
-        File folder = new File(ReplayMod.replaySettings.getRenderPath());
-        FileUtils.forceMkdir(folder);
-        return folder;
+        return makeFolderFromPath(ReplayMod.replaySettings.getRenderPath());
     }
 
     public static File getReplayFolder() throws IOException {
-        String path = ReplayMod.replaySettings.getRecordingPath();
+        return makeFolderFromPath(ReplayMod.replaySettings.getRecordingPath());
+    }
+
+    public static File getReplayDownloadFolder() throws IOException {
+        return makeFolderFromPath(ReplayMod.replaySettings.getDownloadPath());
+    }
+
+    private static File makeFolderFromPath(String path) throws IOException {
         File folder = new File(path);
         FileUtils.forceMkdir(folder);
         return folder;
