@@ -393,6 +393,7 @@ public class GuiRenderSettings extends GuiScreen {
         } else {
             commandInput.textboxKeyTyped(typedChar, keyCode);
             ffmpegArguments.textboxKeyTyped(typedChar, keyCode);
+            validateInputs();
         }
         super.keyTyped(typedChar, keyCode);
     }
@@ -605,6 +606,22 @@ public class GuiRenderSettings extends GuiScreen {
 
     private void validateInputs() {
         boolean valid = true;
+
+        boolean isPreset = false;
+        EncodingPreset curPreset = encodingPresetDropdown.getElement(encodingPresetDropdown.getSelectionIndex());
+        if(ffmpegArguments.getText().trim().equals(curPreset.getCommandLineArgs())) {
+            isPreset = true;
+        }
+
+        if(isPreset) {
+            if(curPreset.isYuv420()) {
+                if(getWidthSetting() % 2 != 0 || getHeightSetting() % 2 != 0) {
+                    valid = false;
+                    renderButton.hoverText = I18n.format("replaymod.gui.rendersettings.customresolution.warning.yuv420");
+                }
+            }
+        }
+
         switch (rendererDropdown.getElement(rendererDropdown.getSelectionIndex())) {
             case CUBIC:
                 if (getWidthSetting() * 3 / 4 != getHeightSetting()

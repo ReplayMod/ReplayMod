@@ -38,6 +38,8 @@ public enum EncodingPreset implements GuiEntryListEntry {
         return commandLineArgs.contains("%BITRATE%");
     }
 
+    public boolean isYuv420() { return commandLineArgs.contains("-pix_fmt yuv420p"); }
+
     @Override
     public String getDisplayString() {
         return getI18nName();
