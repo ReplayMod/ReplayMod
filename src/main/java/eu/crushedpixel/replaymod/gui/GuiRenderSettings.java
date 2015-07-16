@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
@@ -45,7 +46,7 @@ public class GuiRenderSettings extends GuiScreen {
 
     private int virtualY, virtualHeight;
 
-    private GuiCheckBox ignoreCamDir, enableGreenscreen;
+    private GuiCheckBox ignoreCamDir, enableGreenscreen, renderNameTags;
     private GuiNumberInput xRes, yRes;
     private GuiToggleButton interpolation, forceChunks;
     private GuiVideoFramerateSlider framerateSlider;
@@ -161,6 +162,7 @@ public class GuiRenderSettings extends GuiScreen {
             forceChunks.width = interpolation.width = framerateSlider.width = 150;
 
             enableGreenscreen = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_ENABLE_GREENSCREEN, 0, 0, I18n.format("replaymod.gui.rendersettings.chromakey"), false);
+            renderNameTags = new GuiCheckBox(GuiConstants.RENDER_SETTINGS_RENDER_NAMETAGS, 0, 0, I18n.format("replaymod.gui.rendersettings.nametags"), true);
 
             colorPicker = new GuiColorPicker(GuiConstants.RENDER_SETTINGS_COLOR_PICKER, 0, 0, I18n.format("replaymod.gui.rendersettings.skycolor")+": ", 0, 0);
             colorPicker.enabled = enableGreenscreen.isChecked();
@@ -190,6 +192,7 @@ public class GuiRenderSettings extends GuiScreen {
             advancedButtons.add(forceChunks);
             advancedButtons.add(enableGreenscreen);
             advancedButtons.add(colorPicker);
+            advancedButtons.add(renderNameTags);
         }
 
         virtualHeight = 200;
@@ -267,7 +270,7 @@ public class GuiRenderSettings extends GuiScreen {
 
         commandInput.width = 55;
         commandInput.xPosition = (this.width-305)/2;
-        commandInput.yPosition = ffmpegArguments.yPosition = this.virtualY + 20 + ((i/2)*25);
+        commandInput.yPosition = ffmpegArguments.yPosition = advancedButtons.get(advancedButtons.size()-1).yPosition + 20;
 
         ffmpegArguments.width = 245;
         ffmpegArguments.xPosition = commandInput.xPosition+commandInput.width+5;
@@ -286,10 +289,6 @@ public class GuiRenderSettings extends GuiScreen {
         List<GuiButton> toHandle = new ArrayList<GuiButton>();
         toHandle.addAll(permanentButtons);
         toHandle.addAll(advancedTab ? advancedButtons : defaultButtons);
-
-        for(GuiButton b : toHandle) {
-            b.drawButton(mc, mouseX, mouseY);
-        }
 
         if(!advancedTab) {
             this.drawString(fontRendererObj, I18n.format("replaymod.gui.rendersettings.renderer") + ":",
@@ -324,6 +323,11 @@ public class GuiRenderSettings extends GuiScreen {
                 drawString(fontRendererObj, row, commandInput.xPosition, commandInput.yPosition + 30 + (15 * i), Color.WHITE.getRGB());
                 i++;
             }
+        }
+
+        for(GuiButton b : toHandle) {
+            b.drawButton(mc, mouseX, mouseY);
+            GlStateManager.enableBlend();
         }
 
         renderButton.drawOverlay(mc, mouseX, mouseY);
@@ -498,6 +502,8 @@ public class GuiRenderSettings extends GuiScreen {
         if(enableGreenscreen.isChecked()) {
             options.setSkyColor(colorPicker.getPickedColor());
         }
+
+        options.setHideNameTags(!renderNameTags.isChecked());
 
         options.setWidth(getWidthSetting());
         options.setHeight(getHeightSetting());

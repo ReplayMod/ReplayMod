@@ -321,11 +321,12 @@ replaymod.gui.rendersettings.framerate=Video Framerate
 replaymod.gui.rendersettings.quality=Video Quality
 replaymod.gui.rendersettings.chromakey=Chroma Keying
 replaymod.gui.rendersettings.skycolor=Sky Color
+replaymod.gui.rendersettings.nametags=Render Name Tags
 replaymod.gui.rendersettings.outputfile=Output File
 
 replaymod.gui.rendersettings.command=Command
 replaymod.gui.rendersettings.arguments=Command Line Arguments
-replaymod.gui.rendersettings.ffmpeg.description=By default, the Replay Mod will render videos as .webm files. If you are an advanced user, you can customize the command line parameters used to export the video. For more information, check http://replaymod.com/docs
+replaymod.gui.rendersettings.ffmpeg.description=If you are an advanced user, you can customize the command line parameters used to export the video. For more information, check http://replaymod.com/docs
 
 replaymod.gui.rendersettings.stablecamera=Ignore Camera Rotation
 replaymod.gui.rendersettings.exportyoutube=Export for YouTube
