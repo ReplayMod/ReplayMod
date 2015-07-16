@@ -15,11 +15,11 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.lwjgl.input.Keyboard;
-import scala.actors.threadpool.Arrays;
 
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay.NoOverlay {
