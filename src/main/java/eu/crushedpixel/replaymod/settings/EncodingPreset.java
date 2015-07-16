@@ -9,22 +9,22 @@ import net.minecraft.client.resources.I18n;
 public enum EncodingPreset implements GuiEntryListEntry {
 
     MP4CUSTOM("replaymod.gui.rendersettings.presets.mp4.custom",
-            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -b:v %BITRATE% -pix_fmt yuv420p %FILENAME%.mp4", "mp4"),
+            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -b:v %BITRATE% -pix_fmt yuv420p \"%FILENAME%.mp4\"", "mp4"),
 
     MP4HIGH("replaymod.gui.rendersettings.presets.mp4.high",
-            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -qp 1 -pix_fmt yuv420p %FILENAME%.mp4", "mp4"),
+            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -qp 1 -pix_fmt yuv420p \"%FILENAME%.mp4\"", "mp4"),
 
     MP4DEFAULT("replaymod.gui.rendersettings.presets.mp4.default",
-            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -pix_fmt yuv420p %FILENAME%.mp4", "mp4"),
+            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -pix_fmt yuv420p \"%FILENAME%.mp4\"", "mp4"),
 
     MP4POTATO("replaymod.gui.rendersettings.presets.mp4.potato",
-            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -crf 51 -pix_fmt yuv420p %FILENAME%.mp4", "mp4"),
+            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -crf 51 -pix_fmt yuv420p \"%FILENAME%.mp4\"", "mp4"),
 
     WEBMCUSTOM("replaymod.gui.rendersettings.presets.webm.custom",
-            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libvpx -b:v %BITRATE% %FILENAME%.webm", "webm"),
+            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libvpx -b:v %BITRATE% \"%FILENAME%.webm\"", "webm"),
 
     MKVLOSSLESS("replaymod.gui.rendersettings.presets.mkv.lossless",
-            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -qp 0 %FILENAME%.mkv", "mkv");
+            "-f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -qp 0 \"%FILENAME%.mkv\"", "mkv");
 
     private String name;
 
