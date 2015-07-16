@@ -21,6 +21,7 @@ public final class RenderOptions {
     // Advanced
     private boolean waitForChunks = true;
     private boolean isLinearMovement = false;
+    private boolean hideNameTags = true;
     private int skyColor = -1;
     private int width = Minecraft.getMinecraft().displayWidth;
     private int height = Minecraft.getMinecraft().displayHeight;
@@ -50,6 +51,7 @@ public final class RenderOptions {
         copy.ignoreCameraRotation = this.ignoreCameraRotation;
         copy.waitForChunks = this.waitForChunks;
         copy.isLinearMovement = this.isLinearMovement;
+        copy.hideNameTags = this.hideNameTags;
         copy.skyColor = this.skyColor;
         copy.width = this.width;
         copy.height = this.height;

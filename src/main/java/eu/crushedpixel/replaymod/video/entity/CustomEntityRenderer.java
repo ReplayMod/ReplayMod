@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.video.entity;
 
+import eu.crushedpixel.replaymod.coremod.asm_Hooks;
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
@@ -58,6 +59,10 @@ public class CustomEntityRenderer<D extends CaptureData> implements eu.crushedpi
             throw new Error(e);
         } catch (IllegalAccessException e) {
             throw new Error(e);
+        }
+
+        if (options.isHideNameTags()) {
+            asm_Hooks.DO_NOT_RENDER_NAME_TAGS = true;
         }
     }
 
@@ -407,6 +412,8 @@ public class CustomEntityRenderer<D extends CaptureData> implements eu.crushedpi
         } catch (IllegalAccessException e) {
             throw new Error(e);
         }
+
+        asm_Hooks.DO_NOT_RENDER_NAME_TAGS = false;
 
         spectatorRenderer.cleanup();
     }
