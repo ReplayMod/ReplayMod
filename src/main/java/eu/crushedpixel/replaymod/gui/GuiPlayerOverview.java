@@ -54,7 +54,11 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
 
     private final String screenTitle = I18n.format("replaymod.input.playeroverview");
 
+    private final Set<UUID> initialHiddenPlayers;
+
     public GuiPlayerOverview(List<EntityPlayer> players) {
+        initialHiddenPlayers = new HashSet<UUID>(PlayerHandler.getHiddenPlayers());
+
         Collections.sort(players, new PlayerComparator());
 
         this.players = new ArrayList<Pair<EntityPlayer, ResourceLocation>>();
@@ -304,6 +308,7 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
 
     private void saveOnQuit() {
         if(rememberHidden.isChecked()) {
+            if(initialHiddenPlayers.equals(PlayerHandler.getHiddenPlayers())) return;
             try {
                 File f = File.createTempFile(ReplayFile.ENTRY_VISIBILITY, "json");
                 ReplayFileIO.write(getVisibilityInstance(), f);
@@ -312,6 +317,7 @@ public class GuiPlayerOverview extends GuiScreen implements GuiReplayOverlay.NoO
                 e.printStackTrace();
             }
         } else {
+            if(initialHiddenPlayers.isEmpty()) return;
             ReplayMod.replayFileAppender.registerModifiedFile(null, ReplayFile.ENTRY_VISIBILITY, ReplayHandler.getReplayFile());
         }
     }

@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import eu.crushedpixel.replaymod.holders.Transformations;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.UUID;
 
+@EqualsAndHashCode
 public class CustomImageObject implements GuiEntryListEntry {
 
     public CustomImageObject(String name, UUID assetUUID) throws IOException {

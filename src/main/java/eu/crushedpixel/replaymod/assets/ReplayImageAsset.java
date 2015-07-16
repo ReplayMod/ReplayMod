@@ -3,6 +3,8 @@ package eu.crushedpixel.replaymod.assets;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.BoundingUtils;
+import eu.crushedpixel.replaymod.utils.BufferedImageUtils;
+import lombok.EqualsAndHashCode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -16,13 +18,23 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+@EqualsAndHashCode(of={"name", "bufferedImageHashCode"})
 public class ReplayImageAsset implements ReplayAsset<BufferedImage> {
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
     private BufferedImage object;
+    private int bufferedImageHashCode;
 
     private String name;
+
+    public ReplayImageAsset copy() {
+        ReplayImageAsset newReplay = new ReplayImageAsset(name);
+        newReplay.object = object;
+        newReplay.bufferedImageHashCode = bufferedImageHashCode;
+
+        return newReplay;
+    }
 
     public ReplayImageAsset(String name) {
         this.name = name;
@@ -46,6 +58,7 @@ public class ReplayImageAsset implements ReplayAsset<BufferedImage> {
     @Override
     public void loadFromStream(InputStream inputStream) throws IOException {
         this.object = ImageIO.read(inputStream);
+        this.bufferedImageHashCode = BufferedImageUtils.hashCode(object);
         ResourceHelper.freeResource(previewResource);
 
         for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {

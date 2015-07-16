@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.assets;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -13,12 +14,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+@EqualsAndHashCode
 public class AssetRepository {
 
-    private Map<UUID, ReplayAsset> replayAssets;
+    private final Map<UUID, ReplayAsset> replayAssets;
 
     public AssetRepository() {
         replayAssets = new HashMap<UUID, ReplayAsset>();
+    }
+
+    public AssetRepository(AssetRepository toCopy) {
+        HashMap<UUID, ReplayAsset> newAssetList = new HashMap<UUID, ReplayAsset>();
+
+        for(Map.Entry<UUID, ReplayAsset> e : toCopy.replayAssets.entrySet()) {
+            newAssetList.put(e.getKey(), e.getValue().copy());
+        }
+
+        this.replayAssets = newAssetList;
     }
 
     public ReplayAsset addAsset(String assetFileName, InputStream inputStream) throws IOException {

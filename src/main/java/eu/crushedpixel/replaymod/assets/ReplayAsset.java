@@ -17,6 +17,8 @@ public interface ReplayAsset<T> extends GuiEntryListEntry {
 
     void setAssetName(String name);
 
+    ReplayAsset<T> copy();
+
     T getObject();
 
 }

@@ -42,6 +42,8 @@ public class GuiObjectManager extends GuiScreen {
     private GuiString dropdownLabel;
     private GuiDropdown<GuiEntryListValueEntry<UUID>> assetDropdown;
 
+    private final List<CustomImageObject> initialObjects = ReplayHandler.getCustomImageObjects();
+
     private GuiDraggingNumberInput anchorXInput, anchorYInput, anchorZInput;
     private GuiDraggingNumberInput positionXInput, positionYInput, positionZInput;
     private GuiDraggingNumberInput orientationXInput, orientationYInput, orientationZInput;
@@ -173,7 +175,7 @@ public class GuiObjectManager extends GuiScreen {
             nameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 0, 20);
             nameInput.hint = I18n.format("replaymod.gui.objects.properties.name");
 
-            for(CustomImageObject customImageObject : ReplayHandler.getCustomImageObjects()) {
+            for(CustomImageObject customImageObject : initialObjects) {
                 objectList.addElement(customImageObject);
             }
 
@@ -366,6 +368,11 @@ public class GuiObjectManager extends GuiScreen {
 
     private void saveOnQuit() {
         List<CustomImageObject> objects = objectList.getCopyOfElements();
+
+        if(objects.equals(initialObjects)) {
+            return;
+        }
+
         ReplayHandler.setCustomImageObjects(objects);
 
         if(objects.size() > 0) {

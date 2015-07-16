@@ -15,6 +15,7 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.lwjgl.input.Keyboard;
+import scala.actors.threadpool.Arrays;
 
 import java.awt.*;
 import java.io.IOException;
@@ -40,8 +41,11 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
     private int currentSetTimeKeyframeCount, currentSetPositionKeyframeCount, currentSetDuration;
 
+    private final List<KeyframeSet> initialKeyframeSets;
+
     public GuiKeyframeRepository(KeyframeSet[] keyframeRepository) {
         this.keyframeRepository = keyframeRepository;
+        this.initialKeyframeSets = new ArrayList<KeyframeSet>(Arrays.asList(keyframeRepository));
         ReplayMod.replaySender.setReplaySpeed(0);
     }
 
@@ -230,6 +234,8 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
     private void saveOnQuit() {
         ArrayList<KeyframeSet> copy = new ArrayList<KeyframeSet>(keyframeSetList.getCopyOfElements());
+        if(initialKeyframeSets.equals(copy)) return;
+
         this.keyframeRepository = copy.toArray(new KeyframeSet[copy.size()]);
         ReplayHandler.setKeyframeRepository(keyframeRepository, true);
     }
