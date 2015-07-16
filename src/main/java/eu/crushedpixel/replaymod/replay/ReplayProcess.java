@@ -2,8 +2,8 @@ package eu.crushedpixel.replaymod.replay;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
-import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
+import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.GenericLinearInterpolation;
 import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
@@ -16,6 +16,8 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.util.ReportedException;
 
 import java.io.IOException;
 
@@ -114,6 +116,9 @@ public class ReplayProcess {
                 GuiErrorScreen errorScreen = new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"),
                         I18n.format("replaymod.gui.rendering.error.message"));
                 mc.displayGuiScreen(errorScreen);
+            } catch (Throwable t) {
+                CrashReport crashReport = CrashReport.makeCrashReport(t, "Rendering video");
+                throw new ReportedException(crashReport);
             } finally {
                 isVideoRecording = false;
                 stopReplayProcess(success);
