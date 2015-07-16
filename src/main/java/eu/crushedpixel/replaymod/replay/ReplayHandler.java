@@ -151,6 +151,9 @@ public class ReplayHandler {
             cameraEntity.movePath(prev);
         }
         currentEntity = cameraEntity;
+        if(cameraEntity == null) {
+            cameraEntity = new CameraEntity(mc.theWorld);
+        }
         mc.setRenderViewEntity(cameraEntity);
     }
 
