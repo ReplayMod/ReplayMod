@@ -24,7 +24,7 @@ public class CustomObjectRenderer {
 
     @SubscribeEvent
     public void renderCustomObjects(RenderWorldLastEvent event) {
-        if(!ReplayHandler.isInReplay()) return;
+        if(!ReplayHandler.isInReplay() || mc.getRenderViewEntity() == null) return;
 
         double dX = mc.getRenderViewEntity().lastTickPosX + (mc.getRenderViewEntity().posX - mc.getRenderViewEntity().lastTickPosX) * (double)event.partialTicks;
         double dY = mc.getRenderViewEntity().lastTickPosY + (mc.getRenderViewEntity().posY - mc.getRenderViewEntity().lastTickPosY) * (double)event.partialTicks;
