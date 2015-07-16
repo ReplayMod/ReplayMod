@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
@@ -106,8 +107,21 @@ public class ReplayFileAppender {
                     if(replayFile != null) {
                         if(replayFile.canWrite()) {
                             try {
+                                Collection<Pair<File, String>> ftm = filesToMove.get(replayFile);
+
+                                File replayFile2 = replayFile;
+
+                                if(replayFile.getParentFile().equals(ReplayFileIO.getReplayDownloadFolder())) {
+                                    String fileName = FilenameUtils.getName(replayFile.getAbsolutePath());
+                                    File copyTo = new File(ReplayFileIO.getReplayFolder(), fileName);
+                                    copyTo = ReplayFileIO.getNextFreeFile(copyTo);
+
+                                    FileUtils.copyFile(replayFile, copyTo);
+                                    replayFile = copyTo;
+                                }
+
                                 HashMap<String, File> toAdd = new HashMap<String, File>();
-                                for(Pair<File, String> p : filesToMove.get(replayFile)) {
+                                for(Pair<File, String> p : ftm) {
                                     if(p.getLeft() == null || p.getLeft().exists()) {
                                         toAdd.put(p.getRight(), p.getLeft());
                                     }
@@ -115,7 +129,7 @@ public class ReplayFileAppender {
                                 ReplayFileIO.addFilesToZip(replayFile, toAdd);
 
                                 //delete all written files
-                                for(Pair<File, String> p : filesToMove.get(replayFile)) {
+                                for(Pair<File, String> p : ftm) {
                                     if(p.getLeft() != null) {
                                         try {
                                             FileUtils.forceDelete(p.getLeft());
@@ -125,7 +139,7 @@ public class ReplayFileAppender {
                                     }
                                 }
 
-                                filesToMove.removeAll(replayFile);
+                                filesToMove.removeAll(replayFile2);
                             } catch(Exception e) {
                                 e.printStackTrace();
                                 filesToRewrite.add(replayFile);
