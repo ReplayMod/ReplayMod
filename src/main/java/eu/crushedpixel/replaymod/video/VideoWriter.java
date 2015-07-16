@@ -31,6 +31,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
     private final OutputStream outputStream;
     private final WritableByteChannel channel;
     private final String commandArgs;
+    private volatile boolean aborted;
 
     public VideoWriter(final RenderOptions options) throws IOException {
         this.options = options.copy();
@@ -90,6 +91,9 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
             channel.write(frame.getByteBuffer());
             ByteBufferPool.release(frame.getByteBuffer());
         } catch (Throwable t) {
+            if (aborted) {
+                return;
+            }
             CrashReport report = CrashReport.makeCrashReport(t, "Exporting frame");
             CrashReportCategory exportDetails = report.makeCategory("Export details");
             exportDetails.addCrashSection("Export command", options.getExportCommand());
@@ -105,5 +109,9 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
     private void checkSize(int width, int height) {
         isTrue(width == options.getWidth(), "Width has to be %d but was %d", options.getWidth(), width);
         isTrue(height == options.getHeight(), "Height has to be %d but was %d", options.getHeight(), height);
+    }
+
+    public void abort() {
+        aborted = true;
     }
 }

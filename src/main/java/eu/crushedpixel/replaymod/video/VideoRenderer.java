@@ -39,6 +39,7 @@ public class VideoRenderer implements RenderInfo {
     private final Minecraft mc = Minecraft.getMinecraft();
     private final ReplaySender replaySender;
     private final RenderOptions options;
+    private final VideoWriter videoWriter;
 
     private int fps;
     private boolean mouseWasGrabbed;
@@ -60,7 +61,7 @@ public class VideoRenderer implements RenderInfo {
         this.gui = new GuiVideoRenderer(this);
         this.replaySender = ReplayMod.replaySender;
         this.options = options;
-        this.renderingPipeline = Pipelines.newPipeline(options.getMode(), this, new VideoWriter(options) {
+        this.renderingPipeline = Pipelines.newPipeline(options.getMode(), this, videoWriter = new VideoWriter(options) {
             @Override
             public void consume(RGBFrame frame) {
                 gui.updatePreview(frame);
@@ -418,6 +419,7 @@ public class VideoRenderer implements RenderInfo {
     }
 
     public void cancel() {
+        videoWriter.abort();
         this.cancelled = true;
         renderingPipeline.cancel();
     }
