@@ -1,13 +1,15 @@
 package eu.crushedpixel.replaymod.holders;
 
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @NoArgsConstructor
+
+@EqualsAndHashCode
 public class KeyframeSet implements GuiEntryListEntry {
     private String name;
     private Keyframe<AdvancedPosition>[] positionKeyframes;
@@ -74,20 +76,5 @@ public class KeyframeSet implements GuiEntryListEntry {
     @Override
     public String getDisplayString() {
         return name;
-    }
-
-    @Override
-    public boolean equals(Object o2) {
-        if(o2 == null) return false;
-        if(!(o2 instanceof KeyframeSet)) return false;
-        KeyframeSet set2 = (KeyframeSet)o2;
-        return hashCode() == set2.hashCode();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(getKeyframes())
-                .toHashCode();
     }
 }
