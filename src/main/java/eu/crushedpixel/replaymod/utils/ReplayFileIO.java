@@ -14,6 +14,7 @@ import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -44,6 +45,21 @@ public class ReplayFileIO {
         File folder = new File(path);
         FileUtils.forceMkdir(folder);
         return folder;
+    }
+
+    public static File getNextFreeFile(File file) {
+        if(!file.exists()) return file;
+        File folder = file.getParentFile();
+        String filename = FilenameUtils.getBaseName(file.getAbsolutePath());
+        String extension = FilenameUtils.getExtension(file.getAbsolutePath());
+
+        int i = 1;
+        while(file.exists()) {
+            file = new File(folder, filename+"_"+i+"."+extension);
+            i++;
+        }
+
+        return file;
     }
 
     public static List<File> getAllReplayFiles() {
