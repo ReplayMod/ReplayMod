@@ -39,8 +39,8 @@ public class GuiAssetManager extends GuiScreen {
     private ReplayAsset currentAsset;
 
     public GuiAssetManager() {
-        this.initialRepository = ReplayHandler.getAssetRepository();
-        this.assetRepository = new AssetRepository(ReplayHandler.getAssetRepository());
+        this.initialRepository = new AssetRepository(ReplayHandler.getAssetRepository());
+        this.assetRepository = ReplayHandler.getAssetRepository();
     }
 
     @Override
@@ -194,7 +194,6 @@ public class GuiAssetManager extends GuiScreen {
             @Override
             public void run() {
                 if(assetRepository.equals(initialRepository)) return;
-                ReplayHandler.setAssetRepository(assetRepository);
                 assetRepository.saveAssets();
             }
         }, "replaymod-asset-saver").start();
