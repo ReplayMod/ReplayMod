@@ -115,7 +115,9 @@ public class VideoRenderer implements RenderInfo {
 
     @Override
     public float updateForNextFrame() {
-        drawGui();
+        if (!options.isHighPerformance() || framesDone % fps == 0) {
+            drawGui();
+        }
 
         updateTime(mc.timer, framesDone);
 

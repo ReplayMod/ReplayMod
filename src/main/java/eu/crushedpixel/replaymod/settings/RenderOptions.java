@@ -27,6 +27,7 @@ public final class RenderOptions {
     private int height = Minecraft.getMinecraft().displayHeight;
 
     // Highly advanced
+    private boolean highPerformance;
     private String exportCommand = "ffmpeg";
     private String exportCommandArgs = "";
 
@@ -55,6 +56,7 @@ public final class RenderOptions {
         copy.skyColor = this.skyColor;
         copy.width = this.width;
         copy.height = this.height;
+        copy.highPerformance = this.highPerformance;
         copy.exportCommand = this.exportCommand;
         copy.exportCommandArgs = this.exportCommandArgs;
         return copy;

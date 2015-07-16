@@ -516,6 +516,10 @@ public class GuiRenderSettings extends GuiScreen {
 
         options.setIgnoreCameraRotation(ignoreCamDir.isChecked());
 
+        if (isCtrlKeyDown()) {
+            options.setHighPerformance(true);
+        }
+
         if(commandInput.getText().trim().length() > 0) {
             options.setExportCommand(commandInput.getText().trim());
         }
