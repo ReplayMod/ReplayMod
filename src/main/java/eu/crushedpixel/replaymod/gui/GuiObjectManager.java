@@ -354,7 +354,7 @@ public class GuiObjectManager extends GuiScreen {
         addButton.xPosition = nameInput.xPosition;
         addButton.width = removeButton.width = nameInput.width/2 - 2;
         removeButton.xPosition = addButton.xPosition + nameInput.width/2 + 2;
-        addButton.yPosition = removeButton.yPosition = objectList.yPosition+objectList.height-20;
+        addButton.yPosition = removeButton.yPosition = objectList.yPosition+objectList.height-25;
 
         allElements.addPart(addButton);
         disableElements.addPart(removeButton);
