@@ -8,6 +8,7 @@ import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.events.ReplayExitEvent;
+import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
@@ -554,7 +555,7 @@ public class ReplayHandler {
             prevRealTime = keyframe.getRealTimestamp();
         }
 
-        int newCursorPos = prevRealTime+(curTime-prevTime);
+        int newCursorPos = Math.min(GuiReplayOverlay.KEYFRAME_TIMELINE_LENGTH, prevRealTime+(curTime-prevTime));
 
         setRealTimelineCursor(newCursorPos);
     }
