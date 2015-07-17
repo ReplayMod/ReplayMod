@@ -580,20 +580,43 @@ public class GuiReplayOverlay extends Gui {
     }
 
     /**
-     * Render the eye icon in the bottom right corner of the screen.
+     * Render the Ambient Lighting and Path Preview indicators in the lower right corner.
      * @param event Rendered post game overlay
      */
     @SubscribeEvent
-    public void renderLightingIndicator(RenderGameOverlayEvent.Post event) {
+    public void renderIndicators(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
-        if(ReplayMod.replaySettings.isLightingEnabled() && ReplayHandler.isInReplay()) {
+        if(!ReplayHandler.isInReplay()) return;
+
+        int xPos = WIDTH-10;
+
+        if(ReplayMod.replaySettings.isLightingEnabled()) {
+            int width = 19;
+
             mc.renderEngine.bindTexture(replay_gui);
             GlStateManager.color(1, 1, 1, 1);
             GlStateManager.enableAlpha();
             GlStateManager.disableLighting();
-            Gui.drawModalRectWithCustomSizedTexture(WIDTH - 10 - 19, HEIGHT - 10 - 13,
+            Gui.drawModalRectWithCustomSizedTexture(xPos-width, HEIGHT - 10 - 13,
                     90, 20, 19, 13, TEXTURE_SIZE, TEXTURE_SIZE);
+
+            xPos -= width + 5;
         }
+
+        if(ReplayMod.replaySettings.showPathPreview()) {
+            int width = 20;
+
+            mc.renderEngine.bindTexture(replay_gui);
+            GlStateManager.color(1, 1, 1, 1);
+            GlStateManager.enableAlpha();
+            GlStateManager.disableLighting();
+            Gui.drawModalRectWithCustomSizedTexture(xPos-width, HEIGHT - 10 - 13,
+                    100, 0, 20, 13, TEXTURE_SIZE, TEXTURE_SIZE);
+
+            xPos -= width + 5;
+        }
+
+        //can be continued
     }
 
     /**
