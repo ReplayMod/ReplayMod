@@ -258,12 +258,12 @@ public class GuiReplayOverlay extends Gui {
 
     private final GuiReplaySpeedSlider speedSlider = new GuiReplaySpeedSlider(1, SPEED_X, TOP_ROW, I18n.format("replaymod.gui.speed"));
 
+    private boolean toolbarOpen = false;
+
     private final DelegatingElement toolbar = new DelegatingElement() {
 
-        private boolean open = false;
-
         private void toggleOpen() {
-            open = !open;
+            toolbarOpen = !toolbarOpen;
         }
 
         private GuiElement buttonOpenToolbar = new GuiArrowButton(-1, 10, HEIGHT-10-20, "", GuiArrowButton.Direction.UP) {
@@ -327,7 +327,7 @@ public class GuiReplayOverlay extends Gui {
 
         @Override
         public GuiElement delegate() {
-            if(open) {
+            if(toolbarOpen) {
                 return openElements;
             } else {
                 return buttonOpenToolbar;
@@ -336,12 +336,16 @@ public class GuiReplayOverlay extends Gui {
 
         @Override
         public void draw(Minecraft mc, int mouseX, int mouseY) {
-            if(open) {
+            if(toolbarOpen) {
                 drawGradientRect(0, maxButtonY - 10, WIDTH, HEIGHT, -1072689136, -804253680);
             }
             super.draw(mc, mouseX, mouseY);
         }
     };
+
+    public void closeToolbar() {
+        toolbarOpen = false;
+    }
 
     private final GuiElement content = new ComposedElement(buttonPlayPause, buttonExport, buttonPlace, buttonTime,
             buttonPlayPausePath, buttonZoomIn, buttonZoomOut, timeline, timelineReal, scrollbar, speedSlider, toolbar);

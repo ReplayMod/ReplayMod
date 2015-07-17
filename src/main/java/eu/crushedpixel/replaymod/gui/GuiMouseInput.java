@@ -38,4 +38,9 @@ public class GuiMouseInput extends GuiScreen {
 
         super.keyTyped(typedChar, keyCode);
     }
+
+    @Override
+    public void onGuiClosed() {
+        ReplayMod.overlay.closeToolbar();
+    }
 }
