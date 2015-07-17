@@ -592,7 +592,7 @@ public class GuiReplayOverlay extends Gui {
     @SubscribeEvent
     public void renderIndicators(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
-        if(!ReplayHandler.isInReplay()) return;
+        if(!ReplayHandler.isInReplay() || mc.currentScreen instanceof NoOverlay) return;
 
         int xPos = WIDTH-10;
 
