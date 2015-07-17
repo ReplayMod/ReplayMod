@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.*;
+import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Marker;
@@ -22,7 +23,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
-public class GuiEditKeyframe extends GuiScreen {
+public class GuiEditKeyframe extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
     private enum KeyframeType {
         MARKER, POSITION, TIME, SPECTATOR;

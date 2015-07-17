@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.EncodingPreset;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class GuiRenderSettings extends GuiScreen {
+public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
     //for default file
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";

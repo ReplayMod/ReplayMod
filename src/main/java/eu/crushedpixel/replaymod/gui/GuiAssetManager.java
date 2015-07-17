@@ -6,6 +6,7 @@ import eu.crushedpixel.replaymod.assets.ReplayAsset;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.FileChooseListener;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
+import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.gui.GuiScreen;
@@ -18,7 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class GuiAssetManager extends GuiScreen {
+public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
     private String screenTitle;
 
