@@ -3,8 +3,8 @@ package eu.crushedpixel.replaymod.renderer;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
-import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
+import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
@@ -43,9 +43,6 @@ public class PathPreviewRenderer {
         double doubleX = entity.posX;
         double doubleY = entity.posY;
         double doubleZ = entity.posZ;
-
-        GlStateManager.pushAttrib();
-        GlStateManager.pushMatrix();
 
         GlStateManager.disableLighting();
         GlStateManager.disableTexture2D();
@@ -87,6 +84,7 @@ public class PathPreviewRenderer {
 
         GlStateManager.enableTexture2D();
         GlStateManager.blendFunc(GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR);
+
         GlStateManager.disableDepth();
 
         for(Keyframe<AdvancedPosition> kf : distanceSorted) {
@@ -102,13 +100,7 @@ public class PathPreviewRenderer {
             }
         }
 
-        GlStateManager.disableAlpha();
-        GlStateManager.disableTexture2D();
         GlStateManager.disableBlend();
-        GlStateManager.enableLighting();
-
-        GlStateManager.popAttrib();
-        GlStateManager.popMatrix();
     }
 
     @SubscribeEvent
@@ -138,6 +130,8 @@ public class PathPreviewRenderer {
     }
 
     private void drawConnection(double playerX, double playerY, double playerZ, AdvancedPosition pos1, AdvancedPosition pos2, int color) {
+        GlStateManager.pushMatrix();
+
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer renderer = tessellator.getWorldRenderer();
 
@@ -158,6 +152,8 @@ public class PathPreviewRenderer {
 
         tessellator.draw();
         renderer.setTranslation(0, 0, 0);
+
+        GlStateManager.popMatrix();
     }
 
     private void drawPoint(double playerX, double playerY, double playerZ, Keyframe<AdvancedPosition> kf) {
@@ -298,7 +294,6 @@ public class PathPreviewRenderer {
         renderer.addVertexWithUV(x + cubeSize, y + cubeSize, z, 2 * 8 / 64f, 0);
 
         Tessellator.getInstance().draw();
-
         renderer.setTranslation(0, 0, 0);
 
         GlStateManager.popMatrix();

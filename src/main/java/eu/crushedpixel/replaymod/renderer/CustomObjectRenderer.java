@@ -24,31 +24,20 @@ public class CustomObjectRenderer {
 
     @SubscribeEvent
     public void renderCustomObjects(RenderWorldLastEvent event) {
-        if(!ReplayHandler.isInReplay() || mc.getRenderViewEntity() == null) return;
+        if(!ReplayHandler.isInReplay() || mc.getRenderViewEntity() == null || ReplayHandler.getCustomImageObjects().isEmpty()) return;
 
         double dX = mc.getRenderViewEntity().lastTickPosX + (mc.getRenderViewEntity().posX - mc.getRenderViewEntity().lastTickPosX) * (double)event.partialTicks;
         double dY = mc.getRenderViewEntity().lastTickPosY + (mc.getRenderViewEntity().posY - mc.getRenderViewEntity().lastTickPosY) * (double)event.partialTicks;
         double dZ = mc.getRenderViewEntity().lastTickPosZ + (mc.getRenderViewEntity().posZ - mc.getRenderViewEntity().lastTickPosZ) * (double)event.partialTicks;
 
-        GlStateManager.pushAttrib();
-        GlStateManager.pushMatrix();
-
         GlStateManager.enableTexture2D();
-        GlStateManager.disableLighting();
-        GlStateManager.enableAlpha();
-        GlStateManager.enableDepth();
-        
+
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
             drawCustomImageObject(dX, dY, dZ, object);
         }
-
-        GlStateManager.enableLighting();
-        GlStateManager.disableBlend();
-        GlStateManager.popAttrib();
-        GlStateManager.popMatrix();
     }
 
     private void drawCustomImageObject(double playerX, double playerY, double playerZ, CustomImageObject customImageObject) {
