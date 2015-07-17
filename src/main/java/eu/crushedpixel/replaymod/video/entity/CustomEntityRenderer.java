@@ -373,11 +373,14 @@ public class CustomEntityRenderer<D extends CaptureData> implements eu.crushedpi
     }
 
     protected void orientCamera(float partialTicks) {
-        if (options.isIgnoreCameraRotation()) {
-            Entity entity = mc.getRenderViewEntity();
-            // Stop the minecraft code from doing any rotation
-            entity.prevRotationPitch = entity.rotationPitch = 0;
+        Entity entity = mc.getRenderViewEntity();
+        if (options.getIgnoreCameraRotation()[0]) {
             entity.prevRotationYaw = entity.rotationYaw = 0;
+        }
+        if (options.getIgnoreCameraRotation()[1]) {
+            entity.prevRotationPitch = entity.rotationPitch = 0;
+        }
+        if (options.getIgnoreCameraRotation()[2]) {
             ReplayHandler.setCameraTilt(0);
         }
 

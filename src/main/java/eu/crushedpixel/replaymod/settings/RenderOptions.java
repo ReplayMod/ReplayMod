@@ -5,6 +5,7 @@ import lombok.Data;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
+import java.util.Arrays;
 
 import static org.apache.commons.lang3.Validate.isTrue;
 
@@ -16,7 +17,10 @@ public final class RenderOptions {
 
     private File outputFile;
 
-    private boolean ignoreCameraRotation;
+    /**
+     * Whether to ignore camera rotation. On yaw, pitch, roll axis.
+     */
+    private boolean[] ignoreCameraRotation = new boolean[3];
 
     // Advanced
     private boolean waitForChunks = true;
@@ -44,12 +48,16 @@ public final class RenderOptions {
         return skyColor == -1;
     }
 
+    public void setIgnoreCameraRotation(boolean yaw, boolean pitch, boolean roll) {
+        ignoreCameraRotation = new boolean[]{yaw, pitch, roll};
+    }
+
     public RenderOptions copy() {
         RenderOptions copy = new RenderOptions();
         copy.mode = this.mode;
         copy.bitrate = this.bitrate;
         copy.fps = this.fps;
-        copy.ignoreCameraRotation = this.ignoreCameraRotation;
+        copy.ignoreCameraRotation = Arrays.copyOf(this.ignoreCameraRotation, 3);
         copy.waitForChunks = this.waitForChunks;
         copy.isLinearMovement = this.isLinearMovement;
         copy.hideNameTags = this.hideNameTags;

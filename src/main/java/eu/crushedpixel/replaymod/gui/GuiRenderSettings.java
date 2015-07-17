@@ -523,7 +523,7 @@ public class GuiRenderSettings extends GuiScreen {
         }
         options.setMode(pipePreset);
 
-        options.setIgnoreCameraRotation(ignoreCamDir.isChecked());
+        options.setIgnoreCameraRotation(ignoreCamDir.isChecked(), ignoreCamDir.isChecked(), ignoreCamDir.isChecked());
 
         if (isCtrlKeyDown()) {
             options.setHighPerformance(true);
