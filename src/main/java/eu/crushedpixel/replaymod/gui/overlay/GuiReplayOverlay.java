@@ -50,6 +50,8 @@ public class GuiReplayOverlay extends Gui {
     public static final int TEXTURE_SIZE = 128;
     private static final float ZOOM_STEPS = 0.05f;
 
+    public static final int KEYFRAME_TIMELINE_LENGTH = 10 * 60 * 1000;
+
     public static GuiTexturedButton texturedButton(int x, int y, int u, int v, int size, Runnable action, String hoverText) {
         return new GuiTexturedButton(0, x, y, size, size, replay_gui, u, v, TEXTURE_SIZE, TEXTURE_SIZE, action, I18n.format(hoverText));
     }
@@ -244,7 +246,7 @@ public class GuiReplayOverlay extends Gui {
 
     private final GuiKeyframeTimeline timelineReal = new GuiKeyframeTimeline(TIMELINE_REAL_X, BOTTOM_ROW - 1, TIMELINE_REAL_WIDTH, 22, true, true, true);
     {
-        timelineReal.timelineLength = 10 * 60 * 1000;
+        timelineReal.timelineLength = KEYFRAME_TIMELINE_LENGTH;
     }
 
     private final GuiScrollbar scrollbar = new GuiScrollbar(TIMELINE_REAL_X, BOTTOM_ROW + 22, TIMELINE_REAL_WIDTH) {
