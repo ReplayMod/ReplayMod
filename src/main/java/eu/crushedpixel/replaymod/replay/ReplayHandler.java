@@ -173,8 +173,9 @@ public class ReplayHandler {
                 ReplayProcess.startReplayProcess(renderOptions);
             } catch (ReportedException e) {
                 // We have to manually unwrap OOM errors as Minecraft doesn't handle them when they're wrapped
+                Throwable prevCause = null;
                 Throwable cause = e;
-                while (cause != null) {
+                while (cause != null && cause != prevCause) {
                     if (cause instanceof OutOfMemoryError) {
                         // Nevertheless save the crash report in case we actually need it
                         Minecraft minecraft = Minecraft.getMinecraft();
@@ -186,6 +187,7 @@ public class ReplayHandler {
                         crashReport.saveToFile(file);
                         throw (OutOfMemoryError) cause;
                     }
+                    prevCause = cause;
                     cause = e.getCause();
                 }
                 throw e;
