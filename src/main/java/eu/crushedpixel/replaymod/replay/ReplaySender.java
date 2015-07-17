@@ -383,8 +383,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                     }
 
                     CameraEntity cent = ReplayHandler.getCameraEntity();
-
                     cent.moveAbsolute(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
+                    
+                    ReplayHandler.spectateCamera();
                     return null;
                 }
             }.call();
