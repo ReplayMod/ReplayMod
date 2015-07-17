@@ -88,6 +88,7 @@ public class CustomImageObject implements GuiEntryListEntry {
                     e.printStackTrace();
                 }
             }
+            return null;
         }
 
         if(resourceLocation != null && !ResourceHelper.isRegistered(resourceLocation)) {
