@@ -15,6 +15,7 @@ import eu.crushedpixel.replaymod.video.VideoRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiErrorScreen;
+import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
@@ -42,8 +43,6 @@ public class ReplayProcess {
     private static VideoRenderer videoRenderer = null;
 
     private static boolean isVideoRecording = false;
-    private static boolean blocked = false;
-    private static boolean deepBlock = false;
     private static boolean requestFinish = false;
     private static boolean firstTime = false;
 
@@ -59,8 +58,6 @@ public class ReplayProcess {
         timeLinear = null;
         calculated = false;
         requestFinish = false;
-
-        blocked = deepBlock = false;
 
         lastRealTime = System.currentTimeMillis();
         lastRealReplayTime = 0;
@@ -145,12 +142,6 @@ public class ReplayProcess {
         ReplayMod.replaySender.setReplaySpeed(0);
     }
 
-    public static void unblockAndTick(boolean justCheck) {
-        if(!deepBlock) blocked = false;
-        if(!blocked || !isVideoRecording())
-            ReplayProcess.tickReplay(justCheck);
-    }
-
     //if justCheck is true, no Screenshot will be taken, it will only be checked
     //whether all chunks have been rendered. This is necessary because no Render ticks
     //are called if the Timer speed is set to 0, leading to this method never being
@@ -165,6 +156,13 @@ public class ReplayProcess {
         }
 
         if(firstTime) {
+            if(RenderChunk.renderChunksUpdated != 0 || mc.currentScreen != null) {
+                return;
+            }
+
+            lastRealTime = System.currentTimeMillis();
+            lastRealReplayTime = 0;
+
             firstTime = false;
             mc.timer.renderPartialTicks = 100;
             mc.timer.elapsedPartialTicks = 100;

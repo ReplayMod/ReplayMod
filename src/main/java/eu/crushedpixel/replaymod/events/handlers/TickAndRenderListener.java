@@ -52,7 +52,7 @@ public class TickAndRenderListener {
             });
         }
 
-        if(ReplayHandler.isInPath()) ReplayProcess.unblockAndTick(false);
+        if(ReplayHandler.isInPath()) ReplayProcess.tickReplay(false);
         if(ReplayHandler.isCamera()) mc.setRenderViewEntity(ReplayHandler.getCameraEntity());
         if(mc.getRenderViewEntity() != null && (mc.getRenderViewEntity() == mc.thePlayer || !mc.getRenderViewEntity().isEntityAlive())
                 && ReplayHandler.getCameraEntity() != null && !ReplayHandler.isInPath()) {
@@ -71,7 +71,7 @@ public class TickAndRenderListener {
         if(ReplayHandler.getCameraEntity() != null)
             ReplayHandler.getCameraEntity().updateMovement();
         if(ReplayHandler.isInPath()) {
-            ReplayProcess.unblockAndTick(true);
+            ReplayProcess.tickReplay(true);
         } else onMouseMove(new MouseEvent());
 
         FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
