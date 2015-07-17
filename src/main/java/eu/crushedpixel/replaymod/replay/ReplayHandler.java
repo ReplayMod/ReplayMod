@@ -228,11 +228,15 @@ public class ReplayHandler {
     }
 
     public static void toggleMarker() {
-        if(selectedKeyframe != null && selectedKeyframe.getValue() instanceof Marker) markerKeyframes.remove(selectedKeyframe);
-        else {
+        if(selectedKeyframe != null && selectedKeyframe.getValue() instanceof Marker) {
+            markerKeyframes.remove(selectedKeyframe);
+            ReplayHandler.selectKeyframe(null);
+        } else {
             AdvancedPosition pos = new AdvancedPosition(mc.getRenderViewEntity(), false);
             int timestamp = ReplayMod.replaySender.currentTimeStamp();
-            markerKeyframes.add(new Keyframe<Marker>(timestamp, new Marker(null, pos)));
+            Keyframe<Marker> markerKeyframe = new Keyframe<Marker>(timestamp, new Marker(null, pos));
+            markerKeyframes.add(markerKeyframe);
+            ReplayHandler.selectKeyframe(markerKeyframe);
         }
     }
 
