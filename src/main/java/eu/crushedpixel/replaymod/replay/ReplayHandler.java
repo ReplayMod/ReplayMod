@@ -31,6 +31,7 @@ import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.ReportedException;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 
@@ -205,7 +206,14 @@ public class ReplayHandler {
     }
 
     public static CameraEntity getCameraEntity() {
-        if(cameraEntity == null && mc.theWorld != null) cameraEntity = new CameraEntity(mc.theWorld);
+        if(cameraEntity == null && mc.theWorld != null) {
+            synchronized (ReplayHandler.class) {
+                World world = mc.theWorld;
+                if (cameraEntity == null && world != null) {
+                    cameraEntity = new CameraEntity(world);
+                }
+            }
+        }
         return cameraEntity;
     }
 
