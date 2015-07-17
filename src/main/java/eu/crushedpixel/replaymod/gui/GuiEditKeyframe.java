@@ -146,7 +146,7 @@ public class GuiEditKeyframe extends GuiScreen {
 
             //Real Time Input
             int timestamp = keyframe.getRealTimestamp();
-            min = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, 9d, (double)TimestampUtils.getMinutesFromTimestamp(timestamp), false, "", 1);
+            min = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, 9d, (double)TimestampUtils.timestampToWholeMinutes(timestamp), false, "", 1);
             sec = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 25, 0d, 59d, (double)TimestampUtils.getSecondsFromTimestamp(timestamp), false, "", 1);
             ms = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 35, 0d, 999d, (double)TimestampUtils.getMillisecondsFromTimestamp(timestamp), false, "", 1);
 
@@ -167,7 +167,7 @@ public class GuiEditKeyframe extends GuiScreen {
             } else if(keyframeType == KeyframeType.TIME) {
                 int time = ((Keyframe<TimestampValue>) keyframe).getValue().asInt();
 
-                kfMin = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, null, (double)TimestampUtils.getMinutesFromTimestamp(time), false, "", 1);
+                kfMin = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, null, (double)TimestampUtils.timestampToWholeMinutes(time), false, "", 1);
                 kfSec = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 25, 0d, 59d, (double)TimestampUtils.getSecondsFromTimestamp(time), false, "", 1);
                 kfMs = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 35, 0d, 999d, (double)TimestampUtils.getMillisecondsFromTimestamp(time), false, "", 1);
 
