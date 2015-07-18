@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.ARBBufferObject;
 import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.Util;
 
 import java.nio.ByteBuffer;
 
@@ -86,37 +87,61 @@ public class PixelBufferObject {
         }
     }
 
+    private void checkNotMapped() {
+        if (Objects.equals(getHandle(), mapped.get())) {
+            throw new IllegalStateException("Buffer already mapped.");
+        }
+    }
+
     @Api
     public ByteBuffer mapReadOnly() {
         checkBound();
-        mapped.set(getHandle());
+        checkNotMapped();
+        ByteBuffer buffer;
         if (arb) {
-            return ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB, size, null);
+            buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB, size, null);
         } else {
-            return glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY, size, null);
+            buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY, size, null);
         }
+        if (buffer == null) {
+            Util.checkGLError();
+        }
+        mapped.set(getHandle());
+        return buffer;
     }
 
     @Api
     public ByteBuffer mapWriteOnly() {
         checkBound();
-        mapped.set(getHandle());
+        checkNotMapped();
+        ByteBuffer buffer;
         if (arb) {
-            return ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_WRITE_ONLY_ARB, size, null);
+            buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_WRITE_ONLY_ARB, size, null);
         } else {
-            return glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_WRITE_ONLY, size, null);
+            buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_WRITE_ONLY, size, null);
         }
+        if (buffer == null) {
+            Util.checkGLError();
+        }
+        mapped.set(getHandle());
+        return buffer;
     }
 
     @Api
     public ByteBuffer mapReadWrite() {
         checkBound();
-        mapped.set(getHandle());
+        checkNotMapped();
+        ByteBuffer buffer;
         if (arb) {
-            return ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_WRITE_ARB, size, null);
+            buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_WRITE_ARB, size, null);
         } else {
-            return glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_WRITE, size, null);
+            buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_WRITE, size, null);
         }
+        if (buffer == null) {
+            Util.checkGLError();
+        }
+        mapped.set(getHandle());
+        return buffer;
     }
 
     @Api
@@ -130,6 +155,7 @@ public class PixelBufferObject {
         } else {
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         }
+        mapped.set(0);
     }
 
     @Api
