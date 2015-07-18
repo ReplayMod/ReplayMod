@@ -18,6 +18,7 @@ import eu.crushedpixel.replaymod.renderer.*;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
+import eu.crushedpixel.replaymod.settings.EncodingPreset;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.sound.SoundHandler;
@@ -26,8 +27,8 @@ import eu.crushedpixel.replaymod.utils.OpenGLUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
-import lombok.Getter;
 import eu.crushedpixel.replaymod.video.rendering.Pipelines;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.IResourcePack;
@@ -283,7 +284,11 @@ public class ReplayMod {
             }
             if (exportCommandArgs != null) {
                 options.setExportCommandArgs(exportCommandArgs);
+            } else {
+                options.setExportCommandArgs(EncodingPreset.MP4DEFAULT.getCommandLineArgs());
             }
+
+            options.setOutputFile(new File(String.valueOf(System.currentTimeMillis())));
 
             Pipelines.Preset pipelinePreset = Pipelines.Preset.DEFAULT;
             if (type != null) {
@@ -344,7 +349,15 @@ public class ReplayMod {
                         ReplayHandler.useKeyframePresetFromRepository(index);
 
                         System.out.println("Rendering started...");
-                        ReplayProcess.startReplayProcess(options);
+                        try {
+                            ReplayProcess.startReplayProcess(options);
+                        } catch (Throwable t) {
+                            t.printStackTrace();
+                            FMLCommonHandler.instance().exitJava(1, false);
+                        }
+                        if (mc.hasCrashed) {
+                            System.out.println(mc.crashReporter.getCompleteReport());
+                        }
                         System.out.println("Rendering done. Shutting down...");
                         mc.shutdown();
                     }
