@@ -6,6 +6,7 @@ import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.holders.GuiEntryListStringEntry;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import eu.crushedpixel.replaymod.utils.StringUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
@@ -151,7 +152,7 @@ public class GuiReplayEditor extends GuiScreen {
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton)
             throws IOException {
-        replayDropdown.mouseClicked(mouseX, mouseY, mouseButton);
+        replayDropdown.mouseClick(Minecraft.getMinecraft(), mouseX, mouseY, mouseButton);
         currentTab.getStudioPart().mouseClicked(mouseX, mouseY, mouseButton);
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }

@@ -189,7 +189,7 @@ public class GuiConnectPart extends GuiStudioPart {
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton); //call this first to ensure the dropdown is still open
         concatList.mouseClicked(mouseX, mouseY, mouseButton);
-        replayDropdown.mouseClicked(mouseX, mouseY, mouseButton);
+        replayDropdown.mouseClick(Minecraft.getMinecraft(), mouseX, mouseY, mouseButton);
     }
 
     @Override
