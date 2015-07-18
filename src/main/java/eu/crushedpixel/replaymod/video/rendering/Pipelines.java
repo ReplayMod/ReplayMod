@@ -49,28 +49,34 @@ public class Pipelines {
 
     public static Pipeline<StereoscopicOpenGlFrame, RGBFrame> newStereoscopicPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderOptions options = renderInfo.getRenderOptions();
-        return new Pipeline<StereoscopicOpenGlFrame, RGBFrame>(
-                new StereoscopicOpenGlFrameCapturer(new StereoscopicEntityRenderer(options), renderInfo),
-                new StereoscopicToRGBProcessor(),
-                consumer
-        );
+        FrameCapturer<StereoscopicOpenGlFrame> capturer;
+        if (PixelBufferObject.SUPPORTED) {
+            capturer = new StereoscopicPboOpenGlFrameCapturer(new StereoscopicEntityRenderer(options), renderInfo);
+        } else {
+            capturer = new StereoscopicOpenGlFrameCapturer(new StereoscopicEntityRenderer(options), renderInfo);
+        }
+        return new Pipeline<StereoscopicOpenGlFrame, RGBFrame>(capturer, new StereoscopicToRGBProcessor(), consumer);
     }
 
     public static Pipeline<CubicOpenGlFrame, RGBFrame> newCubicPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderOptions options = renderInfo.getRenderOptions();
-        return new Pipeline<CubicOpenGlFrame, RGBFrame>(
-                new CubicOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4),
-                new CubicToRGBProcessor(),
-                consumer
-        );
+        FrameCapturer<CubicOpenGlFrame> capturer;
+        if (PixelBufferObject.SUPPORTED) {
+            capturer = new CubicPboOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4);
+        } else {
+            capturer = new CubicOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4);
+        }
+        return new Pipeline<CubicOpenGlFrame, RGBFrame>(capturer, new CubicToRGBProcessor(), consumer);
     }
 
     public static Pipeline<CubicOpenGlFrame, RGBFrame> newEquirectangularPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderOptions options = renderInfo.getRenderOptions();
-        return new Pipeline<CubicOpenGlFrame, RGBFrame>(
-                new CubicOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4),
-                new EquirectangularToRGBProcessor(options.getWidth() / 4),
-                consumer
-        );
+        FrameCapturer<CubicOpenGlFrame> capturer;
+        if (PixelBufferObject.SUPPORTED) {
+            capturer = new CubicPboOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4);
+        } else {
+            capturer = new CubicOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4);
+        }
+        return new Pipeline<CubicOpenGlFrame, RGBFrame>(capturer, new EquirectangularToRGBProcessor(options.getWidth() / 4), consumer);
     }
 }

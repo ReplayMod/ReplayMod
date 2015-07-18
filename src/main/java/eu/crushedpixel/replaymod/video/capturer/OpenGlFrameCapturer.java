@@ -82,10 +82,10 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         frameBuffer().unbindFramebuffer();
         popMatrix();
 
-        return captureFrame(frameId);
+        return captureFrame(frameId, captureData);
     }
 
-    protected OpenGlFrame captureFrame(int frameId) {
+    protected OpenGlFrame captureFrame(int frameId, D captureData) {
         GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
         GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
 
