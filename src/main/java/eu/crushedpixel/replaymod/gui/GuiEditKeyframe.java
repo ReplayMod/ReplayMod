@@ -153,8 +153,6 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
         buttonList.add(leftButton);
         buttonList.add(rightButton);
-
-        initialized = true;
     }
 
     @Override
@@ -230,6 +228,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
         @Override
         public void initGui() {
+            super.initGui();
+
             if (!initialized) {
                 String name = keyframe.getValue().getName();
                 if (name == null) name = "";
@@ -240,10 +240,10 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                 inputs.addPart(markerNameInput);
             }
 
-            super.initGui();
-
             markerNameInput.xPosition = width/2 - 100;
             markerNameInput.yPosition = height/2-10;
+
+            initialized = true;
         }
 
         @Override
@@ -269,6 +269,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
         @Override
         public void initGui() {
+            super.initGui();
+
             if (!initialized) {
                 int time = keyframe.getValue().asInt();
 
@@ -281,13 +283,13 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                 inputs.addPart(kfMs);
             }
 
-            super.initGui();
-
             kfMin.xPosition = min.xPosition;
             kfSec.xPosition = sec.xPosition;
             kfMs.xPosition = ms.xPosition;
 
             kfMin.yPosition = kfSec.yPosition = kfMs.yPosition = min.yPosition - 10 - 20;
+
+            initialized = true;
         }
 
         @Override
@@ -328,6 +330,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                 return;
             }
 
+            super.initGui();
+
             if (!initialized) {
                 AdvancedPosition pos = keyframe.getValue();
                 xCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getX()), true);
@@ -340,8 +344,6 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                 posInputs = new ComposedElement(xCoord, yCoord, zCoord, yaw, pitch, roll);
                 inputs.addPart(posInputs);
             }
-
-            super.initGui();
 
             int w = Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.xpos")),
                     Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.ypos")),
@@ -363,6 +365,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                     i++;
                 }
             }
+
+            initialized = true;
         }
 
         @Override
