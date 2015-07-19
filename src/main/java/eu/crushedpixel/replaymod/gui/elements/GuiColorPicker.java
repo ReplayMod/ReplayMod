@@ -3,14 +3,13 @@ package eu.crushedpixel.replaymod.gui.elements;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.Point;
 
 import java.awt.*;
 
-public class GuiColorPicker extends GuiButton {
+public class GuiColorPicker extends GuiAdvancedButton {
 
     private final int PICKER_SIZE = 100;
 
@@ -80,6 +79,13 @@ public class GuiColorPicker extends GuiButton {
             }
         }
         return super.mousePressed(mc, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
+        boolean clicked = super.mouseClick(mc, mouseX, mouseY, button);
+        if(clicked) pickerToggled();
+        return clicked;
     }
 
     @Override
