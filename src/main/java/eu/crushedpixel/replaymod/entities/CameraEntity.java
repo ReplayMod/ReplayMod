@@ -102,9 +102,7 @@ public class CameraEntity extends EntityPlayer {
             mc.thePlayer.rotationYaw = mc.getRenderViewEntity().rotationYaw;
 
             //removes water/suffocation/shadow overlays in screen
-            mc.thePlayer.posX = 0;
-            mc.thePlayer.posY = 500;
-            mc.thePlayer.posZ = 0;
+            mc.thePlayer.setPosition(0, 500, 0);
         }
 
         lastCall = Sys.getTime();
