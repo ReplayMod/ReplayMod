@@ -18,6 +18,16 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
         super(0, fontRenderer, x, y, width, height);
     }
 
+    public GuiAdvancedTextField(FontRenderer fontRenderer, String hint) {
+        super(0, fontRenderer, 0, 0, 0, 0);
+        this.hint = hint;
+    }
+
+    public GuiAdvancedTextField(FontRenderer fontRenderer, String hint, int maxInputLength) {
+        this(fontRenderer, hint);
+        setMaxStringLength(maxInputLength);
+    }
+
     @Override
     public void setElementEnabled(boolean isEnabled) {
         this.isEnabled = isEnabled;
