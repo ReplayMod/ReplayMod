@@ -14,6 +14,7 @@ public class ComposedElement implements GuiElement {
 
     public ComposedElement(GuiElement...parts) {
         this.parts = new ArrayList<GuiElement>(Arrays.asList(parts));
+        Collections.sort(this.parts, COMPOSED_ELEMENT_COMPARATOR);
     }
 
     public void addPart(GuiElement part) {
@@ -97,6 +98,10 @@ public class ComposedElement implements GuiElement {
         public int compare(GuiElement o1, GuiElement o2) {
             Boolean d1 = o1 instanceof GuiDropdown;
             Boolean d2 = o2 instanceof GuiDropdown;
+
+            if(d1 && d2) {
+                return -new Integer(((GuiDropdown)o1).yPosition).compareTo(((GuiDropdown)o2).yPosition);
+            }
 
             return d1.compareTo(d2);
         }
