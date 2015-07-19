@@ -135,7 +135,8 @@ public class GuiColorPicker extends GuiAdvancedButton implements GuiOverlayEleme
     }
 
     public boolean hoveringPicker(int mouseX, int mouseY) {
-        return mouseX >= pickerX
+        return enabled
+                && mouseX >= pickerX
                 && mouseY >= pickerY
                 && mouseX <= pickerX+PICKER_SIZE
                 && mouseY <= pickerY+PICKER_SIZE;
