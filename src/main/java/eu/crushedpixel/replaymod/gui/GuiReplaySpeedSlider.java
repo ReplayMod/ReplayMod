@@ -94,7 +94,7 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
     }
 
     @Override
-    protected void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
+    public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
         if(this.visible) {
             try {
                 if(this.dragging) {
@@ -146,6 +146,7 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
         return Math.round(value * max - min);
     }
 
+    @Override
     public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
         if(super.mousePressed(mc, mouseX, mouseY)) {
             this.dragging = true;
@@ -155,6 +156,7 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
         }
     }
 
+    @Override
     public void mouseReleased(int mouseX, int mouseY) {
         this.dragging = false;
     }
@@ -183,11 +185,6 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
     }
 
     @Override
-    public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
-        mouseDragged(mc, mouseX, mouseY);
-    }
-
-    @Override
     public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
         mouseReleased(mouseX, mouseY);
     }
@@ -205,5 +202,10 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
     @Override
     public void setElementEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    protected void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
+        mouseDrag(mc, mouseX, mouseY, 0);
     }
 }

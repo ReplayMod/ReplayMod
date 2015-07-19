@@ -21,12 +21,13 @@ public class GuiVideoFramerateSlider extends GuiAdvancedButton {
         return String.valueOf(value);
     }
 
+    @Override
     protected int getHoverState(boolean mouseOver) {
         return 0;
     }
 
     @Override
-    protected void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
+    public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
         if(this.visible) {
             if(this.dragging) {
                 sliderValue = (float) (mouseX - (this.xPosition + 4)) / (float) (this.width - 8);
@@ -57,7 +58,7 @@ public class GuiVideoFramerateSlider extends GuiAdvancedButton {
     }
 
     @Override
-    public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
         if(super.mousePressed(mc, mouseX, mouseY)) {
             this.dragging = true;
             return true;
@@ -67,7 +68,12 @@ public class GuiVideoFramerateSlider extends GuiAdvancedButton {
     }
 
     @Override
-    public void mouseReleased(int mouseX, int mouseY) {
+    public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int mouseButton) {
         this.dragging = false;
+    }
+
+    @Override
+    protected void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
+        mouseDrag(mc, mouseX, mouseY, 0);
     }
 }
