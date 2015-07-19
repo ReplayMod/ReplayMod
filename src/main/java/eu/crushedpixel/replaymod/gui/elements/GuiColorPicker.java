@@ -9,7 +9,7 @@ import org.lwjgl.util.Point;
 
 import java.awt.*;
 
-public class GuiColorPicker extends GuiAdvancedButton implements GuiOverlayElement {
+public class GuiColorPicker extends GuiAdvancedButton implements GuiOverlayElement, GuiOutsideClickableElement {
 
     private final int PICKER_SIZE = 100;
 

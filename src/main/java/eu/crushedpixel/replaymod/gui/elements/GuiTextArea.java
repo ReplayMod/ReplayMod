@@ -37,7 +37,7 @@ import java.util.Arrays;
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static net.minecraft.util.MathHelper.clamp_int;
 
-public class GuiTextArea extends Gui implements GuiElement {
+public class GuiTextArea extends Gui implements GuiElement, GuiOutsideClickableElement {
 
     // Constants
     protected static final int BORDER = 4;

@@ -11,7 +11,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiFileChooser extends GuiAdvancedButton {
+public class GuiFileChooser extends GuiAdvancedButton implements GuiOutsideClickableElement {
 
     private final Minecraft mc = Minecraft.getMinecraft();
 

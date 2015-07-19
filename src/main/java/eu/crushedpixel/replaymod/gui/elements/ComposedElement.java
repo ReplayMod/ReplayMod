@@ -66,8 +66,13 @@ public class ComposedElement implements GuiElement {
         boolean clicked = false;
         //iterate over elements in reverse order to first handle mouse clicks of elements that are drawn on top
         for (int i=0; i<parts.size(); i++) {
-            clicked = parts.get(parts.size()-1-i).mouseClick(mc, mouseX, mouseY, button);
-            if(clicked) break;
+            GuiElement part = parts.get(parts.size() - 1 - i);
+
+            //if GuiOutsideClickableElement, forward mouse clicks outside of that element
+            if(!clicked || (part instanceof GuiOutsideClickableElement && !part.isHovering(mouseX, mouseY))) {
+                boolean cl = part.mouseClick(mc, mouseX, mouseY, button);
+                if(cl) clicked = cl;
+            }
         }
         return clicked;
     }

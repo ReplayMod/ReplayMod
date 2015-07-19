@@ -7,7 +7,7 @@ import net.minecraft.client.gui.GuiTextField;
 
 import java.awt.*;
 
-public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
+public class GuiAdvancedTextField extends GuiTextField implements GuiElement, GuiOutsideClickableElement {
     public String hint;
     public int hintTextColor = Color.DARK_GRAY.getRGB();
 
