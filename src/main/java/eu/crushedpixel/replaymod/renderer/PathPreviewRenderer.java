@@ -37,6 +37,8 @@ public class PathPreviewRenderer {
     public void renderCameraPath(RenderWorldLastEvent event) {
         if(!ReplayHandler.isInReplay() || ReplayHandler.isInPath() || !ReplayMod.replaySettings.showPathPreview() || mc.gameSettings.hideGUI) return;
 
+        int renderDistanceSquared = mc.gameSettings.renderDistanceChunks*16 * mc.gameSettings.renderDistanceChunks*16;
+
         Entity entity = ReplayHandler.getCameraEntity();
         if(entity == null) return;
 
@@ -68,8 +70,10 @@ public class PathPreviewRenderer {
                 for(int i = 0; i < max; i++) {
                     AdvancedPosition point = keyframes.getInterpolatedValueForPathPosition(i/max, false);
 
-                    if(prev != null) {
-                        drawConnection(doubleX, doubleY, doubleZ, prev, point, Color.RED.getRGB());
+                    if(point.distanceSquared(entity.posX, entity.posY, entity.posZ) < renderDistanceSquared) {
+                        if(prev != null) {
+                            drawConnection(doubleX, doubleY, doubleZ, prev, point, Color.RED.getRGB());
+                        }
                     }
 
                     prev = point;
@@ -88,7 +92,9 @@ public class PathPreviewRenderer {
         GlStateManager.disableDepth();
 
         for(Keyframe<AdvancedPosition> kf : distanceSorted) {
-            drawPoint(doubleX, doubleY, doubleZ, kf);
+            if(kf.getValue().distanceSquared(entity.posX, entity.posY, entity.posZ) < renderDistanceSquared) {
+                drawPoint(doubleX, doubleY, doubleZ, kf);
+            }
         }
 
         if(ReplayHandler.getPositionKeyframes().size() > 1) {
