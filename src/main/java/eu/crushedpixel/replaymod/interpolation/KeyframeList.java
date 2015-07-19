@@ -161,6 +161,8 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
         K toApply = (K) first().getValue().newInstance();
 
         if(previousCallLinear != (Boolean)linear) {
+            previousCallLinear = linear;
+
             interpolation = linear ? new GenericLinearInterpolation<K>() : new GenericSplineInterpolation<K>();
 
             for(Keyframe<K> keyframe : this) {
