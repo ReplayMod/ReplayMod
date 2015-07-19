@@ -24,6 +24,11 @@ public class GuiAdvancedCheckBox extends GuiCheckBox implements GuiElement {
     }
 
     @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovered) {
+        draw(mc, mouseX, mouseY);
+    }
+
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
         drawButton(mc, mouseX, mouseY);
     }
@@ -83,5 +88,25 @@ public class GuiAdvancedCheckBox extends GuiCheckBox implements GuiElement {
         for(CheckBoxListener listener : listeners) {
             listener.onCheck(isChecked());
         }
+    }
+
+    @Override
+    public int xPos() {
+        return xPosition;
+    }
+
+    @Override
+    public int yPos() {
+        return yPosition;
+    }
+
+    @Override
+    public int width() {
+        return width;
+    }
+
+    @Override
+    public int height() {
+        return height;
     }
 }

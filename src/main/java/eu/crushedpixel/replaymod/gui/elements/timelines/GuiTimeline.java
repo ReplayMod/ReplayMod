@@ -87,6 +87,12 @@ public class GuiTimeline extends Gui implements GuiElement {
         }
     }
 
+    @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovered) {
+        draw(mc, mouseX, mouseY);
+    }
+
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
         int bodyLeft = positionX + BORDER_LEFT;
         int bodyRight = positionX + width - BORDER_RIGHT;
@@ -290,5 +296,25 @@ public class GuiTimeline extends Gui implements GuiElement {
     @Override
     public void setElementEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    public int xPos() {
+        return positionX;
+    }
+
+    @Override
+    public int yPos() {
+        return positionY;
+    }
+
+    @Override
+    public int width() {
+        return width;
+    }
+
+    @Override
+    public int height() {
+        return height;
     }
 }

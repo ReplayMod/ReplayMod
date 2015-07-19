@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextField {
+public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextField implements GuiOverlayElement {
 
     private final int visibleDropout;
     private final int dropoutElementHeight = 14;

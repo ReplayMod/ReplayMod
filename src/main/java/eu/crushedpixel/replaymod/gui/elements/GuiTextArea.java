@@ -375,6 +375,11 @@ public class GuiTextArea extends Gui implements GuiElement {
     }
 
     @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovered) {
+        draw(mc, mouseX, mouseY);
+    }
+
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
         // Draw black rect once pixel smaller than gray rect
         drawRect(positionX, positionY, positionX + width, positionY + height, 0xffa0a0a0);
@@ -633,5 +638,25 @@ public class GuiTextArea extends Gui implements GuiElement {
     public void setWidth(int width) {
         this.width = width;
         updateCurrentXOffset();
+    }
+
+    @Override
+    public int xPos() {
+        return positionX;
+    }
+
+    @Override
+    public int yPos() {
+        return positionY;
+    }
+
+    @Override
+    public int width() {
+        return width;
+    }
+
+    @Override
+    public int height() {
+        return height;
     }
 }

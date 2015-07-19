@@ -98,6 +98,11 @@ public class GuiScrollbar extends Gui implements GuiElement {
     }
 
     @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovered) {
+        draw(mc, mouseX, mouseY);
+    }
+
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
         GlStateManager.resetColor();
         mc.renderEngine.bindTexture(replay_gui);
@@ -180,5 +185,25 @@ public class GuiScrollbar extends Gui implements GuiElement {
     @Override
     public void setElementEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    public int xPos() {
+        return positionX;
+    }
+
+    @Override
+    public int yPos() {
+        return positionY;
+    }
+
+    @Override
+    public int width() {
+        return width;
+    }
+
+    @Override
+    public int height() {
+        return SLIDER_HEIGHT;
     }
 }

@@ -9,7 +9,7 @@ import org.lwjgl.util.Point;
 
 import java.awt.*;
 
-public class GuiColorPicker extends GuiAdvancedButton {
+public class GuiColorPicker extends GuiAdvancedButton implements GuiOverlayElement {
 
     private final int PICKER_SIZE = 100;
 
@@ -25,12 +25,12 @@ public class GuiColorPicker extends GuiAdvancedButton {
     }
 
     @Override
-    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovering) {
         if(this.visible) {
             FontRenderer fontrenderer = mc.fontRendererObj;
             mc.getTextureManager().bindTexture(buttonTextures);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+            this.hovered = isHovering(mouseX, mouseY) && !hoveringPicker(mouseX, mouseY);
             int k = this.getHoverState(this.hovered);
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
@@ -46,7 +46,7 @@ public class GuiColorPicker extends GuiAdvancedButton {
             else if (!this.enabled) {
                 l = 10526880;
             }
-            else if (this.hovered) {
+            else if(this.hovered) {
                 l = 16777120;
             }
 
@@ -72,20 +72,25 @@ public class GuiColorPicker extends GuiAdvancedButton {
 
     @Override
     public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+        boolean click = false;
         if(pickerVisible && this.enabled) {
             if(MouseUtils.isMouseWithinBounds(pickerX, pickerY, PICKER_SIZE, PICKER_SIZE)) {
                 Point mousePoint = MouseUtils.getMousePos();
                 setPickerColor(getColorAtPosition(mousePoint.getX() - pickerX, mousePoint.getY() - pickerY));
+                click = true;
             }
         }
-        return super.mousePressed(mc, mouseX, mouseY);
+        return click;
     }
 
     @Override
     public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        boolean clicked = super.mouseClick(mc, mouseX, mouseY, button);
-        if(clicked) pickerToggled();
-        return clicked;
+        if(super.mouseClick(mc, mouseX, mouseY, button)) {
+            if(!hoveringPicker(mouseX, mouseY)) pickerToggled();
+            return true;
+        }
+
+        return mousePressed(mc, mouseX, mouseY);
     }
 
     @Override
@@ -115,5 +120,24 @@ public class GuiColorPicker extends GuiAdvancedButton {
 
     public int getPickedColor() {
         return pickedColor & 0xffffff;
+    }
+
+    @Override
+    public void setElementEnabled(boolean enabled) {
+        super.setElementEnabled(enabled);
+        if(!enabled) pickerVisible = false;
+    }
+
+    @Override
+    public boolean isHovering(int mouseX, int mouseY) {
+        if(!pickerVisible) return super.isHovering(mouseX, mouseY);
+        return super.isHovering(mouseX, mouseY) || hoveringPicker(mouseX, mouseY);
+    }
+
+    public boolean hoveringPicker(int mouseX, int mouseY) {
+        return mouseX >= pickerX
+                && mouseY >= pickerY
+                && mouseX <= pickerX+PICKER_SIZE
+                && mouseY <= pickerY+PICKER_SIZE;
     }
 }

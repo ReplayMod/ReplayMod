@@ -29,6 +29,11 @@ public class GuiString extends Gui implements GuiElement {
     }
 
     @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovered) {
+        draw(mc, mouseX, mouseY);
+    }
+
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
         String text;
         try {
@@ -86,5 +91,25 @@ public class GuiString extends Gui implements GuiElement {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    @Override
+    public int xPos() {
+        return positionX;
+    }
+
+    @Override
+    public int yPos() {
+        return positionY;
+    }
+
+    @Override
+    public int width() {
+        return getWidth();
+    }
+
+    @Override
+    public int height() {
+        return Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT;
     }
 }

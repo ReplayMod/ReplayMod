@@ -256,7 +256,7 @@ public class GuiReplayOverlay extends Gui {
         }
     };
 
-    private final GuiReplaySpeedSlider speedSlider = new GuiReplaySpeedSlider(1, SPEED_X, TOP_ROW, I18n.format("replaymod.gui.speed"));
+    private final GuiReplaySpeedSlider speedSlider = new GuiReplaySpeedSlider(SPEED_X, TOP_ROW, I18n.format("replaymod.gui.speed"));
 
     private boolean toolbarOpen = false;
 

@@ -21,9 +21,9 @@ public class GuiArrowButton extends GuiAdvancedButton {
     }
 
     @Override
-    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovering) {
         try {
-            super.drawButton(mc, mouseX, mouseY);
+            super.draw(mc, mouseX, mouseY, hovering);
             if(dir == Direction.UP) {
                 for(int i = 0; i <= Math.ceil(height / 2) - 5; i++) {
                     drawHorizontalLine(xPosition + width - height + i + 4, xPosition + width - i - 6, yPosition + height - ((height / 3) + i + 2), Color.BLACK.getRGB());

@@ -2,7 +2,9 @@ package eu.crushedpixel.replaymod.gui.elements;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.renderer.GlStateManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
@@ -33,7 +35,35 @@ public class GuiAdvancedButton extends GuiButton implements GuiElement {
 
     @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
-        drawButton(mc, mouseX, mouseY);
+        this.draw(mc, mouseX, mouseY, isHovering(mouseX, mouseY));
+    }
+
+    @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovering) {
+        if (this.visible) {
+            FontRenderer fontrenderer = mc.fontRendererObj;
+            mc.getTextureManager().bindTexture(buttonTextures);
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            this.hovered = isHovering(mouseX, mouseY);
+            int k = this.getHoverState(hovering);
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            GlStateManager.blendFunc(770, 771);
+            this.drawTexturedModalRect(this.xPosition, this.yPosition, 0, 46 + k * 20, this.width / 2, this.height);
+            this.drawTexturedModalRect(this.xPosition + this.width / 2, this.yPosition, 200 - this.width / 2, 46 + k * 20, this.width / 2, this.height);
+            this.mouseDragged(mc, mouseX, mouseY);
+            int l = 14737632;
+
+            if (packedFGColour != 0) {
+                l = packedFGColour;
+            } else if (!this.enabled) {
+                l = 10526880;
+            } else if (hovering) {
+                l = 16777120;
+            }
+
+            this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, l);
+        }
     }
 
     @Override
@@ -48,8 +78,8 @@ public class GuiAdvancedButton extends GuiButton implements GuiElement {
     public boolean isHovering(int mouseX, int mouseY) {
         return mouseX >= xPosition
                 && mouseY >= yPosition
-                && mouseX < xPosition + width
-                && mouseY < yPosition + height;
+                && mouseX <= xPosition + width
+                && mouseY <= yPosition + height;
     }
 
     @Override
@@ -90,5 +120,25 @@ public class GuiAdvancedButton extends GuiButton implements GuiElement {
         if (action != null) {
             action.run();
         }
+    }
+
+    @Override
+    public int xPos() {
+        return xPosition;
+    }
+
+    @Override
+    public int yPos() {
+        return yPosition;
+    }
+
+    @Override
+    public int width() {
+        return width;
+    }
+
+    @Override
+    public int height() {
+        return height;
     }
 }

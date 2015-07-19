@@ -23,7 +23,7 @@ public class GuiTexturedButton extends GuiAdvancedButton implements GuiElement {
     }
 
     @Override
-    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovering) {
         if (visible) {
             hovered = isHovering(mouseX, mouseY) && enabled;
 
@@ -35,7 +35,7 @@ public class GuiTexturedButton extends GuiAdvancedButton implements GuiElement {
 
             mc.renderEngine.bindTexture(texture);
 
-            int u = this.u + (hovered ? width : 0);
+            int u = this.u + (hovering ? width : 0);
             Gui.drawModalRectWithCustomSizedTexture(xPosition, yPosition, u, v, width, height, textureWidth, textureHeight);
         }
     }

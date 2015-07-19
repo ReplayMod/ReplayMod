@@ -23,9 +23,24 @@ public class ComposedElement implements GuiElement {
     }
 
     @Override
+    public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovered) {
+        draw(mc, mouseX, mouseY);
+    }
+
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
-        for (GuiElement part : parts) {
-            part.draw(mc, mouseX, mouseY);
+        GuiElement hovered = null;
+
+        for (int i=parts.size()-1; i>=0; i--) {
+            GuiElement part = parts.get(i);
+            if(part.isHovering(mouseX, mouseY)) {
+                hovered = part;
+                break;
+            }
+        }
+
+        for(GuiElement part : parts) {
+            part.draw(mc, mouseX, mouseY, hovered == part);
         }
     }
 
@@ -96,11 +111,11 @@ public class ComposedElement implements GuiElement {
 
         @Override
         public int compare(GuiElement o1, GuiElement o2) {
-            Boolean d1 = o1 instanceof GuiDropdown;
-            Boolean d2 = o2 instanceof GuiDropdown;
+            Boolean d1 = o1 instanceof GuiOverlayElement;
+            Boolean d2 = o2 instanceof GuiOverlayElement;
 
             if(d1 && d2) {
-                return -new Integer(((GuiDropdown)o1).yPosition).compareTo(((GuiDropdown)o2).yPosition);
+                return -new Integer(o1.yPos()).compareTo(o2.yPos());
             }
 
             return d1.compareTo(d2);
@@ -110,5 +125,25 @@ public class ComposedElement implements GuiElement {
         public boolean equals(Object obj) {
             return false;
         }
+    }
+
+    @Override
+    public int xPos() {
+        return 0;
+    }
+
+    @Override
+    public int yPos() {
+        return 0;
+    }
+
+    @Override
+    public int width() {
+        return 0;
+    }
+
+    @Override
+    public int height() {
+        return 0;
     }
 }
