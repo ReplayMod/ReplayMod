@@ -48,9 +48,8 @@ public class GuiReplayOverlay extends Gui {
     private static final Minecraft mc = Minecraft.getMinecraft();
     public static final ResourceLocation replay_gui = new ResourceLocation("replaymod", "replay_gui.png");
     public static final int TEXTURE_SIZE = 128;
-    private static final float ZOOM_STEPS = 0.05f;
 
-    public static final int KEYFRAME_TIMELINE_LENGTH = 10 * 60 * 1000;
+    public static final int KEYFRAME_TIMELINE_LENGTH = 30 * 60 * 1000;
 
     public static GuiTexturedButton texturedButton(int x, int y, int u, int v, int size, Runnable action, String hoverText) {
         return new GuiTexturedButton(0, x, y, size, size, replay_gui, u, v, TEXTURE_SIZE, TEXTURE_SIZE, action, I18n.format(hoverText));
@@ -228,7 +227,7 @@ public class GuiReplayOverlay extends Gui {
     private final GuiElement buttonZoomIn = texturedButton(WIDTH - 14 - 9, BOTTOM_ROW, 40, 20, 9, new Runnable() {
         @Override
         public void run() {
-            zoom_scale = Math.max(0.025f, zoom_scale - ZOOM_STEPS);
+            timelineReal.zoomIn();
         }
     }, "replaymod.gui.ingame.menu.zoomin");
 
@@ -236,8 +235,7 @@ public class GuiReplayOverlay extends Gui {
 
         @Override
         public void run() {
-            zoom_scale = Math.min(1f, zoom_scale + ZOOM_STEPS);
-            pos_left = Math.min(pos_left, 1f - zoom_scale);
+            timelineReal.zoomOut();
         }
     }, "replaymod.gui.ingame.menu.zoomout");
 
@@ -252,7 +250,7 @@ public class GuiReplayOverlay extends Gui {
     private final GuiScrollbar scrollbar = new GuiScrollbar(TIMELINE_REAL_X, BOTTOM_ROW + 22, TIMELINE_REAL_WIDTH) {
         @Override
         public void dragged() {
-            pos_left = scrollbar.sliderPosition;
+            timelineReal.timeStart = scrollbar.sliderPosition;
         }
     };
 
@@ -350,9 +348,6 @@ public class GuiReplayOverlay extends Gui {
     private final GuiElement content = new ComposedElement(buttonPlayPause, buttonExport, buttonPlace, buttonTime,
             buttonPlayPausePath, buttonZoomIn, buttonZoomOut, timeline, timelineReal, scrollbar, speedSlider, toolbar);
 
-    private float zoom_scale = 0.1f; //can see 1/10th of the timeline
-    private double pos_left = 0f; //left border of timeline is at 0%
-
     public boolean isVisible() {
         return ReplayHandler.isInReplay();
     }
@@ -365,8 +360,8 @@ public class GuiReplayOverlay extends Gui {
         if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
             mc.displayGuiScreen(null);
         }
-        zoom_scale = 0.1f;
-        pos_left = 0;
+        timelineReal.zoom = 0.1f;
+        timelineReal.timeStart = 0;
         if (slider) {
             ReplayHandler.setRealTimelineCursor(0);
             speedSlider.reset();
@@ -386,8 +381,8 @@ public class GuiReplayOverlay extends Gui {
     private void checkResize() {
         if (displayWidth != mc.displayWidth || displayHeight != mc.displayHeight) {
             GuiReplayOverlay other = new GuiReplayOverlay();
-            other.zoom_scale = this.zoom_scale;
-            other.pos_left = this.pos_left;
+            other.timelineReal.zoom = this.timelineReal.zoom;
+            other.timelineReal.timeStart = this.timelineReal.timeStart;
             other.speedSlider.copyValueFrom(this.speedSlider);
 
             this.unregister();
@@ -560,15 +555,13 @@ public class GuiReplayOverlay extends Gui {
         }
 
         // Setup scrollbar and timelines
-        scrollbar.size = zoom_scale;
-        scrollbar.sliderPosition = pos_left;
+        scrollbar.size = timelineReal.zoom;
+        scrollbar.sliderPosition = timelineReal.timeStart;
 
         timeline.cursorPosition = ReplayMod.replaySender.currentTimeStamp();
         timeline.timelineLength = ReplayMod.replaySender.replayLength();
 
         timelineReal.cursorPosition = ReplayHandler.getRealTimelineCursor();
-        timelineReal.zoom = zoom_scale;
-        timelineReal.timeStart = pos_left;
 
         // Draw all elements
         content.draw(mc, mouseX, mouseY);

@@ -115,7 +115,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
             //Real Time Input
             int timestamp = keyframe.getRealTimestamp();
-            min = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, 9d, (double)TimestampUtils.timestampToWholeMinutes(timestamp), false, "", 1);
+            min = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, 29d, (double)TimestampUtils.timestampToWholeMinutes(timestamp), false, "", 1);
             sec = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 25, 0d, 59d, (double)TimestampUtils.getSecondsFromTimestamp(timestamp), false, "", 1);
             ms = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 35, 0d, 999d, (double)TimestampUtils.getMillisecondsFromTimestamp(timestamp), false, "", 1);
 

@@ -137,7 +137,7 @@ public class GuiScrollbar extends Gui implements GuiElement {
 
             int backgroundBodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
             int bodyLeft = positionX + SLIDER_BORDER_LEFT;
-            int bodyRight = positionX + (int) Math.round(backgroundBodyWidth * size) - SLIDER_BORDER_RIGHT;
+            int bodyRight = positionX + Math.max(1, (int) Math.round(backgroundBodyWidth * size) - SLIDER_BORDER_RIGHT);
 
             // Left border
             rect(positionX, positionY, SLIDER_TEXTURE_X, SLIDER_TEXTURE_Y, SLIDER_BORDER_LEFT, SLIDER_HEIGHT);
@@ -172,7 +172,7 @@ public class GuiScrollbar extends Gui implements GuiElement {
     public boolean isHovering(int mouseX, int mouseY) {
         int offsetX = getSliderOffsetX();
         int minX = positionX + offsetX;
-        int maxX = positionX + offsetX + (int) (width * size);
+        int maxX = positionX + offsetX + Math.max(3, (int) (width * size));
         int minY = positionY + BORDER_TOP;
         int maxY = minY + SLIDER_HEIGHT;
         return mouseX >= minX && mouseY >= minY && mouseX < maxX && mouseY < maxY;

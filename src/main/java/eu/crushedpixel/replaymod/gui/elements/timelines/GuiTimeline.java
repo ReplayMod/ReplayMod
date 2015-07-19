@@ -2,6 +2,9 @@ package eu.crushedpixel.replaymod.gui.elements.timelines;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.GuiElement;
+import eu.crushedpixel.replaymod.utils.RoundUtils;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
@@ -46,6 +49,27 @@ public class GuiTimeline extends Gui implements GuiElement {
      * Zoom of this timeline. 1/10 allows the user to see 1/10 of the total length.
      */
     public double zoom = 1;
+
+    /**
+     * The smallest value <code>zoom</code> might have.
+     */
+    public double minZoom = 0.005;
+
+    /**
+     * The step size of zooming in/out
+     */
+    public double zoomStep = 0.05;
+
+    /**
+     * Where the more detailed part of the timeline begins
+     */
+
+    public double detailedZoom = 0.05;
+
+    /**
+     * The step size for the more detailed part of the timeline
+     */
+    public double smallZoomStep = 0.005;
 
     /**
      * Whether to draw markers on the timeline in regular time intervals.
@@ -154,7 +178,7 @@ public class GuiTimeline extends Gui implements GuiElement {
         // Draw markers
         if (showMarkers) {
             int markerY = positionY + height - BORDER_BOTTOM;
-            MarkerType mt = MarkerType.getMarkerType(zoom, timelineLength);
+            Markers mt = Markers.getMarkers(zoom, timelineLength, bodyWidth);
 
             // Small markers
             for (int s = 0; s <= timelineLength; s += mt.smallDistance) {
@@ -178,7 +202,7 @@ public class GuiTimeline extends Gui implements GuiElement {
 
                     // Write time above the timeline
                     long sec = Math.round(s / 1000.0);
-                    String timestamp = String.format("%02d:%02ds", sec / 60, sec % 60);
+                    String timestamp = String.format("%02d:%02d", sec / 60, sec % 60);
                     drawCenteredString(mc.fontRendererObj, timestamp, markerX, positionY - 8, 0xffffffff);
                 }
             }
@@ -217,7 +241,7 @@ public class GuiTimeline extends Gui implements GuiElement {
         long mouseTime = getTimeAt(mouseX, mouseY);
         if (mouseTime != -1) {
             long sec = mouseTime / 1000;
-            String timestamp = String.format("%02d:%02ds", sec / 60, sec % 60);
+            String timestamp = String.format("%02d:%02d", sec / 60, sec % 60);
             ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, timestamp, null, Color.WHITE);
         }
     }
@@ -262,34 +286,52 @@ public class GuiTimeline extends Gui implements GuiElement {
         drawModalRectWithCustomSizedTexture(x, y, u, v, width, height, TEXTURE_SIZE, TEXTURE_SIZE);
     }
 
-
-    private enum MarkerType {
-
-        ONE_S(1000, 100),
-        FIVE_S(5 * 1000, 1000),
-        QUARTER_M(15 * 1000, 3 * 1000),
-        HALF_M(30 * 1000, 5 * 1000),
-        ONE_M(60 * 1000, 10 * 1000),
-        FIVE_M(5 * 60 * 1000, 50 * 1000);
-
-        int distance;
-        int smallDistance;
-
-        MarkerType(int minimum, int smallDistance) {
-            this.distance = minimum;
-            this.smallDistance = smallDistance;
+    public void zoomIn() {
+        if(zoom-zoomStep < detailedZoom) {
+            zoom = Math.max(minZoom, zoom - smallZoomStep);
+            timeStart = Math.min(timeStart, 1f - smallZoomStep);
+        } else {
+            zoom = Math.max(minZoom, zoom - zoomStep);
+            timeStart = Math.min(timeStart, 1f - zoomStep);
         }
+    }
 
-        public static MarkerType getMarkerType(double scale, long totalLength) {
-            long seconds = Math.round(totalLength * scale);
+    public void zoomOut() {
+        if(zoom+smallZoomStep <= detailedZoom) {
+            zoom = Math.min(1, zoom+smallZoomStep);
+        } else {
+            zoom = Math.min(1, zoom+zoomStep);
+        }
+    }
 
-            for(MarkerType mt : values()) {
-                if(seconds / mt.distance <= 10) {
-                    return mt;
-                }
-            }
+    @Data
+    @AllArgsConstructor
+    public static class Markers {
 
-            return FIVE_M;
+        static final int S = 1000;
+        static final int M = 60*1000;
+
+        static final int[] snapNumbers = new int[]{S, 2*S, 5*S, 10*S, 15*S, 20*S, 30*S, M, 2*M,
+            5*M, 10*M, 15*M, 30*M};
+
+        static final int MARKER_DISTANCE = 35;
+
+        int smallDistance;
+        int distance;
+
+        public static Markers getMarkers(double scale, long totalLength, int pixelWidth) {
+
+            //amount of seconds visible on timeline
+            int visible = (int)(scale*totalLength);
+
+            int bigMarkerCount = pixelWidth/MARKER_DISTANCE;
+
+            int bigMarkerDistance = visible / bigMarkerCount;
+            int snap = RoundUtils.getClosestInt(bigMarkerDistance, snapNumbers);
+
+            bigMarkerDistance = RoundUtils.roundToMultiple(bigMarkerDistance, snap);
+
+            return new Markers(bigMarkerDistance/4, bigMarkerDistance);
         }
     }
 
