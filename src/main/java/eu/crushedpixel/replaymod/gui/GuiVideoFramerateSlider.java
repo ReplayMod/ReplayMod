@@ -1,17 +1,17 @@
 package eu.crushedpixel.replaymod.gui;
 
+import eu.crushedpixel.replaymod.gui.elements.GuiAdvancedButton;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 
-public class GuiVideoFramerateSlider extends GuiButton {
+public class GuiVideoFramerateSlider extends GuiAdvancedButton {
 
     public boolean dragging;
     private String displayKey;
     private float sliderValue;
-    public GuiVideoFramerateSlider(int buttonId, int p_i45017_2_, int p_i45017_3_, int initialFramerate, String displayKey) {
-        super(buttonId, p_i45017_2_, p_i45017_3_, 150, 20, "");
+    public GuiVideoFramerateSlider(int xPos, int yPos, int initialFramerate, String displayKey) {
+        super(xPos, yPos, 150, 20, "", null, null);
         this.sliderValue = normalizeValue(initialFramerate);
         this.displayString = displayKey + ": " + translate(initialFramerate);
         this.displayKey = displayKey;
@@ -56,6 +56,7 @@ public class GuiVideoFramerateSlider extends GuiButton {
         return Math.round(10 + r);
     }
 
+    @Override
     public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
         if(super.mousePressed(mc, mouseX, mouseY)) {
             this.dragging = true;
@@ -65,6 +66,7 @@ public class GuiVideoFramerateSlider extends GuiButton {
         }
     }
 
+    @Override
     public void mouseReleased(int mouseX, int mouseY) {
         this.dragging = false;
     }
