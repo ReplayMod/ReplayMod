@@ -78,4 +78,13 @@ public class GuiString extends Gui implements GuiElement {
     public void setElementEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
+    public int getWidth() {
+        try {
+            return Minecraft.getMinecraft().fontRendererObj.getStringWidth(this.getContent.call());
+        } catch(Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }
