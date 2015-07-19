@@ -29,20 +29,20 @@ public class GuiMarkerTimeline extends GuiTimeline {
     public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
         if(!enabled) return false;
 
+        long time = getTimeAt(mouseX, mouseY);
+        if(time == -1) {
+            return false;
+        }
+
+        int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
+
+        Keyframe<Marker> closest = null;
+        if(mouseY >= positionY + BORDER_TOP + 10) {
+            closest = ReplayHandler.getMarkerKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
+        }
+
         //left mouse button
         if(button == 0) {
-            long time = getTimeAt(mouseX, mouseY);
-            if(time == -1) {
-                return false;
-            }
-
-            int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
-
-            Keyframe<Marker> closest = null;
-            if(mouseY >= positionY + BORDER_TOP + 10) {
-                closest = ReplayHandler.getMarkerKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
-            }
-
             ReplayHandler.selectKeyframe(closest);
 
             if(closest == null) { //if no keyframe clicked, jump in time
@@ -65,19 +65,6 @@ public class GuiMarkerTimeline extends GuiTimeline {
             }
 
         } else if(button == 1) {
-
-            long time = getTimeAt(mouseX, mouseY);
-            if(time == -1) {
-                return false;
-            }
-
-            int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
-
-            Keyframe<Marker> closest = null;
-            if(mouseY >= positionY + BORDER_TOP + 10) {
-                closest = ReplayHandler.getMarkerKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
-            }
-
             if(closest != null) {
                 //Jump to clicked Marker Keyframe
                 ReplayHandler.setLastPosition(closest.getValue().getPosition());

@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.gui.elements.timelines;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
@@ -35,24 +36,25 @@ public class GuiKeyframeTimeline extends GuiTimeline {
     @Override
     public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
         if(!enabled) return false;
+
+        long time = getTimeAt(mouseX, mouseY);
+        if(time == -1) {
+            return false;
+        }
+
+        int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
+
+        Keyframe closest;
+        if(mouseY >= positionY + BORDER_TOP + 5 && timeKeyframes) {
+            closest = ReplayHandler.getTimeKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
+        } else if(mouseY >= positionY + BORDER_TOP && placeKeyframes) {
+            closest = ReplayHandler.getPositionKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
+        } else {
+            closest = null;
+        }
+
         //left mouse button
         if(button == 0) {
-            long time = getTimeAt(mouseX, mouseY);
-            if(time == -1) {
-                return false;
-            }
-
-            int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
-
-            Keyframe closest;
-            if(mouseY >= positionY + BORDER_TOP + 5 && timeKeyframes) {
-                closest = ReplayHandler.getTimeKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
-            } else if(mouseY >= positionY + BORDER_TOP && placeKeyframes) {
-                closest = ReplayHandler.getPositionKeyframes().getClosestKeyframeForTimestamp((int) time, tolerance);
-            } else {
-                closest = null;
-            }
-
             ReplayHandler.selectKeyframe(closest); //can be null, deselects keyframe
 
             // If we clicked on a key frame, then continue monitoring the mouse for movements
@@ -71,6 +73,14 @@ public class GuiKeyframeTimeline extends GuiTimeline {
             }
             this.clickTime = currentTime;
 
+        } else if(button == 1) {
+            if(closest != null) {
+                if(closest.getValue() instanceof AdvancedPosition) {
+                    ReplayHandler.getCameraEntity().moveAbsolute((AdvancedPosition)closest.getValue());
+                } else if(closest.getValue() instanceof TimestampValue) {
+                    ReplayMod.replaySender.jumpToTime(((TimestampValue)closest.getValue()).asInt());
+                }
+            }
         }
 
         return isHovering(mouseX, mouseY);
