@@ -22,8 +22,10 @@ public class GenericLinearInterpolation<T extends KeyframeValue> implements Inte
     public void addPoint(T point) {
         points.add(point);
 
-        List<Field> fields = ReflectionUtils.getFieldsToInterpolate(point.getClass());
-        this.fields = fields.toArray(new Field[fields.size()]);
+        if(fields == null) {
+            List<Field> fields = ReflectionUtils.getFieldsToInterpolate(point.getClass());
+            this.fields = fields.toArray(new Field[fields.size()]);
+        }
     }
 
     @Override
