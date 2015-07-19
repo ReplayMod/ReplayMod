@@ -25,6 +25,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement {
 
     public GuiAdvancedTextField(FontRenderer fontRenderer, String hint, int maxInputLength) {
         this(fontRenderer, hint);
+        this.height = 20;
         setMaxStringLength(maxInputLength);
     }
 
