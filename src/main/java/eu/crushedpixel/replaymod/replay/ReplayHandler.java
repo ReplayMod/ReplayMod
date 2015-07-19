@@ -403,6 +403,8 @@ public class ReplayHandler {
         KeyframeSet[] paths = currentReplayFile.paths().get();
         ReplayHandler.setKeyframeRepository(paths == null ? new KeyframeSet[0] : paths, false);
 
+        ReplayHandler.selectKeyframe(null);
+
         List<Keyframe<Marker>> rawMarkerList = currentReplayFile.markers().get();
         if (rawMarkerList == null) {
             rawMarkerList = Collections.emptyList();
