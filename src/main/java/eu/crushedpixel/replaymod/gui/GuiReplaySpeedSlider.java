@@ -1,15 +1,14 @@
 package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.gui.elements.GuiElement;
+import eu.crushedpixel.replaymod.gui.elements.GuiAdvancedButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
-public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
+public class GuiReplaySpeedSlider extends GuiAdvancedButton {
 
     private float sliderValue;
 
@@ -17,8 +16,8 @@ public class GuiReplaySpeedSlider extends GuiButton implements GuiElement {
     private String displayKey;
     private boolean dragging = false;
 
-    public GuiReplaySpeedSlider(int buttonId, int p_i45017_2_, int p_i45017_3_, String displayKey) {
-        super(buttonId, p_i45017_2_, p_i45017_3_, 150, 20, "");
+    public GuiReplaySpeedSlider(int xPos, int yPos, String displayKey) {
+        super(0, xPos, yPos, displayKey);
 
         this.width = 100;
         this.valueMin = 1;
