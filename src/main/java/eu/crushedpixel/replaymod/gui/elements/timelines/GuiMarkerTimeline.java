@@ -52,7 +52,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
                 long currentTime = System.currentTimeMillis();
                 if(closest != null) {
                     if(currentTime - clickTime < 500) { // if double clicked then open GUI instead
-                        mc.displayGuiScreen(new GuiEditKeyframe(closest));
+                        mc.displayGuiScreen(GuiEditKeyframe.create(closest));
                         this.clickedKeyFrame = null;
                     } else {
                         this.clickedKeyFrame = closest;
