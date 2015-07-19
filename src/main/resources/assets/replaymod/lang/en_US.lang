@@ -96,6 +96,10 @@ replaymod.gui.minutes=min
 replaymod.gui.seconds=sec
 replaymod.gui.milliseconds=ms
 
+replaymod.gui.pitch=Pitch
+replaymod.gui.yaw=Yaw
+replaymod.gui.roll=Roll
+
 replaymod.gui.unknownerror=An unknown error occured
 
 replaymod.gui.exit=Exit Replay
@@ -329,11 +333,12 @@ replaymod.gui.rendersettings.command=Command
 replaymod.gui.rendersettings.arguments=Command Line Arguments
 replaymod.gui.rendersettings.ffmpeg.description=If you are an advanced user, you can customize the command line parameters used to export the video. For more information, check http://replaymod.com/docs
 
-replaymod.gui.rendersettings.stablecamera=Ignore Camera Rotation
+replaymod.gui.rendersettings.stabilizecamera=Stabilize Camera
 replaymod.gui.rendersettings.exportyoutube=Export for YouTube
 
-replaymod.gui.rendersettings.basic=Basic Settings
+replaymod.gui.rendersettings.video=Video Settings
 replaymod.gui.rendersettings.advanced=Advanced Settings
+replaymod.gui.rendersettings.commandline=Command Line Settings
 
 replaymod.gui.rendersettings.presets=Encoding Presets
 replaymod.gui.rendersettings.presets.mp4.custom=MP4 - Custom Bitrate
