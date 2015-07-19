@@ -8,7 +8,6 @@ import org.objectweb.asm.tree.*;
 import java.util.ListIterator;
 
 import static org.objectweb.asm.Opcodes.*;
-import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 public class SoundManagerCT implements IClassTransformer {
 

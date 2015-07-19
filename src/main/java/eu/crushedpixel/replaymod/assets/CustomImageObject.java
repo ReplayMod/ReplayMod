@@ -91,7 +91,7 @@ public class CustomImageObject implements GuiEntryListEntry {
             return null;
         }
 
-        if(resourceLocation != null && !ResourceHelper.isRegistered(resourceLocation)) {
+        if(!ResourceHelper.isRegistered(resourceLocation)) {
             ResourceHelper.registerResource(resourceLocation);
             Minecraft.getMinecraft().getTextureManager().loadTexture(resourceLocation, dynamicTexture);
             dynamicTexture.updateDynamicTexture();

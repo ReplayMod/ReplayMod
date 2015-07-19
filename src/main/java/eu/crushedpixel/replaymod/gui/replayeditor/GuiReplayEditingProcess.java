@@ -9,6 +9,7 @@ import net.minecraft.client.resources.I18n;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 
 public class GuiReplayEditingProcess extends GuiScreen {
 
@@ -48,6 +49,8 @@ public class GuiReplayEditingProcess extends GuiScreen {
         cancelButton.width = 150;
         cancelButton.yPosition = this.height - 5 - 20;
 
+        @SuppressWarnings("unchecked")
+        List<GuiButton> buttonList = this.buttonList;
         buttonList.add(cancelButton);
 
         initialized = true;

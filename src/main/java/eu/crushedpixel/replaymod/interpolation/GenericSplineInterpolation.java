@@ -3,6 +3,8 @@ package eu.crushedpixel.replaymod.interpolation;
 import eu.crushedpixel.replaymod.utils.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -11,7 +13,7 @@ public class GenericSplineInterpolation<T extends KeyframeValue> extends BasicSp
     private Field[] fields;
 
     private Vector<T> points;
-    private Vector<Cubic>[] cubics = new Vector[0];
+    private List<Vector<Cubic>> cubics = Collections.emptyList();
 
     public GenericSplineInterpolation() {
         this.points = new Vector<T>();
@@ -24,10 +26,6 @@ public class GenericSplineInterpolation<T extends KeyframeValue> extends BasicSp
         this.fields = fields.toArray(new Field[fields.size()]);
     }
 
-    public Vector<T> getPoints() {
-        return points;
-    }
-
     @Override
     public void prepare() {
         if(fields.length <= 0) {
@@ -35,12 +33,13 @@ public class GenericSplineInterpolation<T extends KeyframeValue> extends BasicSp
                     " has to contain at least one Field");
         }
         if(!points.isEmpty()) {
-            cubics = new Vector[fields.length];
-            for(int i=0; i<fields.length; i++) {
-                cubics[i] = new Vector<Cubic>();
+            cubics = new ArrayList<Vector<Cubic>>(fields.length);
+            for (Field field : fields) {
+                Vector<Cubic> vec = new Vector<Cubic>();
+                cubics.add(vec);
                 try {
-                    calcNaturalCubic(points, fields[i], cubics[i]);
-                } catch(Exception e) {
+                    calcNaturalCubic(points, field, vec);
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -51,15 +50,15 @@ public class GenericSplineInterpolation<T extends KeyframeValue> extends BasicSp
     }
 
     public void applyPoint(float position, T toEdit) {
-        Vector<Cubic> first = cubics[0];
+        Vector<Cubic> first = cubics.get(0);
         position = position * first.size();
-        int cubicNum = (int) Math.min(cubics[0].size() - 1, position);
+        int cubicNum = (int) Math.min(first.size() - 1, position);
         float cubicPos = (position - cubicNum);
 
         int i = 0;
         for(Field f : fields) {
             try {
-                f.set(toEdit, cubics[i].get(cubicNum).eval(cubicPos));
+                f.set(toEdit, cubics.get(i).get(cubicNum).eval(cubicPos));
             } catch(Exception e) {
                 e.printStackTrace();
             }

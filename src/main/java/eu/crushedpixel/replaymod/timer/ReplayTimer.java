@@ -3,10 +3,6 @@ package eu.crushedpixel.replaymod.timer;
 import eu.crushedpixel.replaymod.events.handlers.MinecraftTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Timer;
-import org.lwjgl.LWJGLException;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 public class ReplayTimer extends Timer {
 
@@ -36,14 +32,6 @@ public class ReplayTimer extends Timer {
         if (timerSpeed == 0) {
             try {
                 MinecraftTicker.runMouseKeyboardTick(Minecraft.getMinecraft());
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (LWJGLException e) {
-                e.printStackTrace();
             } catch (OutOfMemoryError e) {
                 // Disable passive mode and reset timer speed so we can use the buttons on the OOM screen
                 passive = false;

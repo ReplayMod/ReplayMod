@@ -116,7 +116,7 @@ public class PacketListener extends DataListener {
     }
 
     @SuppressWarnings("unchecked")
-    private byte[] getPacketData(Packet packet) throws IOException {
+    private byte[] getPacketData(Packet packet) {
         if(packet instanceof S0FPacketSpawnMob) {
             S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
             if (p.field_149043_l == null) {

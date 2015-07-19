@@ -14,10 +14,6 @@ public class ProgressFilter implements StreamFilter {
     private ProgressUpdateListener listener;
     private float minPerc, maxPerc;
 
-    public ProgressFilter(long total, ProgressUpdateListener progressUpdateListener) {
-        this(total, progressUpdateListener, 0, 1);
-    }
-
     public ProgressFilter(long total, ProgressUpdateListener progressUpdateListener, float minPerc, float maxPerc) {
         this.total = total;
 

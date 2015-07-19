@@ -73,9 +73,8 @@ public class VideoRenderer implements RenderInfo {
     /**
      * Render this video.
      * @return {@code true} if rendering was successful, {@code false} if the user aborted rendering (or the window was closed)
-     * @throws IOException {@link Minecraft#runTick()} can apparently throw these, don't question it!
      */
-    public boolean renderVideo() throws IOException {
+    public boolean renderVideo() {
         setup();
 
         // Because this might take some time to prepare we'll render the GUI at least once to not confuse the user

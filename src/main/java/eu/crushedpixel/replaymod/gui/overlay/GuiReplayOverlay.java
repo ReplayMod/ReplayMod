@@ -36,7 +36,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Point;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.List;
 
@@ -191,7 +191,7 @@ public class GuiReplayOverlay extends Gui {
             boolean selected = ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe().getValue() instanceof AdvancedPosition;
             boolean camera;
             if(selected) {
-                camera = ((Keyframe<AdvancedPosition>)ReplayHandler.getSelectedKeyframe()).getValue().getSpectatedEntityID() == null;
+                camera = ((AdvancedPosition)ReplayHandler.getSelectedKeyframe().getValue()).getSpectatedEntityID() == null;
             } else {
                 camera = ReplayHandler.isCamera();
             }
@@ -616,9 +616,10 @@ public class GuiReplayOverlay extends Gui {
             GlStateManager.color(1, 1, 1, 1);
             GlStateManager.enableAlpha();
             GlStateManager.disableLighting();
-            Gui.drawModalRectWithCustomSizedTexture(xPos-width, HEIGHT - 10 - 13,
+            Gui.drawModalRectWithCustomSizedTexture(xPos - width, HEIGHT - 10 - 13,
                     100, 0, 20, 13, TEXTURE_SIZE, TEXTURE_SIZE);
 
+            //noinspection UnusedAssignment
             xPos -= width + 5;
         }
 

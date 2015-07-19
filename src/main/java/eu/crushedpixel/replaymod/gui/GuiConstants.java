@@ -2,8 +2,6 @@ package eu.crushedpixel.replaymod.gui;
 
 public class GuiConstants {
 
-    public static final int MAIN_MENU_UPDATE_BUTTON = 8765;
-
     public static final int CENTER_DOWNLOADED_REPLAYS_BUTTON = 2001;
     public static final int CENTER_SEARCH_BUTTON = 2002;
     public static final int CENTER_BACK_BUTTON = 2003;
@@ -61,17 +59,8 @@ public class GuiConstants {
     public static final int PLAYER_OVERVIEW_SHOW_ALL = 101;
     public static final int PLAYER_OVERVIEW_REMEMBER = -10;
 
-    public static final int RENDER_SETTINGS_RENDER_BUTTON = 9002;
-    public static final int RENDER_SETTINGS_CANCEL_BUTTON = 9003;
-    public static final int RENDER_SETTINGS_INTERPOLATION_BUTTON = 9007;
-    public static final int RENDER_SETTINGS_FORCECHUNKS_BUTTON = 9008;
-    public static final int RENDER_SETTINGS_FRAMERATE_SLIDER = 9009;
-    public static final int RENDER_SETTINGS_STATIC_CAMERA = 9012;
-    public static final int RENDER_SETTINGS_ADVANCED_BUTTON = 9013;
     public static final int RENDER_SETTINGS_COLOR_PICKER = 9014;
-    public static final int RENDER_SETTINGS_ENABLE_GREENSCREEN = 9015;
     public static final int RENDER_SETTINGS_OUTPUT_CHOOSER = 9016;
-    public static final int RENDER_SETTINGS_RENDER_NAMETAGS = 9017;
 
     public static final int REPLAY_SETTINGS_RECORDSERVER_ID = 9004;
     public static final int REPLAY_SETTINGS_RECORDSP_ID = 9005;
@@ -83,5 +72,4 @@ public class GuiConstants {
     public static final int REPLAY_SETTINGS_CLEARCALLBACK_ID = 9014;
 
     public static final int REPLAY_EDITING_CANCEL_BUTTON = 1234;
-    public static final int REPLAY_DOWNLOADING_CANCEL_BUTTON = 2345;
 }

@@ -136,14 +136,13 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                 int i = iterator.nextIndex();
                 int nextSpectatorKeyframeRealTime = -1;
 
-                while(iterator.hasNext()) {
+                if (iterator.hasNext()) {
                     Keyframe<AdvancedPosition> kf2 = iterator.next();
                     if(kf.getValue().getSpectatedEntityID()
                             .equals(kf2.getValue().getSpectatedEntityID())) {
 
                         nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
                     }
-                    break;
                 }
 
                 int i2 = iterator.previousIndex();
@@ -172,12 +171,11 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                 int i = iterator.nextIndex();
                 int nextTimeKeyframeRealTime = -1;
 
-                while(iterator.hasNext()) {
+                if (iterator.hasNext()) {
                     Keyframe<TimestampValue> kf2 = iterator.next();
                     if(kf.getValue().asInt() > kf2.getValue().asInt()) {
                         nextTimeKeyframeRealTime = kf2.getRealTimestamp();
                     }
-                    break;
                 }
 
                 int i2 = iterator.previousIndex();
@@ -232,7 +230,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                 y += 0;
 
                 //If Spectator Keyframe, use different texture
-                if(((Keyframe<AdvancedPosition>) kf).getValue().getSpectatedEntityID() != null) {
+                if(((AdvancedPosition) kf.getValue()).getSpectatedEntityID() != null) {
                     textureX = KEYFRAME_SPEC_X;
                     textureY = KEYFRAME_SPEC_Y;
                 }

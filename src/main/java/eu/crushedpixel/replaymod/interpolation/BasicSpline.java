@@ -1,12 +1,11 @@
 package eu.crushedpixel.replaymod.interpolation;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 
 public abstract class BasicSpline {
-    public void calcNaturalCubic(List valueCollection, Field val, Collection<Cubic> cubicCollection) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public void calcNaturalCubic(List valueCollection, Field val, Collection<Cubic> cubicCollection) throws IllegalArgumentException, IllegalAccessException {
         int num = valueCollection.size() - 1;
 
         double[] gamma = new double[num + 1];

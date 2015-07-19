@@ -138,8 +138,8 @@ public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextFie
     }
 
     public boolean mouseClickedResult(int xPos, int yPos) {
+        if(!isEnabled) return false;
         boolean success = false;
-        if(!isEnabled) return success;
         if(xPos > xPosition + width - height && xPos < xPosition + width && yPos > yPosition && yPos < yPosition + height) {
             open = !open;
         } else {

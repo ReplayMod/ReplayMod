@@ -10,6 +10,7 @@ import eu.crushedpixel.replaymod.api.replay.SearchQuery;
 import eu.crushedpixel.replaymod.api.replay.holders.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHash;
+import eu.crushedpixel.replaymod.utils.Api;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -195,6 +196,7 @@ public class ApiClient {
         return invokeAndReturn(builder, Favorites.class).getFavorited();
     }
 
+    @Api
     public void removeFile(String auth, int file) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.remove_file);
         builder.put("auth", auth);

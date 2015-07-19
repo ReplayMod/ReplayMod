@@ -77,11 +77,6 @@ public class ReplaySettings {
         return (Boolean) ReplayOptions.linear.getValue();
     }
 
-    public void setLinearMovement(boolean linear) {
-        ReplayOptions.linear.setValue(linear);
-        rewriteSettings();
-    }
-
     public boolean isLightingEnabled() {
         return (Boolean) ReplayOptions.lighting.getValue();
     }
@@ -89,15 +84,6 @@ public class ReplaySettings {
     public void setLightingEnabled(boolean enabled) {
         ReplayOptions.lighting.setValue(enabled);
         LightingHandler.setLighting(enabled);
-        rewriteSettings();
-    }
-
-    public boolean getWaitForChunks() {
-        return (Boolean) RenderOptions.waitForChunks.getValue();
-    }
-
-    public void setWaitForChunks(boolean wait) {
-        RenderOptions.waitForChunks.setValue(wait);
         rewriteSettings();
     }
 

@@ -11,6 +11,7 @@ import eu.crushedpixel.replaymod.gui.elements.timelines.GuiTimeline;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
+import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
@@ -29,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+
+import org.lwjgl.util.Point;
 
 public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
@@ -50,16 +53,12 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
     private GuiDraggingNumberInput scaleXInput, scaleYInput, scaleZInput;
     private GuiDraggingNumberInput opacityInput;
     
-    private NumberInputGroup anchorNumberInputs, positionNumberInputs, orientationNumberInputs, scaleNumberInputs, opacityNumberInputs;
+    private NumberPositionInputGroup anchorNumberInputs, positionNumberInputs, orientationNumberInputs, scaleNumberInputs;
+    private NumberValueInputGroup opacityNumberInputs;
 
     @Getter
     private GuiObjectKeyframeTimeline objectKeyframeTimeline;
 
-    private GuiScrollbar timelineScrollbar;
-
-    private GuiTexturedButton zoomInButton, zoomOutButton;
-
-    private ComposedElement anchorInputs, positionInputs, scaleInputs, orientationInputs, opacityInputs, numberInputs;
     private ComposedElement disableElements, allElements;
 
     private static final int KEYFRAME_BUTTON_X = 80;
@@ -257,19 +256,19 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
 
         int inputWidth = 40;
 
-        anchorInputs = new ComposedElement(anchorXInput, anchorYInput, anchorZInput);
-        positionInputs = new ComposedElement(positionXInput, positionYInput, positionZInput);
-        orientationInputs = new ComposedElement(orientationXInput, orientationYInput, orientationZInput);
-        scaleInputs = new ComposedElement(scaleXInput, scaleYInput, scaleZInput);
-        opacityInputs = new ComposedElement(opacityInput);
-        numberInputs = new ComposedElement(anchorInputs, positionInputs, orientationInputs, scaleInputs, opacityInputs);
+        ComposedElement anchorInputs = new ComposedElement(anchorXInput, anchorYInput, anchorZInput);
+        ComposedElement positionInputs = new ComposedElement(positionXInput, positionYInput, positionZInput);
+        ComposedElement orientationInputs = new ComposedElement(orientationXInput, orientationYInput, orientationZInput);
+        ComposedElement scaleInputs = new ComposedElement(scaleXInput, scaleYInput, scaleZInput);
+        ComposedElement opacityInputs = new ComposedElement(opacityInput);
+        ComposedElement numberInputs = new ComposedElement(anchorInputs, positionInputs, orientationInputs, scaleInputs, opacityInputs);
 
         for(int i = numberInputs.getParts().size()-1; i >= 0; i--) {
             int yPos = this.height-5-10-(25*(numberInputs.getParts().size()-i));
             DelegatingElement button = keyframeButton(10, yPos, i);
             GuiString label = new GuiString(35, yPos + 6, Color.WHITE, labelStrings[i]);
 
-            ComposedElement child = (ComposedElement)numberInputs.getParts().get(i);
+            ComposedElement child = (ComposedElement) numberInputs.getParts().get(i);
             int x = 0;
             for(GuiElement el : child.getParts()) {
                 GuiDraggingNumberInput dni = (GuiDraggingNumberInput)el;
@@ -294,10 +293,10 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
         objectKeyframeTimeline = new GuiObjectKeyframeTimeline(timelineX, timelineY, timelineWidth, timelineHeight);
         disableElements.addPart(objectKeyframeTimeline);
 
-        timelineScrollbar = new GuiScrollbar(timelineX, this.height-15, timelineWidth-21) {
+        GuiScrollbar timelineScrollbar = new GuiScrollbar(timelineX, this.height - 15, timelineWidth - 21) {
             @Override
             public void dragged() {
-                objectKeyframeTimeline.timeStart = (float)sliderPosition;
+                objectKeyframeTimeline.timeStart = (float) sliderPosition;
             }
         };
 
@@ -306,14 +305,14 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
 
         disableElements.addPart(timelineScrollbar);
 
-        zoomInButton = GuiReplayOverlay.texturedButton(width - 28, this.height-15, 40, 20, 9, new Runnable() {
+        GuiTexturedButton zoomInButton = GuiReplayOverlay.texturedButton(width - 28, this.height - 15, 40, 20, 9, new Runnable() {
             @Override
             public void run() {
                 objectKeyframeTimeline.zoom = Math.max(0.025f, objectKeyframeTimeline.zoom - ZOOM_STEPS);
             }
         }, "replaymod.gui.ingame.menu.zoomin");
 
-        zoomOutButton = GuiReplayOverlay.texturedButton(width - 18, this.height-15, 40, 30, 9, new Runnable() {
+        GuiTexturedButton zoomOutButton = GuiReplayOverlay.texturedButton(width - 18, this.height - 15, 40, 30, 9, new Runnable() {
 
             @Override
             public void run() {
@@ -467,17 +466,17 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
         saveOnQuit();
     }
 
-    public abstract class NumberInputGroup implements NumberValueChangeListener {
+    public abstract class NumberInputGroup<T extends KeyframeValue> implements NumberValueChangeListener {
 
-        KeyframeList toModify;
+        KeyframeList<T> toModify;
 
-        public void setUnderlyingKeyframeList(KeyframeList toModify) {
+        public void setUnderlyingKeyframeList(KeyframeList<T> toModify) {
             this.toModify = toModify;
         }
 
     }
 
-    public class NumberValueInputGroup extends NumberInputGroup {
+    public class NumberValueInputGroup extends NumberInputGroup<NumberValue> {
 
         public NumberValueInputGroup(KeyframeList<NumberValue> toModify, GuiNumberInput input) {
             this.toModify = toModify;
@@ -486,6 +485,7 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void onValueChange(double value) {
             NumberValue numberValue = new NumberValue(value);
 
@@ -498,7 +498,7 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
         }
     }
 
-    public class NumberPositionInputGroup extends NumberInputGroup {
+    public class NumberPositionInputGroup extends NumberInputGroup<Position> {
 
         public NumberPositionInputGroup(KeyframeList<Position> toModify, GuiNumberInput xInput, GuiNumberInput yInput, GuiNumberInput zInput) {
             this.toModify = toModify;
@@ -514,6 +514,7 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
         private GuiNumberInput xInput, yInput, zInput;
 
         @Override
+        @SuppressWarnings("unchecked")
         public void onValueChange(double value) {
             Position position = new Position(xInput.getPreciseValue(), yInput.getPreciseValue(), zInput.getPreciseValue());
 
@@ -561,10 +562,10 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
 
             if(transformations != null) {
                 for(int i = 0; i < 5; i++) {
-                    KeyframeList keyframes = transformations.getKeyframeListByID(i);
+                    KeyframeList<?> keyframes = transformations.getKeyframeListByID(i);
 
                     //Draw Keyframe logos
-                    for(Keyframe kf : (List<Keyframe>) keyframes) {
+                    for(Keyframe kf : keyframes) {
                         drawKeyframe(kf, (int)(i * (height / 5f)) + 10, bodyWidth, leftTime, rightTime, segmentLength);
                     }
                 }
@@ -609,9 +610,8 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
                         int lower = upper + KEYFRAME_SIZE;
                         if(mouseY >= upper && mouseY <= lower) {
                             KeyframeList keyframes = transformations.getKeyframeListByID(i);
-                            Keyframe closest = keyframes.getClosestKeyframeForTimestamp(time, tolerance);
 
-                            selectedKeyframe = closest;
+                            selectedKeyframe = keyframes.getClosestKeyframeForTimestamp(time, tolerance);
 
                             if(selectedKeyframe != null) {
                                 selectedKeyframeRow = i;
@@ -662,6 +662,7 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
             this.dragging = false;
         }
 
+        @SuppressWarnings("unchecked")
         public void addKeyframe(int line) {
             CustomImageObject currentObject = objectList.getElement(objectList.getSelectionIndex());
             if(currentObject != null) {
@@ -672,32 +673,32 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
                 
                 switch(line) {
                     case 0:
-                        
-                        kf = new Keyframe(timestamp, new Position(
+
+                        kf = new Keyframe<Position>(timestamp, new Position(
                                 anchorXInput.getPreciseValue(),
                                 anchorYInput.getPreciseValue(),
                                 anchorZInput.getPreciseValue()));
                         break;
                     case 1:
-                        kf = new Keyframe(timestamp, new Position(
+                        kf = new Keyframe<Position>(timestamp, new Position(
                                 positionXInput.getPreciseValue(),
                                 positionYInput.getPreciseValue(),
                                 positionZInput.getPreciseValue()));
                         break;
                     case 2:
-                        kf = new Keyframe(timestamp, new Position(
+                        kf = new Keyframe<Position>(timestamp, new Position(
                                 orientationXInput.getPreciseValue(),
                                 orientationYInput.getPreciseValue(),
                                 orientationZInput.getPreciseValue()));
                         break;
                     case 3:
-                        kf = new Keyframe(timestamp, new Position(
+                        kf = new Keyframe<Position>(timestamp, new Position(
                                 scaleXInput.getPreciseValue(),
                                 scaleYInput.getPreciseValue(),
                                 scaleZInput.getPreciseValue()));
                         break;
                     case 4:
-                        kf = new Keyframe(timestamp, new NumberValue(
+                        kf = new Keyframe<NumberValue>(timestamp, new NumberValue(
                                 opacityInput.getPreciseValue()
                         ));
                         break;

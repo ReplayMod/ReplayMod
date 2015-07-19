@@ -132,7 +132,7 @@ public class ReplayFileIO {
         return new PacketData(bb, timestamp);
     }
 
-    public static Packet deserializePacket(byte[] bytes) throws InstantiationException, IllegalAccessException, IOException {
+    public static Packet deserializePacket(byte[] bytes) {
         try {
             ByteBuf bb = Unpooled.wrappedBuffer(bytes);
             PacketBuffer pb = new PacketBuffer(bb);
@@ -148,7 +148,7 @@ public class ReplayFileIO {
         }
     }
 
-    public static byte[] serializePacket(Packet packet) throws IOException {
+    public static byte[] serializePacket(Packet packet) {
         ByteBuf bb = Unpooled.buffer();
         packetSerializer.encode(EnumConnectionState.PLAY, packet, bb);
         bb.readerIndex(0);

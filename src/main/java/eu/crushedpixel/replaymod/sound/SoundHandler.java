@@ -10,7 +10,6 @@ import java.io.InputStream;
 
 public class SoundHandler {
 
-    private final Minecraft mc = Minecraft.getMinecraft();
     private final ResourceLocation successSoundLocation = new ResourceLocation("replaymod", "renderSuccess.wav");
 
     public void playRenderSuccessSound() {

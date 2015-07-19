@@ -17,15 +17,11 @@ public class WindowsUriScheme extends UriScheme {
 
     private void regAdd(String args) throws IOException, InterruptedException {
         Process process = Runtime.getRuntime().exec("REG ADD HKCU\\Software\\Classes" + args);
-        try {
-            if (process.waitFor() != 0) {
-                StringBuilderWriter writer = new StringBuilderWriter();
-                IOUtils.copy(process.getInputStream(), writer);
-                IOUtils.copy(process.getErrorStream(), writer);
-                throw new IOException(writer.toString());
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        if (process.waitFor() != 0) {
+            StringBuilderWriter writer = new StringBuilderWriter();
+            IOUtils.copy(process.getInputStream(), writer);
+            IOUtils.copy(process.getErrorStream(), writer);
+            throw new IOException(writer.toString());
         }
     }
 }

@@ -4,7 +4,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @NoArgsConstructor
@@ -24,6 +23,7 @@ public class KeyframeSet implements GuiEntryListEntry {
         this.name = name;
     }
 
+    @SuppressWarnings("unchecked")
     public void setKeyframes(Keyframe[] keyframes) {
         List<Keyframe<AdvancedPosition>> posKFList = new ArrayList<Keyframe<AdvancedPosition>>();
         List<Keyframe<TimestampValue>> timeKFList = new ArrayList<Keyframe<TimestampValue>>();
@@ -44,10 +44,10 @@ public class KeyframeSet implements GuiEntryListEntry {
     }
 
     public Keyframe[] getKeyframes() {
-        List<Keyframe> kfList = new ArrayList<Keyframe>();
-        Collections.addAll(kfList, positionKeyframes);
-        Collections.addAll(kfList, timeKeyframes);
-        return kfList.toArray(new Keyframe[kfList.size()]);
+        Keyframe[] keyframes = new Keyframe[positionKeyframes.length + timeKeyframes.length];
+        System.arraycopy(positionKeyframes, 0, keyframes, 0, positionKeyframes.length);
+        System.arraycopy(timeKeyframes, 0, keyframes, positionKeyframes.length, timeKeyframes.length);
+        return keyframes;
     }
 
     public int getTimeKeyframeCount() {

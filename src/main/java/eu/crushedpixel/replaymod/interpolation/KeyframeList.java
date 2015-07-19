@@ -157,7 +157,8 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
         if(first() == null) return null;
         if(size() == 1) return first().getValue();
 
-        K toApply = (K)first().getValue().newInstance();
+        @SuppressWarnings("unchecked")
+        K toApply = (K) first().getValue().newInstance();
 
         if(previousCallLinear != (Boolean)linear) {
             interpolation = linear ? new GenericLinearInterpolation<K>() : new GenericSplineInterpolation<K>();

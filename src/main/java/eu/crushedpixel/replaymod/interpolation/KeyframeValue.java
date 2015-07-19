@@ -9,6 +9,6 @@ package eu.crushedpixel.replaymod.interpolation;
  */
 public interface KeyframeValue {
 
-    public KeyframeValue newInstance();
+    KeyframeValue newInstance();
 
 }

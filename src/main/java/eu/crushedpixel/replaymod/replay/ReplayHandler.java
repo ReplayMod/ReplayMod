@@ -125,11 +125,7 @@ public class ReplayHandler {
         positionKeyframes.clear();
         timeKeyframes.clear();
         for(Keyframe kf : kfs) {
-            if(kf.getValue() instanceof AdvancedPosition) {
-                positionKeyframes.add(kf);
-            } else if(kf.getValue() instanceof TimestampValue) {
-                timeKeyframes.add(kf);
-            }
+            addKeyframe(kf);
         }
 
         fireKeyframesModifyEvent();
@@ -264,17 +260,15 @@ public class ReplayHandler {
         Float a = null;
         Float b;
 
-        for(Keyframe kf : positionKeyframes) {
-            if(!(kf.getValue() instanceof AdvancedPosition)) continue;
-            Keyframe<AdvancedPosition> pkf = (Keyframe<AdvancedPosition>)kf;
-            AdvancedPosition pos = pkf.getValue();
+        for(Keyframe<AdvancedPosition> kf : positionKeyframes) {
+            AdvancedPosition pos = kf.getValue();
             b = (float)pos.getYaw() % 360;
             if(a != null) {
                 float diff = b-a;
                 if(Math.abs(diff) > 180) {
                     b = a - (360 - diff) % 360;
                     pos.setYaw(b);
-                    pkf.setValue(pos);
+                    kf.setValue(pos);
                 }
             }
             a = b;
@@ -283,6 +277,7 @@ public class ReplayHandler {
         fireKeyframesModifyEvent();
     }
 
+    @SuppressWarnings("unchecked")
     public static void addKeyframe(Keyframe keyframe) {
         if(keyframe.getValue() instanceof AdvancedPosition) {
             addPositionKeyframe(keyframe);
@@ -420,12 +415,10 @@ public class ReplayHandler {
         PlayerHandler.loadPlayerVisibilityConfiguration(visibility);
 
         //load assets
-        AssetRepository assets = currentReplayFile.assetRepository().get();
-        assetRepository = assets;
+        assetRepository = currentReplayFile.assetRepository().get();
 
         //load custom image objects
-        CustomObjectRepository objectRepository = currentReplayFile.customImageObjects().get();
-        customImageObjects = objectRepository;
+        customImageObjects = currentReplayFile.customImageObjects().get();
         if(customImageObjects == null) customImageObjects = new CustomObjectRepository();
 
         ReplayMod.replaySender = new ReplaySender(currentReplayFile, asyncMode);
@@ -576,10 +569,6 @@ public class ReplayHandler {
 
     public static List<CustomImageObject> getCustomImageObjects() {
         return customImageObjects.getObjects();
-    }
-
-    public static void addCustomImageObject(CustomImageObject object) {
-        customImageObjects.getObjects().add(object);
     }
 
     public static void setCustomImageObjects(List<CustomImageObject> objects) {

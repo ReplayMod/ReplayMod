@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.api.replay;
 
 import com.google.gson.Gson;
-import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.api.replay.holders.ApiError;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
@@ -24,8 +23,7 @@ public class FileUploader {
 
     private GuiUploadFile parent;
 
-    public void uploadFile(GuiUploadFile gui, String auth, String filename, List<String> tags, File file, Category category, String description)
-            throws IOException, ApiException, RuntimeException {
+    public void uploadFile(GuiUploadFile gui, String auth, String filename, List<String> tags, File file, Category category, String description) {
         boolean success = false;
         String info = null;
 

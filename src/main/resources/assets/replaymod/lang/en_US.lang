@@ -248,11 +248,6 @@ replaymod.gui.settings.interpolation=Path Interpolation
 replaymod.gui.settings.pathpreview=Show Path Preview
 replaymod.gui.settings.keyframecleancallback=Clear Confirmation
 
-replaymod.gui.settings.videoquality.draft=Draft
-replaymod.gui.settings.videoquality.normal=Normal
-replaymod.gui.settings.videoquality.good=Good
-replaymod.gui.settings.videoquality.best=Best
-
 replaymod.gui.settings.warning.linea=WARNING: Recording settings will be
 replaymod.gui.settings.warning.lineb=applied the next time you join a world.
 

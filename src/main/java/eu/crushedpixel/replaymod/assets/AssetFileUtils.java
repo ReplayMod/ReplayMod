@@ -14,7 +14,7 @@ public class AssetFileUtils {
             return ImageIO.getReaderFileSuffixes();
         }
 
-        return null;
+        throw new UnsupportedOperationException("Unknown replay asset type: " + clazz);
     }
 
     public static String[] getAllAvailableExtensions() {

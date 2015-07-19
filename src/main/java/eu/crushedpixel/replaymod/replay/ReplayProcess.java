@@ -192,9 +192,7 @@ public class ReplayProcess {
         if(timeLinear == null) {
             timeLinear = new GenericLinearInterpolation<TimestampValue>();
             for(Keyframe<TimestampValue> kf : ReplayHandler.getTimeKeyframes()) {
-                if(kf.getValue() instanceof TimestampValue) {
-                    timeLinear.addPoint(kf.getValue());
-                }
+                timeLinear.addPoint(kf.getValue());
             }
         }
 
