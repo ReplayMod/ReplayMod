@@ -71,16 +71,12 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     public Keyframe<K> getPreviousKeyframe(int realTime, boolean inclusive) {
         if(this.isEmpty()) return null;
 
-        Keyframe<K> backup = null;
-
         List<Keyframe<K>> found = new ArrayList<Keyframe<K>>();
 
         for(Keyframe<K> kf : this) {
 
             if((inclusive && kf.getRealTimestamp() <= realTime) || (!inclusive && kf.getRealTimestamp() < realTime)) {
                 found.add(kf);
-            } else if(kf.getRealTimestamp() == realTime) {
-                backup = kf;
             }
 
         }
@@ -88,7 +84,7 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
         if(found.size() > 0)
             return found.get(found.size() - 1); //last element is nearest
 
-        else return backup;
+        return null;
     }
 
     /**
@@ -100,19 +96,15 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     public Keyframe<K> getNextKeyframe(int realTime, boolean inclusive) {
         if(this.isEmpty()) return null;
 
-        Keyframe<K> backup = null;
-
         for(Keyframe<K> kf : this) {
 
             if((inclusive && kf.getRealTimestamp() >= realTime) || (!inclusive && kf.getRealTimestamp() > realTime)) {
                 return kf; //first found element is next
-            } else if(kf.getRealTimestamp() == realTime) {
-                backup = kf;
             }
 
         }
 
-        return backup;
+        return null;
     }
 
     /**
