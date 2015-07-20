@@ -30,10 +30,15 @@ public class GenericSplineInterpolation<T extends KeyframeValue> extends BasicSp
 
     @Override
     public void prepare() {
+        if(fields == null) {
+            throw new IllegalStateException("At least one Keyframe has to be added before preparing");
+        }
+
         if(fields.length <= 0) {
             throw new IllegalStateException("The passed KeyframeValue class" +
                     " has to contain at least one Field");
         }
+
         if(!points.isEmpty()) {
             cubics = new ArrayList<Vector<Cubic>>(fields.length);
             for (Field field : fields) {

@@ -30,8 +30,13 @@ public class GenericLinearInterpolation<T extends KeyframeValue> implements Inte
 
     @Override
     public void applyPoint(float position, T toEdit) {
-        if(points.isEmpty()) {
-            throw new IllegalStateException("At least one Value needs to be added for this operation");
+        if(fields == null) {
+            throw new IllegalStateException("At least one Keyframe has to be added before preparing");
+        }
+
+        if(fields.length <= 0) {
+            throw new IllegalStateException("The passed KeyframeValue class" +
+                    " has to contain at least one Field");
         }
 
         //first, get previous and next T for given position

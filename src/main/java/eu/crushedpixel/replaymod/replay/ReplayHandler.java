@@ -579,6 +579,7 @@ public class ReplayHandler {
 
     public static void fireKeyframesModifyEvent() {
         FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(positionKeyframes, timeKeyframes));
-
+        positionKeyframes.recalculate(ReplayMod.replaySettings.isLinearMovement());
+        timeKeyframes.recalculate(ReplayMod.replaySettings.isLinearMovement());
     }
 }
