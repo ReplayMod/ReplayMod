@@ -1,13 +1,25 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
+import eu.crushedpixel.replaymod.utils.OpenGLUtils;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
-
-import java.awt.*;
 
 public class GuiArrowButton extends GuiAdvancedButton {
 
+    private static final int TEXTURE_X = 40;
+    private static final int TEXTURE_Y = 80;
+    private static final int TEXTURE_WIDTH = 12;
+    private static final int TEXTURE_HEIGHT = 12;
+
+
+    @AllArgsConstructor
     public enum Direction {
-        UP, DOWN, RIGHT, LEFT
+        UP(-90), DOWN(90), RIGHT(0), LEFT(180);
+
+        @Getter
+        private int rotation;
     }
 
     private Direction dir;
@@ -21,29 +33,22 @@ public class GuiArrowButton extends GuiAdvancedButton {
     }
 
     @Override
+    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+        draw(mc, mouseX, mouseY);
+    }
+
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY, boolean hovering) {
         try {
             super.draw(mc, mouseX, mouseY, hovering);
-            if(dir == Direction.UP) {
-                for(int i = 0; i <= Math.ceil(height / 2) - 5; i++) {
-                    drawHorizontalLine(xPosition + width - height + i + 4, xPosition + width - i - 6, yPosition + height - ((height / 3) + i + 2), Color.BLACK.getRGB());
-                }
-            } else if(dir == Direction.DOWN) {
-                for(int i = 0; i <= Math.ceil(height / 2) - 5; i++) {
-                    drawHorizontalLine(xPosition + width - height + i + 4, xPosition + width - i - 6, yPosition + (height / 3) + i + 2, Color.BLACK.getRGB());
-                }
-            } else if(dir == Direction.LEFT) {
-                for(int i = -1; i < Math.ceil(height / 2) - 5; i++) {
-                    drawVerticalLine(xPosition + height - ((height / 3) + i + 4), yPosition + width - height + i + 4, yPosition + width - i - 6, Color.BLACK.getRGB());
-                }
-            } else if(dir == Direction.RIGHT) {
-                for(int i = -1; i < Math.ceil(height / 2) - 5; i++) {
-                    drawVerticalLine(xPosition + (height / 3) + i + 2, yPosition + width - height + i + 4, yPosition + width - i - 6, Color.BLACK.getRGB());
-                }
-            }
+
+            mc.getTextureManager().bindTexture(GuiReplayOverlay.replay_gui);
+
+            OpenGLUtils.drawRotatedRectWithCustomSizedTexture(xPosition+4, yPosition+4, dir.getRotation(),
+                    TEXTURE_X, TEXTURE_Y, TEXTURE_WIDTH, TEXTURE_HEIGHT, 128, 128);
+
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
-
 }
