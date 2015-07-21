@@ -45,7 +45,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
-            S2BPacketChangeGameState.class,
             S06PacketUpdateHealth.class,
             S2DPacketOpenWindow.class,
             S2EPacketCloseWindow.class,
@@ -55,7 +54,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             S37PacketStatistics.class,
             S1FPacketSetExperience.class,
             S43PacketCamera.class,
-            S39PacketPlayerAbilities.class);
+            S39PacketPlayerAbilities.class,
+            S02PacketChat.class,
+            S45PacketTitle.class);
 
     /**
      * Whether to work in async mode.
@@ -389,6 +390,22 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                     return null;
                 }
             }.call();
+        }
+
+        if(p instanceof S2BPacketChangeGameState) {
+            S2BPacketChangeGameState pg = (S2BPacketChangeGameState)p;
+            int reason = pg.func_149138_c();
+
+            // only allow the following packets:
+            // 1 - End raining
+            // 2 - Begin raining
+            //
+            // The following values are to control sky color (e.g. if thunderstorm)
+            // 7 - Fade value
+            // 8 - Fade time
+            if(!(reason == 1 || reason == 2 || reason == 7 || reason == 8)) {
+                return null;
+            }
         }
 
         return asyncMode ? processPacketAsync(p) : processPacketSync(p);
