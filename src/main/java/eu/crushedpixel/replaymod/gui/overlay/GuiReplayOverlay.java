@@ -354,15 +354,16 @@ public class GuiReplayOverlay extends Gui {
 
     /**
      * Resets the UI.
-     * @param slider {@code true} if the speed-slider should be reset as well
+     * @param resetElements Whether the timeline and Speed Slider should be reset as well
      */
-    public void resetUI(boolean slider) {
+    public void resetUI(boolean resetElements) {
         if(FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
             mc.displayGuiScreen(null);
         }
-        timelineReal.zoom = 0.1f;
-        timelineReal.timeStart = 0;
-        if (slider) {
+        if (resetElements) {
+            timelineReal.zoom = 0.033f;
+            timelineReal.timeStart = 0;
+
             ReplayHandler.setRealTimelineCursor(0);
             speedSlider.reset();
         }
