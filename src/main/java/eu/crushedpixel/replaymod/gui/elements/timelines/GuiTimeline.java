@@ -314,7 +314,7 @@ public class GuiTimeline extends Gui implements GuiElement {
         static final int[] snapNumbers = new int[]{S, 2*S, 5*S, 10*S, 15*S, 20*S, 30*S, M, 2*M,
             5*M, 10*M, 15*M, 30*M};
 
-        static final int MARKER_DISTANCE = 35;
+        static final int MARKER_DISTANCE = 40;
 
         int smallDistance;
         int distance;
