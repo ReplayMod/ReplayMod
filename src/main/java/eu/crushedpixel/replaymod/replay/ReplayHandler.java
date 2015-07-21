@@ -522,22 +522,18 @@ public class ReplayHandler {
         return currentReplayFile == null ? null : currentReplayFile.getFile();
     }
 
-    public static void syncTimeCursor(boolean shiftMode) {
+    /**
+     * Synchronizes the cursor on the Keyframe Timeline with the Replay Time
+     * @param ignoreReplaySpeed If true, it always uses 1.0 as the stretch factor
+     */
+    public static void syncTimeCursor(boolean ignoreReplaySpeed) {
         selectKeyframe(null);
 
         int curTime = ReplayMod.replaySender.currentTimeStamp();
 
         int prevTime, prevRealTime;
 
-        Keyframe<TimestampValue> keyframe;
-
-        //if shift is down, it will refer to the previous Time Keyframe instead of the last one
-        if(shiftMode) {
-            int realTime = getRealTimelineCursor();
-            keyframe = timeKeyframes.getPreviousKeyframe(realTime, false);
-        } else {
-            keyframe = timeKeyframes.last();
-        }
+        Keyframe<TimestampValue> keyframe = timeKeyframes.last();
 
         if(keyframe == null) {
             prevTime = 0;
@@ -547,7 +543,9 @@ public class ReplayHandler {
             prevRealTime = keyframe.getRealTimestamp();
         }
 
-        int newCursorPos = Math.min(GuiReplayOverlay.KEYFRAME_TIMELINE_LENGTH, prevRealTime+(curTime-prevTime));
+        double speed = ignoreReplaySpeed ? 1 : ReplayMod.overlay.getSpeedSliderValue();
+
+        int newCursorPos = Math.min(GuiReplayOverlay.KEYFRAME_TIMELINE_LENGTH, (int)(prevRealTime+((curTime-prevTime)/speed)));
 
         setRealTimelineCursor(newCursorPos);
     }

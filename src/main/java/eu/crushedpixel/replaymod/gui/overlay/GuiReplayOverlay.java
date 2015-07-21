@@ -256,6 +256,10 @@ public class GuiReplayOverlay extends Gui {
 
     private final GuiReplaySpeedSlider speedSlider = new GuiReplaySpeedSlider(SPEED_X, TOP_ROW, I18n.format("replaymod.gui.speed"));
 
+    public double getSpeedSliderValue() {
+        return speedSlider.getSliderValue();
+    }
+
     private boolean toolbarOpen = false;
 
     private final DelegatingElement toolbar = new DelegatingElement() {
