@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.holders;
 
-import eu.crushedpixel.replaymod.interpolation.Interpolate;
+import eu.crushedpixel.replaymod.interpolation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -68,5 +68,15 @@ public class AdvancedPosition extends Position {
     @Override
     public AdvancedPosition newInstance() {
         return new AdvancedPosition();
+    }
+
+    @Override
+    public Interpolation getCubicInterpolator() {
+        return new AdvancedPositionSplineInterpolation();
+    }
+
+    @Override
+    public Interpolation getLinearInterpolator() {
+        return new AdvancedPositionLinearInterpolation();
     }
 }

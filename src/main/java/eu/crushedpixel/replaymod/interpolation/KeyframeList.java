@@ -165,12 +165,13 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
      * Recalculates the underlying Interpolation instances.
      * @param linear Whether to prepare linear or cubic interpolation
      */
+    @SuppressWarnings("unchecked")
     public void recalculate(boolean linear) {
         previousCallLinear = linear;
 
-        if(isEmpty()) return;
+        if(size() < 2) return;
 
-        interpolation = linear ? new GenericLinearInterpolation<K>() : new GenericSplineInterpolation<K>();
+        interpolation = linear ? first().getValue().getLinearInterpolator() : first().getValue().getCubicInterpolator();
 
         for(Keyframe<K> keyframe : this) {
             interpolation.addPoint(keyframe.getValue());

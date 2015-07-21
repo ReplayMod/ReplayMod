@@ -5,8 +5,9 @@ import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
+import eu.crushedpixel.replaymod.interpolation.AdvancedPositionLinearInterpolation;
+import eu.crushedpixel.replaymod.interpolation.AdvancedPositionSplineInterpolation;
 import eu.crushedpixel.replaymod.interpolation.GenericLinearInterpolation;
-import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
@@ -31,8 +32,8 @@ public class ReplayProcess {
 
     private static boolean linear = false;
 
-    private static GenericSplineInterpolation<AdvancedPosition> motionSpline = null;
-    private static GenericLinearInterpolation<AdvancedPosition> motionLinear = null;
+    private static AdvancedPositionSplineInterpolation motionSpline = null;
+    private static AdvancedPositionLinearInterpolation motionLinear = null;
     private static GenericLinearInterpolation<TimestampValue> timeLinear = null;
 
     private static double previousReplaySpeed = 0;
@@ -176,7 +177,7 @@ public class ReplayProcess {
 
         if(!linear && motionSpline == null) {
             //set up spline path
-            motionSpline = new GenericSplineInterpolation<AdvancedPosition>();
+            motionSpline = new AdvancedPositionSplineInterpolation();
             for(Keyframe<AdvancedPosition> kf : ReplayHandler.getPositionKeyframes()) {
                 motionSpline.addPoint(kf.getValue());
             }
@@ -184,7 +185,7 @@ public class ReplayProcess {
 
         if(linear && motionLinear == null) {
             //set up linear path
-            motionLinear = new GenericLinearInterpolation<AdvancedPosition>();
+            motionLinear = new AdvancedPositionLinearInterpolation();
             for(Keyframe<AdvancedPosition> kf : ReplayHandler.getPositionKeyframes()) {
                 motionLinear.addPoint(kf.getValue());
             }

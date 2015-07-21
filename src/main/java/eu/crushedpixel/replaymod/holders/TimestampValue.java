@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.holders;
 
-import eu.crushedpixel.replaymod.interpolation.Interpolate;
-import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
+import eu.crushedpixel.replaymod.interpolation.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -21,4 +20,13 @@ public class TimestampValue implements KeyframeValue {
         return new TimestampValue();
     }
 
+    @Override
+    public Interpolation getLinearInterpolator() {
+        return new GenericLinearInterpolation<TimestampValue>();
+    }
+
+    @Override
+    public Interpolation getCubicInterpolator() {
+        return new GenericSplineInterpolation<TimestampValue>();
+    }
 }

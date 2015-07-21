@@ -6,10 +6,7 @@ import eu.crushedpixel.replaymod.gui.GuiVideoRenderer;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
-import eu.crushedpixel.replaymod.interpolation.GenericLinearInterpolation;
-import eu.crushedpixel.replaymod.interpolation.GenericSplineInterpolation;
-import eu.crushedpixel.replaymod.interpolation.Interpolation;
-import eu.crushedpixel.replaymod.interpolation.KeyframeList;
+import eu.crushedpixel.replaymod.interpolation.*;
 import eu.crushedpixel.replaymod.renderer.ChunkLoadingRenderGlobal;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
@@ -146,9 +143,9 @@ public class VideoRenderer implements RenderInfo {
 
         fps = options.getFps();
         if (options.isLinearMovement()) {
-            movement = new GenericLinearInterpolation<AdvancedPosition>();
+            movement = new AdvancedPositionLinearInterpolation();
         } else {
-            movement = new GenericSplineInterpolation<AdvancedPosition>();
+            movement = new AdvancedPositionSplineInterpolation();
         }
         time = new GenericLinearInterpolation<TimestampValue>();
 

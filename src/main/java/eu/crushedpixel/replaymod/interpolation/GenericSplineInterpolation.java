@@ -10,15 +10,16 @@ import java.util.Vector;
 
 public class GenericSplineInterpolation<T extends KeyframeValue> extends BasicSpline implements Interpolation<T> {
 
-    private Field[] fields;
+    protected Field[] fields;
 
-    private Vector<T> points;
-    private List<Vector<Cubic>> cubics = Collections.emptyList();
+    protected Vector<T> points;
+    protected List<Vector<Cubic>> cubics = Collections.emptyList();
 
     public GenericSplineInterpolation() {
         this.points = new Vector<T>();
     }
 
+    @Override
     public void addPoint(T point) {
         this.points.add(point);
 
@@ -56,6 +57,7 @@ public class GenericSplineInterpolation<T extends KeyframeValue> extends BasicSp
         }
     }
 
+    @Override
     public void applyPoint(float position, T toEdit) {
         Vector<Cubic> first = cubics.get(0);
         position = position * first.size();

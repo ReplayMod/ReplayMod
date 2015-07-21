@@ -257,23 +257,6 @@ public class ReplayHandler {
         positionKeyframes.add(keyframe);
         selectKeyframe(keyframe);
 
-        Float a = null;
-        Float b;
-
-        for(Keyframe<AdvancedPosition> kf : positionKeyframes) {
-            AdvancedPosition pos = kf.getValue();
-            b = (float)pos.getYaw() % 360;
-            if(a != null) {
-                float diff = b-a;
-                if(Math.abs(diff) > 180) {
-                    b = a - (360 - diff) % 360;
-                    pos.setYaw(b);
-                    kf.setValue(pos);
-                }
-            }
-            a = b;
-        }
-
         fireKeyframesModifyEvent();
     }
 

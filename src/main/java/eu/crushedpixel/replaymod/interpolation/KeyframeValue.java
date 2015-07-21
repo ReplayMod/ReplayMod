@@ -11,4 +11,6 @@ public interface KeyframeValue {
 
     KeyframeValue newInstance();
 
+    Interpolation getLinearInterpolator();
+    Interpolation getCubicInterpolator();
 }

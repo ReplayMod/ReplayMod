@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.holders;
 
-import eu.crushedpixel.replaymod.interpolation.Interpolate;
-import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
+import eu.crushedpixel.replaymod.interpolation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,4 +25,13 @@ public class Position implements KeyframeValue {
         this.z = pos.getZ();
     }
 
+    @Override
+    public Interpolation getLinearInterpolator() {
+        return new GenericLinearInterpolation<Position>();
+    }
+
+    @Override
+    public Interpolation getCubicInterpolator() {
+        return new GenericSplineInterpolation<Position>();
+    }
 }
