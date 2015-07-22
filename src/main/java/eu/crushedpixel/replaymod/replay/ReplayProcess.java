@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
+import org.lwjgl.input.Mouse;
 
 import java.io.IOException;
 
@@ -132,6 +133,8 @@ public class ReplayProcess {
         else {
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathinterrupted", ChatMessageType.INFORMATION);
         }
+
+        Mouse.setCursorPosition(0, 0);
 
         ReplayHandler.setInPath(false);
         ReplayMod.replaySender.setAsyncMode(true);
