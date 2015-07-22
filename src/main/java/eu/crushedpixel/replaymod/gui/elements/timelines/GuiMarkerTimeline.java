@@ -68,7 +68,7 @@ public class GuiMarkerTimeline extends GuiTimeline {
             if(closest != null) {
                 //Jump to clicked Marker Keyframe
                 ReplayHandler.setLastPosition(closest.getValue().getPosition());
-                ReplayMod.replaySender.jumpToTime(closest.getRealTimestamp());
+                ReplayMod.overlay.performJump(closest.getRealTimestamp(), false);
             }
         }
 

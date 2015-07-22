@@ -436,6 +436,10 @@ public class GuiReplayOverlay extends Gui {
     }
 
     public void performJump(long timelineTime) {
+        performJump(timelineTime, true);
+    }
+
+    public void performJump(long timelineTime, boolean setLastPosition) {
         if (timelineTime != -1) { // Click on timeline
             //When hurrying, no Timeline jumping etc. is possible
             if(!ReplayMod.replaySender.isHurrying()) {
@@ -443,11 +447,13 @@ public class GuiReplayOverlay extends Gui {
                     mc.displayGuiScreen(null);
                 }
 
-                CameraEntity cam = ReplayHandler.getCameraEntity();
-                if(cam != null) {
-                    ReplayHandler.setLastPosition(new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
-                } else {
-                    ReplayHandler.setLastPosition(null);
+                if(setLastPosition) {
+                    CameraEntity cam = ReplayHandler.getCameraEntity();
+                    if(cam != null) {
+                        ReplayHandler.setLastPosition(new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
+                    } else {
+                        ReplayHandler.setLastPosition(null);
+                    }
                 }
 
                 long diff = timelineTime - ReplayMod.replaySender.getDesiredTimestamp();
