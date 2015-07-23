@@ -329,6 +329,8 @@ public class ReplayHandler {
             markerKeyframes.clear();
         }
 
+        setRealTimelineCursor(0);
+
         fireKeyframesModifyEvent();
     }
 
