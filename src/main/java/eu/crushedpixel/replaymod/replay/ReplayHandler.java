@@ -128,6 +128,8 @@ public class ReplayHandler {
             addKeyframe(kf);
         }
 
+        selectKeyframe(null);
+
         fireKeyframesModifyEvent();
     }
 
