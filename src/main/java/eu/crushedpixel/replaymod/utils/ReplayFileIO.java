@@ -42,7 +42,7 @@ public class ReplayFileIO {
     }
 
     private static File makeFolderFromPath(String path) throws IOException {
-        File folder = new File(path);
+        File folder = new File(new File(path).toPath().normalize().toUri());
         FileUtils.forceMkdir(folder);
         return folder;
     }
