@@ -29,4 +29,9 @@ public class TimestampValue implements KeyframeValue {
     public Interpolation getCubicInterpolator() {
         return new GenericSplineInterpolation<TimestampValue>();
     }
+
+    @Override
+    public String toString() {
+        return "TimestampValue: "+asInt();
+    }
 }
