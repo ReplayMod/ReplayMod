@@ -274,8 +274,8 @@ public class VideoRenderer implements RenderInfo {
 
         // WARNING: The rest of this method contains some magic for which Marius is responsible
         // Time interpolation
-        Keyframe<TimestampValue> lastTime = timeKeyframes.getPreviousKeyframe(videoTime, false);
-        Keyframe<TimestampValue> nextTime = timeKeyframes.getNextKeyframe(videoTime, false);
+        Keyframe<TimestampValue> lastTime = timeKeyframes.getPreviousKeyframe(videoTime, true);
+        Keyframe<TimestampValue> nextTime = timeKeyframes.getNextKeyframe(videoTime, true);
 
         int lastTimeStamp = 0;
         int nextTimeStamp = 0;
