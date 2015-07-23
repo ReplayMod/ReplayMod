@@ -18,7 +18,6 @@ import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.FMLClientHandler;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Point;
@@ -417,7 +416,6 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         File outputFile = outputFileChooser.getSelectedFile();
         outputFile = new File(outputFile.getParent(), FilenameUtils.getBaseName(outputFile.getAbsolutePath()));
 
-        if(outputFile.exists()) FileUtils.deleteQuietly(outputFile);
         options.setOutputFile(outputFile);
 
         if(enableGreenscreen.isChecked()) {
