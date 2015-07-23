@@ -5,15 +5,20 @@ import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.KeyBinding;
+import org.lwjgl.input.Mouse;
 
 import java.io.IOException;
 
 public class GuiMouseInput extends GuiScreen {
 
+    private final Minecraft mc = Minecraft.getMinecraft();
+
     private final GuiReplayOverlay overlay;
 
     public GuiMouseInput(GuiReplayOverlay overlay) {
         this.overlay = overlay;
+        Mouse.setGrabbed(false);
+        Mouse.setCursorPosition(mc.displayWidth/2, mc.displayHeight/2);
     }
 
     @Override
