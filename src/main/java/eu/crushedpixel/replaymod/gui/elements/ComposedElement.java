@@ -42,6 +42,10 @@ public class ComposedElement implements GuiElement {
         for(GuiElement part : parts) {
             part.draw(mc, mouseX, mouseY, hovered == part);
         }
+
+        for(GuiElement part : parts) {
+            part.drawOverlay(mc, mouseX, mouseY);
+        }
     }
 
     @Override
