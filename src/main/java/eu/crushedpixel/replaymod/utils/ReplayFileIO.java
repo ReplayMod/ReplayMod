@@ -18,7 +18,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
-import java.nio.file.FileSystems;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -43,7 +42,7 @@ public class ReplayFileIO {
     }
 
     private static File makeFolderFromPath(String path) throws IOException {
-        File folder = new File(FileSystems.getDefault().getPath(path).normalize().toUri());
+        File folder = new File(path).getCanonicalFile();
         FileUtils.forceMkdir(folder);
         return folder;
     }
