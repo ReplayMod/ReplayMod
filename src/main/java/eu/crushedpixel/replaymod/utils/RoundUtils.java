@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.utils;
 
-import java.text.DecimalFormat;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class RoundUtils {
 
@@ -15,13 +16,9 @@ public class RoundUtils {
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
-        StringBuilder format = new StringBuilder("#.");
-        for(int i=0; i<places; i++) {
-            format.append("#");
-        }
-
-        DecimalFormat df = new DecimalFormat(format.toString());
-        return Double.valueOf(df.format(value));
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 
     public static int getClosestInt(int base, int[] snap) {
