@@ -43,16 +43,6 @@ public class GuiVideoRenderer extends GuiScreen {
     private DynamicTexture previewTexture;
     private boolean previewTextureDirty;
 
-    private int renderTimeTaken = 0;
-    private long prevTime = -1;
-    private long prevRenderTime = -1;
-
-    private int[] renderTimes = new int[50];
-    private int currentIndex = 0;
-
-    private int prevRenderedFrames = 0;
-    private int renderTimeLeft = 0;
-
     public GuiVideoRenderer(VideoRenderer renderer) {
         this.renderer = renderer;
     }
@@ -106,49 +96,91 @@ public class GuiVideoRenderer extends GuiScreen {
         }
     }
 
+    //the total render time
+    private int renderTimeTaken = 0;
+
+    //the time at which the Screen was last updated
+    private long prevTime = -1;
+
+    //the time at which the rendering of the current frame started
+    private long frameStartTime = -1;
+
+    //the amount of frames that were rendered when the time left was last updated
+    private int prevRenderedFrames = 0;
+
+    //the estimated render time that is left (in seconds)
+    private int renderTimeLeft = 0;
+
+    //each of the durations the rendering process took for the last 50 frames
+    private int[] renderTimes = new int[50];
+    //the algorithm's current position in the renderTimes array
+    private int currentIndex = 0;
+
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         long current = System.currentTimeMillis();
 
-        //calculate estimated time left
-        if(prevRenderTime == -1) {
-            prevRenderTime = current;
-            prevTime = current;
-        }
-
-        if(prevRenderedFrames < renderer.getFramesDone()) {
-            prevRenderedFrames = renderer.getFramesDone();
-
-            int renderTime = (int)(current - prevRenderTime);
-
-            renderTimes[currentIndex] = renderTime;
-
-            int validValues = 0;
-
-            int totalTime = 0;
-            for(int i : renderTimes) {
-                if(i > 0) {
-                    totalTime += i;
-                    validValues++;
-                }
-            }
-
-            float averageRenderTime = validValues > 0 ? totalTime / validValues : 0;
-
-            prevRenderTime = current;
-
-            //remaining render time in seconds
-            renderTimeLeft = Math.round((averageRenderTime * (renderer.getTotalFrames() - renderer.getFramesDone())) / 1000);
-        }
-
-        if(!renderer.isPaused()) {
+        //first, update the total render time (only if rendering is not paused and has already started)
+        if(!renderer.isPaused() && renderer.getFramesDone() > 0 && prevTime > -1) {
             renderTimeTaken += (current - prevTime);
+        } else {
+            //if the rendering process is paused, we have to update the frame start time to prevent huge render times
+            //for the currently rendered frame(s)
+            frameStartTime = current;
         }
 
+        //always update prevTime, so we don't get huge time jumps when unpausing the rendering process
         prevTime = current;
 
-        currentIndex++;
-        if(currentIndex >= renderTimes.length) currentIndex = 0;
+
+        //calculate estimated time left
+
+        //if the amount of rendered frames has increased since the last update
+        if(prevRenderedFrames < renderer.getFramesDone()) {
+            //we don't include the first frame in our calculations,
+            //as setting up the rendering process takes a few seconds
+            if(prevRenderedFrames > 0) {
+
+                //calculate the amount of frames that have been rendered since the last update
+                int framesRendered = renderer.getFramesDone() - prevRenderedFrames;
+
+                //calculate the time it took to render these frames
+                int renderTime = (int)(current - frameStartTime);
+
+                //calculate the average time it took for each of these frames to render
+                int avgRenderTime = renderTime/framesRendered;
+
+                //add all of the average render times to the render times array
+                for(int i=0; i<framesRendered; i++) {
+                    renderTimes[currentIndex] = avgRenderTime;
+                    currentIndex++;
+                    if(currentIndex >= renderTimes.length) currentIndex = 0;
+                }
+
+                //the renderTimes array initially contains lots of zeros,
+                //so we count the amount of valid timespans
+                int validValues = 0;
+
+                int totalTime = 0;
+                for(int i : renderTimes) {
+                    if(i > 0) {
+                        totalTime += i;
+                        validValues++;
+                    }
+                }
+
+                //calculate the average render time for the previous [up to 50] frames
+                float averageRenderTime = validValues > 0 ? totalTime / validValues : 0;
+
+                //calculate the remaining render time in seconds
+                renderTimeLeft = Math.round((averageRenderTime * (renderer.getTotalFrames() - renderer.getFramesDone())) / 1000);
+            }
+
+            //set the render start time of the next frame(s) to the current timestamp
+            frameStartTime = current;
+            //update the amount of rendered frames for the last calculation
+            prevRenderedFrames = renderer.getFramesDone();
+        }
 
         String takenString = I18n.format("replaymod.gui.rendering.timetaken")+": "+DurationUtils.convertSecondsToString(renderTimeTaken/1000);
         String leftString = I18n.format("replaymod.gui.rendering.timeleft")+": "+DurationUtils.convertSecondsToString(renderTimeLeft);
