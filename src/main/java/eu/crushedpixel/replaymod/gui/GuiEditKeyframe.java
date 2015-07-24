@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.gui;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.*;
-import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
+import eu.crushedpixel.replaymod.gui.elements.listeners.NumberValueChangeListener;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Marker;
@@ -24,7 +24,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
-public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen implements GuiReplayOverlay.NoOverlay {
+public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen {
 
     @SuppressWarnings("unchecked")
     public static GuiEditKeyframe create(Keyframe kf) {
@@ -158,9 +158,9 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
     @Override
     public void onGuiClosed() {
         if(!save) {
+            ReplayHandler.removeKeyframe(keyframe);
+            ReplayHandler.addKeyframe(keyframeBackup);
             ReplayHandler.selectKeyframe(keyframeBackup);
-        } else {
-            keyframe.setRealTimestamp(TimestampUtils.calculateTimestamp(min.getIntValue(), sec.getIntValue(), ms.getIntValue()));
         }
         ReplayHandler.fireKeyframesModifyEvent();
         Keyboard.enableRepeatEvents(false);
@@ -238,6 +238,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                 markerNameInput.setText(name);
 
                 inputs.addPart(markerNameInput);
+
+                new KeyframeValueChangeListener(this);
             }
 
             markerNameInput.xPosition = width/2 - 100;
@@ -248,15 +250,9 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
         @Override
         public void onGuiClosed() {
-            if (!save) {
-                ReplayHandler.getMarkerKeyframes().remove(keyframe);
-                ReplayHandler.getMarkerKeyframes().add(keyframeBackup);
-            } else {
-                keyframe.getValue().setName(markerNameInput.getText().trim());
-            }
+            keyframe.getValue().setName(markerNameInput.getText().trim());
             super.onGuiClosed();
         }
-
     }
 
     private static class GuiEditKeyframeTime extends GuiEditKeyframe<TimestampValue> {
@@ -281,6 +277,20 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                 inputs.addPart(kfMin);
                 inputs.addPart(kfSec);
                 inputs.addPart(kfMs);
+
+                KeyframeValueChangeListener listener = new KeyframeValueChangeListener(this) {
+                    @Override
+                    public void onValueChange(double value) {
+                        keyframe.setValue(new TimestampValue(TimestampUtils.calculateTimestamp(
+                                kfMin.getIntValue(), kfSec.getIntValue(), kfMs.getIntValue())));
+
+                        super.onValueChange(value);
+                    }
+                };
+
+                kfMin.addValueChangeListener(listener);
+                kfSec.addValueChangeListener(listener);
+                kfMs.addValueChangeListener(listener);
             }
 
             kfMin.xPosition = min.xPosition;
@@ -298,18 +308,6 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
             drawString(fontRendererObj, I18n.format("replaymod.gui.minutes"), kfMin.xPosition + kfMin.width + 5, kfMin.yPosition + 7, Color.WHITE.getRGB());
             drawString(fontRendererObj, I18n.format("replaymod.gui.seconds"), kfSec.xPosition + kfSec.width + 5, kfSec.yPosition + 7, Color.WHITE.getRGB());
             drawString(fontRendererObj, I18n.format("replaymod.gui.milliseconds"), kfMs.xPosition + kfMs.width + 5, kfMs.yPosition + 7, Color.WHITE.getRGB());
-        }
-
-        @Override
-        public void onGuiClosed() {
-            if (!save) {
-                ReplayHandler.removeKeyframe(keyframe);
-                ReplayHandler.addKeyframe(keyframeBackup);
-            } else {
-                keyframe.setValue(new TimestampValue(TimestampUtils.calculateTimestamp(
-                        kfMin.getIntValue(), kfSec.getIntValue(), kfMs.getIntValue())));
-            }
-            super.onGuiClosed();
         }
 
     }
@@ -343,6 +341,24 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
                 posInputs = new ComposedElement(xCoord, yCoord, zCoord, yaw, pitch, roll);
                 inputs.addPart(posInputs);
+
+                KeyframeValueChangeListener listener = new KeyframeValueChangeListener(this) {
+                    @Override
+                    public void onValueChange(double value) {
+                        keyframe.setValue(new AdvancedPosition(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
+                                zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float) yaw.getPreciseValue(),
+                                (float) roll.getPreciseValue(), null));
+
+                        super.onValueChange(value);
+                    }
+                };
+
+                xCoord.addValueChangeListener(listener);
+                yCoord.addValueChangeListener(listener);
+                zCoord.addValueChangeListener(listener);
+                pitch.addValueChangeListener(listener);
+                yaw.addValueChangeListener(listener);
+                roll.addValueChangeListener(listener);
             }
 
             int w = Math.max(fontRendererObj.getStringWidth(I18n.format("replaymod.gui.editkeyframe.xpos")),
@@ -370,19 +386,6 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
         }
 
         @Override
-        public void onGuiClosed() {
-            if (!save) {
-                ReplayHandler.removeKeyframe(keyframe);
-                ReplayHandler.addKeyframe(keyframeBackup);
-            } else {
-                keyframe.setValue(new AdvancedPosition(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
-                        zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float) yaw.getPreciseValue(),
-                        (float) roll.getPreciseValue(), null));
-            }
-            super.onGuiClosed();
-        }
-
-        @Override
         protected void drawScreen0() {
             if (keyframe.getValue().getSpectatedEntityID() != null) return;
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.xpos"), left, virtualY + 27, Color.WHITE.getRGB());
@@ -393,5 +396,26 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.camroll"), left + totalWidth - 100 - 5 - w2, virtualY + 87, Color.WHITE.getRGB());
         }
 
+    }
+
+    private static class KeyframeValueChangeListener implements NumberValueChangeListener {
+
+        private GuiEditKeyframe parent;
+
+        public KeyframeValueChangeListener(GuiEditKeyframe parent) {
+            this.parent = parent;
+
+            parent.min.addValueChangeListener(this);
+            parent.sec.addValueChangeListener(this);
+            parent.ms.addValueChangeListener(this);
+        }
+
+        @Override
+        public void onValueChange(double value) {
+            int realTimestamp = TimestampUtils.calculateTimestamp(parent.min.getIntValue(), parent.sec.getIntValue(), parent.ms.getIntValue());
+            parent.keyframe.setRealTimestamp(realTimestamp);
+
+            ReplayHandler.fireKeyframesModifyEvent();
+        }
     }
 }
