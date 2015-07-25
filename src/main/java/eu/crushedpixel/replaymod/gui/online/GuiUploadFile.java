@@ -62,7 +62,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
     private ComposedElement content;
 
     private GuiTextField messageTextField;
-    private GuiButton startUploadButton, cancelUploadButton, backButton;
+    private GuiAdvancedButton startUploadButton, cancelUploadButton, backButton;
     private GuiProgressBar progressBar;
 
     private File replayFile;
@@ -215,14 +215,14 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
         List<GuiButton> buttonList = this.buttonList;
         if(startUploadButton == null) {
             List<GuiButton> bottomBar = new ArrayList<GuiButton>();
-            startUploadButton = new GuiButton(GuiConstants.UPLOAD_START_BUTTON, 0, 0, I18n.format("replaymod.gui.upload.start"));
+            startUploadButton = new GuiAdvancedButton(GuiConstants.UPLOAD_START_BUTTON, 0, 0, I18n.format("replaymod.gui.upload.start"));
             bottomBar.add(startUploadButton);
 
-            cancelUploadButton = new GuiButton(GuiConstants.UPLOAD_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.upload.cancel"));
+            cancelUploadButton = new GuiAdvancedButton(GuiConstants.UPLOAD_CANCEL_BUTTON, 0, 0, I18n.format("replaymod.gui.upload.cancel"));
             cancelUploadButton.enabled = false;
             bottomBar.add(cancelUploadButton);
 
-            backButton = new GuiButton(GuiConstants.UPLOAD_BACK_BUTTON, 0, 0, I18n.format("replaymod.gui.back"));
+            backButton = new GuiAdvancedButton(GuiConstants.UPLOAD_BACK_BUTTON, 0, 0, I18n.format("replaymod.gui.back"));
             bottomBar.add(backButton);
 
             int i = 0;
@@ -374,6 +374,8 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
 
         progressBar.drawProgressBar();
 
+        startUploadButton.drawOverlay(mc, mouseX, mouseY);
+
         content.draw(mc, mouseX, mouseY);
         content.drawOverlay(mc, mouseX, mouseY);
     }
@@ -413,15 +415,19 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
         if(name.getText().trim().length() < 5 || name.getText().trim().length() > 30) {
             enabled = false;
             name.setTextColor(Color.RED.getRGB());
+            startUploadButton.hoverText = I18n.format("replaymod.gui.upload.error.name.length");
         } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_SPACE_HYPHEN_UNDERSCORE, name.getText())) {
             enabled = false;
             name.setTextColor(Color.RED.getRGB());
+            startUploadButton.hoverText = I18n.format("replaymod.gui.upload.error.name");
         } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_COMMA, tags.getText())) {
             enabled = false;
             tags.setTextColor(Color.RED.getRGB());
+            startUploadButton.hoverText = I18n.format("replaymod.gui.upload.error.tags");
         } else {
             name.setTextColor(Color.WHITE.getRGB());
             tags.setTextColor(Color.WHITE.getRGB());
+            startUploadButton.hoverText = null;
         }
 
         if(lockUploadButton) enabled = false;

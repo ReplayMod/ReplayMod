@@ -133,7 +133,6 @@ replaymod.gui.register.error.invalidname=Username may only contain letters and n
 replaymod.gui.register.error.shortpw=Password has to be at least 5 characters long
 replaymod.gui.register.error.authfailed=Could not authenticate your Minecraft account
 
-
 #Replay Viewer GUI
 replaymod.gui.viewer.rename.title=Rename Replay
 replaymod.gui.viewer.rename.name=Replay Name
@@ -192,6 +191,10 @@ replaymod.gui.upload.success=File has been successfully uploaded
 replaymod.gui.upload.canceled=Upload has been canceled
 replaymod.gui.upload.hideip=Hide Server IP
 replaymod.gui.upload.nothumbnail=Missing Thumbnail. Please create a Thumbnail in the Replay using the %1$s key.
+
+replaymod.gui.upload.error.name.length=The Replay Name has to be between 5 and 30 characters long
+replaymod.gui.upload.error.name=The Replay Name may not contain special characters
+replaymod.gui.upload.error.tags=Tags may only contain letters and are separated using a comma
 
 #Replay Editor
 replaymod.gui.editor.replayfile=Replay File
