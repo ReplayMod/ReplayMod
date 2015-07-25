@@ -129,6 +129,7 @@ replaymod.gui.register.confirmpw=Confirm Password
 
 replaymod.gui.register.error.nomatch=Passwords don't match
 replaymod.gui.register.error.shortusername=Username has to be at least 5 characters long
+replaymod.gui.register.error.invalidname=Username may only contain letters and numbers
 replaymod.gui.register.error.shortpw=Password has to be at least 5 characters long
 replaymod.gui.register.error.authfailed=Could not authenticate your Minecraft account
 

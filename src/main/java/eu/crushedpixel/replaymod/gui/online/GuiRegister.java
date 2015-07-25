@@ -10,6 +10,7 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.utils.EmailAddressUtils;
+import eu.crushedpixel.replaymod.utils.RegexUtils;
 import org.lwjgl.util.ReadableColor;
 
 public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
@@ -101,6 +102,8 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                 String status = null;
                 if (usernameInput.getText().length() < 5) {
                     status = "replaymod.gui.register.error.shortusername";
+                } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_UNDERSCORE, usernameInput.getText().trim())) {
+                    status = "replaymod.gui.register.error.invalidname";
                 } else if (passwordInput.getText().length() < 5) {
                     status = "replaymod.gui.register.error.shortpw";
                 } else if (!EmailAddressUtils.isValidEmailAddress(mailInput.getText())) {

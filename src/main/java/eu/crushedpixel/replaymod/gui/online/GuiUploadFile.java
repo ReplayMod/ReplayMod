@@ -11,10 +11,7 @@ import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
-import eu.crushedpixel.replaymod.utils.ImageUtils;
-import eu.crushedpixel.replaymod.utils.MouseUtils;
-import eu.crushedpixel.replaymod.utils.ReplayFile;
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import eu.crushedpixel.replaymod.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -43,14 +40,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
 
 public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
 
     private final Minecraft mc = Minecraft.getMinecraft();
-
-    private static final Pattern titlePattern = Pattern.compile("[^a-z0-9 \\-_]", Pattern.CASE_INSENSITIVE);
-    private static final Pattern tagsPattern = Pattern.compile("[^a-z0-9,]", Pattern.CASE_INSENSITIVE);
 
     private final ResourceLocation textureResource;
     private DynamicTexture dynTex = null;
@@ -419,10 +412,11 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
         boolean enabled = true;
         if(name.getText().trim().length() < 5 || name.getText().trim().length() > 30) {
             enabled = false;
-        } else if(titlePattern.matcher(name.getText()).find()) {
+            name.setTextColor(Color.RED.getRGB());
+        } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_SPACE_HYPHEN_UNDERSCORE, name.getText())) {
             enabled = false;
             name.setTextColor(Color.RED.getRGB());
-        } else if(tagsPattern.matcher(tags.getText()).find()) {
+        } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_COMMA, tags.getText())) {
             enabled = false;
             tags.setTextColor(Color.RED.getRGB());
         } else {
