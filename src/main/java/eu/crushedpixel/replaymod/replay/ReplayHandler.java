@@ -165,10 +165,10 @@ public class ReplayHandler {
         return currentEntity;
     }
 
-    public static void startPath(RenderOptions renderOptions) {
+    public static void startPath(RenderOptions renderOptions, boolean fromStart) {
         if(!ReplayHandler.isInPath()) {
             try {
-                ReplayProcess.startReplayProcess(renderOptions);
+                ReplayProcess.startReplayProcess(renderOptions, fromStart);
             } catch (ReportedException e) {
                 // We have to manually unwrap OOM errors as Minecraft doesn't handle them when they're wrapped
                 Throwable prevCause = null;

@@ -119,7 +119,7 @@ public class GuiReplayOverlay extends Gui {
         private final GuiElement buttonPlay = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 0, 20, new Runnable() {
             @Override
             public void run() {
-                ReplayHandler.startPath(null);
+                ReplayHandler.startPath(null, GuiScreen.isCtrlKeyDown());
 
             }
         }, "replaymod.gui.ingame.menu.playpath");

@@ -457,7 +457,7 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         if(FMLClientHandler.instance().hasOptifine()) {
             mc.displayGuiScreen(new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"), I18n.format("replaymod.gui.rendering.error.optifine")));
         } else {
-            ReplayHandler.startPath(options);
+            ReplayHandler.startPath(options, true);
         }
 
     }

@@ -350,7 +350,7 @@ public class ReplayMod {
 
                         System.out.println("Rendering started...");
                         try {
-                            ReplayProcess.startReplayProcess(options);
+                            ReplayProcess.startReplayProcess(options, true);
                         } catch (Throwable t) {
                             t.printStackTrace();
                             FMLCommonHandler.instance().exitJava(1, false);
