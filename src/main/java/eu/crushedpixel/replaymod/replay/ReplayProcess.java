@@ -82,6 +82,13 @@ public class ReplayProcess {
         //default camera path, no rendering
         if (renderOptions == null) {
             initialTimestamp = fromStart ? 0 : ReplayHandler.getRealTimelineCursor();
+
+            //if the cursor is at (or very near) the end, play from the beginning as well
+            if(initialTimestamp + 50 >= Math.max(ReplayHandler.getTimeKeyframes().last().getRealTimestamp(),
+                    ReplayHandler.getPositionKeyframes().last().getRealTimestamp())) {
+                initialTimestamp = 0;
+            }
+
             lastRealReplayTime = initialTimestamp;
 
             int ts = ReplayHandler.getTimeKeyframes().getInterpolatedValueForTimestamp(initialTimestamp, true).asInt();
