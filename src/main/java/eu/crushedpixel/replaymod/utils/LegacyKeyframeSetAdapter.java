@@ -53,7 +53,11 @@ public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
                                 spectatedEntityID = in.nextInt();
                             }
                         }
-                        newKeyframe.getValue().setSpectatedEntityID(spectatedEntityID);
+
+                        if(spectatedEntityID != null) {
+                            newKeyframe.getValue().setSpectatedEntityID(spectatedEntityID);
+                        }
+
                         in.endObject();
 
                         keyframes.add(newKeyframe);
