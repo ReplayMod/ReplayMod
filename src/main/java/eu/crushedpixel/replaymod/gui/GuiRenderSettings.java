@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
@@ -37,6 +38,9 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
     private static final SimpleDateFormat FILE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
 
     private static final int LEFT_BORDER = 10;
+
+    private final RenderOptions initialRenderOptions = RenderOptions.loadFromConfig(ReplayMod.config);
+    private boolean initialized = false;
 
     private GuiAdvancedButton renderButton = new GuiAdvancedButton(0, 0, 100, 20, I18n.format("replaymod.gui.render"), new Runnable() {
         @Override
@@ -224,7 +228,13 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         initializeAdvancedTab();
         initializeCommandLineTab();
 
+        if(!initialized) {
+            initializeValues();
+        }
+
         validateInputs();
+
+        initialized = true;
     }
 
     private void initializeVideoTab() {
@@ -320,6 +330,62 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         ffmpegArguments.xPosition = commandInput.xPosition+commandInput.width+5;
     }
 
+    private void initializeValues() {
+        RendererSettings defRS = RendererSettings.valueOf(initialRenderOptions.getMode().name());
+
+        List<RendererSettings> settingsList = rendererDropdown.getAllElements();
+        for(int i=0; i<settingsList.size(); i++) {
+            if(defRS == settingsList.get(i)) {
+                rendererDropdown.setSelectionIndex(i);
+                break;
+            }
+        }
+
+        EncodingPreset preset = null;
+        for(EncodingPreset p : EncodingPreset.values()) {
+            if(p.getCommandLineArgs().equals(initialRenderOptions.getExportCommandArgs())) {
+                preset = p;
+                break;
+            }
+        }
+
+        List<EncodingPreset> presetList = encodingPresetDropdown.getAllElements();
+        if(preset != null) {
+            for(int i=0; i<presetList.size(); i++) {
+                if(preset == encodingPresetDropdown.getElement(i)) {
+                    encodingPresetDropdown.setSelectionIndex(i);
+                    break;
+                }
+            }
+        }
+
+        xRes.setValueQuietly(initialRenderOptions.getWidth());
+        yRes.setValueQuietly(initialRenderOptions.getHeight());
+
+        stableYaw.setIsChecked(initialRenderOptions.getIgnoreCameraRotation()[0]);
+        stablePitch.setIsChecked(initialRenderOptions.getIgnoreCameraRotation()[1]);
+        stableRoll.setIsChecked(initialRenderOptions.getIgnoreCameraRotation()[2]);
+
+        enableGreenscreen.setIsChecked(!initialRenderOptions.isDefaultSky());
+        renderNameTags.setIsChecked(!initialRenderOptions.isHideNameTags());
+
+        framerateSlider.setFPS(initialRenderOptions.getFps());
+
+        String bitrateString = initialRenderOptions.getBitrate();
+        //trim away the "K" at the end of the returned String
+        int bitrateValue = Integer.valueOf(bitrateString.substring(0, bitrateString.length() - 1));
+        bitrateInput.setValueQuietly(bitrateValue);
+
+        if(!initialRenderOptions.isDefaultSky())
+            colorPicker.setPickerColor(initialRenderOptions.getSkyColor());
+
+        commandInput.setText(initialRenderOptions.getExportCommand());
+
+        if(!initialRenderOptions.getExportCommandArgs().isEmpty()) {
+            ffmpegArguments.setText(initialRenderOptions.getExportCommandArgs());
+        }
+    }
+
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawGradientRect(LEFT_BORDER, virtualY, width - LEFT_BORDER, virtualY + virtualHeight, -1072689136, -804253680);
@@ -347,7 +413,7 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
 
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int state) {
-        currentScreen.mouseRelease(mc, mouseX, mouseX, state);
+        currentScreen.mouseRelease(mc, mouseX, mouseY, state);
     }
 
     @Override
@@ -453,6 +519,8 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         if(ffmpegArguments.getText().trim().length() > 0) {
             options.setExportCommandArgs(ffmpegArguments.getText().trim());
         }
+
+        options.saveToConfig(ReplayMod.config);
 
         if(FMLClientHandler.instance().hasOptifine()) {
             mc.displayGuiScreen(new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"), I18n.format("replaymod.gui.rendering.error.optifine")));
