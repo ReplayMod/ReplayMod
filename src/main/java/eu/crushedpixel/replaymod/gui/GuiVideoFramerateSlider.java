@@ -12,9 +12,8 @@ public class GuiVideoFramerateSlider extends GuiAdvancedButton {
     private float sliderValue;
     public GuiVideoFramerateSlider(int xPos, int yPos, int initialFramerate, String displayKey) {
         super(xPos, yPos, 150, 20, "", null, null);
-        this.sliderValue = normalizeValue(initialFramerate);
-        this.displayString = displayKey + ": " + translate(initialFramerate);
         this.displayKey = displayKey;
+        setFPS(initialFramerate);
     }
 
     private String translate(int value) {
@@ -45,6 +44,11 @@ public class GuiVideoFramerateSlider extends GuiAdvancedButton {
 
     public int getFPS() {
         return denormalizeValue(sliderValue);
+    }
+
+    public void setFPS(int fps) {
+        this.sliderValue = normalizeValue(fps);
+        this.displayString = displayKey + ": " + translate(fps);
     }
 
     private float normalizeValue(int val) {
