@@ -15,10 +15,21 @@ public class GuiMouseInput extends GuiScreen {
 
     private final GuiReplayOverlay overlay;
 
+    private boolean shouldClose = false;
+
     public GuiMouseInput(GuiReplayOverlay overlay) {
         this.overlay = overlay;
         Mouse.setGrabbed(false);
         Mouse.setCursorPosition(mc.displayWidth/2, mc.displayHeight/2);
+
+        if(mc.currentScreen instanceof GuiMouseInput) {
+            shouldClose = true;
+        }
+    }
+
+    @Override
+    public void initGui() {
+        if(shouldClose) mc.displayGuiScreen(null);
     }
 
     @Override
