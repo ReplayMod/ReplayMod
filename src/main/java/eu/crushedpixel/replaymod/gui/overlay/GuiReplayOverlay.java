@@ -124,6 +124,14 @@ public class GuiReplayOverlay extends Gui {
             }
         }, "replaymod.gui.ingame.menu.playpath");
 
+        private final GuiElement buttonPlayFromStart = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 0, 20, new Runnable() {
+            @Override
+            public void run() {
+                ReplayHandler.startPath(null, GuiScreen.isCtrlKeyDown());
+
+            }
+        }, "replaymod.gui.ingame.menu.playpathfromstart");
+
         private final GuiElement buttonPause = texturedButton(BUTTON_PLAY_PATH_X, BOTTOM_ROW, 0, 20, 20, new Runnable() {
             @Override
             public void run() {
@@ -134,7 +142,7 @@ public class GuiReplayOverlay extends Gui {
 
         @Override
         public GuiElement delegate() {
-            return ReplayHandler.isInPath() ? buttonPause : buttonPlay;
+            return ReplayHandler.isInPath() ? buttonPause : GuiScreen.isCtrlKeyDown() ? buttonPlayFromStart : buttonPlay;
         }
     };
 
