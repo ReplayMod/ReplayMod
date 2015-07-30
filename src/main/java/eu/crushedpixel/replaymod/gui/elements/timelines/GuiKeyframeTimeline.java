@@ -76,7 +76,8 @@ public class GuiKeyframeTimeline extends GuiTimeline {
         } else if(button == 1) {
             if(closest != null) {
                 if(closest.getValue() instanceof AdvancedPosition) {
-                    ReplayHandler.getCameraEntity().moveAbsolute((AdvancedPosition)closest.getValue());
+                    AdvancedPosition pos = (AdvancedPosition)closest.getValue();
+                    ReplayHandler.getCameraEntity().movePath(pos);
                 } else if(closest.getValue() instanceof TimestampValue) {
                     ReplayMod.overlay.performJump(((TimestampValue)closest.getValue()).asInt());
                 }

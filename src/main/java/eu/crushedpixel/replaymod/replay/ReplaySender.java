@@ -540,14 +540,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                                 if (isHurrying() && lastTimeStamp > desiredTimeStamp && !startFromBeginning) {
                                     desiredTimeStamp = -1;
 
-                                    AdvancedPosition pos = ReplayHandler.getLastPosition();
-                                    CameraEntity cam = ReplayHandler.getCameraEntity();
-                                    if (cam != null && pos != null) {
-                                        // Move camera back in case we have been respawned
-                                        if (Math.abs(pos.getX() - cam.posX) < ReplayMod.TP_DISTANCE_LIMIT && Math.abs(pos.getZ() - cam.posZ) < ReplayMod.TP_DISTANCE_LIMIT) {
-                                            cam.moveAbsolute(pos);
-                                        }
-                                    }
+                                    ReplayHandler.moveCameraToLastPosition();
 
                                     // Pause after jumping
                                     setReplaySpeed(0);

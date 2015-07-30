@@ -66,8 +66,10 @@ public class GuiMarkerTimeline extends GuiTimeline {
 
         } else if(button == 1) {
             if(closest != null) {
-                //Jump to clicked Marker Keyframe
-                ReplayHandler.setLastPosition(closest.getValue().getPosition());
+                //Jump to clicked Marker Keyframe (explicitly force to jump to this position)
+                ReplayHandler.setLastPosition(closest.getValue().getPosition(), true);
+
+                //perform the jump, telling the Overlay not to override the last position value
                 ReplayMod.overlay.performJump(closest.getRealTimestamp(), false);
             }
         }

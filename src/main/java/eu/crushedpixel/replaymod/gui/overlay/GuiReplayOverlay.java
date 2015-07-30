@@ -458,9 +458,9 @@ public class GuiReplayOverlay extends Gui {
                 if(setLastPosition) {
                     CameraEntity cam = ReplayHandler.getCameraEntity();
                     if(cam != null) {
-                        ReplayHandler.setLastPosition(new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw));
+                        ReplayHandler.setLastPosition(new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch, cam.rotationYaw), false);
                     } else {
-                        ReplayHandler.setLastPosition(null);
+                        ReplayHandler.setLastPosition(null, false);
                     }
                 }
 
@@ -526,6 +526,9 @@ public class GuiReplayOverlay extends Gui {
                         } catch (IOException e) {
                             e.printStackTrace(); // This should never be thrown but whatever
                         }
+
+                        //finally, updating the camera's position (which is not done by the sync jumping)
+                        ReplayHandler.moveCameraToLastPosition();
 
                         // No need to remove our please-wait-screen. It'll vanish with the next
                         // render pass as it's never been a real GuiScreen in the first place.

@@ -518,8 +518,27 @@ public class ReplayHandler {
         return lastPosition;
     }
 
-    public static void setLastPosition(AdvancedPosition position) {
+    @Getter
+    private static boolean forceLastPosition = false;
+
+    public static void setLastPosition(AdvancedPosition position, boolean force) {
         lastPosition = position;
+        forceLastPosition = force;
+    }
+
+    public static void moveCameraToLastPosition() {
+        //get the camera position we had before jumping in time
+        AdvancedPosition pos = ReplayHandler.getLastPosition();
+        CameraEntity cam = ReplayHandler.getCameraEntity();
+        if (cam != null && pos != null) {
+            // Move camera back in case we have been respawned, unless we're more than ReplayMod.TP_DISTANCE_LIMIT away from that point
+            // this is ignored if we explicitly said to respect this position, e.g. when jumping to marker keyframes.
+            if (ReplayHandler.isForceLastPosition() ||
+                    (Math.abs(pos.getX() - cam.posX) < ReplayMod.TP_DISTANCE_LIMIT &&
+                            Math.abs(pos.getZ() - cam.posZ) < ReplayMod.TP_DISTANCE_LIMIT)) {
+                cam.moveAbsolute(pos);
+            }
+        }
     }
 
     public static File getReplayFile() {
