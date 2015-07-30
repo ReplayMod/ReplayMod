@@ -160,8 +160,9 @@ public class CameraEntity extends EntityPlayer {
 
     public void moveAbsolute(AdvancedPosition pos) {
         this.moveAbsolute(pos.getX(), pos.getY(), pos.getZ());
-        rotationPitch = (float)pos.getPitch();
-        rotationYaw = (float)pos.getYaw();
+        rotationPitch = prevRotationPitch = (float)pos.getPitch();
+        rotationYaw = prevRotationYaw = (float)pos.getYaw();
+        updateBoundingBox();
     }
 
     public void moveAbsolute(double x, double y, double z) {
