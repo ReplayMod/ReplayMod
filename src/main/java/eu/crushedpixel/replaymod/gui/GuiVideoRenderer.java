@@ -43,6 +43,8 @@ public class GuiVideoRenderer extends GuiScreen {
     private DynamicTexture previewTexture;
     private boolean previewTextureDirty;
 
+    private boolean initialized = false;
+
     public GuiVideoRenderer(VideoRenderer renderer) {
         this.renderer = renderer;
     }
@@ -50,19 +52,40 @@ public class GuiVideoRenderer extends GuiScreen {
     @Override
     @SuppressWarnings("unchecked") // I blame forge for not re-adding generics to that list
     public void initGui() {
-        String text = PAUSE_RENDERING;
-        buttonList.add(pauseButton = new GuiButton(1, width / 2 - 152, height - 10 - 20, text));
+        if(!initialized) {
+            String text = PAUSE_RENDERING;
+            pauseButton = new GuiButton(1, width / 2 - 152, height - 10 - 20, text);
 
-        text = CANCEL;
-        buttonList.add(cancelButton = new GuiButton(1, width / 2 + 2, height - 10 - 20, text));
+            text = CANCEL;
+            cancelButton = new GuiButton(1, width / 2 + 2, height - 10 - 20, text);
 
-        pauseButton.width = cancelButton.width = 150;
+            pauseButton.width = cancelButton.width = 150;
 
-        progressBar = new GuiProgressBar(10, height - 10 - 20 - 10 - 20, width-20, 20);
+            progressBar = new GuiProgressBar(10, height - 10 - 20 - 10 - 20, width-20, 20);
 
-        text = PREVIEW;
-        buttonList.add(previewCheckBox = new GuiCheckBox(0, (width - fontRendererObj.getStringWidth(text)) / 2 - 8,
-                pauseButton.yPosition - 10 - 20 - 10 - 20 - 5 , text, false));
+            text = PREVIEW;
+            previewCheckBox = new GuiCheckBox(0, (width - fontRendererObj.getStringWidth(text)) / 2 - 8,
+                    pauseButton.yPosition - 10 - 20 - 10 - 20 - 5 , text, false);
+        } else {
+            pauseButton.xPosition = width / 2 - 152;
+            pauseButton.yPosition = height - 10 - 20;
+
+            cancelButton.xPosition = width / 2 + 2;
+            cancelButton.yPosition = height - 10 - 20;
+
+            progressBar.setBounds(10, height - 10 - 20 - 10 - 20, width - 20, 20);
+
+            previewCheckBox.xPosition = (width - fontRendererObj.getStringWidth(PREVIEW)) / 2 - 8;
+            previewCheckBox.yPosition = pauseButton.yPosition - 10 - 20 - 10 - 20 - 5;
+        }
+
+        buttonList.add(pauseButton);
+        buttonList.add(cancelButton);
+        buttonList.add(previewCheckBox);
+
+        initialized = true;
+
+        super.initGui();
     }
 
     @Override

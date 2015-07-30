@@ -365,6 +365,12 @@ public class VideoRenderer implements RenderInfo {
                 throw new RuntimeException(e);
             }
 
+            //if not in high performance mode, update the gui size if screen size changed
+            //this takes virtually no time
+            if(!options.isHighPerformance()) {
+                mc.updateDisplay();
+            }
+
             ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
             int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
             int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
