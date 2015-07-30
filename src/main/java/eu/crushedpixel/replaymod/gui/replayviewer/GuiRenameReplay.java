@@ -15,17 +15,17 @@ import java.io.IOException;
 import java.util.List;
 
 public class GuiRenameReplay extends GuiScreen {
-    private GuiScreen field_146585_a;
-    private GuiTextField field_146583_f;
+    private GuiScreen parent;
+    private GuiTextField replayNameInput;
     private File file;
 
     public GuiRenameReplay(GuiScreen parent, File file) {
-        this.field_146585_a = parent;
+        this.parent = parent;
         this.file = file;
     }
 
     public void updateScreen() {
-        this.field_146583_f.updateCursorCounter();
+        this.replayNameInput.updateCursorCounter();
     }
 
     public void initGui() {
@@ -36,9 +36,9 @@ public class GuiRenameReplay extends GuiScreen {
         buttonList.add(new GuiButton(0, this.width / 2 - 100, this.height / 4 + 96 + 12, I18n.format("replaymod.gui.rename")));
         buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 120 + 12, I18n.format("replaymod.gui.cancel")));
         String s = FilenameUtils.getBaseName(file.getAbsolutePath());
-        this.field_146583_f = new GuiTextField(2, this.fontRendererObj, this.width / 2 - 100, 60, 200, 20);
-        this.field_146583_f.setFocused(true);
-        this.field_146583_f.setText(s);
+        this.replayNameInput = new GuiTextField(2, this.fontRendererObj, this.width / 2 - 100, 60, 200, 20);
+        this.replayNameInput.setFocused(true);
+        this.replayNameInput.setText(s);
     }
 
     public void onGuiClosed() {
@@ -48,26 +48,21 @@ public class GuiRenameReplay extends GuiScreen {
     protected void actionPerformed(GuiButton button) throws IOException {
         if(button.enabled) {
             if(button.id == 1) {
-                this.mc.displayGuiScreen(this.field_146585_a);
+                this.mc.displayGuiScreen(this.parent);
             } else if(button.id == 0) {
                 File folder = ReplayFileIO.getReplayFolder();
 
-                File initRenamed = new File(folder, (this.field_146583_f.getText().trim() + ReplayFile.ZIP_FILE_EXTENSION).replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
-                File renamed = initRenamed;
-                int i = 1;
-                while(renamed.isFile()) {
-                    renamed = new File(initRenamed.getAbsolutePath() + "_" + i);
-                    i++;
-                }
+                File initRenamed = new File(folder, (this.replayNameInput.getText().trim() + ReplayFile.ZIP_FILE_EXTENSION).replaceAll("[^a-zA-Z0-9\\.\\- ]", "_"));
+                File renamed = ReplayFileIO.getNextFreeFile(initRenamed);
                 FileUtils.moveFile(file, renamed);
-                this.mc.displayGuiScreen(this.field_146585_a);
+                this.mc.displayGuiScreen(this.parent);
             }
         }
     }
 
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        this.field_146583_f.textboxKeyTyped(typedChar, keyCode);
-        ((GuiButton) this.buttonList.get(0)).enabled = this.field_146583_f.getText().trim().length() > 0;
+        this.replayNameInput.textboxKeyTyped(typedChar, keyCode);
+        ((GuiButton) this.buttonList.get(0)).enabled = this.replayNameInput.getText().trim().length() > 0;
 
         if(keyCode == 28 || keyCode == 156) {
             this.actionPerformed((GuiButton) this.buttonList.get(0));
@@ -76,14 +71,14 @@ public class GuiRenameReplay extends GuiScreen {
 
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
-        this.field_146583_f.mouseClicked(mouseX, mouseY, mouseButton);
+        this.replayNameInput.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
         this.drawCenteredString(this.fontRendererObj, I18n.format("replaymod.gui.viewer.rename.title"), this.width / 2, 20, 16777215);
         this.drawString(this.fontRendererObj, I18n.format("replaymod.gui.viewer.rename.name"), this.width / 2 - 100, 47, 10526880);
-        this.field_146583_f.drawTextBox();
+        this.replayNameInput.drawTextBox();
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 }
