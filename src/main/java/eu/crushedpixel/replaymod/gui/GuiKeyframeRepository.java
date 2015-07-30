@@ -226,10 +226,11 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
             saveOnQuit();
             super.keyTyped(typedChar, keyCode);
         }
-        if(currentKeyframeSet != null) {
-            currentKeyframeSet.setName(nameInput.getText());
-            keyframeSetList.replaceElement(keyframeSetList.getSelectionIndex(), currentKeyframeSet);
+        if(currentKeyframeSet != null && !currentKeyframeSet.getName().equals(nameInput.getText().trim())) {
+            currentKeyframeSet.setName(nameInput.getText().trim());
         }
+
+        super.keyTyped(typedChar, keyCode);
     }
 
     private void saveOnQuit() {
