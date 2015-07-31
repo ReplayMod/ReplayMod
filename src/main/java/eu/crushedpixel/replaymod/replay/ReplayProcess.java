@@ -14,10 +14,12 @@ import eu.crushedpixel.replaymod.video.VideoRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiErrorScreen;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
+import org.lwjgl.opengl.Display;
 
 import java.io.IOException;
 
@@ -100,6 +102,11 @@ public class ReplayProcess {
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
             mc.timer.timerSpeed = 1;
         } else {
+            //if FBOs are not enabled/supported, prevent the user from resizing the MC window
+            if(!OpenGlHelper.isFramebufferEnabled()) {
+                Display.setResizable(false);
+            }
+
             initialTimestamp = 0;
             boolean success = false;
             try {
@@ -139,6 +146,9 @@ public class ReplayProcess {
         ReplayTimer.get(mc).passive = false;
         ReplayMod.replaySender.setReplaySpeed(previousReplaySpeed);
         ReplayMod.replaySender.setReplaySpeed(0);
+
+        //re-enable window resizing after rendering
+        Display.setResizable(true);
     }
 
     //if justCheck is true, no Screenshot will be taken, it will only be checked
