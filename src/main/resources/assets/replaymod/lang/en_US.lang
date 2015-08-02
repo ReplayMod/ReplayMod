@@ -127,6 +127,8 @@ replaymod.gui.login.connectionerror=Could not connect to ReplayMod.com
 replaymod.gui.register.title=Register on ReplayMod.com
 replaymod.gui.register.confirmpw=Confirm Password
 
+replaymod.gui.register.disclaimer=By registering an account, you agree to the Replay Mod's Terms of Service: https://replaymod.com/legal/terms
+
 replaymod.gui.register.error.nomatch=Passwords don't match
 replaymod.gui.register.error.shortusername=Username has to be at least 5 characters long
 replaymod.gui.register.error.invalidname=Username may only contain letters and numbers
