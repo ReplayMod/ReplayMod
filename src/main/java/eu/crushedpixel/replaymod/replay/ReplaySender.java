@@ -7,7 +7,6 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.events.handlers.RecordingHandler;
 import eu.crushedpixel.replaymod.holders.PacketData;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -285,12 +284,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      */
     protected Packet processPacket(Packet p) throws Exception {
         if(BAD_PACKETS.contains(p.getClass())) return null;
-
-        if (p instanceof S29PacketSoundEffect || p instanceof S28PacketEffect) {
-            if (!asyncMode || isHurrying()) {
-                return null;
-            }
-        }
 
         if(p instanceof S48PacketResourcePackSend) {
             S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;

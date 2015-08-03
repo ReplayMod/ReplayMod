@@ -13,6 +13,7 @@ import eu.crushedpixel.replaymod.utils.CameraPathValidator;
 import eu.crushedpixel.replaymod.video.VideoRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.chunk.RenderChunk;
@@ -22,6 +23,8 @@ import net.minecraft.util.ReportedException;
 import org.lwjgl.opengl.Display;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReplayProcess {
 
@@ -46,6 +49,12 @@ public class ReplayProcess {
     public static boolean isVideoRecording() {
         return isVideoRecording;
     }
+
+    //a copy of the initial sound settings,
+    //which we will modify to prevent game sounds from annoying us while rendering
+
+    @SuppressWarnings("unchecked") //I, too, blame Forge for not re-adding generics to that Map.
+    private static Map<SoundCategory, Float> mapSoundLevelsBefore = null;
 
     private static void resetProcess() {
         firstTime = true;
@@ -101,11 +110,29 @@ public class ReplayProcess {
 
             ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.pathstarted", ChatMessageType.INFORMATION);
             mc.timer.timerSpeed = 1;
+
+            //set the sound level map to null
+            //so a previous map doesn't override the current game settings after a camera path
+            mapSoundLevelsBefore = null;
         } else {
             //if FBOs are not enabled/supported, prevent the user from resizing the MC window
             if(!OpenGlHelper.isFramebufferEnabled()) {
                 Display.setResizable(false);
             }
+
+            //if rendering, disable all game sounds except for gui sounds
+            @SuppressWarnings("unchecked") //I, too, blame Forge for not re-adding generics to that Map.
+            Map<SoundCategory, Float> orgMap = (Map<SoundCategory, Float>)mc.gameSettings.mapSoundLevels;
+            mapSoundLevelsBefore = new HashMap<SoundCategory, Float>(orgMap);
+
+            //turn down for what? to mute all sound of course!
+            //the GUI sounds (button clicks etc) are not muted this way.
+            for(SoundCategory category : SoundCategory.values()) {
+                if(category == SoundCategory.MASTER) continue;
+                orgMap.put(category, 0f);
+            }
+
+            mc.gameSettings.mapSoundLevels = orgMap;
 
             initialTimestamp = 0;
             boolean success = false;
@@ -149,6 +176,9 @@ public class ReplayProcess {
 
         //re-enable window resizing after rendering
         Display.setResizable(true);
+
+        //restore the sound settings
+        mc.gameSettings.mapSoundLevels = mapSoundLevelsBefore;
     }
 
     //if justCheck is true, no Screenshot will be taken, it will only be checked
