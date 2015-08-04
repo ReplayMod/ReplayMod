@@ -23,6 +23,11 @@ version = "0.6"
 group= "eu.crushedpixel.replaymod"
 archivesBaseName = "replaymod"
 
+ext {
+    mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
+    mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
+}
+
 minecraft {
     version = "1.8-11.14.1.1402"
     runDir = "eclipse"
@@ -35,6 +40,13 @@ minecraft {
     mappings = "snapshot_nodoc_20141130"
 }
 
+repositories {
+    maven {
+        name = "SpongePowered Repo"
+        url = "http://repo.spongepowered.org/maven/"
+    }
+}
+
 configurations {
     shade
     compile.extendsFrom shade
@@ -43,6 +55,7 @@ configurations {
 dependencies {
     compile 'org.projectlombok:lombok:1.16.4'
 
+    shade 'org.spongepowered:mixin:0.4.3'
     shade fileTree(dir: 'libs', includes: ['*.jar'])
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
@@ -61,6 +74,9 @@ dependencies {
 
 jar {
     dependsOn configurations.shade
+
+    from project.mixinRefMap
+
     def noticeDir = file("$buildDir/NOTICE")
     doFirst {
         noticeDir.deleteDir()
@@ -97,8 +113,10 @@ jar {
     }
 
     manifest { 
-         attributes 'FMLCorePlugin': 'eu.crushedpixel.replaymod.coremod.LoadingPlugin',
-                 'FMLCorePluginContainsFMLMod': 'false',
+         attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+                 'TweakOrder': '0',
+                 'MixinConfigs': 'mixins.replaymod.json',
+                 'FMLCorePlugin': 'eu.crushedpixel.replaymod.coremod.LoadingPlugin',
                  'FMLAT': 'replaymod_at.cfg'
 	}
 }
@@ -138,6 +156,31 @@ processResources
 
 sourceSets {
     main { output.resourcesDir = output.classesDir }
+}
+
+reobf.doFirst {
+    if (project.mixinSrg.exists()) {
+        addExtraSrgFile project.mixinSrg
+    }
+}
+
+task copySrgs(type: Copy, dependsOn: 'genSrgs') {
+    from plugins.getPlugin('forge').delayedFile('{SRG_DIR}')
+
+    include '**/*.srg'
+    into 'build/srgs'
+}
+
+setupDecompWorkspace.dependsOn copySrgs
+setupDevWorkspace.dependsOn copySrgs
+compileJava.dependsOn copySrgs
+
+compileJava {
+    options.compilerArgs += [
+            "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
+            "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}",
+            "-AreobfSrgFile=${project.file('build/srgs/mcp-srg.srg').canonicalPath}"
+    ]
 }
 
 defaultTasks 'build'

@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "eu.crushedpixel.replaymod.mixin",
+  "mixins": [
+    "MixinEffectRenderer",
+    "MixinEntityRenderer",
+    "MixinRenderManager"
+  ],
+  "server": [],
+  "client": [],
+  "refmap": "mixins.replaymod.refmap.json"
+}

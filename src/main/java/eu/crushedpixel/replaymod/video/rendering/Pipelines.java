@@ -2,10 +2,8 @@ package eu.crushedpixel.replaymod.video.rendering;
 
 import eu.crushedpixel.replaymod.opengl.PixelBufferObject;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
+import eu.crushedpixel.replaymod.video.EntityRendererHandler;
 import eu.crushedpixel.replaymod.video.capturer.*;
-import eu.crushedpixel.replaymod.video.entity.CubicEntityRenderer;
-import eu.crushedpixel.replaymod.video.entity.CustomEntityRenderer;
-import eu.crushedpixel.replaymod.video.entity.StereoscopicEntityRenderer;
 import eu.crushedpixel.replaymod.video.frame.CubicOpenGlFrame;
 import eu.crushedpixel.replaymod.video.frame.OpenGlFrame;
 import eu.crushedpixel.replaymod.video.frame.RGBFrame;
@@ -40,9 +38,9 @@ public class Pipelines {
         RenderOptions options = renderInfo.getRenderOptions();
         FrameCapturer<OpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new SimplePboOpenGlFrameCapturer(new CustomEntityRenderer<CaptureData>(options), renderInfo);
+            capturer = new SimplePboOpenGlFrameCapturer(new EntityRendererHandler(options), renderInfo);
         } else {
-            capturer = new SimpleOpenGlFrameCapturer(new CustomEntityRenderer<CaptureData>(options), renderInfo);
+            capturer = new SimpleOpenGlFrameCapturer(new EntityRendererHandler(options), renderInfo);
         }
         return new Pipeline<OpenGlFrame, RGBFrame>(capturer, new OpenGlToRGBProcessor(), consumer);
     }
@@ -51,9 +49,9 @@ public class Pipelines {
         RenderOptions options = renderInfo.getRenderOptions();
         FrameCapturer<StereoscopicOpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new StereoscopicPboOpenGlFrameCapturer(new StereoscopicEntityRenderer(options), renderInfo);
+            capturer = new StereoscopicPboOpenGlFrameCapturer(new EntityRendererHandler(options), renderInfo);
         } else {
-            capturer = new StereoscopicOpenGlFrameCapturer(new StereoscopicEntityRenderer(options), renderInfo);
+            capturer = new StereoscopicOpenGlFrameCapturer(new EntityRendererHandler(options), renderInfo);
         }
         return new Pipeline<StereoscopicOpenGlFrame, RGBFrame>(capturer, new StereoscopicToRGBProcessor(), consumer);
     }
@@ -62,9 +60,9 @@ public class Pipelines {
         RenderOptions options = renderInfo.getRenderOptions();
         FrameCapturer<CubicOpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new CubicPboOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4);
+            capturer = new CubicPboOpenGlFrameCapturer(new EntityRendererHandler(options), renderInfo, options.getWidth() / 4);
         } else {
-            capturer = new CubicOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4);
+            capturer = new CubicOpenGlFrameCapturer(new EntityRendererHandler(options), renderInfo, options.getWidth() / 4);
         }
         return new Pipeline<CubicOpenGlFrame, RGBFrame>(capturer, new CubicToRGBProcessor(), consumer);
     }
@@ -73,9 +71,9 @@ public class Pipelines {
         RenderOptions options = renderInfo.getRenderOptions();
         FrameCapturer<CubicOpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new CubicPboOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4);
+            capturer = new CubicPboOpenGlFrameCapturer(new EntityRendererHandler(options), renderInfo, options.getWidth() / 4);
         } else {
-            capturer = new CubicOpenGlFrameCapturer(new CubicEntityRenderer(options), renderInfo, options.getWidth() / 4);
+            capturer = new CubicOpenGlFrameCapturer(new EntityRendererHandler(options), renderInfo, options.getWidth() / 4);
         }
         return new Pipeline<CubicOpenGlFrame, RGBFrame>(capturer, new EquirectangularToRGBProcessor(options.getWidth() / 4), consumer);
     }

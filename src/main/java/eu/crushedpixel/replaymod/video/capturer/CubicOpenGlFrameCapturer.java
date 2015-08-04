@@ -8,7 +8,7 @@ public class CubicOpenGlFrameCapturer extends OpenGlFrameCapturer<CubicOpenGlFra
     }
 
     private final int frameSize;
-    public CubicOpenGlFrameCapturer(WorldRenderer<Data> worldRenderer, RenderInfo renderInfo, int frameSize) {
+    public CubicOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, int frameSize) {
         super(worldRenderer, renderInfo);
         this.frameSize = frameSize;
     }

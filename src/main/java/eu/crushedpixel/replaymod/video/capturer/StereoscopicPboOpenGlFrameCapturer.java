@@ -6,8 +6,7 @@ import eu.crushedpixel.replaymod.video.frame.StereoscopicOpenGlFrame;
 public class StereoscopicPboOpenGlFrameCapturer
         extends MultiFramePboOpenGlFrameCapturer<StereoscopicOpenGlFrame, StereoscopicOpenGlFrameCapturer.Data> {
 
-    public StereoscopicPboOpenGlFrameCapturer(WorldRenderer<StereoscopicOpenGlFrameCapturer.Data> worldRenderer,
-                                              RenderInfo renderInfo) {
+    public StereoscopicPboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         super(worldRenderer, renderInfo, StereoscopicOpenGlFrameCapturer.Data.class,
                 renderInfo.getFrameSize().getWidth() / 2 * renderInfo.getFrameSize().getHeight());
     }

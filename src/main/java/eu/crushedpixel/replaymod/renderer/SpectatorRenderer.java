@@ -2,6 +2,7 @@ package eu.crushedpixel.replaymod.renderer;
 
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.SkinProvider;
+import eu.crushedpixel.replaymod.video.EntityRendererHandler;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -25,7 +26,6 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.Project;
 
 public class SpectatorRenderer {
 
@@ -41,10 +41,6 @@ public class SpectatorRenderer {
         Entity current = ReplayHandler.getCurrentEntity();
         if(!(current instanceof EntityPlayer)) return null;
         return (EntityPlayer)current;
-    }
-
-    protected void gluPerspective(float fovY, float aspect, float zNear, float zFar) {
-        Project.gluPerspective(fovY, aspect, zNear, zFar);
     }
 
     public void renderSpectatorHand(EntityPlayer entityPlayer, float partialTicks, int renderPass) {
@@ -65,7 +61,7 @@ public class SpectatorRenderer {
             GlStateManager.translate((float)(-(renderPass * 2 - 1)) * f1, 0.0F, 0.0F);
         }
 
-        gluPerspective(mc.entityRenderer.getFOVModifier(partialTicks, false),
+        ((EntityRendererHandler.GluPerspective) mc.entityRenderer).gluPerspective(mc.entityRenderer.getFOVModifier(partialTicks, false),
                 (float) this.mc.displayWidth / (float) this.mc.displayHeight, 0.05F, mc.entityRenderer.farPlaneDistance * 2.0F);
 
         GlStateManager.matrixMode(GL11.GL_MODELVIEW);

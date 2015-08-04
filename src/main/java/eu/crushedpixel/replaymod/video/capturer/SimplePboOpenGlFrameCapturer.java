@@ -14,7 +14,7 @@ public class SimplePboOpenGlFrameCapturer extends OpenGlFrameCapturer<OpenGlFram
     private final int bufferSize;
     private PixelBufferObject pbo, otherPBO;
 
-    public SimplePboOpenGlFrameCapturer(WorldRenderer<CaptureData> worldRenderer, RenderInfo renderInfo) {
+    public SimplePboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         super(worldRenderer, renderInfo);
 
         ReadableDimension size = renderInfo.getFrameSize();
@@ -81,6 +81,7 @@ public class SimplePboOpenGlFrameCapturer extends OpenGlFrameCapturer<OpenGlFram
 
     @Override
     public void close() throws IOException {
+        super.close();
         pbo.delete();
         otherPBO.delete();
     }

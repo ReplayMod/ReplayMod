@@ -15,7 +15,7 @@ public abstract class MultiFramePboOpenGlFrameCapturer<F extends Frame, D extend
     private final D[] data;
     private PixelBufferObject pbo, otherPBO;
 
-    public MultiFramePboOpenGlFrameCapturer(WorldRenderer<D> worldRenderer, RenderInfo renderInfo, Class<D> type, int framePixels) {
+    public MultiFramePboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, Class<D> type, int framePixels) {
         super(worldRenderer, renderInfo);
 
         data = type.getEnumConstants();
@@ -97,6 +97,7 @@ public abstract class MultiFramePboOpenGlFrameCapturer<F extends Frame, D extend
 
     @Override
     public void close() throws IOException {
+        super.close();
         pbo.delete();
         otherPBO.delete();
     }

@@ -19,12 +19,12 @@ import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData> implements FrameCapturer<F> {
-    protected final WorldRenderer<D> worldRenderer;
+    protected final WorldRenderer worldRenderer;
     protected final RenderInfo renderInfo;
     protected int framesDone;
     private Framebuffer frameBuffer;
 
-    public OpenGlFrameCapturer(WorldRenderer<D> worldRenderer, RenderInfo renderInfo) {
+    public OpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         this.worldRenderer = worldRenderer;
         this.renderInfo = renderInfo;
     }
