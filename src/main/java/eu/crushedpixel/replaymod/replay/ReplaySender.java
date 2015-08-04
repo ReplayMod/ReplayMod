@@ -285,6 +285,12 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     protected Packet processPacket(Packet p) throws Exception {
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
+        if(ReplayProcess.isVideoRecording() && ReplayHandler.isInPath()) {
+            if(p instanceof S29PacketSoundEffect) {
+                return null;
+            }
+        }
+
         if(p instanceof S48PacketResourcePackSend) {
             S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
             String url = packet.func_179783_a();
