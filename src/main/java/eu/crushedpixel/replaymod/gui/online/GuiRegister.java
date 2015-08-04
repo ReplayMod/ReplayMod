@@ -11,7 +11,7 @@ import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.utils.EmailAddressUtils;
 import eu.crushedpixel.replaymod.utils.RegexUtils;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.gui.FontRenderer;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableColor;
 
@@ -21,7 +21,7 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
     private final GuiPasswordField passwordInput, passwordConfirmation;
     private final GuiButton registerButton = new GuiButton(this).setI18nLabel("replaymod.gui.register").setSize(150, 20).setDisabled();
     private final GuiButton cancelButton = new GuiButton(this).setI18nLabel("replaymod.gui.cancel").setSize(150, 20);
-    private final GuiLabel disclaimerLabel = new GuiLabel(this).setI18nText(I18n.format("replaymod.gui.register.disclaimer"));
+    private final GuiLabel disclaimerLabel = new GuiLabel(this).setI18nText("replaymod.gui.register.disclaimer");
     private final GuiLabel statusLabel = new GuiLabel(this).setColor(ReadableColor.RED);
 
     {
@@ -54,13 +54,11 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                 pos(cancelButton, width / 2 + 2, 170);
                 pos(statusLabel, width / 2 - statusLabel.getMinSize().getWidth() / 2, 152);
 
-                int lineCount = getMinecraft().fontRendererObj
-                        .listFormattedStringToWidth(disclaimerLabel.getText(), width - 10).size();
-                Dimension dim = new Dimension(width - 10, getMinecraft().fontRendererObj.FONT_HEIGHT*lineCount);
-                disclaimerLabel.setMinSize(dim);
-                disclaimerLabel.setMaxSize(dim);
-                pos(disclaimerLabel, width / 2 - disclaimerLabel.getMinSize().getWidth() / 2,
-                        height - disclaimerLabel.getMinSize().getHeight() - 5);
+                FontRenderer font = getMinecraft().fontRendererObj;
+                int lineCount = font.listFormattedStringToWidth(disclaimerLabel.getText(), width - 10).size();
+                Dimension dim = new Dimension(width - 10, font.FONT_HEIGHT * lineCount);
+                disclaimerLabel.setSize(dim);
+                pos(disclaimerLabel, 5, height - dim.getHeight() - 5);
             }
         });
 
