@@ -547,6 +547,8 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
             this.zoom = 0.1;
             this.timelineLength = 10 * 60 * 1000;
             this.showMarkers = true;
+
+            this.cursorPosition = ReplayHandler.getRealTimelineCursor();
         }
 
         @Override
