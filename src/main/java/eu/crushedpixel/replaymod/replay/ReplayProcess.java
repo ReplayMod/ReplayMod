@@ -1,5 +1,6 @@
 package eu.crushedpixel.replaymod.replay;
 
+import com.google.common.collect.Maps;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
@@ -123,7 +124,11 @@ public class ReplayProcess {
             //if rendering, disable all game sounds except for gui sounds
             @SuppressWarnings("unchecked") //I, too, blame Forge for not re-adding generics to that Map.
             Map<SoundCategory, Float> orgMap = (Map<SoundCategory, Float>)mc.gameSettings.mapSoundLevels;
-            mapSoundLevelsBefore = new HashMap<SoundCategory, Float>(orgMap);
+            if(orgMap != null) {
+                mapSoundLevelsBefore = new HashMap<SoundCategory, Float>(orgMap);
+            } else {
+                orgMap = Maps.newEnumMap(SoundCategory.class);
+            }
 
             //turn down for what? to mute all sound of course!
             //the GUI sounds (button clicks etc) are not muted this way.
