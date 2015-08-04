@@ -24,7 +24,10 @@ public enum EncodingPreset implements GuiEntryListEntry {
             "-y -f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libvpx -b:v %BITRATE% \"%FILENAME%.webm\"", "webm"),
 
     MKVLOSSLESS("replaymod.gui.rendersettings.presets.mkv.lossless",
-            "-y -f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -qp 0 \"%FILENAME%.mkv\"", "mkv");
+            "-y -f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - -an -c:v libx264 -preset ultrafast -qp 0 \"%FILENAME%.mkv\"", "mkv"),
+
+    PNGSEQUENCE("replaymod.gui.rendersettings.presets.png",
+            "-y -f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - \"%FILENAME%-%06d.png\"", "png");
 
     private String name;
 
