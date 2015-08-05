@@ -57,6 +57,11 @@ public class ReplaySettings {
         rewriteSettings();
     }
 
+    public void toggleInterpolation() {
+        ReplayOptions.linear.setValue(!((Boolean)ReplayOptions.linear.getValue()));
+        rewriteSettings();
+    }
+
     public boolean showRecordingIndicator() {
         return (Boolean) RecordingOptions.indicator.getValue();
     }

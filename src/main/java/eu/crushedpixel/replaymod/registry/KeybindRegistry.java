@@ -26,6 +26,7 @@ public class KeybindRegistry {
     public static final String KEY_PATH_PREVIEW = "replaymod.input.pathpreview";
     public static final String KEY_ASSET_MANAGER = "replaymod.input.assetmanager";
     public static final String KEY_OBJECT_MANAGER = "replaymod.input.objectmanager";
+    public static final String KEY_TOGGLE_INTERPOLATION = "replaymod.input.interpolation";
     private static Minecraft mc = Minecraft.getMinecraft();
 
     @Getter
@@ -54,6 +55,8 @@ public class KeybindRegistry {
 
         replayModKeyBindings.add(new KeyBinding(KEY_ASSET_MANAGER, Keyboard.KEY_G, "replaymod.title"));
         replayModKeyBindings.add(new KeyBinding(KEY_OBJECT_MANAGER, Keyboard.KEY_F, "replaymod.title"));
+
+        replayModKeyBindings.add(new KeyBinding(KEY_TOGGLE_INTERPOLATION, Keyboard.KEY_O, "replaymod.title"));
     }
 
     public static void initialize() {

@@ -229,5 +229,9 @@ public class KeyInputHandler {
         if(kb.getKeyDescription().equals(KeybindRegistry.KEY_OBJECT_MANAGER) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
             mc.displayGuiScreen(new GuiObjectManager());
         }
+
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_TOGGLE_INTERPOLATION) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+            ReplayMod.replaySettings.toggleInterpolation();
+        }
     }
 }

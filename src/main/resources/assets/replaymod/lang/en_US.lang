@@ -272,6 +272,7 @@ replaymod.input.marker=Add Event Marker
 replaymod.input.pathpreview=Toggle Path Preview
 replaymod.input.assetmanager=Asset Manager
 replaymod.input.objectmanager=Object Manager
+replaymod.input.interpolation=Toggle Interpolation
 
 #Keyframe Presets GUI
 replaymod.gui.keyframerepository.title=Keyframe Repository
