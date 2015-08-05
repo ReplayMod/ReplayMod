@@ -40,7 +40,6 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
     @Override
     public String[] getASMTransformerClass() {
         return new String[]{
-                CameraRollCT.class.getName(),
                 ForceChunkLoadingCT.class.getName(),
                 NoNameTagCT.class.getName(),
                 SoundManagerCT.class.getName(),

@@ -234,4 +234,17 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             GlStateManager.translate(0.0F, 0.0F, 0.1F);
         }
     }
+
+
+    /*
+     *   Misc
+     */
+
+
+    @Inject(method = "orientCamera", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;translate(FFF)V", shift = At.Shift.AFTER, ordinal = 3))
+    private void setupCameraRoll(float partialTicks, CallbackInfo ci) {
+        if (ReplayHandler.isInReplay()) {
+            GL11.glRotated(ReplayHandler.getCameraTilt(), 0D, 0D, 1D);
+        }
+    }
 }
