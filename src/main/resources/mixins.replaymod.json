@@ -4,6 +4,7 @@
   "mixins": [
     "MixinEffectRenderer",
     "MixinEntityRenderer",
+    "MixinRenderItem",
     "MixinRenderManager"
   ],
   "server": [],
