@@ -4,6 +4,7 @@
   "mixins": [
     "MixinEffectRenderer",
     "MixinEntityRenderer",
+    "MixinMinecraft",
     "MixinRenderItem",
     "MixinRenderManager"
   ],

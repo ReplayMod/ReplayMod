@@ -41,8 +41,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
     public String[] getASMTransformerClass() {
         return new String[]{
                 ForceChunkLoadingCT.class.getName(),
-                NoNameTagCT.class.getName(),
-                SoundManagerCT.class.getName()
+                NoNameTagCT.class.getName()
         };
     }
 
