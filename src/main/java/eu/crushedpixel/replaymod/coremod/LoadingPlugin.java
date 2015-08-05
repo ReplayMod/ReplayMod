@@ -40,8 +40,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
     @Override
     public String[] getASMTransformerClass() {
         return new String[]{
-                ForceChunkLoadingCT.class.getName(),
-                NoNameTagCT.class.getName()
+                ForceChunkLoadingCT.class.getName()
         };
     }
 

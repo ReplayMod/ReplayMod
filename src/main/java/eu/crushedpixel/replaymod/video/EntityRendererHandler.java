@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.video;
 
-import eu.crushedpixel.replaymod.coremod.asm_Hooks;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.capturer.CaptureData;
 import eu.crushedpixel.replaymod.video.capturer.WorldRenderer;
@@ -23,10 +22,6 @@ public class EntityRendererHandler implements WorldRenderer {
 
     public EntityRendererHandler(RenderOptions options) {
         this.options = options;
-
-        if (options.isHideNameTags()) {
-            asm_Hooks.DO_NOT_RENDER_NAME_TAGS = true;
-        }
 
         ((IEntityRenderer) mc.entityRenderer).setHandler(this);
     }
@@ -67,8 +62,6 @@ public class EntityRendererHandler implements WorldRenderer {
     @Override
     public void close() throws IOException {
         ((IEntityRenderer) mc.entityRenderer).setHandler(null);
-
-        asm_Hooks.DO_NOT_RENDER_NAME_TAGS = false;
     }
 
     public static final class NoCullingClippingHelper extends ClippingHelper {

@@ -5,6 +5,8 @@
     "MixinEffectRenderer",
     "MixinEntityRenderer",
     "MixinMinecraft",
+    "MixinRender",
+    "MixinRendererLivingEntity",
     "MixinRenderItem",
     "MixinRenderManager"
   ],
