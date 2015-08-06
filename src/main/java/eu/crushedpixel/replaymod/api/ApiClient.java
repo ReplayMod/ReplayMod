@@ -207,8 +207,13 @@ public class ApiClient {
     public boolean isVersionUpToDate(String versionIdentifier) throws IOException, ApiException {
         //in a development environment, getContainer().getVersion() will return ${version}
         if(versionIdentifier.equals("${version}")) return true;
+
+        //get the Minecraft Version String
+        String mcversion = mc.getVersion();
+
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.up_to_date);
         builder.put("version", versionIdentifier);
+        builder.put("minecraft", mcversion);
         return invokeAndReturn(builder, Success.class).isSuccess();
     }
 
