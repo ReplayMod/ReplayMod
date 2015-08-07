@@ -135,7 +135,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
         }
 
         if(!AuthenticationHandler.isAuthenticated()) {
-            mc.displayGuiScreen(new GuiLoginPrompt(parent, this).toMinecraft());
+            mc.displayGuiScreen(new GuiLoginPrompt(parent, this, true).toMinecraft());
             return;
         }
 

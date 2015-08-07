@@ -78,9 +78,15 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
         password.onTextChanged(contentValidation);
     }
 
-    public GuiLoginPrompt(net.minecraft.client.gui.GuiScreen parent, net.minecraft.client.gui.GuiScreen successScreen) {
+    public GuiLoginPrompt(net.minecraft.client.gui.GuiScreen parent,
+                          net.minecraft.client.gui.GuiScreen successScreen, boolean manuallyTriggered) {
         this.parent = parent;
         this.successScreen = successScreen;
+
+        //if the login prompt was opened automatically (on mod startup), show a "skip" instead of "cancel" button
+        if(!manuallyTriggered) {
+            cancelButton.setI18nLabel("replaymod.gui.login.skip");
+        }
 
         setLayout(new CustomLayout<GuiLoginPrompt>() {
             @Override

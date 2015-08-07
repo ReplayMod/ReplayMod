@@ -124,6 +124,8 @@ replaymod.gui.login.logging=Logging in...
 replaymod.gui.login.incorrect=Incorrect username or password
 replaymod.gui.login.connectionerror=Could not connect to ReplayMod.com
 
+replaymod.gui.login.skip=Skip
+
 replaymod.gui.register.title=Register on ReplayMod.com
 replaymod.gui.register.confirmpw=Confirm Password
 
