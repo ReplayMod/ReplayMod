@@ -194,43 +194,43 @@ public class KeyInputHandler {
             ReplayHandler.setCameraTilt(0);
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_THUMBNAIL) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found && !ReplayHandler.isInPath()) {
             TickAndRenderListener.requestScreenshot();
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PLAYER_OVERVIEW) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PLAYER_OVERVIEW) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !found && !ReplayHandler.isInPath()) {
             PlayerHandler.openPlayerOverview();
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_LIGHTING) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             ReplayMod.replaySettings.setLightingEnabled(!ReplayMod.replaySettings.isLightingEnabled());
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_CLEAR_KEYFRAMES) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_CLEAR_KEYFRAMES) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             ReplayHandler.resetKeyframes(false, ReplayMod.replaySettings.showClearKeyframesCallback());
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SYNC_TIMELINE) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_SYNC_TIMELINE) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             ReplayHandler.syncTimeCursor(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_KEYFRAME_PRESETS) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_KEYFRAME_PRESETS) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             mc.displayGuiScreen(new GuiKeyframeRepository(ReplayHandler.getKeyframeRepository()));
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PATH_PREVIEW) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_PATH_PREVIEW) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             ReplayMod.replaySettings.setShowPathPreview(!ReplayMod.replaySettings.showPathPreview());
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ASSET_MANAGER) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_ASSET_MANAGER) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             mc.displayGuiScreen(new GuiAssetManager());
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_OBJECT_MANAGER) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_OBJECT_MANAGER) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             mc.displayGuiScreen(new GuiObjectManager());
         }
 
-        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_TOGGLE_INTERPOLATION) && (kb.isPressed() || kb.getKeyCode() == keyCode)) {
+        if(kb.getKeyDescription().equals(KeybindRegistry.KEY_TOGGLE_INTERPOLATION) && (kb.isPressed() || kb.getKeyCode() == keyCode) && !ReplayHandler.isInPath()) {
             ReplayMod.replaySettings.toggleInterpolation();
         }
     }
