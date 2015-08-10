@@ -16,7 +16,7 @@ import java.io.File;
 public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading> implements ProgressUpdateListener {
 
     private GuiProgressBar progressBar = new GuiProgressBar(this).setHeight(20);
-    private GuiButton cancelButton = new GuiButton(this).setI18nLabel("gui.cancel").setWidth(150).onClick(new Runnable() {
+    private GuiButton cancelButton = new GuiButton(this).setI18nLabel("gui.cancel").setSize(150, 20).onClick(new Runnable() {
                 @Override
                 public void run() {
                     ReplayMod.apiClient.cancelDownload();
