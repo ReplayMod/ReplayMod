@@ -128,6 +128,7 @@ public class GuiConnectPart extends GuiStudioPart {
                         filesToConcat.set(concatList.getSelectionIndex(), replayDropdown.getElement(selectionIndex));
                         concatList.setElements(filesToConcat);
                     } catch(Exception e) {
+                        e.printStackTrace();
                         // TODO Prevent exception
                     }
                 }
@@ -136,7 +137,15 @@ public class GuiConnectPart extends GuiStudioPart {
             concatList.addSelectionListener(new SelectionListener() {
                 @Override
                 public void onSelectionChanged(int selectionIndex) {
-                    String selName = concatList.getElement(selectionIndex).getDisplayString();
+                    GuiEntryListStringEntry entry = concatList.getElement(selectionIndex);
+                    if(entry == null) {
+                        removeButton.enabled = false;
+                        return;
+                    } else {
+                        removeButton.enabled = true;
+                    }
+
+                    String selName = entry.getDisplayString();
                     int i = 0;
                     for(Object s : replayDropdown.getAllElements()) {
                         String str = ((GuiEntryListStringEntry)s).getDisplayString();
