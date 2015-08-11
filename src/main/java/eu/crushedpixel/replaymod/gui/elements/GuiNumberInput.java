@@ -93,6 +93,18 @@ public class GuiNumberInput extends GuiAdvancedTextField {
         }
     }
 
+    @Override
+    public void deleteFromCursor(int p_146175_1_) {
+        super.deleteFromCursor(p_146175_1_);
+        fireValueChangeEvent();
+    }
+
+    @Override
+    public void deleteWords(int p_146177_1_) {
+        super.deleteWords(p_146177_1_);
+        fireValueChangeEvent();
+    }
+
     public int getIntValue() {
         try {
             return Integer.valueOf(getText());
