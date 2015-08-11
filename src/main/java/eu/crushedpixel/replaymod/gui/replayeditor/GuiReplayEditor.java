@@ -64,7 +64,10 @@ public class GuiReplayEditor extends GuiScreen {
 
         tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_TRIM_TAB, 0, 0, I18n.format("replaymod.gui.editor.trim.title")));
         tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_CONNECT_TAB, 0, 0, I18n.format("replaymod.gui.editor.connect.title")));
-        tabButtons.add(new GuiButton(GuiConstants.REPLAY_EDITOR_MODIFY_TAB, 0, 0, I18n.format("replaymod.gui.editor.modify.title")));
+
+        GuiButton modifyButton = new GuiButton(GuiConstants.REPLAY_EDITOR_MODIFY_TAB, 0, 0, I18n.format("replaymod.gui.editor.modify.title"));
+        modifyButton.enabled = false;
+        tabButtons.add(modifyButton);
 
         int w = this.width - 30;
         int w2 = w / tabButtons.size();
@@ -130,7 +133,7 @@ public class GuiReplayEditor extends GuiScreen {
         } else if(button.id == GuiConstants.REPLAY_EDITOR_CONNECT_TAB) {
             currentTab = StudioTab.CONNECT;
         } else if(button.id == GuiConstants.REPLAY_EDITOR_MODIFY_TAB) {
-            currentTab = StudioTab.MODIFY;
+            //currentTab = StudioTab.MODIFY;
         } else if(button.id == GuiConstants.REPLAY_EDITOR_SAVE_BUTTON) {
             File outputFile = getSelectedFile();
             File folder = ReplayFileIO.getReplayFolder();
