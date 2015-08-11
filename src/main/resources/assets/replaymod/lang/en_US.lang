@@ -222,6 +222,8 @@ replaymod.gui.editor.progress.status.writing.raw=Rewriting Replay...
 replaymod.gui.editor.progress.status.writing.final=Writing File to disk...
 replaymod.gui.editor.progress.status.finished=Finished Editing!
 
+replaymod.gui.editor.disclaimer=The Replay Editor is an experimental feature and may contain bugs.
+
 #Cancel Replay GUI
 replaymod.gui.cancelrender.title=Cancel Rendering
 replaymod.gui.cancelrender.message=Are you sure that you want to cancel the current rendering process?

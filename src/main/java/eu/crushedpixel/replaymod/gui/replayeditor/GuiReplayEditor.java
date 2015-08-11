@@ -176,7 +176,7 @@ public class GuiReplayEditor extends GuiScreen {
             i++;
         }
 
-        drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.replayeditor"), this.width / 2, 10, 16777215);
+        drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.editor.disclaimer"), this.width / 2, 10, 16777215);
         drawString(fontRendererObj,  I18n.format("replaymod.gui.editor.replayfile"), 30, 67, Color.WHITE.getRGB());
 
         replayDropdown.drawTextBox();
