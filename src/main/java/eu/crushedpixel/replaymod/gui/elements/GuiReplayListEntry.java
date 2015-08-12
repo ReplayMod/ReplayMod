@@ -71,6 +71,9 @@ public class GuiReplayListEntry implements IGuiListEntry {
                     } else {
                         image = ImageIO.read(imageFile);
                     }
+                    if(image == null) {
+                        image = ResourceHelper.getDefaultThumbnail();
+                    }
                     dynTex = new DynamicTexture(image);
                     mc.getTextureManager().loadTexture(textureResource, dynTex);
                     dynTex.updateDynamicTexture();
