@@ -26,6 +26,7 @@ archivesBaseName = "replaymod"
 ext {
     mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
     mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
+    libFiles = fileTree(dir: 'libs', includes: ['*.jar'])
 }
 
 minecraft {
@@ -47,16 +48,12 @@ repositories {
     }
 }
 
-configurations {
-    shade
-    compile.extendsFrom shade
-}
-
 dependencies {
     compile 'org.projectlombok:lombok:1.16.4'
 
-    shade 'org.spongepowered:mixin:0.4.3'
-    shade fileTree(dir: 'libs', includes: ['*.jar'])
+    compile 'org.spongepowered:mixin:0.4.3'
+    compile libFiles
+
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
@@ -73,15 +70,17 @@ dependencies {
 }
 
 jar {
-    dependsOn configurations.shade
+    dependsOn configurations.compile
 
     from project.mixinRefMap
+
+    def shade = {libFiles + files(configurations.compile.find { it.name.startsWith("mixin-") })}
 
     def noticeDir = file("$buildDir/NOTICE")
     doFirst {
         noticeDir.deleteDir()
         noticeDir.mkdirs()
-        configurations.shade.collect { it.isDirectory() ? fileTree(it) : zipTree(it) }.each {
+        shade().collect { it.isDirectory() ? fileTree(it) : zipTree(it) }.each {
             it.matching { include '**/NOTICE*' }.each {
                 new File(noticeDir, 'NOTICE.txt') << it.getText('UTF-8') + '\n'
             }
@@ -108,7 +107,7 @@ jar {
     }
     from langDir
 
-    from (configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }) {
+    from ({shade().collect { it.isDirectory() ? it : zipTree(it) }}) {
         exclude '**/NOTICE*'
     }
 
