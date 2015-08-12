@@ -184,12 +184,6 @@ public class ReplayMod {
 
         KeybindRegistry.initialize();
 
-        try {
-            mc.entityRenderer = new SafeEntityRenderer(mc, mc.entityRenderer);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
         tooltipRenderer = new TooltipRenderer();
 
         @SuppressWarnings("unchecked")
