@@ -48,6 +48,7 @@ public class CustomObjectRenderer {
                 || resourceLocation == null) return;
 
         GlStateManager.pushMatrix();
+        GlStateManager.pushAttrib();
 
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer renderer = tessellator.getWorldRenderer();
@@ -107,6 +108,7 @@ public class CustomObjectRenderer {
         tessellator.draw();
         renderer.setTranslation(0, 0, 0);
 
+        GlStateManager.popAttrib();
         GlStateManager.popMatrix();
     }
 }
