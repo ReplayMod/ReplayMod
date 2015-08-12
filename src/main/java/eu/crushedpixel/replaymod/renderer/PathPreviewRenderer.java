@@ -37,6 +37,8 @@ public class PathPreviewRenderer {
     public void renderCameraPath(RenderWorldLastEvent event) {
         if(!ReplayHandler.isInReplay() || ReplayHandler.isInPath() || !ReplayMod.replaySettings.showPathPreview() || mc.gameSettings.hideGUI) return;
 
+        GlStateManager.pushAttrib();
+
         int renderDistanceSquared = mc.gameSettings.renderDistanceChunks*16 * mc.gameSettings.renderDistanceChunks*16;
 
         Entity entity = ReplayHandler.getCameraEntity();
@@ -107,6 +109,8 @@ public class PathPreviewRenderer {
         }
 
         GlStateManager.disableBlend();
+
+        GlStateManager.popAttrib();
     }
 
     @SubscribeEvent
