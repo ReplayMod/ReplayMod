@@ -2,14 +2,13 @@
 {
   "modid": "replaymod",
   "name": "Replay Mod",
-  "description": "Example placeholder mod.",
+  "description": "A Mod which allows you to record, replay and share your Minecraft experience.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
-  "updateUrl": "",
-  "authorList": ["CrushedPixel"],
-  "credits": "Johni0702 for helping me out!",
-  "logoFile": "",
+  "url": "https://replaymod.com",
+  "updateUrl": "https://replaymod.com/download",
+  "authorList": ["CrushedPixel", "johni0702"],
+  "logoFile": "replaymod_logo.png",
   "screenshots": [],
   "dependencies": []
 }
