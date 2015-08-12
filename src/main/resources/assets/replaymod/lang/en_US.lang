@@ -29,6 +29,7 @@ replaymod.api.filetoobig=The uploaded file is too big
 replaymod.api.usernametoolong=The username is too long
 replaymod.api.descriptiontoolong=The description is too long
 replaymod.api.passwordlength=The password has to be between 5 and 32 characters long
+replaymod.api.suspended=Your account has been suspended
 
 #All of the chat messages
 replaymod.chat.recordingstarted=Recording started
