@@ -25,6 +25,7 @@ public class GuiReplayEditor extends GuiScreen {
     public static GuiReplayEditor instance = null;
     private StudioTab currentTab = StudioTab.TRIM;
     private GuiDropdown<GuiEntryListStringEntry> replayDropdown;
+    private GuiButton saveButton;
     private GuiButton saveModeButton;
     private boolean overrideSave = false;
     private boolean initialized = false;
@@ -105,7 +106,7 @@ public class GuiReplayEditor extends GuiScreen {
         backButton.width = 70;
         buttonList.add(backButton);
 
-        GuiButton saveButton = new GuiButton(GuiConstants.REPLAY_EDITOR_SAVE_BUTTON, width - 70 - 18, height - (2 * 20) - 5 - 3, I18n.format("replaymod.gui.save"));
+        saveButton = new GuiButton(GuiConstants.REPLAY_EDITOR_SAVE_BUTTON, width - 70 - 18, height - (2 * 20) - 5 - 3, I18n.format("replaymod.gui.save"));
         saveButton.width = 70;
         buttonList.add(saveButton);
 
@@ -162,6 +163,7 @@ public class GuiReplayEditor extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        saveButton.enabled = currentTab.getStudioPart().validateInputs();
         drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
         currentTab.getStudioPart().drawScreen(mouseX, mouseY, partialTicks);

@@ -34,6 +34,11 @@ public class GuiTrimPart extends GuiStudioPart {
     }
 
     @Override
+    public boolean validateInputs() {
+        return getEndTimestamp() == 0 || getEndTimestamp() > getStartTimestamp();
+    }
+
+    @Override
     public void applyFilters(final File replayFile, final File outputFile) {
         this.outputFile = outputFile;
         filterThread = new Thread(new Runnable() {

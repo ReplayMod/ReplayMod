@@ -52,4 +52,8 @@ public abstract class GuiStudioPart extends GuiScreen implements ProgressUpdateL
         this.progress = progress;
     }
 
+    public boolean validateInputs() {
+        return true;
+    }
+
 }
