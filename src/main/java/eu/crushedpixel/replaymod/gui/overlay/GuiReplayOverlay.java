@@ -312,7 +312,13 @@ public class GuiReplayOverlay extends Gui {
 
                 if(buttonY < maxButtonY || maxButtonY == -1) maxButtonY = buttonY;
 
-                GuiElement button = new GuiAdvancedButton(buttonX, buttonY, 20, 20, Keyboard.getKeyName(kb.getKeyCode()), new Runnable() {
+                String keyName = "???";
+                try {
+                    keyName = Keyboard.getKeyName(kb.getKeyCode());
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
+                }
+                GuiElement button = new GuiAdvancedButton(buttonX, buttonY, 20, 20, keyName, new Runnable() {
                     @Override
                     public void run() {
                         ReplayMod.keyInputHandler.handleCustomKeybindings(kb, false, kb.getKeyCode());
