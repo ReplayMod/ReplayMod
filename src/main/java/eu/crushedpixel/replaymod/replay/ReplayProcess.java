@@ -183,7 +183,9 @@ public class ReplayProcess {
         Display.setResizable(true);
 
         //restore the sound settings
-        mc.gameSettings.mapSoundLevels = mapSoundLevelsBefore;
+        if (mapSoundLevelsBefore != null) {
+            mc.gameSettings.mapSoundLevels = mapSoundLevelsBefore;
+        }
     }
 
     //if justCheck is true, no Screenshot will be taken, it will only be checked
