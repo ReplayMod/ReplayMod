@@ -97,12 +97,12 @@ public class GuiTrimPart extends GuiStudioPart {
     public void initGui() {
         if(!initialized) {
             startMinInput = new GuiNumberInput(fontRendererObj, 70, yPos, 30, null, 999d, null, false);
-            startSecInput = new GuiNumberInput(fontRendererObj, 120, yPos, 25, null, 99d, null, false);
-            startMsInput = new GuiNumberInput(fontRendererObj, 165, yPos, 30, null, 999d, null, false);
+            startSecInput = new GuiNumberInput(fontRendererObj, 125, yPos, 25, null, 99d, null, false);
+            startMsInput = new GuiNumberInput(fontRendererObj, 175, yPos, 30, null, 999d, null, false);
 
             endMinInput = new GuiNumberInput(fontRendererObj, 70, yPos + 30, 30, null, 999d, null, false);
-            endSecInput = new GuiNumberInput(fontRendererObj, 120, yPos + 30, 25, null, 99d, null, false);
-            endMsInput = new GuiNumberInput(fontRendererObj, 165, yPos + 30, 30, null, 999d, null, false);
+            endSecInput = new GuiNumberInput(fontRendererObj, 125, yPos + 30, 25, null, 99d, null, false);
+            endMsInput = new GuiNumberInput(fontRendererObj, 175, yPos + 30, 30, null, 999d, null, false);
 
             inputOrder.clear();
 
@@ -130,13 +130,13 @@ public class GuiTrimPart extends GuiStudioPart {
         drawString(mc.fontRendererObj, I18n.format("replaymod.gui.end")+":", 30, yPos + 7 + 30, Color.WHITE.getRGB());
         drawString(mc.fontRendererObj, I18n.format("replaymod.gui.minutes"), 105, yPos + 7, Color.WHITE.getRGB());
         drawString(mc.fontRendererObj, I18n.format("replaymod.gui.minutes"), 105, yPos + 7 + 30, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.seconds"), 150, yPos + 7, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.seconds"), 150, yPos + 7 + 30, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.milliseconds"), 200, yPos + 7, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.milliseconds"), 200, yPos + 7 + 30, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.seconds"), 155, yPos + 7, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.seconds"), 155, yPos + 7 + 30, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.milliseconds"), 210, yPos + 7, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, I18n.format("replaymod.gui.milliseconds"), 210, yPos + 7 + 30, Color.WHITE.getRGB());
 
-        drawString(mc.fontRendererObj, "Timestamp: " + getStartTimestamp(), 230, yPos + 7, Color.WHITE.getRGB());
-        drawString(mc.fontRendererObj, "Timestamp: " + getEndTimestamp(), 230, yPos + 30 + 7, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, "Timestamp: " + getStartTimestamp(), 240, yPos + 7, Color.WHITE.getRGB());
+        drawString(mc.fontRendererObj, "Timestamp: " + getEndTimestamp(), 240, yPos + 30 + 7, Color.WHITE.getRGB());
 
         for(GuiNumberInput input : inputOrder) {
             input.drawTextBox();
