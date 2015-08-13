@@ -474,35 +474,6 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         Keyboard.enableRepeatEvents(false);
     }
 
-    private void updateCurrentList(Pagination pagination) {
-        hideSearchFields();
-
-        elementSelected(-1);
-        currentList = new ReplayFileList(mc, width, height, 50, height - 60, this);
-        GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
-        currentList.addEntry(loadingListEntry);
-
-        if(pagination.getLoadedPages() < 0) {
-            pagination.fetchPage();
-        }
-
-        for(FileInfo i : pagination.getFiles()) {
-            if(Thread.interrupted()) break;
-            try {
-                File tmp = null;
-                if(i.hasThumbnail()) {
-                    tmp = File.createTempFile("thumb_online_" + i.getId(), "jpg");
-                    ReplayMod.apiClient.downloadThumbnail(i.getId(), tmp);
-                }
-                currentList.addEntry(currentList.getEntries().size()-1, new GuiReplayListEntry(currentList, i, tmp));
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        currentList.removeEntry(loadingListEntry);
-    }
-
     private Thread currentListLoader;
 
     private void cancelCurrentListLoader() {
@@ -516,49 +487,67 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         }
     }
 
-    public void showOnlineRecent() {
+    public void show(final Pagination pagination) {
         cancelCurrentListLoader();
+
+        hideSearchFields();
+        elementSelected(-1);
+        currentList = new ReplayFileList(mc, width, height, 50, height - 60, this);
+        final GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
+        currentList.addEntry(loadingListEntry);
+
         currentListLoader = new Thread(new Runnable() {
             @Override
             public void run() {
-                updateCurrentList(new SearchPagination(recentFileSearchQuery));
+                if(pagination.getLoadedPages() < 0) {
+                    pagination.fetchPage();
+                }
+
+                for(FileInfo i : pagination.getFiles()) {
+                    if(Thread.interrupted()) break;
+                    try {
+                        File tmp = null;
+                        if(i.hasThumbnail()) {
+                            tmp = File.createTempFile("thumb_online_" + i.getId(), "jpg");
+                            ReplayMod.apiClient.downloadThumbnail(i.getId(), tmp);
+                        }
+                        final GuiReplayListEntry entry = new GuiReplayListEntry(currentList, i, tmp);
+                        mc.addScheduledTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                currentList.addEntry(currentList.getEntries().size() - 1, entry);
+                            }
+                        });
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                mc.addScheduledTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        currentList.removeEntry(loadingListEntry);
+                    }
+                });
             }
         }, "replaymod-list-loader");
         currentListLoader.start();
+    }
+
+    public void showOnlineRecent() {
+        show(new SearchPagination(recentFileSearchQuery));
     }
 
     public void showOnlineBest() {
-        cancelCurrentListLoader();
-        currentListLoader = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                updateCurrentList(new SearchPagination(bestFileSearchQuery));
-            }
-        }, "replaymod-list-loader");
-        currentListLoader.start();
+        show(new SearchPagination(bestFileSearchQuery));
     }
 
     public void showDownloadedFiles() {
-        cancelCurrentListLoader();
-        currentListLoader = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                updateCurrentList(new DownloadedFilePagination());
-            }
-        }, "replaymod-list-loader");
-        currentListLoader.start();
+        show(new DownloadedFilePagination());
     }
 
     public void showFavoritedFiles() {
-        cancelCurrentListLoader();
-        currentListLoader = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ReplayMod.favoritedFileHandler.reloadFavorites();
-                updateCurrentList(new FavoritedFilePagination());
-            }
-        }, "replaymod-list-loader");
-        currentListLoader.start();
+        show(new FavoritedFilePagination());
     }
 
     public void showReplaySearch() {
@@ -569,13 +558,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
     public void showReplaySearch(final SearchPagination searchPagination) {
         disableTopBarButton(-1);
-        currentListLoader = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                updateCurrentList(searchPagination);
-            }
-        }, "replaymod-list-loader");
-        currentListLoader.start();
+        show(searchPagination);
     }
 
     @SuppressWarnings("unchecked")
