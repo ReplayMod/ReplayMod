@@ -38,6 +38,9 @@ public class StudioImplementation {
         ReplayFile replayFile = new ZipReplayFile(studio, file);
 
         ReplayMetaData metaData = replayFile.getMetaData();
+        if (ending == 0) {
+            ending = metaData.getDuration();
+        }
 
         PacketStream stream = studio.createReplayStream(replayFile.getPacketData(), true);
         stream.addFilter(new ProgressFilter(metaData.getDuration(), updateListener, 1/100f, 9/10f));
