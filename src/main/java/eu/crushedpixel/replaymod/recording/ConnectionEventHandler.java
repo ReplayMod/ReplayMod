@@ -20,7 +20,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -97,7 +96,7 @@ public class ConnectionEventHandler {
             if(event.isLocal) {
                 worldName = MinecraftServer.getServer().getWorldName();
             } else {
-                worldName = ((InetSocketAddress) nm.getRemoteAddress()).getHostName();
+                worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
             }
             Channel channel = nm.channel();
             ChannelPipeline pipeline = channel.pipeline();
