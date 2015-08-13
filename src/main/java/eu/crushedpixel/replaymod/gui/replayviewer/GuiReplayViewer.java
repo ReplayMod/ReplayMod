@@ -55,21 +55,23 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     private Thread fileReloader;
 
     private class FileReloaderThread extends Thread {
+        private final GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
+
+        @Override
+        public synchronized void start() {
+            replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
+            replayGuiList.clearEntries();
+            replayGuiList.addEntry(loadingListEntry);
+            super.start();
+        }
 
         @Override
         public void run() {
-            final GuiLoadingListEntry loadingListEntry = new GuiLoadingListEntry();
-
-            replayGuiList.clearEntries();
-            replayGuiList.addEntry(loadingListEntry);
-
-            replayFileList = new ArrayList<Pair<Pair<File, ReplayMetaData>, File>>();
-
-            for(File file : ReplayFileIO.getAllReplayFiles()) {
+            for(final File file : ReplayFileIO.getAllReplayFiles()) {
                 if(interrupted()) break;
                 try {
                     ReplayFile replayFile = new ReplayFile(file);
-                    ReplayMetaData metaData = replayFile.metadata().get();
+                    final ReplayMetaData metaData = replayFile.metadata().get();
                     BufferedImage img = replayFile.thumb().get();
 
                     replayFile.close();
@@ -83,16 +85,13 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                         ImageIO.write(img, "jpg", tmp);
                     }
 
-                    final Pair<Pair<File, ReplayMetaData>, File> p = Pair.of(Pair.of(file, metaData), tmp);
-                    final int index = getInsertionIndex(p, replayFileList);
-
-                    replayFileList.add(index, p);
-
-                    final FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null,
-                            -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true, -1);
-
-                    replayGuiList.addEntry(index, new GuiReplayListEntry(replayGuiList, fileInfo, p.second()));
-
+                    final File thumb = tmp;
+                    mc.addScheduledTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            addEntry(file, metaData, thumb);
+                        }
+                    });
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
@@ -300,6 +299,18 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
             e.printStackTrace();
         }
 
+    }
+
+    private void addEntry(File file, ReplayMetaData metaData, File thumb) {
+        final Pair<Pair<File, ReplayMetaData>, File> p = Pair.of(Pair.of(file, metaData), thumb);
+        final int index = getInsertionIndex(p, replayFileList);
+
+        replayFileList.add(index, p);
+
+        final FileInfo fileInfo = new FileInfo(-1, p.first().second(), null, null,
+                -1, -1, -1, FilenameUtils.getBaseName(p.first().first().getName()), true, -1);
+
+        replayGuiList.addEntry(index, new GuiReplayListEntry(replayGuiList, fileInfo, p.second()));
     }
 
     private static FileAgeComparator fileAgeComparator = new FileAgeComparator();
