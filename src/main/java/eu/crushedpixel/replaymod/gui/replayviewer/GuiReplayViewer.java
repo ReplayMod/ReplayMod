@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
 
@@ -51,6 +52,8 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
     private GuiButton renameButton;
     private GuiButton deleteButton;
     private boolean delete_file = false;
+
+    private Queue<Runnable> loadedReplaysQueue = new ConcurrentLinkedQueue<Runnable>();
 
     private Thread fileReloader;
 
@@ -86,7 +89,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                     }
 
                     final File thumb = tmp;
-                    mc.addScheduledTask(new Runnable() {
+                    loadedReplaysQueue.offer(new Runnable() {
                         @Override
                         public void run() {
                             addEntry(file, metaData, thumb);
@@ -270,6 +273,14 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
             }
 
             this.mc.displayGuiScreen(this);
+        }
+    }
+
+    @Override
+    public void updateScreen() {
+        super.updateScreen();
+        while (!loadedReplaysQueue.isEmpty()) {
+            loadedReplaysQueue.poll().run();
         }
     }
 

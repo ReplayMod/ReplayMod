@@ -22,8 +22,9 @@ import org.lwjgl.input.Keyboard;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
 
@@ -40,6 +41,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private GuiDropdown<GuiEntryListStringEntry> searchCategoryDropdown, searchVersionDropdown;
     private GuiAdvancedTextField searchNameInput, searchServerInput;
     private GuiButton searchActionButton;
+
+    private Queue<GuiReplayListEntry> loadedReplaysQueue = new ConcurrentLinkedQueue<GuiReplayListEntry>();
 
     private boolean showSearchFields = false;
 
@@ -449,6 +452,9 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             searchNameInput.updateCursorCounter();
             searchServerInput.updateCursorCounter();
         }
+        while (!loadedReplaysQueue.isEmpty()) {
+            currentList.addEntry(currentList.getEntries().size() - 1, loadedReplaysQueue.poll());
+        }
     }
 
     @Override
@@ -485,6 +491,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 Thread.currentThread().interrupt();
             }
         }
+        loadedReplaysQueue.clear();
     }
 
     public void show(final Pagination pagination) {
@@ -512,12 +519,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                             ReplayMod.apiClient.downloadThumbnail(i.getId(), tmp);
                         }
                         final GuiReplayListEntry entry = new GuiReplayListEntry(currentList, i, tmp);
-                        mc.addScheduledTask(new Runnable() {
-                            @Override
-                            public void run() {
-                                currentList.addEntry(currentList.getEntries().size() - 1, entry);
-                            }
-                        });
+                        loadedReplaysQueue.offer(entry);
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
