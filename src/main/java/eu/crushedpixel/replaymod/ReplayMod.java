@@ -214,21 +214,6 @@ public class ReplayMod {
         }, "localizedResourcePackLoader");
         localizedResourcePackLoader.start();
 
-        /*
-        boolean auth = false;
-        try {
-            auth = AuthenticationHandler.hasDonated(Minecraft.getMinecraft().getSession().getPlayerID());
-        } catch(Exception e) {
-            JOptionPane.showMessageDialog(null, "Couldn't connect to the Replay Mod Server to verify whether you donated!");
-            FMLCommonHandler.instance().exitJava(0, false);
-        }
-
-        if(!auth) {
-            JOptionPane.showMessageDialog(null, "It seems like you didn't donate, so you can't use the Replay Mod yet.");
-            FMLCommonHandler.instance().exitJava(0, false);
-        }
-        */
-
         if (System.getProperty("replaymod.render.file") != null) {
             final File file = new File(System.getProperty("replaymod.render.file"));
             if (!file.exists()) {
