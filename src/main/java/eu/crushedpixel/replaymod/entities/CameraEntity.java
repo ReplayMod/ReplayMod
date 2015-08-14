@@ -100,9 +100,6 @@ public class CameraEntity extends EntityPlayer {
             //Aligns the particle rotation
             mc.thePlayer.rotationPitch = mc.thePlayer.prevRotationPitch = mc.getRenderViewEntity().rotationPitch;
             mc.thePlayer.rotationYaw = mc.thePlayer.prevRotationYaw = mc.getRenderViewEntity().rotationYaw;
-
-            //removes water/suffocation/shadow overlays in screen
-            mc.thePlayer.setPosition(0, 500, 0);
         }
 
         lastCall = Sys.getTime();

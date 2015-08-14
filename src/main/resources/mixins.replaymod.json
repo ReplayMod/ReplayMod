@@ -4,12 +4,13 @@
   "mixins": [
     "MixinEffectRenderer",
     "MixinEntityRenderer",
+    "MixinItemRenderer",
     "MixinMinecraft",
     "MixinRender",
     "MixinRendererLivingEntity",
+    "MixinRenderGlobal",
     "MixinRenderItem",
-    "MixinRenderManager",
-    "MixinRenderGlobal"
+    "MixinRenderManager"
   ],
   "server": [],
   "client": [],
