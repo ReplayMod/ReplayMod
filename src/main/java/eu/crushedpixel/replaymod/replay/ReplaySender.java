@@ -325,6 +325,13 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             }
         }
 
+        if(p instanceof S19PacketEntityStatus) {
+            S19PacketEntityStatus packet = (S19PacketEntityStatus)p;
+            if(packet.field_149164_a == actualID) {
+                packet.field_149164_a = RecordingHandler.entityID;
+            }
+        }
+
         if(p instanceof S01PacketJoinGame) {
             S01PacketJoinGame packet = (S01PacketJoinGame) p;
             allowMovement = true;

@@ -313,67 +313,6 @@ public class RecordingHandler {
     }
 
     @SubscribeEvent
-    public void onHurt(LivingHurtEvent event) {
-        if(!ConnectionEventHandler.isRecording()) return;
-        try {
-            if(event.entity.getEntityId() != mc.thePlayer.getEntityId()) {
-                return;
-            }
-
-            S19PacketEntityStatus packet = new S19PacketEntityStatus();
-
-            ByteBuf buf = Unpooled.buffer();
-            PacketBuffer pbuf = new PacketBuffer(buf);
-
-            pbuf.writeInt(entityID);
-            pbuf.writeByte(2);
-
-            packet.readPacketData(pbuf);
-
-            ConnectionEventHandler.insertPacket(packet);
-
-            //Damage Animation
-            S0BPacketAnimation pac = new S0BPacketAnimation();
-
-            ByteBuf bb = Unpooled.buffer();
-            PacketBuffer pb = new PacketBuffer(bb);
-
-            pb.writeVarIntToBuffer(entityID);
-            pb.writeByte(1);
-
-            pac.readPacketData(pb);
-
-            ConnectionEventHandler.insertPacket(pac);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SubscribeEvent
-    public void onDeath(LivingDeathEvent event) {
-        if(!ConnectionEventHandler.isRecording()) return;
-        try {
-            if(event.entity.getEntityId() != mc.thePlayer.getEntityId()) {
-                return;
-            }
-
-            S19PacketEntityStatus packet = new S19PacketEntityStatus();
-
-            ByteBuf buf = Unpooled.buffer();
-            PacketBuffer pbuf = new PacketBuffer(buf);
-
-            pbuf.writeInt(entityID);
-            pbuf.writeByte(3);
-
-            packet.readPacketData(pbuf);
-
-            ConnectionEventHandler.insertPacket(packet);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SubscribeEvent
     public void onStartEating(PlayerUseItemEvent.Start event) {
         if(!ConnectionEventHandler.isRecording()) return;
         try {
