@@ -20,8 +20,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.storage.MapData;
-import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -33,7 +31,6 @@ public class SpectatorRenderer {
     private EntityPlayer currentPlayer;
 
     public SpectatorRenderer() {
-        MinecraftForge.EVENT_BUS.register(this);
         FMLCommonHandler.instance().bus().register(this);
     }
 
@@ -97,19 +94,6 @@ public class SpectatorRenderer {
         if(this.mc.gameSettings.viewBobbing) {
             mc.entityRenderer.setupViewBobbing(partialTicks);
         }
-    }
-
-    @SubscribeEvent
-    public void renderHandEvent(RenderHandEvent event) {
-        if(!ReplayHandler.isInReplay() || ReplayHandler.isCamera()) {
-            return;
-        }
-
-        EntityPlayer entityPlayer = getSpectatedPlayer();
-        if(entityPlayer == null) return;
-
-        renderSpectatorHand(entityPlayer, event.partialTicks, event.renderPass);
-        event.setCanceled(true);
     }
 
     @SuppressWarnings("deprecation")
@@ -538,7 +522,6 @@ public class SpectatorRenderer {
     }
 
     public void cleanup() {
-        MinecraftForge.EVENT_BUS.unregister(this);
         FMLCommonHandler.instance().bus().unregister(this);
     }
 }

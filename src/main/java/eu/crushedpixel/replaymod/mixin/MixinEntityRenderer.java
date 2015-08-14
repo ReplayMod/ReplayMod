@@ -26,18 +26,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EntityRenderer.class)
 public abstract class MixinEntityRenderer implements EntityRendererHandler.IEntityRenderer, EntityRendererHandler.GluPerspective {
     private EntityRendererHandler handler;
-    private SpectatorRenderer spectatorRenderer;
+    private SpectatorRenderer spectatorRenderer = new SpectatorRenderer();
 
     @Override
     public void setHandler(EntityRendererHandler handler) {
         this.handler = handler;
-        if (spectatorRenderer != null) {
-            spectatorRenderer.cleanup();
-            spectatorRenderer = null;
-        }
-        if (handler != null) {
-            spectatorRenderer = new SpectatorRenderer();
-        }
     }
 
     @Override
@@ -112,11 +105,17 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     private void renderSpectatorHand(float partialTicks, int renderPass, CallbackInfo ci) {
         if (handler != null) {
             if (handler.data instanceof CubicOpenGlFrameCapturer.Data) {
+                ci.cancel();
                 return; // No spectator hands during 360° view, we wouldn't even know where to put it
             }
             Entity currentEntity = ReplayHandler.getCurrentEntity();
             if (!ReplayHandler.isCamera() && currentEntity instanceof EntityPlayer) {
                 renderPass = handler.data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE ? 1 : 0;
+                spectatorRenderer.renderSpectatorHand((EntityPlayer) currentEntity, partialTicks, renderPass);
+            }
+        } else if (ReplayHandler.isInReplay() && !ReplayHandler.isCamera()) {
+            Entity currentEntity = ReplayHandler.getCurrentEntity();
+            if (!ReplayHandler.isCamera() && currentEntity instanceof EntityPlayer) {
                 spectatorRenderer.renderSpectatorHand((EntityPlayer) currentEntity, partialTicks, renderPass);
             }
         }
