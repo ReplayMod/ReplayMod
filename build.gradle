@@ -19,7 +19,7 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "1.0.1"
+version = "1.0.2"
 group= "eu.crushedpixel.replaymod"
 archivesBaseName = "replaymod"
 
