@@ -100,7 +100,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                 }
             }
 
-            mc.addScheduledTask(new Runnable() {
+            loadedReplaysQueue.offer(new Runnable() {
                 @Override
                 public void run() {
                     replayGuiList.removeEntry(loadingListEntry);

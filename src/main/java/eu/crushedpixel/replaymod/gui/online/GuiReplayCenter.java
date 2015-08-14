@@ -42,7 +42,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
     private GuiAdvancedTextField searchNameInput, searchServerInput;
     private GuiButton searchActionButton;
 
-    private Queue<GuiReplayListEntry> loadedReplaysQueue = new ConcurrentLinkedQueue<GuiReplayListEntry>();
+    private Queue<GuiListExtended.IGuiListEntry> loadedReplaysQueue = new ConcurrentLinkedQueue<GuiListExtended.IGuiListEntry>();
 
     private boolean showSearchFields = false;
 
@@ -453,7 +453,12 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             searchServerInput.updateCursorCounter();
         }
         while (!loadedReplaysQueue.isEmpty()) {
-            currentList.addEntry(currentList.getEntries().size() - 1, loadedReplaysQueue.poll());
+            GuiListExtended.IGuiListEntry entry = loadedReplaysQueue.poll();
+            if (entry instanceof GuiLoadingListEntry) {
+                currentList.removeEntry(entry);
+            } else {
+                currentList.addEntry(currentList.getEntries().size() - 1, entry);
+            }
         }
     }
 
@@ -525,12 +530,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                     }
                 }
 
-                mc.addScheduledTask(new Runnable() {
-                    @Override
-                    public void run() {
-                        currentList.removeEntry(loadingListEntry);
-                    }
-                });
+                loadedReplaysQueue.add(loadingListEntry);
             }
         }, "replaymod-list-loader");
         currentListLoader.start();
