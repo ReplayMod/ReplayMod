@@ -120,9 +120,11 @@ public class ConnectionEventHandler {
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-        isRecording = false;
-        MinecraftForge.EVENT_BUS.unregister(guiOverlay);
-        packetListener = null;
-        ReplayMod.chatMessageHandler.stop();
+        if (isRecording) {
+            isRecording = false;
+            MinecraftForge.EVENT_BUS.unregister(guiOverlay);
+            packetListener = null;
+            ReplayMod.chatMessageHandler.stop();
+        }
     }
 }
