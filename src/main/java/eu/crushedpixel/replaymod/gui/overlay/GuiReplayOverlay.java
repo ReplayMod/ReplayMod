@@ -583,6 +583,9 @@ public class GuiReplayOverlay extends Gui {
         }
 
         // Setup scrollbar and timelines
+        if (timelineReal.timeStart + timelineReal.zoom > 1) {
+            timelineReal.timeStart = 1 - timelineReal.zoom;
+        }
         scrollbar.size = timelineReal.zoom;
         scrollbar.sliderPosition = timelineReal.timeStart;
 
