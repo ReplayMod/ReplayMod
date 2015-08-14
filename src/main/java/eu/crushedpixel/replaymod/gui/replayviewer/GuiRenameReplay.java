@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.gui.replayviewer;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
@@ -54,7 +55,16 @@ public class GuiRenameReplay extends GuiScreen {
 
                 File initRenamed = new File(folder, (this.replayNameInput.getText().trim() + ReplayFile.ZIP_FILE_EXTENSION).replaceAll("[^a-zA-Z0-9\\.\\- ]", "_"));
                 File renamed = ReplayFileIO.getNextFreeFile(initRenamed);
-                FileUtils.moveFile(file, renamed);
+                try {
+                    FileUtils.moveFile(file, renamed);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    mc.displayGuiScreen(new GuiErrorScreen(
+                            I18n.format("replaymod.gui.viewer.delete.failed1"),
+                            I18n.format("replaymod.gui.viewer.delete.failed2")
+                    ));
+                    return;
+                }
                 this.mc.displayGuiScreen(this.parent);
             }
         }
