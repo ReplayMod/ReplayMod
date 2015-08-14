@@ -485,7 +485,7 @@ public class SpectatorRenderer {
                 renderWaterOverlayTexture(partialTicks, player);
             }
 
-            if (this.mc.thePlayer.isBurning()) {
+            if (player.isBurning()) {
                 mc.entityRenderer.itemRenderer.renderFireInFirstPerson(partialTicks);
             }
         }
