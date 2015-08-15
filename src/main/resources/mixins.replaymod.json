@@ -4,7 +4,6 @@
   "mixins": [
     "MixinEffectRenderer",
     "MixinEntityRenderer",
-    "MixinItemRenderer",
     "MixinMinecraft",
     "MixinRender",
     "MixinRendererLivingEntity",
