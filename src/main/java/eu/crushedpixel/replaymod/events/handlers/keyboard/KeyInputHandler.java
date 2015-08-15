@@ -39,52 +39,41 @@ public class KeyInputHandler {
             boolean forward = false, backward = false, left = false, right = false, up = false, down = false;
 
             for(KeyBinding kb : keyBindings) {
-                //don't act on Mouse inputs
-                if(kb.getKeyCode() < 0) continue;
+                if(!kb.isKeyDown()) continue;
+                if(ReplayHandler.isCamera()) {
+                    if(kb.getKeyDescription().equals("key.forward")) {
+                        forward = true;
+                        speedup = true;
+                    }
 
-                if(!ReplayMod.replaySender.paused() && !kb.isKeyDown()) continue;
+                    if(kb.getKeyDescription().equals("key.back")) {
+                        backward = true;
+                        speedup = true;
+                    }
 
-                if(ReplayMod.replaySender.paused() && !Keyboard.isKeyDown(kb.getKeyCode()))
-                    continue;
-                try {
+                    if(kb.getKeyDescription().equals("key.jump")) {
+                        up = true;
+                        speedup = true;
+                    }
+
+                    if(kb.getKeyDescription().equals("key.left")) {
+                        left = true;
+                        speedup = true;
+                    }
+
+                    if(kb.getKeyDescription().equals("key.right")) {
+                        right = true;
+                        speedup = true;
+                    }
+                }
+
+                if(kb.getKeyDescription().equals("key.sneak")) {
                     if(ReplayHandler.isCamera()) {
-                        if(kb.getKeyDescription().equals("key.forward")) {
-                            forward = true;
-                            speedup = true;
-                        }
-
-                        if(kb.getKeyDescription().equals("key.back")) {
-                            backward = true;
-                            speedup = true;
-                        }
-
-                        if(kb.getKeyDescription().equals("key.jump")) {
-                            up = true;
-                            speedup = true;
-                        }
-
-                        if(kb.getKeyDescription().equals("key.left")) {
-                            left = true;
-                            speedup = true;
-                        }
-
-                        if(kb.getKeyDescription().equals("key.right")) {
-                            right = true;
-                            speedup = true;
-                        }
+                        down = true;
+                        speedup = true;
+                    } else {
+                        ReplayHandler.spectateCamera();
                     }
-
-                    if(kb.getKeyDescription().equals("key.sneak")) {
-                        if(ReplayHandler.isCamera()) {
-                            down = true;
-                            speedup = true;
-                        } else {
-                            ReplayHandler.spectateCamera();
-                        }
-                    }
-
-                } catch(Exception e) {
-                    e.printStackTrace();
                 }
             }
 
