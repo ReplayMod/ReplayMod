@@ -10,7 +10,8 @@
     "MixinRendererLivingEntity",
     "MixinRenderGlobal",
     "MixinRenderItem",
-    "MixinRenderManager"
+    "MixinRenderManager",
+    "MixinTileEntityEndPortalRenderer"
   ],
   "server": [],
   "client": [],
