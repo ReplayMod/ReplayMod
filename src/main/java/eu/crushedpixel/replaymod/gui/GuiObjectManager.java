@@ -175,7 +175,11 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
             nameInput.hint = I18n.format("replaymod.gui.objects.properties.name");
 
             for(CustomImageObject customImageObject : initialObjects) {
-                objectList.addElement(customImageObject);
+                try {
+                    objectList.addElement(customImageObject.copy());
+                } catch(IOException ioe) {
+                    ioe.printStackTrace();
+                }
             }
 
             objectList.addSelectionListener(new SelectionListener() {

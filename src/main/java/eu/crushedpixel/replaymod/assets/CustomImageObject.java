@@ -24,6 +24,20 @@ public class CustomImageObject implements GuiEntryListEntry {
         setLinkedAsset(assetUUID);
     }
 
+    public CustomImageObject copy() throws IOException {
+        CustomImageObject copy = new CustomImageObject(this.name, this.getLinkedAsset());
+
+        copy.textureWidth = this.textureWidth;
+        copy.textureHeight = this.textureHeight;
+
+        copy.width = width;
+        copy.height = height;
+
+        copy.transformations = transformations;
+
+        return copy;
+    }
+
     @Getter @Setter private String name;
     @Getter private UUID linkedAsset;
 
