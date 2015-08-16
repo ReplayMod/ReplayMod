@@ -38,8 +38,14 @@ public class StudioImplementation {
         ReplayFile replayFile = new ZipReplayFile(studio, file);
 
         ReplayMetaData metaData = replayFile.getMetaData();
+        if (beginning > metaData.getDuration()) {
+            beginning = metaData.getDuration();
+        }
         if (ending == 0) {
             ending = metaData.getDuration();
+        }
+        if (ending < beginning) {
+            ending = beginning;
         }
 
         PacketStream stream = studio.createReplayStream(replayFile.getPacketData(), true);
