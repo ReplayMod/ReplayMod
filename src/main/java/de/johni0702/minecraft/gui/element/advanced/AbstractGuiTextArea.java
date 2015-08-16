@@ -252,7 +252,7 @@ public abstract class AbstractGuiTextArea<T extends AbstractGuiTextArea<T>>
             newText[cursorY + 1] = text[cursorY].substring(cursorX);
 
             if (cursorY + 1 < text.length) {
-                System.arraycopy(text, cursorY + 1, newText, cursorY + 1, text.length - cursorY - 1);
+                System.arraycopy(text, cursorY + 1, newText, cursorY + 2, text.length - cursorY - 1);
             }
             text = newText;
             selectionX = cursorX = 0;

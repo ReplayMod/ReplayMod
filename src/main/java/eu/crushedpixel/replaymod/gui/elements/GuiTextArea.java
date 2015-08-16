@@ -250,7 +250,7 @@ public class GuiTextArea extends Gui implements GuiElement, GuiOutsideClickableE
             newText[cursorY + 1] = text[cursorY].substring(cursorX);
 
             if (cursorY + 1 < text.length) {
-                System.arraycopy(text, cursorY + 1, newText, cursorY + 1, text.length - cursorY - 1);
+                System.arraycopy(text, cursorY + 1, newText, cursorY + 2, text.length - cursorY - 1);
             }
             text = newText;
             selectionX = cursorX = 0;
@@ -510,118 +510,127 @@ public class GuiTextArea extends Gui implements GuiElement, GuiOutsideClickableE
             return;
         }
 
-        if (GuiScreen.isCtrlKeyDown()) {
+        try {
+            if (GuiScreen.isCtrlKeyDown()) {
+                switch (keyCode) {
+                    case Keyboard.KEY_A: // Select all
+                        cursorX = cursorY = 0;
+                        selectionY = text.length - 1;
+                        selectionX = text[selectionY].length();
+                        updateCurrentXOffset();
+                        updateCurrentYOffset();
+                        return;
+                    case Keyboard.KEY_C: // Copy
+                        GuiScreen.setClipboardString(getSelectedText());
+                        return;
+                    case Keyboard.KEY_V: // Paste
+                        if (enabled) {
+                            writeText(GuiScreen.getClipboardString());
+                        }
+                        return;
+                    case Keyboard.KEY_X: // Cut
+                        if (enabled) {
+                            GuiScreen.setClipboardString(cutSelectedText());
+                        }
+                        return;
+                }
+            }
+
+            boolean words = GuiScreen.isCtrlKeyDown();
+            boolean select = GuiScreen.isShiftKeyDown();
             switch (keyCode) {
-                case Keyboard.KEY_A: // Select all
-                    cursorX = cursorY = 0;
-                    selectionY = text.length - 1;
-                    selectionX = text[selectionY].length();
-                    updateCurrentXOffset();
-                    updateCurrentYOffset();
-                    return;
-                case Keyboard.KEY_C: // Copy
-                    GuiScreen.setClipboardString(getSelectedText());
-                    return;
-                case Keyboard.KEY_V: // Paste
+                case Keyboard.KEY_HOME:
+                    cursorX = 0;
+                    break;
+                case Keyboard.KEY_END:
+                    cursorX = text[cursorY].length();
+                    break;
+                case Keyboard.KEY_LEFT:
+                    if (cursorX == 0) {
+                        if (cursorY > 0) {
+                            cursorY--;
+                            cursorX = text[cursorY].length();
+                        }
+                    } else {
+                        if (words) {
+                            cursorX -= getPreviousWordLength();
+                        } else {
+                            cursorX--;
+                        }
+                    }
+                    break;
+                case Keyboard.KEY_RIGHT:
+                    if (cursorX == text[cursorY].length()) {
+                        if (cursorY < text.length - 1) {
+                            cursorY++;
+                            cursorX = 0;
+                        }
+                    } else {
+                        if (words) {
+                            cursorX += getNextWordLength();
+                        } else {
+                            cursorX++;
+                        }
+                    }
+                    break;
+                case Keyboard.KEY_UP:
+                    if (cursorY > 0) {
+                        cursorY--;
+                        cursorX = Math.min(cursorX, text[cursorY].length());
+                    }
+                    break;
+                case Keyboard.KEY_DOWN:
+                    if (cursorY + 1 < text.length) {
+                        cursorY++;
+                        cursorX = Math.min(cursorX, text[cursorY].length());
+                    }
+                    break;
+                case Keyboard.KEY_BACK:
                     if (enabled) {
-                        writeText(GuiScreen.getClipboardString());
+                        if (getSelectedText().length() > 0) {
+                            deleteSelectedText();
+                        } else if (words) {
+                            deletePreviousWord();
+                        } else {
+                            deletePreviousChar();
+                        }
                     }
                     return;
-                case Keyboard.KEY_X: // Cut
+                case Keyboard.KEY_DELETE:
                     if (enabled) {
-                        GuiScreen.setClipboardString(cutSelectedText());
+                        if (getSelectedText().length() > 0) {
+                            deleteSelectedText();
+                        } else if (words) {
+                            deleteNextWord();
+                        } else {
+                            deleteNextChar();
+                        }
+                    }
+                    return;
+                default:
+                    if (enabled) {
+                        if (key == '\r') {
+                            key = '\n';
+                        }
+                        writeChar(key);
                     }
                     return;
             }
-        }
 
-        boolean words = GuiScreen.isCtrlKeyDown();
-        boolean select = GuiScreen.isShiftKeyDown();
-        switch (keyCode) {
-            case Keyboard.KEY_HOME:
-                cursorX = 0;
-                break;
-            case Keyboard.KEY_END:
-                cursorX = text[cursorY].length();
-                break;
-            case Keyboard.KEY_LEFT:
-                if (cursorX == 0) {
-                    if (cursorY > 0) {
-                        cursorY--;
-                        cursorX = text[cursorY].length();
-                    }
-                } else {
-                    if (words) {
-                        cursorX -= getPreviousWordLength();
-                    } else {
-                        cursorX--;
-                    }
-                }
-                break;
-            case Keyboard.KEY_RIGHT:
-                if (cursorX == text[cursorY].length()) {
-                    if (cursorY < text.length - 1) {
-                        cursorY++;
-                        cursorX = 0;
-                    }
-                } else {
-                    if (words) {
-                        cursorX += getNextWordLength();
-                    } else {
-                        cursorX++;
-                    }
-                }
-                break;
-            case Keyboard.KEY_UP:
-                if (cursorY > 0) {
-                    cursorY--;
-                    cursorX = Math.min(cursorX, text[cursorY].length());
-                }
-                break;
-            case Keyboard.KEY_DOWN:
-                if (cursorY + 1 < text.length) {
-                    cursorY++;
-                    cursorX = Math.min(cursorX, text[cursorY].length());
-                }
-                break;
-            case Keyboard.KEY_BACK:
-                if (enabled) {
-                    if (getSelectedText().length() > 0) {
-                        deleteSelectedText();
-                    } else if (words) {
-                        deletePreviousWord();
-                    } else {
-                        deletePreviousChar();
-                    }
-                }
-                return;
-            case Keyboard.KEY_DELETE:
-                if (enabled) {
-                    if (getSelectedText().length() > 0) {
-                        deleteSelectedText();
-                    } else if (words) {
-                        deleteNextWord();
-                    } else {
-                        deleteNextChar();
-                    }
-                }
-                return;
-            default:
-                if (enabled) {
-                    if (key == '\r') {
-                        key = '\n';
-                    }
-                    writeChar(key);
-                }
-                return;
-        }
+            updateCurrentXOffset();
+            updateCurrentYOffset();
 
-        updateCurrentXOffset();
-        updateCurrentYOffset();
-
-        if (!select) {
-            selectionX = cursorX;
-            selectionY = cursorY;
+            if (!select) {
+                selectionX = cursorX;
+                selectionY = cursorY;
+            }
+        } finally {
+            System.out.println(cursorX + "/" + cursorY);
+            System.out.println(selectionX + "/" + selectionY);
+            System.out.println("Lines (" + text.length + "): ");
+            for (String line : text) {
+                System.out.println(line);
+            }
         }
     }
 
