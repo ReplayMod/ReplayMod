@@ -80,7 +80,7 @@ public class CustomImageObject implements GuiEntryListEntry {
         this.setWidth(w);
         this.setHeight(h);
 
-        resourceLocation = new ResourceLocation(linkedAsset.toString());
+        resourceLocation = new ResourceLocation(UUID.randomUUID().toString()+linkedAsset.toString());
 
         Minecraft.getMinecraft().addScheduledTask(new Runnable() {
             @Override
