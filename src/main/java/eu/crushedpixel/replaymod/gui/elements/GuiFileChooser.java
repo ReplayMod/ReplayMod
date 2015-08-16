@@ -67,8 +67,6 @@ public class GuiFileChooser extends GuiAdvancedButton implements GuiOutsideClick
                     e.printStackTrace();
                 }
 
-                if(mc.isFullScreen()) mc.toggleFullscreen();
-
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -91,6 +89,14 @@ public class GuiFileChooser extends GuiAdvancedButton implements GuiOutsideClick
                         }
 
                         fileChooser.setVisible(true);
+
+                        mc.addScheduledTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(mc.isFullScreen()) mc.toggleFullscreen();
+                                mc.setIngameNotInFocus();
+                            }
+                        });
 
                         int result;
 
