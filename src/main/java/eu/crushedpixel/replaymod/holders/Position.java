@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.interpolation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.BlockPos;
 
 @Data
@@ -23,6 +24,12 @@ public class Position implements KeyframeValue {
         this.x = pos.getX();
         this.y = pos.getY();
         this.z = pos.getZ();
+    }
+
+    public Position(Entity entity) {
+        this.x = entity.posX;
+        this.y = entity.posY;
+        this.z = entity.posZ;
     }
 
     @Override

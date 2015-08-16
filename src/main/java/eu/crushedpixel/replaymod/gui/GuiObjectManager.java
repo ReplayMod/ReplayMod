@@ -153,7 +153,7 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
                     try {
                         CustomImageObject customImageObject = new CustomImageObject(I18n.format("replaymod.gui.objects.defaultname"), null);
 
-                        Position defaultPosition = new Position(mc.getRenderViewEntity().getPosition());
+                        Position defaultPosition = new Position(mc.getRenderViewEntity());
                         customImageObject.getTransformations().setDefaultPosition(defaultPosition);
 
                         objectList.addElement(customImageObject);
