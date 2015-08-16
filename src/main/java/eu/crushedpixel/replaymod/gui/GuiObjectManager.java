@@ -1,8 +1,6 @@
 package eu.crushedpixel.replaymod.gui;
 
-import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.assets.CustomImageObject;
-import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
 import eu.crushedpixel.replaymod.assets.ReplayAsset;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.NumberValueChangeListener;
@@ -14,8 +12,6 @@ import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
-import eu.crushedpixel.replaymod.utils.ReplayFile;
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
@@ -26,7 +22,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Point;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -377,18 +372,6 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
         }
 
         ReplayHandler.setCustomImageObjects(objects);
-
-        if(objects.size() > 0) {
-            try {
-                File f = File.createTempFile(ReplayFile.ENTRY_CUSTOM_OBJECTS, "json");
-                ReplayFileIO.write(new CustomObjectRepository(objects), f);
-                ReplayMod.replayFileAppender.registerModifiedFile(f, ReplayFile.ENTRY_CUSTOM_OBJECTS, ReplayHandler.getReplayFile());
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            ReplayMod.replayFileAppender.registerModifiedFile(null, ReplayFile.ENTRY_CUSTOM_OBJECTS, ReplayHandler.getReplayFile());
-        }
     }
 
     private void updateValuesForTransformation(Transformation transformation) {

@@ -51,6 +51,15 @@ public class CustomImageObject implements GuiEntryListEntry {
     @Getter private Transformations transformations = new Transformations();
 
     public void setLinkedAsset(UUID assetUUID) throws IOException {
+        if(assetUUID == null) return;
+
+        //if no asset repository available, simply accept the UUID and it will load the image later
+        //when calling getResourceLocation for the first time
+        if(ReplayHandler.getAssetRepository() == null) {
+            this.linkedAsset = assetUUID;
+            return;
+        }
+
         ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(assetUUID);
 
         if(asset instanceof ReplayImageAsset) {

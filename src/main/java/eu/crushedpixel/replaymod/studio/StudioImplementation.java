@@ -122,7 +122,7 @@ public class StudioImplementation {
             }
             if (timeKeyframes >= 2) {
                 Keyframe[] keyframes = resultKeyframes.toArray(new Keyframe[resultKeyframes.size()]);
-                resultSets.add(new KeyframeSet(set.getName(), keyframes));
+                resultSets.add(new KeyframeSet(set.getName(), keyframes, set.getCustomObjects()));
             }
         }
 

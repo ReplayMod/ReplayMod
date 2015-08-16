@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import eu.crushedpixel.replaymod.assets.CustomImageObject;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
@@ -87,6 +88,11 @@ public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
                         keyframes.add(newKeyframe);
                     }
                     in.endArray();
+
+                } else if("customObjects".equals(jsonTag)) {
+                    CustomImageObject[] customObjects = new Gson().fromJson(in, CustomImageObject[].class);
+
+                    set.setCustomObjects(customObjects);
                 }
             }
             in.endObject();

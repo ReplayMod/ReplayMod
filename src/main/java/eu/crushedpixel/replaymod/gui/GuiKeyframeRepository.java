@@ -139,7 +139,7 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
                 List<Keyframe> kfs = new ArrayList<Keyframe>(ReplayHandler.getAllKeyframes());
 
                 Keyframe[] keyframes = kfs.toArray(new Keyframe[ReplayHandler.getAllKeyframes().size()]);
-                KeyframeSet newSet = new KeyframeSet(I18n.format("replaymod.gui.keyframerepository.preset.defaultname"), keyframes);
+                KeyframeSet newSet = new KeyframeSet(I18n.format("replaymod.gui.keyframerepository.preset.defaultname"), keyframes, ReplayHandler.getCustomImageObjects());
 
                 try {
                     CameraPathValidator.validateCameraPath(ReplayHandler.getPositionKeyframes(), ReplayHandler.getTimeKeyframes());
@@ -161,7 +161,7 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
                 keyframeSetList.removeElement(keyframeSetList.getSelectionIndex());
                 break;
             case GuiConstants.KEYFRAME_REPOSITORY_LOAD_BUTTON:
-                ReplayHandler.useKeyframePreset(keyframeSetList.getElement(keyframeSetList.getSelectionIndex()).getKeyframes());
+                ReplayHandler.useKeyframePreset(keyframeSetList.getElement(keyframeSetList.getSelectionIndex()));
                 saveOnQuit();
                 mc.displayGuiScreen(null);
                 break;
@@ -198,6 +198,9 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
             this.drawString(fontRendererObj, I18n.format("replaymod.gui.duration")+": "+ DurationFormatUtils.formatDurationHMS(currentSetDuration),
                     loadButton.xPosition+2, removeButton.yPosition + 70, Color.WHITE.getRGB());
+
+            this.drawString(fontRendererObj, I18n.format("replaymod.gui.objects")+": "+currentSet.getCustomObjectCount(),
+                    loadButton.xPosition+2, removeButton.yPosition + 90, Color.WHITE.getRGB());
         }
 
         if(message != null) {

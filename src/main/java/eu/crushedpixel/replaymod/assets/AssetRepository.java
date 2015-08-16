@@ -83,7 +83,7 @@ public class AssetRepository {
                 try {
                     String filepath = ReplayFile.ENTRY_ASSET_FOLDER + uuid.toString()+ "_" + asset.getDisplayString() + "." + asset.getSavedFileExtension();
 
-                    File toAdd = File.createTempFile(asset.getDisplayString(), asset.getSavedFileExtension());
+                    File toAdd = File.createTempFile("ASSET_"+asset.getDisplayString(), asset.getSavedFileExtension());
                     FileOutputStream fos = new FileOutputStream(toAdd);
                     asset.writeToStream(fos);
 

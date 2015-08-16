@@ -1,26 +1,45 @@
 package eu.crushedpixel.replaymod.holders;
 
-import lombok.EqualsAndHashCode;
+import eu.crushedpixel.replaymod.assets.CustomImageObject;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 @NoArgsConstructor
-
-@EqualsAndHashCode
 public class KeyframeSet implements GuiEntryListEntry {
     private String name;
     private Keyframe<AdvancedPosition>[] positionKeyframes;
     private Keyframe<TimestampValue>[] timeKeyframes;
+    private CustomImageObject[] customObjects = new CustomImageObject[0];
 
-    public KeyframeSet(String name, Keyframe[] keyframes) {
+    public KeyframeSet(String name, Keyframe[] keyframes, List<CustomImageObject> customObjectRepository) {
         this.name = name;
+        setCustomObjects(customObjectRepository.toArray(new CustomImageObject[customObjectRepository.size()]));
         setKeyframes(keyframes);
     }
 
-    public void setName(String name) {
+    public KeyframeSet(String name, Keyframe[] keyframes, CustomImageObject[] customObjects) {
         this.name = name;
+        setCustomObjects(customObjects);
+        setKeyframes(keyframes);
+    }
+
+    public void setCustomObjects(CustomImageObject[] customObjects) {
+        this.customObjects = new CustomImageObject[customObjects.length];
+
+        int i = 0;
+        for(CustomImageObject object : customObjects) {
+            try {
+                this.customObjects[i] = object.copy();
+            } catch(IOException ioe) {
+                ioe.printStackTrace();
+            }
+            i++;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -37,10 +56,6 @@ public class KeyframeSet implements GuiEntryListEntry {
 
         positionKeyframes = posKFList.toArray(new Keyframe[posKFList.size()]);
         timeKeyframes = timeKFList.toArray(new Keyframe[timeKFList.size()]);
-    }
-
-    public String getName() {
-        return name;
     }
 
     public Keyframe[] getKeyframes() {
@@ -71,6 +86,10 @@ public class KeyframeSet implements GuiEntryListEntry {
         }
 
         return last-first;
+    }
+
+    public int getCustomObjectCount() {
+        return customObjects.length;
     }
 
     @Override

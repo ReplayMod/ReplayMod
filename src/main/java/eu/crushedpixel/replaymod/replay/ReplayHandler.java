@@ -118,10 +118,14 @@ public class ReplayHandler {
     }
 
     public static void useKeyframePresetFromRepository(int index) {
-        useKeyframePreset(keyframeRepository[index].getKeyframes());
+        useKeyframePreset(keyframeRepository[index]);
     }
 
-    public static void useKeyframePreset(Keyframe[] kfs) {
+    public static void useKeyframePreset(KeyframeSet keyframeSet) {
+        setCustomImageObjects(Arrays.asList(keyframeSet.getCustomObjects()));
+
+        Keyframe[] kfs = keyframeSet.getKeyframes();
+
         positionKeyframes.clear();
         timeKeyframes.clear();
         for(Keyframe kf : kfs) {
@@ -406,9 +410,7 @@ public class ReplayHandler {
         //load assets
         assetRepository = currentReplayFile.assetRepository().get();
 
-        //load custom image objects
-        customImageObjects = currentReplayFile.customImageObjects().get();
-        if(customImageObjects == null) customImageObjects = new CustomObjectRepository();
+        customImageObjects = new CustomObjectRepository();
 
         ReplayMod.replaySender = new ReplaySender(currentReplayFile, asyncMode);
         channel.pipeline().addFirst(ReplayMod.replaySender);
