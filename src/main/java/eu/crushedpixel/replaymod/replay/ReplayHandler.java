@@ -495,6 +495,8 @@ public class ReplayHandler {
 
         resetKeyframes(true);
 
+        PlayerHandler.resetHiddenPlayers();
+
         inReplay = false;
 
         FMLCommonHandler.instance().bus().post(new ReplayExitEvent());
