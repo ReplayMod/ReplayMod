@@ -2,10 +2,10 @@
   "required": true,
   "package": "eu.crushedpixel.replaymod.mixin",
   "mixins": [
-    "MixinEntityPlayerSP",
     "MixinEffectRenderer",
     "MixinEntityRenderer",
     "MixinMinecraft",
+    "MixinPlayerControllerMP",
     "MixinRender",
     "MixinRenderArrow",
     "MixinRendererLivingEntity",

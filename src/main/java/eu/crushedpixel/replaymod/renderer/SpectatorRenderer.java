@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.renderer;
 
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.SkinProvider;
 import eu.crushedpixel.replaymod.video.EntityRendererHandler;
 import net.minecraft.block.material.Material;
@@ -35,7 +34,7 @@ public class SpectatorRenderer {
     }
 
     private EntityPlayer getSpectatedPlayer() {
-        Entity current = ReplayHandler.getCurrentEntity();
+        Entity current = mc.getRenderViewEntity();
         if(!(current instanceof EntityPlayer)) return null;
         return (EntityPlayer)current;
     }
@@ -211,7 +210,7 @@ public class SpectatorRenderer {
 
     public void renderMapArms(EntityPlayer entityPlayer) {
         bindPlayerTexture(entityPlayer);
-        Render render = mc.entityRenderer.itemRenderer.renderManager.getEntityRenderObject(ReplayHandler.getCurrentEntity());
+        Render render = mc.entityRenderer.itemRenderer.renderManager.getEntityRenderObject(entityPlayer);
         RenderPlayer renderplayer = (RenderPlayer)render;
 
         if(!entityPlayer.isInvisible()) {
@@ -397,7 +396,7 @@ public class SpectatorRenderer {
     public void tickEvent(TickEvent event) {
         if(event.type != TickEvent.Type.CLIENT) return;
         if(event.phase != TickEvent.Phase.START) return;
-        Entity current = ReplayHandler.getCurrentEntity();
+        Entity current = mc.getRenderViewEntity();
         if(!(current instanceof EntityPlayer)) return;
         EntityPlayer entityPlayer = (EntityPlayer)current;
         updateEquippedItem(entityPlayer);

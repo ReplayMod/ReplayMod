@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.video;
 
 import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.gui.GuiVideoRenderer;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
@@ -206,11 +205,8 @@ public class VideoRenderer implements RenderInfo {
     private void updateCam() {
         KeyframeList<AdvancedPosition> positionKeyframes = ReplayHandler.getPositionKeyframes();
 
-        if (ReplayHandler.getCameraEntity() == null) {
-            if (mc.theWorld == null) {
-                return; // World hasn't been sent yet
-            }
-            ReplayHandler.setCameraEntity(new CameraEntity(mc.theWorld));
+        if (mc.thePlayer == null) {
+            return; // Not ready yet
         }
         int videoTime = framesDone * 1000 / fps;
         int posCount = ReplayHandler.getPositionKeyframes().size();

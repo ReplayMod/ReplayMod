@@ -3,21 +3,20 @@ package eu.crushedpixel.replaymod.entities;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.replay.LesserDataWatcher;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.stats.StatFileWriter;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.Sys;
 
-public class CameraEntity extends EntityPlayer {
+public class CameraEntity extends EntityPlayerSP {
 
     public static final double SPEED_CHANGE = 0.5;
     public static final double LOWER_SPEED = 2;
@@ -46,35 +45,12 @@ public class CameraEntity extends EntityPlayer {
     private Vec3 dirBefore;
     private double motion;
 
-    private final Minecraft mc = Minecraft.getMinecraft();
-
     private long lastCall = 0;
 
     private boolean speedup = false;
 
-    public CameraEntity(World worldIn) {
-        super(worldIn, Minecraft.getMinecraft().getSession().getProfile());
-        FMLCommonHandler.instance().bus().register(this);
-    }
-
-    @SubscribeEvent
-    public void tick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            if(!ReplayHandler.isInReplay()) return;
-            Entity view = Minecraft.getMinecraft().getRenderViewEntity();
-            if (view != this && view != null) {
-                prevPosX = view.prevPosX;
-                prevPosY = view.prevPosY;
-                prevPosZ = view.prevPosZ;
-                prevRotationYaw = view.prevRotationYaw;
-                prevRotationPitch = view.prevRotationPitch;
-                posX = view.posX;
-                posY = view.posY;
-                posZ = view.posZ;
-                rotationYaw = view.rotationYaw;
-                rotationPitch = view.rotationPitch;
-            }
-        }
+    public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
+        super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
     }
 
     //frac = time since last tick
@@ -94,13 +70,6 @@ public class CameraEntity extends EntityPlayer {
         }
 
         motion = Math.min(motion, MAX_SPEED);
-
-        if(ReplayHandler.getCameraEntity() != null && mc.thePlayer != null
-                && mc.getRenderViewEntity() != null) {
-            //Aligns the particle rotation
-            mc.thePlayer.rotationPitch = mc.thePlayer.prevRotationPitch = mc.getRenderViewEntity().rotationPitch;
-            mc.thePlayer.rotationYaw = mc.thePlayer.prevRotationYaw = mc.getRenderViewEntity().rotationYaw;
-        }
 
         lastCall = Sys.getTime();
 
@@ -192,6 +161,19 @@ public class CameraEntity extends EntityPlayer {
                 posX + width / 2, posY + height, posZ + width / 2));
     }
 
+    private void updatePos(Entity to) {
+        prevPosX = to.prevPosX;
+        prevPosY = to.prevPosY;
+        prevPosZ = to.prevPosZ;
+        prevRotationYaw = to.prevRotationYaw;
+        prevRotationPitch = to.prevRotationPitch;
+        posX = to.posX;
+        posY = to.posY;
+        posZ = to.posZ;
+        rotationYaw = to.rotationYaw;
+        rotationPitch = to.rotationPitch;
+    }
+
     @Override
     protected void entityInit() {
         this.dataWatcher = new LesserDataWatcher(this);
@@ -209,8 +191,36 @@ public class CameraEntity extends EntityPlayer {
     }
 
     @Override
+    public void onUpdate() {
+        Entity view = mc.getRenderViewEntity();
+        if (view != null && view != this) {
+            updatePos(view);
+        }
+    }
+
+    @Override
+    public boolean isEntityInsideOpaqueBlock() {
+        return false;
+    }
+
+    @Override
+    public boolean isInsideOfMaterial(Material materialIn) {
+        return false;
+    }
+
+    @Override
+    public boolean isInLava() {
+        return false;
+    }
+
+    @Override
+    public boolean isInWater() {
+        return false;
+    }
+
+    @Override
     public boolean canBePushed() {
-        return true;
+        return false;
     }
 
     @Override
@@ -218,20 +228,7 @@ public class CameraEntity extends EntityPlayer {
 
     @Override
     public boolean canBeCollidedWith() {
-        return true;
-    }
-
-    @Override
-    public boolean canRenderOnFire() {
         return false;
-    }
-
-    @Override
-    public void setCurrentItemOrArmor(int slotIn, ItemStack stack) {}
-
-    @Override
-    public ItemStack[] getInventory() {
-        return null;
     }
 
     @Override

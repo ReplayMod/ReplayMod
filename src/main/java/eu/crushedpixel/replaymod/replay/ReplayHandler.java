@@ -31,7 +31,6 @@ import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.ReportedException;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 
@@ -51,13 +50,11 @@ public class ReplayHandler {
     private static Keyframe selectedKeyframe;
 
     private static boolean inPath = false;
-    private static CameraEntity cameraEntity;
 
     private static KeyframeList<AdvancedPosition> positionKeyframes = new KeyframeList<AdvancedPosition>();
     private static KeyframeList<TimestampValue> timeKeyframes = new KeyframeList<TimestampValue>();
 
     private static boolean inReplay = false;
-    private static Entity currentEntity = null;
     private static AdvancedPosition lastPosition = null;
 
     private static KeyframeList<Marker> initialMarkers = new KeyframeList<Marker>();
@@ -142,31 +139,18 @@ public class ReplayHandler {
             spectateCamera();
         }
         else {
-            currentEntity = e;
-            if (mc.getRenderViewEntity() != currentEntity) {
-                mc.setRenderViewEntity(currentEntity);
+            if (mc.getRenderViewEntity() != e) {
+                mc.setRenderViewEntity(e);
             }
         }
     }
 
     public static void spectateCamera() {
-        if(currentEntity != null) {
-            AdvancedPosition prev = new AdvancedPosition(currentEntity, false);
-            cameraEntity.movePath(prev);
-        }
-        currentEntity = cameraEntity;
-        if(cameraEntity == null) {
-            cameraEntity = new CameraEntity(mc.theWorld);
-        }
-        mc.setRenderViewEntity(cameraEntity);
+        mc.setRenderViewEntity(getCameraEntity());
     }
 
     public static boolean isCamera() {
-        return currentEntity == cameraEntity;
-    }
-
-    public static Entity getCurrentEntity() {
-        return currentEntity;
+        return mc.thePlayer instanceof CameraEntity && mc.thePlayer == mc.getRenderViewEntity();
     }
 
     public static void startPath(RenderOptions renderOptions, boolean fromStart) {
@@ -210,21 +194,7 @@ public class ReplayHandler {
     }
 
     public static CameraEntity getCameraEntity() {
-        if(cameraEntity == null && mc.theWorld != null) {
-            synchronized (ReplayHandler.class) {
-                World world = mc.theWorld;
-                if (cameraEntity == null && world != null) {
-                    cameraEntity = new CameraEntity(world);
-                }
-            }
-        }
-        return cameraEntity;
-    }
-
-    public static void setCameraEntity(CameraEntity entity) {
-        if(entity == null) return;
-        cameraEntity = entity;
-        spectateCamera();
+        return mc.thePlayer instanceof CameraEntity ? (CameraEntity) mc.thePlayer : null;
     }
 
     public static float getCameraTilt() {

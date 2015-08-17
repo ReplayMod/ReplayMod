@@ -108,13 +108,13 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
                 ci.cancel();
                 return; // No spectator hands during 360° view, we wouldn't even know where to put it
             }
-            Entity currentEntity = ReplayHandler.getCurrentEntity();
+            Entity currentEntity = Minecraft.getMinecraft().getRenderViewEntity();
             if (!ReplayHandler.isCamera() && currentEntity instanceof EntityPlayer) {
                 renderPass = handler.data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE ? 1 : 0;
                 spectatorRenderer.renderSpectatorHand((EntityPlayer) currentEntity, partialTicks, renderPass);
             }
         } else if (ReplayHandler.isInReplay() && !ReplayHandler.isCamera()) {
-            Entity currentEntity = ReplayHandler.getCurrentEntity();
+            Entity currentEntity = Minecraft.getMinecraft().getRenderViewEntity();
             if (!ReplayHandler.isCamera() && currentEntity instanceof EntityPlayer) {
                 spectatorRenderer.renderSpectatorHand((EntityPlayer) currentEntity, partialTicks, renderPass);
             }
