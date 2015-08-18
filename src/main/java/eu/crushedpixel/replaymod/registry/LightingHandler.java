@@ -6,6 +6,9 @@ import net.minecraft.client.settings.GameSettings.Options;
 
 public class LightingHandler {
 
+    //I've picked this value because it's very unlikely someone is going to set it manually
+    private static final float AMBIENT_GAMMA = 1000;
+
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     private static float initialGamma = 0;
@@ -15,11 +18,11 @@ public class LightingHandler {
     public static void setLighting(boolean lighting) {
 
         float gamma = mc.gameSettings.getOptionFloatValue(Options.GAMMA);
-        if(gamma < 1000) {
+        if(gamma != AMBIENT_GAMMA) {
             initialGamma = gamma;
         }
 
-        if(lighting) mc.gameSettings.setOptionFloatValue(Options.GAMMA, 1000);
+        if(lighting) mc.gameSettings.setOptionFloatValue(Options.GAMMA, AMBIENT_GAMMA);
         else mc.gameSettings.setOptionFloatValue(Options.GAMMA, initialGamma);
 
         enabled = lighting;
