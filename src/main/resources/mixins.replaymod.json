@@ -5,6 +5,7 @@
     "MixinEffectRenderer",
     "MixinEntityRenderer",
     "MixinMinecraft",
+    "MixinNetHandlerPlayClient",
     "MixinPlayerControllerMP",
     "MixinRender",
     "MixinRenderArrow",

@@ -5,7 +5,6 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
-import eu.crushedpixel.replaymod.events.handlers.RecordingHandler;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -39,6 +38,14 @@ import java.util.concurrent.Callable;
  */
 @Sharable
 public class ReplaySender extends ChannelInboundHandlerAdapter {
+
+    /**
+     * Previously packets for the client player were inserted using one fixed entity id (this one).
+     * This is no longer the case however to provide backwards compatibility, we have to convert
+     * these old packets to use the normal entity id.
+     * Need to punch someone? -> CrushedPixel
+     */
+    public static final int LEGACY_ENTITY_ID = Integer.MIN_VALUE + 9001;
 
     /**
      * These packets are ignored completely during replay.
@@ -291,6 +298,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             }
         }
 
+        convertLegacyEntityIds(p);
+
         if(p instanceof S48PacketResourcePackSend) {
             S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
             String url = packet.func_179783_a();
@@ -311,33 +320,12 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             }
         }
 
-        if(p instanceof S1CPacketEntityMetadata) {
-            S1CPacketEntityMetadata packet = (S1CPacketEntityMetadata) p;
-            if(packet.field_149379_a == actualID) {
-                packet.field_149379_a = RecordingHandler.entityID;
-            }
-        }
-
-        if(p instanceof S1BPacketEntityAttach) {
-            S1BPacketEntityAttach packet = (S1BPacketEntityAttach) p;
-            if(packet.func_149403_d() == actualID) {
-                return null;
-            }
-        }
-
-        if(p instanceof S19PacketEntityStatus) {
-            S19PacketEntityStatus packet = (S19PacketEntityStatus)p;
-            if(packet.field_149164_a == actualID) {
-                packet.field_149164_a = RecordingHandler.entityID;
-            }
-        }
-
         if(p instanceof S01PacketJoinGame) {
             S01PacketJoinGame packet = (S01PacketJoinGame) p;
             allowMovement = true;
             int entId = packet.getEntityId();
             actualID = entId;
-            entId = Integer.MIN_VALUE + 9002;
+            entId = -1789435; // Camera entity id should be negative which is an invalid id and can't be used by servers
             int dimension = packet.getDimension();
             EnumDifficulty difficulty = packet.getDifficulty();
             int maxPlayers = packet.getMaxPlayers();
@@ -726,4 +714,65 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         return p; // During synchronous playback everything is sent normally
     }
 
+    /**
+     * This is necessary to convert packets from old replays to new replays.
+     * @param packet The packet to be transformed.
+     * @see #LEGACY_ENTITY_ID
+     */
+    private void convertLegacyEntityIds(Packet packet) {
+        if (packet instanceof S0CPacketSpawnPlayer) {
+            S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
+            if (p.field_148957_a == LEGACY_ENTITY_ID) {
+                p.field_148957_a = actualID;
+            }
+        } else if (packet instanceof S18PacketEntityTeleport) {
+            S18PacketEntityTeleport p = (S18PacketEntityTeleport) packet;
+            if (p.field_149458_a == LEGACY_ENTITY_ID) {
+                p.field_149458_a = actualID;
+            }
+        } else if (packet instanceof S14PacketEntity.S17PacketEntityLookMove) {
+            S14PacketEntity.S17PacketEntityLookMove p = (S14PacketEntity.S17PacketEntityLookMove) packet;
+            if (p.field_149074_a == LEGACY_ENTITY_ID) {
+                p.field_149074_a = actualID;
+            }
+        } else if (packet instanceof S19PacketEntityHeadLook) {
+            S19PacketEntityHeadLook p = (S19PacketEntityHeadLook) packet;
+            if (p.field_149384_a == LEGACY_ENTITY_ID) {
+                p.field_149384_a = actualID;
+            }
+        } else if (packet instanceof S12PacketEntityVelocity) {
+            S12PacketEntityVelocity p = (S12PacketEntityVelocity) packet;
+            if (p.field_149417_a == LEGACY_ENTITY_ID) {
+                p.field_149417_a = actualID;
+            }
+        } else if (packet instanceof S0BPacketAnimation) {
+            S0BPacketAnimation p = (S0BPacketAnimation) packet;
+            if (p.entityId == LEGACY_ENTITY_ID) {
+                p.entityId = actualID;
+            }
+        } else if (packet instanceof S04PacketEntityEquipment) {
+            S04PacketEntityEquipment p = (S04PacketEntityEquipment) packet;
+            if (p.field_149394_a == LEGACY_ENTITY_ID) {
+                p.field_149394_a = actualID;
+            }
+        } else if (packet instanceof S1BPacketEntityAttach) {
+            S1BPacketEntityAttach p = (S1BPacketEntityAttach) packet;
+            if (p.field_149408_a == LEGACY_ENTITY_ID) {
+                p.field_149408_a = actualID;
+            }
+            if (p.field_149406_b == LEGACY_ENTITY_ID) {
+                p.field_149406_b = actualID;
+            }
+        } else if (packet instanceof S0DPacketCollectItem) {
+            S0DPacketCollectItem p = (S0DPacketCollectItem) packet;
+            if (p.field_149356_b == LEGACY_ENTITY_ID) {
+                p.field_149356_b = actualID;
+            }
+        } else if (packet instanceof S13PacketDestroyEntities) {
+            S13PacketDestroyEntities p = (S13PacketDestroyEntities) packet;
+            if (p.field_149100_a.length == 1 && p.field_149100_a[0] == LEGACY_ENTITY_ID) {
+                p.field_149100_a[0] = actualID;
+            }
+        }
+    }
 }

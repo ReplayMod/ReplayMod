@@ -12,12 +12,8 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.*;
 import net.minecraft.network.play.server.S14PacketEntity.S17PacketEntityLookMove;
-import net.minecraft.network.play.server.S38PacketPlayerListItem.Action;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.MathHelper;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
@@ -29,8 +25,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 public class RecordingHandler {
 
-    public static final int entityID = Integer.MIN_VALUE + 9001;
-
     private final Minecraft mc = Minecraft.getMinecraft();
     private Double lastX = null, lastY = null, lastZ = null;
     private ItemStack[] playerItems = new ItemStack[5];
@@ -39,32 +33,9 @@ public class RecordingHandler {
     private int lastRiding = -1;
     private Integer rotationYawHeadBefore = null;
 
-    @SubscribeEvent
-    public void onPlayerJoin(EntityJoinWorldEvent e) {
+    public void onPlayerJoin() {
         try {
-            if(e.entity != mc.thePlayer) return;
             if(!ConnectionEventHandler.isRecording()) return;
-
-            EntityPlayer player = (EntityPlayer) e.entity;
-
-            S38PacketPlayerListItem ppli = new S38PacketPlayerListItem();
-            ByteBuf buf = Unpooled.buffer();
-            PacketBuffer pbuf = new PacketBuffer(buf);
-
-            pbuf.writeEnumValue(Action.ADD_PLAYER);
-            pbuf.writeVarIntToBuffer(1);
-            pbuf.writeUuid(e.entity.getUniqueID());
-
-            pbuf.writeString(player.getName());
-            pbuf.writeVarIntToBuffer(0);
-            pbuf.writeVarIntToBuffer(mc.playerController.getCurrentGameType().getID());
-            pbuf.writeVarIntToBuffer(0);
-
-            pbuf.writeBoolean(true);
-            pbuf.writeChatComponent(player.getDisplayName());
-
-            ppli.readPacketData(pbuf);
-            ConnectionEventHandler.insertPacket(ppli);
 
             ConnectionEventHandler.insertPacket(spawnPlayer(mc.thePlayer));
         } catch(Exception e1) {
@@ -79,7 +50,7 @@ public class RecordingHandler {
             ByteBuf bb = Unpooled.buffer();
             PacketBuffer pb = new PacketBuffer(bb);
 
-            pb.writeVarIntToBuffer(entityID);
+            pb.writeVarIntToBuffer(player.getEntityId());
             pb.writeUuid(EntityPlayer.getUUID(player.getGameProfile()));
 
             pb.writeInt(MathHelper.floor_double(player.posX * 32.0D));
@@ -144,12 +115,12 @@ public class RecordingHandler {
                 int z = MathHelper.floor_double(e.player.posZ * 32.0D);
                 byte yaw = (byte) ((int) (e.player.rotationYaw * 256.0F / 360.0F));
                 byte pitch = (byte) ((int) (e.player.rotationPitch * 256.0F / 360.0F));
-                packet = new S18PacketEntityTeleport(entityID, x, y, z, yaw, pitch, e.player.onGround);
+                packet = new S18PacketEntityTeleport(e.player.getEntityId(), x, y, z, yaw, pitch, e.player.onGround);
             } else {
                 byte newYaw = (byte) ((int) (e.player.rotationYaw * 256.0F / 360.0F));
                 byte newPitch = (byte) ((int) (e.player.rotationPitch * 256.0F / 360.0F));
 
-                packet = new S17PacketEntityLookMove(entityID,
+                packet = new S17PacketEntityLookMove(e.player.getEntityId(),
                         (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
                         newYaw, newPitch, e.player.onGround);
             }
@@ -164,7 +135,7 @@ public class RecordingHandler {
                 ByteBuf bb1 = Unpooled.buffer();
                 PacketBuffer pb1 = new PacketBuffer(bb1);
 
-                pb1.writeVarIntToBuffer(entityID);
+                pb1.writeVarIntToBuffer(e.player.getEntityId());
                 pb1.writeByte(rotationYawHead);
 
                 head.readPacketData(pb1);
@@ -174,7 +145,7 @@ public class RecordingHandler {
                 rotationYawHeadBefore = rotationYawHead;
             }
 
-            S12PacketEntityVelocity vel = new S12PacketEntityVelocity(entityID, e.player.motionX, e.player.motionY, e.player.motionZ);
+            S12PacketEntityVelocity vel = new S12PacketEntityVelocity(e.player.getEntityId(), e.player.motionX, e.player.motionY, e.player.motionZ);
             ConnectionEventHandler.insertPacket(vel);
 
             //Animation Packets
@@ -185,7 +156,7 @@ public class RecordingHandler {
                 ByteBuf bb = Unpooled.buffer();
                 PacketBuffer pb = new PacketBuffer(bb);
 
-                pb.writeVarIntToBuffer(entityID);
+                pb.writeVarIntToBuffer(e.player.getEntityId());
                 pb.writeByte(0);
 
                 pac.readPacketData(pb);
@@ -216,31 +187,31 @@ public class RecordingHandler {
             //Inventory Handling
             if(playerItems[0] != mc.thePlayer.getHeldItem()) {
                 playerItems[0] = mc.thePlayer.getHeldItem();
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(entityID, 0, playerItems[0]);
+                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 0, playerItems[0]);
                 ConnectionEventHandler.insertPacket(pee);
             }
 
             if(playerItems[1] != mc.thePlayer.inventory.armorInventory[0]) {
                 playerItems[1] = mc.thePlayer.inventory.armorInventory[0];
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(entityID, 1, playerItems[1]);
+                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 1, playerItems[1]);
                 ConnectionEventHandler.insertPacket(pee);
             }
 
             if(playerItems[2] != mc.thePlayer.inventory.armorInventory[1]) {
                 playerItems[2] = mc.thePlayer.inventory.armorInventory[1];
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(entityID, 2, playerItems[2]);
+                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 2, playerItems[2]);
                 ConnectionEventHandler.insertPacket(pee);
             }
 
             if(playerItems[3] != mc.thePlayer.inventory.armorInventory[2]) {
                 playerItems[3] = mc.thePlayer.inventory.armorInventory[2];
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(entityID, 3, playerItems[3]);
+                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 3, playerItems[3]);
                 ConnectionEventHandler.insertPacket(pee);
             }
 
             if(playerItems[4] != mc.thePlayer.inventory.armorInventory[3]) {
                 playerItems[4] = mc.thePlayer.inventory.armorInventory[3];
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(entityID, 4, playerItems[4]);
+                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 4, playerItems[4]);
                 ConnectionEventHandler.insertPacket(pee);
             }
 
@@ -259,7 +230,7 @@ public class RecordingHandler {
                 ByteBuf buf = Unpooled.buffer();
                 PacketBuffer pbuf = new PacketBuffer(buf);
 
-                pbuf.writeInt(entityID);
+                pbuf.writeInt(e.player.getEntityId());
                 pbuf.writeInt(lastRiding);
                 pbuf.writeBoolean(false);
 
@@ -275,7 +246,7 @@ public class RecordingHandler {
                 ByteBuf bb = Unpooled.buffer();
                 PacketBuffer pb = new PacketBuffer(bb);
 
-                pb.writeVarIntToBuffer(entityID);
+                pb.writeVarIntToBuffer(e.player.getEntityId());
                 pb.writeByte(2);
 
                 pac.readPacketData(pb);
@@ -294,7 +265,7 @@ public class RecordingHandler {
     public void onPickupItem(ItemPickupEvent event) {
         if(!ConnectionEventHandler.isRecording()) return;
         try {
-            ConnectionEventHandler.insertPacket(new S0DPacketCollectItem(event.pickedUp.getEntityId(), entityID));
+            ConnectionEventHandler.insertPacket(new S0DPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId()));
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -305,7 +276,7 @@ public class RecordingHandler {
         if(!ConnectionEventHandler.isRecording()) return;
         try {
             //destroy entity, then respawn
-            ConnectionEventHandler.insertPacket(new S13PacketDestroyEntities(entityID));
+            ConnectionEventHandler.insertPacket(new S13PacketDestroyEntities(mc.thePlayer.getEntityId()));
             ConnectionEventHandler.insertPacket(spawnPlayer(mc.thePlayer));
         } catch(Exception e) {
             e.printStackTrace();
@@ -322,7 +293,7 @@ public class RecordingHandler {
             ByteBuf bb = Unpooled.buffer();
             PacketBuffer pb = new PacketBuffer(bb);
 
-            pb.writeVarIntToBuffer(entityID);
+            pb.writeVarIntToBuffer(event.entityPlayer.getEntityId());
             pb.writeByte(3);
 
             packet.readPacketData(pb);
@@ -347,7 +318,7 @@ public class RecordingHandler {
             ByteBuf buf = Unpooled.buffer();
             PacketBuffer pbuf = new PacketBuffer(buf);
 
-            pbuf.writeVarIntToBuffer(entityID);
+            pbuf.writeVarIntToBuffer(event.entityPlayer.getEntityId());
             pbuf.writeBlockPos(event.pos);
 
             pub.readPacketData(pbuf);
@@ -374,7 +345,7 @@ public class RecordingHandler {
             ByteBuf buf = Unpooled.buffer();
             PacketBuffer pbuf = new PacketBuffer(buf);
 
-            pbuf.writeInt(entityID);
+            pbuf.writeInt(event.player.getEntityId());
             pbuf.writeInt(event.minecart.getEntityId());
             pbuf.writeBoolean(false);
 
