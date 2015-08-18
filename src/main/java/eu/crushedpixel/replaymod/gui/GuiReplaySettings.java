@@ -84,6 +84,8 @@ public class GuiReplaySettings extends GuiScreen {
             } else if(o == ReplayOptions.keyframeCleanCallback) {
                 GuiToggleButton keyframeClearCallbackButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_CLEARCALLBACK_ID, xPos, yPos, 150, 20, o);
                 buttonList.add(keyframeClearCallbackButton);
+            } else if(o == ReplayOptions.showChat) {
+                buttonList.add(new GuiSettingsOnOffButton(0, xPos, yPos, 150, 20, o));
             }
 
             ++i;

@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.entities.CameraEntity;
 import eu.crushedpixel.replaymod.holders.PacketData;
+import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -61,7 +62,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             S1FPacketSetExperience.class,
             S43PacketCamera.class,
             S39PacketPlayerAbilities.class,
-            S02PacketChat.class,
             S45PacketTitle.class);
 
     /**
@@ -405,6 +405,12 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             // 7 - Fade value
             // 8 - Fade time
             if(!(reason == 1 || reason == 2 || reason == 7 || reason == 8)) {
+                return null;
+            }
+        }
+
+        if (p instanceof S02PacketChat) {
+            if (ReplaySettings.ReplayOptions.showChat.getValue() != Boolean.TRUE) {
                 return null;
             }
         }
