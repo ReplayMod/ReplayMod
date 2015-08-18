@@ -15,6 +15,7 @@ public interface ReplayAsset<T> extends GuiEntryListEntry {
 
     void drawToScreen(int x, int y, int maxWidth, int maxHeight);
 
+    String getAssetName();
     void setAssetName(String name);
 
     ReplayAsset<T> copy();

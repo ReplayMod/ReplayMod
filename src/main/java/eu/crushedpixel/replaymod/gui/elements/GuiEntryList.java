@@ -153,6 +153,9 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiAdvancedTextFi
     public List<T> getCopyOfElements() {
         return new ArrayList<T>(elements);
     }
+    public List<T> getElements() {
+        return elements;
+    }
 
     public void replaceElement(int index, T replace) {
         elements.set(index, replace);

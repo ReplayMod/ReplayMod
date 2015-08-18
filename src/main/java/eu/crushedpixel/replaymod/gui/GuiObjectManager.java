@@ -23,6 +23,8 @@ import org.lwjgl.util.Point;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -129,11 +131,18 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
 
             dropdownLabel = new GuiString(0, 0, Color.WHITE, I18n.format("replaymod.gui.assets.filechooser")+": ");
             assetDropdown = new GuiDropdown<GuiEntryListValueEntry<UUID>>(fontRendererObj, 0, 0, 0, 5);
-            if(ReplayHandler.getAssetRepository().getCopyOfReplayAssets().isEmpty()) {
+            List<ReplayAsset> assets = ReplayHandler.getAssetRepository().getCopyOfReplayAssets();
+            Collections.sort(assets, new Comparator<ReplayAsset>() {
+                @Override
+                public int compare(ReplayAsset o1, ReplayAsset o2) {
+                    return o1.getAssetName().compareTo(o2.getAssetName());
+                }
+            });
+            if(assets.isEmpty()) {
                 assetDropdown.addElement(new GuiEntryListValueEntry<UUID>(I18n.format("replaymod.gui.assets.emptylist"), null));
             } else {
                 assetDropdown.addElement(new GuiEntryListValueEntry<UUID>(I18n.format("replaymod.gui.assets.noselection"), null));
-                for(ReplayAsset asset : ReplayHandler.getAssetRepository().getCopyOfReplayAssets()) {
+                for(ReplayAsset asset : assets) {
                     assetDropdown.addElement(new GuiEntryListValueEntry<UUID>(
                             asset.getDisplayString(), ReplayHandler.getAssetRepository().getUUIDForAsset(asset)));
                 }

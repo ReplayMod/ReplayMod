@@ -41,6 +41,11 @@ public class ReplayImageAsset implements ReplayAsset<BufferedImage> {
     }
 
     @Override
+    public String getAssetName() {
+        return name;
+    }
+
+    @Override
     public void setAssetName(String name) {
         this.name = name;
     }

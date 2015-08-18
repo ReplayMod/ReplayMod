@@ -18,6 +18,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
@@ -63,6 +66,7 @@ public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOve
                     try {
                         ReplayAsset newAsset = assetRepository.addAsset(file.getName(), new FileInputStream(file));
                         assetGuiEntryList.addElement(newAsset);
+                        sortAssetList();
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
@@ -109,7 +113,11 @@ public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOve
             assetGuiEntryList.addSelectionListener(new SelectionListener() {
                 @Override
                 public void onSelectionChanged(int selectionIndex) {
-                    currentAsset = assetGuiEntryList.getElement(selectionIndex);
+                    ReplayAsset newAsset = assetGuiEntryList.getElement(selectionIndex);
+                    if (newAsset == currentAsset) {
+                        return;
+                    }
+                    currentAsset = newAsset;
                     inputElements.setElementEnabled(currentAsset != null);
 
                     assetNameInput.setText(currentAsset != null ? currentAsset.getDisplayString() : "");
@@ -121,6 +129,7 @@ public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOve
             for(ReplayAsset asset : assetRepository.getCopyOfReplayAssets()) {
                 assetGuiEntryList.addElement(asset);
             }
+            sortAssetList();
         }
 
         int visibleEntries = (int)Math.floor(((double)this.height-(45+20+15+20))/14);
@@ -179,6 +188,7 @@ public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOve
 
         if(currentAsset != null) {
             currentAsset.setAssetName(assetNameInput.getText());
+            sortAssetList();
         }
 
         super.keyTyped(typedChar, keyCode);
@@ -198,5 +208,16 @@ public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOve
                 assetRepository.saveAssets();
             }
         }, "replaymod-asset-saver").start();
+    }
+
+    private void sortAssetList() {
+        List<ReplayAsset> list = assetGuiEntryList.getElements();
+        Collections.sort(list, new Comparator<ReplayAsset>() {
+            @Override
+            public int compare(ReplayAsset o1, ReplayAsset o2) {
+                return o1.getAssetName().compareTo(o2.getAssetName());
+            }
+        });
+        assetGuiEntryList.setSelectionIndex(list.indexOf(currentAsset));
     }
 }
