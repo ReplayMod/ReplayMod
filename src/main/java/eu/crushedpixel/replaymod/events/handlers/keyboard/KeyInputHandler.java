@@ -71,9 +71,8 @@ public class KeyInputHandler {
                     if(ReplayHandler.isCamera()) {
                         down = true;
                         speedup = true;
-                    } else {
-                        ReplayHandler.spectateCamera();
                     }
+                    ReplayHandler.spectateCamera();
                 }
             }
 

@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.stats.StatFileWriter;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
@@ -15,6 +16,8 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import org.lwjgl.Sys;
+
+import java.util.UUID;
 
 public class CameraEntity extends EntityPlayerSP {
 
@@ -49,8 +52,13 @@ public class CameraEntity extends EntityPlayerSP {
 
     private boolean speedup = false;
 
+    private UUID spectating;
+
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
         super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
+        if (mc.thePlayer instanceof CameraEntity) {
+            spectating = ((CameraEntity) mc.thePlayer).spectating;
+        }
     }
 
     //frac = time since last tick
@@ -193,8 +201,19 @@ public class CameraEntity extends EntityPlayerSP {
     @Override
     public void onUpdate() {
         Entity view = mc.getRenderViewEntity();
-        if (view != null && view != this) {
-            updatePos(view);
+        if (view != null) {
+            if (spectating != null && (view.getUniqueID() != spectating || view.worldObj != worldObj)) {
+                view = worldObj.getPlayerEntityByUUID(spectating);
+                if (view != null) {
+                    mc.setRenderViewEntity(view);
+                } else {
+                    mc.setRenderViewEntity(this);
+                    return;
+                }
+            }
+            if (view != this) {
+                updatePos(view);
+            }
         }
     }
 
@@ -234,6 +253,20 @@ public class CameraEntity extends EntityPlayerSP {
     @Override
     public boolean isSpectator() {
         return true;
+    }
+
+    public void spectate(Entity e) {
+        if (e == null || e == this) {
+            spectating = null;
+            e = this;
+        } else if (e instanceof EntityPlayer) {
+            spectating = e.getUniqueID();
+        }
+
+        if (mc.getRenderViewEntity() != e) {
+            mc.setRenderViewEntity(e);
+            updatePos(e);
+        }
     }
 
     public enum MoveDirection {
