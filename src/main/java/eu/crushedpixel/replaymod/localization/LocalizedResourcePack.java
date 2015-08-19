@@ -3,6 +3,7 @@ package eu.crushedpixel.replaymod.localization;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import eu.crushedpixel.replaymod.ReplayMod;
+import eu.crushedpixel.replaymod.api.ApiException;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
@@ -37,21 +38,22 @@ public class LocalizedResourcePack implements IResourcePack {
         String langcode = loc.getResourcePath().split("/")[1].split("\\.")[0];
         if(availableLanguages.containsKey(langcode)) return true;
         if(!websiteAvailable) return false;
-        boolean downloaded = true;
         try {
             String lang = ReplayMod.apiClient.getTranslation(langcode);
             String prop = StringEscapeUtils.unescapeHtml4(lang);
             availableLanguages.put(langcode, prop);
+            return true;
+        } catch (ApiException e) {
+            if (e.getError().getId() != 16) { // This language has not been translated
+                e.printStackTrace();
+            }
         } catch(ConnectException ce) {
             websiteAvailable = false;
             ce.printStackTrace();
-            downloaded = false;
         } catch(Exception e) {
             e.printStackTrace();
-            downloaded = false;
         }
-
-        return downloaded;
+        return false;
     }
 
     @Override
