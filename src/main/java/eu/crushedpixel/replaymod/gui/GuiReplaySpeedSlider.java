@@ -23,7 +23,6 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
         this.valueMin = 1;
         this.valueMax = 38;
         this.valueStep = 1;
-        this.displayString = displayKey + ": 1x";
         this.displayKey = displayKey;
 
         reset();
