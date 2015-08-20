@@ -27,10 +27,6 @@ public class KeyInputHandler {
     public void onKeyInput() throws Exception {
         if(!ReplayHandler.isInReplay()) return;
 
-        if(!Keyboard.isCreated()) Keyboard.create();
-
-        Keyboard.poll();
-
         KeyBinding[] keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings;
 
         boolean speedup = false;
