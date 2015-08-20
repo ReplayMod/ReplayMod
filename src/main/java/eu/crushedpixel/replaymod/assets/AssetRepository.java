@@ -4,7 +4,6 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import lombok.EqualsAndHashCode;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -13,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.zip.ZipEntry;
 
 @EqualsAndHashCode
 public class AssetRepository {
@@ -65,9 +65,9 @@ public class AssetRepository {
         try {
             ReplayFile replayFile = new ReplayFile(ReplayHandler.getReplayFile());
 
-            Enumeration<ZipArchiveEntry> entries = replayFile.getEntries();
+            Enumeration<? extends ZipEntry> entries = replayFile.entries();
             while(entries.hasMoreElements()) {
-                ZipArchiveEntry entry = entries.nextElement();
+                ZipEntry entry = entries.nextElement();
                 if(entry.getName().startsWith(ReplayFile.ENTRY_ASSET_FOLDER)) {
                     ReplayMod.replayFileAppender.registerModifiedFile(null, entry.getName(), ReplayHandler.getReplayFile());
                 }

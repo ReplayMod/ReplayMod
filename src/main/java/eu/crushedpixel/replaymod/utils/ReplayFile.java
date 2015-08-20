@@ -12,14 +12,14 @@ import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.Marker;
 import eu.crushedpixel.replaymod.holders.PlayerVisibility;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class ReplayFile extends ZipFile {
 
@@ -49,7 +49,7 @@ public class ReplayFile extends ZipFile {
         return file;
     }
 
-    public ZipArchiveEntry recordingEntry() {
+    public ZipEntry recordingEntry() {
         return getEntry(ENTRY_RECORDING);
     }
 
@@ -66,7 +66,7 @@ public class ReplayFile extends ZipFile {
         };
     }
 
-    public ZipArchiveEntry metadataEntry() {
+    public ZipEntry metadataEntry() {
         return getEntry(ENTRY_METADATA);
     }
 
@@ -84,8 +84,8 @@ public class ReplayFile extends ZipFile {
         };
     }
 
-    public ZipArchiveEntry pathsEntry() {
-        ZipArchiveEntry newEntry = getEntry(ENTRY_PATHS);
+    public ZipEntry pathsEntry() {
+        ZipEntry newEntry = getEntry(ENTRY_PATHS);
         return newEntry != null ? newEntry : getEntry(ENTRY_PATHS_OLD);
     }
 
@@ -94,7 +94,7 @@ public class ReplayFile extends ZipFile {
             @Override
             public KeyframeSet[] get() {
                 try {
-                    ZipArchiveEntry entry = pathsEntry();
+                    ZipEntry entry = pathsEntry();
                     if (entry == null) {
                         return null;
                     }
@@ -111,8 +111,8 @@ public class ReplayFile extends ZipFile {
         };
     }
 
-    public ZipArchiveEntry visibilityEntry() {
-        ZipArchiveEntry newEntry = getEntry(ENTRY_VISIBILITY);
+    public ZipEntry visibilityEntry() {
+        ZipEntry newEntry = getEntry(ENTRY_VISIBILITY);
         return newEntry != null ? newEntry : getEntry(ENTRY_VISIBILITY_OLD);
     }
 
@@ -121,7 +121,7 @@ public class ReplayFile extends ZipFile {
             @Override
             public PlayerVisibility get() {
                 try {
-                    ZipArchiveEntry entry = visibilityEntry();
+                    ZipEntry entry = visibilityEntry();
                     if (entry == null) {
                         return null;
                     }
@@ -134,7 +134,7 @@ public class ReplayFile extends ZipFile {
         };
     }
 
-    public ZipArchiveEntry markersEntry() {
+    public ZipEntry markersEntry() {
         return getEntry(ENTRY_MARKERS);
     }
 
@@ -143,7 +143,7 @@ public class ReplayFile extends ZipFile {
             @Override
             public List<Keyframe<Marker>> get() {
                 try {
-                    ZipArchiveEntry entry = markersEntry();
+                    ZipEntry entry = markersEntry();
                     if (entry == null) {
                         return null;
                     }
@@ -159,7 +159,7 @@ public class ReplayFile extends ZipFile {
         };
     }
 
-    public ZipArchiveEntry thumbEntry() {
+    public ZipEntry thumbEntry() {
         return getEntry(ENTRY_THUMB);
     }
 
@@ -168,7 +168,7 @@ public class ReplayFile extends ZipFile {
             @Override
             public BufferedImage get() {
                 try {
-                    ZipArchiveEntry entry = thumbEntry();
+                    ZipEntry entry = thumbEntry();
                     if (entry == null) {
                         return null;
                     }
@@ -185,7 +185,7 @@ public class ReplayFile extends ZipFile {
         };
     }
 
-    public ZipArchiveEntry resourcePackIndexEntry() {
+    public ZipEntry resourcePackIndexEntry() {
         return getEntry(ENTRY_RESOURCE_PACK_INDEX);
     }
 
@@ -195,7 +195,7 @@ public class ReplayFile extends ZipFile {
             @SuppressWarnings("unchecked")
             public Map<Integer, String> get() {
                 try {
-                    ZipArchiveEntry entry = resourcePackIndexEntry();
+                    ZipEntry entry = resourcePackIndexEntry();
                     if (entry == null) {
                         return null;
                     }
@@ -212,7 +212,7 @@ public class ReplayFile extends ZipFile {
         };
     }
 
-    public ZipArchiveEntry resourcePackEntry(String hash) {
+    public ZipEntry resourcePackEntry(String hash) {
         return getEntry(String.format(ENTRY_RESOURCE_PACK, hash));
     }
 
@@ -221,7 +221,7 @@ public class ReplayFile extends ZipFile {
             @Override
             public InputStream get() {
                 try {
-                    ZipArchiveEntry entry = resourcePackEntry(hash);
+                    ZipEntry entry = resourcePackEntry(hash);
                     if (entry == null) {
                         return null;
                     }
@@ -240,12 +240,12 @@ public class ReplayFile extends ZipFile {
             public AssetRepository get() {
                 AssetRepository assetRepository = new AssetRepository();
 
-                Enumeration<ZipArchiveEntry> entries = getEntries();
+                Enumeration<? extends ZipEntry> entries = entries();
 
                 while(entries.hasMoreElements()) {
 
                     try {
-                        ZipArchiveEntry entry = entries.nextElement();
+                        ZipEntry entry = entries.nextElement();
 
                         String entryName = entry.getName();
 
