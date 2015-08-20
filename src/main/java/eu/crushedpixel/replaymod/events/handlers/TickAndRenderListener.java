@@ -10,7 +10,6 @@ import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -61,7 +60,7 @@ public class TickAndRenderListener {
     }
 
     @SubscribeEvent
-    public void tick(TickEvent event) {
+    public void onRenderTick(TickEvent.RenderTickEvent event) {
         if(!ReplayHandler.isInReplay() || ReplayProcess.isVideoRecording()) return;
 
         if(ReplayHandler.getCameraEntity() != null)
@@ -70,7 +69,7 @@ public class TickAndRenderListener {
             ReplayProcess.tickReplay(true);
         } else onMouseMove(new MouseEvent());
 
-        FMLCommonHandler.instance().bus().post(new InputEvent.KeyInputEvent());
+        FMLCommonHandler.instance().fireKeyInput();
     }
 
     @SubscribeEvent
