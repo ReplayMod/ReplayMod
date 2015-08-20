@@ -23,14 +23,6 @@ public class MinecraftTicker {
                 i = Mouse.getEventButton();
                 KeyBinding.setKeyBindState(i - 100, Mouse.getEventButtonState());
 
-                if(Mouse.getEventButtonState()) {
-                    if(mc.thePlayer.isSpectator() && i == 2) {
-                        mc.ingameGUI.func_175187_g().func_175261_b();
-                    } else {
-                        KeyBinding.onTick(i - 100);
-                    }
-                }
-
                 long k = Minecraft.getSystemTime() - mc.systemTime;
 
                 if(k <= 200L) {
