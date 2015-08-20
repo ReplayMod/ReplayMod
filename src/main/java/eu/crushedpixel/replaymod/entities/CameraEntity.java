@@ -52,13 +52,10 @@ public class CameraEntity extends EntityPlayerSP {
 
     private boolean speedup = false;
 
-    private UUID spectating;
+    private static UUID spectating;
 
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
         super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
-        if (mc.thePlayer instanceof CameraEntity) {
-            spectating = ((CameraEntity) mc.thePlayer).spectating;
-        }
     }
 
     //frac = time since last tick
@@ -215,6 +212,14 @@ public class CameraEntity extends EntityPlayerSP {
                 updatePos(view);
             }
         }
+    }
+
+    @Override
+    public void preparePlayerToSpawn() {
+        if (mc.theWorld != null) {
+            worldObj = mc.theWorld;
+        }
+        super.preparePlayerToSpawn();
     }
 
     @Override
