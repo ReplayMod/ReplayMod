@@ -24,7 +24,6 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -103,9 +102,11 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
             } catch(Exception e) {
                 e.printStackTrace();
             } finally {
-                if(archive != null) {
-                    IOUtils.closeQuietly(archive);
-                }
+                try {
+                    if (archive != null) {
+                        archive.close();
+                    }
+                } catch (IOException ignored) {}
             }
         }
 
