@@ -2,10 +2,12 @@ package eu.crushedpixel.replaymod.sound;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import org.apache.commons.io.IOUtils;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 public class SoundHandler {
@@ -23,7 +25,9 @@ public class SoundHandler {
     public void playSound(ResourceLocation loc) {
         try {
             InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(loc).getInputStream();
-            AudioInputStream ais = AudioSystem.getAudioInputStream(is);
+            byte[] bytes = IOUtils.toByteArray(is);
+            is.close();
+            AudioInputStream ais = AudioSystem.getAudioInputStream(new ByteArrayInputStream(bytes));
 
             Clip clip = AudioSystem.getClip();
             clip.open(ais);
