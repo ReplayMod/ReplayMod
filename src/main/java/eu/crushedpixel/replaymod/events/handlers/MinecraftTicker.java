@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
 import net.minecraftforge.client.event.MouseEvent;
 import org.lwjgl.input.Keyboard;
@@ -35,23 +34,6 @@ public class MinecraftTicker {
                 long k = Minecraft.getSystemTime() - mc.systemTime;
 
                 if(k <= 200L) {
-                    int j = Mouse.getEventDWheel();
-
-                    if(j != 0) {
-                        if(mc.thePlayer.isSpectator()) {
-                            j = j < 0 ? -1 : 1;
-
-                            if(mc.ingameGUI.func_175187_g().func_175262_a()) {
-                                mc.ingameGUI.func_175187_g().func_175259_b(-j);
-                            } else {
-                                float f = MathHelper.clamp_float(mc.thePlayer.capabilities.getFlySpeed() + (float) j * 0.005F, 0.0F, 0.2F);
-                                mc.thePlayer.capabilities.setFlySpeed(f);
-                            }
-                        } else {
-                            mc.thePlayer.inventory.changeCurrentItem(j);
-                        }
-                    }
-
                     if(mc.currentScreen == null) {
                         if(!mc.inGameHasFocus && Mouse.getEventButtonState()) {
                             mc.setIngameFocus();
@@ -184,37 +166,6 @@ public class MinecraftTicker {
 
                 net.minecraftforge.fml.common.FMLCommonHandler.instance().fireKeyInput();
             }
-
-            for(i = 0; i < 9; ++i) {
-                if(mc.gameSettings.keyBindsHotbar[i].isPressed()) {
-                    if(mc.thePlayer.isSpectator()) {
-                        mc.ingameGUI.func_175187_g().func_175260_a(i);
-                    } else {
-                        mc.thePlayer.inventory.currentItem = i;
-                    }
-                }
-            }
-
-            if(mc.thePlayer != null && mc.thePlayer.isUsingItem()) {
-                if(!mc.gameSettings.keyBindUseItem.isKeyDown()) {
-                    mc.playerController.onStoppedUsingItem(mc.thePlayer);
-                }
-
-                while(true) {
-                    if(!mc.gameSettings.keyBindAttack.isPressed()) {
-                        while(true) {
-                            if (!mc.gameSettings.keyBindUseItem.isPressed()
-                                    && !mc.gameSettings.keyBindPickBlock.isPressed()) {
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-            if(mc.thePlayer != null)
-                mc.sendClickBlockToController(mc.currentScreen == null && mc.gameSettings.keyBindAttack.isKeyDown() && mc.inGameHasFocus);
 
             mc.systemTime = Minecraft.getSystemTime();
         } catch (ReportedException e) {
