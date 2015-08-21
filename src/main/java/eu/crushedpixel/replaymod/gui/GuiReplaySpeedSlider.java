@@ -30,11 +30,12 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
 
     public void copyValueFrom(GuiReplaySpeedSlider other) {
         sliderValue = other.sliderValue;
+        recalculateDisplayString();
     }
 
     public void reset() {
         sliderValue = 9f / 38f;
-        displayString = displayKey + ": 1x";
+        recalculateDisplayString();
     }
 
     public static float convertScale(float value) {
@@ -104,7 +105,7 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
                     if(ReplayMod.replaySender.getReplaySpeed() != 0) {
                         ReplayMod.replaySender.setReplaySpeed(convertScale(normalizedToReal(sliderValue)));
                     }
-                    this.displayString = displayKey + ": " + translate(convertScale(normalizedToReal(sliderValue)));
+                    recalculateDisplayString();
                 }
 
                 mc.getTextureManager().bindTexture(buttonTextures);
@@ -115,6 +116,10 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
                 // TODO: Fix exception
             }
         }
+    }
+
+    private void recalculateDisplayString() {
+        this.displayString = displayKey + ": " + translate(convertScale(normalizedToReal(sliderValue)));
     }
 
     public float normalizeValue(float p_148266_1_) {
