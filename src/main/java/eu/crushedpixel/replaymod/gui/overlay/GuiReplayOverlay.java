@@ -398,7 +398,7 @@ public class GuiReplayOverlay extends Gui {
     }
 
     private void checkResize() {
-        if (displayWidth != mc.displayWidth || displayHeight != mc.displayHeight) {
+        if (!screenDimensions.equals(MouseUtils.getScaledDimensions())) {
             GuiReplayOverlay other = new GuiReplayOverlay();
             other.timelineReal.zoom = this.timelineReal.zoom;
             other.timelineReal.timeStart = this.timelineReal.timeStart;
