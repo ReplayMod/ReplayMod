@@ -188,6 +188,9 @@ public class CameraEntity extends EntityPlayerSP {
 
     @Override
     public void setAngles(float yaw, float pitch) {
+        if (ReplayHandler.isInPath()) {
+            return; // Disallow camera movement by mouse during path preview
+        }
         this.rotationYaw = (float) ((double) this.rotationYaw + (double) yaw * 0.15D);
         this.rotationPitch = (float) ((double) this.rotationPitch - (double) pitch * 0.15D);
         this.rotationPitch = MathHelper.clamp_float(this.rotationPitch, -90.0F, 90.0F);
