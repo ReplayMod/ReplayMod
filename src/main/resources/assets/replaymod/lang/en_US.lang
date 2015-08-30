@@ -28,7 +28,7 @@ replaymod.api.mcuserexists=A ReplayMod account is already associated with this M
 replaymod.api.filetoobig=The uploaded file is too big
 replaymod.api.usernametoolong=The username is too long
 replaymod.api.descriptiontoolong=The description is too long
-replaymod.api.passwordlength=The password has to be between 5 and 32 characters long
+replaymod.api.passwordlength=The password has to be between 5 and 1024 characters long
 replaymod.api.suspended=Your account has been suspended
 
 #All of the chat messages
@@ -136,6 +136,7 @@ replaymod.gui.register.error.nomatch=Passwords don't match
 replaymod.gui.register.error.shortusername=Username has to be at least 5 characters long
 replaymod.gui.register.error.invalidname=Username may only contain letters and numbers
 replaymod.gui.register.error.shortpw=Password has to be at least 5 characters long
+replaymod.gui.register.error.longpw=Password has to be at most 1024 characters long
 replaymod.gui.register.error.authfailed=Could not authenticate your Minecraft account
 
 #Replay Viewer GUI

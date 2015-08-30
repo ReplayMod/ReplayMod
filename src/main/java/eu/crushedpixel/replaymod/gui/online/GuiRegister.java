@@ -8,6 +8,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import eu.crushedpixel.replaymod.api.ApiException;
+import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.utils.EmailAddressUtils;
 import eu.crushedpixel.replaymod.utils.RegexUtils;
@@ -36,10 +37,10 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                         .addElements(data, mailInput = new GuiTextField().setSize(145, 20)),
                 new GuiPanel().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(10))
                         .addElements(data, new GuiLabel().setI18nText("replaymod.gui.password"))
-                        .addElements(data, passwordInput = new GuiPasswordField().setMaxLength(32).setSize(145, 20)),
+                        .addElements(data, passwordInput = new GuiPasswordField().setMaxLength(GuiConstants.MAX_PW_LENGTH+1).setSize(145, 20)),
                 new GuiPanel().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(10))
                         .addElements(data, new GuiLabel().setI18nText("replaymod.gui.register.confirmpw"))
-                        .addElements(data, passwordConfirmation = new GuiPasswordField().setMaxLength(32).setSize(145, 20))
+                        .addElements(data, passwordConfirmation = new GuiPasswordField().setMaxLength(GuiConstants.MAX_PW_LENGTH+1).setSize(145, 20))
         );
         usernameInput.setNext(mailInput)
                 .getNext().setNext(passwordInput)
@@ -113,8 +114,10 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                     status = "replaymod.gui.register.error.shortusername";
                 } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_UNDERSCORE, usernameInput.getText().trim())) {
                     status = "replaymod.gui.register.error.invalidname";
-                } else if (passwordInput.getText().length() < 5) {
+                } else if (passwordInput.getText().length() < GuiConstants.MIN_PW_LENGTH) {
                     status = "replaymod.gui.register.error.shortpw";
+                } else if (passwordInput.getText().length() > GuiConstants.MAX_PW_LENGTH) {
+                    status = "replaymod.gui.register.error.longpw";
                 } else if (!EmailAddressUtils.isValidEmailAddress(mailInput.getText())) {
                     status = "replaymod.api.invalidmail";
                 } else if (!passwordConfirmation.getText().equals(passwordInput.getText())) {
