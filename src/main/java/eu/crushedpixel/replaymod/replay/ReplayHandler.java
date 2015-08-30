@@ -11,7 +11,9 @@ import eu.crushedpixel.replaymod.events.ReplayExitEvent;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
+import eu.crushedpixel.replaymod.registry.LightingHandler;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
+import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -73,6 +75,11 @@ public class ReplayHandler {
      * The file currently being played.
      */
     private static ReplayFile currentReplayFile;
+
+    /**
+     * Currently active replay restrictions.
+     */
+    private static Restrictions restrictions;
 
     public static KeyframeSet[] getKeyframeRepository() {
         return keyframeRepository;
@@ -335,6 +342,8 @@ public class ReplayHandler {
 
         setCameraTilt(0);
 
+        restrictions = new Restrictions();
+
         networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND) {
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
@@ -399,6 +408,8 @@ public class ReplayHandler {
             channel.close();
         }
 
+        restrictions = new Restrictions();
+
         networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND) {
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
@@ -459,8 +470,16 @@ public class ReplayHandler {
         resetKeyframes(true);
 
         PlayerHandler.resetHiddenPlayers();
+        ReplayGuiRegistry.show();
+        LightingHandler.setLighting(false);
+
+        if (mc.theWorld != null) {
+            mc.theWorld.sendQuittingDisconnectingPacket();
+            mc.loadWorld(null);
+        }
 
         inReplay = false;
+        lastExit = System.currentTimeMillis();
 
         FMLCommonHandler.instance().bus().post(new ReplayExitEvent());
     }
@@ -552,5 +571,9 @@ public class ReplayHandler {
         FMLCommonHandler.instance().bus().post(new KeyframesModifyEvent(positionKeyframes, timeKeyframes));
         positionKeyframes.recalculate(ReplayMod.replaySettings.isLinearMovement());
         timeKeyframes.recalculate(ReplayMod.replaySettings.isLinearMovement());
+    }
+
+    public static Restrictions getRestrictions() {
+        return restrictions;
     }
 }

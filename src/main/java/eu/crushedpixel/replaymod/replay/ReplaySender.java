@@ -14,11 +14,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
+import net.minecraft.client.gui.GuiErrorScreen;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.*;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings.GameType;
@@ -290,6 +293,38 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      * @return The processed packet or {@code null} if no packet shall be sent
      */
     protected Packet processPacket(Packet p) throws Exception {
+        if (p instanceof S3FPacketCustomPayload) {
+            S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
+            if (Restrictions.PLUGIN_CHANNEL.equals(packet.getChannelName())) {
+                final String unknown = ReplayHandler.getRestrictions().handle(packet);
+                if (unknown == null) {
+                    return null;
+                } else {
+                    // Failed to parse options, make sure that under no circumstances further packets are parsed
+                    terminateReplay();
+                    // Then end replay and show error GUI
+                    mc.addScheduledTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            ReplayHandler.endReplay();
+                            mc.displayGuiScreen(new GuiErrorScreen(
+                                    I18n.format("replaymod.error.unknownrestriction1"),
+                                    I18n.format("replaymod.error.unknownrestriction2", unknown)
+                            ));
+                        }
+                    });
+                }
+            }
+        }
+        if (p instanceof S40PacketDisconnect) {
+            IChatComponent reason = ((S40PacketDisconnect) p).func_149165_c();
+            if ("Please update to view this replay.".equals(reason.getUnformattedText())) {
+                // This version of the mod supports replay restrictions so we are allowed
+                // to remove this packet.
+                return null;
+            }
+        }
+
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
         if(ReplayProcess.isVideoRecording() && ReplayHandler.isInPath()) {
@@ -484,7 +519,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                     Thread.sleep(10);
                 }
                 REPLAY_LOOP:
-                while (true) {
+                while (!terminate) {
                     synchronized (ReplaySender.this) {
                         if (dis == null) {
                             dis = new DataInputStream(replayFile.recording().get());

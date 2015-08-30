@@ -8,8 +8,6 @@ import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
 import eu.crushedpixel.replaymod.gui.replayeditor.GuiReplayEditor;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
-import eu.crushedpixel.replaymod.registry.LightingHandler;
-import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
@@ -193,15 +191,7 @@ public class GuiEventHandler {
 
             event.button.enabled = false;
 
-            LightingHandler.setLighting(false);
-
-            ReplayHandler.lastExit = System.currentTimeMillis();
-
-            mc.theWorld.sendQuittingDisconnectingPacket();
-            mc.loadWorld(null);
             mc.displayGuiScreen(new GuiMainMenu());
-
-            ReplayGuiRegistry.show();
 
             ReplayHandler.endReplay();
         }

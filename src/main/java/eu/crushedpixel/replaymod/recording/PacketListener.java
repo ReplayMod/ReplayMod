@@ -10,6 +10,7 @@ import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.Marker;
+import eu.crushedpixel.replaymod.replay.Restrictions;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
@@ -25,10 +26,8 @@ import net.minecraft.entity.DataWatcher;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.C19PacketResourcePackStatus;
-import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
-import net.minecraft.network.play.server.S0DPacketCollectItem;
-import net.minecraft.network.play.server.S0FPacketSpawnMob;
-import net.minecraft.network.play.server.S48PacketResourcePackSend;
+import net.minecraft.network.play.server.*;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.HttpUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -106,6 +105,14 @@ public class PacketListener extends DataListener {
                 }
 
                 dataWriter.writePacket(getPacketData(packet));
+
+                if (packet instanceof S3FPacketCustomPayload) {
+                    S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
+                    if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
+                        packet = new S40PacketDisconnect(new ChatComponentText("Please update to view this replay."));
+                        dataWriter.writePacket(getPacketData(packet));
+                    }
+                }
             } catch(Exception e) {
                 e.printStackTrace();
             }

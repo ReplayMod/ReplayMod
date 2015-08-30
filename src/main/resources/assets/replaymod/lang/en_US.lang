@@ -415,3 +415,7 @@ replaymod.gui.objects.properties.name=Object Name
 replaymod.gui.objects.empty=No Objects added
 replaymod.gui.objects.defaultname=New Object
 replaymod.gui.objects=Custom Objects
+
+#Errors
+replaymod.error.unknownrestriction1=This replay cannot be played with your current version.
+replaymod.error.unknownrestriction2=It tried to enforce %s which is unknown.
