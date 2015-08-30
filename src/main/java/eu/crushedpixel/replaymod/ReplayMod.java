@@ -33,6 +33,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -64,6 +66,20 @@ public class ReplayMod {
 
     public static ModContainer getContainer() {
         return Loader.instance().getIndexedModList().get(MODID);
+    }
+
+    @Getter(lazy = true)
+    private static final String minecraftVersion = parseMinecraftVersion();
+    private static String parseMinecraftVersion() {
+        CrashReport crashReport = new CrashReport("", new Throwable());
+        @SuppressWarnings("unchecked")
+        List<CrashReportCategory.Entry> list = crashReport.getCategory().children;
+        for (CrashReportCategory.Entry entry : list) {
+            if ("Minecraft Version".equals(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return "Unknown";
     }
 
     public static final String MODID = "replaymod";

@@ -8,7 +8,7 @@ import de.johni0702.replaystudio.filter.StreamFilter;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ReplayMetaData;
 import de.johni0702.replaystudio.stream.PacketStream;
-import net.minecraft.client.Minecraft;
+import eu.crushedpixel.replaymod.ReplayMod;
 import org.apache.commons.io.IOUtils;
 import org.spacehq.mc.protocol.packet.ingame.server.ServerResourcePackSendPacket;
 import org.spacehq.mc.protocol.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
@@ -111,17 +111,11 @@ public class ConnectMetadataFilter implements StreamFilter {
     }
 
     public void writeTo(ReplayFile output) throws IOException {
-        String mcVersion = Minecraft.getMinecraft().getVersion();
-        String[] split = mcVersion.split("-");
-        if(split.length > 0) {
-            mcVersion = split[0];
-        }
-
         ReplayMetaData metaData = new ReplayMetaData();
         metaData.setDuration((int) duration);
         metaData.setSingleplayer(false);
         metaData.setServerName("Multiple worlds");
-        metaData.setMcVersion(mcVersion);
+        metaData.setMcVersion(ReplayMod.getMinecraftVersion());
         metaData.setDate(System.currentTimeMillis());
         metaData.setPlayers(players.toArray(new String[players.size()]));
         output.writeMetaData(metaData);

@@ -10,7 +10,6 @@ import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -169,11 +168,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
                 ReplayMod.replayFileAppender.startNewReplayFileWriting();
                 saveState = 1;
 
-                String mcversion = Minecraft.getMinecraft().getVersion();
-                String[] split = mcversion.split("-");
-                if(split.length > 0) {
-                    mcversion = split[0];
-                }
+                String mcversion = ReplayMod.getMinecraftVersion();
 
                 String[] pl = players.toArray(new String[players.size()]);
 

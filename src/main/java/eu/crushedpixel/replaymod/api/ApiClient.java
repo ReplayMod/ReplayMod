@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.exceptions.AuthenticationException;
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.ReplayModApiMethods;
 import eu.crushedpixel.replaymod.api.replay.SearchQuery;
 import eu.crushedpixel.replaymod.api.replay.holders.*;
@@ -208,12 +209,9 @@ public class ApiClient {
         //in a development environment, getContainer().getVersion() will return ${version}
         if(versionIdentifier.equals("${version}")) return true;
 
-        //get the Minecraft Version String
-        String mcversion = mc.getVersion();
-
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.up_to_date);
         builder.put("version", versionIdentifier);
-        builder.put("minecraft", mcversion);
+        builder.put("minecraft", ReplayMod.getMinecraftVersion());
         return invokeAndReturn(builder, Success.class).isSuccess();
     }
 
