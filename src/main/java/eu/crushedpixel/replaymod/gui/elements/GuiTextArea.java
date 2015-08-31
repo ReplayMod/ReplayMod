@@ -74,11 +74,12 @@ public class GuiTextArea extends Gui implements GuiElement, GuiOutsideClickableE
     public int textColorEnabled = 0xE0E0E0;
     public int textColorDisabled = 0x707070;
 
-
+    /*
     public GuiTextArea(FontRenderer fontRenderer, int positionX, int positionY, int width, int height,
                        int maxTextWidth, int maxTextHeight) {
         this(0, fontRenderer, positionX, positionY, width, height, maxTextWidth, maxTextHeight, -1);
     }
+    */
 
     public GuiTextArea(FontRenderer fontRenderer, int positionX, int positionY, int width, int height,
                        int maxTextWidth, int maxTextHeight, int maxCharCount) {

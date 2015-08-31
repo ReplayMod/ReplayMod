@@ -33,6 +33,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -166,12 +167,14 @@ public class PacketListener extends DataListener {
             if (levelDir.isFile()) {
                 netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
                 Futures.addCallback(mc.getResourcePackRepository().func_177319_a(levelDir), new FutureCallback() {
+                    @Override
                     public void onSuccess(Object result) {
                         recordResourcePack(levelDir, requestId);
                         netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
                     }
 
-                    public void onFailure(Throwable throwable) {
+                    @Override
+                    public void onFailure(@Nonnull Throwable throwable) {
                         netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.FAILED_DOWNLOAD));
                     }
                 });
@@ -187,8 +190,10 @@ public class PacketListener extends DataListener {
                 netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.DECLINED));
             } else {
                 mc.addScheduledTask(new Runnable() {
+                    @Override
                     public void run() {
                         mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
+                            @Override
                             public void confirmClicked(boolean result, int id) {
                                 if (serverData != null) {
                                     serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
@@ -224,11 +229,13 @@ public class PacketListener extends DataListener {
 
     private void downloadResourcePackFuture(int requestId, String url, final String hash) {
         Futures.addCallback(downloadResourcePack(requestId, url, hash), new FutureCallback() {
+            @Override
             public void onSuccess(Object result) {
                 mc.getNetHandler().addToSendQueue(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
             }
 
-            public void onFailure(Throwable throwable) {
+            @Override
+            public void onFailure(@Nonnull Throwable throwable) {
                 mc.getNetHandler().addToSendQueue(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.FAILED_DOWNLOAD));
             }
         });
@@ -278,6 +285,7 @@ public class PacketListener extends DataListener {
             final Minecraft mc = Minecraft.getMinecraft();
 
             Futures.getUnchecked(mc.addScheduledTask(new Runnable() {
+                @Override
                 public void run() {
                     mc.displayGuiScreen(guiScreen);
                 }
@@ -286,12 +294,14 @@ public class PacketListener extends DataListener {
             Map sessionInfo = Minecraft.getSessionInfo();
             repo.field_177322_i = HttpUtil.func_180192_a(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
             Futures.addCallback(repo.field_177322_i, new FutureCallback() {
+                @Override
                 public void onSuccess(Object value) {
                     recordResourcePack(file, requestId);
                     repo.func_177319_a(file);
                 }
 
-                public void onFailure(Throwable throwable) {
+                @Override
+                public void onFailure(@Nonnull Throwable throwable) {
                     throwable.printStackTrace();
                 }
             });

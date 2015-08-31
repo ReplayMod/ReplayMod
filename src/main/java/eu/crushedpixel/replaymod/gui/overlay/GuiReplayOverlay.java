@@ -55,9 +55,6 @@ public class GuiReplayOverlay extends Gui {
         return new GuiTexturedButton(0, x, y, size, size, replay_gui, u, v, TEXTURE_SIZE, TEXTURE_SIZE, action, I18n.format(hoverText));
     }
 
-    private final int displayWidth = mc.displayWidth;
-    private final int displayHeight = mc.displayHeight;
-
     private final Point screenDimensions = MouseUtils.getScaledDimensions();
     private final int WIDTH = screenDimensions.getX();
     private final int HEIGHT = screenDimensions.getY();

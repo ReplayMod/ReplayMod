@@ -10,9 +10,6 @@ public class CustomObjectRepository {
     public CustomObjectRepository() {
         this.objects = new ArrayList<CustomImageObject>();
     }
-    public CustomObjectRepository(List<CustomImageObject> objects) {
-        setObjects(objects);
-    }
 
     public void setObjects(List<CustomImageObject> objects) {
         this.objects = new ArrayList<CustomImageObject>(objects);

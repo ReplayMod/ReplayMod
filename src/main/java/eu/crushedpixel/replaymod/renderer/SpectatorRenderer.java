@@ -519,7 +519,7 @@ public class SpectatorRenderer {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.disableBlend();
     }
-
+    
     public void cleanup() {
         FMLCommonHandler.instance().bus().unregister(this);
     }

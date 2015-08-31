@@ -28,6 +28,7 @@ public class ReplayImageAsset implements ReplayAsset<BufferedImage> {
 
     private String name;
 
+    @Override
     public ReplayImageAsset copy() {
         ReplayImageAsset newReplay = new ReplayImageAsset(name);
         newReplay.object = object;

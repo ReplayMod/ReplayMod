@@ -22,6 +22,7 @@ public class GuiReplaySettings extends GuiScreen {
         this.parentGuiScreen = parentGuiScreen;
     }
 
+    @Override
     public void initGui() {
         this.screenTitle = I18n.format("replaymod.gui.settings.title");
 
@@ -107,7 +108,7 @@ public class GuiReplaySettings extends GuiScreen {
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 
-
+    @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         if(button.enabled) {
             switch(button.id) {

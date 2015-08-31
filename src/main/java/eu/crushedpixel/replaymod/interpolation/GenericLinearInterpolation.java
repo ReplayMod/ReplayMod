@@ -19,6 +19,7 @@ public class GenericLinearInterpolation<T extends KeyframeValue> implements Inte
     @Override
     public void prepare() {}
 
+    @Override
     public void addPoint(T point) {
         points.add(point);
 

@@ -366,9 +366,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             if(searchServerInput.getText().trim().length() > 0) {
                 searchQuery.server = searchServerInput.getText().trim();
             }
-
-            Boolean order = searchSortToggle.getValue() == 0;
-            searchQuery.order = order;
+            
+            searchQuery.order = searchSortToggle.getValue() == 0;
 
             SearchPagination searchPagination = new SearchPagination(searchQuery);
             showReplaySearch(searchPagination);

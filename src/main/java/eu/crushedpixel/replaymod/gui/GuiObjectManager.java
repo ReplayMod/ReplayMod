@@ -379,6 +379,7 @@ public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOv
         }
 
         ReplayHandler.setCustomImageObjects(objects);
+
     }
 
     private void updateValuesForTransformation(Transformation transformation) {

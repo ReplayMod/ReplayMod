@@ -75,7 +75,7 @@ public class ComposedElement implements GuiElement {
             //if GuiOutsideClickableElement, forward mouse clicks outside of that element
             if(!clicked || (part instanceof GuiOutsideClickableElement && !part.isHovering(mouseX, mouseY))) {
                 boolean cl = part.mouseClick(mc, mouseX, mouseY, button);
-                if(cl) clicked = cl;
+                if(cl) clicked = true;
             }
         }
         return clicked;

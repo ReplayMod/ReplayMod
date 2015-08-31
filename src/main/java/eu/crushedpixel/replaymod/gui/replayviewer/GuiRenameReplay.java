@@ -25,10 +25,12 @@ public class GuiRenameReplay extends GuiScreen {
         this.file = file;
     }
 
+    @Override
     public void updateScreen() {
         this.replayNameInput.updateCursorCounter();
     }
 
+    @Override
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
         @SuppressWarnings("unchecked")
@@ -42,10 +44,12 @@ public class GuiRenameReplay extends GuiScreen {
         this.replayNameInput.setText(s);
     }
 
+    @Override
     public void onGuiClosed() {
         Keyboard.enableRepeatEvents(false);
     }
 
+    @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         if(button.enabled) {
             if(button.id == 1) {
@@ -70,6 +74,7 @@ public class GuiRenameReplay extends GuiScreen {
         }
     }
 
+    @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
         this.replayNameInput.textboxKeyTyped(typedChar, keyCode);
         ((GuiButton) this.buttonList.get(0)).enabled = this.replayNameInput.getText().trim().length() > 0;
@@ -79,11 +84,13 @@ public class GuiRenameReplay extends GuiScreen {
         }
     }
 
+    @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         this.replayNameInput.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
+    @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.drawDefaultBackground();
         this.drawCenteredString(this.fontRendererObj, I18n.format("replaymod.gui.viewer.rename.title"), this.width / 2, 20, 16777215);

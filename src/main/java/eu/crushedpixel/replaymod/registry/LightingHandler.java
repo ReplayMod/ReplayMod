@@ -13,8 +13,6 @@ public class LightingHandler {
 
     private static float initialGamma = 0;
 
-    private static boolean enabled = false;
-
     public static void setLighting(boolean lighting) {
 
         float gamma = mc.gameSettings.getOptionFloatValue(Options.GAMMA);
@@ -24,8 +22,6 @@ public class LightingHandler {
 
         if(lighting) mc.gameSettings.setOptionFloatValue(Options.GAMMA, AMBIENT_GAMMA);
         else mc.gameSettings.setOptionFloatValue(Options.GAMMA, initialGamma);
-
-        enabled = lighting;
 
         if(ReplayMod.replaySender.paused()) {
             mc.entityRenderer.lightmapUpdateNeeded = true;
