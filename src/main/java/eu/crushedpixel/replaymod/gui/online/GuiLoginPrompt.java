@@ -6,8 +6,8 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiPasswordField;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 
 public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
 
@@ -34,8 +34,8 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        switch(AuthenticationHandler.authenticate(username.getText(), password.getText())) {
-                            case AuthenticationHandler.SUCCESS:
+                        switch(ReplayMod.apiClient.login(username.getText(), password.getText())) {
+                            case SUCCESS:
                                 statusLabel.setText("");
                                 getMinecraft().addScheduledTask(new Runnable() {
                                     @Override
@@ -44,10 +44,10 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
                                     }
                                 });
                                 break;
-                            case AuthenticationHandler.INVALID:
+                            case INVALID_DATA:
                                 statusLabel.setI18nText("replaymod.gui.login.incorrect");
                                 break;
-                            case AuthenticationHandler.NO_CONNECTION:
+                            case IO_ERROR:
                                 statusLabel.setI18nText("replaymod.gui.login.connectionerror");
                                 break;
                         }

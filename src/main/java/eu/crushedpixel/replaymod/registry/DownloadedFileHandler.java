@@ -2,7 +2,6 @@ package eu.crushedpixel.replaymod.registry;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import org.apache.commons.io.FileUtils;
@@ -59,7 +58,7 @@ public class DownloadedFileHandler {
         f = generateFileForID(id);
 
         try {
-            ReplayMod.apiClient.downloadFile(AuthenticationHandler.getKey(), id, f, progressUpdateListener);
+            ReplayMod.apiClient.downloadFile(id, f, progressUpdateListener);
             if(f.exists()) {
                 addToIndex(id);
             }

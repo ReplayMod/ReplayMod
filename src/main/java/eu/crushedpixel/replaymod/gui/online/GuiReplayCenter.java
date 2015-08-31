@@ -14,7 +14,6 @@ import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.holders.GuiEntryListStringEntry;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
@@ -22,8 +21,9 @@ import org.lwjgl.input.Keyboard;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
@@ -59,7 +59,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         Keyboard.enableRepeatEvents(true);
 
         if(!initialized) {
-            if(!AuthenticationHandler.isAuthenticated()) {
+            if(!ReplayMod.apiClient.isLoggedIn()) {
                 mc.displayGuiScreen(new GuiLoginPrompt(new GuiMainMenu(), this, true).toMinecraft());
             }
 
@@ -73,11 +73,11 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
             topBar.add(bestButton);
 
             GuiButton downloadedReplayButton = new GuiButton(GuiConstants.CENTER_DOWNLOADED_REPLAYS_BUTTON, 20, 30, I18n.format("replaymod.gui.center.top.downloaded"));
-            downloadedReplayButton.enabled = AuthenticationHandler.isAuthenticated();
+            downloadedReplayButton.enabled = ReplayMod.apiClient.isLoggedIn();
             topBar.add(downloadedReplayButton);
 
             GuiButton favoritedReplayButton = new GuiButton(GuiConstants.CENTER_FAVORITED_REPLAYS_BUTTON, 20, 30, I18n.format("replaymod.gui.center.top.favorited"));
-            favoritedReplayButton.enabled = AuthenticationHandler.isAuthenticated();
+            favoritedReplayButton.enabled = ReplayMod.apiClient.isLoggedIn();
             topBar.add(favoritedReplayButton);
 
             GuiButton searchButton = new GuiButton(GuiConstants.CENTER_SEARCH_BUTTON, 20, 30, I18n.format("replaymod.gui.center.top.search"));
@@ -382,7 +382,7 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
                 mc.addScheduledTask(new Runnable() {
                     @Override
                     public void run() {
-                        AuthenticationHandler.logout();
+                        ReplayMod.apiClient.logout();
                         mc.displayGuiScreen(new GuiMainMenu());
                     }
                 });

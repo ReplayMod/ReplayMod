@@ -7,9 +7,9 @@ import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.utils.EmailAddressUtils;
 import eu.crushedpixel.replaymod.utils.RegexUtils;
 import net.minecraft.client.gui.FontRenderer;
@@ -80,7 +80,7 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                             String username = usernameInput.getText().trim();
                             String mail = mailInput.getText().trim();
                             String password = passwordInput.getText();
-                            AuthenticationHandler.register(username, mail, password);
+                            ReplayMod.apiClient.register(username, mail, password);
 
                             getMinecraft().addScheduledTask(new Runnable() {
                                 @Override

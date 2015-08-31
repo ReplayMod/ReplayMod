@@ -7,7 +7,6 @@ import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
 import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
 import eu.crushedpixel.replaymod.gui.replayeditor.GuiReplayEditor;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
@@ -43,7 +42,7 @@ public class GuiEventHandler {
         if(event.gui instanceof GuiMainMenu) {
             if(ReplayMod.firstMainMenu) {
                 ReplayMod.firstMainMenu = false;
-                if(!AuthenticationHandler.isAuthenticated()) {
+                if(!ReplayMod.apiClient.isLoggedIn()) {
                     event.gui = new GuiLoginPrompt(event.gui, event.gui, false).toMinecraft();
                     return;
                 }
@@ -57,7 +56,7 @@ public class GuiEventHandler {
             if(ReplayHandler.isInReplay()) ReplayHandler.setInReplay(false);
         }
 
-        if(!AuthenticationHandler.isAuthenticated()) return;
+        if(!ReplayMod.apiClient.isLoggedIn()) return;
 
         if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
             if(ReplayHandler.isInReplay()) {
@@ -74,7 +73,7 @@ public class GuiEventHandler {
     public void onDraw(DrawScreenEvent e) {
         if(e.gui instanceof GuiMainMenu) {
             e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.title")+":", 5, 5, Color.WHITE.getRGB());
-            if(AuthenticationHandler.isAuthenticated()) {
+            if(ReplayMod.apiClient.isLoggedIn()) {
                 e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedin").toUpperCase(), 5, 15, DARK_GREEN.getRGB());
             } else {
                 e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedout").toUpperCase(), 5, 15, DARK_RED.getRGB());
@@ -174,7 +173,7 @@ public class GuiEventHandler {
             if(event.button.id == GuiConstants.REPLAY_MANAGER_BUTTON_ID) {
                 mc.displayGuiScreen(new GuiReplayViewer());
             } else if(event.button.id == GuiConstants.REPLAY_CENTER_BUTTON_ID) {
-                if(AuthenticationHandler.isAuthenticated()) {
+                if(ReplayMod.apiClient.isLoggedIn()) {
                     mc.displayGuiScreen(new GuiReplayCenter());
                 } else {
                     mc.displayGuiScreen(new GuiLoginPrompt(event.gui, new GuiReplayCenter(), true).toMinecraft());

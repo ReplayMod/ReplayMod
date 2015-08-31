@@ -1,6 +1,7 @@
 package eu.crushedpixel.replaymod.api.replay;
 
 import com.google.gson.Gson;
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.holders.ApiError;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;
@@ -23,7 +24,7 @@ public class FileUploader {
 
     private GuiUploadFile parent;
 
-    public void uploadFile(GuiUploadFile gui, String auth, String filename, List<String> tags, File file, Category category, String description) {
+    public void uploadFile(GuiUploadFile gui, String filename, List<String> tags, File file, Category category, String description) {
         boolean success = false;
         String info = null;
 
@@ -35,7 +36,7 @@ public class FileUploader {
             if(uploading) throw new RuntimeException("FileUploader is already uploading");
             uploading = true;
 
-            String postData = "?auth=" + auth + "&category=" + category.getId();
+            String postData = "?auth=" + ReplayMod.apiClient.getAuthKey() + "&category=" + category.getId();
 
             if(tags.size() > 0) {
                 postData += "&tags=";

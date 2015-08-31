@@ -10,11 +10,14 @@ import eu.crushedpixel.replaymod.gui.online.GuiReplayDownloading;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
+import eu.crushedpixel.replaymod.online.authentication.ConfigurationAuthData;
 import eu.crushedpixel.replaymod.online.urischeme.UriScheme;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import eu.crushedpixel.replaymod.registry.*;
-import eu.crushedpixel.replaymod.renderer.*;
+import eu.crushedpixel.replaymod.renderer.CustomObjectRenderer;
+import eu.crushedpixel.replaymod.renderer.InvisibilityRender;
+import eu.crushedpixel.replaymod.renderer.PathPreviewRenderer;
+import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
@@ -83,7 +86,6 @@ public class ReplayMod {
     }
 
     public static final String MODID = "replaymod";
-    public static final ApiClient apiClient = new ApiClient();
     private static final Minecraft mc = Minecraft.getMinecraft();
     public static GuiEventHandler guiEventHandler;
     public static GuiReplayOverlay overlay;
@@ -107,6 +109,7 @@ public class ReplayMod {
     public static CustomObjectRenderer customObjectRenderer;
     public static SoundHandler soundHandler = new SoundHandler();
     public static CrosshairRenderHandler crosshairRenderHandler;
+    public static ApiClient apiClient;
 
     @Getter
     private static boolean latestModVersion = true;
@@ -134,7 +137,9 @@ public class ReplayMod {
 
         config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
-        AuthenticationHandler.loadAuthkeyFromConfig();
+        ConfigurationAuthData authData = new ConfigurationAuthData(config);
+        apiClient = new ApiClient(authData);
+        authData.load(apiClient);
 
         uploadedFileHandler = new UploadedFileHandler(event.getModConfigurationDirectory());
 

@@ -27,28 +27,66 @@ public class ApiClient {
     private static final Gson gson = new Gson();
     private static final JsonParser jsonParser = new JsonParser();
 
-    public AuthKey getLogin(String username, String password) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.login);
-        builder.put("user", username);
-        builder.put("pw", password);
-        builder.put("mod", true);
-        return invokeAndReturn(builder, AuthKey.class);
+    private final AuthData authData;
+
+    public ApiClient(AuthData authData) {
+        this.authData = authData;
     }
 
-    public AuthKey register(String username, String mail, String password, String uuid)
-            throws IOException, ApiException, AuthenticationException {
+    public boolean isLoggedIn() {
+        return authData.getUserName() != null && authData.getAuthKey() != null;
+    }
 
+    public String getAuthKey() {
+        return authData.getAuthKey();
+    }
+
+    public void register(String userName, String eMail, String password) throws AuthenticationException, IOException, ApiException {
         AuthenticationHash authenticationHash = sessionserverJoin();
 
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.register);
-        builder.put("username", username);
-        builder.put("email", mail);
+        builder.put("username", userName);
+        builder.put("email", eMail);
         builder.put("password", password);
-        builder.put("uuid", uuid);
+        builder.put("uuid", mc.getSession().getProfile().getId().toString());
         builder.put("mcusername", authenticationHash.username);
         builder.put("timelong", authenticationHash.currentTime);
         builder.put("randomlong", authenticationHash.randomLong);
-        return invokeAndReturn(builder, AuthKey.class);
+        AuthKey auth = invokeAndReturn(builder, AuthKey.class);
+
+        authData.setData(userName, auth.getAuth());
+    }
+
+    public AuthData.AuthResult login(String userName, String password) {
+        try {
+            QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.login);
+            builder.put("user", userName);
+            builder.put("pw", password);
+            builder.put("mod", true);
+            AuthKey result = invokeAndReturn(builder, AuthKey.class);
+            authData.setData(userName, result.getAuth());
+            return AuthData.AuthResult.SUCCESS;
+        } catch(ApiException e) {
+            return AuthData.AuthResult.INVALID_DATA;
+        } catch(Exception e) {
+            return AuthData.AuthResult.IO_ERROR;
+        }
+    }
+
+    public AuthData.AuthResult logout() {
+        try {
+            authData.setData(null, null);
+
+            QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.logout);
+            builder.put("auth", authData.getAuthKey());
+            builder.put("mod", true);
+            invokeAndReturn(builder, Success.class);
+            return AuthData.AuthResult.SUCCESS;
+        } catch(ApiException e) {
+            return AuthData.AuthResult.INVALID_DATA;
+        } catch(Exception e) {
+            return AuthData.AuthResult.IO_ERROR;
+        }
     }
 
     private AuthenticationHash sessionserverJoin() throws AuthenticationException {
@@ -68,21 +106,6 @@ public class ApiClient {
         } catch(Exception e) {
             return null;
         }
-    }
-
-    public boolean logout(String auth) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.logout);
-        builder.put("auth", auth);
-        builder.put("mod", true);
-        Success succ = invokeAndReturn(builder, Success.class);
-        return succ.isSuccess();
-    }
-
-    public boolean hasDonated(String uuid) throws IOException, ApiException {
-        QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.check_auth);
-        builder.put("uuid", uuid);
-        Donated succ = invokeAndReturn(builder, Donated.class);
-        return succ.hasDonated();
     }
 
     public FileInfo[] getFileInfo(List<Integer> ids) throws IOException, ApiException {
@@ -111,11 +134,11 @@ public class ApiClient {
 
     private boolean cancelDownload = false;
 
-    public void downloadFile(String auth, int file, File target, ProgressUpdateListener listener) throws IOException, ApiException {
+    public void downloadFile(int file, File target, ProgressUpdateListener listener) throws IOException, ApiException {
         cancelDownload = false;
 
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.download_file);
-        builder.put("auth", auth);
+        builder.put("auth", authData.getAuthKey());
         builder.put("id", file);
         String url = builder.toString();
         URL website = new URL(url);
@@ -167,40 +190,40 @@ public class ApiClient {
         this.cancelDownload = true;
     }
 
-    public void rateFile(String auth, int file, Rating.RatingType rating) throws IOException, ApiException {
+    public void rateFile(int file, Rating.RatingType rating) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.rate_file);
-        builder.put("auth", auth);
+        builder.put("auth", authData.getAuthKey());
         builder.put("id", file);
         builder.put("rating", rating.getKey());
         invokeAndReturn(builder, Success.class);
     }
 
-    public FileRating[] getRatedFiles(String auth) throws IOException, ApiException {
+    public FileRating[] getRatedFiles() throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_ratings);
-        builder.put("auth", auth);
+        builder.put("auth", authData.getAuthKey());
 
         return invokeAndReturn(builder, RatedFiles.class).getRated();
     }
 
-    public void favFile(String auth, int file, boolean fav) throws IOException, ApiException {
+    public void favFile(int file, boolean fav) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.fav_file);
-        builder.put("auth", auth);
+        builder.put("auth", authData.getAuthKey());
         builder.put("id", file);
         builder.put("fav", fav);
         invokeAndReturn(builder, Success.class);
     }
 
-    public int[] getFavorites(String auth) throws IOException, ApiException {
+    public int[] getFavorites() throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_favorites);
-        builder.put("auth", auth);
+        builder.put("auth", authData.getAuthKey());
 
         return invokeAndReturn(builder, Favorites.class).getFavorited();
     }
 
     @Api
-    public void removeFile(String auth, int file) throws IOException, ApiException {
+    public void removeFile(int file) throws IOException, ApiException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.remove_file);
-        builder.put("auth", auth);
+        builder.put("auth", authData.getAuthKey());
         builder.put("id", file);
         invokeAndReturn(builder, Success.class);
     }

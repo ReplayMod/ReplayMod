@@ -3,7 +3,6 @@ package eu.crushedpixel.replaymod.registry;
 import com.google.common.primitives.Ints;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiException;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,20 +25,20 @@ public class FavoritedFileHandler {
     }
 
     public void addToFavorites(Integer id) throws IOException, ApiException {
-        ReplayMod.apiClient.favFile(AuthenticationHandler.getKey(), id, true);
+        ReplayMod.apiClient.favFile(id, true);
         favorited.remove(id);
         favorited.add(id);
     }
 
     public void removeFromFavorites(Integer id) throws IOException, ApiException {
-        ReplayMod.apiClient.favFile(AuthenticationHandler.getKey(), id, false);
+        ReplayMod.apiClient.favFile(id, false);
         favorited.remove(id);
     }
 
     public void reloadFavorites() {
-        if(AuthenticationHandler.isAuthenticated()) {
+        if(ReplayMod.apiClient.isLoggedIn()) {
             try {
-                int[] ids = ReplayMod.apiClient.getFavorites(AuthenticationHandler.getKey());
+                int[] ids = ReplayMod.apiClient.getFavorites();
                 favorited = new ArrayList<Integer>(Ints.asList(ids));
                 retrieved = true;
             } catch(Exception e) {

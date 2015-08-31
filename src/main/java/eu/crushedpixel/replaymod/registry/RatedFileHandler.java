@@ -4,7 +4,6 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.api.replay.holders.FileRating;
 import eu.crushedpixel.replaymod.api.replay.holders.Rating;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,7 +23,7 @@ public class RatedFileHandler {
     }
 
     public void rateFile(int id, Rating.RatingType type) throws IOException, ApiException {
-        ReplayMod.apiClient.rateFile(AuthenticationHandler.getKey(), id, type);
+        ReplayMod.apiClient.rateFile(id, type);
         if(type == Rating.RatingType.LIKE || type == Rating.RatingType.DISLIKE) {
             rated.put(id, type == Rating.RatingType.LIKE);
         } else {
@@ -33,9 +32,9 @@ public class RatedFileHandler {
     }
 
     public void reloadRatings() {
-        if(AuthenticationHandler.isAuthenticated()) {
+        if(ReplayMod.apiClient.isLoggedIn()) {
             try {
-                FileRating[] ratings = ReplayMod.apiClient.getRatedFiles(AuthenticationHandler.getKey());
+                FileRating[] ratings = ReplayMod.apiClient.getRatedFiles();
                 rated = new HashMap<Integer, Boolean>();
 
                 for(FileRating fr : ratings) {

@@ -7,7 +7,6 @@ import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
-import eu.crushedpixel.replaymod.online.authentication.AuthenticationHandler;
 import eu.crushedpixel.replaymod.recording.ReplayMetaData;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
@@ -135,7 +134,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
             return;
         }
 
-        if(!AuthenticationHandler.isAuthenticated()) {
+        if(!ReplayMod.apiClient.isLoggedIn()) {
             mc.displayGuiScreen(new GuiLoginPrompt(parent, this, true).toMinecraft());
             return;
         }
@@ -320,12 +319,12 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
                             FileUtils.copyFile(replayFile, tmp);
                             ReplayFileIO.addFilesToZip(tmp, toAdd);
 
-                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, tmp, category, desc);
+                            uploader.uploadFile(GuiUploadFile.this, name, tags, tmp, category, desc);
 
                             FileUtils.deleteQuietly(tmpMeta);
                             FileUtils.deleteQuietly(tmp);
                         } else {
-                            uploader.uploadFile(GuiUploadFile.this, AuthenticationHandler.getKey(), name, tags, replayFile, category, desc);
+                            uploader.uploadFile(GuiUploadFile.this, name, tags, replayFile, category, desc);
                         }
 
                         ReplayMod.uploadedFileHandler.markAsUploaded(replayFile);
