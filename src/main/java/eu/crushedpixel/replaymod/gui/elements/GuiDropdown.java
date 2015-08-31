@@ -163,6 +163,20 @@ public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextFie
     }
 
     @Override
+    public boolean isHovering(int mouseX, int mouseY) {
+        if(isExpanded()) {
+            int requiredHeight = Math.min(elements.size() * dropoutElementHeight, maxDropoutHeight);
+
+            return mouseX >= xPosition
+                    && mouseY >= yPosition
+                    && mouseX < xPosition + width
+                    && mouseY < yPosition + height + requiredHeight;
+        }
+
+        return super.isHovering(mouseX, mouseY);
+    }
+
+    @Override
     public void setText(String text) {
         if(!getText().equals(text)) {
             super.setText(text);
