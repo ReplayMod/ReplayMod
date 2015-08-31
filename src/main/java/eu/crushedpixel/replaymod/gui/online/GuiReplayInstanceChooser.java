@@ -50,20 +50,23 @@ public class GuiReplayInstanceChooser extends GuiScreen {
 
             List<File> chooseableFiles = new ArrayList<File>();
 
-            for(File file : replayFolder.listFiles()) {
-                try {
-                    String extension = FilenameUtils.getExtension(file.getAbsolutePath());
-                    if(!("." + extension).equals(ReplayFile.ZIP_FILE_EXTENSION)) continue;
+            File[] files = replayFolder.listFiles();
+            if(files != null) {
+                for(File file : files) {
+                    try {
+                        String extension = FilenameUtils.getExtension(file.getAbsolutePath());
+                        if(!("." + extension).equals(ReplayFile.ZIP_FILE_EXTENSION)) continue;
 
-                    String filename = FilenameUtils.getBaseName(file.getAbsolutePath());
-                    String[] split = filename.split("_");
-                    String first = split[0];
+                        String filename = FilenameUtils.getBaseName(file.getAbsolutePath());
+                        String[] split = filename.split("_");
+                        String first = split[0];
 
-                    if(StringUtils.isNumeric(first) && Integer.valueOf(first) == id) {
-                        chooseableFiles.add(file);
+                        if(StringUtils.isNumeric(first) && Integer.valueOf(first) == id) {
+                            chooseableFiles.add(file);
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
                     }
-                } catch(Exception e) {
-                    e.printStackTrace();
                 }
             }
 
