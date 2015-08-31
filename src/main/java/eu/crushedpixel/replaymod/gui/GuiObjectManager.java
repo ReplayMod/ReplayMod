@@ -28,8 +28,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-import org.lwjgl.util.Point;
-
 public class GuiObjectManager extends GuiScreen implements GuiReplayOverlay.NoOverlay {
 
     private boolean initialized = false;
