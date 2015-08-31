@@ -116,7 +116,7 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement, Gu
 
     @Override
     public boolean isFocused() {
-        return isEnabled ? super.isFocused() : false;
+        return isEnabled && super.isFocused();
     }
 
     @Override

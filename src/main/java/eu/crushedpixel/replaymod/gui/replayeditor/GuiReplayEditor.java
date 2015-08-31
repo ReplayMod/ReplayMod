@@ -133,7 +133,7 @@ public class GuiReplayEditor extends GuiScreen {
             currentTab = StudioTab.TRIM;
         } else if(button.id == GuiConstants.REPLAY_EDITOR_CONNECT_TAB) {
             currentTab = StudioTab.CONNECT;
-        } else if(button.id == GuiConstants.REPLAY_EDITOR_MODIFY_TAB) {
+        //} else if(button.id == GuiConstants.REPLAY_EDITOR_MODIFY_TAB) {
             //currentTab = StudioTab.MODIFY;
         } else if(button.id == GuiConstants.REPLAY_EDITOR_SAVE_BUTTON) {
             File outputFile = getSelectedFile();

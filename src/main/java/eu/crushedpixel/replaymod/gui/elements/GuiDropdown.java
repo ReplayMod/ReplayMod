@@ -21,7 +21,6 @@ public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextFie
     private final int maxDropoutHeight;
     private int selectionIndex = -1;
     private boolean open = false;
-    private Minecraft mc = Minecraft.getMinecraft();
     private List<SelectionListener> selectionListeners = new ArrayList<SelectionListener>();
 
     private int upperIndex = 0;

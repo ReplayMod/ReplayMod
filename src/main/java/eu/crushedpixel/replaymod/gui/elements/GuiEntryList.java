@@ -14,7 +14,6 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiAdvancedTextFi
 
     public final static int elementHeight = 14;
     private int selectionIndex = -1;
-    private Minecraft mc = Minecraft.getMinecraft();
     private int visibleElements;
     private int upperIndex = 0;
 
@@ -161,10 +160,12 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiAdvancedTextFi
         return elements;
     }
 
+    /*
     public void replaceElement(int index, T replace) {
         elements.set(index, replace);
         fireSelectionChangeEvent();
     }
+    */
 
     public int getEntryCount() {
         return elements.size();
