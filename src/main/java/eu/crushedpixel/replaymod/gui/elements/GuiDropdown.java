@@ -36,7 +36,7 @@ public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextFie
     }
 
     @Override
-    public void drawTextBox() {
+    public void draw(Minecraft mc, int mouseX, int mouseY) {
         if(elements.size() > selectionIndex && selectionIndex >= 0) {
             setText(mc.fontRendererObj.trimStringToWidth(
                     elements.get(selectionIndex).getDisplayString(), width - 8));
@@ -106,11 +106,15 @@ public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextFie
 
             if(drawScrollBar) {
                 //The scroll bar
-                int dw = Mouse.getDWheel();
-                if(dw > 0) {
-                    dw = -1;
-                } else if(dw < 0) {
-                    dw = 1;
+                int dw = 0;
+
+                if(isHovering(mouseX, mouseY)) {
+                    dw = Mouse.getDWheel();
+                    if(dw > 0) {
+                        dw = -1;
+                    } else if(dw < 0) {
+                        dw = 1;
+                    }
                 }
 
                 upperIndex = Math.max(Math.min(upperIndex + dw, elements.size() - visibleDropout), 0);

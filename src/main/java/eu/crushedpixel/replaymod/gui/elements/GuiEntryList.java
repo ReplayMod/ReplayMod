@@ -39,7 +39,7 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiAdvancedTextFi
     }
 
     @Override
-    public void drawTextBox() {
+    public void draw(Minecraft mc, int mouseX, int mouseY) {
         try {
             super.drawTextBox();
 
@@ -68,11 +68,15 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiAdvancedTextFi
             //drawing the scroll bar
             if(elements.size() > visibleElements) {
                 //handle scroll events
-                int dw = Mouse.getDWheel();
-                if(dw > 0) {
-                    dw = -1;
-                } else if(dw < 0) {
-                    dw = 1;
+                int dw = 0;
+
+                if(isHovering(mouseX, mouseY)) {
+                    dw = Mouse.getDWheel();
+                    if(dw > 0) {
+                        dw = -1;
+                    } else if(dw < 0) {
+                        dw = 1;
+                    }
                 }
 
                 upperIndex = Math.max(Math.min(upperIndex + dw, elements.size() - visibleElements), 0);
