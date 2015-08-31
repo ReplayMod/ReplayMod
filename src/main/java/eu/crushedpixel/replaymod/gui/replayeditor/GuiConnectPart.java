@@ -56,7 +56,7 @@ public class GuiConnectPart extends GuiStudioPart {
                     OUTER:
                     for (GuiEntryListStringEntry fileName : filesToConcat) {
                         for (File file : replayFiles) {
-                            if (fileName.equals(FilenameUtils.getBaseName(file.getAbsolutePath()))) {
+                            if (fileName.getDisplayString().equals(FilenameUtils.getBaseName(file.getAbsolutePath()))) {
                                 inputFiles.add(file);
                                 continue OUTER;
                             }
