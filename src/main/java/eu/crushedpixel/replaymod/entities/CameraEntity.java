@@ -52,7 +52,7 @@ public class CameraEntity extends EntityPlayerSP {
 
     private boolean speedup = false;
 
-    private static UUID spectating;
+    public static UUID spectating;
 
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
         super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);

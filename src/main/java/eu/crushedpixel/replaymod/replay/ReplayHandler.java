@@ -478,6 +478,8 @@ public class ReplayHandler {
             mc.loadWorld(null);
         }
 
+        CameraEntity.spectating = null;
+
         inReplay = false;
         lastExit = System.currentTimeMillis();
 
