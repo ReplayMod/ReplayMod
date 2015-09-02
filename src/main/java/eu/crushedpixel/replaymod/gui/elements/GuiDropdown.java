@@ -35,6 +35,13 @@ public class GuiDropdown<T extends GuiEntryListEntry> extends GuiAdvancedTextFie
     }
 
     @Override
+    @Deprecated
+    public void drawTextBox() {
+        Point mousePos = MouseUtils.getMousePos();
+        draw(Minecraft.getMinecraft(), mousePos.getX(), mousePos.getY());
+    }
+    
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
         if(elements.size() > selectionIndex && selectionIndex >= 0) {
             setText(mc.fontRendererObj.trimStringToWidth(

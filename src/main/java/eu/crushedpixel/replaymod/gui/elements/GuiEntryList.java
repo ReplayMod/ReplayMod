@@ -2,9 +2,11 @@ package eu.crushedpixel.replaymod.gui.elements;
 
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
 import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
+import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.util.Point;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -35,6 +37,13 @@ public class GuiEntryList<T extends GuiEntryListEntry> extends GuiAdvancedTextFi
 
     public void setEmptyMessage(String emptyMessage) {
         this.emptyMessage = emptyMessage;
+    }
+
+    @Override
+    @Deprecated
+    public void drawTextBox() {
+        Point mousePos = MouseUtils.getMousePos();
+        draw(Minecraft.getMinecraft(), mousePos.getX(), mousePos.getY());
     }
 
     @Override
