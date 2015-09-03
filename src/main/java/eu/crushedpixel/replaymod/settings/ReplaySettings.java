@@ -204,7 +204,8 @@ public class ReplaySettings {
         lighting(false, "replaymod.gui.settings.lighting"),
         previewPath(false, "replaymod.gui.settings.pathpreview"),
         keyframeCleanCallback(true, "replaymod.gui.settings.keyframecleancallback"),
-        showChat(false, "options.chat.visibility");
+        showChat(false, "options.chat.visibility"),
+        renderInvisible(true, "replaymod.gui.settings.renderinvisible");
 
         private Object value;
         private String name;

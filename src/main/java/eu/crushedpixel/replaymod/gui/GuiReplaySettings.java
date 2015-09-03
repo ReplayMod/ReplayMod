@@ -69,23 +69,12 @@ public class GuiReplaySettings extends GuiScreen {
             int xPos = this.width / 2 - 155 + i % 2 * 160;
             int yPos = this.height / 6 + 24 * (i >> 1);
 
-            if(o == ReplayOptions.lighting) {
-                GuiToggleButton lightingButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_ENABLE_LIGHTING, xPos, yPos, 150, 20, o);
-                buttonList.add(lightingButton);
-
-            } else if(o == ReplayOptions.linear) {
+            if(o == ReplayOptions.linear) {
                 GuiToggleButton linearButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_FORCE_LINEAR, xPos, yPos, 150, 20, o,
                         I18n.format("replaymod.gui.settings.interpolation.linear"), I18n.format("replaymod.gui.settings.interpolation.cubic"));
                 buttonList.add(linearButton);
 
-            } else if(o == ReplayOptions.previewPath) {
-                GuiToggleButton pathPreviewButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_PATHPREVIEW_ID, xPos, yPos, 150, 20, o);
-                buttonList.add(pathPreviewButton);
-
-            } else if(o == ReplayOptions.keyframeCleanCallback) {
-                GuiToggleButton keyframeClearCallbackButton = new GuiSettingsOnOffButton(REPLAY_SETTINGS_CLEARCALLBACK_ID, xPos, yPos, 150, 20, o);
-                buttonList.add(keyframeClearCallbackButton);
-            } else if(o == ReplayOptions.showChat) {
+            } else {
                 buttonList.add(new GuiSettingsOnOffButton(0, xPos, yPos, 150, 20, o));
             }
 
