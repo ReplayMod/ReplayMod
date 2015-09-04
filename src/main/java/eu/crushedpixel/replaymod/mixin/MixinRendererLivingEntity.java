@@ -19,8 +19,12 @@ public abstract class MixinRendererLivingEntity {
     private void areAllNamesHidden(EntityLivingBase entity, CallbackInfoReturnable<Boolean> ci) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) Minecraft.getMinecraft().entityRenderer).getHandler();
         if (handler != null && handler.getOptions().isHideNameTags()) {
+            ci.setReturnValue(false); //this calls the cancel method
+        }
+
+        if(ReplayHandler.isInReplay() && entity.isInvisible()
+                && ReplaySettings.ReplayOptions.renderInvisible.getValue() == Boolean.FALSE) {
             ci.setReturnValue(false);
-            ci.cancel();
         }
     }
 
