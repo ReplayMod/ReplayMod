@@ -14,7 +14,7 @@ import net.minecraft.entity.Entity;
 @EqualsAndHashCode(callSuper=true)
 public class SpectatorData extends AdvancedPosition {
 
-    private int spectatedEntityID;
+    private Integer spectatedEntityID;
 
     public SpectatorData(double x, double y, double z, double pitch, double yaw, double roll, int entityID) {
         super(x, y, z, pitch, yaw, roll);
@@ -28,6 +28,15 @@ public class SpectatorData extends AdvancedPosition {
     public SpectatorData(Entity e) {
         super(e.posX, e.posY, e.posZ, e.rotationPitch, e.rotationYaw);
         this.spectatedEntityID = e.getEntityId();
+    }
+
+    /**
+     * @return itself if it's a valid SpectatorData object,
+     * otherwise a new AdvancedPosition object containing the same position data
+     */
+    public AdvancedPosition normalize() {
+        if(spectatedEntityID != null) return this;
+        return new AdvancedPosition(x, y, z, pitch, yaw, roll);
     }
 
     @Override

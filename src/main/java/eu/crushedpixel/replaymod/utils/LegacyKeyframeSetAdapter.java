@@ -5,10 +5,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import eu.crushedpixel.replaymod.assets.CustomImageObject;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
-import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.KeyframeSet;
-import eu.crushedpixel.replaymod.holders.TimestampValue;
+import eu.crushedpixel.replaymod.holders.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,8 +44,8 @@ public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
                         while(in.hasNext()) {
                             String jsonKeyframeTag = in.nextName();
                             if("value".equals(jsonKeyframeTag) || "position".equals(jsonKeyframeTag)) {
-                                AdvancedPosition position = new Gson().fromJson(in, AdvancedPosition.class);
-                                newKeyframe.setValue(position);
+                                SpectatorData spectatorData = new Gson().fromJson(in, SpectatorData.class);
+                                newKeyframe.setValue(spectatorData.normalize());
                             } else if("realTimestamp".equals(jsonKeyframeTag)) {
                                 newKeyframe.setRealTimestamp(in.nextInt());
                             } else if("spectatedEntityID".equals(jsonKeyframeTag)) {
