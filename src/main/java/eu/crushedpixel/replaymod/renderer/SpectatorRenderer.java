@@ -40,7 +40,7 @@ public class SpectatorRenderer {
     }
 
     public void renderSpectatorHand(EntityPlayer entityPlayer, float partialTicks, int renderPass) {
-        if(entityPlayer.isInvisible()) return;
+        if(entityPlayer.isInvisible() && itemToRender == null) return;
         
         if (entityPlayer != currentPlayer) {
             updateNow(entityPlayer);
