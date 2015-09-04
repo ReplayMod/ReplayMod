@@ -3,10 +3,7 @@ package eu.crushedpixel.replaymod.gui;
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.NumberValueChangeListener;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
-import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Marker;
-import eu.crushedpixel.replaymod.holders.TimestampValue;
+import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.interpolation.KeyframeValue;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
@@ -323,7 +320,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
         @Override
         public void initGui() {
-            if (keyframe.getValue().getSpectatedEntityID() != null) {
+            if (keyframe.getValue() instanceof SpectatorData) {
+                //TODO: Spectator Keyframe Settings
                 super.initGui();
                 return;
             }
@@ -347,7 +345,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                     public void onValueChange(double value) {
                         keyframe.setValue(new AdvancedPosition(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
                                 zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float) yaw.getPreciseValue(),
-                                (float) roll.getPreciseValue(), null));
+                                (float) roll.getPreciseValue()));
 
                         super.onValueChange(value);
                     }
@@ -387,7 +385,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
         @Override
         protected void drawScreen0() {
-            if (keyframe.getValue().getSpectatedEntityID() != null) return;
+            if (keyframe.getValue() instanceof SpectatorData) return;
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.xpos"), left, virtualY + 27, Color.WHITE.getRGB());
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.ypos"), left, virtualY + 57, Color.WHITE.getRGB());
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.zpos"), left, virtualY + 87, Color.WHITE.getRGB());

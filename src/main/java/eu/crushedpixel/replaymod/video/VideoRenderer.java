@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiVideoRenderer;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.SpectatorData;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.*;
 import eu.crushedpixel.replaymod.renderer.ChunkLoadingRenderGlobal;
@@ -238,8 +239,10 @@ public class VideoRenderer implements RenderInfo {
 
         //if it's between two spectator keyframes sharing the same entity, spectate this entity
         if(lastPos != null && nextPos != null) {
-            if(lastPos.getValue().getSpectatedEntityID() != null && nextPos.getValue().getSpectatedEntityID() != null) {
-                if(lastPos.getValue().getSpectatedEntityID().equals(nextPos.getValue().getSpectatedEntityID())) {
+            if(lastPos.getValue() instanceof SpectatorData && nextPos.getValue() instanceof SpectatorData) {
+                SpectatorData lastSpec = (SpectatorData)lastPos.getValue();
+                SpectatorData nextSpec = (SpectatorData)nextPos.getValue();
+                if(lastSpec.getSpectatedEntityID() == nextSpec.getSpectatedEntityID()) {
                     spectating = true;
                 }
             }
@@ -257,9 +260,8 @@ public class VideoRenderer implements RenderInfo {
                 mc.entityRenderer.fovModifierHand = mc.entityRenderer.fovModifierHandPrev = 1;
             }
         } else {
-            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getValue().getSpectatedEntityID()));
+            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(((SpectatorData)lastPos.getValue()).getSpectatedEntityID()));
         }
-
     }
 
     private void updateTime(Timer timer, int framesDone) {

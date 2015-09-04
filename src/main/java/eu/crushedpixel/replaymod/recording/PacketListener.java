@@ -217,7 +217,7 @@ public class PacketListener extends DataListener {
     }
 
     public void addMarker() {
-        AdvancedPosition pos = new AdvancedPosition(Minecraft.getMinecraft().getRenderViewEntity(), false);
+        AdvancedPosition pos = new AdvancedPosition(Minecraft.getMinecraft().getRenderViewEntity());
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
         Keyframe<Marker> marker = new Keyframe<Marker>(timestamp, new Marker(null, pos));

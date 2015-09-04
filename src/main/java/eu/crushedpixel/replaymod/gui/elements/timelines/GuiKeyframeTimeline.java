@@ -2,10 +2,7 @@ package eu.crushedpixel.replaymod.gui.elements.timelines;
 
 import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
-import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.Marker;
-import eu.crushedpixel.replaymod.holders.TimestampValue;
+import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 
@@ -131,7 +128,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
             while(iterator.hasNext()) {
                 Keyframe<AdvancedPosition> kf = iterator.next();
 
-                if(kf.getValue().getSpectatedEntityID() == null)
+                if(!(kf.getValue() instanceof SpectatorData))
                     continue;
 
                 int i = iterator.nextIndex();
@@ -139,10 +136,14 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 
                 if (iterator.hasNext()) {
                     Keyframe<AdvancedPosition> kf2 = iterator.next();
-                    if(kf.getValue().getSpectatedEntityID()
-                            .equals(kf2.getValue().getSpectatedEntityID())) {
 
-                        nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
+                    if(kf2.getValue() instanceof SpectatorData) {
+                        SpectatorData spectatorData1 = (SpectatorData)kf.getValue();
+                        SpectatorData spectatorData2 = (SpectatorData)kf2.getValue();
+
+                        if(spectatorData1.getSpectatedEntityID() == spectatorData2.getSpectatedEntityID()) {
+                            nextSpectatorKeyframeRealTime = kf2.getRealTimestamp();
+                        }
                     }
                 }
 
@@ -231,7 +232,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                 y += 0;
 
                 //If Spectator Keyframe, use different texture
-                if(((AdvancedPosition) kf.getValue()).getSpectatedEntityID() != null) {
+                if(kf.getValue() instanceof SpectatorData) {
                     textureX = KEYFRAME_SPEC_X;
                     textureY = KEYFRAME_SPEC_Y;
                 }

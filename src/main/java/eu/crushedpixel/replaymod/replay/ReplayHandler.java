@@ -214,7 +214,7 @@ public class ReplayHandler {
             markerKeyframes.remove(selectedKeyframe);
             ReplayHandler.selectKeyframe(null);
         } else {
-            AdvancedPosition pos = new AdvancedPosition(mc.getRenderViewEntity(), false);
+            AdvancedPosition pos = new AdvancedPosition(mc.getRenderViewEntity());
             int timestamp = ReplayMod.replaySender.currentTimeStamp();
             Keyframe<Marker> markerKeyframe = new Keyframe<Marker>(timestamp, new Marker(null, pos));
             markerKeyframes.add(markerKeyframe);

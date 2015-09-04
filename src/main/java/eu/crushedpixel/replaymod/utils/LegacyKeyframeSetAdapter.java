@@ -37,6 +37,7 @@ public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
                 if("name".equals(jsonTag)) {
                     set.setName(in.nextString());
 
+                    //TODO: Adapt to new Spectator Keyframe system
                 } else if("positionKeyframes".equals(jsonTag)) {
                     in.beginArray();
                     while(in.hasNext()) {
@@ -56,7 +57,7 @@ public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
                         }
 
                         if(spectatedEntityID != null) {
-                            newKeyframe.getValue().setSpectatedEntityID(spectatedEntityID);
+                            newKeyframe.setValue(newKeyframe.getValue().asSpectatorData(spectatedEntityID));
                         }
 
                         in.endObject();

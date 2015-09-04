@@ -10,6 +10,7 @@ import eu.crushedpixel.replaymod.gui.elements.timelines.GuiKeyframeTimeline;
 import eu.crushedpixel.replaymod.gui.elements.timelines.GuiMarkerTimeline;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.SpectatorData;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
@@ -150,12 +151,12 @@ public class GuiReplayOverlay extends Gui {
                 Entity cam = mc.getRenderViewEntity();
                 if (cam != null) {
                     AdvancedPosition position = new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
-                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt(), null);
+                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt());
 
                     if (ReplayHandler.isCamera())
                         ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), position));
                     else
-                        ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), new AdvancedPosition(cam.getEntityId(), true)));
+                        ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), new SpectatorData(cam)));
                 }
             }
         }, "replaymod.gui.ingame.menu.addposkeyframe");
@@ -173,12 +174,12 @@ public class GuiReplayOverlay extends Gui {
                 Entity cam = mc.getRenderViewEntity();
                 if (cam != null) {
                     AdvancedPosition position = new AdvancedPosition(cam.posX, cam.posY, cam.posZ, cam.rotationPitch,
-                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt(), null);
+                            cam.rotationYaw % 360, ReplayHandler.getCameraTilt());
 
                     if (ReplayHandler.isCamera())
                         ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), position));
                     else
-                        ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), new AdvancedPosition(cam.getEntityId(), true)));
+                        ReplayHandler.addKeyframe(new Keyframe<AdvancedPosition>(ReplayHandler.getRealTimelineCursor(), new SpectatorData(cam)));
                 }
             }
         }, "replaymod.gui.ingame.menu.addspeckeyframe");
@@ -195,7 +196,7 @@ public class GuiReplayOverlay extends Gui {
             boolean selected = ReplayHandler.getSelectedKeyframe() != null && ReplayHandler.getSelectedKeyframe().getValue() instanceof AdvancedPosition;
             boolean camera;
             if(selected) {
-                camera = ((AdvancedPosition)ReplayHandler.getSelectedKeyframe().getValue()).getSpectatedEntityID() == null;
+                camera = !(ReplayHandler.getSelectedKeyframe().getValue() instanceof SpectatorData);
             } else {
                 camera = ReplayHandler.isCamera();
             }

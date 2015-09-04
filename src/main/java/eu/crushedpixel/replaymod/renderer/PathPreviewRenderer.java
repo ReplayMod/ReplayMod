@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.SpectatorData;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
@@ -201,7 +202,7 @@ public class PathPreviewRenderer {
             posY += size;
         }
 
-        if(pos1.getSpectatedEntityID() != null) {
+        if(pos1 instanceof SpectatorData) {
             posX += size;
         }
 

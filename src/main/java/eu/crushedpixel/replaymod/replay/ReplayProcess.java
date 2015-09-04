@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
+import eu.crushedpixel.replaymod.holders.SpectatorData;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
@@ -234,8 +235,10 @@ public class ReplayProcess {
 
         //if it's between two spectator keyframes sharing the same entity, spectate this entity
         if(lastPos != null && nextPos != null) {
-            if(lastPos.getValue().getSpectatedEntityID() != null && nextPos.getValue().getSpectatedEntityID() != null) {
-                if(lastPos.getValue().getSpectatedEntityID().equals(nextPos.getValue().getSpectatedEntityID())) {
+            if(lastPos.getValue() instanceof SpectatorData && nextPos.getValue() instanceof SpectatorData) {
+                SpectatorData lastSpec = (SpectatorData)lastPos.getValue();
+                SpectatorData nextSpec = (SpectatorData)nextPos.getValue();
+                if(lastSpec.getSpectatedEntityID() == nextSpec.getSpectatedEntityID()) {
                     spectating = true;
                 }
             }
@@ -284,7 +287,7 @@ public class ReplayProcess {
                 ReplayHandler.getCameraEntity().movePath(pos);
             }
         } else {
-            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(lastPos.getValue().getSpectatedEntityID()));
+            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(((SpectatorData)lastPos.getValue()).getSpectatedEntityID()));
         }
 
         Integer curTimestamp = timeKeyframes.getInterpolatedValueForTimestamp(curRealReplayTime, true).asInt();
