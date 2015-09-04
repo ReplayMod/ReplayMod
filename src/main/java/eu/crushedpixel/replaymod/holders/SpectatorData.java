@@ -3,18 +3,21 @@ package eu.crushedpixel.replaymod.holders;
 import eu.crushedpixel.replaymod.interpolation.AdvancedPositionLinearInterpolation;
 import eu.crushedpixel.replaymod.interpolation.AdvancedPositionSplineInterpolation;
 import eu.crushedpixel.replaymod.interpolation.Interpolation;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 
-@Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 public class SpectatorData extends AdvancedPosition {
 
     private Integer spectatedEntityID;
+
+    public int getSpectatedEntityID() {
+        if(spectatedEntityID == null) throw new IllegalStateException();
+        return spectatedEntityID;
+    }
 
     public SpectatorData(double x, double y, double z, double pitch, double yaw, double roll, int entityID) {
         super(x, y, z, pitch, yaw, roll);
