@@ -3,16 +3,42 @@ package eu.crushedpixel.replaymod.holders;
 import eu.crushedpixel.replaymod.interpolation.AdvancedPositionLinearInterpolation;
 import eu.crushedpixel.replaymod.interpolation.AdvancedPositionSplineInterpolation;
 import eu.crushedpixel.replaymod.interpolation.Interpolation;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 
+@Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 public class SpectatorData extends AdvancedPosition {
 
     private Integer spectatedEntityID;
+
+    private SpectatingMethod spectatingMethod = SpectatingMethod.FIRST_PERSON;
+
+    //these fields are only relevant for SpectatingMethod.SHOULDER_CAM
+    /**
+     * The shoulder camera's distance (in blocks) to the player
+     */
+    private double shoulderCamDistance = 3;
+
+    /**
+     * The shoulder camera's pitch offset in degrees, value between -90 and 90
+     */
+    private float shoulderCamPitchOffset = 0;
+
+    /**
+     * The shoulder camera's rotation around the player in degrees
+     */
+    private float shoulderCamYawOffset = 0;
+
+    /**
+     * The distance between the automatically calculated position keyframes in milliseconds
+     */
+    private int shoulderCamSmoothness = 500;
+
 
     public int getSpectatedEntityID() {
         if(spectatedEntityID == null) throw new IllegalStateException();
@@ -55,5 +81,9 @@ public class SpectatorData extends AdvancedPosition {
     @Override
     public Interpolation getLinearInterpolator() {
         return new AdvancedPositionLinearInterpolation();
+    }
+
+    public enum SpectatingMethod {
+        FIRST_PERSON, SHOULDER_CAM
     }
 }
