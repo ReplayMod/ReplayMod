@@ -19,6 +19,7 @@ import org.lwjgl.util.Point;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen {
@@ -27,6 +28,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
     public static GuiEditKeyframe create(Keyframe kf) {
         if(kf.getValue() instanceof Marker) return new GuiEditKeyframeMarker(kf);
         if(kf.getValue() instanceof TimestampValue) return new GuiEditKeyframeTime(kf);
+        if(kf.getValue() instanceof SpectatorData) return new GuiEditKeyframeSpectator(kf);
         if(kf.getValue() instanceof AdvancedPosition) return new GuiEditKeyframePosition(kf);
         throw new UnsupportedOperationException("Keyframe type unknown: " + kf);
     }
@@ -132,7 +134,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                 min.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.minutes")) + 5
                 + sec.width + 5 + fontRendererObj.getStringWidth(I18n.format("replaymod.gui.seconds")) + 5;
 
-        min.yPosition = sec.yPosition = ms.yPosition = virtualY+virtualHeight-65;
+        min.yPosition = sec.yPosition = ms.yPosition = virtualY+virtualHeight-55;
 
         saveButton.yPosition = cancelButton.yPosition = virtualY + virtualHeight - 20 - 5;
         saveButton.xPosition = this.width - 100 - 5 - 10;
@@ -320,12 +322,6 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 
         @Override
         public void initGui() {
-            if (keyframe.getValue() instanceof SpectatorData) {
-                //TODO: Spectator Keyframe Settings
-                super.initGui();
-                return;
-            }
-
             super.initGui();
 
             if (!initialized) {
@@ -394,6 +390,108 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
             drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.camroll"), left + totalWidth - 100 - 5 - w2, virtualY + 87, Color.WHITE.getRGB());
         }
 
+    }
+
+    private static class GuiEditKeyframeSpectator extends GuiEditKeyframe<AdvancedPosition> {
+        private GuiToggleButton perspectiveButton;
+
+        private GuiString shoulderDistanceString, shoulderPitchString, shoulderYawString, shoulderSmoothnessString;
+        private GuiDraggingNumberInput shoulderDistanceInput, shoulderPitchOffsetInput,
+                shoulderYawOffsetInput, shoulderSmoothnessInput;
+
+        private ComposedElement spectatorCamSettings;
+        private ComposedElement shoulderCamSettings;
+
+        private DelegatingElement perspectiveSettings = new DelegatingElement() {
+            @Override
+            public GuiElement delegate() {
+                switch(perspectiveButton.getValue()) {
+                    case 0:
+                        return spectatorCamSettings;
+                    case 1:
+                        return shoulderCamSettings;
+                    default:
+                        return null;
+                }
+            }
+        };
+
+        public GuiEditKeyframeSpectator(Keyframe<AdvancedPosition> keyframe) {
+            super(keyframe, ReplayHandler.getPositionKeyframes());
+            screenTitle = I18n.format("replaymod.gui.editkeyframe.title.spec");
+        }
+
+        @Override
+        public void initGui() {
+            super.initGui();
+
+            if (!initialized) {
+                SpectatorData data = (SpectatorData)keyframe.getValue();
+
+                perspectiveButton = new GuiToggleButton(0, 0, 0, 200, 20, I18n.format("replaymod.gui.editkeyframe.spec.method")+": ", new String[]{
+                        I18n.format("replaymod.gui.editkeyframe.spec.method.firstperson"),
+                        I18n.format("replaymod.gui.editkeyframe.spec.method.shoulder")});
+
+                perspectiveButton.setValue(Arrays.asList(SpectatorData.SpectatingMethod.values()).indexOf(data.getSpectatingMethod()));
+
+                spectatorCamSettings = new ComposedElement();
+
+                //create elements in shoulderCamSettings
+                shoulderDistanceString = new GuiString(0, 0, Color.WHITE, I18n.format("replaymod.gui.editkeyframe.spec.method.shoulder.distance"));
+                shoulderPitchString = new GuiString(0, 0, Color.WHITE, I18n.format("replaymod.gui.editkeyframe.spec.method.shoulder.pitch"));
+                shoulderYawString = new GuiString(0, 0, Color.WHITE, I18n.format("replaymod.gui.editkeyframe.spec.method.shoulder.yaw"));
+                shoulderSmoothnessString = new GuiString(0, 0, Color.WHITE, I18n.format("replaymod.gui.editkeyframe.spec.method.shoulder.smoothness"));
+
+                shoulderDistanceInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, 0d, 30d, data.getShoulderCamDistance(), true, "", 0.1);
+                shoulderPitchOffsetInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, -90d, 90d, (double)data.getShoulderCamPitchOffset(), true, "°", 1);
+                shoulderYawOffsetInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, null, null, (double)data.getShoulderCamYawOffset(), true, "°", 1);
+                shoulderSmoothnessInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, 0.1d, 1d, data.getShoulderCamSmoothness()/1000d, true, "", 0.1);
+
+                shoulderCamSettings = new ComposedElement(
+                        shoulderDistanceString, shoulderDistanceInput,
+                        shoulderPitchString, shoulderPitchOffsetInput,
+                        shoulderYawString, shoulderYawOffsetInput,
+                        shoulderSmoothnessString, shoulderSmoothnessInput);
+
+                inputs.addPart(new ComposedElement(perspectiveButton, perspectiveSettings));
+            }
+
+            perspectiveButton.xPosition = (this.width-perspectiveButton.width())/2;
+            perspectiveButton.yPosition = this.virtualY + 20;
+
+            int verticalSpacing = 20 + 5;
+            int totalWidth = 300;
+            int elementWidth = 145;
+            int horizontalSpacing = 10;
+
+            int y = perspectiveButton.yPos() + verticalSpacing;
+
+            int i = 0;
+            for(GuiElement el : shoulderCamSettings.getParts()) {
+                el.xPos((width-totalWidth)/2 + (i%2)*(elementWidth + horizontalSpacing));
+                el.width(elementWidth);
+
+                el.yPos(y + ((i+1)%2)*7);
+
+                if(i%2 == 1) {
+                    y += verticalSpacing;
+                }
+                i++;
+            }
+
+            initialized = true;
+        }
+
+        @Override
+        public void onGuiClosed() {
+            SpectatorData data = (SpectatorData)keyframe.getValue();
+            data.setSpectatingMethod(SpectatorData.SpectatingMethod.values()[perspectiveButton.getValue()]);
+            data.setShoulderCamDistance(shoulderDistanceInput.getPreciseValue());
+            data.setShoulderCamPitchOffset(shoulderPitchOffsetInput.getIntValue());
+            data.setShoulderCamYawOffset(shoulderYawOffsetInput.getIntValue());
+            data.setShoulderCamSmoothness((int)(shoulderSmoothnessInput.getPreciseValue()*1000));
+            super.onGuiClosed();
+        }
     }
 
     private static class KeyframeValueChangeListener implements NumberValueChangeListener {

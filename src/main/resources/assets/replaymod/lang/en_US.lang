@@ -311,6 +311,15 @@ replaymod.gui.editkeyframe.timelineposition=Timeline Position
 replaymod.gui.editkeyframe.markername=Event Marker Name
 replaymod.gui.editkeyframe.timestamp=Time Index
 
+replaymod.gui.editkeyframe.spec.method=Spectating Method
+replaymod.gui.editkeyframe.spec.method.firstperson=First Person
+replaymod.gui.editkeyframe.spec.method.shoulder=Shoulder Camera
+
+replaymod.gui.editkeyframe.spec.method.shoulder.distance=Camera Distance
+replaymod.gui.editkeyframe.spec.method.shoulder.pitch=Pitch Offset
+replaymod.gui.editkeyframe.spec.method.shoulder.yaw=Rotation Angle
+replaymod.gui.editkeyframe.spec.method.shoulder.smoothness=Path Smoothness
+
 #Render Settings GUI
 replaymod.gui.rendersettings.title=Rendering Options
 replaymod.gui.rendersettings.renderer=Rendering Method
