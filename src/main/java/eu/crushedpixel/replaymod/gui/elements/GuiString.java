@@ -112,4 +112,20 @@ public class GuiString extends Gui implements GuiElement {
     public int height() {
         return Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT;
     }
+
+    @Override
+    public void xPos(int x) {
+        positionX = x;
+    }
+
+    @Override
+    public void yPos(int y) {
+        positionY = y;
+    }
+
+    @Override
+    public void width(int width) {}
+
+    @Override
+    public void height(int height) {}
 }

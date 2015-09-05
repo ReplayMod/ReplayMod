@@ -86,4 +86,24 @@ public abstract class DelegatingElement implements GuiElement {
     public int height() {
         return delegate().height();
     }
+
+    @Override
+    public void xPos(int x) {
+        delegate().xPos(x);
+    }
+
+    @Override
+    public void yPos(int y) {
+        delegate().yPos(y);
+    }
+
+    @Override
+    public void width(int width) {
+        delegate().width(width);
+    }
+
+    @Override
+    public void height(int height) {
+        delegate().height(height);
+    }
 }

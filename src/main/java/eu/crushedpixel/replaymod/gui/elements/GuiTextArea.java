@@ -660,4 +660,24 @@ public class GuiTextArea extends Gui implements GuiElement, GuiOutsideClickableE
     public int height() {
         return height;
     }
+
+    @Override
+    public void xPos(int x) {
+        positionX = x;
+    }
+
+    @Override
+    public void yPos(int y) {
+        positionY = y;
+    }
+
+    @Override
+    public void width(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void height(int height) {
+        this.height = height;
+    }
 }

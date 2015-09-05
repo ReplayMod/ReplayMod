@@ -17,6 +17,11 @@ public interface GuiElement {
     int width();
     int height();
 
+    void xPos(int x);
+    void yPos(int y);
+    void width(int width);
+    void height(int height);
+
     boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button);
     void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button);
     void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button);

@@ -138,4 +138,24 @@ public class GuiAdvancedTextField extends GuiTextField implements GuiElement, Gu
     public int height() {
         return height;
     }
+
+    @Override
+    public void xPos(int x) {
+        xPosition = x;
+    }
+
+    @Override
+    public void yPos(int y) {
+        yPosition = y;
+    }
+
+    @Override
+    public void width(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void height(int height) {
+        this.height = height;
+    }
 }

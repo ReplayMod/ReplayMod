@@ -359,4 +359,16 @@ public class GuiTimeline extends Gui implements GuiElement {
     public int height() {
         return height;
     }
+
+    @Override
+    public void xPos(int x) {}
+
+    @Override
+    public void yPos(int y) {}
+
+    @Override
+    public void width(int width) {}
+
+    @Override
+    public void height(int height) {}
 }

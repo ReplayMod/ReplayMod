@@ -155,4 +155,16 @@ public class ComposedElement implements GuiElement {
     public int height() {
         return 0;
     }
+
+    @Override
+    public void xPos(int x) {}
+
+    @Override
+    public void yPos(int y) {}
+
+    @Override
+    public void width(int width) {}
+
+    @Override
+    public void height(int height) {}
 }

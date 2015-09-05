@@ -206,4 +206,16 @@ public class GuiScrollbar extends Gui implements GuiElement {
     public int height() {
         return SLIDER_HEIGHT;
     }
+
+    @Override
+    public void xPos(int x) {}
+
+    @Override
+    public void yPos(int y) {}
+
+    @Override
+    public void width(int width) {}
+
+    @Override
+    public void height(int height) {}
 }
