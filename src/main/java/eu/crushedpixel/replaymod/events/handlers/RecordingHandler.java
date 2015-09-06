@@ -19,7 +19,6 @@ import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
@@ -40,6 +39,15 @@ public class RecordingHandler {
             ConnectionEventHandler.insertPacket(spawnPlayer(mc.thePlayer));
         } catch(Exception e1) {
             e1.printStackTrace();
+        }
+    }
+
+    public void onPlayerRespawn() {
+        if(!ConnectionEventHandler.isRecording()) return;
+        try {
+            ConnectionEventHandler.insertPacket(spawnPlayer(mc.thePlayer));
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -266,18 +274,6 @@ public class RecordingHandler {
         if(!ConnectionEventHandler.isRecording()) return;
         try {
             ConnectionEventHandler.insertPacket(new S0DPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId()));
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SubscribeEvent
-    public void onRespawn(PlayerRespawnEvent event) {
-        if(!ConnectionEventHandler.isRecording()) return;
-        try {
-            //destroy entity, then respawn
-            ConnectionEventHandler.insertPacket(new S13PacketDestroyEntities(mc.thePlayer.getEntityId()));
-            ConnectionEventHandler.insertPacket(spawnPlayer(mc.thePlayer));
         } catch(Exception e) {
             e.printStackTrace();
         }

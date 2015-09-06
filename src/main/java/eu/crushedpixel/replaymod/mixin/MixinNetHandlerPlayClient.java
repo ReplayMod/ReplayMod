@@ -4,6 +4,7 @@ import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.recording.ConnectionEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S38PacketPlayerListItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,6 +33,20 @@ public abstract class MixinNetHandlerPlayClient {
                     ReplayMod.recordingHandler.onPlayerJoin();
                 }
             }
+        }
+    }
+
+    /**
+     * Record the own player entity respawning.
+     * We cannot use the {@link net.minecraftforge.event.entity.EntityJoinWorldEvent} because that would also include
+     * the first spawn which is already handled by {@link #recordOwnJoin(S38PacketPlayerListItem, CallbackInfo)}.
+     * @param packet The packet
+     * @param ci Callback info
+     */
+    @Inject(method = "handleRespawn", at=@At("RETURN"))
+    public void recordOwnRespawn(S07PacketRespawn packet, CallbackInfo ci) {
+        if (ConnectionEventHandler.isRecording()) {
+            ReplayMod.recordingHandler.onPlayerRespawn();
         }
     }
 }
