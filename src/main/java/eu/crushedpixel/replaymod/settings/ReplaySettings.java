@@ -258,7 +258,8 @@ public class ReplaySettings {
     public enum AdvancedOptions implements ValueEnum {
         recordingPath("./replay_recordings/", ""),
         renderPath("./replay_videos/", ""),
-        downloadPath("./replay_downloads", "");
+        downloadPath("./replay_downloads", ""),
+        disableLoginPrompt(false, "");
 
         private Object value;
         private String name;

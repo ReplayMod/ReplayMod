@@ -9,6 +9,7 @@ import eu.crushedpixel.replaymod.gui.replayeditor.GuiReplayEditor;
 import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplayProcess;
+import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
@@ -42,7 +43,7 @@ public class GuiEventHandler {
         if(event.gui instanceof GuiMainMenu) {
             if(ReplayMod.firstMainMenu) {
                 ReplayMod.firstMainMenu = false;
-                if(!ReplayMod.apiClient.isLoggedIn()) {
+                if(!ReplayMod.apiClient.isLoggedIn() && ReplaySettings.AdvancedOptions.disableLoginPrompt.getValue() != Boolean.TRUE) {
                     event.gui = new GuiLoginPrompt(event.gui, event.gui, false).toMinecraft();
                     return;
                 }
