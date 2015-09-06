@@ -84,6 +84,16 @@ public class SpectatorData extends AdvancedPosition {
     }
 
     public enum SpectatingMethod {
-        FIRST_PERSON, SHOULDER_CAM
+        FIRST_PERSON(0xFF0080FF), SHOULDER_CAM(0xFFFF8000);
+
+        private int color;
+
+        public int getColor() {
+            return color;
+        }
+
+        SpectatingMethod(int color) {
+            this.color = color;
+        }
     }
 }

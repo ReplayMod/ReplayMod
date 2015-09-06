@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.gui.GuiEditKeyframe;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 
 import java.util.ListIterator;
 
@@ -158,8 +159,12 @@ public class GuiKeyframeTimeline extends GuiTimeline {
                     int keyframeX = getKeyframeX(kf.getRealTimestamp(), leftTime, bodyWidth, segmentLength);
                     int nextX = getKeyframeX(nextSpectatorKeyframeRealTime, leftTime, bodyWidth, segmentLength);
 
-                    drawGradientRect(Math.max(keyframeX + 2, positionX+BORDER_LEFT), positionY + BORDER_TOP + 1, Math.min(nextX - 2, positionX+width-BORDER_RIGHT+1),
-                            positionY + BORDER_TOP + 4, 0xFF0080FF, 0xFF0080FF);
+                    int color = ((SpectatorData)kf.getValue()).getSpectatingMethod().getColor();
+
+                    drawRect(Math.max(keyframeX + 2, positionX+BORDER_LEFT), positionY + BORDER_TOP + 1, Math.min(nextX - 2, positionX+width-BORDER_RIGHT+1),
+                            positionY + BORDER_TOP + 4, color);
+
+                    GlStateManager.color(1, 1, 1, 1);
                 }
             }
         }
