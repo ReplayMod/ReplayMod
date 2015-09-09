@@ -20,6 +20,7 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
+import net.minecraftforge.fml.common.FMLLog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -96,7 +97,7 @@ public class GuiReplayViewer extends GuiScreen implements GuiYesNoCallback {
                         }
                     });
                 } catch(Exception e) {
-                    e.printStackTrace();
+                    FMLLog.getLogger().error("Could not load Replay File "+file.getName(), e);
                 }
             }
 
