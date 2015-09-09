@@ -18,27 +18,7 @@ public class SpectatorData extends AdvancedPosition {
 
     private SpectatingMethod spectatingMethod = SpectatingMethod.FIRST_PERSON;
 
-    //these fields are only relevant for SpectatingMethod.SHOULDER_CAM
-    /**
-     * The shoulder camera's distance (in blocks) to the player
-     */
-    private double shoulderCamDistance = 3;
-
-    /**
-     * The shoulder camera's pitch offset in degrees, value between -90 and 90
-     */
-    private float shoulderCamPitchOffset = 0;
-
-    /**
-     * The shoulder camera's rotation around the player in degrees
-     */
-    private float shoulderCamYawOffset = 0;
-
-    /**
-     * The distance between the automatically calculated position keyframes in milliseconds
-     */
-    private int shoulderCamSmoothness = 500;
-
+    private SpectatorDataThirdPersonInfo thirdPersonInfo = new SpectatorDataThirdPersonInfo();
 
     public int getSpectatedEntityID() {
         if(spectatedEntityID == null) throw new IllegalStateException();
