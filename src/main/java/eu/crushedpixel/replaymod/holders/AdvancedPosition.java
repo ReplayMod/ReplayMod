@@ -33,7 +33,7 @@ public class AdvancedPosition extends Position {
         this(e.posX, e.posY, e.posZ, e.rotationPitch, e.rotationYaw);
     }
 
-    public AdvancedPosition(double x, double y, double z, float pitch, float yaw) {
+    public AdvancedPosition(double x, double y, double z, double pitch, double yaw) {
         this(x, y, z, pitch, yaw, 0);
     }
 
