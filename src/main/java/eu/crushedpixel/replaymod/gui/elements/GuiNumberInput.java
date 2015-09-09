@@ -107,7 +107,7 @@ public class GuiNumberInput extends GuiAdvancedTextField {
 
     public int getIntValue() {
         try {
-            return Integer.valueOf(getText());
+            return (int)getPreciseValue();
         } catch(Exception e) {
             return 0;
         }
