@@ -62,6 +62,15 @@ public class AdvancedPosition extends Position {
         return new AdvancedPosition(position.x, position.y, position.z, pitch, yaw, roll);
     }
 
+    public void apply(AdvancedPosition toApply) {
+        this.x = toApply.getX();
+        this.y = toApply.getY();
+        this.z = toApply.getZ();
+        this.pitch = toApply.getPitch();
+        this.yaw = toApply.getYaw();
+        this.roll = toApply.getRoll();
+    }
+
     @Override
     public AdvancedPosition newInstance() {
         return new AdvancedPosition();

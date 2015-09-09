@@ -11,11 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>> {
 
-    private static final KeyframeComparator KEYFRAME_COMPARATOR = new KeyframeComparator();
+    protected static final KeyframeComparator KEYFRAME_COMPARATOR = new KeyframeComparator();
 
-    private Boolean previousCallLinear = null;
+    protected Boolean previousCallLinear = null;
 
-    private Interpolation<K> interpolation;
+    protected Interpolation<K> interpolation;
 
     public KeyframeList(List<Keyframe<K>> initial) {
         for(Keyframe<K> kf : initial) {
@@ -186,7 +186,7 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
      * @param timestamp The value to use
      * @return A value between 0 and 1
      */
-    private float getPositionOnPath(int timestamp) {
+    protected float getPositionOnPath(int timestamp) {
         Keyframe previousKeyframe = getPreviousKeyframe(timestamp, true);
         Keyframe nextKeyframe = getNextKeyframe(timestamp, true);
 
