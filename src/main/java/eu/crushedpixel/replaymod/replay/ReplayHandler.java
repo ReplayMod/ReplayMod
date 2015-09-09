@@ -11,6 +11,7 @@ import eu.crushedpixel.replaymod.events.ReplayExitEvent;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.*;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
+import eu.crushedpixel.replaymod.preparation.EntityPositionTracker;
 import eu.crushedpixel.replaymod.registry.LightingHandler;
 import eu.crushedpixel.replaymod.registry.PlayerHandler;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
@@ -80,6 +81,12 @@ public class ReplayHandler {
      * Currently active replay restrictions.
      */
     private static Restrictions restrictions;
+
+    /**
+     * The EntityPositionTracker for the current Replay File.
+     */
+    @Getter
+    private static EntityPositionTracker entityPositionTracker;
 
     public static KeyframeSet[] getKeyframeRepository() {
         return keyframeRepository;
@@ -327,6 +334,12 @@ public class ReplayHandler {
     }
 
     public static void startReplay(File file, boolean asyncMode) {
+        entityPositionTracker = new EntityPositionTracker(file);
+        try {
+            entityPositionTracker.load();
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
+        }
 
         ReplayMod.chatMessageHandler.initialize();
         mc.ingameGUI.getChatGUI().clearChatMessages();
