@@ -34,45 +34,47 @@ public class KeyInputHandler {
         if(mc.currentScreen == null) {
             boolean forward = false, backward = false, left = false, right = false, up = false, down = false;
 
-            for(KeyBinding kb : keyBindings) {
-                if(!kb.isKeyDown()) continue;
-                if(ReplayHandler.isCamera()) {
-                    if(kb.getKeyDescription().equals("key.forward")) {
-                        forward = true;
-                        speedup = true;
-                    }
-
-                    if(kb.getKeyDescription().equals("key.back")) {
-                        backward = true;
-                        speedup = true;
-                    }
-
-                    if(kb.getKeyDescription().equals("key.jump")) {
-                        up = true;
-                        speedup = true;
-                    }
-
-                    if(kb.getKeyDescription().equals("key.left")) {
-                        left = true;
-                        speedup = true;
-                    }
-
-                    if(kb.getKeyDescription().equals("key.right")) {
-                        right = true;
-                        speedup = true;
-                    }
-                }
-
-                if(kb.getKeyDescription().equals("key.sneak")) {
+            if(!ReplayHandler.isInPath()) {
+                for(KeyBinding kb : keyBindings) {
+                    if(!kb.isKeyDown()) continue;
                     if(ReplayHandler.isCamera()) {
-                        down = true;
-                        speedup = true;
-                    }
-                    ReplayHandler.spectateCamera();
-                }
-            }
+                        if(kb.getKeyDescription().equals("key.forward")) {
+                            forward = true;
+                            speedup = true;
+                        }
 
-            forwardCameraMovement(forward, backward, left, right, up, down);
+                        if(kb.getKeyDescription().equals("key.back")) {
+                            backward = true;
+                            speedup = true;
+                        }
+
+                        if(kb.getKeyDescription().equals("key.jump")) {
+                            up = true;
+                            speedup = true;
+                        }
+
+                        if(kb.getKeyDescription().equals("key.left")) {
+                            left = true;
+                            speedup = true;
+                        }
+
+                        if(kb.getKeyDescription().equals("key.right")) {
+                            right = true;
+                            speedup = true;
+                        }
+                    }
+
+                    if(kb.getKeyDescription().equals("key.sneak")) {
+                        if(ReplayHandler.isCamera()) {
+                            down = true;
+                            speedup = true;
+                        }
+                        ReplayHandler.spectateCamera();
+                    }
+                }
+
+                forwardCameraMovement(forward, backward, left, right, up, down);
+            }
         }
 
         if(ReplayHandler.getCameraEntity() != null) {
