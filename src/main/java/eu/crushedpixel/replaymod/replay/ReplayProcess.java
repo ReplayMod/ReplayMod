@@ -21,6 +21,7 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.ReportedException;
 import org.lwjgl.opengl.Display;
 
@@ -232,14 +233,25 @@ public class ReplayProcess {
         Keyframe<AdvancedPosition> nextPos = positionKeyframes.getNextKeyframe(curRealReplayTime, true);
 
         boolean spectating = false;
+        boolean spectateCamera = true;
+        SpectatorData.SpectatingMethod spectatingMethod = null;
 
-        //if it's between two spectator keyframes sharing the same entity, spectate this entity
+        SpectatorData previousSpectatorData = null;
+        SpectatorData nextSpectatorData = null;
+
+        //check whether between two Spectator Keyframes
         if(lastPos != null && nextPos != null) {
             if(lastPos.getValue() instanceof SpectatorData && nextPos.getValue() instanceof SpectatorData) {
-                SpectatorData lastSpec = (SpectatorData)lastPos.getValue();
-                SpectatorData nextSpec = (SpectatorData)nextPos.getValue();
-                if(lastSpec.getSpectatedEntityID() == nextSpec.getSpectatedEntityID()) {
+                previousSpectatorData = (SpectatorData)lastPos.getValue();
+                nextSpectatorData = (SpectatorData)nextPos.getValue();
+                if(previousSpectatorData.getSpectatedEntityID() == nextSpectatorData.getSpectatedEntityID()) {
                     spectating = true;
+                    //the previous SpectatingMethod always applies
+                    spectatingMethod = previousSpectatorData.getSpectatingMethod();
+
+                    if(spectatingMethod == SpectatorData.SpectatingMethod.FIRST_PERSON) {
+                        spectateCamera = false;
+                    }
                 }
             }
         }
@@ -278,16 +290,34 @@ public class ReplayProcess {
             }
         }
 
-        if(!spectating) {
+        if(spectateCamera) {
             ReplayHandler.spectateCamera();
-            AdvancedPosition pos = positionKeyframes.getInterpolatedValueForTimestamp(curRealReplayTime, linear);
+        }
 
-            if(pos != null) {
-                ReplayHandler.setCameraTilt((float)pos.getRoll());
-                ReplayHandler.getCameraEntity().movePath(pos);
-            }
+        AdvancedPosition cameraPosition = null;
+        if(!spectating) {
+            cameraPosition = positionKeyframes.getInterpolatedValueForTimestamp(curRealReplayTime, linear);
         } else {
-            ReplayHandler.spectateEntity(mc.theWorld.getEntityByID(((SpectatorData)lastPos.getValue()).getSpectatedEntityID()));
+            Entity toSpectate = mc.theWorld.getEntityByID(((SpectatorData) lastPos.getValue()).getSpectatedEntityID());
+            //depending on the SpectatingMethod, position the camera relative to the spectated entity
+            if(spectatingMethod == SpectatorData.SpectatingMethod.FIRST_PERSON) {
+                ReplayHandler.spectateEntity(toSpectate);
+            } else if(spectatingMethod == SpectatorData.SpectatingMethod.SHOULDER_CAM) {
+                //calculate the camera position using the shoulder cam settings
+                AdvancedPosition entityPosition = new AdvancedPosition(toSpectate);
+
+                //first, rotate the camera pitch and yaw according to the settings
+                entityPosition.setYaw(entityPosition.getYaw() + previousSpectatorData.getShoulderCamYawOffset());
+                entityPosition.setPitch(entityPosition.getPitch() + previousSpectatorData.getShoulderCamPitchOffset());
+
+                //next, move the camera point to fulfill the specified distance to the entity
+                cameraPosition = entityPosition.getDestination(-1 * previousSpectatorData.getShoulderCamDistance());
+            }
+        }
+
+        if(cameraPosition != null) {
+            ReplayHandler.setCameraTilt((float)cameraPosition.getRoll());
+            ReplayHandler.getCameraEntity().movePath(cameraPosition);
         }
 
         Integer curTimestamp = timeKeyframes.getInterpolatedValueForTimestamp(curRealReplayTime, true).asInt();
