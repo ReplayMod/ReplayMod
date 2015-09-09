@@ -10,6 +10,7 @@ import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
 import eu.crushedpixel.replaymod.events.ReplayExitEvent;
 import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.*;
+import eu.crushedpixel.replaymod.interpolation.AdvancedPositionKeyframeList;
 import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.preparation.EntityPositionTracker;
 import eu.crushedpixel.replaymod.registry.LightingHandler;
@@ -54,7 +55,7 @@ public class ReplayHandler {
 
     private static boolean inPath = false;
 
-    private static KeyframeList<AdvancedPosition> positionKeyframes = new KeyframeList<AdvancedPosition>();
+    private static AdvancedPositionKeyframeList positionKeyframes = new AdvancedPositionKeyframeList();
     private static KeyframeList<TimestampValue> timeKeyframes = new KeyframeList<TimestampValue>();
 
     private static boolean inReplay = false;
@@ -268,7 +269,7 @@ public class ReplayHandler {
         fireKeyframesModifyEvent();
     }
 
-    public static KeyframeList<AdvancedPosition> getPositionKeyframes() {
+    public static AdvancedPositionKeyframeList getPositionKeyframes() {
         return positionKeyframes;
     }
 
