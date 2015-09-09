@@ -443,8 +443,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
                 shoulderSmoothnessString = new GuiString(0, 0, Color.WHITE, I18n.format("replaymod.gui.editkeyframe.spec.method.shoulder.smoothness"));
 
                 shoulderDistanceInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, 0d, 30d, data.getShoulderCamDistance(), true, "", 0.1);
-                shoulderPitchOffsetInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, -90d, 90d, (double)data.getShoulderCamPitchOffset(), true, "°", 1);
-                shoulderYawOffsetInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, null, null, (double)data.getShoulderCamYawOffset(), true, "°", 1);
+                shoulderPitchOffsetInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, -90d, 90d, (double)data.getShoulderCamPitchOffset(), false, "°", 1);
+                shoulderYawOffsetInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, null, null, (double)data.getShoulderCamYawOffset(), false, "°", 1);
                 shoulderSmoothnessInput = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 0, 0.1d, 1d, data.getShoulderCamSmoothness()/1000d, true, "", 0.1);
 
                 shoulderCamSettings = new ComposedElement(
