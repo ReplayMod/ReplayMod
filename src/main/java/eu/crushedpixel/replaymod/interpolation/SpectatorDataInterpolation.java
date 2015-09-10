@@ -18,7 +18,7 @@ public class SpectatorDataInterpolation {
 
     private Integer entityID = null;
 
-    private List<Pair<Integer, SpectatorData>> points = new ArrayList<Pair<Integer, SpectatorData>>();
+    private List<Pair<Integer, Keyframe<AdvancedPosition>>> points = new ArrayList<Pair<Integer, Keyframe<AdvancedPosition>>>();
     private KeyframeList<AdvancedPosition> underlyingKeyframes;
 
     private final boolean linear;
@@ -32,18 +32,8 @@ public class SpectatorDataInterpolation {
         return points.size();
     }
 
-    public boolean contains(SpectatorData spectatorData) {
-        return indexOf(spectatorData) != -1;
-    }
-
-    public int indexOf(SpectatorData spectatorData) {
-        int i = 0;
-        for(Pair<Integer, SpectatorData> pair : points) {
-            if(pair.getValue().equals(spectatorData)) return i;
-            i++;
-        }
-
-        return -1;
+    public List<Keyframe<AdvancedPosition>> elements() {
+        return new ArrayList<Keyframe<AdvancedPosition>>(underlyingKeyframes);
     }
 
     public void prepare() {
@@ -54,43 +44,72 @@ public class SpectatorDataInterpolation {
                         new GenericSplineInterpolation<SpectatorDataThirdPersonInfo>();
 
         double previousSmoothness = 0.5;
-        for(Pair<Integer, SpectatorData> pair : points) {
-            if(pair.getValue().getSpectatingMethod() == SpectatorData.SpectatingMethod.FIRST_PERSON) {
+        for(Pair<Integer, Keyframe<AdvancedPosition>> pair : points) {
+            if(((SpectatorData)pair.getValue().getValue()).getSpectatingMethod() == SpectatorData.SpectatingMethod.FIRST_PERSON) {
                 thirdPersonInfoInterpolation.addPoint(new SpectatorDataThirdPersonInfo(0, 0, 0, previousSmoothness));
             } else {
-                SpectatorDataThirdPersonInfo thirdPersonInfo = pair.getValue().getThirdPersonInfo();
+                SpectatorDataThirdPersonInfo thirdPersonInfo = ((SpectatorData)pair.getValue().getValue()).getThirdPersonInfo();
                 thirdPersonInfoInterpolation.addPoint(thirdPersonInfo);
                 previousSmoothness = thirdPersonInfo.shoulderCamSmoothness;
             }
         }
         thirdPersonInfoInterpolation.prepare();
 
+        //updating the spectator keyframe's position in the world to smoothly continue the path
+        //with non-spectator position keyframes
+        for(Pair<Integer, Keyframe<AdvancedPosition>> pair : points) {
+            AdvancedPosition entityPosition = ReplayHandler.getEntityPositionTracker().getEntityPositionAtTimestamp(entityID, pair.getKey());
+            if(entityPosition == null) continue;
+
+            //transform the entity position (sry for no dry code :x )
+            SpectatorDataThirdPersonInfo thirdPersonInfo = ((SpectatorData)pair.getValue().getValue()).getThirdPersonInfo();
+
+            //first, rotate the camera pitch and yaw according to the settings
+            entityPosition.setYaw(entityPosition.getYaw() + thirdPersonInfo.shoulderCamYawOffset);
+            entityPosition.setPitch(entityPosition.getPitch() + thirdPersonInfo.shoulderCamPitchOffset);
+
+            //next, move the camera point to fulfill the specified distance to the entity
+            entityPosition = entityPosition.getDestination(-1 * thirdPersonInfo.shoulderCamDistance);
+
+            pair.getValue().getValue().apply(entityPosition);
+        }
+
         //feed the underlying keyframe list with AdvancedPosition Keyframes that are derived from the Spectator Keyframes
         underlyingKeyframes = new KeyframeList<AdvancedPosition>();
         int i = 0;
         int firstTimestamp = -1;
         int size = points.size()-1;
-        for(Pair<Integer, SpectatorData> pair : points) {
+        for(Pair<Integer, Keyframe<AdvancedPosition>> pair : points) {
+            underlyingKeyframes.add(new Keyframe<AdvancedPosition>(pair.getValue().getRealTimestamp(), pair.getValue().getValue()));
+
             int timestamp = pair.getKey();
             if(firstTimestamp == -1) firstTimestamp = timestamp;
+
+            int realTimestamp = pair.getValue().getRealTimestamp();
+            int nextRealTimestamp = realTimestamp;
 
             int currentTimestamp = timestamp;
             int nextTimestamp = timestamp;
 
             if(i+1 < points.size()) {
-                nextTimestamp = points.get(i+1).getKey();
+                Pair<Integer, Keyframe<AdvancedPosition>> nextPair = points.get(i+1);
+                nextTimestamp = nextPair.getKey();
+                nextRealTimestamp = nextPair.getValue().getRealTimestamp();
             }
 
             int difference = nextTimestamp - timestamp;
+            int realTimestampDifference = nextRealTimestamp - realTimestamp;
 
             int smoothness = 0;
-            while(currentTimestamp + smoothness <= nextTimestamp) {
+            while(currentTimestamp + smoothness < nextTimestamp) {
                 currentTimestamp += smoothness;
 
                 SpectatorDataThirdPersonInfo thirdPersonInfo = new SpectatorDataThirdPersonInfo();
                 float percentage = (float)i/size;
                 percentage += ((currentTimestamp-timestamp)/(float)difference) * 1f/size;
-                if(Float.isNaN(percentage)) percentage = 1;
+
+                float progress = ((currentTimestamp-timestamp)/(float)difference);
+                int interpolatedRealTimestamp = (int)(realTimestamp + (progress*realTimestampDifference));
 
                 thirdPersonInfoInterpolation.applyPoint(percentage, thirdPersonInfo);
 
@@ -106,52 +125,19 @@ public class SpectatorDataInterpolation {
 
                 //next, move the camera point to fulfill the specified distance to the entity
                 entityPosition = entityPosition.getDestination(-1 * thirdPersonInfo.shoulderCamDistance);
-                underlyingKeyframes.add(new Keyframe<AdvancedPosition>(currentTimestamp-firstTimestamp, entityPosition));
+
+                underlyingKeyframes.add(new Keyframe<AdvancedPosition>(interpolatedRealTimestamp, entityPosition));
             }
 
             i++;
         }
     }
 
-    public void applyPoint(float position, AdvancedPosition toEdit) {
-        int keyframeIndex = (int)Math.min(size()-1, position*(size()-1));
-        float remainder = (position - ((float)keyframeIndex/(size()-1)));
-        float partial = remainder / (1f/(size()-1));
-
-        Pair<Integer, SpectatorData> pair = points.get(keyframeIndex);
-        Pair<Integer, SpectatorData> next = keyframeIndex < points.size()-1 ? points.get(keyframeIndex+1) : null;
-
-        SpectatorData spectatorData = pair.getValue();
-
-        //decide whether the Entity is spectated in First Person Mode or not
-        boolean firstPerson = true;
-
-        //firstPerson is false if either the SpectatorKeyframe
-        //or the following SpectatorKeyframe are no FIRST_PERSON Keyframes
-        //it's only true if the position value is between two FIRST_PERSON Keyframes
-        if(spectatorData.getSpectatingMethod() != SpectatorData.SpectatingMethod.FIRST_PERSON) {
-            firstPerson = false;
-        } else if(next != null) {
-            if(next.getValue().getSpectatingMethod() != SpectatorData.SpectatingMethod.FIRST_PERSON) firstPerson = false;
-        }
-
-        if(firstPerson) {
-            int firstTimestamp = pair.getKey();
-            int nextTimestamp = next == null ? pair.getKey() : next.getKey();
-
-            int diff = nextTimestamp - firstTimestamp;
-            int interpolatedTimestamp = firstTimestamp+(int)(partial*diff);
-
-            AdvancedPosition pos = ReplayHandler.getEntityPositionTracker().getEntityPositionAtTimestamp(entityID, interpolatedTimestamp);
-            if(pos != null) toEdit.apply(pos);
-        } else {
-            toEdit.apply(underlyingKeyframes.getInterpolatedValueForPathPosition(position, linear));
-        }
-    }
-
-    public void addPoint(SpectatorData spectatorData, int realTimestamp) {
+    public void addPoint(Keyframe<AdvancedPosition> keyframe, int realTimestamp) {
+        if(!(keyframe.getValue() instanceof SpectatorData)) throw new IllegalArgumentException();
+        SpectatorData spectatorData = (SpectatorData)keyframe.getValue();
         if(entityID == null) entityID = spectatorData.getSpectatedEntityID();
         else if(entityID != spectatorData.getSpectatedEntityID()) throw new IllegalArgumentException();
-        points.add(Pair.of(realTimestamp, spectatorData));
+        points.add(Pair.of(realTimestamp, keyframe));
     }
 }

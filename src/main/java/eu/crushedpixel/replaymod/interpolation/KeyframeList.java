@@ -5,6 +5,7 @@ import eu.crushedpixel.replaymod.holders.KeyframeComparator;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,6 +42,20 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
     public void add(int index, Keyframe<K> element) {
         super.add(index, element);
         sort();
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Keyframe<K>> c) {
+        boolean result = super.addAll(c);
+        sort();
+        return result;
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends Keyframe<K>> c) {
+        boolean result = super.addAll(index, c);
+        sort();
+        return result;
     }
 
     @Override
@@ -217,6 +232,18 @@ public class KeyframeList<K extends KeyframeValue> extends ArrayList<Keyframe<K>
                 (float)(size() - 1);
 
         return Math.max(0, Math.min(1, value));
+    }
+
+    protected int getTimestampFromPathPosition(float pathPosition) {
+        int keyframeIndex = (int)Math.min(size()-1, pathPosition*(size()-1));
+        float remainder = (pathPosition - ((float)keyframeIndex/(size()-1)));
+        float partial = remainder / (1f/(size()-1));
+
+        int previousTimestamp = get(keyframeIndex).getRealTimestamp();
+        int nextTimestamp = size()-1 > keyframeIndex ? get(keyframeIndex+1).getRealTimestamp() : previousTimestamp;
+
+        int diff = nextTimestamp - previousTimestamp;
+        return (int)(previousTimestamp + (partial*diff));
     }
 
 }
