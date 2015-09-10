@@ -49,8 +49,8 @@ public class SpectatorData extends AdvancedPosition {
     }
 
     @Override
-    public SpectatorData newInstance() {
-        return new SpectatorData();
+    public AdvancedPosition newInstance() {
+        return new AdvancedPosition();
     }
 
     @Override
