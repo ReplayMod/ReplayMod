@@ -109,7 +109,7 @@ public class EntityPositionTracker {
         for(Pair<Integer, AdvancedPosition> pair : positions) {
             if(pair.getKey() <= timestamp) exists = true;
             if(pair.getKey() >= timestamp) {
-                if(exists) return pair.getValue();
+                if(exists) return pair.getValue().copy();
                 return null;
             }
         }
