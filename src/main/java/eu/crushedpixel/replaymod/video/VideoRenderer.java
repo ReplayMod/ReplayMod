@@ -42,11 +42,12 @@ public class VideoRenderer implements RenderInfo {
     private boolean mouseWasGrabbed;
 
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
-    private Interpolation<AdvancedPosition> movement;
-    private Interpolation<TimestampValue> time;
 
     private int framesDone;
     private int totalFrames;
+
+    private KeyframeList<AdvancedPosition> positionKeyframes;
+    private KeyframeList<TimestampValue> timeKeyframes;
 
     private final GuiVideoRenderer gui;
     private boolean paused;
@@ -85,10 +86,7 @@ public class VideoRenderer implements RenderInfo {
         // Note that it is impossible to also get the interpolation between their latest position
         // and the one in the recording correct as there's no reliable way to tell when the server ticks
         // or when we should be done with the interpolation of the entity
-        TimestampValue timestampValue = new TimestampValue();
-        time.applyPoint(0, timestampValue);
-
-        int videoStart = (int) timestampValue.value;
+        int videoStart = timeKeyframes.getInterpolatedValueForPathPosition(0, true).asInt();
 
         if (videoStart > 1000) {
             int replayTime = videoStart - 1000;
@@ -142,43 +140,13 @@ public class VideoRenderer implements RenderInfo {
         mc.timer.timerSpeed = 1;
 
         fps = options.getFps();
-        if (options.isLinearMovement()) {
-            movement = new AdvancedPositionLinearInterpolation();
-        } else {
-            movement = new AdvancedPositionSplineInterpolation();
-        }
-        time = new GenericLinearInterpolation<TimestampValue>();
 
-        int duration = 0;
-        int posKeyframes = 0;
+        positionKeyframes = ReplayHandler.getPositionKeyframes();
+        timeKeyframes = ReplayHandler.getTimeKeyframes();
 
-        for(Keyframe<AdvancedPosition> keyframe : ReplayHandler.getPositionKeyframes()) {
-            if (keyframe.getRealTimestamp() > duration) {
-                duration = keyframe.getRealTimestamp();
-            }
-
-            movement.addPoint(keyframe.getValue());
-            posKeyframes++;
-        }
-
-        for(Keyframe<TimestampValue> keyframe : ReplayHandler.getTimeKeyframes()) {
-            if (keyframe.getRealTimestamp() > duration) {
-                duration = keyframe.getRealTimestamp();
-            }
-
-            int timestamp = (int)keyframe.getValue().value;
-            time.addPoint(new TimestampValue(timestamp));
-        }
+        int duration = Math.max(timeKeyframes.last().getRealTimestamp(), positionKeyframes.last().getRealTimestamp());
 
         totalFrames = duration*fps/1000;
-
-        if (posKeyframes >= 2) {
-            movement.prepare();
-        } else {
-            movement = null; // No movement occurring
-        }
-        time.prepare();
-
 
         ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
         gui.setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
@@ -215,45 +183,42 @@ public class VideoRenderer implements RenderInfo {
         AdvancedPosition pos = new AdvancedPosition();
         Keyframe<AdvancedPosition> lastPos = positionKeyframes.getPreviousKeyframe(videoTime, true);
         Keyframe<AdvancedPosition> nextPos = null;
-        if (movement == null || lastPos == null) {
-            // Stay at one position, no movement
-            Keyframe<AdvancedPosition> keyframe = positionKeyframes.getNextKeyframe(-1, true);
-            assert keyframe != null;
-            pos = keyframe.getValue();
-        } else {
-            // Position interpolation
-            nextPos = positionKeyframes.getNextKeyframe(videoTime, true);
 
-            int lastPosStamp = lastPos.getRealTimestamp();
-            int nextPosStamp = (nextPos == null ? lastPos : nextPos).getRealTimestamp();
+        // Position interpolation
+        nextPos = positionKeyframes.getNextKeyframe(videoTime, true);
 
-            int diffLength = nextPosStamp - lastPosStamp;
-            float diffPct = (float) (videoTime - lastPosStamp) / diffLength;
-            if(Float.isInfinite(diffPct) || Float.isNaN(diffPct)) diffPct = 0;
+        int lastPosStamp = lastPos.getRealTimestamp();
+        int nextPosStamp = (nextPos == null ? lastPos : nextPos).getRealTimestamp();
 
-            float totalPct = (positionKeyframes.indexOf(lastPos) + diffPct) / (posCount-1);
-            movement.applyPoint(Math.max(0, Math.min(1, totalPct)), pos);
-        }
+        int diffLength = nextPosStamp - lastPosStamp;
+        float diffPct = (float) (videoTime - lastPosStamp) / diffLength;
+        if(Float.isInfinite(diffPct) || Float.isNaN(diffPct)) diffPct = 0;
 
-        boolean spectating = false;
+        float totalPct = (positionKeyframes.indexOf(lastPos) + diffPct) / (posCount-1);
+        pos = positionKeyframes.getInterpolatedValueForPathPosition(Math.max(0, Math.min(1, totalPct)), ReplayMod.replaySettings.isLinearMovement());
 
-        //if it's between two spectator keyframes sharing the same entity, spectate this entity
+        boolean spectateCamera = true;
+
+        //check whether between two First Person Spectator Keyframes
         if(lastPos != null && nextPos != null) {
             if(lastPos.getValue() instanceof SpectatorData && nextPos.getValue() instanceof SpectatorData) {
-                SpectatorData lastSpec = (SpectatorData)lastPos.getValue();
-                SpectatorData nextSpec = (SpectatorData)nextPos.getValue();
-                if(lastSpec.getSpectatedEntityID() == nextSpec.getSpectatedEntityID()) {
-                    spectating = true;
+                SpectatorData previousSpectatorData = (SpectatorData)lastPos.getValue();
+                SpectatorData nextSpectatorData = (SpectatorData)nextPos.getValue();
+                if(previousSpectatorData.getSpectatedEntityID() == nextSpectatorData.getSpectatedEntityID()) {
+                    if(previousSpectatorData.getSpectatingMethod() == SpectatorData.SpectatingMethod.FIRST_PERSON
+                            && nextSpectatorData.getSpectatingMethod() == SpectatorData.SpectatingMethod.FIRST_PERSON) {
+                        spectateCamera = false;
+                    }
                 }
             }
         }
 
-        if(!spectating) {
+        if(spectateCamera) {
             // Make sure we're spectating the camera entity
             // We do not use .spectateCamera() as that method sets the position of the camera to the previous
             // entity, overriding our calculations
             ReplayHandler.spectateEntity(ReplayHandler.getCameraEntity());
-            
+
             if(pos != null) {
                 ReplayHandler.setCameraTilt((float)pos.getRoll());
                 ReplayHandler.getCameraEntity().movePath(pos);
@@ -314,9 +279,8 @@ public class VideoRenderer implements RenderInfo {
 
         float timePos = (timeKeyframes.indexOf(lastTime) + currentTimeStepPerc) / (timeCount-1f);
 
-        TimestampValue timestampValue = new TimestampValue();
-        time.applyPoint(Math.max(0, Math.min(1, timePos)), timestampValue);
-        Integer replayTime = (int) timestampValue.value;
+        Integer replayTime = timeKeyframes.getInterpolatedValueForPathPosition(Math.max(0, Math.min(1, timePos)), true).asInt();
+
         replaySender.sendPacketsTill(replayTime);
 
         if (curSpeed >= 0) {
