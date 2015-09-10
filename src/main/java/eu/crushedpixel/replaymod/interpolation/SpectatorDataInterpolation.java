@@ -58,17 +58,22 @@ public class SpectatorDataInterpolation {
             if(pair.getValue().getSpectatingMethod() == SpectatorData.SpectatingMethod.FIRST_PERSON) {
                 thirdPersonInfoInterpolation.addPoint(new SpectatorDataThirdPersonInfo(0, 0, 0, previousSmoothness));
             } else {
-                thirdPersonInfoInterpolation.addPoint(pair.getValue().getThirdPersonInfo());
-                previousSmoothness = pair.getValue().getThirdPersonInfo().shoulderCamSmoothness;
+                SpectatorDataThirdPersonInfo thirdPersonInfo = pair.getValue().getThirdPersonInfo();
+                thirdPersonInfoInterpolation.addPoint(thirdPersonInfo);
+                previousSmoothness = thirdPersonInfo.shoulderCamSmoothness;
             }
         }
         thirdPersonInfoInterpolation.prepare();
 
-        //feed the underlying interpolator with AdvancedPosition Keyframes that are derived from the Spectator Keyframes
+        //feed the underlying keyframe list with AdvancedPosition Keyframes that are derived from the Spectator Keyframes
+        underlyingKeyframes = new KeyframeList<AdvancedPosition>();
         int i = 0;
-        int size = points.size();
+        int firstTimestamp = -1;
+        int size = points.size()-1;
         for(Pair<Integer, SpectatorData> pair : points) {
             int timestamp = pair.getKey();
+            if(firstTimestamp == -1) firstTimestamp = timestamp;
+
             int currentTimestamp = timestamp;
             int nextTimestamp = timestamp;
 
@@ -79,12 +84,13 @@ public class SpectatorDataInterpolation {
             int difference = nextTimestamp - timestamp;
 
             int smoothness = 0;
-            while(currentTimestamp + smoothness < nextTimestamp) {
+            while(currentTimestamp + smoothness <= nextTimestamp) {
                 currentTimestamp += smoothness;
 
                 SpectatorDataThirdPersonInfo thirdPersonInfo = new SpectatorDataThirdPersonInfo();
                 float percentage = (float)i/size;
                 percentage += ((currentTimestamp-timestamp)/(float)difference) * 1f/size;
+                if(Float.isNaN(percentage)) percentage = 1;
 
                 thirdPersonInfoInterpolation.applyPoint(percentage, thirdPersonInfo);
 
@@ -100,20 +106,17 @@ public class SpectatorDataInterpolation {
 
                 //next, move the camera point to fulfill the specified distance to the entity
                 entityPosition = entityPosition.getDestination(-1 * thirdPersonInfo.shoulderCamDistance);
-                underlyingKeyframes.add(new Keyframe<AdvancedPosition>(currentTimestamp, entityPosition));
+                underlyingKeyframes.add(new Keyframe<AdvancedPosition>(currentTimestamp-firstTimestamp, entityPosition));
             }
 
             i++;
         }
-
-        underlyingKeyframes.recalculate(linear);
     }
 
     public void applyPoint(float position, AdvancedPosition toEdit) {
-        int keyframeIndex = (int)position*points.size();
-
-        //the progress between this and the next keyframe (between 0 and 1)
-        float partial = (position - ((float)keyframeIndex/points.size())) / (1f/points.size());
+        int keyframeIndex = (int)Math.min(size()-1, position*(size()-1));
+        float remainder = (position - ((float)keyframeIndex/(size()-1)));
+        float partial = remainder / (1f/(size()-1));
 
         Pair<Integer, SpectatorData> pair = points.get(keyframeIndex);
         Pair<Integer, SpectatorData> next = keyframeIndex < points.size()-1 ? points.get(keyframeIndex+1) : null;
@@ -140,8 +143,7 @@ public class SpectatorDataInterpolation {
             int interpolatedTimestamp = firstTimestamp+(int)(partial*diff);
 
             AdvancedPosition pos = ReplayHandler.getEntityPositionTracker().getEntityPositionAtTimestamp(entityID, interpolatedTimestamp);
-            if(pos != null)
-                toEdit.apply(pos);
+            if(pos != null) toEdit.apply(pos);
         } else {
             toEdit.apply(underlyingKeyframes.getInterpolatedValueForPathPosition(position, linear));
         }
