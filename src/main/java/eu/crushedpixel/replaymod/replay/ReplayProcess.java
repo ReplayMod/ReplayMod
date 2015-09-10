@@ -125,7 +125,7 @@ public class ReplayProcess {
 
             //if rendering, disable all game sounds except for gui sounds
             @SuppressWarnings("unchecked") //I, too, blame Forge for not re-adding generics to that Map.
-            Map<SoundCategory, Float> orgMap = (Map<SoundCategory, Float>)mc.gameSettings.mapSoundLevels;
+                    Map<SoundCategory, Float> orgMap = (Map<SoundCategory, Float>)mc.gameSettings.mapSoundLevels;
             if(orgMap != null) {
                 mapSoundLevelsBefore = new HashMap<SoundCategory, Float>(orgMap);
             } else {
@@ -232,24 +232,16 @@ public class ReplayProcess {
         Keyframe<AdvancedPosition> lastPos = positionKeyframes.getPreviousKeyframe(curRealReplayTime, true);
         Keyframe<AdvancedPosition> nextPos = positionKeyframes.getNextKeyframe(curRealReplayTime, true);
 
-        boolean spectating = false;
         boolean spectateCamera = true;
-        SpectatorData.SpectatingMethod spectatingMethod = null;
 
-        SpectatorData previousSpectatorData = null;
-        SpectatorData nextSpectatorData = null;
-
-        //check whether between two Spectator Keyframes
+        //check whether between two First Person Spectator Keyframes
         if(lastPos != null && nextPos != null) {
             if(lastPos.getValue() instanceof SpectatorData && nextPos.getValue() instanceof SpectatorData) {
-                previousSpectatorData = (SpectatorData)lastPos.getValue();
-                nextSpectatorData = (SpectatorData)nextPos.getValue();
+                SpectatorData previousSpectatorData = (SpectatorData)lastPos.getValue();
+                SpectatorData nextSpectatorData = (SpectatorData)nextPos.getValue();
                 if(previousSpectatorData.getSpectatedEntityID() == nextSpectatorData.getSpectatedEntityID()) {
-                    spectating = true;
-                    //the previous SpectatingMethod always applies
-                    spectatingMethod = previousSpectatorData.getSpectatingMethod();
-
-                    if(spectatingMethod == SpectatorData.SpectatingMethod.FIRST_PERSON) {
+                    if(previousSpectatorData.getSpectatingMethod() == SpectatorData.SpectatingMethod.FIRST_PERSON
+                            && nextSpectatorData.getSpectatingMethod() == SpectatorData.SpectatingMethod.FIRST_PERSON) {
                         spectateCamera = false;
                     }
                 }
@@ -290,29 +282,13 @@ public class ReplayProcess {
             }
         }
 
-        if(spectateCamera) {
-            ReplayHandler.spectateCamera();
-        }
-
         AdvancedPosition cameraPosition = null;
-        if(!spectating) {
+        if(spectateCamera) {
             cameraPosition = positionKeyframes.getInterpolatedValueForTimestamp(curRealReplayTime, linear);
+            ReplayHandler.spectateCamera();
         } else {
             Entity toSpectate = mc.theWorld.getEntityByID(((SpectatorData) lastPos.getValue()).getSpectatedEntityID());
-            //depending on the SpectatingMethod, position the camera relative to the spectated entity
-            if(spectatingMethod == SpectatorData.SpectatingMethod.FIRST_PERSON) {
-                ReplayHandler.spectateEntity(toSpectate);
-            } else if(spectatingMethod == SpectatorData.SpectatingMethod.SHOULDER_CAM) {
-                //calculate the camera position using the shoulder cam settings
-                AdvancedPosition entityPosition = new AdvancedPosition(toSpectate);
-
-                //first, rotate the camera pitch and yaw according to the settings
-                entityPosition.setYaw(entityPosition.getYaw() + previousSpectatorData.getShoulderCamYawOffset());
-                entityPosition.setPitch(entityPosition.getPitch() + previousSpectatorData.getShoulderCamPitchOffset());
-
-                //next, move the camera point to fulfill the specified distance to the entity
-                cameraPosition = entityPosition.getDestination(-1 * previousSpectatorData.getShoulderCamDistance());
-            }
+            ReplayHandler.spectateEntity(toSpectate);
         }
 
         if(cameraPosition != null) {
