@@ -6,7 +6,7 @@ import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.SpectatorData;
-import eu.crushedpixel.replaymod.interpolation.KeyframeList;
+import eu.crushedpixel.replaymod.interpolation.AdvancedPositionKeyframeList;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -27,10 +27,12 @@ import java.util.List;
 public class PathPreviewRenderer {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final int DEFAULT_PATH_COLOR = Color.RED.getRGB();
+    private static final int SPECTATOR_PATH_COLOR = Color.BLUE.getRGB();
 
     private DistanceComparator distanceComparator = new DistanceComparator();
 
-    private KeyframeList<AdvancedPosition> keyframes;
+    private AdvancedPositionKeyframeList keyframes;
 
     private final ResourceLocation cameraHeadResource = new ResourceLocation("replaymod", "camera_head.png");
 
@@ -54,33 +56,29 @@ public class PathPreviewRenderer {
         GlStateManager.enableBlend();
 
         if(keyframes.size() > 1) {
+            AdvancedPosition previousPosition = null;
 
-            AdvancedPosition prev = null;
+            int i = 0;
+            for(Keyframe<AdvancedPosition> keyframe : keyframes) {
+                int timestamp = keyframe.getRealTimestamp();
+                int nextTimestamp = timestamp;
 
-            if(ReplayMod.replaySettings.isLinearMovement()) {
-
-                for(Keyframe<AdvancedPosition> point : keyframes) {
-                    if(prev != null) {
-                        drawConnection(doubleX, doubleY, doubleZ, prev, point.getValue(), Color.RED.getRGB());
-                    }
-
-                    prev = point.getValue();
+                if(i+1 < keyframes.size()) {
+                    nextTimestamp = keyframes.get(i+1).getRealTimestamp();
                 }
 
-            } else {
+                int diff = nextTimestamp-timestamp;
+                int step = diff/100;
 
-                float max = keyframes.size() * 50;
-                for(int i = 0; i < max; i++) {
-                    AdvancedPosition point = keyframes.getInterpolatedValueForPathPosition(i/max, false);
-
-                    if(point.distanceSquared(entity.posX, entity.posY, entity.posZ) < renderDistanceSquared) {
-                        if(prev != null) {
-                            drawConnection(doubleX, doubleY, doubleZ, prev, point, Color.RED.getRGB());
-                        }
+                for(int currentTimestamp = timestamp; currentTimestamp < nextTimestamp; currentTimestamp += step) {
+                    AdvancedPosition position = keyframes.getInterpolatedValueForTimestamp(currentTimestamp, ReplayMod.replaySettings.isLinearMovement());
+                    if(previousPosition != null) {
+                        drawConnection(doubleX, doubleY, doubleZ, previousPosition, position, DEFAULT_PATH_COLOR, renderDistanceSquared);
                     }
-
-                    prev = point;
+                    previousPosition = position;
                 }
+
+                i++;
             }
         }
 
@@ -116,7 +114,7 @@ public class PathPreviewRenderer {
 
     @SubscribeEvent
     public void recalcSpline(KeyframesModifyEvent event) {
-        keyframes = event.getPositionKeyframes();
+        keyframes = ReplayHandler.getPositionKeyframes();
     }
 
     private class DistanceComparator implements Comparator<Keyframe<AdvancedPosition>> {
@@ -140,7 +138,8 @@ public class PathPreviewRenderer {
         }
     }
 
-    private void drawConnection(double playerX, double playerY, double playerZ, AdvancedPosition pos1, AdvancedPosition pos2, int color) {
+    private void drawConnection(double playerX, double playerY, double playerZ, AdvancedPosition pos1, AdvancedPosition pos2, int color, int renderDistanceSquared) {
+        if(pos2.distanceSquared(playerX, playerY, playerZ) > renderDistanceSquared) return;
         GlStateManager.pushMatrix();
 
         Tessellator tessellator = Tessellator.getInstance();
@@ -261,9 +260,9 @@ public class PathPreviewRenderer {
         GlStateManager.rotate((float) pos.getRoll(), 0, 0, 1);
 
         float cubeSize = 0.5f;
-        
+
         x = y = z = -cubeSize/2;
-        
+
         renderer.startDrawingQuads();
 
         renderer.setColorRGBA_I(Color.WHITE.getRGB(), 200);
