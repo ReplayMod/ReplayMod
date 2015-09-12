@@ -1,13 +1,20 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
+import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.listeners.CheckBoxListener;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
+import org.apache.commons.lang3.StringUtils;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GuiAdvancedCheckBox extends GuiCheckBox implements GuiElement {
+
+    public String hoverText;
+    public Color hoverTextColor = Color.WHITE;
+
     public GuiAdvancedCheckBox(int xPos, int yPos, String displayString, boolean isChecked) {
         super(0, xPos, yPos, displayString, isChecked);
     }
@@ -35,7 +42,10 @@ public class GuiAdvancedCheckBox extends GuiCheckBox implements GuiElement {
 
     @Override
     public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
-
+        hovered = isHovering(mouseX, mouseY);
+        if(hovered && !StringUtils.isEmpty(hoverText)) {
+            ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, hoverText, null, hoverTextColor);
+        }
     }
 
     @Override
