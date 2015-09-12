@@ -31,6 +31,8 @@ public final class RenderOptions {
     private int width = Minecraft.getMinecraft().displayWidth;
     private int height = Minecraft.getMinecraft().displayHeight;
 
+    private boolean inject360Metadata = false;
+
     // Highly advanced
     private boolean highPerformance;
     private String exportCommand = "ffmpeg";
@@ -65,6 +67,7 @@ public final class RenderOptions {
         copy.skyColor = this.skyColor;
         copy.width = this.width;
         copy.height = this.height;
+        copy.inject360Metadata = this.inject360Metadata;
         copy.highPerformance = this.highPerformance;
         copy.exportCommand = this.exportCommand;
         copy.exportCommandArgs = this.exportCommandArgs;
@@ -85,6 +88,7 @@ public final class RenderOptions {
     private static final String LINEAR_ENTRY = "linearMovement";
     private static final String HIDE_NAMETAGS_ENTRY = "hideNametags";
     private static final String SKY_COLOR_ENTRY = "skyColor";
+    private static final String INJECT_METADATA_ENTRY = "injectMetadata";
     private static final String WIDTH_ENTRY = "xRes";
     private static final String HEIGHT_ENTRY = "yRes";
     private static final String HIGH_PERFORMANCE_ENTRY = "highPerformance";
@@ -104,6 +108,7 @@ public final class RenderOptions {
         loaded.isLinearMovement = getLinearFromConfig(config);
         loaded.hideNameTags = getHideNametagsFromConfig(config);
         loaded.skyColor = getSkyColorFromConfig(config);
+        loaded.inject360Metadata = getInject360MetadataFromConfig(config);
         loaded.width = getWidthFromConfig(config);
         loaded.height = getHeightFromConfig(config);
         loaded.highPerformance = getHighPerformanceFromConfig(config);
@@ -126,6 +131,7 @@ public final class RenderOptions {
         getLinearFromConfig(config, isLinearMovement());
         getHideNametagsFromConfig(config, isHideNameTags());
         getSkyColorFromConfig(config, getSkyColor());
+        getInject360MetadataFromConfig(config, isInject360Metadata());
         getWidthFromConfig(config, getWidth());
         getHeightFromConfig(config, getHeight());
         getHighPerformanceFromConfig(config, isHighPerformance());
@@ -209,6 +215,14 @@ public final class RenderOptions {
 
     private static int getSkyColorFromConfig(Configuration config, int def) {
         return config.get(CATEGORY_NAME, SKY_COLOR_ENTRY, def).getInt();
+    }
+
+    private static boolean getInject360MetadataFromConfig(Configuration config) {
+        return getInject360MetadataFromConfig(config, false);
+    }
+
+    private static boolean getInject360MetadataFromConfig(Configuration config, boolean def) {
+        return config.get(CATEGORY_NAME, INJECT_METADATA_ENTRY, def).getBoolean();
     }
 
     private static int getWidthFromConfig(Configuration config) {

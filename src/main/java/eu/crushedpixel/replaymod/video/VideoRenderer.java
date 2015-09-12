@@ -6,7 +6,7 @@ import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.SpectatorData;
 import eu.crushedpixel.replaymod.holders.TimestampValue;
-import eu.crushedpixel.replaymod.interpolation.*;
+import eu.crushedpixel.replaymod.interpolation.KeyframeList;
 import eu.crushedpixel.replaymod.renderer.ChunkLoadingRenderGlobal;
 import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.replay.ReplaySender;
@@ -15,6 +15,7 @@ import eu.crushedpixel.replaymod.timer.EnchantmentTimer;
 import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.video.capturer.RenderInfo;
 import eu.crushedpixel.replaymod.video.frame.RGBFrame;
+import eu.crushedpixel.replaymod.video.metadata.MetadataInjector;
 import eu.crushedpixel.replaymod.video.rendering.Pipeline;
 import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import net.minecraft.client.Minecraft;
@@ -25,6 +26,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.FutureTask;
 
@@ -103,6 +105,11 @@ public class VideoRenderer implements RenderInfo {
         mc.renderGlobal.renderEntitiesStartupCounter = 0;
 
         renderingPipeline.run();
+
+        if(options.isInject360Metadata()) {
+            File outputFile = options.getOutputFile();
+            MetadataInjector.inject360Metadata(new File(outputFile.getParentFile(), outputFile.getName() + ".mp4"));
+        }
 
         finish();
         return !cancelled;

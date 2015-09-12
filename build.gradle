@@ -52,7 +52,10 @@ dependencies {
     compile 'org.projectlombok:lombok:1.16.4'
 
     compile 'org.spongepowered:mixin:0.4.3'
+    compile 'com.googlecode.mp4parser:isoparser:1.1.7'
     compile libFiles
+
+    compile 'org.aspectj:aspectjrt:1.8.2'
 
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
@@ -74,7 +77,9 @@ jar {
 
     from project.mixinRefMap
 
-    def shade = {libFiles + files(configurations.compile.find { it.name.startsWith("mixin-") })}
+    def shade = {libFiles + files(configurations.compile.findAll { c ->
+        ['mixin', 'isoparser', 'aspectjrt'].any {c.name.startsWith("$it-")}
+    })}
 
     def noticeDir = file("$buildDir/NOTICE")
     doFirst {

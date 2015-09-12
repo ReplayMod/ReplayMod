@@ -348,6 +348,8 @@ replaymod.gui.rendersettings.chromakey=Chroma Keying
 replaymod.gui.rendersettings.skycolor=Sky Color
 replaymod.gui.rendersettings.nametags=Render Name Tags
 replaymod.gui.rendersettings.outputfile=Output File
+replaymod.gui.rendersettings.360metadata=Inject 360° Metadata
+replaymod.gui.rendersettings.360metadata.error=360° Metadata can only be added to Equirectangular videos in MP4 format
 
 replaymod.gui.rendersettings.command=Command
 replaymod.gui.rendersettings.arguments=Command Line Arguments

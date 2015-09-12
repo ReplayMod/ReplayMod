@@ -131,13 +131,21 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         });
     }
 
+    private GuiAdvancedCheckBox injectMetadata = new GuiAdvancedCheckBox(0, 0, I18n.format("replaymod.gui.rendersettings.360metadata"), false);
+
     private GuiVideoFramerateSlider framerateSlider = new GuiVideoFramerateSlider(0, 0, ReplayMod.replaySettings.getVideoFramerate(),
             I18n.format("replaymod.gui.rendersettings.framerate"));
 
     private GuiNumberInput bitrateInput = new GuiNumberInputWithText(mc.fontRendererObj, 0, 0, 50, 1D, null, 10000D, false, " kbps");
     private GuiColorPicker colorPicker = new GuiColorPicker(GuiConstants.RENDER_SETTINGS_COLOR_PICKER, 0, 0, I18n.format("replaymod.gui.rendersettings.skycolor")+": ", 0, 0);
     private GuiAdvancedTextField commandInput = new GuiAdvancedTextField(mc.fontRendererObj, I18n.format("replaymod.gui.rendersettings.command"), 3000);
-    private GuiAdvancedTextField ffmpegArguments = new GuiAdvancedTextField(mc.fontRendererObj, I18n.format("replaymod.gui.rendersettings.ffmpeghint"), 3000);
+    private GuiAdvancedTextField ffmpegArguments = new GuiAdvancedTextField(mc.fontRendererObj, I18n.format("replaymod.gui.rendersettings.ffmpeghint"), 3000) {
+        @Override
+        public void moveCursorBy(int move) {
+            super.moveCursorBy(move);
+            validateInputs(); //the file extension may have changed, so we revalidate the inputs
+        }
+    };
 
     private File defaultFile = null;
     {
@@ -193,7 +201,7 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
                 xRes, yRes, framerateSlider, bitrateString, bitrateInput, fileChooserString, outputFileChooser);
 
         private ComposedElement advancedSettings = new ComposedElement(renderButton, cancelButton, toggleTabButton,
-                renderNameTags, stabilizeString, stablePitch, stableYaw, stableRoll, enableGreenscreen, colorPicker);
+                renderNameTags, injectMetadata, stabilizeString, stablePitch, stableYaw, stableRoll, enableGreenscreen, colorPicker);
 
         private ComposedElement commandLineSettings = new ComposedElement(renderButton, cancelButton, toggleTabButton,
                 commandInput, ffmpegArguments);
@@ -319,6 +327,9 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         colorPicker.pickerY = colorPicker.yPosition + 20;
 
         colorPicker.setElementEnabled(enableGreenscreen.isChecked());
+
+        injectMetadata.xPos(leftX);
+        injectMetadata.yPos(enableGreenscreen.yPos()+heightDiff);
     }
 
     private void initializeCommandLineTab() {
@@ -368,6 +379,8 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
 
         enableGreenscreen.setIsChecked(!initialRenderOptions.isDefaultSky());
         renderNameTags.setIsChecked(!initialRenderOptions.isHideNameTags());
+
+        injectMetadata.setIsChecked(initialRenderOptions.isInject360Metadata());
 
         framerateSlider.setFPS(initialRenderOptions.getFps());
 
@@ -490,6 +503,10 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
 
         options.setHideNameTags(!renderNameTags.isChecked());
 
+        if(injectMetadata.enabled) {
+            options.setInject360Metadata(injectMetadata.isChecked());
+        }
+
         options.setWidth(getWidthSetting());
         options.setHeight(getHeightSetting());
 
@@ -567,6 +584,8 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
                 String newName = FilenameUtils.getBaseName(selectedFile.getAbsolutePath())+"."+preset.getFileExtension();
                 outputFileChooser.setSelectedFile(new File(selectedFile.getParent(), newName));
             }
+
+            validateInputs();
         }
     }
 
@@ -578,6 +597,8 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
 
     private void validateInputs() {
         boolean valid = true;
+
+        boolean isMp4 = false;
 
         boolean isPreset = false;
         EncodingPreset curPreset = encodingPresetDropdown.getElement(encodingPresetDropdown.getSelectionIndex());
@@ -592,9 +613,17 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
                     renderButton.hoverText = I18n.format("replaymod.gui.rendersettings.customresolution.warning.yuv420");
                 }
             }
+
+            //injecting Metadata is only possible with mp4 containers.
+            //To assure the mp4 file extension (which we need to obtain the file path),
+            //we can't allow custom command line arguments
+            if("mp4".equals(curPreset.getFileExtension())) {
+                isMp4 = true;
+            }
         }
 
         boolean isPanoramic = false;
+        boolean isEquirectangular = false;
 
         switch (rendererDropdown.getElement(rendererDropdown.getSelectionIndex())) {
             case CUBIC:
@@ -607,6 +636,7 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
                 break;
             case EQUIRECTANGULAR:
                 isPanoramic = true;
+                isEquirectangular = true;
                 if (getWidthSetting() / 2 != getHeightSetting()
                         || getWidthSetting() % 2 != 0) {
                     valid = false;
@@ -619,6 +649,14 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         stableYaw.setElementEnabled(isPanoramic);
         stablePitch.setElementEnabled(isPanoramic);
         stableRoll.setElementEnabled(isPanoramic);
+
+        injectMetadata.setElementEnabled(isEquirectangular && isMp4);
+        if(injectMetadata.enabled) {
+            injectMetadata.hoverText = null;
+        } else {
+            injectMetadata.hoverText = I18n.format("replaymod.gui.rendersettings.360metadata.error");
+            injectMetadata.hoverTextColor = Color.RED;
+        }
 
         if (valid) {
             renderButton.enabled = true;
