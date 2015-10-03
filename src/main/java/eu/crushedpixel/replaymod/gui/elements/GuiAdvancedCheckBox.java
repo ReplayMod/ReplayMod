@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.listeners.CheckBoxListener;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.client.config.GuiCheckBox;

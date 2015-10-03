@@ -7,7 +7,7 @@ import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.utils.EmailAddressUtils;

@@ -1,15 +1,14 @@
 package eu.crushedpixel.replaymod.gui.online;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.replaymod.core.ReplayMod;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
-import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 
 import java.io.File;
 
@@ -49,7 +48,8 @@ public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading
                         @Override
                         public void run() {
                             try {
-                                ReplayHandler.startReplay(replayFile);
+                                // TODO
+//                                ReplayHandler.startReplay(replayFile);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

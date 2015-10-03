@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.mixin;
 
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.ViewFrustum;
 import net.minecraft.client.renderer.chunk.IRenderChunkFactory;
@@ -39,9 +38,10 @@ public abstract class MixinViewFrustum {
      */
     @Inject(method = "updateChunkPositions", at = @At("HEAD"), cancellable = true)
     public void fixedUpdateChunkPositions(double viewEntityX, double viewEntityZ, CallbackInfo ci) {
-        if (!ReplayHandler.isInReplay()) {
-            return;
-        }
+        // TODO
+//        if (!ReplayHandler.isInReplay()) {
+//            return;
+//        }
 
         int i = MathHelper.floor_double(viewEntityX) - 8;
         int j = MathHelper.floor_double(viewEntityZ) - 8;

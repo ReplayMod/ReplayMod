@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.utils;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;

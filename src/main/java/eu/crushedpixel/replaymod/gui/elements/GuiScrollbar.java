@@ -6,8 +6,8 @@ import net.minecraft.client.renderer.GlStateManager;
 
 import java.awt.*;
 
-import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.TEXTURE_SIZE;
-import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.replay_gui;
+import static com.replaymod.core.ReplayMod.TEXTURE;
+import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.glEnable;
 
@@ -105,7 +105,7 @@ public class GuiScrollbar extends Gui implements GuiElement {
     @Override
     public void draw(Minecraft mc, int mouseX, int mouseY) {
         GlStateManager.resetColor();
-        mc.renderEngine.bindTexture(replay_gui);
+        mc.renderEngine.bindTexture(TEXTURE);
         glEnable(GL_BLEND);
 
         // Background
@@ -157,7 +157,7 @@ public class GuiScrollbar extends Gui implements GuiElement {
         if(!enabled) {
             GlStateManager.color(Color.GRAY.getRed()/255f, Color.GRAY.getGreen()/255f, Color.GRAY.getBlue()/255f, 1f);
         }
-        Minecraft.getMinecraft().renderEngine.bindTexture(replay_gui);
+        Minecraft.getMinecraft().renderEngine.bindTexture(TEXTURE);
         glEnable(GL_BLEND);
 
         drawModalRectWithCustomSizedTexture(x, y, u, v, width, height, TEXTURE_SIZE, TEXTURE_SIZE);

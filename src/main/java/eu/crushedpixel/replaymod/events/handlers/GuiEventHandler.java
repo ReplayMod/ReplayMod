@@ -1,14 +1,11 @@
 package eu.crushedpixel.replaymod.events.handlers;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
+import com.replaymod.core.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
 import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
 import eu.crushedpixel.replaymod.gui.replayeditor.GuiReplayEditor;
-import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.replay.ReplayProcess;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
@@ -26,7 +23,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.util.Point;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GuiEventHandler {
@@ -54,19 +50,20 @@ public class GuiEventHandler {
                     e.printStackTrace();
                 }
             }
-            if(ReplayHandler.isInReplay()) ReplayHandler.setInReplay(false);
         }
 
         if(!ReplayMod.apiClient.isLoggedIn()) return;
 
         if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
-            if(ReplayHandler.isInReplay()) {
-                event.setCanceled(true);
-            }
+            // TODO
+//            if(ReplayHandler.isInReplay()) {
+//                event.setCanceled(true);
+//            }
         } else if(event.gui instanceof GuiDisconnected) {
-            if(!ReplayHandler.isInReplay() && System.currentTimeMillis() - ReplayHandler.lastExit < 5000) {
-                event.setCanceled(true);
-            }
+            // TODO
+//            if(!ReplayHandler.isInReplay() && System.currentTimeMillis() - ReplayHandler.lastExit < 5000) {
+//                event.setCanceled(true);
+//            }
         }
     }
 
@@ -121,20 +118,7 @@ public class GuiEventHandler {
     public void onInit(InitGuiEvent event) {
         @SuppressWarnings("unchecked")
         List<GuiButton> buttonList = event.buttonList;
-        if(event.gui instanceof GuiIngameMenu && ReplayHandler.isInReplay()) {
-            ReplayMod.replaySender.setReplaySpeed(0);
-            for(GuiButton b : new ArrayList<GuiButton>(buttonList)) {
-                if(b.id == 1) {
-                    b.displayString = I18n.format("replaymod.gui.exit");
-                    b.yPosition -= 24 * 2;
-                    b.id = GuiConstants.EXIT_REPLAY_BUTTON;
-                } else if(b.id >= 5 && b.id <= 7) {
-                    buttonList.remove(b);
-                } else if(b.id != 4) {
-                    b.yPosition -= 24 * 2;
-                }
-            }
-        } else if(event.gui instanceof GuiMainMenu) {
+        if(event.gui instanceof GuiMainMenu) {
             int i1 = event.gui.height / 4 + 24 + 10;
 
             for(GuiButton b : buttonList) {
@@ -171,9 +155,7 @@ public class GuiEventHandler {
     public void onButton(ActionPerformedEvent event) {
         if(!event.button.enabled) return;
         if(event.gui instanceof GuiMainMenu) {
-            if(event.button.id == GuiConstants.REPLAY_MANAGER_BUTTON_ID) {
-                mc.displayGuiScreen(new GuiReplayViewer());
-            } else if(event.button.id == GuiConstants.REPLAY_CENTER_BUTTON_ID) {
+            if(event.button.id == GuiConstants.REPLAY_CENTER_BUTTON_ID) {
                 if(ReplayMod.apiClient.isLoggedIn()) {
                     mc.displayGuiScreen(new GuiReplayCenter());
                 } else {
@@ -183,17 +165,7 @@ public class GuiEventHandler {
                 mc.displayGuiScreen(new GuiReplayEditor());
             }
         } else if(event.gui instanceof GuiOptions && event.button.id == GuiConstants.REPLAY_OPTIONS_BUTTON_ID) {
-            mc.displayGuiScreen(new GuiReplaySettings(event.gui));
-        }
-
-        if(ReplayHandler.isInReplay() && event.gui instanceof GuiIngameMenu && event.button.id == GuiConstants.EXIT_REPLAY_BUTTON) {
-            if(ReplayHandler.isInPath()) ReplayProcess.stopReplayProcess(false);
-
-            event.button.enabled = false;
-
-            mc.displayGuiScreen(new GuiMainMenu());
-
-            ReplayHandler.endReplay();
+            new GuiReplaySettings(event.gui, ReplayMod.instance.getSettingsRegistry()).display();
         }
     }
 

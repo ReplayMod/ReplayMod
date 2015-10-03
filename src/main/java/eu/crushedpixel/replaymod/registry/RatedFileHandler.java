@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.registry;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiException;
 import eu.crushedpixel.replaymod.api.replay.holders.FileRating;
 import eu.crushedpixel.replaymod.api.replay.holders.Rating;

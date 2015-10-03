@@ -1,7 +1,6 @@
 package eu.crushedpixel.replaymod.assets;
 
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.BoundingUtils;
 import eu.crushedpixel.replaymod.utils.BufferedImageUtils;
 import lombok.EqualsAndHashCode;
@@ -67,11 +66,12 @@ public class ReplayImageAsset implements ReplayAsset<BufferedImage> {
         this.bufferedImageHashCode = BufferedImageUtils.hashCode(object);
         ResourceHelper.freeResource(previewResource);
 
-        for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
-            if(object.getLinkedAsset() != null && object.getLinkedAsset().equals(ReplayHandler.getAssetRepository().getUUIDForAsset(this))) {
-                object.setImage(this.object);
-            }
-        }
+        // TODO
+//        for(CustomImageObject object : ReplayHandler.getCustomImageObjects()) {
+//            if(object.getLinkedAsset() != null && object.getLinkedAsset().equals(ReplayHandler.getAssetRepository().getUUIDForAsset(this))) {
+//                object.setImage(this.object);
+//            }
+//        }
     }
 
     @Override

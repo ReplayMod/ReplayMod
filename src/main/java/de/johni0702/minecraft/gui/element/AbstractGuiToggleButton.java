@@ -47,7 +47,7 @@ public abstract class AbstractGuiToggleButton<V, T extends AbstractGuiToggleButt
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
         String orgLabel = getLabel();
-        setLabel(orgLabel + values[selected]);
+        setLabel(orgLabel + ": " + values[selected]);
         super.draw(renderer, size, renderInfo);
         setLabel(orgLabel);
     }

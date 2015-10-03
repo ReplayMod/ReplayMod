@@ -1,17 +1,14 @@
 package eu.crushedpixel.replaymod.video;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import eu.crushedpixel.replaymod.events.handlers.TickAndRenderListener;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class ReplayScreenshot {
 
@@ -67,20 +64,13 @@ public class ReplayScreenshot {
 
                         final BufferedImage nbi = ImageUtils.cropImage(fbi, rect);
 
-                        File replayFile = ReplayHandler.getReplayFile();
-
-                        File tempImage = File.createTempFile("thumb", null);
-
                         int h = 720;
                         int w = 1280;
 
                         BufferedImage img = ImageUtils.scaleImage(nbi, new Dimension(w, h));
 
-                        ImageIO.write(img, "jpg", tempImage);
-
-                        ReplayMod.replayFileAppender.registerModifiedFile(tempImage, "thumb", replayFile);
-
-                        tempImage.deleteOnExit();
+                        // TODO
+//                        ReplayHandler.getReplayFile().writeThumb(img);
 
                         ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.savedthumb", ChatMessageType.INFORMATION);
                     } catch(Exception e) {

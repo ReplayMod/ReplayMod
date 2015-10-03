@@ -1,28 +1,23 @@
 package eu.crushedpixel.replaymod.renderer;
 
-import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.events.KeyframesModifyEvent;
-import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.SpectatorData;
 import eu.crushedpixel.replaymod.interpolation.AdvancedPositionKeyframeList;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+
+import static com.replaymod.core.ReplayMod.TEXTURE;
 
 public class PathPreviewRenderer {
 
@@ -38,83 +33,85 @@ public class PathPreviewRenderer {
 
     @SubscribeEvent
     public void renderCameraPath(RenderWorldLastEvent event) {
-        if(!ReplayHandler.isInReplay() || ReplayHandler.isInPath() || !ReplayMod.replaySettings.showPathPreview() || mc.gameSettings.hideGUI) return;
-
-        GlStateManager.pushAttrib();
-
-        int renderDistanceSquared = mc.gameSettings.renderDistanceChunks*16 * mc.gameSettings.renderDistanceChunks*16;
-
-        Entity entity = ReplayHandler.getCameraEntity();
-        if(entity == null) return;
-
-        double doubleX = entity.posX;
-        double doubleY = entity.posY;
-        double doubleZ = entity.posZ;
-
-        GlStateManager.disableLighting();
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableBlend();
-
-        if(keyframes.size() > 1) {
-            AdvancedPosition previousPosition = null;
-
-            int i = 0;
-            for(Keyframe<AdvancedPosition> keyframe : keyframes) {
-                int timestamp = keyframe.getRealTimestamp();
-                int nextTimestamp = timestamp;
-
-                if(i+1 < keyframes.size()) {
-                    nextTimestamp = keyframes.get(i+1).getRealTimestamp();
-                }
-
-                int diff = nextTimestamp-timestamp;
-                int step = diff/100;
-
-                for(int currentTimestamp = timestamp; currentTimestamp < nextTimestamp; currentTimestamp += step) {
-                    AdvancedPosition position = keyframes.getInterpolatedValueForTimestamp(currentTimestamp, ReplayMod.replaySettings.isLinearMovement());
-                    if(previousPosition != null) {
-                        drawConnection(doubleX, doubleY, doubleZ, previousPosition, position, DEFAULT_PATH_COLOR, renderDistanceSquared);
-                    }
-                    previousPosition = position;
-                }
-
-                i++;
-            }
-        }
-
-        distanceComparator.setPlayerPos(doubleX, doubleY + 1.4, doubleZ);
-
-        List<Keyframe<AdvancedPosition>> distanceSorted = new ArrayList<Keyframe<AdvancedPosition>>(keyframes);
-        Collections.sort(distanceSorted, distanceComparator);
-
-        GlStateManager.enableTexture2D();
-        GlStateManager.blendFunc(GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR);
-
-        GlStateManager.disableDepth();
-
-        for(Keyframe<AdvancedPosition> kf : distanceSorted) {
-            if(kf.getValue().distanceSquared(entity.posX, entity.posY, entity.posZ) < renderDistanceSquared) {
-                drawPoint(doubleX, doubleY, doubleZ, kf);
-            }
-        }
-
-        if(ReplayHandler.getPositionKeyframes().size() > 1) {
-            AdvancedPosition cameraPosition = ReplayHandler.getPositionKeyframes().getInterpolatedValueForTimestamp(ReplayHandler.getRealTimelineCursor(),
-                    ReplayMod.replaySettings.isLinearMovement());
-            if(cameraPosition != null) {
-                GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-                drawCamera(doubleX, doubleY, doubleZ, cameraPosition);
-            }
-        }
-
-        GlStateManager.disableBlend();
-
-        GlStateManager.popAttrib();
+        // TODO
+//        if(!ReplayHandler.isInReplay() || ReplayHandler.isInPath() || !ReplayMod.replaySettings.showPathPreview() || mc.gameSettings.hideGUI) return;
+//
+//        GlStateManager.pushAttrib();
+//
+//        int renderDistanceSquared = mc.gameSettings.renderDistanceChunks*16 * mc.gameSettings.renderDistanceChunks*16;
+//
+//        Entity entity = ReplayHandler.getCameraEntity();
+//        if(entity == null) return;
+//
+//        double doubleX = entity.posX;
+//        double doubleY = entity.posY;
+//        double doubleZ = entity.posZ;
+//
+//        GlStateManager.disableLighting();
+//        GlStateManager.disableTexture2D();
+//        GlStateManager.enableBlend();
+//
+//        if(keyframes.size() > 1) {
+//            AdvancedPosition previousPosition = null;
+//
+//            int i = 0;
+//            for(Keyframe<AdvancedPosition> keyframe : keyframes) {
+//                int timestamp = keyframe.getRealTimestamp();
+//                int nextTimestamp = timestamp;
+//
+//                if(i+1 < keyframes.size()) {
+//                    nextTimestamp = keyframes.get(i+1).getRealTimestamp();
+//                }
+//
+//                int diff = nextTimestamp-timestamp;
+//                int step = diff/100;
+//
+//                for(int currentTimestamp = timestamp; currentTimestamp < nextTimestamp; currentTimestamp += step) {
+//                    AdvancedPosition position = keyframes.getInterpolatedValueForTimestamp(currentTimestamp, ReplayMod.replaySettings.isLinearMovement());
+//                    if(previousPosition != null) {
+//                        drawConnection(doubleX, doubleY, doubleZ, previousPosition, position, DEFAULT_PATH_COLOR, renderDistanceSquared);
+//                    }
+//                    previousPosition = position;
+//                }
+//
+//                i++;
+//            }
+//        }
+//
+//        distanceComparator.setPlayerPos(doubleX, doubleY + 1.4, doubleZ);
+//
+//        List<Keyframe<AdvancedPosition>> distanceSorted = new ArrayList<Keyframe<AdvancedPosition>>(keyframes);
+//        Collections.sort(distanceSorted, distanceComparator);
+//
+//        GlStateManager.enableTexture2D();
+//        GlStateManager.blendFunc(GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR);
+//
+//        GlStateManager.disableDepth();
+//
+//        for(Keyframe<AdvancedPosition> kf : distanceSorted) {
+//            if(kf.getValue().distanceSquared(entity.posX, entity.posY, entity.posZ) < renderDistanceSquared) {
+//                drawPoint(doubleX, doubleY, doubleZ, kf);
+//            }
+//        }
+//
+//        if(ReplayHandler.getPositionKeyframes().size() > 1) {
+//            AdvancedPosition cameraPosition = ReplayHandler.getPositionKeyframes().getInterpolatedValueForTimestamp(ReplayHandler.getRealTimelineCursor(),
+//                    ReplayMod.replaySettings.isLinearMovement());
+//            if(cameraPosition != null) {
+//                GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+//                drawCamera(doubleX, doubleY, doubleZ, cameraPosition);
+//            }
+//        }
+//
+//        GlStateManager.disableBlend();
+//
+//        GlStateManager.popAttrib();
     }
 
     @SubscribeEvent
     public void recalcSpline(KeyframesModifyEvent event) {
-        keyframes = ReplayHandler.getPositionKeyframes();
+        // TODO
+//        keyframes = ReplayHandler.getPositionKeyframes();
     }
 
     private class DistanceComparator implements Comparator<Keyframe<AdvancedPosition>> {
@@ -172,7 +169,7 @@ public class PathPreviewRenderer {
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer renderer = tessellator.getWorldRenderer();
 
-        mc.renderEngine.bindTexture(GuiReplayOverlay.replay_gui);
+        mc.renderEngine.bindTexture(TEXTURE);
 
         AdvancedPosition pos1 = kf.getValue();
 
@@ -197,9 +194,10 @@ public class PathPreviewRenderer {
         float size = 10/128f;
 
 
-        if(kf.equals(ReplayHandler.getSelectedKeyframe())) {
-            posY += size;
-        }
+        // TODO
+//        if(kf.equals(ReplayHandler.getSelectedKeyframe())) {
+//            posY += size;
+//        }
 
         if(pos1 instanceof SpectatorData) {
             posX += size;

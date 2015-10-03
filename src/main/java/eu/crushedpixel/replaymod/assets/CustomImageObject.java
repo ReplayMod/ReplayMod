@@ -3,7 +3,6 @@ package eu.crushedpixel.replaymod.assets;
 import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
 import eu.crushedpixel.replaymod.holders.Transformations;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,19 +54,20 @@ public class CustomImageObject implements GuiEntryListEntry {
 
         //if no asset repository available, simply accept the UUID and it will load the image later
         //when calling getResourceLocation for the first time
-        if(ReplayHandler.getAssetRepository() == null) {
-            this.linkedAsset = assetUUID;
-            return;
-        }
-
-        ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(assetUUID);
-
-        if(asset instanceof ReplayImageAsset) {
-            this.linkedAsset = assetUUID;
-            setImage(((ReplayImageAsset)asset).getObject());
-        } else if(asset != null) {
-            throw new UnsupportedOperationException("A CustomImageObject requires a ReplayImageAsset");
-        }
+        // TODO
+//        if(ReplayHandler.getAssetRepository() == null) {
+//            this.linkedAsset = assetUUID;
+//            return;
+//        }
+//
+//        ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(assetUUID);
+//
+//        if(asset instanceof ReplayImageAsset) {
+//            this.linkedAsset = assetUUID;
+//            setImage(((ReplayImageAsset)asset).getObject());
+//        } else if(asset != null) {
+//            throw new UnsupportedOperationException("A CustomImageObject requires a ReplayImageAsset");
+//        }
     }
 
     public void setImage(final BufferedImage bufferedImage) throws IOException {
@@ -103,14 +103,15 @@ public class CustomImageObject implements GuiEntryListEntry {
 
     public ResourceLocation getResourceLocation() {
         if(resourceLocation == null) {
-            ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(linkedAsset);
-            if(asset instanceof ReplayImageAsset) {
-                try {
-                    setImage(((ReplayImageAsset) asset).getObject());
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            // TODO
+//            ReplayAsset asset = ReplayHandler.getAssetRepository().getAssetByUUID(linkedAsset);
+//            if(asset instanceof ReplayImageAsset) {
+//                try {
+//                    setImage(((ReplayImageAsset) asset).getObject());
+//                } catch(Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
             return null;
         }
 

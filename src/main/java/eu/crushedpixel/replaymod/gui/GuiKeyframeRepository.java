@@ -1,13 +1,9 @@
 package eu.crushedpixel.replaymod.gui;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.GuiEntryList;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
-import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
-import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.KeyframeSet;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.utils.CameraPathValidator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -22,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay.NoOverlay {
+public class GuiKeyframeRepository extends GuiScreen {
 
     private boolean initialized = false;
 
@@ -133,39 +129,40 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
 
     @Override
     public void actionPerformed(GuiButton button) {
-        if(!button.enabled) return;
-        switch(button.id) {
-            case GuiConstants.KEYFRAME_REPOSITORY_ADD_BUTTON:
-                List<Keyframe> kfs = new ArrayList<Keyframe>(ReplayHandler.getAllKeyframes());
-
-                Keyframe[] keyframes = kfs.toArray(new Keyframe[ReplayHandler.getAllKeyframes().size()]);
-                KeyframeSet newSet = new KeyframeSet(I18n.format("replaymod.gui.keyframerepository.preset.defaultname"), keyframes, ReplayHandler.getCustomImageObjects());
-
-                try {
-                    CameraPathValidator.validateCameraPath(ReplayHandler.getPositionKeyframes(), ReplayHandler.getTimeKeyframes());
-                } catch(CameraPathValidator.InvalidCameraPathException e) {
-                    message = e.getLocalizedMessage();
-                    break;
-                }
-
-                if(keyframeSetList.getCopyOfElements().contains(newSet)) {
-                    message = I18n.format("replaymod.gui.keyframerepository.duplicate");
-                    break;
-                }
-                message = null;
-
-                keyframeSetList.addElement(newSet);
-                keyframeSetList.setSelectionIndex(keyframeSetList.getEntryCount()-1);
-                break;
-            case GuiConstants.KEYFRAME_REPOSITORY_REMOVE_BUTTON:
-                keyframeSetList.removeElement(keyframeSetList.getSelectionIndex());
-                break;
-            case GuiConstants.KEYFRAME_REPOSITORY_LOAD_BUTTON:
-                ReplayHandler.useKeyframePreset(keyframeSetList.getElement(keyframeSetList.getSelectionIndex()));
-                saveOnQuit();
-                mc.displayGuiScreen(null);
-                break;
-        }
+        // TODO
+//        if(!button.enabled) return;
+//        switch(button.id) {
+//            case GuiConstants.KEYFRAME_REPOSITORY_ADD_BUTTON:
+//                List<Keyframe> kfs = new ArrayList<Keyframe>(ReplayHandler.getAllKeyframes());
+//
+//                Keyframe[] keyframes = kfs.toArray(new Keyframe[ReplayHandler.getAllKeyframes().size()]);
+//                KeyframeSet newSet = new KeyframeSet(I18n.format("replaymod.gui.keyframerepository.preset.defaultname"), keyframes, ReplayHandler.getCustomImageObjects());
+//
+//                try {
+//                    CameraPathValidator.validateCameraPath(ReplayHandler.getPositionKeyframes(), ReplayHandler.getTimeKeyframes());
+//                } catch(CameraPathValidator.InvalidCameraPathException e) {
+//                    message = e.getLocalizedMessage();
+//                    break;
+//                }
+//
+//                if(keyframeSetList.getCopyOfElements().contains(newSet)) {
+//                    message = I18n.format("replaymod.gui.keyframerepository.duplicate");
+//                    break;
+//                }
+//                message = null;
+//
+//                keyframeSetList.addElement(newSet);
+//                keyframeSetList.setSelectionIndex(keyframeSetList.getEntryCount()-1);
+//                break;
+//            case GuiConstants.KEYFRAME_REPOSITORY_REMOVE_BUTTON:
+//                keyframeSetList.removeElement(keyframeSetList.getSelectionIndex());
+//                break;
+//            case GuiConstants.KEYFRAME_REPOSITORY_LOAD_BUTTON:
+//                ReplayHandler.useKeyframePreset(keyframeSetList.getElement(keyframeSetList.getSelectionIndex()));
+//                saveOnQuit();
+//                mc.displayGuiScreen(null);
+//                break;
+//        }
     }
 
     @Override
@@ -241,7 +238,8 @@ public class GuiKeyframeRepository extends GuiScreen implements GuiReplayOverlay
         if(initialKeyframeSets.equals(copy)) return;
 
         this.keyframeRepository = copy.toArray(new KeyframeSet[copy.size()]);
-        ReplayHandler.setKeyframeRepository(keyframeRepository, true);
+        // TODO
+//        ReplayHandler.setKeyframeRepository(keyframeRepository, true);
     }
 
     @Override

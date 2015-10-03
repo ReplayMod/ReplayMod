@@ -1,7 +1,7 @@
 package eu.crushedpixel.replaymod.registry;
 
 import com.google.common.primitives.Ints;
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiException;
 
 import java.io.IOException;

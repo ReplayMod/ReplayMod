@@ -1,7 +1,5 @@
 package eu.crushedpixel.replaymod.mixin;
 
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.video.EntityRendererHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RendererLivingEntity;
@@ -22,17 +20,19 @@ public abstract class MixinRendererLivingEntity {
             ci.setReturnValue(false); //this calls the cancel method
         }
 
-        if(ReplayHandler.isInReplay() && entity.isInvisible()
-                && ReplaySettings.ReplayOptions.renderInvisible.getValue() == Boolean.FALSE) {
-            ci.setReturnValue(false);
-        }
+        // TODO
+//        if(ReplayHandler.isInReplay() && entity.isInvisible()
+//                && ReplaySettings.ReplayOptions.renderInvisible.getValue() == Boolean.FALSE) {
+//            ci.setReturnValue(false);
+//        }
     }
 
     @Redirect(method = "renderModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityLivingBase;isInvisibleToPlayer(Lnet/minecraft/entity/player/EntityPlayer;)Z"))
     private boolean shouldInvisibleNotBeRendered(EntityLivingBase entity, EntityPlayer thePlayer) {
-        if(ReplaySettings.ReplayOptions.renderInvisible.getValue() == Boolean.TRUE|| !ReplayHandler.isInReplay()) {
-            return entity.isInvisibleToPlayer(thePlayer);
-        }
+        // TODO
+//        if(ReplaySettings.ReplayOptions.renderInvisible.getValue() == Boolean.TRUE|| !ReplayHandler.isInReplay()) {
+//            return entity.isInvisibleToPlayer(thePlayer);
+//        }
         return true; //the original method inverts the return value
     }
 }

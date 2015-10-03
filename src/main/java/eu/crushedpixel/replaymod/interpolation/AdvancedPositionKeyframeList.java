@@ -3,8 +3,6 @@ package eu.crushedpixel.replaymod.interpolation;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.SpectatorData;
-import eu.crushedpixel.replaymod.holders.TimestampValue;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import lombok.NoArgsConstructor;
 
 import java.util.ListIterator;
@@ -56,17 +54,18 @@ public class AdvancedPositionKeyframeList extends KeyframeList<AdvancedPosition>
                     spectatorInterpolation = new SpectatorDataInterpolation(linear);
                 }
                 int keyframeTimestamp = keyframe.getRealTimestamp();
-                TimestampValue timestampValue = ReplayHandler.getTimeKeyframes().getInterpolatedValueForTimestamp(keyframeTimestamp, true);
-                int replayTimestamp = timestampValue == null ? 0 : timestampValue.asInt();
-                if(firstTimestamp == -1) firstTimestamp = replayTimestamp;
-                spectatorInterpolation.addPoint(keyframe, replayTimestamp);
-                if(iterator.hasNext()) {
-                    keyframe = iterator.next();
-                    found = keyframe.getValue() instanceof SpectatorData;
-                    if(!found) completedKeyframes.add(keyframe);
-                } else {
-                    found = false;
-                }
+                // TODO
+//                TimestampValue timestampValue = ReplayHandler.getTimeKeyframes().getInterpolatedValueForTimestamp(keyframeTimestamp, true);
+//                int replayTimestamp = timestampValue == null ? 0 : timestampValue.asInt();
+//                if(firstTimestamp == -1) firstTimestamp = replayTimestamp;
+//                spectatorInterpolation.addPoint(keyframe, replayTimestamp);
+//                if(iterator.hasNext()) {
+//                    keyframe = iterator.next();
+//                    found = keyframe.getValue() instanceof SpectatorData;
+//                    if(!found) completedKeyframes.add(keyframe);
+//                } else {
+//                    found = false;
+//                }
             }
 
             if(spectatorInterpolation != null && spectatorInterpolation.size() > 1) {

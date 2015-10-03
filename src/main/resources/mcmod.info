@@ -1,15 +1,69 @@
 [
-{
-  "modid": "replaymod",
-  "name": "Replay Mod",
-  "description": "A Mod which allows you to record, replay and share your Minecraft experience.",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
-  "url": "https://replaymod.com",
-  "updateUrl": "https://replaymod.com/download",
-  "authorList": ["CrushedPixel", "johni0702"],
-  "logoFile": "replaymod_logo.png",
-  "screenshots": [],
-  "dependencies": []
-}
+  {
+    "modid": "replaymod",
+    "name": "Replay Mod",
+    "description": "A Mod which allows you to record, replay and share your Minecraft experience.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://replaymod.com",
+    "updateUrl": "https://replaymod.com/download",
+    "authorList": [
+      "CrushedPixel",
+      "johni0702"
+    ],
+    "logoFile": "replaymod_logo.png",
+    "screenshots": [],
+    "dependencies": []
+  },
+  {
+    "modid": "replaymod-recording",
+    "name": "Replay Mod - Recording",
+    "description": "Recording Module of the ReplayMod",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://replaymod.com",
+    "updateUrl": "https://replaymod.com/download",
+    "authorList": [
+      "CrushedPixel",
+      "johni0702"
+    ],
+    "logoFile": "replaymod_logo.png",
+    "parent": "replaymod",
+    "screenshots": [],
+    "dependencies": []
+  },
+  {
+    "modid": "replaymod-replay",
+    "name": "Replay Mod - Replay",
+    "description": "Replay Module of the ReplayMod",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://replaymod.com",
+    "updateUrl": "https://replaymod.com/download",
+    "authorList": [
+      "CrushedPixel",
+      "johni0702"
+    ],
+    "logoFile": "replaymod_logo.png",
+    "parent": "replaymod",
+    "screenshots": [],
+    "dependencies": []
+  },
+  {
+    "modid": "replaymod-extras",
+    "name": "Replay Mod - Extras",
+    "description": "Extras Module of the ReplayMod - Small but neat additions",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://replaymod.com",
+    "updateUrl": "https://replaymod.com/download",
+    "authorList": [
+      "CrushedPixel",
+      "johni0702"
+    ],
+    "logoFile": "replaymod_logo.png",
+    "parent": "replaymod",
+    "screenshots": [],
+    "dependencies": []
+  }
 ]

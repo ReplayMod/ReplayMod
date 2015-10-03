@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.mixin;
 
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinMinecraft {
     @Redirect(method = "runGameLoop", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/audio/SoundHandler;setListener(Lnet/minecraft/entity/player/EntityPlayer;F)V"))
     public void setSoundSystemListener(SoundHandler soundHandler, EntityPlayer listener, float renderPartialTicks) {
-        soundHandler.setListener(ReplayHandler.isInReplay() ? ReplayHandler.getCameraEntity() : listener, renderPartialTicks);
+        //TODO might no longer be necessary?
+//        soundHandler.setListener(ReplayHandler.isInReplay() ? ReplayHandler.getCameraEntity() : listener, renderPartialTicks);
     }
 }

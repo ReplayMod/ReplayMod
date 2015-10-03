@@ -67,7 +67,9 @@ public class HorizontalLayout implements Layout {
             GuiElement element  = entry.getKey();
             Data data = entry.getValue() instanceof Data ? (Data) entry.getValue() : DEFAULT_DATA;
             Dimension elementSize = new Dimension(element.getMinSize());
-            elementSize.setHeight(Math.min(size.getHeight(), element.getMaxSize().getHeight()));
+            ReadableDimension elementMaxSize = element.getMaxSize();
+            elementSize.setWidth(Math.min(size.getWidth() - x, Math.min(elementSize.getWidth(), elementMaxSize.getWidth())));
+            elementSize.setHeight(Math.min(size.getHeight(), elementMaxSize.getHeight()));
             int remainingHeight = size.getHeight() - elementSize.getHeight();
             int y = (int) (data.alignment * remainingHeight);
             map.put(element, Pair.<ReadablePoint, ReadableDimension>of(new Point(x, y), elementSize));

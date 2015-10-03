@@ -67,6 +67,8 @@ public class VerticalLayout implements Layout {
             GuiElement element  = entry.getKey();
             Data data = entry.getValue() instanceof Data ? (Data) entry.getValue() : DEFAULT_DATA;
             Dimension elementSize = new Dimension(element.getMinSize());
+            ReadableDimension elementMaxSize = element.getMaxSize();
+            elementSize.setHeight(Math.min(size.getHeight() - y, Math.min(elementSize.getHeight(), elementMaxSize.getHeight())));
             elementSize.setWidth(Math.min(size.getWidth(), element.getMaxSize().getWidth()));
             int remainingWidth = size.getWidth() - elementSize.getWidth();
             int x = (int) (data.alignment * remainingWidth);

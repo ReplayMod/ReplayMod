@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.registry;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import eu.crushedpixel.replaymod.events.ReplayExitEvent;
+import com.replaymod.replay.events.ReplayCloseEvent;
 import eu.crushedpixel.replaymod.gui.GuiReplaySaving;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.Minecraft;
@@ -91,7 +91,7 @@ public class ReplayFileAppender {
     }
 
     @SubscribeEvent
-    public void onReplayExit(ReplayExitEvent event) {
+    public void onReplayExit(ReplayCloseEvent.Post event) {
         if(!filesToRewrite.isEmpty()) {
             openGuiSavingScreen();
             writeFiles();

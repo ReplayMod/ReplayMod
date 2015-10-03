@@ -90,9 +90,9 @@ public class StudioImplementation {
     }
 
     private static void shiftPaths(ReplayFile replayFile, int beginning, int ending) throws IOException {
-        Optional<InputStream> in = replayFile.get(eu.crushedpixel.replaymod.utils.ReplayFile.ENTRY_PATHS);
+        Optional<InputStream> in = replayFile.get("paths.json");
         if (!in.isPresent()) {
-            in = replayFile.get(eu.crushedpixel.replaymod.utils.ReplayFile.ENTRY_PATHS_OLD);
+            in = replayFile.get("paths");
             if (!in.isPresent()) {
                 return;
             }
@@ -126,7 +126,7 @@ public class StudioImplementation {
             }
         }
 
-        Writer out = new OutputStreamWriter(replayFile.write(eu.crushedpixel.replaymod.utils.ReplayFile.ENTRY_PATHS));
+        Writer out = new OutputStreamWriter(replayFile.write("paths.json"));
         new Gson().toJson(resultSets.toArray(new KeyframeSet[resultSets.size()]), out);
         out.flush();
         out.close();

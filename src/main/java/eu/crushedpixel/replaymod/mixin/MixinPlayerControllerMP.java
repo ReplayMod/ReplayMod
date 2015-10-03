@@ -1,7 +1,7 @@
 package eu.crushedpixel.replaymod.mixin;
 
-import eu.crushedpixel.replaymod.entities.CameraEntity;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.CameraEntity;
+import com.replaymod.replay.ReplayModReplay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
@@ -25,7 +25,7 @@ public abstract class MixinPlayerControllerMP {
 
     @Inject(method = "func_178892_a", at=@At("HEAD"), cancellable = true)
     public void createReplayCamera(World worldIn, StatFileWriter statFileWriter, CallbackInfoReturnable<EntityPlayerSP> ci) {
-        if (ReplayHandler.isInReplay()) {
+        if (ReplayModReplay.instance.getReplayHandler() != null) {
             ci.setReturnValue(new CameraEntity(mc, worldIn, netClientHandler, statFileWriter));
             ci.cancel();
         }

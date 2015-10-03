@@ -1,7 +1,7 @@
 package eu.crushedpixel.replaymod.api.replay;
 
 import com.google.gson.Gson;
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.holders.ApiError;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.online.GuiUploadFile;

@@ -26,11 +26,14 @@ import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
 
 public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implements GuiElement<T> {
+    protected static final ResourceLocation TEXTURE = new ResourceLocation("guiapi", "gui.png");
+
     @Getter
     private final Minecraft minecraft = Minecraft.getMinecraft();
 

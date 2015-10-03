@@ -8,7 +8,7 @@ import de.johni0702.replaystudio.filter.StreamFilter;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ReplayMetaData;
 import de.johni0702.replaystudio.stream.PacketStream;
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import org.apache.commons.io.IOUtils;
 import org.spacehq.mc.protocol.packet.ingame.server.ServerResourcePackSendPacket;
 import org.spacehq.mc.protocol.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;

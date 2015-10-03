@@ -7,8 +7,6 @@ import eu.crushedpixel.replaymod.gui.elements.GuiAdvancedButton;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.gui.elements.GuiString;
 import eu.crushedpixel.replaymod.holders.GuiEntryListValueEntry;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
@@ -55,7 +53,7 @@ public class GuiReplayInstanceChooser extends GuiScreen {
                 for(File file : files) {
                     try {
                         String extension = FilenameUtils.getExtension(file.getAbsolutePath());
-                        if(!("." + extension).equals(ReplayFile.ZIP_FILE_EXTENSION)) continue;
+                        if(!"zip".equals(extension)) continue;
 
                         String filename = FilenameUtils.getBaseName(file.getAbsolutePath());
                         String[] split = filename.split("_");
@@ -72,7 +70,8 @@ public class GuiReplayInstanceChooser extends GuiScreen {
 
             //if no modified versions of the replay were found, start the downloaded one
             if(chooseableFiles.isEmpty()) {
-                ReplayHandler.startReplay(downloadedFile);
+                // TODO
+//                ReplayHandler.startReplay(downloadedFile);
                 return;
             }
 
@@ -103,7 +102,8 @@ public class GuiReplayInstanceChooser extends GuiScreen {
                 public void run() {
                     try {
                         File file = fileDropdown.getElement(fileDropdown.getSelectionIndex()).getValue();
-                        ReplayHandler.startReplay(file);
+                        //TODO
+//                        ReplayHandler.startReplay(file);
                     } catch(Exception e) {
                         e.printStackTrace();
                     }

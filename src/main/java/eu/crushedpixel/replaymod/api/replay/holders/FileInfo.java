@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.api.replay.holders;
 
-import eu.crushedpixel.replaymod.recording.ReplayMetaData;
+import de.johni0702.replaystudio.replay.ReplayMetaData;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

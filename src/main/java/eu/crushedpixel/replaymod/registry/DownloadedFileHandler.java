@@ -1,8 +1,7 @@
 package eu.crushedpixel.replaymod.registry;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
-import eu.crushedpixel.replaymod.utils.ReplayFile;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -35,7 +34,7 @@ public class DownloadedFileHandler {
     }
 
     private File generateFileForID(int id) {
-        return new File(downloadFolder, id+ReplayFile.ZIP_FILE_EXTENSION);
+        return new File(downloadFolder, id+ ".zip");
     }
 
     public void addToIndex(int id) {

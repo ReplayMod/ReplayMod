@@ -1,12 +1,10 @@
 package eu.crushedpixel.replaymod.gui;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.CheckBoxListener;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
-import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.holders.GuiEntryListEntry;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.settings.EncodingPreset;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
@@ -29,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoOverlay {
+public class GuiRenderSettings extends GuiScreen {
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
@@ -542,7 +540,8 @@ public class GuiRenderSettings extends GuiScreen implements GuiReplayOverlay.NoO
         if(FMLClientHandler.instance().hasOptifine()) {
             mc.displayGuiScreen(new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"), I18n.format("replaymod.gui.rendering.error.optifine")));
         } else {
-            ReplayHandler.startPath(options, true);
+            // TODO
+//            ReplayHandler.startPath(options, true);
         }
 
     }

@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.replayeditor;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.holders.GuiEntryListStringEntry;

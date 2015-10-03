@@ -35,15 +35,32 @@ import java.util.Collection;
 import java.util.Map;
 
 public abstract class CustomLayout<T extends GuiContainer<T>> implements Layout {
+    private final Layout parent;
     private Map<GuiElement, Pair<Point, Dimension>> result = Maps.newHashMap();
+
+    public CustomLayout() {
+        this(null);
+    }
+
+    public CustomLayout(Layout parent) {
+        this.parent = parent;
+    }
 
     @Override
     @SuppressWarnings("unchecked")
     public Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> layOut(GuiContainer container, ReadableDimension size) {
         result.clear();
-        Collection<GuiElement> elements = container.getChildren();
-        for (GuiElement element : elements) {
-            result.put(element, Pair.of(new Point(0, 0), new Dimension(element.getMinSize())));
+        if (parent == null) {
+            Collection<GuiElement> elements = container.getChildren();
+            for (GuiElement element : elements) {
+                result.put(element, Pair.of(new Point(0, 0), new Dimension(element.getMinSize())));
+            }
+        } else {
+            Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> elements = parent.layOut(container, size);
+            for (Map.Entry<GuiElement, Pair<ReadablePoint, ReadableDimension>> entry : elements.entrySet()) {
+                Pair<ReadablePoint, ReadableDimension> pair = entry.getValue();
+                result.put(entry.getKey(), Pair.of(new Point(pair.getLeft()), new Dimension(pair.getRight())));
+            }
         }
 
         layout((T) container, size.getWidth(), size.getHeight());

@@ -1,10 +1,11 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
-import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
 import eu.crushedpixel.replaymod.utils.OpenGLUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+
+import static com.replaymod.core.ReplayMod.TEXTURE;
 
 public class GuiArrowButton extends GuiAdvancedButton {
 
@@ -42,7 +43,7 @@ public class GuiArrowButton extends GuiAdvancedButton {
         try {
             super.draw(mc, mouseX, mouseY, hovering);
 
-            mc.getTextureManager().bindTexture(GuiReplayOverlay.replay_gui);
+            mc.getTextureManager().bindTexture(TEXTURE);
 
             OpenGLUtils.drawRotatedRectWithCustomSizedTexture(xPosition+4, yPosition+4, dir.getRotation(),
                     TEXTURE_X, TEXTURE_Y, TEXTURE_WIDTH, TEXTURE_HEIGHT, 128, 128);

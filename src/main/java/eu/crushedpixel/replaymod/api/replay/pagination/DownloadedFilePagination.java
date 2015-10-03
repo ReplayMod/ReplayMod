@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.api.replay.pagination;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 
 import java.io.File;

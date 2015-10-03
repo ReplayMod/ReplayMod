@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.settings;
 
-import eu.crushedpixel.replaymod.ReplayMod;
 import eu.crushedpixel.replaymod.registry.LightingHandler;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.Configuration;
@@ -9,34 +8,6 @@ import net.minecraftforge.common.config.Property;
 public class ReplaySettings {
 
     private static final String[] CATEGORIES = new String[]{"recording", "replay", "render", "advanced"};
-
-    public void readValues() {
-        Configuration config = ReplayMod.config;
-
-        config.load();
-
-        for(RecordingOptions o : RecordingOptions.values()) {
-            Property p = getConfigSetting(config, o.name(), o.getValue(), "recording", false);
-            o.setValue(getValueObject(p));
-        }
-
-        for(ReplayOptions o : ReplayOptions.values()) {
-            Property p = getConfigSetting(config, o.name(), o.getValue(), "replay", false);
-            o.setValue(getValueObject(p));
-        }
-
-        for(RenderOptions o : RenderOptions.values()) {
-            Property p = getConfigSetting(config, o.name(), o.getValue(), "render", false);
-            o.setValue(getValueObject(p));
-        }
-
-        for(AdvancedOptions o : AdvancedOptions.values()) {
-            Property p = getConfigSetting(config, o.name(), o.getValue(), "advanced", true);
-            o.setValue(getValueObject(p));
-        }
-
-        config.save();
-    }
 
     public String getRecordingPath() {
         return (String) AdvancedOptions.recordingPath.getValue();
@@ -54,12 +25,10 @@ public class ReplaySettings {
 
     public void setVideoFramerate(int framerate) {
         RenderOptions.videoFramerate.setValue(Math.min(120, Math.max(10, framerate)));
-        rewriteSettings();
     }
 
     public void toggleInterpolation() {
         ReplayOptions.linear.setValue(!((Boolean)ReplayOptions.linear.getValue()));
-        rewriteSettings();
     }
 
     public boolean showRecordingIndicator() {
@@ -89,44 +58,16 @@ public class ReplaySettings {
     public void setLightingEnabled(boolean enabled) {
         ReplayOptions.lighting.setValue(enabled);
         LightingHandler.setLighting(enabled);
-        rewriteSettings();
     }
 
     public boolean showPathPreview() { return (Boolean) ReplayOptions.previewPath.getValue(); }
 
     public void setShowPathPreview(boolean show) {
         ReplayOptions.previewPath.setValue(show);
-        rewriteSettings();
     }
 
     public boolean showClearKeyframesCallback() {
         return (Boolean) ReplayOptions.keyframeCleanCallback.getValue();
-    }
-
-    public void rewriteSettings() {
-        ReplayMod.config.load();
-
-        for(String cat : CATEGORIES) {
-            ReplayMod.config.removeCategory(ReplayMod.config.getCategory(cat));
-        }
-
-        for(RecordingOptions o : RecordingOptions.values()) {
-            getConfigSetting(ReplayMod.config, o.name(), o.getValue(), "recording", false);
-        }
-
-        for(ReplayOptions o : ReplayOptions.values()) {
-            getConfigSetting(ReplayMod.config, o.name(), o.getValue(), "replay", false);
-        }
-
-        for(RenderOptions o : RenderOptions.values()) {
-            getConfigSetting(ReplayMod.config, o.name(), o.getValue(), "render", false);
-        }
-
-        for(AdvancedOptions o : AdvancedOptions.values()) {
-            getConfigSetting(ReplayMod.config, o.name(), o.getValue(), "advanced", false);
-        }
-
-        ReplayMod.config.save();
     }
 
     private Property getConfigSetting(Configuration config, String name, Object value, String category, boolean warning) {
@@ -174,7 +115,7 @@ public class ReplaySettings {
     public enum RecordingOptions implements ValueEnum {
         recordServer(true, "replaymod.gui.settings.recordserver"),
         recordSingleplayer(true, "replaymod.gui.settings.recordsingleplayer"),
-        notifications(true, "replaymod.gui.settings.notifications"),
+        notifications(true, "replaymod.gui.settings.notifications"), // TODO
         indicator(true, "replaymod.gui.settings.indicator");
 
         private Object value;

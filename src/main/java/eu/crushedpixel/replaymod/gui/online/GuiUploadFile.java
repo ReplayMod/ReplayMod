@@ -1,16 +1,22 @@
 package eu.crushedpixel.replaymod.gui.online;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.google.common.base.Optional;
+import de.johni0702.replaystudio.replay.ReplayFile;
+import de.johni0702.replaystudio.replay.ReplayMetaData;
+import de.johni0702.replaystudio.replay.ZipReplayFile;
+import de.johni0702.replaystudio.studio.ReplayStudio;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.FileUploader;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
-import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
-import eu.crushedpixel.replaymod.recording.ReplayMetaData;
+import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
-import eu.crushedpixel.replaymod.utils.*;
+import eu.crushedpixel.replaymod.utils.ImageUtils;
+import eu.crushedpixel.replaymod.utils.MouseUtils;
+import eu.crushedpixel.replaymod.utils.RegexUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -35,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -84,15 +89,15 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
         boolean correctFile = false;
         this.replayFile = file;
 
-        if(("." + FilenameUtils.getExtension(file.getAbsolutePath())).equals(ReplayFile.ZIP_FILE_EXTENSION)) {
+        if(("." + FilenameUtils.getExtension(file.getAbsolutePath())).equals(".zip")) {
             ReplayFile archive = null;
             try {
-                archive = new ReplayFile(file);
+                archive = new ZipReplayFile(new ReplayStudio(), file);
 
-                metaData = archive.metadata().get();
-                BufferedImage img = archive.thumb().get();
-                if(img != null) {
-                    thumb = ImageUtils.scaleImage(img, new Dimension(1280, 720));
+                metaData = archive.getMetaData();
+                Optional<BufferedImage> img = archive.getThumb();
+                if(img.isPresent()) {
+                    thumb = ImageUtils.scaleImage(img.get(), new Dimension(1280, 720));
                     hasThumbnail = true;
                 }
 
@@ -307,21 +312,15 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
 
                         if(hideServerIP.isChecked()) {
                             File tmp = File.createTempFile("replay_hidden_ip", "mcpr");
-                            File tmpMeta = File.createTempFile("metadata", "json");
 
-                            ReplayMetaData newMetaData = metaData.copy();
-                            newMetaData.removeServer();
-                            ReplayFileIO.write(newMetaData, tmpMeta);
-
-                            HashMap<String, File> toAdd = new HashMap<String, File>();
-                            toAdd.put(ReplayFile.ENTRY_METADATA, tmpMeta);
-
-                            FileUtils.copyFile(replayFile, tmp);
-                            ReplayFileIO.addFilesToZip(tmp, toAdd);
+                            ReplayMetaData newMetaData = new ReplayMetaData(metaData);
+                            newMetaData.setServerName(null);
+                            ReplayFile replay = new ZipReplayFile(new ReplayStudio(), replayFile);
+                            replay.writeMetaData(newMetaData);
+                            replay.saveTo(tmp);
 
                             uploader.uploadFile(GuiUploadFile.this, name, tags, tmp, category, desc);
 
-                            FileUtils.deleteQuietly(tmpMeta);
                             FileUtils.deleteQuietly(tmp);
                         } else {
                             uploader.uploadFile(GuiUploadFile.this, name, tags, replayFile, category, desc);

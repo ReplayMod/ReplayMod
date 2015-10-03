@@ -1,12 +1,11 @@
 package eu.crushedpixel.replaymod.gui;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.GuiAdvancedButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
-import net.minecraftforge.fml.client.FMLClientHandler;
 
 public class GuiReplaySpeedSlider extends GuiAdvancedButton {
 
@@ -74,7 +73,7 @@ public class GuiReplaySpeedSlider extends GuiAdvancedButton {
                     l = packedFGColour;
                 } else if(!this.enabled) {
                     l = 10526880;
-                } else if(this.hovered && FMLClientHandler.instance().isGUIOpen(GuiMouseInput.class)) {
+                } else if(this.hovered) {
                     l = 16777120;
                 }
 

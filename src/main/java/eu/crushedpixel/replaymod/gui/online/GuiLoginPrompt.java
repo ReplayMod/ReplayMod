@@ -6,7 +6,7 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiPasswordField;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 
 public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {

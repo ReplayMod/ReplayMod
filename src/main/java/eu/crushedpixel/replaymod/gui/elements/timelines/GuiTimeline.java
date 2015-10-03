@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.elements.timelines;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.elements.GuiElement;
 import eu.crushedpixel.replaymod.utils.RoundUtils;
 import lombok.AllArgsConstructor;
@@ -11,8 +11,8 @@ import net.minecraft.client.renderer.GlStateManager;
 
 import java.awt.*;
 
-import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.TEXTURE_SIZE;
-import static eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay.replay_gui;
+import static com.replaymod.core.ReplayMod.TEXTURE;
+import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.glEnable;
 
@@ -76,7 +76,7 @@ public class GuiTimeline extends Gui implements GuiElement {
      * This draws the time at big markers above the timeline. Therefore extra space in negative y direction
      * should be kept empty if markers are desired.
      */
-    public boolean showMarkers;
+    public boolean showMarkers; // TODO: Rename to not be confused with Marker
 
     protected final int positionX;
     protected final int positionY;
@@ -280,7 +280,7 @@ public class GuiTimeline extends Gui implements GuiElement {
         if(!enabled) {
             GlStateManager.color(Color.GRAY.getRed() / 255f, Color.GRAY.getGreen() / 255f, Color.GRAY.getBlue() / 255f, 1f);
         }
-        Minecraft.getMinecraft().renderEngine.bindTexture(replay_gui);
+        Minecraft.getMinecraft().renderEngine.bindTexture(TEXTURE);
         glEnable(GL_BLEND);
 
         drawModalRectWithCustomSizedTexture(x, y, u, v, width, height, TEXTURE_SIZE, TEXTURE_SIZE);

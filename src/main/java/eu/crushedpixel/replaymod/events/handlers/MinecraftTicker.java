@@ -1,20 +1,19 @@
 package eu.crushedpixel.replaymod.events.handlers;
 
-import eu.crushedpixel.replaymod.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
-import net.minecraftforge.client.event.MouseEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 public class MinecraftTicker {
 
     public static void runMouseKeyboardTick(Minecraft mc) {
-        ReplayMod.mouseInputHandler.mouseEvent(new MouseEvent());
+        // TODO
+//        ReplayMod.mouseInputHandler.mouseEvent(new MouseEvent());
         if(mc.thePlayer == null) return;
         try {
             mc.mcProfiler.endStartSection("mouse");

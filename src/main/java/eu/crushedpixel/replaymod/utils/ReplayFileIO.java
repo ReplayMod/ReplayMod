@@ -1,12 +1,12 @@
 package eu.crushedpixel.replaymod.utils;
 
 import com.google.gson.Gson;
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.recording.packet.PacketSerializer;
+import de.johni0702.replaystudio.replay.ReplayMetaData;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
-import eu.crushedpixel.replaymod.holders.*;
-import eu.crushedpixel.replaymod.interpolation.KeyframeList;
-import eu.crushedpixel.replaymod.recording.PacketSerializer;
-import eu.crushedpixel.replaymod.recording.ReplayMetaData;
+import eu.crushedpixel.replaymod.holders.KeyframeSet;
+import eu.crushedpixel.replaymod.holders.PacketData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.EnumConnectionState;
@@ -15,10 +15,12 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -72,57 +74,6 @@ public class ReplayFileIO {
         return files;
     }
 
-    public static void writeReplayFile(File replayFile, File tempFile, ReplayMetaData metaData, Set<Keyframe<Marker>> markers,
-                                       Map<String, File> resourcePacks, Map<Integer, String> resourcePackRequests) throws IOException {
-        byte[] buffer = new byte[1024];
-
-        FileOutputStream fos = new FileOutputStream(replayFile);
-        ZipOutputStream zos = new ZipOutputStream(fos);
-
-        String json = new Gson().toJson(metaData);
-
-        zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_METADATA));
-        PrintWriter pw = new PrintWriter(zos);
-        pw.write(json);
-        pw.flush();
-        zos.closeEntry();
-
-        zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_RECORDING));
-        FileInputStream fis = new FileInputStream(tempFile);
-        int len;
-        while((len = fis.read(buffer)) > 0) {
-            zos.write(buffer, 0, len);
-        }
-
-        fis.close();
-        zos.closeEntry();
-
-        if(!markers.isEmpty()) {
-            zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_MARKERS));
-
-            pw = new PrintWriter(zos);
-            pw.write(new Gson().toJson(markers.toArray(new Keyframe[markers.size()])));
-            pw.flush();
-            zos.closeEntry();
-        }
-
-        if(!resourcePackRequests.isEmpty()) {
-            zos.putNextEntry(new ZipEntry(ReplayFile.ENTRY_RESOURCE_PACK_INDEX));
-            pw = new PrintWriter(zos);
-            pw.write(new Gson().toJson(resourcePackRequests));
-            pw.flush();
-            zos.closeEntry();
-
-            for(Map.Entry<String, File> entry : resourcePacks.entrySet()) {
-                zos.putNextEntry(new ZipEntry(String.format(ReplayFile.ENTRY_RESOURCE_PACK, entry.getKey())));
-                IOUtils.copy(new FileInputStream(entry.getValue()), zos);
-                zos.closeEntry();
-            }
-        }
-
-        zos.close();
-    }
-
     public static PacketData readPacketData(DataInputStream dis) throws IOException {
         int timestamp = dis.readInt();
         int bytes = dis.readInt();
@@ -160,12 +111,6 @@ public class ReplayFileIO {
         return array;
     }
 
-    public static void writePacket(PacketData pd, DataOutput out) throws IOException {
-        out.writeInt(pd.getTimestamp());
-        out.writeInt(pd.getByteArray().length);
-        out.write(pd.getByteArray());
-    }
-
     private static final Gson gson = new Gson();
 
     private static void write(Object obj, File file) throws IOException {
@@ -177,16 +122,8 @@ public class ReplayFileIO {
         write((Object) keyframeRegistry, file);
     }
 
-    public static void write(PlayerVisibility visibility, File file) throws IOException {
-        write((Object) visibility, file);
-    }
-
     public static void write(ReplayMetaData metaData, File file) throws IOException {
         write((Object) metaData, file);
-    }
-
-    public static void write(KeyframeList<Marker> markers, File file) throws IOException {
-        write((Object) markers, file);
     }
 
     public static void write(CustomObjectRepository repository, File file) throws IOException {

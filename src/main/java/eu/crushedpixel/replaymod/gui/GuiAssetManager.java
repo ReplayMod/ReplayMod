@@ -6,8 +6,6 @@ import eu.crushedpixel.replaymod.assets.ReplayAsset;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.FileChooseListener;
 import eu.crushedpixel.replaymod.gui.elements.listeners.SelectionListener;
-import eu.crushedpixel.replaymod.gui.overlay.GuiReplayOverlay;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
@@ -22,7 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOverlay {
+public class GuiAssetManager extends GuiScreen {
 
     private String screenTitle;
 
@@ -43,8 +41,10 @@ public class GuiAssetManager extends GuiScreen implements GuiReplayOverlay.NoOve
     private ReplayAsset currentAsset;
 
     public GuiAssetManager() {
-        this.initialRepository = new AssetRepository(ReplayHandler.getAssetRepository());
-        this.assetRepository = ReplayHandler.getAssetRepository();
+        // TODO
+        initialRepository = null;
+//        this.initialRepository = new AssetRepository(ReplayHandler.getAssetRepository());
+//        this.assetRepository = ReplayHandler.getAssetRepository();
     }
 
     @Override

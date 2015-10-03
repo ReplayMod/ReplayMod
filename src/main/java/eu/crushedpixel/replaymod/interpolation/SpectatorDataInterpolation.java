@@ -4,7 +4,6 @@ import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.holders.Keyframe;
 import eu.crushedpixel.replaymod.holders.SpectatorData;
 import eu.crushedpixel.replaymod.holders.SpectatorDataThirdPersonInfo;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -58,20 +57,21 @@ public class SpectatorDataInterpolation {
         //updating the spectator keyframe's position in the world to smoothly continue the path
         //with non-spectator position keyframes
         for(Pair<Integer, Keyframe<AdvancedPosition>> pair : points) {
-            AdvancedPosition entityPosition = ReplayHandler.getEntityPositionTracker().getEntityPositionAtTimestamp(entityID, pair.getKey());
-            if(entityPosition == null) continue;
-
-            //transform the entity position (sry for no dry code :x )
-            SpectatorDataThirdPersonInfo thirdPersonInfo = ((SpectatorData)pair.getValue().getValue()).getThirdPersonInfo();
-
-            //first, rotate the camera pitch and yaw according to the settings
-            entityPosition.setYaw(entityPosition.getYaw() + thirdPersonInfo.shoulderCamYawOffset);
-            entityPosition.setPitch(entityPosition.getPitch() + thirdPersonInfo.shoulderCamPitchOffset);
-
-            //next, move the camera point to fulfill the specified distance to the entity
-            entityPosition = entityPosition.getDestination(-1 * thirdPersonInfo.shoulderCamDistance);
-
-            pair.getValue().getValue().apply(entityPosition);
+            // TODO
+//            AdvancedPosition entityPosition = ReplayHandler.getEntityPositionTracker().getEntityPositionAtTimestamp(entityID, pair.getKey());
+//            if(entityPosition == null) continue;
+//
+//            //transform the entity position (sry for no dry code :x )
+//            SpectatorDataThirdPersonInfo thirdPersonInfo = ((SpectatorData)pair.getValue().getValue()).getThirdPersonInfo();
+//
+//            //first, rotate the camera pitch and yaw according to the settings
+//            entityPosition.setYaw(entityPosition.getYaw() + thirdPersonInfo.shoulderCamYawOffset);
+//            entityPosition.setPitch(entityPosition.getPitch() + thirdPersonInfo.shoulderCamPitchOffset);
+//
+//            //next, move the camera point to fulfill the specified distance to the entity
+//            entityPosition = entityPosition.getDestination(-1 * thirdPersonInfo.shoulderCamDistance);
+//
+//            pair.getValue().getValue().apply(entityPosition);
         }
 
         //feed the underlying keyframe list with AdvancedPosition Keyframes that are derived from the Spectator Keyframes
@@ -116,17 +116,18 @@ public class SpectatorDataInterpolation {
                 smoothness = (int)(thirdPersonInfo.shoulderCamSmoothness*1000);
 
                 //calculate the Position relative to the Entity
-                AdvancedPosition entityPosition = ReplayHandler.getEntityPositionTracker().getEntityPositionAtTimestamp(entityID, currentTimestamp);
-                if(entityPosition == null) continue;
-
-                //first, rotate the camera pitch and yaw according to the settings
-                entityPosition.setYaw(entityPosition.getYaw() + thirdPersonInfo.shoulderCamYawOffset);
-                entityPosition.setPitch(entityPosition.getPitch() + thirdPersonInfo.shoulderCamPitchOffset);
-
-                //next, move the camera point to fulfill the specified distance to the entity
-                entityPosition = entityPosition.getDestination(-1 * thirdPersonInfo.shoulderCamDistance);
-
-                underlyingKeyframes.add(new Keyframe<AdvancedPosition>(interpolatedRealTimestamp, entityPosition));
+                // TODO
+//                AdvancedPosition entityPosition = ReplayHandler.getEntityPositionTracker().getEntityPositionAtTimestamp(entityID, currentTimestamp);
+//                if(entityPosition == null) continue;
+//
+//                //first, rotate the camera pitch and yaw according to the settings
+//                entityPosition.setYaw(entityPosition.getYaw() + thirdPersonInfo.shoulderCamYawOffset);
+//                entityPosition.setPitch(entityPosition.getPitch() + thirdPersonInfo.shoulderCamPitchOffset);
+//
+//                //next, move the camera point to fulfill the specified distance to the entity
+//                entityPosition = entityPosition.getDestination(-1 * thirdPersonInfo.shoulderCamDistance);
+//
+//                underlyingKeyframes.add(new Keyframe<AdvancedPosition>(interpolatedRealTimestamp, entityPosition));
             }
 
             i++;

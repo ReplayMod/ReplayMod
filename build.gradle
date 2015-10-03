@@ -119,7 +119,7 @@ jar {
     manifest { 
          attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
                  'TweakOrder': '0',
-                 'MixinConfigs': 'mixins.replaymod.json',
+                 'MixinConfigs': 'mixins.replaymod.json,mixins.recording.replaymod.json',
                  'FMLCorePlugin': 'eu.crushedpixel.replaymod.coremod.LoadingPlugin',
                  'FMLAT': 'replaymod_at.cfg'
 	}

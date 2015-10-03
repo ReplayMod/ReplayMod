@@ -1,18 +1,12 @@
 package eu.crushedpixel.replaymod.assets;
 
-import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.utils.ReplayFile;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.zip.ZipEntry;
 
 @EqualsAndHashCode
 public class AssetRepository {
@@ -62,40 +56,29 @@ public class AssetRepository {
     }
 
     public void saveAssets() {
-        try {
-            ReplayFile replayFile = new ReplayFile(ReplayHandler.getReplayFile());
-
-            Enumeration<? extends ZipEntry> entries = replayFile.entries();
-            while(entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if(entry.getName().startsWith(ReplayFile.ENTRY_ASSET_FOLDER)) {
-                    ReplayMod.replayFileAppender.registerModifiedFile(null, entry.getName(), ReplayHandler.getReplayFile());
-                }
-            }
-
-            replayFile.close();
-
-            ReplayMod.replayFileAppender.deleteAllFilesByFolder(ReplayFile.ENTRY_ASSET_FOLDER, ReplayHandler.getReplayFile());
-
-            for(Map.Entry<UUID, ReplayAsset> e : replayAssets.entrySet()) {
-                UUID uuid = e.getKey();
-                ReplayAsset asset = e.getValue();
-                try {
-                    String filepath = ReplayFile.ENTRY_ASSET_FOLDER + uuid.toString()+ "_" + asset.getDisplayString() + "." + asset.getSavedFileExtension();
-
-                    File toAdd = File.createTempFile("ASSET_"+asset.getDisplayString(), asset.getSavedFileExtension());
-                    FileOutputStream fos = new FileOutputStream(toAdd);
-                    asset.writeToStream(fos);
-
-
-                    ReplayMod.replayFileAppender.registerModifiedFile(toAdd, filepath, ReplayHandler.getReplayFile());
-                } catch(IOException io) {
-                    io.printStackTrace();
-                }
-            }
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
+        // TODO
+//        try {
+//            ReplayFile replayFile = ReplayHandler.getReplayFile();
+//
+//            for (ReplayAssetEntry entry : replayFile.getAssets()) {
+//                if (!replayAssets.containsKey(entry.getUuid())) {
+//                    replayFile.removeAsset(entry.getUuid());
+//                }
+//            }
+//
+//            for(Map.Entry<UUID, ReplayAsset> e : replayAssets.entrySet()) {
+//                UUID uuid = e.getKey();
+//                ReplayAsset asset = e.getValue();
+//                String extension = asset.getSavedFileExtension();
+//                String name = asset.getAssetName();
+//
+//                try (OutputStream out = replayFile.writeAsset(new ReplayAssetEntry(uuid, extension, name))) {
+//                    asset.writeToStream(out);
+//                }
+//            }
+//        } catch(IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public static ReplayAsset assetFromFileName(String filename) {

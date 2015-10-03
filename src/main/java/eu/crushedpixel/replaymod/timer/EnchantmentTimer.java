@@ -1,9 +1,5 @@
 package eu.crushedpixel.replaymod.timer;
 
-import eu.crushedpixel.replaymod.ReplayMod;
-import eu.crushedpixel.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.replay.ReplayProcess;
-
 public class EnchantmentTimer {
 
     private static long lastRealTime = System.currentTimeMillis();
@@ -20,17 +16,18 @@ public class EnchantmentTimer {
     }
 
     public static long getEnchantmentTime() {
-        if(!(ReplayHandler.isInPath() && ReplayProcess.isVideoRecording())) {
-            if(ReplayHandler.isInReplay()) {
-                long timeDiff = System.currentTimeMillis() - lastRealTime;
-                double toAdd = timeDiff * ReplayMod.replaySender.getReplaySpeed();
-                lastFakeTime = Math.round(lastFakeTime + toAdd);
-                lastRealTime = System.currentTimeMillis();
-                return lastFakeTime;
-            }
-            lastFakeTime = lastRealTime = System.currentTimeMillis();
-            return lastRealTime;
-        }
+        // TODO
+//        if(!(ReplayHandler.isInPath() && ReplayProcess.isVideoRecording())) {
+//            if(ReplayHandler.isInReplay()) {
+//                long timeDiff = System.currentTimeMillis() - lastRealTime;
+//                double toAdd = timeDiff * ReplayMod.replaySender.getReplaySpeed();
+//                lastFakeTime = Math.round(lastFakeTime + toAdd);
+//                lastRealTime = System.currentTimeMillis();
+//                return lastFakeTime;
+//            }
+//            lastFakeTime = lastRealTime = System.currentTimeMillis();
+//            return lastRealTime;
+//        }
         return recordingTime;
     }
 }

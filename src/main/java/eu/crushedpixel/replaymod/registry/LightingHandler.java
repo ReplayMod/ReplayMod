@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.registry;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings.Options;
 

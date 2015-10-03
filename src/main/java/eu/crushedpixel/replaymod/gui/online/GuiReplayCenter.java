@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.online;
 
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.SearchQuery;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
@@ -12,7 +12,6 @@ import eu.crushedpixel.replaymod.api.replay.pagination.Pagination;
 import eu.crushedpixel.replaymod.api.replay.pagination.SearchPagination;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.*;
-import eu.crushedpixel.replaymod.gui.replayviewer.GuiReplayViewer;
 import eu.crushedpixel.replaymod.holders.GuiEntryListStringEntry;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.resources.I18n;
@@ -265,7 +264,8 @@ public class GuiReplayCenter extends GuiScreen implements GuiYesNoCallback {
         } else if(button.id == GuiConstants.CENTER_LOGOUT_BUTTON) {
             mc.displayGuiScreen(getYesNoGui(this, LOGOUT_CALLBACK_ID));
         } else if(button.id == GuiConstants.CENTER_MANAGER_BUTTON) {
-            mc.displayGuiScreen(new GuiReplayViewer());
+            // TODO
+//            mc.displayGuiScreen(new GuiReplayViewer(mod));
         } else if(button.id == GuiConstants.CENTER_RECENT_BUTTON) {
             disableTopBarButton(button.id);
             showOnlineRecent();

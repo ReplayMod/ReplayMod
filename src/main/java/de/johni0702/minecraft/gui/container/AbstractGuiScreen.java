@@ -83,21 +83,21 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
             final GuiElement tooltip = forEach(GuiElement.class).getTooltip(renderInfo);
             if (tooltip != null) {
                 final ReadableDimension tooltipSize = tooltip.getMinSize();
-                int dx, dy;
+                int x, y;
                 if (renderInfo.mouseX + 8 + tooltipSize.getWidth() < screenSize.getWidth()) {
-                    dx = 8;
+                    x = renderInfo.mouseX + 8;
                 } else {
-                    dx = -8;
+                    x = screenSize.getWidth() - tooltipSize.getWidth() - 1;
                 }
                 if (renderInfo.mouseY + 8 + tooltipSize.getHeight() < screenSize.getHeight()) {
-                    dy = 8;
+                    y = renderInfo.mouseY + 8;
                 } else {
-                    dy = -8;
+                    y = screenSize.getHeight() - tooltipSize.getHeight() - 1;
                 }
-                final ReadablePoint position = new Point(renderInfo.mouseX + dx, renderInfo.mouseY + dy);
+                final ReadablePoint position = new Point(x, y);
                 try {
                     OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, position, tooltipSize);
-                    tooltip.draw(eRenderer, tooltipSize, renderInfo.offsetMouse(position.getX(), position.getY()));
+                    tooltip.draw(eRenderer, tooltipSize, renderInfo);
                 } catch (Exception ex) {
                     CrashReport crashReport = CrashReport.makeCrashReport(ex, "Rendering Gui Tooltip");
                     renderInfo.addTo(crashReport);

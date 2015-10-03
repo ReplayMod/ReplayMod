@@ -2,7 +2,7 @@ package eu.crushedpixel.replaymod.localization;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.ApiException;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;

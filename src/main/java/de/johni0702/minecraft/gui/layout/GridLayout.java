@@ -27,7 +27,6 @@ import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.tuple.Pair;
@@ -40,11 +39,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
-@RequiredArgsConstructor
 public class GridLayout implements Layout {
     private static final Data DEFAULT_DATA = new Data();
 
-    private final int columns;
+    @Accessors(chain = true)
+    @Getter
+    @Setter
+    private int columns;
 
     @Accessors(chain = true)
     @Getter

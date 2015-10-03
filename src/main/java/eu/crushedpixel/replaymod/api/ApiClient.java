@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.exceptions.AuthenticationException;
-import eu.crushedpixel.replaymod.ReplayMod;
+import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.ReplayModApiMethods;
 import eu.crushedpixel.replaymod.api.replay.SearchQuery;
 import eu.crushedpixel.replaymod.api.replay.holders.*;
