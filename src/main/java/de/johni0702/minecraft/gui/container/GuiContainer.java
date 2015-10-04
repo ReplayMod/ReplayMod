@@ -39,5 +39,6 @@ public interface GuiContainer<T extends GuiContainer<T>> extends ComposedGuiElem
 
     Map<GuiElement, LayoutData> getElements();
     T addElements(LayoutData layoutData, GuiElement...elements);
+    T removeElement(GuiElement element);
 
 }

@@ -108,6 +108,14 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
     }
 
     @Override
+    public T removeElement(GuiElement element) {
+        if (elements.remove(element) != null) {
+            layedOutElements.remove(element);
+        }
+        return getThis();
+    }
+
+    @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
         try {
             layedOutElements = layout.layOut(this, size);
