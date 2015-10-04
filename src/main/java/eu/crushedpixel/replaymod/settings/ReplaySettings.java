@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.settings;
 
-import eu.crushedpixel.replaymod.registry.LightingHandler;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -49,15 +48,6 @@ public class ReplaySettings {
 
     public boolean isLinearMovement() {
         return (Boolean) ReplayOptions.linear.getValue();
-    }
-
-    public boolean isLightingEnabled() {
-        return (Boolean) ReplayOptions.lighting.getValue();
-    }
-
-    public void setLightingEnabled(boolean enabled) {
-        ReplayOptions.lighting.setValue(enabled);
-        LightingHandler.setLighting(enabled);
     }
 
     public boolean showPathPreview() { return (Boolean) ReplayOptions.previewPath.getValue(); }
@@ -142,7 +132,6 @@ public class ReplaySettings {
 
     public enum ReplayOptions implements ValueEnum {
         linear(false, "replaymod.gui.settings.interpolation"),
-        lighting(false, "replaymod.gui.settings.lighting"),
         previewPath(false, "replaymod.gui.settings.pathpreview"),
         keyframeCleanCallback(true, "replaymod.gui.settings.keyframecleancallback"),
         showChat(false, "options.chat.visibility"),

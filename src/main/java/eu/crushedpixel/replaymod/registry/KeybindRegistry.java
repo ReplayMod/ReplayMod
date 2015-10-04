@@ -47,8 +47,6 @@ public class KeybindRegistry {
 
         replayModKeyBindings.add(new KeyBinding(KEY_PLAYER_OVERVIEW, Keyboard.KEY_B, "replaymod.title"));
 
-        replayModKeyBindings.add(new KeyBinding(KEY_LIGHTING, Keyboard.KEY_Z, "replaymod.title"));
-
         replayModKeyBindings.add(new KeyBinding(KEY_ASSET_MANAGER, Keyboard.KEY_G, "replaymod.title"));
         replayModKeyBindings.add(new KeyBinding(KEY_OBJECT_MANAGER, Keyboard.KEY_F, "replaymod.title"));
 

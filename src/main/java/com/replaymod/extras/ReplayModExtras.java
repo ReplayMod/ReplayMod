@@ -19,7 +19,8 @@ public class ReplayModExtras {
     @Mod.Instance(ReplayMod.MOD_ID)
     private static ReplayMod core;
 
-    private static final List<Class<? extends Extra>> builtin = Arrays.<Class<? extends Extra>>asList(
+    private static final List<Class<? extends Extra>> builtin = Arrays.asList(
+            FullBrightness.class,
             HotkeyButtons.class
     );
 
