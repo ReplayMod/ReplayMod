@@ -89,8 +89,8 @@ public class HotkeyButtons implements Extra {
             overlay.setLayout(new CustomLayout<GuiReplayOverlay>(overlay.getLayout()) {
                 @Override
                 protected void layout(GuiReplayOverlay container, int width, int height) {
-                    panelLayout.setColumns((width - 10) / 105);
-                    size(panel, panelLayout.calcMinSize(container));
+                    panelLayout.setColumns((width - 10) / 155);
+                    size(panel, panel.getMinSize());
 
                     pos(toggleButton, 5, height - 25);
                     pos(panel, 5, y(toggleButton) - 5 - height(panel));
