@@ -76,6 +76,15 @@ public class ReplayModReplay {
                 }
             }
         });
+
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
+            @Override
+            public void run() {
+                if (replayHandler != null) {
+                    replayHandler.getOverlay().playPauseButton.onClick();
+                }
+            }
+        });
     }
 
     @Mod.EventHandler

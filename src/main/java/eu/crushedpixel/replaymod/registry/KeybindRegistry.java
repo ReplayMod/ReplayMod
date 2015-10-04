@@ -35,8 +35,6 @@ public class KeybindRegistry {
     static {
         replayModKeyBindings = new ArrayList<KeyBinding>();
 
-        replayModKeyBindings.add(new KeyBinding(KEY_PLAY_PAUSE, Keyboard.KEY_P, "replaymod.title"));
-
         replayModKeyBindings.add(new KeyBinding(KEY_ROLL_CLOCKWISE, Keyboard.KEY_L, "replaymod.title"));
         replayModKeyBindings.add(new KeyBinding(KEY_ROLL_COUNTERCLOCKWISE, Keyboard.KEY_J, "replaymod.title"));
         replayModKeyBindings.add(new KeyBinding(KEY_RESET_TILT, Keyboard.KEY_K, "replaymod.title"));
