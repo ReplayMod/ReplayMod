@@ -9,7 +9,7 @@ import de.johni0702.replaystudio.data.Marker;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
-import eu.crushedpixel.replaymod.replay.Restrictions;
+import com.replaymod.core.utils.Restrictions;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;

@@ -5,7 +5,7 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import eu.crushedpixel.replaymod.holders.PacketData;
-import eu.crushedpixel.replaymod.replay.Restrictions;
+import com.replaymod.core.utils.Restrictions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandler.Sharable;

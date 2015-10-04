@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.replay;
+package com.replaymod.core.utils;
 
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
