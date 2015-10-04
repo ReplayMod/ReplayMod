@@ -1,18 +1,17 @@
 package eu.crushedpixel.replaymod.gui.online;
 
 import com.google.common.base.Optional;
+import com.replaymod.core.ReplayMod;
+import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ReplayMetaData;
 import de.johni0702.replaystudio.replay.ZipReplayFile;
 import de.johni0702.replaystudio.studio.ReplayStudio;
-import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.api.replay.FileUploader;
 import eu.crushedpixel.replaymod.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
-import com.replaymod.replay.gui.screen.GuiReplayViewer;
-import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.utils.ImageUtils;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
@@ -359,7 +358,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
             Gui.drawScaledCustomSizeModalRect(columnRight, 20, 0, 0, 1280, 720, columnWidth, height, 1280, 720);
 
             if (!hasThumbnail) {
-                KeyBinding keyBinding = KeybindRegistry.getKeyBinding(KeybindRegistry.KEY_THUMBNAIL);
+                KeyBinding keyBinding = ReplayMod.instance.getKeyBindingRegistry().getKeyBindings().get("replaymod.input.thumbnail");
                 String str = I18n.format("replaymod.gui.upload.nothumbnail",
                         keyBinding == null ? "???" : GameSettings.getKeyDisplayString(keyBinding.getKeyCode()));
                 int y = 20 + height + 10;

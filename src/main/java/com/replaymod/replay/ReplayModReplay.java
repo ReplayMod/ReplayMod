@@ -1,10 +1,15 @@
 package com.replaymod.replay;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.handler.GuiHandler;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ZipReplayFile;
 import de.johni0702.replaystudio.studio.ReplayStudio;
+import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -42,6 +47,33 @@ public class ReplayModReplay {
             @Override
             public void run() {
 
+            }
+        });
+
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.thumbnail", Keyboard.KEY_N, new Runnable() {
+            @Override
+            public void run() {
+                if (replayHandler != null) {
+                    Minecraft mc = Minecraft.getMinecraft();
+                    ListenableFuture<NoGuiScreenshot> future = NoGuiScreenshot.take(mc, 1280, 720);
+                    Futures.addCallback(future, new FutureCallback<NoGuiScreenshot>() {
+                        @Override
+                        public void onSuccess(NoGuiScreenshot result) {
+                            try {
+                                replayHandler.getReplayFile().writeThumb(result.getImage());
+                                ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.savedthumb",
+                                        ChatMessageHandler.ChatMessageType.INFORMATION);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Throwable t) {
+                            t.printStackTrace();
+                        }
+                    });
+                }
             }
         });
     }
