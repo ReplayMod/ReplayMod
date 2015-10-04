@@ -89,11 +89,18 @@ public class ReplayModReplay {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
+        Minecraft mc = core.getMinecraft();
+        mc.timer = new InputReplayTimer(mc.timer, this);
+
         new GuiHandler(this).register();
     }
 
     public void startReplay(File file) throws IOException {
         ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file);
         replayHandler = new ReplayHandler(replayFile, true);
+    }
+
+    public ReplayMod getCore() {
+        return core;
     }
 }

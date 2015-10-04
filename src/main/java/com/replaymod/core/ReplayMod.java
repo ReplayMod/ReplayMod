@@ -23,7 +23,6 @@ import eu.crushedpixel.replaymod.settings.EncodingPreset;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.sound.SoundHandler;
-import eu.crushedpixel.replaymod.timer.ReplayTimer;
 import eu.crushedpixel.replaymod.utils.OpenGLUtils;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
 import eu.crushedpixel.replaymod.video.rendering.Pipelines;
@@ -177,8 +176,6 @@ public class ReplayMod {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        mc.timer = new ReplayTimer();
-
         MinecraftForge.EVENT_BUS.register(guiEventHandler = new GuiEventHandler());
 
         FMLCommonHandler.instance().bus().register(keyInputHandler);
@@ -446,5 +443,9 @@ public class ReplayMod {
         if("currentPlayer".equals("Moesh")) {
             System.exit(-1);
         }
+    }
+
+    public Minecraft getMinecraft() {
+        return mc;
     }
 }

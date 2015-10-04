@@ -205,6 +205,10 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
 
     protected class UserInputGuiScreen extends net.minecraft.client.gui.GuiScreen {
 
+        {
+            allowUserInput = true;
+        }
+
         @Override
         protected void keyTyped(char typedChar, int keyCode) throws IOException {
             forEach(Typeable.class).typeKey(MouseUtils.getMousePos(), keyCode, typedChar, isCtrlKeyDown(), isShiftKeyDown());
