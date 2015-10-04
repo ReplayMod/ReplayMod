@@ -1,8 +1,8 @@
 package com.replaymod.recording;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.packet.PacketListener;
-import com.replaymod.core.ReplayMod;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -34,6 +34,7 @@ public class ReplayModRecording {
                 PacketListener packetListener = connectionEventHandler.getPacketListener();
                 if (packetListener != null) {
                     packetListener.addMarker();
+                    core.printInfoToChat("replaymod.chat.addedmarker");
                 }
             }
         });

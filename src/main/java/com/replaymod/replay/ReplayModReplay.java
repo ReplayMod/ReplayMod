@@ -8,7 +8,6 @@ import com.replaymod.replay.handler.GuiHandler;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ZipReplayFile;
 import de.johni0702.replaystudio.studio.ReplayStudio;
-import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -61,8 +60,7 @@ public class ReplayModReplay {
                         public void onSuccess(NoGuiScreenshot result) {
                             try {
                                 replayHandler.getReplayFile().writeThumb(result.getImage());
-                                ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.savedthumb",
-                                        ChatMessageHandler.ChatMessageType.INFORMATION);
+                                core.printInfoToChat("replaymod.chat.savedthumb");
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

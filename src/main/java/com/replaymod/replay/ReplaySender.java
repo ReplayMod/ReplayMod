@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import de.johni0702.replaystudio.replay.ReplayFile;
-import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import eu.crushedpixel.replaymod.replay.Restrictions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
@@ -66,6 +65,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             S43PacketCamera.class,
             S39PacketPlayerAbilities.class,
             S45PacketTitle.class);
+
+    private static int TP_DISTANCE_LIMIT = 128;
 
     /**
      * The replay handler responsible for the current replay.
@@ -404,8 +405,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             }
 
             if(cent != null) {
-                if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > ReplayMod.TP_DISTANCE_LIMIT) ||
-                        (Math.abs(cent.posZ - ppl.func_148933_e()) > ReplayMod.TP_DISTANCE_LIMIT))) {
+                if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > TP_DISTANCE_LIMIT) ||
+                        (Math.abs(cent.posZ - ppl.func_148933_e()) > TP_DISTANCE_LIMIT))) {
                     return null;
                 } else {
                     allowMovement = false;

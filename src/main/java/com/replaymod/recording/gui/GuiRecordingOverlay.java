@@ -1,6 +1,7 @@
 package com.replaymod.recording.gui;
 
-import com.replaymod.core.ReplayMod;
+import com.replaymod.core.SettingsRegistry;
+import com.replaymod.recording.Setting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -18,9 +19,11 @@ import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
  */
 public class GuiRecordingOverlay {
     private final Minecraft mc;
+    private final SettingsRegistry settingsRegistry;
 
-    public GuiRecordingOverlay(Minecraft mc) {
+    public GuiRecordingOverlay(Minecraft mc, SettingsRegistry settingsRegistry) {
         this.mc = mc;
+        this.settingsRegistry = settingsRegistry;
     }
 
     public void register() {
@@ -38,7 +41,7 @@ public class GuiRecordingOverlay {
     @SubscribeEvent
     public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
-        if(ReplayMod.replaySettings.showRecordingIndicator()) {
+        if (settingsRegistry.get(Setting.INDICATOR)) {
             FontRenderer fontRenderer = mc.fontRendererObj;
             fontRenderer.drawString(I18n.format("replaymod.gui.recording").toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
             mc.renderEngine.bindTexture(TEXTURE);

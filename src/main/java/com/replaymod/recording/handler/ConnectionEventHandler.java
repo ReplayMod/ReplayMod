@@ -1,13 +1,12 @@
 package com.replaymod.recording.handler;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.gui.GuiRecordingOverlay;
 import com.replaymod.recording.packet.PacketListener;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ZipReplayFile;
 import de.johni0702.replaystudio.studio.ReplayStudio;
-import com.replaymod.core.ReplayMod;
-import eu.crushedpixel.replaymod.chat.ChatMessageHandler.ChatMessageType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import net.minecraft.client.Minecraft;
@@ -47,8 +46,6 @@ public class ConnectionEventHandler {
 
     @SubscribeEvent
     public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
-        ReplayMod.chatMessageHandler.initialize();
-
         try {
             if(event.isLocal) {
                 if (MinecraftServer.getServer().getEntityWorld().getWorldType() == WorldType.DEBUG_WORLD) {
@@ -88,12 +85,12 @@ public class ConnectionEventHandler {
             recordingEventHandler = new RecordingEventHandler(packetListener);
             recordingEventHandler.register();
 
-            guiOverlay = new GuiRecordingOverlay(mc);
+            guiOverlay = new GuiRecordingOverlay(mc, core.getSettingsRegistry());
             guiOverlay.register();
 
-            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.recordingstarted", ChatMessageType.INFORMATION);
+            core.printInfoToChat("replaymod.chat.recordingstarted");
         } catch(Exception e) {
-            ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.recordingfailed", ChatMessageType.WARNING);
+            core.printWarningToChat("replaymod.chat.recordingfailed");
             e.printStackTrace();
         }
     }
@@ -106,8 +103,6 @@ public class ConnectionEventHandler {
             recordingEventHandler.unregister();
             recordingEventHandler = null;
             packetListener = null;
-
-            ReplayMod.chatMessageHandler.stop();
         }
     }
 

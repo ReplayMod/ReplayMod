@@ -2,7 +2,6 @@ package com.replaymod.replay;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
-import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
@@ -82,9 +81,6 @@ public class ReplayHandler {
         FMLCommonHandler.instance().bus().post(new ReplayOpenEvent.Pre(this));
 
         markers = replayFile.getMarkers().or(Collections.<Marker>emptySet());
-
-        // TODO: get rid of chat message handler
-        ReplayMod.chatMessageHandler.initialize();
 
         replaySender = new ReplaySender(this, replayFile, asyncMode);
 
@@ -312,9 +308,9 @@ public class ReplayHandler {
                 Display.update();
 
                 // Send the packets
-                ReplayMod.replaySender.sendPacketsTill(targetTime);
-                ReplayMod.replaySender.setAsyncMode(true);
-                ReplayMod.replaySender.setReplaySpeed(0);
+                replaySender.sendPacketsTill(targetTime);
+                replaySender.setAsyncMode(true);
+                replaySender.setReplaySpeed(0);
 
                 mc.getNetHandler().getNetworkManager().processReceivedPackets();
                 @SuppressWarnings("unchecked")

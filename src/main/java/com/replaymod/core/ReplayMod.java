@@ -33,7 +33,7 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -85,32 +85,55 @@ public class ReplayMod {
     public static final int TEXTURE_SIZE = 128;
 
     private static final Minecraft mc = Minecraft.getMinecraft();
+
+    @Deprecated
     public static GuiEventHandler guiEventHandler;
+    @Deprecated
     public static ReplaySettings replaySettings;
+    @Deprecated
     public static Configuration config;
+    @Deprecated
     public static boolean firstMainMenu = true;
+    @Deprecated
     public static ChatMessageHandler chatMessageHandler = new ChatMessageHandler();
+    @Deprecated
     public static KeyInputHandler keyInputHandler = new KeyInputHandler();
+    @Deprecated
     public static MouseInputHandler mouseInputHandler = new MouseInputHandler();
+    @Deprecated
     public static ReplaySender replaySender;
+    @Deprecated
     public static int TP_DISTANCE_LIMIT = 128;
+    @Deprecated
     public static ReplayFileAppender replayFileAppender;
+    @Deprecated
     public static UploadedFileHandler uploadedFileHandler;
+    @Deprecated
     public static DownloadedFileHandler downloadedFileHandler;
+    @Deprecated
     public static FavoritedFileHandler favoritedFileHandler;
+    @Deprecated
     public static RatedFileHandler ratedFileHandler;
+    @Deprecated
     public static SpectatorRenderer spectatorRenderer;
+    @Deprecated
     public static TooltipRenderer tooltipRenderer;
+    @Deprecated
     public static PathPreviewRenderer pathPreviewRenderer;
+    @Deprecated
     public static CustomObjectRenderer customObjectRenderer;
+    @Deprecated
     public static SoundHandler soundHandler = new SoundHandler();
+    @Deprecated
     public static CrosshairRenderHandler crosshairRenderHandler;
+    @Deprecated
     public static ApiClient apiClient;
 
     private final KeyBindingRegistry keyBindingRegistry = new KeyBindingRegistry();
     private final SettingsRegistry settingsRegistry = new SettingsRegistry();
 
     @Getter
+    @Deprecated
     private static boolean latestModVersion = true;
 
     // The instance of your mod that Forge uses.
@@ -447,5 +470,27 @@ public class ReplayMod {
 
     public Minecraft getMinecraft() {
         return mc;
+    }
+
+    public void printInfoToChat(String message, Object... args) {
+        printToChat(false, message, args);
+    }
+
+    public void printWarningToChat(String message, Object... args) {
+        printToChat(true, message, args);
+    }
+
+    private void printToChat(boolean warning, String message, Object... args) {
+        if (ReplayMod.replaySettings.isShowNotifications()) {
+            // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
+            ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
+            ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);
+            IChatComponent text = new ChatComponentText("[").setChatStyle(coloredDarkGray)
+                    .appendSibling(new ChatComponentTranslation("replaymod.title").setChatStyle(coloredGold))
+                    .appendSibling(new ChatComponentText("] "))
+                    .appendSibling(new ChatComponentTranslation(message, args).setChatStyle(new ChatStyle()
+                            .setColor(warning ? EnumChatFormatting.RED : EnumChatFormatting.DARK_GREEN)));
+            mc.thePlayer.addChatMessage(text);
+        }
     }
 }

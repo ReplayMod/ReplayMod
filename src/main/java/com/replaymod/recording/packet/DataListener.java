@@ -2,11 +2,10 @@ package com.replaymod.recording.packet;
 
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
+import com.replaymod.core.ReplayMod;
 import de.johni0702.replaystudio.data.Marker;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ReplayMetaData;
-import com.replaymod.core.ReplayMod;
-import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -90,8 +89,6 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
         marker.setPitch((float) pos.getPitch());
         marker.setRoll((float) pos.getRoll());
         markers.add(marker);
-
-        ReplayMod.chatMessageHandler.addLocalizedChatMessage("replaymod.chat.addedmarker", ChatMessageHandler.ChatMessageType.INFORMATION);
     }
 
     public class DataWriter {
@@ -142,14 +139,12 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
 
         public synchronized void requestFinish() {
             if (saveService.isShutdown()) return;
+            // TODO: Add some GUI showing saving status
             try {
                 Runtime.getRuntime().removeShutdownHook(shutdownHook);
                 saveService.shutdown();
                 saveService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                 stream.close();
-
-                // TODO: Get rid of replay file appender
-                ReplayMod.replayFileAppender.startNewReplayFileWriting();
 
                 String mcversion = ReplayMod.getMinecraftVersion();
 
@@ -173,7 +168,7 @@ public abstract class DataListener extends ChannelInboundHandlerAdapter {
             } catch(Exception e) {
                 e.printStackTrace();
             } finally {
-                ReplayMod.replayFileAppender.replayFileWritingFinished();
+                // TODO: Always close GUI
             }
         }
 
