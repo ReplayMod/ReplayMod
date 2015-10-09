@@ -82,7 +82,7 @@ public class ReplayMod {
     public static final String MOD_ID = "replaymod";
 
     public static final ResourceLocation TEXTURE = new ResourceLocation("replaymod", "replay_gui.png");
-    public static final int TEXTURE_SIZE = 128;
+    public static final int TEXTURE_SIZE = 256;
 
     private static final Minecraft mc = Minecraft.getMinecraft();
 
