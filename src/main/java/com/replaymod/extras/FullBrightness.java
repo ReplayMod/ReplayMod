@@ -46,7 +46,7 @@ public class FullBrightness implements Extra {
 
     @SubscribeEvent
     public void preRender(TickEvent.RenderTickEvent event) {
-        if (active) {
+        if (active && module.getReplayHandler() != null) {
             if (event.phase == TickEvent.Phase.START) {
                 originalGamma = gameSettings.gammaSetting;
                 gameSettings.gammaSetting = 1000;
