@@ -27,6 +27,7 @@ import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
@@ -35,6 +36,9 @@ import java.awt.image.BufferedImage;
 public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
         extends AbstractGuiElement<T> implements IGuiImage<T> {
     private DynamicTexture texture;
+    private ResourceLocation resourceLocation;
+    private int u, v;
+    private int uWidth, vHeight;
     private int textureWidth, textureHeight;
 
     public AbstractGuiImage() {
@@ -46,10 +50,14 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
 
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-        renderer.bindTexture(texture);
+        if (texture != null) {
+            renderer.bindTexture(texture);
+        } else {
+            renderer.bindTexture(resourceLocation);
+        }
         int w = size.getWidth();
         int h = size.getHeight();
-        renderer.drawTexturedRect(0, 0, 0, 0, w, h, textureWidth, textureHeight, textureWidth, textureHeight);
+        renderer.drawTexturedRect(0, 0, u, v, w, h, uWidth, vHeight, textureWidth, textureHeight);
     }
 
     @Override
@@ -67,13 +75,69 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
 
     @Override
     public T setTexture(BufferedImage img) {
+        resourceLocation = null;
         if (texture != null) {
             texture.deleteGlTexture();
         }
         texture = new DynamicTexture(img);
-        textureWidth = img.getWidth();
-        textureHeight = img.getHeight();
+        textureWidth = uWidth = img.getWidth();
+        textureHeight = vHeight = img.getHeight();
         return getThis();
+    }
+
+    @Override
+    public T setTexture(ResourceLocation resourceLocation) {
+        if (texture != null) {
+            texture.deleteGlTexture();
+            texture = null;
+        }
+        this.resourceLocation = resourceLocation;
+        textureWidth = textureHeight = 256;
+        return getThis();
+    }
+
+    @Override
+    public T setTexture(ResourceLocation resourceLocation, int u, int v, int width, int height) {
+        setTexture(resourceLocation);
+        setUV(u, v);
+        setUVSize(width, height);
+        return getThis();
+    }
+
+    @Override
+    public T setU(int u) {
+        this.u = u;
+        return getThis();
+    }
+
+    @Override
+    public T setV(int v) {
+        this.v = v;
+        return getThis();
+    }
+
+    @Override
+    public T setUV(int u, int v) {
+        setU(u);
+        return setV(v);
+    }
+
+    @Override
+    public T setUWidth(int width) {
+        this.uWidth = width;
+        return getThis();
+    }
+
+    @Override
+    public T setVHeight(int height) {
+        this.vHeight = height;
+        return getThis();
+    }
+
+    @Override
+    public T setUVSize(int width, int height) {
+        setUWidth(width);
+        return setVHeight(height);
     }
 
     /**

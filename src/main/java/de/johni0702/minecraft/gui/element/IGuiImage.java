@@ -22,8 +22,20 @@
 
 package de.johni0702.minecraft.gui.element;
 
+import net.minecraft.util.ResourceLocation;
+
 import java.awt.image.BufferedImage;
 
 public interface IGuiImage<T extends IGuiImage<T>> extends GuiElement<T> {
     T setTexture(BufferedImage img);
+    T setTexture(ResourceLocation resourceLocation);
+    T setTexture(ResourceLocation resourceLocation, int u, int v, int width, int height);
+
+    T setU(int u);
+    T setV(int v);
+    T setUV(int u, int v);
+
+    T setUWidth(int width);
+    T setVHeight(int height);
+    T setUVSize(int width, int height);
 }
