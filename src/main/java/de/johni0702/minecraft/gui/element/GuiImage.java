@@ -32,6 +32,10 @@ public class GuiImage extends AbstractGuiImage<GuiImage> {
         super(container);
     }
 
+    public GuiImage(GuiImage copyOf) {
+        super(copyOf);
+    }
+
     @Override
     protected GuiImage getThis() {
         return this;

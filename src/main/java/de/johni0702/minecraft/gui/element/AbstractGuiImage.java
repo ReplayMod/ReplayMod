@@ -22,6 +22,7 @@
 
 package de.johni0702.minecraft.gui.element;
 
+import com.google.common.base.Preconditions;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -41,11 +42,29 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
     private int uWidth, vHeight;
     private int textureWidth, textureHeight;
 
+    /**
+     * Reference to the copied image to prevent it from being garbage collected
+     * and subsequently releasing the OpenGL texture.
+     */
+    private AbstractGuiImage<T> copyOf;
+
     public AbstractGuiImage() {
     }
 
     public AbstractGuiImage(GuiContainer container) {
         super(container);
+    }
+
+    public AbstractGuiImage(AbstractGuiImage<T> copyOf) {
+        this.texture = copyOf.texture;
+        this.resourceLocation = copyOf.resourceLocation;
+        this.u = copyOf.u;
+        this.v = copyOf.v;
+        this.uWidth = copyOf.uWidth;
+        this.vHeight = copyOf.vHeight;
+        this.textureWidth = copyOf.textureWidth;
+        this.textureHeight = copyOf.textureHeight;
+        this.copyOf = copyOf;
     }
 
     @Override
@@ -63,7 +82,7 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if (texture != null) {
+        if (texture != null && copyOf == null) {
             getMinecraft().addScheduledTask(new Finalizer(texture));
         }
     }
@@ -75,6 +94,7 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
 
     @Override
     public T setTexture(BufferedImage img) {
+        Preconditions.checkState(copyOf == null, "Cannot change texture of copy.");
         resourceLocation = null;
         if (texture != null) {
             texture.deleteGlTexture();
@@ -87,6 +107,7 @@ public abstract class AbstractGuiImage<T extends AbstractGuiImage<T>>
 
     @Override
     public T setTexture(ResourceLocation resourceLocation) {
+        Preconditions.checkState(copyOf == null, "Cannot change texture of copy.");
         if (texture != null) {
             texture.deleteGlTexture();
             texture = null;
