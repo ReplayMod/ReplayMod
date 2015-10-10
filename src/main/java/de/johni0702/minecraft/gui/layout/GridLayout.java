@@ -23,7 +23,6 @@
 package de.johni0702.minecraft.gui.layout;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import lombok.AllArgsConstructor;
@@ -38,6 +37,7 @@ import org.lwjgl.util.ReadablePoint;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GridLayout implements Layout {
@@ -63,7 +63,7 @@ public class GridLayout implements Layout {
         }
         int cellWidth = (size.getWidth() + spacingX) / columns - spacingX;
         int cellHeight = (size.getHeight() + spacingY) / rows - spacingY;
-        Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> map = Maps.newHashMap();
+        Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> map = new LinkedHashMap<>();
         Iterator<Map.Entry<GuiElement, LayoutData>> iter = container.getElements().entrySet().iterator();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {

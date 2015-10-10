@@ -22,7 +22,6 @@
 
 package de.johni0702.minecraft.gui.layout;
 
-import com.google.common.collect.Maps;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import lombok.AllArgsConstructor;
@@ -35,6 +34,7 @@ import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class VerticalLayout implements Layout {
@@ -59,7 +59,7 @@ public class VerticalLayout implements Layout {
     public Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> layOut(GuiContainer<?> container, ReadableDimension size) {
         int y = 0;
         int spacing = 0;
-        Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> map = Maps.newHashMap();
+        Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> map = new LinkedHashMap<>();
         for (Map.Entry<GuiElement, LayoutData> entry : container.getElements().entrySet()) {
             y += spacing;
             spacing = this.spacing;

@@ -22,7 +22,6 @@
 
 package de.johni0702.minecraft.gui.layout;
 
-import com.google.common.collect.Maps;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,11 +31,12 @@ import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class CustomLayout<T extends GuiContainer<T>> implements Layout {
     private final Layout parent;
-    private Map<GuiElement, Pair<Point, Dimension>> result = Maps.newHashMap();
+    private Map<GuiElement, Pair<Point, Dimension>> result = new LinkedHashMap<>();
 
     public CustomLayout() {
         this(null);
