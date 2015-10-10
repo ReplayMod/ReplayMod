@@ -22,6 +22,7 @@
 
 package de.johni0702.minecraft.gui.layout;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.element.GuiElement;
@@ -54,6 +55,7 @@ public class GridLayout implements Layout {
 
     @Override
     public Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> layOut(GuiContainer<?> container, ReadableDimension size) {
+        Preconditions.checkState(columns != 0, "Columns may not be 0.");
         int elements = container.getElements().size();
         int rows = (elements - 1 + columns) / columns;
         if (rows < 1) {
@@ -91,6 +93,7 @@ public class GridLayout implements Layout {
 
     @Override
     public ReadableDimension calcMinSize(GuiContainer<?> container) {
+        Preconditions.checkState(columns != 0, "Columns may not be 0.");
         int maxWidth = 0, maxHeight = 0;
         int elements = 0;
         for (Map.Entry<GuiElement, LayoutData> entry : container.getElements().entrySet()) {
