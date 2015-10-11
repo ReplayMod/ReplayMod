@@ -181,7 +181,7 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
 
         @Override
         protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
-            forEach(Draggable.class).mouseClick(new Point(mouseX, mouseY), mouseButton);
+            forEach(Draggable.class).mouseRelease(new Point(mouseX, mouseY), mouseButton);
         }
 
         @Override
