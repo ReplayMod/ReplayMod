@@ -62,6 +62,7 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
     public void setVisible(boolean visible) {
         if (this.visible != visible) {
             if (visible) {
+                forEach(Loadable.class).load();
                 MinecraftForge.EVENT_BUS.register(eventHandler);
             } else {
                 forEach(Closeable.class).close();

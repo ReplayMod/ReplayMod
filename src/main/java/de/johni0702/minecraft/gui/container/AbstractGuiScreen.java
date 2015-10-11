@@ -221,6 +221,7 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
             }
             screenSize = new Dimension(width, height);
             renderer = new MinecraftGuiRenderer(new ScaledResolution(mc, mc.displayWidth, mc.displayHeight));
+            forEach(Loadable.class).load();
         }
 
         public T getWrapper() {
