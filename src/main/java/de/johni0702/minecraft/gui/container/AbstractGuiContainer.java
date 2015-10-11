@@ -84,10 +84,10 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
         Pair<ReadablePoint, ReadableDimension> pair = layedOutElements.get(element);
         checkState(pair != null, "Element " + element + " not part of " + this);
         ReadablePoint pos = pair.getKey();
-        point.translate(-pos.getX(), -pos.getY());
         if (getContainer() != null) {
             getContainer().convertFor(this, point);
         }
+        point.translate(-pos.getX(), -pos.getY());
     }
 
     @Override
