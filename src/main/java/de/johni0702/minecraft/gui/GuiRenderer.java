@@ -34,6 +34,8 @@ public interface GuiRenderer {
 
     ReadableDimension getSize();
 
+    void setDrawingArea(int x, int y, int width, int height);
+
     void bindTexture(ResourceLocation location);
 
     void bindTexture(ITextureObject texture);

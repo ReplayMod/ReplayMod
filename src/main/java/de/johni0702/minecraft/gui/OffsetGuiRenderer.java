@@ -25,10 +25,8 @@ package de.johni0702.minecraft.gui;
 import lombok.NonNull;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.util.Point;
-import org.lwjgl.util.ReadableColor;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.ReadablePoint;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.*;
 
 public class OffsetGuiRenderer implements GuiRenderer {
 
@@ -56,6 +54,33 @@ public class OffsetGuiRenderer implements GuiRenderer {
     @Override
     public ReadableDimension getSize() {
         return size;
+    }
+
+    @Override
+    public void setDrawingArea(int x, int y, int width, int height) {
+        int x2 = x + width;
+        int y2 = y + height;
+        // Convert and clamp top and left border
+        x = Math.max(0, x + position.getX());
+        y = Math.max(0, y + position.getY());
+        // Clamp and convert bottom and right border
+        x2 = Math.min(x2, size.getWidth()) + position.getX();
+        y2 = Math.min(y2, size.getHeight()) + position.getY();
+        // Make sure bottom and top / right and left aren't flipped
+        x2 = Math.max(x2, x);
+        y2 = Math.max(y2, y);
+        // Pass to parent
+        renderer.setDrawingArea(x, y, x2 - x, y2 - y);
+    }
+
+    public void startUsing() {
+        GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
+        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        setDrawingArea(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+    }
+
+    public void stopUsing() {
+        GL11.glPopAttrib();
     }
 
     @Override

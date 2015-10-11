@@ -199,7 +199,7 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
                     || screenSize.getWidth() != res.getScaledWidth()
                     || screenSize.getHeight() != res.getScaledHeight()) {
                 screenSize = new Dimension(res.getScaledWidth(), res.getScaledHeight());
-                renderer = new MinecraftGuiRenderer(screenSize);
+                renderer = new MinecraftGuiRenderer(res);
             }
         }
     }

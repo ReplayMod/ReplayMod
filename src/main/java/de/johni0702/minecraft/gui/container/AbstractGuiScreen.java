@@ -220,7 +220,7 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
                 Keyboard.enableRepeatEvents(true);
             }
             screenSize = new Dimension(width, height);
-            renderer = new MinecraftGuiRenderer(screenSize);
+            renderer = new MinecraftGuiRenderer(new ScaledResolution(mc, mc.displayWidth, mc.displayHeight));
         }
 
         public T getWrapper() {

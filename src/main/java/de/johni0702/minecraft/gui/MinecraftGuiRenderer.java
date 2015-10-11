@@ -26,11 +26,13 @@ import lombok.NonNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Color;
 import org.lwjgl.util.*;
 
@@ -42,9 +44,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     private final Gui gui = new Gui();
 
     @NonNull
-    private final ReadableDimension size;
+    private final ScaledResolution size;
 
-    public MinecraftGuiRenderer(ReadableDimension size) {
+    public MinecraftGuiRenderer(ScaledResolution size) {
         this.size = size;
     }
 
@@ -55,7 +57,31 @@ public class MinecraftGuiRenderer implements GuiRenderer {
 
     @Override
     public ReadableDimension getSize() {
-        return size;
+        return new ReadableDimension() {
+            @Override
+            public int getWidth() {
+                return size.getScaledWidth();
+            }
+
+            @Override
+            public int getHeight() {
+                return size.getScaledHeight();
+            }
+
+            @Override
+            public void getSize(WritableDimension dest) {
+                dest.setSize(getWidth(), getHeight());
+            }
+        };
+    }
+
+    @Override
+    public void setDrawingArea(int x, int y, int width, int height) {
+        // glScissor origin is bottom left corner whereas otherwise it's top left
+        y = size.getScaledHeight() - y - height;
+
+        int f = size.getScaleFactor();
+        GL11.glScissor(x * f, y * f, width * f, height * f);
     }
 
     @Override
