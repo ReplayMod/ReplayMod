@@ -36,6 +36,7 @@ import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ReportedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.util.Point;
+import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 
@@ -57,6 +58,8 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
     private Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> layedOutElements;
 
     private Layout layout = DEFAULT_LAYOUT;
+
+    private ReadableColor backgroundColor;
 
     public AbstractGuiContainer() {
     }
@@ -140,6 +143,9 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
             });
             throw new ReportedException(crashReport);
         }
+        if (backgroundColor != null) {
+            renderer.drawRect(0, 0, size.getWidth(), size.getHeight(), backgroundColor);
+        }
         for (final Map.Entry<GuiElement, Pair<ReadablePoint, ReadableDimension>> e : layedOutElements.entrySet()) {
             GuiElement element = e.getKey();
             if (element instanceof ComposedGuiElement) {
@@ -209,5 +215,16 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
     @Override
     public ReadableDimension calcMinSize() {
         return layout.calcMinSize(this);
+    }
+
+    @Override
+    public ReadableColor getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    @Override
+    public T setBackgroundColor(ReadableColor backgroundColor) {
+        this.backgroundColor = backgroundColor;
+        return getThis();
     }
 }
