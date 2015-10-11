@@ -155,7 +155,19 @@ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implem
 
     @Override
     public ReadableDimension getMinSize() {
-        return minSize == null ? calcMinSize() : minSize;
+        ReadableDimension calcSize = calcMinSize();
+        if (minSize == null) {
+            return calcSize;
+        } else {
+            if (minSize.getWidth() >= calcSize.getWidth() && minSize.getHeight() >= calcSize.getHeight()) {
+                return minSize;
+            } else {
+                return new Dimension(
+                        Math.max(calcSize.getWidth(), minSize.getWidth()),
+                        Math.max(calcSize.getHeight(), minSize.getHeight())
+                );
+            }
+        }
     }
 
     protected abstract ReadableDimension calcMinSize();
