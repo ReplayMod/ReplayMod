@@ -43,7 +43,7 @@ public class GuiRenameReplay extends AbstractGuiScreen<GuiRenameReplay> {
                     // Sanitize their input
                     String name = nameField.getText().trim().replace("[^a-zA-Z0-9\\.\\- ]", "_");
                     // This file is what they want
-                    File targetFile = new File(file.getParentFile(), name + ".zip");
+                    File targetFile = new File(file.getParentFile(), name + ".mcpr");
                     // But if it's already used, this is what they get
                     File renamed = ReplayFileIO.getNextFreeFile(targetFile);
                     try {
