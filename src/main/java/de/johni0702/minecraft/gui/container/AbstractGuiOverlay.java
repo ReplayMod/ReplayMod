@@ -38,6 +38,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
@@ -233,6 +234,14 @@ public abstract class AbstractGuiOverlay<T extends AbstractGuiOverlay<T>> extend
         @Override
         public void updateScreen() {
             forEach(Tickable.class).tick();
+        }
+
+        @Override
+        public void handleMouseInput() throws IOException {
+            super.handleMouseInput();
+            if (Mouse.hasWheel() && Mouse.getEventDWheel() != 0) {
+                forEach(Scrollable.class).scroll(MouseUtils.getMousePos(), Mouse.getEventDWheel());
+            }
         }
 
         @Override

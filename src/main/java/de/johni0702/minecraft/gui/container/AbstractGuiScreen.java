@@ -32,10 +32,12 @@ import de.johni0702.minecraft.gui.function.*;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ReportedException;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
@@ -192,6 +194,14 @@ public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends 
         @Override
         public void updateScreen() {
             forEach(Tickable.class).tick();
+        }
+
+        @Override
+        public void handleMouseInput() throws IOException {
+            super.handleMouseInput();
+            if (Mouse.hasWheel() && Mouse.getEventDWheel() != 0) {
+                forEach(Scrollable.class).scroll(MouseUtils.getMousePos(), Mouse.getEventDWheel());
+            }
         }
 
         @Override
