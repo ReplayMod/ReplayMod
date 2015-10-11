@@ -28,6 +28,7 @@ import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.element.AbstractComposedGuiElement;
 import de.johni0702.minecraft.gui.element.ComposedGuiElement;
 import de.johni0702.minecraft.gui.element.GuiElement;
+import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.Layout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
 import net.minecraft.crash.CrashReport;
@@ -49,11 +50,13 @@ import static com.google.common.base.Preconditions.checkState;
 public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
         extends AbstractComposedGuiElement<T> implements GuiContainer<T> {
 
+    private static final Layout DEFAULT_LAYOUT = new HorizontalLayout();
+
     private final Map<GuiElement, LayoutData> elements = new LinkedHashMap<GuiElement, LayoutData>();
 
     private Map<GuiElement, Pair<ReadablePoint, ReadableDimension>> layedOutElements;
 
-    private Layout layout;
+    private Layout layout = DEFAULT_LAYOUT;
 
     public AbstractGuiContainer() {
     }
