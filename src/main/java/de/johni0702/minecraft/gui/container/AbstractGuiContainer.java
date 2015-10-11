@@ -22,6 +22,8 @@
 
 package de.johni0702.minecraft.gui.container;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.OffsetGuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -40,10 +42,7 @@ import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -217,6 +216,39 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
     @Override
     public ReadableDimension calcMinSize() {
         return layout.calcMinSize(this);
+    }
+
+    @Override
+    public T sortElements() {
+        sortElements(new Comparator<GuiElement>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public int compare(GuiElement o1, GuiElement o2) {
+                if (o1 instanceof Comparable && o2 instanceof Comparable) {
+                    return ((Comparable) o1).compareTo(o2);
+                }
+                return o1.hashCode() - o2.hashCode();
+            }
+        });
+        return getThis();
+    }
+
+    @Override
+    public T sortElements(final Comparator<GuiElement> comparator) {
+        Ordering<Map.Entry<GuiElement, LayoutData>> ordering = new Ordering<Map.Entry<GuiElement, LayoutData>>() {
+            @Override
+            public int compare(Map.Entry<GuiElement, LayoutData> left, Map.Entry<GuiElement, LayoutData> right) {
+                return comparator.compare(left.getKey(), right.getKey());
+            }
+        };
+        if (!ordering.isOrdered(elements.entrySet())) {
+            ImmutableList<Map.Entry<GuiElement, LayoutData>> sorted = ordering.immutableSortedCopy(elements.entrySet());
+            elements.clear();
+            for (Map.Entry<GuiElement, LayoutData> entry : sorted) {
+                elements.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return getThis();
     }
 
     @Override

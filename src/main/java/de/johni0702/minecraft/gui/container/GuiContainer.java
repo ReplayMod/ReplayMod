@@ -29,6 +29,7 @@ import de.johni0702.minecraft.gui.layout.LayoutData;
 import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableColor;
 
+import java.util.Comparator;
 import java.util.Map;
 
 public interface GuiContainer<T extends GuiContainer<T>> extends ComposedGuiElement<T> {
@@ -41,6 +42,8 @@ public interface GuiContainer<T extends GuiContainer<T>> extends ComposedGuiElem
     Map<GuiElement, LayoutData> getElements();
     T addElements(LayoutData layoutData, GuiElement...elements);
     T removeElement(GuiElement element);
+    T sortElements();
+    T sortElements(Comparator<GuiElement> comparator);
 
     ReadableColor getBackgroundColor();
     T setBackgroundColor(ReadableColor backgroundColor);
