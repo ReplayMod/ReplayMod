@@ -112,6 +112,7 @@ public abstract class AbstractGuiResourceLoadingList
                                 @Override
                                 public void run() {
                                     resourcesPanel.addElements(null, new Element(obj.get()));
+                                    resourcesPanel.sortElements();
                                 }
                             });
                         }
