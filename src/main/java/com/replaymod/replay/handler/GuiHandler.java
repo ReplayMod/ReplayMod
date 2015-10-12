@@ -92,7 +92,7 @@ public class GuiHandler {
 
         if (event.gui instanceof GuiMainMenu) {
             if (event.button.id == BUTTON_REPLAY_VIEWER) {
-                mc.displayGuiScreen(new GuiReplayViewer(mod));
+                new GuiReplayViewer(mod).display();
             }
         }
 

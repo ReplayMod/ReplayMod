@@ -116,7 +116,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
         if(!correctFile) {
             Logger logger = LogManager.getLogger();
             logger.error("Invalid file provided to upload");
-            mc.displayGuiScreen(parent);
+            parent.display();
             replayFile = null;
             return;
         }
@@ -134,12 +134,12 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
     @Override
     public void initGui() {
         if(replayFile == null) {
-            mc.displayGuiScreen(parent);
+            parent.display();
             return;
         }
 
         if(!ReplayMod.apiClient.isLoggedIn()) {
-            mc.displayGuiScreen(new GuiLoginPrompt(parent, this, true).toMinecraft());
+            mc.displayGuiScreen(new GuiLoginPrompt(parent.toMinecraft(), this, true).toMinecraft());
             return;
         }
 
@@ -289,7 +289,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
     protected void actionPerformed(GuiButton button) throws IOException {
         if(!button.enabled) return;
         if(button.id == GuiConstants.UPLOAD_BACK_BUTTON) {
-            mc.displayGuiScreen(parent);
+            parent.display();
         } else if(button.id == GuiConstants.UPLOAD_START_BUTTON) {
             final String name = this.name.getText().trim();
             new Thread(new Runnable() {

@@ -101,4 +101,8 @@ public class ReplayModReplay {
     public ReplayMod getCore() {
         return core;
     }
+
+    public Logger getLogger() {
+        return logger;
+    }
 }
