@@ -22,15 +22,20 @@
 
 package de.johni0702.minecraft.gui.element;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ReportedException;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -45,19 +50,15 @@ public abstract class AbstractComposedGuiElement<T extends AbstractComposedGuiEl
 
     @Override
     public int getMaxLayer() {
-        int maxLayer = getLayer();
-        for (GuiElement element : getChildren()) {
-            int elementMaxLayer;
-            if (element instanceof ComposedGuiElement) {
-                elementMaxLayer = ((ComposedGuiElement) element).getMaxLayer();
-            }  else {
-                elementMaxLayer = element.getLayer();
-            }
-            if (elementMaxLayer > maxLayer) {
-                maxLayer = elementMaxLayer;
-            }
-        }
-        return maxLayer;
+        return getLayer() + Ordering.natural().max(Iterables.concat(Collections.singleton(0),
+                Iterables.transform(getChildren(), new Function<GuiElement, Integer>() {
+
+                    @Nullable
+                    @Override
+                    public Integer apply(GuiElement e) {
+                        return e instanceof ComposedGuiElement ? ((ComposedGuiElement) e).getMaxLayer() : e.getLayer();
+                    }
+                })));
     }
 
     @Override
@@ -65,14 +66,14 @@ public abstract class AbstractComposedGuiElement<T extends AbstractComposedGuiEl
     public <C> C forEach(final Class<C> ofType) {
         int maxLayer = getMaxLayer();
         final List<C> layers = new ArrayList<C>(maxLayer + 1);
-        for (int i = 0; i <= maxLayer; i++) {
+        for (int i = maxLayer; i >= 0; i--) {
             layers.add(forEach(i, ofType));
         }
         return (C) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{ofType}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 boolean isGetter = method.getName().startsWith("get");
-                Object handled = method.getReturnType().equals(Boolean.class) ? false : null;
+                Object handled = method.getReturnType().equals(boolean.class) ? false : null;
                 for (final C layer : layers) {
                     handled = method.invoke(layer, args);
                     if (handled != null) {
@@ -136,7 +137,7 @@ public abstract class AbstractComposedGuiElement<T extends AbstractComposedGuiEl
                         if (element instanceof ComposedGuiElement) {
                             ComposedGuiElement composed = (ComposedGuiElement) element;
                             if (layer <= composed.getMaxLayer()) {
-                                Object elementProxy = composed.forEach(layer, ofType);
+                                Object elementProxy = composed.forEach(layer - composed.getLayer(), ofType);
                                 handled = method.invoke(elementProxy, args);
                             }
                         } else if (ofType.isInstance(element) && element.getLayer() == layer) {

@@ -38,7 +38,7 @@ public class RenderInfo {
     }
 
     public RenderInfo layer(int layer) {
-        return new RenderInfo(partialTick, mouseX, mouseY, layer);
+        return this.layer == layer ? this : new RenderInfo(partialTick, mouseX, mouseY, layer);
     }
 
     public void addTo(CrashReport crashReport) {

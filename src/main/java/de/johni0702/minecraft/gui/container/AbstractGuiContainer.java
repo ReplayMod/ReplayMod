@@ -145,7 +145,7 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
             });
             throw new ReportedException(crashReport);
         }
-        if (backgroundColor != null) {
+        if (backgroundColor != null && renderInfo.getLayer() == 0) {
             renderer.drawRect(0, 0, size.getWidth(), size.getHeight(), backgroundColor);
         }
         for (final Map.Entry<GuiElement, Pair<ReadablePoint, ReadableDimension>> e : layedOutElements.entrySet()) {
@@ -164,7 +164,8 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
             try {
                 OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, ePosition, eSize);
                 eRenderer.startUsing();
-                e.getKey().draw(eRenderer, eSize, renderInfo.offsetMouse(ePosition.getX(), ePosition.getY()));
+                e.getKey().draw(eRenderer, eSize, renderInfo.offsetMouse(ePosition.getX(), ePosition.getY())
+                        .layer(renderInfo.getLayer() - e.getKey().getLayer()));
                 eRenderer.stopUsing();
             } catch (Exception ex) {
                 CrashReport crashReport = CrashReport.makeCrashReport(ex, "Rendering Gui");
