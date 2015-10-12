@@ -39,6 +39,9 @@ public class LocalizedResourcePack implements IResourcePack {
         if(availableLanguages.containsKey(langcode)) return true;
         if(!websiteAvailable) return false;
         try {
+            if (Boolean.parseBoolean(System.getProperty("replaymod.offline", "false"))) {
+                return false;
+            }
             String lang = ReplayMod.apiClient.getTranslation(langcode);
             String prop = StringEscapeUtils.unescapeHtml4(lang);
             availableLanguages.put(langcode, prop);
