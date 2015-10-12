@@ -108,6 +108,7 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     @Override
     public void drawRect(int x, int y, int width, int height, int color) {
         Gui.drawRect(x, y, x + width, y + height, color);
+        GlStateManager.color(1, 1, 1);
     }
 
     @Override
@@ -168,7 +169,9 @@ public class MinecraftGuiRenderer implements GuiRenderer {
     @Override
     public int drawString(int x, int y, int color, String text, boolean shadow) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
-        return shadow ? fontRenderer.drawStringWithShadow(text, x, y, color) : fontRenderer.drawString(text, x, y, color);
+        int ret = shadow ? fontRenderer.drawStringWithShadow(text, x, y, color) : fontRenderer.drawString(text, x, y, color);
+        GlStateManager.color(1, 1, 1);
+        return ret;
     }
 
     @Override
