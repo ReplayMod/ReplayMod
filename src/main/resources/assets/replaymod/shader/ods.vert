@@ -38,34 +38,27 @@ void main() {
 
     // Rotate for different cubic views
     float z;
-    switch (direction) {
-        case 0: // LEFT
+    if (direction == 0) { // LEFT
             z = position.z;
             position.z = position.x;
             position.x = -z;
-            break;
-        case 1: // RIGHT
+    } else if (direction == 1) { // RIGHT
             z = position.z;
             position.z = -position.x;
             position.x = z;
-            break;
-        case 2: // FRONT
+    } else if (direction == 2) { // FRONT
             // No changes required
-            break;
-        case 3: // BACK
+    } else if (direction == 3) { // BACK
             position.x = -position.x;
             position.z = -position.z;
-            break;
-        case 4: // TOP
+    } else if (direction == 4) { // TOP
             z = position.z;
             position.z = -position.y;
             position.y = z;
-            break;
-        case 5: // BOTTOM
+    } else if (direction == 5) { // BOTTOM
             z = position.z;
             position.z = position.y;
             position.y = -z;
-            break;
     }
 
     // Transform to screen space
