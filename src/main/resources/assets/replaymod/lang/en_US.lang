@@ -260,6 +260,7 @@ replaymod.gui.settings.interpolation=Path Interpolation
 replaymod.gui.settings.pathpreview=Show Path Preview
 replaymod.gui.settings.keyframecleancallback=Clear Confirmation
 replaymod.gui.settings.renderinvisible=Render invisible Entities
+replaymod.gui.settings.camera=Camera
 
 replaymod.gui.settings.warning.linea=WARNING: Recording settings will be
 replaymod.gui.settings.warning.lineb=applied the next time you join a world.
@@ -280,6 +281,10 @@ replaymod.input.pathpreview=Toggle Path Preview
 replaymod.input.assetmanager=Asset Manager
 replaymod.input.objectmanager=Object Manager
 replaymod.input.interpolation=Toggle Interpolation
+
+# CameraControllers
+replaymod.camera.classic=Classic
+replaymod.camera.vanilla=Vanilla-ish
 
 #Keyframe Presets GUI
 replaymod.gui.keyframerepository.title=Keyframe Repository

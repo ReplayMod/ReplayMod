@@ -1,9 +1,11 @@
 package com.replaymod.replay;
 
+import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.replay.camera.*;
 import com.replaymod.replay.handler.GuiHandler;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ZipReplayFile;
@@ -11,12 +13,15 @@ import de.johni0702.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 @Mod(modid = ReplayModReplay.MOD_ID, useMetadata = true)
 public class ReplayModReplay {
@@ -27,6 +32,8 @@ public class ReplayModReplay {
 
     @Mod.Instance(ReplayMod.MOD_ID)
     private static ReplayMod core;
+
+    private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 
     private Logger logger;
 
@@ -83,6 +90,21 @@ public class ReplayModReplay {
                 }
             }
         });
+
+        cameraControllerRegistry.register("replaymod.camera.classic", new Function<CameraEntity, CameraController>() {
+            @Nullable
+            @Override
+            public CameraController apply(CameraEntity cameraEntity) {
+                return new ClassicCameraController(cameraEntity);
+            }
+        });
+        cameraControllerRegistry.register("replaymod.camera.vanilla", new Function<CameraEntity, CameraController>() {
+            @Nullable
+            @Override
+            public CameraController apply(@Nullable CameraEntity cameraEntity) {
+                return new VanillaCameraController(core.getMinecraft(), cameraEntity);
+            }
+        });
     }
 
     @Mod.EventHandler
@@ -91,6 +113,11 @@ public class ReplayModReplay {
         mc.timer = new InputReplayTimer(mc.timer, this);
 
         new GuiHandler(this).register();
+    }
+
+    @Mod.EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
+        Setting.CAMERA.setChoices(new ArrayList<>(cameraControllerRegistry.getControllers()));
     }
 
     public void startReplay(File file) throws IOException {
@@ -104,5 +131,14 @@ public class ReplayModReplay {
 
     public Logger getLogger() {
         return logger;
+    }
+
+    public CameraControllerRegistry getCameraControllerRegistry() {
+        return cameraControllerRegistry;
+    }
+
+    public CameraController createCameraController(CameraEntity cameraEntity) {
+        String controllerName = core.getSettingsRegistry().get(Setting.CAMERA);
+        return cameraControllerRegistry.create(controllerName, cameraEntity);
     }
 }

@@ -1,6 +1,8 @@
 package com.replaymod.replay.camera;
 
+import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replay.Setting;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +41,7 @@ public class CameraEntity extends EntityPlayerSP {
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
         super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
         FMLCommonHandler.instance().bus().register(this);
-        cameraController = new VanillaCameraController(mc, this);
+        cameraController = ReplayModReplay.instance.createCameraController(this);
     }
 
     /**
@@ -212,6 +214,13 @@ public class CameraEntity extends EntityPlayerSP {
             long timePassed = now - lastControllerUpdate;
             cameraController.update(timePassed / 50f);
             lastControllerUpdate = now;
+        }
+    }
+
+    @SubscribeEvent
+    public void onSettingsChanged(SettingsChangedEvent event) {
+        if (event.getKey() == Setting.CAMERA) {
+            cameraController = ReplayModReplay.instance.createCameraController(this);
         }
     }
 }

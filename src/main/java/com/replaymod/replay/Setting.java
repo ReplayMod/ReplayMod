@@ -6,6 +6,9 @@ public final class Setting<T> extends SettingsRegistry.SettingKeys<T> {
     public static final Setting<Boolean> RECORD_SINGLEPLAYER = make("recordSingleplayer", "recordsingleplayer", true);
     public static final Setting<Boolean> RECORD_SERVER = make("recordServer", "recordserver", true);
     public static final Setting<Boolean> INDICATOR = make("indicator", "indicator", true);
+    public static final SettingsRegistry.MultipleChoiceSettingKeys<String> CAMERA =
+            new SettingsRegistry.MultipleChoiceSettingKeys<>(
+                    "replay", "camera", "replaymod.gui.settings.camera", "replaymod.camera.classic");
 
     private static <T> Setting<T> make(String key, String displayName, T defaultValue) {
         return new Setting<>(key, displayName, defaultValue);
