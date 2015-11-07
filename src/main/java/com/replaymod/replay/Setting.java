@@ -12,6 +12,6 @@ public final class Setting<T> extends SettingsRegistry.SettingKeys<T> {
     }
 
     public Setting(String key, String displayString, T defaultValue) {
-        super("recording", key, "replaymod.gui.settings." + displayString, defaultValue);
+        super("replay", key, "replaymod.gui.settings." + displayString, defaultValue);
     }
 }
