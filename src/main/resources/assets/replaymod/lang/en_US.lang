@@ -354,16 +354,19 @@ replaymod.gui.rendersettings.renderer.tiled=Tiled Rendering
 replaymod.gui.rendersettings.renderer.stereoscopic=Stereoscopic Rendering
 replaymod.gui.rendersettings.renderer.cubic=Cubic Rendering
 replaymod.gui.rendersettings.renderer.equirectangular=Equirectangular Rendering
+replaymod.gui.rendersettings.renderer.ods=ODS Rendering
 
 replaymod.gui.rendersettings.renderer.default.description=Renders the video in the specified resolution. Fastest Rendering Option.
 replaymod.gui.rendersettings.renderer.stereoscopic.description=Renders the video as a stereoscopic (side-by-side) 3D movie, usable by different 3D technologies. The image for one eye is half the width of the video
 replaymod.gui.rendersettings.renderer.cubic.description=Renders the video with a 360 degree panoramic view, using Cubic Projection. This is usable by several 360 degree video players (and the Oculus Rift), for example VR Player.
 replaymod.gui.rendersettings.renderer.equirectangular.description=Renders the video with a 360 degree panoramic view, using Equirectangular Projection. This is usable by YouTube's new 360 degree video function, and several video players (and the Oculus Rift), for example VR Player.
+replaymod.gui.rendersettings.renderer.ods.description=Renders the video with a stereoscopic 3D 360 degree panoramic view, also called VR Video. This is usable by YouTube's new VR video function.
 
 replaymod.gui.rendersettings.customresolution=Video Resolution
 replaymod.gui.rendersettings.customresolution.warning.cubic=Cubic Rendering requires an aspect ratio of 4:3
 replaymod.gui.rendersettings.customresolution.warning.equirectangular=Equirectangular Rendering requires an aspect ratio of 2:1
 replaymod.gui.rendersettings.customresolution.warning.yuv420=For this preset, the width and height values need to be even numbers
+replaymod.gui.rendersettings.customresolution.warning.ods=ODS Rendering requires an aspect ratio of 1:1
 replaymod.gui.rendersettings.resolution=Video Resolution
 replaymod.gui.rendersettings.interpolation=Path Interpolation
 replaymod.gui.rendersettings.forcechunks=Force Render Chunks
