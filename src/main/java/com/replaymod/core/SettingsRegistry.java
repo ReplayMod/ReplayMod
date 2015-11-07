@@ -5,10 +5,7 @@ import net.minecraftforge.common.config.Configuration;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SettingsRegistry {
@@ -97,6 +94,10 @@ public class SettingsRegistry {
         T getDefault();
     }
 
+    public interface MultipleChoiceSettingKey<T> extends SettingKey<T> {
+        List<T> getChoices();
+    }
+
     public static class SettingKeys<T> implements SettingKey<T> {
         private final String category;
         private final String key;
@@ -128,6 +129,23 @@ public class SettingsRegistry {
         @Override
         public T getDefault() {
             return defaultValue;
+        }
+    }
+
+    public static class MultipleChoiceSettingKeys<T> extends SettingKeys<T> implements MultipleChoiceSettingKey<T> {
+        private List<T> choices = Collections.emptyList();
+
+        public MultipleChoiceSettingKeys(String category, String key, String displayString, T defaultValue) {
+            super(category, key, displayString, defaultValue);
+        }
+
+        public void setChoices(List<T> choices) {
+            this.choices = Collections.unmodifiableList(choices);
+        }
+
+        @Override
+        public List<T> getChoices() {
+            return choices;
         }
     }
 }

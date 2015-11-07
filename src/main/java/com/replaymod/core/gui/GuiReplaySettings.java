@@ -1,16 +1,21 @@
 package com.replaymod.core.gui;
 
+import com.replaymod.core.SettingsRegistry;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiToggleButton;
+import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
-import com.replaymod.core.SettingsRegistry;
+import de.johni0702.minecraft.gui.utils.Consumer;
+import lombok.RequiredArgsConstructor;
 import net.minecraft.client.resources.I18n;
+
+import java.util.List;
 
 public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
 
@@ -45,6 +50,32 @@ public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
                             settingsRegistry.save();
                         }
                     });
+                } else if (key instanceof SettingsRegistry.MultipleChoiceSettingKey) {
+                    final SettingsRegistry.MultipleChoiceSettingKey<?> multipleChoiceKey =
+                            (SettingsRegistry.MultipleChoiceSettingKey<?>) key;
+                    List<?> values = multipleChoiceKey.getChoices();
+                    MultipleChoiceDropdownEntry[] entries = new MultipleChoiceDropdownEntry[values.size()];
+                    int selected = 0;
+                    Object currentValue = settingsRegistry.get(multipleChoiceKey);
+                    for (int j = 0; j < entries.length; j++) {
+                        Object value = values.get(j);
+                        entries[j] = new MultipleChoiceDropdownEntry(value,
+                                multipleChoiceKey.getDisplayString() + ": " + I18n.format(value.toString()));
+                        if (currentValue.equals(value)) {
+                            selected = j;
+                        }
+                    }
+                    final GuiDropdownMenu<MultipleChoiceDropdownEntry> menu =
+                            new GuiDropdownMenu<MultipleChoiceDropdownEntry>().setSize(150, 20).setValues(entries);
+                    menu.setSelected(selected).onSelection(new Consumer<Integer>() {
+                        @Override
+                        public void consume(Integer obj) {
+                            settingsRegistry.set((SettingsRegistry.SettingKey) multipleChoiceKey,
+                                    menu.getSelectedValue().value);
+                            settingsRegistry.save();
+                        }
+                    });
+                    element = menu;
                 } else {
                     throw new IllegalArgumentException("Type " + key.getDefault().getClass() + " not supported.");
                 }
@@ -71,5 +102,16 @@ public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
     @Override
     protected GuiReplaySettings getThis() {
         return this;
+    }
+
+    @RequiredArgsConstructor
+    private static class MultipleChoiceDropdownEntry {
+        private final Object value;
+        private final String text;
+
+        @Override
+        public String toString() {
+            return text;
+        }
     }
 }
