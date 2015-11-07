@@ -87,7 +87,7 @@ public class GuiHandler {
     }
 
     @SubscribeEvent
-    public void onButton(GuiScreenEvent.ActionPerformedEvent event) {
+    public void onButton(GuiScreenEvent.ActionPerformedEvent.Pre event) {
         if(!event.button.enabled) return;
 
         if (event.gui instanceof GuiMainMenu) {
