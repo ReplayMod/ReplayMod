@@ -23,6 +23,7 @@
 package de.johni0702.minecraft.gui.element.advanced;
 
 import de.johni0702.minecraft.gui.element.GuiElement;
+import de.johni0702.minecraft.gui.utils.Consumer;
 
 public interface IGuiDropdownMenu<V, T extends IGuiDropdownMenu<V, T>> extends GuiElement<T> {
     T setValues(V... values);
@@ -40,4 +41,6 @@ public interface IGuiDropdownMenu<V, T extends IGuiDropdownMenu<V, T>> extends G
     V[] getValues();
 
     boolean isOpened();
+
+    T onSelection(Consumer<Integer> consumer);
 }

@@ -32,6 +32,7 @@ import de.johni0702.minecraft.gui.element.AbstractGuiClickable;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.function.Clickable;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import de.johni0702.minecraft.gui.utils.Consumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.gui.FontRenderer;
@@ -52,6 +53,8 @@ public abstract class AbstractGuiDropdownMenu<V, T extends AbstractGuiDropdownMe
 
     @Getter
     private boolean opened;
+
+    private Consumer<Integer> onSelection;
 
     private GuiPanel dropdown;
 
@@ -136,6 +139,7 @@ public abstract class AbstractGuiDropdownMenu<V, T extends AbstractGuiDropdownMe
     @Override
     public T setSelected(int selected) {
         this.selected = selected;
+        onSelection(selected);
         return getThis();
     }
 
@@ -163,6 +167,18 @@ public abstract class AbstractGuiDropdownMenu<V, T extends AbstractGuiDropdownMe
     @Override
     public Collection<GuiElement> getChildren() {
         return opened ? Collections.<GuiElement>singletonList(dropdown) : Collections.<GuiElement>emptyList();
+    }
+
+    @Override
+    public T onSelection(Consumer<Integer> consumer) {
+        this.onSelection = consumer;
+        return getThis();
+    }
+
+    public void onSelection(Integer value) {
+        if (onSelection != null) {
+            onSelection.consume(value);
+        }
     }
 
     @Override
