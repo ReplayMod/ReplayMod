@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.mixin;
 
-import com.replaymod.replay.CameraEntity;
+import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.ReplayModReplay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;

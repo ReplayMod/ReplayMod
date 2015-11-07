@@ -3,6 +3,7 @@ package com.replaymod.replay;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.replay.camera.CameraEntity;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import com.replaymod.core.utils.Restrictions;
@@ -425,7 +426,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
-                    cent.moveAbsolute(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
+                    cent.setCameraPosition(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
                     return null;
                 }
             }.call();

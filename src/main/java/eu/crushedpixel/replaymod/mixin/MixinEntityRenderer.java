@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.mixin;
 
-import com.replaymod.replay.CameraEntity;
+import com.replaymod.replay.camera.CameraEntity;
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.video.EntityRendererHandler;

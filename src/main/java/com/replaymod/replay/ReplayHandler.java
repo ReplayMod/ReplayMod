@@ -2,6 +2,7 @@ package com.replaymod.replay;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
@@ -72,7 +73,7 @@ public class ReplayHandler {
      */
     private AdvancedPosition targetCameraPosition;
 
-    protected UUID spectating;
+    private UUID spectating;
 
     public ReplayHandler(ReplayFile replayFile, boolean asyncMode) throws IOException {
         Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
@@ -212,7 +213,7 @@ public class ReplayHandler {
 
         if (mc.getRenderViewEntity() != e) {
             mc.setRenderViewEntity(e);
-            cameraEntity.updatePos(e);
+            cameraEntity.setCameraPosRot(e);
         }
     }
 
@@ -240,6 +241,10 @@ public class ReplayHandler {
         return mc.thePlayer instanceof CameraEntity ? (CameraEntity) mc.thePlayer : null;
     }
 
+    public UUID getSpectatedUUID() {
+        return spectating;
+    }
+
     public void setTargetPosition(AdvancedPosition pos) {
         targetCameraPosition = pos;
     }
@@ -247,7 +252,7 @@ public class ReplayHandler {
     public void moveCameraToTargetPosition() {
         CameraEntity cam = getCameraEntity();
         if (cam != null && targetCameraPosition != null) {
-            cam.moveAbsolute(targetCameraPosition);
+            cam.setCameraPosRot(targetCameraPosition);
         }
     }
 

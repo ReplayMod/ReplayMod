@@ -1,6 +1,8 @@
 package com.replaymod.replay;
 
 import com.replaymod.core.utils.WrappedTimer;
+import com.replaymod.replay.camera.CameraController;
+import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
@@ -64,7 +66,21 @@ public class InputReplayTimer extends WrappedTimer {
 
         int wheel = Mouse.getEventDWheel();
         if (wheel != 0) {
-            // TODO: Update camera movement speed
+            ReplayHandler replayHandler = mod.getReplayHandler();
+            if (replayHandler != null) {
+                CameraEntity cameraEntity = replayHandler.getCameraEntity();
+                if (cameraEntity != null) {
+                    CameraController controller = cameraEntity.getCameraController();
+                    while (wheel > 0) {
+                        controller.increaseSpeed();
+                        wheel--;
+                    }
+                    while (wheel < 0) {
+                        controller.decreaseSpeed();
+                        wheel++;
+                    }
+                }
+            }
         }
 
         if (mc.currentScreen == null) {

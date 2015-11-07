@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.mixin;
 
-import com.replaymod.replay.CameraEntity;
+import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiSpectator;
 import org.spongepowered.asm.mixin.Mixin;
