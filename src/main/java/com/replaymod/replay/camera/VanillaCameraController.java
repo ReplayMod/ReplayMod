@@ -54,8 +54,8 @@ public class VanillaCameraController implements CameraController {
                 direction.x * yawSin + direction.z * yawCos
         );
         // Adjust for current speed
-        // We transform speed to blocks per second: x->2^(x/300)
-        direction.mul(Math.pow(2, speed / 300d));
+        // We transform speed to blocks per second: x->2^(x/300+1)
+        direction.mul(Math.pow(2, speed / 300d + 1));
         // Adjust for time passed
         direction.mul(partialTicksPassed / 20);
         // Actually move
