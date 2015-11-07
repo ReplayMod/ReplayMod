@@ -9,12 +9,10 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.TeeOutputStream;
 import org.lwjgl.util.ReadableDimension;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +27,8 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
     private final WritableByteChannel channel;
     private final String commandArgs;
     private volatile boolean aborted;
+
+    private ByteArrayOutputStream ffmpegLog = new ByteArrayOutputStream(4096);
 
     public VideoWriter(final RenderSettings settings) throws IOException {
         this.settings = settings;
@@ -47,7 +47,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         System.out.println("Starting " + settings.getExportCommand() + " with args: " + commandArgs);
         String[] cmdline = new CommandLine(executable).addArguments(commandArgs).toStrings();
         process = new ProcessBuilder(cmdline).directory(outputFolder).start();
-        OutputStream exportLogOut = new FileOutputStream("export.log");
+        OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream("export.log"), ffmpegLog);
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();
         outputStream = process.getOutputStream();
@@ -109,5 +109,16 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
 
     public void abort() {
         aborted = true;
+    }
+
+    public File getVideoFile() {
+        String log = ffmpegLog.toString();
+        for (String line : log.split("\n")) {
+            if (line.startsWith("Output #0")) {
+                String fileName = line.substring(line.indexOf(", to '") + 6, line.lastIndexOf('\''));
+                return new File(settings.getOutputFile().getParentFile(), fileName);
+            }
+        }
+        throw new IllegalStateException("No output file found.");
     }
 }

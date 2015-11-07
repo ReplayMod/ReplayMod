@@ -4,9 +4,11 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.RenderSettings;
+import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.metadata.MetadataInjector;
@@ -216,7 +218,7 @@ public class VideoRenderer implements RenderInfo {
 
         ReplayMod.soundHandler.playRenderSuccessSound();
 
-        mc.displayGuiScreen(null);
+        new GuiRenderingDone(ReplayModRender.instance, videoWriter.getVideoFile(), totalFrames, settings).display();
     }
 
     private void tick() {

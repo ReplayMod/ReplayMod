@@ -3,6 +3,7 @@ package com.replaymod.extras;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.extras.playeroverview.PlayerOverview;
 import com.replaymod.extras.urischeme.UriSchemeExtra;
+import com.replaymod.extras.youtube.YoutubeUpload;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -24,6 +25,7 @@ public class ReplayModExtras {
     private static final List<Class<? extends Extra>> builtin = Arrays.asList(
             PlayerOverview.class,
             UriSchemeExtra.class,
+            YoutubeUpload.class,
             FullBrightness.class,
             HotkeyButtons.class,
             LocalizationExtra.class,
