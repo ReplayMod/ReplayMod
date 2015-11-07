@@ -39,10 +39,44 @@ public class OffsetGuiRenderer implements GuiRenderer {
     @NonNull
     private final ReadableDimension size;
 
+    private final boolean strict;
+
+    /**
+     * Creates a new strict offset gui renderer with the same settings as the supplied one.
+     * @see #OffsetGuiRenderer(GuiRenderer, ReadablePoint, ReadableDimension, boolean)
+     * @param renderer The renderer to copy from
+     */
+    public OffsetGuiRenderer(OffsetGuiRenderer renderer) {
+        this(renderer.renderer, renderer.position, renderer.size, true);
+    }
+
+    /**
+     * Create a new offset GUI renderer. All calls to this renderer are forwarded to the parent
+     * renderer with coordinates offset by the specified position.
+     * This also ensures that drawing happens within the specified bounds.
+     * @param renderer The parent renderer
+     * @param position The position of this renderer within the parent (used as is, not copied)
+     * @param size The size of the drawable area (used as is, not copied)
+     */
     public OffsetGuiRenderer(GuiRenderer renderer, ReadablePoint position, ReadableDimension size) {
+        this(renderer, position, size, true);
+    }
+
+
+    /**
+     * Create a new offset GUI renderer. All calls to this renderer are forwarded to the parent
+     * renderer with coordinates offset by the specified position.
+     * If strict is {@code true}, this also ensures that drawing happens within the specified bounds.
+     * @param renderer The parent renderer
+     * @param position The position of this renderer within the parent (used as is, not copied)
+     * @param size The size of the drawable area (used as is, not copied)
+     * @param strict Whether drawing should be forced to be within the drawable area
+     */
+    public OffsetGuiRenderer(GuiRenderer renderer, ReadablePoint position, ReadableDimension size, boolean strict) {
         this.renderer = renderer;
         this.position = position;
         this.size = size;
+        this.strict = strict;
     }
 
     @Override
@@ -58,6 +92,7 @@ public class OffsetGuiRenderer implements GuiRenderer {
 
     @Override
     public void setDrawingArea(int x, int y, int width, int height) {
+        if (!strict) return;
         int x2 = x + width;
         int y2 = y + height;
         // Convert and clamp top and left border

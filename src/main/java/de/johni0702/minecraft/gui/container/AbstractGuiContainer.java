@@ -150,19 +150,22 @@ public abstract class AbstractGuiContainer<T extends AbstractGuiContainer<T>>
         }
         for (final Map.Entry<GuiElement, Pair<ReadablePoint, ReadableDimension>> e : layedOutElements.entrySet()) {
             GuiElement element = e.getKey();
+            boolean strict;
             if (element instanceof ComposedGuiElement) {
                 if (((ComposedGuiElement) element).getMaxLayer() < renderInfo.layer) {
                     continue;
                 }
+                strict = renderInfo.layer == 0;
             } else {
                 if (element.getLayer() != renderInfo.layer) {
                     continue;
                 }
+                strict = true;
             }
             final ReadablePoint ePosition = e.getValue().getLeft();
             final ReadableDimension eSize = e.getValue().getRight();
             try {
-                OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, ePosition, eSize);
+                OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, ePosition, eSize, strict);
                 eRenderer.startUsing();
                 e.getKey().draw(eRenderer, eSize, renderInfo.offsetMouse(ePosition.getX(), ePosition.getY())
                         .layer(renderInfo.getLayer() - e.getKey().getLayer()));
