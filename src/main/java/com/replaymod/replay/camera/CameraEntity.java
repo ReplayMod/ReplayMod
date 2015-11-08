@@ -11,6 +11,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.item.EntityItemFrame;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.stats.StatFileWriter;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
@@ -214,7 +217,20 @@ public class CameraEntity extends EntityPlayerSP {
             long timePassed = now - lastControllerUpdate;
             cameraController.update(timePassed / 50f);
             lastControllerUpdate = now;
+
+            if (mc.gameSettings.keyBindAttack.isPressed() || mc.gameSettings.keyBindUseItem.isPressed()) {
+                if (canSpectate(mc.pointedEntity)) {
+                    ReplayModReplay.instance.getReplayHandler().spectateEntity(mc.pointedEntity);
+                    // Make sure we don't exit right away
+                    mc.gameSettings.keyBindSneak.pressTime = 0;
+                }
+            }
         }
+    }
+
+    public boolean canSpectate(Entity e) {
+        return e != null && !e.isInvisible()
+                && (e instanceof EntityPlayer || e instanceof EntityLiving || e instanceof EntityItemFrame);
     }
 
     @SubscribeEvent

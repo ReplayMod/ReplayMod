@@ -3,6 +3,7 @@ package com.replaymod.replay;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import com.replaymod.replay.camera.CameraEntity;
+import com.replaymod.replay.camera.SpectatorCameraController;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
@@ -206,6 +207,12 @@ public class ReplayHandler {
             e = cameraEntity;
         } else if (e instanceof EntityPlayer) {
             spectating = e.getUniqueID();
+        }
+
+        if (e == cameraEntity) {
+            cameraEntity.setCameraController(ReplayModReplay.instance.createCameraController(cameraEntity));
+        } else {
+            cameraEntity.setCameraController(new SpectatorCameraController(cameraEntity));
         }
 
         if (mc.getRenderViewEntity() != e) {
