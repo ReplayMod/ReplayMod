@@ -92,7 +92,10 @@ public class OffsetGuiRenderer implements GuiRenderer {
 
     @Override
     public void setDrawingArea(int x, int y, int width, int height) {
-        if (!strict) return;
+        if (!strict) {
+            renderer.setDrawingArea(x + position.getX(), y + position.getY(), width, height);
+            return;
+        }
         int x2 = x + width;
         int y2 = y + height;
         // Convert and clamp top and left border
@@ -111,7 +114,7 @@ public class OffsetGuiRenderer implements GuiRenderer {
     public void startUsing() {
         GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        setDrawingArea(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        setDrawingArea(0, 0, size.getWidth(), size.getHeight());
     }
 
     public void stopUsing() {

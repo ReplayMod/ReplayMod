@@ -112,7 +112,12 @@ public abstract class AbstractGuiDropdownMenu<V, T extends AbstractGuiDropdownMe
             ReadablePoint offsetPoint = new Point(0, size.getHeight());
             ReadableDimension offsetSize = new Dimension(size.getWidth(), (fontRenderer.FONT_HEIGHT + 5) *  values.length);
             OffsetGuiRenderer offsetRenderer = new OffsetGuiRenderer(renderer, offsetPoint, offsetSize);
-            dropdown.draw(offsetRenderer, offsetSize, renderInfo.offsetMouse(0, offsetPoint.getY()).layer(0));
+            offsetRenderer.startUsing();
+            try {
+                dropdown.draw(offsetRenderer, offsetSize, renderInfo.offsetMouse(0, offsetPoint.getY()).layer(0));
+            } finally {
+                offsetRenderer.stopUsing();
+            }
         }
     }
 
