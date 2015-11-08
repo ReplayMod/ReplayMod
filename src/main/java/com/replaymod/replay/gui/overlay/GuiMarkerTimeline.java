@@ -1,182 +1,179 @@
 package com.replaymod.replay.gui.overlay;
 
-import de.johni0702.replaystudio.data.Marker;
 import com.replaymod.core.ReplayMod;
-import eu.crushedpixel.replaymod.gui.elements.timelines.GuiTimeline;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import com.replaymod.replay.ReplayHandler;
-import eu.crushedpixel.replaymod.utils.MouseUtils;
-import net.minecraft.client.Minecraft;
+import de.johni0702.minecraft.gui.GuiRenderer;
+import de.johni0702.minecraft.gui.RenderInfo;
+import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
+import de.johni0702.minecraft.gui.function.Draggable;
+import de.johni0702.replaystudio.data.Marker;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.MathHelper;
 import org.lwjgl.util.Point;
+import org.lwjgl.util.ReadableDimension;
+import org.lwjgl.util.ReadablePoint;
 
-import java.awt.*;
-
-public class GuiMarkerTimeline extends GuiTimeline {
-    private static final int KEYFRAME_MARKER_X = 109;
-    private static final int KEYFRAME_MARKER_Y = 20;
+public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> implements Draggable {
+    protected static final int TEXTURE_MARKER_X = 109;
+    protected static final int TEXTURE_MARKER_Y = 20;
+    protected static final int TEXTURE_MARKER_SELECTED_X = 114;
+    protected static final int TEXTURE_MARKER_SELECTED_Y = 20;
+    protected static final int MARKER_SIZE = 5;
 
     private final ReplayHandler replayHandler;
+
+    private ReadableDimension lastSize;
+
     private Marker selectedMarker;
-    private Marker clickedMarker;
-    private long clickTime;
+    private int draggingStartX;
+    private int draggingTimeDelta;
     private boolean dragging;
+    private long lastClickTime;
 
-    public GuiMarkerTimeline(ReplayHandler replayHandler, int positionX, int positionY, int width, int height) {
-        super(positionX, positionY, width, height);
+    public GuiMarkerTimeline(ReplayHandler replayHandler) {
         this.replayHandler = replayHandler;
-        this.showMarkers = false;
     }
 
     @Override
-    public boolean mouseClick(Minecraft mc, int mouseX, int mouseY, int button) {
-        if(!enabled) return false;
+    protected GuiMarkerTimeline getThis() {
+        return this;
+    }
 
-        long time = getTimeAt(mouseX, mouseY);
-        if(time == -1) {
-            return false;
+    @Override
+    public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
+        lastSize = size;
+        super.draw(renderer, size, renderInfo);
+
+        drawMarkers(renderer, size);
+    }
+
+    protected void drawMarkers(GuiRenderer renderer, ReadableDimension size) {
+        renderer.bindTexture(ReplayMod.TEXTURE);
+
+        for (Marker marker : replayHandler.getMarkers()) {
+            drawMarker(renderer, size, marker);
+        }
+    }
+
+    protected void drawMarker(GuiRenderer renderer, ReadableDimension size, Marker marker) {
+        int visibleLength = (int) (getLength() * getZoom());
+        int markerPos = MathHelper.clamp_int(marker.getTime(), getOffset(), getOffset() + visibleLength);
+        double positionInVisible = markerPos - getOffset();
+        double fractionOfVisible = positionInVisible / visibleLength;
+        int markerX = (int) (BORDER_LEFT + fractionOfVisible * (size.getWidth() - BORDER_LEFT - BORDER_RIGHT));
+
+        int textureX, textureY;
+        if (marker.equals(selectedMarker)) {
+            textureX = TEXTURE_MARKER_SELECTED_X;
+            textureY = TEXTURE_MARKER_SELECTED_Y;
+        } else {
+            textureX = TEXTURE_MARKER_X;
+            textureY = TEXTURE_MARKER_Y;
+        }
+        renderer.drawTexturedRect(markerX - 2, size.getHeight() - BORDER_BOTTOM - MARKER_SIZE,
+                textureX, textureY, MARKER_SIZE, MARKER_SIZE);
+    }
+
+
+    /**
+     * Returns the marker which the mouse is at.
+     * @param mouseX X coordinate of the mouse
+     * @param mouseY Y coordinate of the mouse
+     * @return The marker or {@code null} if the mouse isn't on a marker
+     */
+    protected Marker getMarkerAt(int mouseX, int mouseY) {
+        if (lastSize == null) {
+            return null;
+        }
+        Point mouse = new Point(mouseX, mouseY);
+        getContainer().convertFor(this, mouse);
+        mouseX = mouse.getX();
+        mouseY = mouse.getY();
+
+        if (mouseX < 0 || mouseY < lastSize.getHeight() - BORDER_BOTTOM - MARKER_SIZE
+                || mouseX > lastSize.getWidth() || mouseY > lastSize.getHeight() - BORDER_BOTTOM) {
+            return null;
         }
 
-        int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
-
-        Marker closest = null;
-        if(mouseY >= positionY + BORDER_TOP + 10) {
-            long distance = tolerance;
-            for (Marker m : replayHandler.getMarkers()) {
-                long d = Math.abs(m.getTime() - time);
-                if (d <= distance) {
-                    closest = m;
-                    distance = d;
-                }
+        int visibleLength = (int) (getLength() * getZoom());
+        int contentWidth = lastSize.getWidth() - BORDER_LEFT - BORDER_RIGHT;
+        for (Marker marker : replayHandler.getMarkers()) {
+            int markerPos = MathHelper.clamp_int(marker.getTime(), getOffset(), getOffset() + visibleLength);
+            double positionInVisible = markerPos - getOffset();
+            double fractionOfVisible = positionInVisible / visibleLength;
+            int markerX = (int) (BORDER_LEFT + fractionOfVisible * contentWidth);
+            if (Math.abs(markerX - mouseX) < 3) {
+                return marker;
             }
         }
+        return null;
+    }
 
-        //left mouse button
-        if(button == 0) {
-            if(closest == null) { //if no keyframe clicked, jump in time
-                replayHandler.doJump((int) getTimeAt(mouseX, mouseY), true);
-            } else {
-                selectedMarker = closest;
-                // If we clicked on a key frame, then continue monitoring the mouse for movements
-                long currentTime = System.currentTimeMillis();
-                if(currentTime - clickTime < 500) { // if double clicked then open GUI instead
-//                    mc.displayGuiScreen(GuiEditKeyframe.create(closest));
-                    // TODO Edit Gui
-                    this.clickedMarker = null;
-                } else {
-                    this.clickedMarker = closest;
-                    this.dragging = false;
+    @Override
+    public boolean mouseClick(ReadablePoint position, int button) {
+        Marker marker = getMarkerAt(position.getX(), position.getY());
+        if (marker != null) {
+            if (button == 0) { // Left click
+                long now = System.currentTimeMillis();
+                selectedMarker = marker;
+                if (Math.abs(lastClickTime - now) > 500) { // Single click
+                    draggingStartX = position.getX();
+                    draggingTimeDelta = marker.getTime() - getTimeAt(position.getX(), position.getY());
+                } else { // Double click
+                    // TODO: Open Edit GUI
                 }
-                this.clickTime = currentTime;
-            }
-
-        } else if(button == 1) {
-            if(closest != null) {
-                //Jump to clicked Marker Keyframe (explicitly force to jump to this position)
+                lastClickTime = now;
+            } else if (button == 1) { // Right click
+                selectedMarker = null;
                 replayHandler.setTargetPosition(new AdvancedPosition(
-                        closest.getX(), closest.getY(), closest.getZ(),
-                        closest.getPitch(), closest.getYaw(), closest.getRoll()
+                        marker.getX(), marker.getY(), marker.getZ(),
+                        marker.getPitch(), marker.getYaw(), marker.getRoll()
                 ));
-
-                //perform the jump, telling the Overlay not to override the last position value
-                replayHandler.doJump(closest.getTime(), false);
+                replayHandler.doJump(marker.getTime(), false);
             }
+            return true;
         }
-
-        return isHovering(mouseX, mouseY);
+        return super.mouseClick(position, button);
     }
 
     @Override
-    public void mouseDrag(Minecraft mc, int mouseX, int mouseY, int button) {
-        if(!enabled) return;
-        long time = getTimeAt(mouseX, mouseY);
-        if (time != -1) {
-            if (clickedMarker != null) {
-                int tolerance = (int) (2 * Math.round(zoom * timelineLength / width));
-
-                if (dragging || Math.abs(clickedMarker.getTime() - time) > tolerance) {
-                    clickedMarker.setTime((int) time);
-                    dragging = true;
+    public boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall) {
+        if (selectedMarker != null) {
+            int diff = position.getX() - draggingStartX;
+            if (Math.abs(diff) > MARKER_SIZE) {
+                dragging = true;
+            }
+            if (dragging) {
+                int timeAt = getTimeAt(position.getX(), position.getY());
+                if (timeAt != -1) {
+                    selectedMarker.setTime(draggingTimeDelta + timeAt);
                 }
+                return true;
             }
         }
+        return false;
     }
 
     @Override
-    public void mouseRelease(Minecraft mc, int mouseX, int mouseY, int button) {
-        mouseDrag(mc, mouseX, mouseY, button);
-        clickedMarker = null;
-        if (dragging) {
-            replayHandler.saveMarkers();
-            dragging = false;
+    public boolean mouseRelease(ReadablePoint position, int button) {
+        if (selectedMarker != null) {
+            mouseDrag(position, button, 0);
+            if (dragging) {
+                dragging = false;
+                replayHandler.saveMarkers();
+                return true;
+            }
         }
+        return false;
     }
 
     @Override
-    public void draw(Minecraft mc, int mouseX, int mouseY) {
-        super.draw(mc, mouseX, mouseY);
-
-        int bodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
-
-        long leftTime = Math.round(timeStart * timelineLength);
-        long rightTime = Math.round((timeStart + zoom) * timelineLength);
-
-        double segmentLength = timelineLength * zoom;
-
-        drawTimelineCursor(leftTime, rightTime, bodyWidth);
-
-        //Draw Keyframe logos
-        for (Marker marker : replayHandler.getMarkers()) {
-            drawMarker(marker, bodyWidth, leftTime, rightTime, segmentLength);
+    protected String getTooltipText(RenderInfo renderInfo) {
+        Marker marker = getMarkerAt(renderInfo.mouseX, renderInfo.mouseY);
+        if (marker != null) {
+            return marker.getName() != null ? marker.getName() : I18n.format("replaymod.gui.ingame.unnamedmarker");
         }
-    }
-
-    private int getMarkerX(int timestamp, long leftTime, int bodyWidth, double segmentLength) {
-        long positionInSegment = timestamp - leftTime;
-        double fractionOfSegment = positionInSegment / segmentLength;
-        return (int) (positionX + BORDER_LEFT + fractionOfSegment * bodyWidth);
-    }
-
-    @Override
-    public void drawOverlay(Minecraft mc, int mouseX, int mouseY) {
-        boolean drawn = false;
-
-        int bodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
-
-        long leftTime = Math.round(timeStart * timelineLength);
-        double segmentLength = timelineLength * zoom;
-
-        for (Marker marker : replayHandler.getMarkers()) {
-            int markerX = getMarkerX(marker.getTime(), leftTime, bodyWidth, segmentLength);
-
-            if(MouseUtils.isMouseWithinBounds(markerX - 2, this.positionY + BORDER_TOP + 10 + 1, 5, 5)) {
-                Point mouse = MouseUtils.getMousePos();
-                String markerName = marker.getName();
-                if(markerName == null || markerName.isEmpty()) markerName = I18n.format("replaymod.gui.ingame.unnamedmarker");
-                ReplayMod.tooltipRenderer.drawTooltip(mouse.getX(), mouse.getY(), markerName, null, Color.WHITE);
-
-                drawn = true;
-            }
-        }
-
-        if(!drawn) {
-            super.drawOverlay(mc, mouseX, mouseY);
-        }
-    }
-
-    private void drawMarker(Marker marker, int bodyWidth, long leftTime, long rightTime, double segmentLength) {
-        if (marker.getTime() <= rightTime && marker.getTime() >= leftTime) {
-            int textureX = KEYFRAME_MARKER_X;
-            int textureY = KEYFRAME_MARKER_Y;
-            int y = positionY+10;
-
-            int keyframeX = getMarkerX(marker.getTime(), leftTime, bodyWidth, segmentLength);
-
-            if (selectedMarker == marker) {
-                textureX += 5;
-            }
-
-            rect(keyframeX - 2, y + BORDER_TOP, textureX, textureY, 5, 5);
-        }
+        return super.getTooltipText(renderInfo);
     }
 }

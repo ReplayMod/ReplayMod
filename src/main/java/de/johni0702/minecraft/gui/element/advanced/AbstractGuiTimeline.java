@@ -68,13 +68,17 @@ public abstract class AbstractGuiTimeline<T extends AbstractGuiTimeline<T>> exte
         setTooltip(new GuiTooltip(){
             @Override
             public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-                int ms = getTimeAt(renderInfo.mouseX, renderInfo.mouseY);
-                int s = ms / 1000 % 60;
-                int m = ms / 1000 / 60;
-                setText(String.format("%02d:%02d", m, s));
+                setText(getTooltipText(renderInfo));
                 super.draw(renderer, size, renderInfo);
             }
         }.setText("00:00"));
+    }
+
+    protected String getTooltipText(RenderInfo renderInfo) {
+        int ms = getTimeAt(renderInfo.mouseX, renderInfo.mouseY);
+        int s = ms / 1000 % 60;
+        int m = ms / 1000 / 60;
+        return String.format("%02d:%02d", m, s);
     }
 
     @Override

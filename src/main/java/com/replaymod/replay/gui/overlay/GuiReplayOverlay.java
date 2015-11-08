@@ -9,7 +9,6 @@ import de.johni0702.minecraft.gui.container.AbstractGuiOverlay;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiSlider;
 import de.johni0702.minecraft.gui.element.GuiTexturedButton;
-import de.johni0702.minecraft.gui.element.advanced.GuiTimeline;
 import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -26,19 +25,12 @@ import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 
 public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
-    private final ReplayHandler replayHandler;
     public final GuiPanel topPanel = new GuiPanel(this)
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.LEFT).setSpacing(5));
     public final GuiTexturedButton playPauseButton = new GuiTexturedButton().setSize(20, 20)
             .setTexture(ReplayMod.TEXTURE, TEXTURE_SIZE);
     public final GuiSlider speedSlider = new GuiSlider().setSize(100, 20).setSteps(37); // 0.0 is not included
-    public final GuiTimeline timeline = new GuiTimeline(){
-        @Override
-        public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-            setCursorPosition(replayHandler.getReplaySender().currentTimeStamp());
-            super.draw(renderer, size, renderInfo);
-        }
-    }.setSize(Integer.MAX_VALUE, 20);
+    public final GuiMarkerTimeline timeline;
 
     /**
      * This is not used by the replay module itself but may be used by other modules/extras to show
@@ -48,7 +40,13 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(5));
 
     public GuiReplayOverlay(final ReplayHandler replayHandler) {
-        this.replayHandler = replayHandler;
+        timeline = new GuiMarkerTimeline(replayHandler){
+            @Override
+            public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
+                setCursorPosition(replayHandler.getReplaySender().currentTimeStamp());
+                super.draw(renderer, size, renderInfo);
+            }
+        }.setSize(Integer.MAX_VALUE, 20);
 
         topPanel.addElements(null, playPauseButton, speedSlider, timeline);
         setLayout(new CustomLayout<GuiReplayOverlay>() {
