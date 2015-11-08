@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.camera.*;
 import com.replaymod.replay.handler.GuiHandler;
+import de.johni0702.replaystudio.data.Marker;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import de.johni0702.replaystudio.replay.ZipReplayFile;
 import de.johni0702.replaystudio.studio.ReplayStudio;
@@ -52,7 +53,21 @@ public class ReplayModReplay {
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
             @Override
             public void run() {
-
+                if (replayHandler != null ) {
+                    CameraEntity camera = replayHandler.getCameraEntity();
+                    if (camera != null) {
+                        Marker marker = new Marker();
+                        marker.setTime(replayHandler.getReplaySender().currentTimeStamp());
+                        marker.setX(camera.posX);
+                        marker.setY(camera.posY);
+                        marker.setZ(camera.posZ);
+                        marker.setYaw(camera.rotationYaw);
+                        marker.setPitch(camera.rotationPitch);
+                        marker.setRoll(camera.roll);
+                        replayHandler.getMarkers().add(marker);
+                        replayHandler.saveMarkers();
+                    }
+                }
             }
         });
 

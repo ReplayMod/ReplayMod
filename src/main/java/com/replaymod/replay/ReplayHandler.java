@@ -29,10 +29,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Point;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -81,7 +78,7 @@ public class ReplayHandler {
 
         FMLCommonHandler.instance().bus().post(new ReplayOpenEvent.Pre(this));
 
-        markers = replayFile.getMarkers().or(Collections.<Marker>emptySet());
+        markers = new HashSet<>(replayFile.getMarkers().or(Collections.<Marker>emptySet()));
 
         replaySender = new ReplaySender(this, replayFile, asyncMode);
 
