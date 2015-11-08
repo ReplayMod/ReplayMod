@@ -1,5 +1,6 @@
 package com.replaymod.extras;
 
+import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
@@ -66,7 +67,8 @@ public class HotkeyButtons implements Extra {
                 }
             }.setLayout(panelLayout = new GridLayout().setSpacingX(5).setSpacingY(5).setColumns(1));
 
-            for (final KeyBinding keyBinding : mod.getKeyBindingRegistry().getKeyBindings().values()) {
+            final KeyBindingRegistry keyBindingRegistry = mod.getKeyBindingRegistry();
+            for (final KeyBinding keyBinding : keyBindingRegistry.getKeyBindings().values()) {
                 String keyName = "???";
                 try {
                     keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
@@ -79,7 +81,7 @@ public class HotkeyButtons implements Extra {
                                     @Override
                                     public void run() {
                                         keyBinding.pressTime++;
-                                        FMLCommonHandler.instance().fireKeyInput();
+                                        keyBindingRegistry.handleKeyBindings();
                                     }
                                 }),
                                 new GuiLabel().setI18nText(keyBinding.getKeyDescription())
