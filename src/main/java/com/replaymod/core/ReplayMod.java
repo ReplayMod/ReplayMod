@@ -3,17 +3,14 @@ package com.replaymod.core;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.replay.ReplaySender;
 import eu.crushedpixel.replaymod.api.ApiClient;
-import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.handlers.CrosshairRenderHandler;
 import eu.crushedpixel.replaymod.events.handlers.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.handlers.MouseInputHandler;
 import eu.crushedpixel.replaymod.events.handlers.TickAndRenderListener;
 import eu.crushedpixel.replaymod.events.handlers.keyboard.KeyInputHandler;
-import eu.crushedpixel.replaymod.gui.online.GuiReplayDownloading;
 import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.online.authentication.ConfigurationAuthData;
-import eu.crushedpixel.replaymod.online.urischeme.UriScheme;
 import eu.crushedpixel.replaymod.registry.*;
 import eu.crushedpixel.replaymod.renderer.CustomObjectRenderer;
 import eu.crushedpixel.replaymod.renderer.InvisibilityRender;
@@ -47,13 +44,9 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -156,17 +149,6 @@ public class ReplayMod {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        try {
-            UriScheme uriScheme = UriScheme.create();
-            if (uriScheme == null) {
-                throw new UnsupportedOperationException("OS not supported.");
-            }
-            uriScheme.install();
-        } catch (Exception e) {
-            System.err.println("Failed to install UriScheme handler:");
-            e.printStackTrace();
-        }
-
         // Initialize the static OpenGL info field from the minecraft main thread
         // Unfortunately lwjgl uses static methods so we have to make use of magic init calls as well
         OpenGLUtils.init();
@@ -398,67 +380,13 @@ public class ReplayMod {
 
             testIfMoeshAndExitMinecraft();
         }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ServerSocket serverSocket = null;
-                try {
-                    serverSocket = new ServerSocket(UriScheme.PROCESS_PORT);
-                    while (!Thread.interrupted()) {
-                        Socket clientSocket = serverSocket.accept();
-                        try {
-                            InputStream inputStream = clientSocket.getInputStream();
-                            String replayId = IOUtils.toString(inputStream);
-                            final int id = Integer.parseInt(replayId);
-                            mc.addScheduledTask(new Runnable() {
-                                @Override
-                                public void run() {
-                                    loadOnlineReplay(id);
-                                }
-                            });
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            IOUtils.closeQuietly(clientSocket);
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    IOUtils.closeQuietly(serverSocket);
-                }
-            }
-        }, "UriSchemeHandler").start();
-
-        String replayId = System.getenv("replaymod.uri.replayid");
-        if (replayId != null) {
-            final int id = Integer.parseInt(replayId);
-            @SuppressWarnings("unchecked")
-            Queue<ListenableFutureTask> tasks = mc.scheduledTasks;
-            synchronized (mc.scheduledTasks) {
-                tasks.add(ListenableFutureTask.create(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadOnlineReplay(id);
-                    }
-                }, null));
-            }
-        }
     }
 
-    private void loadOnlineReplay(int id) {
-        File file = ReplayMod.downloadedFileHandler.getFileForID(id);
-        if (file == null) {
-            FileInfo info = new FileInfo(id, null, null, null, 0, 0, 0, String.valueOf(id), false, 0);
-            new GuiReplayDownloading(info).display();
-        } else {
-            try {
-                // TODO
-//                ReplayHandler.startReplay(file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    public void runLater(Runnable runnable) {
+        @SuppressWarnings("unchecked")
+        Queue<ListenableFutureTask> tasks = mc.scheduledTasks;
+        synchronized (mc.scheduledTasks) {
+            tasks.add(ListenableFutureTask.create(runnable, null));
         }
     }
 

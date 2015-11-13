@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.online.urischeme;
+package com.replaymod.extras.urischeme;
 
 import net.minecraft.util.Util;
 

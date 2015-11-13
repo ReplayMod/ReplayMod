@@ -2,6 +2,7 @@ package com.replaymod.extras;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.extras.playeroverview.PlayerOverview;
+import com.replaymod.extras.urischeme.UriSchemeExtra;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -22,6 +23,7 @@ public class ReplayModExtras {
 
     private static final List<Class<? extends Extra>> builtin = Arrays.asList(
             PlayerOverview.class,
+            UriSchemeExtra.class,
             FullBrightness.class,
             HotkeyButtons.class
     );

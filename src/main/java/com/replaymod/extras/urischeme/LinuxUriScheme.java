@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.online.urischeme;
+package com.replaymod.extras.urischeme;
 
 import com.replaymod.core.ReplayMod;
 import org.apache.commons.io.FileUtils;
