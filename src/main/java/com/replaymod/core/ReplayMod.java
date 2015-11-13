@@ -13,7 +13,6 @@ import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
 import eu.crushedpixel.replaymod.online.authentication.ConfigurationAuthData;
 import eu.crushedpixel.replaymod.registry.*;
 import eu.crushedpixel.replaymod.renderer.CustomObjectRenderer;
-import eu.crushedpixel.replaymod.renderer.InvisibilityRender;
 import eu.crushedpixel.replaymod.renderer.PathPreviewRenderer;
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.settings.EncodingPreset;
@@ -25,7 +24,6 @@ import eu.crushedpixel.replaymod.utils.TooltipRenderer;
 import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
@@ -48,7 +46,6 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 @Mod(modid = ReplayMod.MOD_ID, useMetadata = true)
@@ -217,11 +214,6 @@ public class ReplayMod {
         KeybindRegistry.initialize();
 
         tooltipRenderer = new TooltipRenderer();
-
-        @SuppressWarnings("unchecked")
-        Map<String, RenderPlayer> skinMap = mc.getRenderManager().skinMap;
-        skinMap.put("default", new InvisibilityRender(mc.getRenderManager()));
-        skinMap.put("slim", new InvisibilityRender(mc.getRenderManager(), true));
 
         Thread localizedResourcePackLoader = new Thread(new Runnable() {
             @Override
