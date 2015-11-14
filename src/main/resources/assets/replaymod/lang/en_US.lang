@@ -232,6 +232,11 @@ replaymod.gui.cancelrender.message=Are you sure that you want to cancel the curr
 #Saving Replay GUI
 replaymod.gui.replaysaving.title=Saving Replay File...
 replaymod.gui.replaysaving.message=Please wait while your recent Replay is being saved.
+replaymod.gui.replaymodified.message=Replay was modified. Would you like to save the changes?
+replaymod.gui.replaymodified.yes=Save Modified Replay
+replaymod.gui.replaymodified.no=Discard Changes
+replaymod.gui.replaymodified.warning1=A Replay named "%1$s" already exist.
+replaymod.gui.replaymodified.warning2=Are you sure you want to replace it?
 
 #Player Overview GUI
 replaymod.gui.playeroverview.visible=Visible

@@ -58,7 +58,7 @@ public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading
                             @Override
                             public void run() {
                                 try {
-                                    mod.getReplayModule().startReplay(replayFile);
+                                    mod.startReplay(replayId, null, null);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }

@@ -136,7 +136,10 @@ public class ReplayModReplay {
     }
 
     public void startReplay(File file) throws IOException {
-        ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file);
+        startReplay(new ZipReplayFile(new ReplayStudio(), file));
+    }
+
+    public void startReplay(ReplayFile replayFile) throws IOException {
         replayHandler = new ReplayHandler(replayFile, true);
     }
 

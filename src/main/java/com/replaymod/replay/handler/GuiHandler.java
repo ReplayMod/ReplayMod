@@ -99,12 +99,12 @@ public class GuiHandler {
         if (event.gui instanceof GuiIngameMenu && mod.getReplayHandler() != null) {
             if (event.button.id == BUTTON_EXIT_REPLAY) {
                 event.button.enabled = false;
+                mc.displayGuiScreen(new GuiMainMenu());
                 try {
                     mod.getReplayHandler().endReplay();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                mc.displayGuiScreen(new GuiMainMenu());
             }
         }
     }
