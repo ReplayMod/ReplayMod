@@ -3,19 +3,15 @@ package eu.crushedpixel.replaymod.events.handlers;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.gui.GuiReplaySettings;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.gui.online.GuiLoginPrompt;
-import eu.crushedpixel.replaymod.gui.online.GuiReplayCenter;
 import eu.crushedpixel.replaymod.gui.replayeditor.GuiReplayEditor;
-import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.studio.VersionValidator;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
-import eu.crushedpixel.replaymod.utils.StringUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
-import net.minecraft.client.gui.inventory.GuiInventory;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiMainMenu;
+import net.minecraft.client.gui.GuiOptions;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent;
@@ -35,70 +31,15 @@ public class GuiEventHandler {
     private GuiButton editorButton;
 
     @SubscribeEvent
-    public void onGui(GuiOpenEvent event) {
-        if(event.gui instanceof GuiMainMenu) {
-            if(ReplayMod.firstMainMenu) {
-                ReplayMod.firstMainMenu = false;
-                if(!ReplayMod.apiClient.isLoggedIn() && ReplaySettings.AdvancedOptions.disableLoginPrompt.getValue() != Boolean.TRUE) {
-                    event.gui = new GuiLoginPrompt(event.gui, event.gui, false).toMinecraft();
-                    return;
-                }
-            } else {
-                try {
-                    mc.timer.timerSpeed = 1;
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        if(!ReplayMod.apiClient.isLoggedIn()) return;
-
-        if(event.gui instanceof GuiChat || event.gui instanceof GuiInventory) {
-            // TODO
-//            if(ReplayHandler.isInReplay()) {
-//                event.setCanceled(true);
-//            }
-        } else if(event.gui instanceof GuiDisconnected) {
-            // TODO
-//            if(!ReplayHandler.isInReplay() && System.currentTimeMillis() - ReplayHandler.lastExit < 5000) {
-//                event.setCanceled(true);
-//            }
-        }
-    }
-
-    @SubscribeEvent
     public void onDraw(DrawScreenEvent e) {
         if(e.gui instanceof GuiMainMenu) {
-            e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.title")+":", 5, 5, Color.WHITE.getRGB());
-            if(ReplayMod.apiClient.isLoggedIn()) {
-                e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedin").toUpperCase(), 5, 15, DARK_GREEN.getRGB());
-            } else {
-                e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedout").toUpperCase(), 5, 15, DARK_RED.getRGB());
-            }
-
-            //if version not up to date, display info string
-            if(!ReplayMod.isLatestModVersion()) {
-                int width = Math.max(100, e.gui.width / 2 - 100 - 10);
-
-                String[] lines = StringUtils.splitStringInMultipleRows(I18n.format("replaymod.gui.outdated"), width);
-
-                int maxLineWidth = 0;
-                for(String line : lines) {
-                    int lineWidth = mc.fontRendererObj.getStringWidth(line);
-                    if(lineWidth > maxLineWidth) {
-                        maxLineWidth = lineWidth;
-                    }
-                }
-
-                Gui.drawRect(2, 77, 5+maxLineWidth+3, 80+(lines.length * 10), 0x80FF0000);
-
-                int i = 0;
-                for(String line : lines) {
-                    mc.fontRendererObj.drawStringWithShadow(line, 5, 80 + (i * 10), Color.WHITE.getRGB());
-                    i++;
-                }
-            }
+            // TODO Do we need this?
+//            e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.title")+":", 5, 5, Color.WHITE.getRGB());
+//            if(ReplayMod.apiClient.isLoggedIn()) {
+//                e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedin").toUpperCase(), 5, 15, DARK_GREEN.getRGB());
+//            } else {
+//                e.gui.drawString(mc.fontRendererObj, I18n.format("replaymod.gui.loggedout").toUpperCase(), 5, 15, DARK_RED.getRGB());
+//            }
 
             if(replayCount == 0) {
                 if(editorButton.isMouseOver()) {
@@ -141,10 +82,6 @@ public class GuiEventHandler {
 
             editorButton = re;
 
-            GuiButton rc = new GuiButton(GuiConstants.REPLAY_CENTER_BUTTON_ID, event.gui.width / 2 - 100, i1 + 3 * 24, I18n.format("replaymod.gui.replaycenter"));
-            rc.enabled = true;
-            buttonList.add(rc);
-
         } else if(event.gui instanceof GuiOptions) {
             buttonList.add(new GuiButton(GuiConstants.REPLAY_OPTIONS_BUTTON_ID,
                     event.gui.width / 2 - 155, event.gui.height / 6 + 48 - 6 - 24, 310, 20, I18n.format("replaymod.gui.settings.title")));
@@ -155,13 +92,7 @@ public class GuiEventHandler {
     public void onButton(ActionPerformedEvent event) {
         if(!event.button.enabled) return;
         if(event.gui instanceof GuiMainMenu) {
-            if(event.button.id == GuiConstants.REPLAY_CENTER_BUTTON_ID) {
-                if(ReplayMod.apiClient.isLoggedIn()) {
-                    mc.displayGuiScreen(new GuiReplayCenter());
-                } else {
-                    mc.displayGuiScreen(new GuiLoginPrompt(event.gui, new GuiReplayCenter(), true).toMinecraft());
-                }
-            } else if(event.button.id == GuiConstants.REPLAY_EDITOR_BUTTON_ID) {
+            if(event.button.id == GuiConstants.REPLAY_EDITOR_BUTTON_ID) {
                 mc.displayGuiScreen(new GuiReplayEditor());
             }
         } else if(event.gui instanceof GuiOptions && event.button.id == GuiConstants.REPLAY_OPTIONS_BUTTON_ID) {

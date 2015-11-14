@@ -1,8 +1,8 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
-import eu.crushedpixel.replaymod.api.replay.holders.Category;
-import eu.crushedpixel.replaymod.api.replay.holders.FileInfo;
+import com.replaymod.online.api.replay.holders.Category;
+import com.replaymod.online.api.replay.holders.FileInfo;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.utils.DurationUtils;
 import net.minecraft.client.Minecraft;

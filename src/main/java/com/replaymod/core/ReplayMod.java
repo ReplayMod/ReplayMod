@@ -2,16 +2,15 @@ package com.replaymod.core;
 
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.replay.ReplaySender;
-import eu.crushedpixel.replaymod.api.ApiClient;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.handlers.CrosshairRenderHandler;
 import eu.crushedpixel.replaymod.events.handlers.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.handlers.MouseInputHandler;
 import eu.crushedpixel.replaymod.events.handlers.TickAndRenderListener;
 import eu.crushedpixel.replaymod.events.handlers.keyboard.KeyInputHandler;
-import eu.crushedpixel.replaymod.localization.LocalizedResourcePack;
-import eu.crushedpixel.replaymod.online.authentication.ConfigurationAuthData;
-import eu.crushedpixel.replaymod.registry.*;
+import eu.crushedpixel.replaymod.registry.KeybindRegistry;
+import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
+import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
 import eu.crushedpixel.replaymod.renderer.CustomObjectRenderer;
 import eu.crushedpixel.replaymod.renderer.PathPreviewRenderer;
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
@@ -24,7 +23,6 @@ import eu.crushedpixel.replaymod.utils.TooltipRenderer;
 import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -99,12 +97,6 @@ public class ReplayMod {
     @Deprecated
     public static UploadedFileHandler uploadedFileHandler;
     @Deprecated
-    public static DownloadedFileHandler downloadedFileHandler;
-    @Deprecated
-    public static FavoritedFileHandler favoritedFileHandler;
-    @Deprecated
-    public static RatedFileHandler ratedFileHandler;
-    @Deprecated
     public static SpectatorRenderer spectatorRenderer;
     @Deprecated
     public static TooltipRenderer tooltipRenderer;
@@ -116,15 +108,9 @@ public class ReplayMod {
     public static SoundHandler soundHandler = new SoundHandler();
     @Deprecated
     public static CrosshairRenderHandler crosshairRenderHandler;
-    @Deprecated
-    public static ApiClient apiClient;
 
     private final KeyBindingRegistry keyBindingRegistry = new KeyBindingRegistry();
     private final SettingsRegistry settingsRegistry = new SettingsRegistry();
-
-    @Getter
-    @Deprecated
-    private static boolean latestModVersion = true;
 
     // The instance of your mod that Forge uses.
     @Instance(MOD_ID)
@@ -153,27 +139,13 @@ public class ReplayMod {
         config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
         settingsRegistry.setConfiguration(config);
-        ConfigurationAuthData authData = new ConfigurationAuthData(config);
-        apiClient = new ApiClient(authData);
-        authData.load(apiClient);
 
         uploadedFileHandler = new UploadedFileHandler(event.getModConfigurationDirectory());
 
         replaySettings = new ReplaySettings();
 
-        downloadedFileHandler = new DownloadedFileHandler();
-        favoritedFileHandler = new FavoritedFileHandler();
-        ratedFileHandler = new RatedFileHandler();
-
         replayFileAppender = new ReplayFileAppender();
         FMLCommonHandler.instance().bus().register(replayFileAppender);
-
-        //check if latest mod version
-        try {
-            latestModVersion = apiClient.isVersionUpToDate(getContainer().getVersion());
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @EventHandler
@@ -214,26 +186,6 @@ public class ReplayMod {
         KeybindRegistry.initialize();
 
         tooltipRenderer = new TooltipRenderer();
-
-        Thread localizedResourcePackLoader = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    @SuppressWarnings("unchecked")
-                    List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
-                    defaultResourcePacks.add(new LocalizedResourcePack());
-                    mc.addScheduledTask(new Runnable() {
-                        @Override
-                        public void run() {
-                            mc.refreshResources();
-                        }
-                    });
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }, "localizedResourcePackLoader");
-        localizedResourcePackLoader.start();
 
         if (System.getProperty("replaymod.render.file") != null) {
             final File file = new File(System.getProperty("replaymod.render.file"));
@@ -380,6 +332,10 @@ public class ReplayMod {
         synchronized (mc.scheduledTasks) {
             tasks.add(ListenableFutureTask.create(runnable, null));
         }
+    }
+
+    public String getVersion() {
+        return getContainer().getVersion();
     }
 
     private void testIfMoeshAndExitMinecraft() {

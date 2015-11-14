@@ -25,7 +25,9 @@ public class ReplayModExtras {
             PlayerOverview.class,
             UriSchemeExtra.class,
             FullBrightness.class,
-            HotkeyButtons.class
+            HotkeyButtons.class,
+            LocalizationExtra.class,
+            VersionChecker.class
     );
 
     private Logger logger;

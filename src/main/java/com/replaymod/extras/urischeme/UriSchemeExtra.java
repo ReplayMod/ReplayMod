@@ -2,6 +2,9 @@ package com.replaymod.extras.urischeme;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.extras.Extra;
+import com.replaymod.online.ReplayModOnline;
+import de.johni0702.minecraft.gui.container.GuiScreen;
+import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -10,6 +13,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class UriSchemeExtra implements Extra {
+    @Mod.Instance(ReplayModOnline.MOD_ID)
+    private static ReplayModOnline module;
+
     private ReplayMod mod;
 
     @Override
@@ -72,17 +78,10 @@ public class UriSchemeExtra implements Extra {
     }
 
     private void loadReplay(int id) {
-        // TODO
-//        File file = ReplayMod.downloadedFileHandler.getFileForID(id);
-//        if (file == null) {
-//            FileInfo info = new FileInfo(id, null, null, null, 0, 0, 0, String.valueOf(id), false, 0);
-//            new GuiReplayDownloading(info).display();
-//        } else {
-//            try {
-//                ReplayHandler.startReplay(file);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
+        try {
+            module.startReplay(id, "Replay #" + id, GuiScreen.wrap(null));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

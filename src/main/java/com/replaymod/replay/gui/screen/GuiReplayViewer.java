@@ -8,9 +8,9 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.container.AbstractGuiContainer;
-import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.element.advanced.GuiResourceLoadingList;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
@@ -49,7 +49,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class GuiReplayViewer extends AbstractGuiScreen<GuiReplayViewer> {
+public class GuiReplayViewer extends GuiScreen {
     private final ReplayModReplay mod;
 
     public final GuiResourceLoadingList<GuiReplayEntry> list = new GuiResourceLoadingList<GuiReplayEntry>(this).onSelectionChanged(new Runnable() {
@@ -245,7 +245,7 @@ public class GuiReplayViewer extends AbstractGuiScreen<GuiReplayViewer> {
         public void run() {
             getMinecraft().displayGuiScreen(null);
         }
-    }).setSize(73, 20).setI18nLabel("replaymod.gui.cancel");;
+    }).setSize(73, 20).setI18nLabel("replaymod.gui.cancel");
 
     public final GuiPanel replayButtonPanel = new GuiPanel().setLayout(new GridLayout().setSpacingX(5).setSpacingY(5)
             .setColumns(2)).addElements(null, loadButton, new GuiPanel() /* Upload */, renameButton, deleteButton);
@@ -260,20 +260,15 @@ public class GuiReplayViewer extends AbstractGuiScreen<GuiReplayViewer> {
 
         setTitle(new GuiLabel().setI18nText("replaymod.gui.replayviewer"));
 
-        setLayout(new CustomLayout<GuiReplayViewer>() {
+        setLayout(new CustomLayout<GuiScreen>() {
             @Override
-            protected void layout(GuiReplayViewer container, int width, int height) {
+            protected void layout(GuiScreen container, int width, int height) {
                 pos(buttonPanel, width / 2 - width(buttonPanel) / 2, height - 10 - height(buttonPanel));
 
                 pos(list, 0, 30);
                 size(list, width, y(buttonPanel) - 10 - y(list));
             }
         });
-    }
-
-    @Override
-    protected GuiReplayViewer getThis() {
-        return this;
     }
 
     private final GuiImage defaultThumbnail = new GuiImage().setTexture(ResourceHelper.getDefaultThumbnail());
@@ -349,29 +344,4 @@ public class GuiReplayViewer extends AbstractGuiScreen<GuiReplayViewer> {
             return Long.compare(o.dateMillis, dateMillis);
         }
     }
-
-// TODO: Online module
-//        if(uploadButton.isMouseOver() && !uploadButton.enabled && loadButton.enabled) {
-//            if(currentFileUploaded) {
-//                ReplayMod.tooltipRenderer.drawTooltip(mouseX, mouseY, I18n.format("replaymod.gui.viewer.alreadyuploaded"), this, Color.RED);
-//            }
-//        }
-//
-//    private boolean currentFileUploaded = false;
-//
-//    public void setButtonsEnabled(boolean b) {
-//        loadButton.enabled = b;
-//
-//        if(b) {
-//            currentFileUploaded = ReplayMod.uploadedFileHandler.isUploaded(replayFileList.get(replayGuiList.selected).first().first());
-//            uploadButton.enabled = !currentFileUploaded;
-//        } else {
-//            uploadButton.enabled = false;
-//        }
-//
-//
-//        renameButton.enabled = b;
-//        deleteButton.enabled = b;
-//    }
-
 }
