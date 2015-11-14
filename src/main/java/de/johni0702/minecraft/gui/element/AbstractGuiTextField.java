@@ -121,7 +121,9 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
         wrapped.textboxKeyTyped(keyChar, keyCode);
         String after = wrapped.getText();
         if (!before.equals(after)) {
-            textChanged.run();
+            if (textChanged != null) {
+                textChanged.run();
+            }
         }
         return true;
     }
