@@ -45,36 +45,38 @@ public abstract class AbstractGuiPopup<T extends AbstractGuiPopup<T>> extends Ab
 
         @Override
         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-            renderer.bindTexture(TEXTURE);
-            int w = size.getWidth();
-            int h = size.getHeight();
+            if (renderInfo.getLayer() == 0) {
+                renderer.bindTexture(TEXTURE);
+                int w = size.getWidth();
+                int h = size.getHeight();
 
-            // Corners
-            renderer.drawTexturedRect(0, 0, u0, v0, 5, 5); // Top left
-            renderer.drawTexturedRect(w - 5, 0, u0 + 12, v0, 5, 5); // Top right
-            renderer.drawTexturedRect(0, h - 5, u0, v0 + 12, 5, 5); // Bottom left
-            renderer.drawTexturedRect(w - 5, h - 5, u0 + 12, v0 + 12, 5, 5); // Bottom right
+                // Corners
+                renderer.drawTexturedRect(0, 0, u0, v0, 5, 5); // Top left
+                renderer.drawTexturedRect(w - 5, 0, u0 + 12, v0, 5, 5); // Top right
+                renderer.drawTexturedRect(0, h - 5, u0, v0 + 12, 5, 5); // Bottom left
+                renderer.drawTexturedRect(w - 5, h - 5, u0 + 12, v0 + 12, 5, 5); // Bottom right
 
-            // Top and bottom edge
-            for (int x = 5; x < w - 5; x += 5) {
-                int rx = Math.min(5, w - 5 - x);
-                renderer.drawTexturedRect(x, 0, u0 + 6, v0, rx, 5); // Top
-                renderer.drawTexturedRect(x, h - 5, u0 + 6, v0 + 12, rx, 5); // Bottom
-            }
-
-            // Left and right edge
-            for (int y = 5; y < w - 5; y += 5) {
-                int ry = Math.min(5, h - 5 - y);
-                renderer.drawTexturedRect(0, y, u0, v0 + 6, 5, ry); // Left
-                renderer.drawTexturedRect(w - 5, y, u0 + 12, v0 + 6, 5, ry); // Right
-            }
-
-            // Center
-            for (int x = 5; x < w - 5; x += 5) {
-                for (int y = 5; y < w - 5; y += 5) {
+                // Top and bottom edge
+                for (int x = 5; x < w - 5; x += 5) {
                     int rx = Math.min(5, w - 5 - x);
+                    renderer.drawTexturedRect(x, 0, u0 + 6, v0, rx, 5); // Top
+                    renderer.drawTexturedRect(x, h - 5, u0 + 6, v0 + 12, rx, 5); // Bottom
+                }
+
+                // Left and right edge
+                for (int y = 5; y < w - 5; y += 5) {
                     int ry = Math.min(5, h - 5 - y);
-                    renderer.drawTexturedRect(x, y, u0 + 6, v0 + 6, rx, ry);
+                    renderer.drawTexturedRect(0, y, u0, v0 + 6, 5, ry); // Left
+                    renderer.drawTexturedRect(w - 5, y, u0 + 12, v0 + 6, 5, ry); // Right
+                }
+
+                // Center
+                for (int x = 5; x < w - 5; x += 5) {
+                    for (int y = 5; y < w - 5; y += 5) {
+                        int rx = Math.min(5, w - 5 - x);
+                        int ry = Math.min(5, h - 5 - y);
+                        renderer.drawTexturedRect(x, y, u0 + 6, v0 + 6, rx, ry);
+                    }
                 }
             }
 
