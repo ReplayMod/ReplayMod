@@ -41,6 +41,7 @@ public class GuiYesNoPopup extends AbstractGuiPopup<GuiYesNoPopup> {
         GuiYesNoPopup popup = new GuiYesNoPopup(container).setBackgroundColor(Colors.DARK_TRANSPARENT)
                 .setLayer(container.getMaxLayer() + 1);
         popup.getInfo().addElements(new VerticalLayout.Data(0.5), info);
+        popup.open();
         return popup;
     }
 

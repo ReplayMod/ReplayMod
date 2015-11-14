@@ -105,10 +105,16 @@ public abstract class AbstractGuiPopup<T extends AbstractGuiPopup<T>> extends Ab
         });
     }
 
-    private final Layout originalLayout;
+    private Layout originalLayout;
+
+    private final GuiContainer container;
 
     public AbstractGuiPopup(GuiContainer container) {
-        super(container);
+        this.container = container;
+    }
+
+    protected void open() {
+        container.addElements(null, this);
         container.setLayout(new CustomLayout(originalLayout = container.getLayout()) {
             @Override
             protected void layout(GuiContainer container, int width, int height) {
