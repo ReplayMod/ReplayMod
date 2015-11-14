@@ -67,10 +67,10 @@ public abstract class AbstractGuiTextField<T extends AbstractGuiTextField<T>>
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
         ReadablePoint position = renderer.getOpenGlOffset();
-        wrapped.xPosition = position.getX();
-        wrapped.yPosition = position.getY();
-        wrapped.width = size.getWidth();
-        wrapped.height = size.getHeight();
+        wrapped.xPosition = position.getX() + 1;
+        wrapped.yPosition = position.getY() + 1;
+        wrapped.width = size.getWidth() - 2;
+        wrapped.height = size.getHeight() - 2;
 
         if (wrapped.text.isEmpty() && !isFocused() && !Strings.isNullOrEmpty(hint)) {
             wrapped.setEnabled(false);
