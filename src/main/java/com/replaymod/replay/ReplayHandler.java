@@ -116,6 +116,7 @@ public class ReplayHandler {
             mc.loadWorld(null);
         }
 
+        mc.timer.timerSpeed = 1;
         overlay.setVisible(false);
 
         // These might have been hidden by the overlay, so we have to make sure they're visible again
