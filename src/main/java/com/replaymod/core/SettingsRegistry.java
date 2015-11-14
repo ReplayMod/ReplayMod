@@ -126,7 +126,7 @@ public class SettingsRegistry {
 
         @Override
         public String getDisplayString() {
-            return I18n.format(displayString);
+            return displayString == null ? null : I18n.format(displayString);
         }
 
         @Override
