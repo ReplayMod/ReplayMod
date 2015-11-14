@@ -38,8 +38,7 @@ import org.lwjgl.util.Dimension;
 
 public class GuiYesNoPopup extends AbstractGuiPopup<GuiYesNoPopup> {
     public static GuiYesNoPopup open(GuiContainer container, GuiElement... info) {
-        GuiYesNoPopup popup = new GuiYesNoPopup(container).setBackgroundColor(Colors.DARK_TRANSPARENT)
-                .setLayer(container.getMaxLayer() + 1);
+        GuiYesNoPopup popup = new GuiYesNoPopup(container).setBackgroundColor(Colors.DARK_TRANSPARENT);
         popup.getInfo().addElements(new VerticalLayout.Data(0.5), info);
         popup.open();
         return popup;
