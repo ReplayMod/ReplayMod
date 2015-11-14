@@ -28,6 +28,15 @@ public class GuiScreen extends AbstractGuiScreen<GuiScreen> {
         return ((GuiScreen.MinecraftGuiScreen) minecraft).getWrapper();
     }
 
+    public static GuiScreen wrap(final net.minecraft.client.gui.GuiScreen minecraft) {
+        return new GuiScreen() {
+            @Override
+            public net.minecraft.client.gui.GuiScreen toMinecraft() {
+                return minecraft;
+            }
+        };
+    }
+
     @Override
     protected GuiScreen getThis() {
         return this;
