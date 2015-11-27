@@ -42,7 +42,9 @@ public class GuiPanel extends AbstractGuiContainer<GuiPanel> {
     @Builder
     GuiPanel(Layout layout, int width , int height, @Singular("with") Map<GuiElement, LayoutData> withElements) {
         setLayout(layout);
-        setSize(width, height);
+        if (width != 0 || height != 0) {
+            setSize(width, height);
+        }
         for (Map.Entry<GuiElement, LayoutData> e : withElements.entrySet()) {
             addElements(e.getValue(), e.getKey());
         }
