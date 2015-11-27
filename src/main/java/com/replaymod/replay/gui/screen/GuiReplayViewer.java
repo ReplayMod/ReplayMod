@@ -165,9 +165,9 @@ public class GuiReplayViewer extends GuiScreen {
                         popup.getYesButton().onClick();
                     }
                 }
-            }).onTextChanged(new Runnable() {
+            }).onTextChanged(new Consumer<String>() {
                 @Override
-                public void run() {
+                public void consume(String obj) {
                     popup.getYesButton().setEnabled(!nameField.getText().isEmpty());
                 }
             });

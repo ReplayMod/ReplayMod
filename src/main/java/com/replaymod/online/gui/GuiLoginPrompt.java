@@ -8,6 +8,7 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiPasswordField;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
+import de.johni0702.minecraft.gui.utils.Consumer;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 
 public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
@@ -72,9 +73,9 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
                 new GuiRegister(apiClient, GuiLoginPrompt.this).display();
             }
         });
-        Runnable contentValidation = new Runnable() {
+        Consumer<String> contentValidation = new Consumer<String>() {
             @Override
-            public void run() {
+            public void consume(String obj) {
                 loginButton.setEnabled(!username.getText().isEmpty() && !password.getText().isEmpty());
             }
         };
