@@ -112,6 +112,9 @@ public abstract class AbstractGuiPopup<T extends AbstractGuiPopup<T>> extends Ab
     private final GuiContainer container;
 
     public AbstractGuiPopup(GuiContainer container) {
+        while (container.getContainer() != null) {
+            container = container.getContainer();
+        }
         this.container = container;
     }
 
