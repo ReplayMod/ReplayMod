@@ -121,7 +121,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
                     draggingStartX = position.getX();
                     draggingTimeDelta = marker.getTime() - getTimeAt(position.getX(), position.getY());
                 } else { // Double click
-                    // TODO: Open Edit GUI
+                    new GuiEditMarkerPopup(replayHandler, getContainer(), marker).open();
                 }
                 lastClickTime = now;
             } else if (button == 1) { // Right click
