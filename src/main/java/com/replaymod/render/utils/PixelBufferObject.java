@@ -48,6 +48,8 @@ public class PixelBufferObject {
         } else {
             glBufferData(GL_PIXEL_PACK_BUFFER, size, usage.gl15);
         }
+
+        unbind();
     }
 
     private int getHandle() {
