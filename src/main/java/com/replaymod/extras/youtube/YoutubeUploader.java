@@ -182,7 +182,14 @@ public class YoutubeUploader {
             MetadataInjector.injectODSMetadata(tmpFile);
 
             return tmpFile;
+
+        } else if (settings.getRenderMethod() == RenderSettings.RenderMethod.EQUIRECTANGULAR) {
+            // if metadata hasn't been injected before, inject it before the upload
+            if (!settings.isInject360Metadata()) {
+                MetadataInjector.inject360Metadata(videoFile);
+            }
         }
+
         return videoFile;
     }
 
