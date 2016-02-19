@@ -1,9 +1,9 @@
 package com.replaymod.replay.camera;
 
-import com.sun.javafx.geom.Vec3d;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
+import org.lwjgl.util.vector.Vector3f;
 
 /**
  * Camera controller performing vanilla creative-like camera movements.
@@ -12,9 +12,9 @@ public class VanillaCameraController implements CameraController {
     private static final int MAX_SPEED = 1000;
     private static final int MIN_SPEED = -1000;
 
-    private static final Vec3d[] DIRECTIONS = new Vec3d[]{
-            new Vec3d(0, 0, 1), new Vec3d(0, 0, -1), new Vec3d(1, 0, 0), new Vec3d(-1, 0, 0),
-            new Vec3d(0, 1, 0), new Vec3d(0, -1, 0),
+    private static final Vector3f[] DIRECTIONS = new Vector3f[]{
+            new Vector3f(0, 0, 1), new Vector3f(0, 0, -1), new Vector3f(1, 0, 0), new Vector3f(-1, 0, 0),
+            new Vector3f(0, 1, 0), new Vector3f(0, -1, 0),
     };
 
     private final KeyBinding[] bindings = new KeyBinding[6];
@@ -37,16 +37,16 @@ public class VanillaCameraController implements CameraController {
     @Override
     public void update(float partialTicksPassed) {
         if (partialTicksPassed == 0) return;
-        Vec3d direction = new Vec3d(0, 0, 0);
+        Vector3f direction = new Vector3f(0, 0, 0);
         for (int i = 0; i < 6; i++) { // First, get movement direction depending on keys pressed
             if (bindings[i].isKeyDown()) {
-                direction.add(DIRECTIONS[i]);
+                Vector3f.add(direction, DIRECTIONS[i], direction);
             }
         }
         if (direction.length() == 0) return;
-        direction.normalize(); // Normalize, so we don't move quicker if we hold down multiple keys
+        direction.normalise(direction); // Normalize, so we don't move quicker if we hold down multiple keys
         double yawRadians = Math.toRadians(camera.rotationYaw);
-        double yawSin = Math.sin(yawRadians), yawCos = Math.cos(yawRadians);
+        float yawSin = (float) Math.sin(yawRadians), yawCos = (float) Math.cos(yawRadians);
         // Rotate by yaw
         direction.set(
                 direction.x * yawCos - direction.z * yawSin,
@@ -55,9 +55,9 @@ public class VanillaCameraController implements CameraController {
         );
         // Adjust for current speed
         // We transform speed to blocks per second: x->2^(x/300+1)
-        direction.mul(Math.pow(2, speed / 300d + 1));
+        direction.scale((float) Math.pow(2, speed / 300d + 1));
         // Adjust for time passed
-        direction.mul(partialTicksPassed / 20);
+        direction.scale(partialTicksPassed / 20);
         // Actually move
         camera.moveCamera(direction.x, direction.y, direction.z);
     }
