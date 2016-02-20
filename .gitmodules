@@ -1,0 +1,3 @@
+[submodule "jGui"]
+	path = jGui
+	url = https://github.com/ReplayMod/jGui
