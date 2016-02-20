@@ -83,7 +83,7 @@ jar {
     from project.mixinRefMap
 
     def shade = {libFiles + files(configurations.compile.findAll { c ->
-        ['mixin', 'isoparser', 'aspectjrt'].any {c.name.startsWith("$it-")}
+        ['mixin', 'isoparser', 'aspectjrt', 'jGui'].any {c.name.startsWith("$it-")}
     })}
 
     def noticeDir = file("$buildDir/NOTICE")
