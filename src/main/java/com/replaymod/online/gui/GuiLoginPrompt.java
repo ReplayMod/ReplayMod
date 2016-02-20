@@ -64,7 +64,7 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
         cancelButton.onClick(new Runnable() {
             @Override
             public void run() {
-                successScreen.display();
+                parent.display();
             }
         });
         registerButton.onClick(new Runnable() {
