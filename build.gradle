@@ -164,7 +164,12 @@ processResources
 }
 
 sourceSets {
-    main { output.resourcesDir = output.classesDir }
+    main {
+        output.resourcesDir = output.classesDir
+        resources {
+            srcDir 'jGui/src/main/resources'
+        }
+    }
 }
 
 reobf.doFirst {
