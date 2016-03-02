@@ -8,16 +8,22 @@ buildscript {
             url = "http://files.minecraftforge.net/maven"
         }
         maven {
+            name = "sponge"
+            url = "https://repo.spongepowered.org/maven"
+        }
+        maven {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.3-SNAPSHOT'
     }
 }
 
-apply plugin: 'forge'
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'org.spongepowered.mixin'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -27,20 +33,13 @@ group= "eu.crushedpixel.replaymod"
 archivesBaseName = "replaymod"
 
 ext {
-    mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
-    mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
     libFiles = fileTree(dir: 'libs', includes: ['*.jar'])
 }
 
 minecraft {
-    version = "1.8-11.14.3.1450"
+    coreMod = 'eu.crushedpixel.replaymod.coremod.LoadingPlugin'
+    version = '1.8-11.14.4.1563'
     runDir = "eclipse"
-    
-    // the mappings can be changed at any time, and must be in the following format.
-    // snapshot_YYYYMMDD   snapshot are built nightly.
-    // stable_#            stables are built at the discretion of the MCP team.
-    // Use non-default mappings at your own risk. they may not allways work.
-    // simply re-run your setup task after changing the mappings to update your workspace.
     mappings = "snapshot_nodoc_20141130"
 }
 
@@ -61,26 +60,10 @@ dependencies {
     compile 'org.aspectj:aspectjrt:1.8.2'
 
     compile project(':jGui')
-
-    // you may put jars on which you depend on in ./libs
-    // or you may define them like so..
-    //compile "some.group:artifact:version:classifier"
-    //compile "some.group:artifact:version"
-      
-    // real examples
-    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
-    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
-
-    // for more info...
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
-
 }
 
 jar {
     dependsOn configurations.compile
-
-    from project.mixinRefMap
 
     def shade = {libFiles + files(configurations.compile.findAll { c ->
         ['mixin', 'isoparser', 'aspectjrt', 'jGui'].any {c.name.startsWith("$it-")}
@@ -115,17 +98,24 @@ jar {
 	    e.printStackTrace();
 	}
     }
-    from langDir
+    from (langDir) {
+        exclude '**/en_US.lang'
+    }
 
     from ({shade().collect { it.isDirectory() ? it : zipTree(it) }}) {
         exclude '**/NOTICE*'
+        // exclude everything taken in from jGui for running the mod in a dev environment
+        exclude { new File(file('jGui/src/main/resources'), it.relativePath.pathString).exists() }
+        eachFile {
+            if (getName() == 'LICENSE.txt') {
+                setName(getFile().getParentFile().getName().split('-')[0] + '-LICENSE.txt')
+            }
+        }
     }
 
-    manifest { 
+    manifest {
          attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
                  'TweakOrder': '0',
-                 'MixinConfigs': 'mixins.replaymod.json,mixins.recording.replaymod.json',
-                 'FMLCorePlugin': 'eu.crushedpixel.replaymod.coremod.LoadingPlugin',
                  'FMLAT': 'replaymod_at.cfg'
 	}
 }
@@ -152,11 +142,11 @@ processResources
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-                
+
         // replace version and mcversion
         expand 'version':project.version + '-' + getGitCommitHash(), 'mcversion':project.minecraft.version
     }
-        
+
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
@@ -165,36 +155,11 @@ processResources
 
 sourceSets {
     main {
-        output.resourcesDir = output.classesDir
         resources {
             srcDir 'jGui/src/main/resources'
         }
+        refMap = "mixins.replaymod.refmap.json"
     }
-}
-
-reobf.doFirst {
-    if (project.mixinSrg.exists()) {
-        addExtraSrgFile project.mixinSrg
-    }
-}
-
-task copySrgs(type: Copy, dependsOn: 'genSrgs') {
-    from plugins.getPlugin('forge').delayedFile('{SRG_DIR}')
-
-    include '**/*.srg'
-    into 'build/srgs'
-}
-
-setupDecompWorkspace.dependsOn copySrgs
-setupDevWorkspace.dependsOn copySrgs
-compileJava.dependsOn copySrgs
-
-compileJava {
-    options.compilerArgs += [
-            "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
-            "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}",
-            "-AreobfSrgFile=${project.file('build/srgs/mcp-srg.srg').canonicalPath}"
-    ]
 }
 
 defaultTasks 'build'
