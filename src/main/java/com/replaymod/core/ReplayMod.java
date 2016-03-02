@@ -366,7 +366,9 @@ public class ReplayMod {
                     .appendSibling(new ChatComponentText("] "))
                     .appendSibling(new ChatComponentTranslation(message, args).setChatStyle(new ChatStyle()
                             .setColor(warning ? EnumChatFormatting.RED : EnumChatFormatting.DARK_GREEN)));
-            mc.thePlayer.addChatMessage(text);
+            // Send message to chat GUI
+            // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
+            mc.ingameGUI.getChatGUI().printChatMessage(text);
         }
     }
 }
