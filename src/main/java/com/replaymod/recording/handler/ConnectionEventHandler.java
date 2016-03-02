@@ -90,8 +90,8 @@ public class ConnectionEventHandler {
 
             core.printInfoToChat("replaymod.chat.recordingstarted");
         } catch(Exception e) {
-            core.printWarningToChat("replaymod.chat.recordingfailed");
             e.printStackTrace();
+            core.printWarningToChat("replaymod.chat.recordingfailed");
         }
     }
 
