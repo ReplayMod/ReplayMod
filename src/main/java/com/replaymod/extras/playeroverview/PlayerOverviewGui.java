@@ -134,7 +134,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
 
     @Override
     public void close() {
-        ReplayModReplay.instance.getReplayHandler().getOverlay().setVisible(false);
+        ReplayModReplay.instance.getReplayHandler().getOverlay().setVisible(true);
         extra.saveHiddenPlayers();
     }
 
