@@ -30,9 +30,11 @@ public class TimelineImpl implements Timeline {
     @Override
     public <T> Optional<T> getValue(Property<T> property, long time) {
         for (Path path : paths) {
-            Optional<T> value = path.getValue(property, time);
-            if (value.isPresent()) {
-                return value;
+            if (path.isActive()) {
+                Optional<T> value = path.getValue(property, time);
+                if (value.isPresent()) {
+                    return value;
+                }
             }
         }
         return Optional.absent();

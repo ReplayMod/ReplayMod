@@ -99,4 +99,18 @@ public interface Path {
      *                             {@code false} if it inherits the one of the second segment
      */
     void remove(Keyframe keyframe, boolean useFirstInterpolator);
+
+    /**
+     * Set whether this path is active.
+     * If this path is not active, it shouldn't be applied to the game during playback.
+     * @param active {@code true} if active, {@code false} otherwise
+     */
+    void setActive(boolean active);
+
+    /**
+     * Returns whether this path is active.
+     * @return {@code true} if active, {@code false} otherwise
+     * @see #setActive(boolean)
+     */
+    boolean isActive();
 }

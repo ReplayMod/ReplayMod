@@ -16,6 +16,7 @@ public class PathImpl implements Path {
     private final Timeline timeline;
     private Map<Long, Keyframe> keyframes = new TreeMap<>();
     private List<PathSegment> segments = new LinkedList<>();
+    private boolean active = true;
 
     public PathImpl(Timeline timeline) {
         this.timeline = timeline;
@@ -162,6 +163,16 @@ public class PathImpl implements Path {
             }
         }
         throw new AssertionError("No segment for keyframe found!");
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
     }
 
     private PathSegment getSegment(long time) {
