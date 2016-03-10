@@ -9,6 +9,7 @@ import de.johni0702.minecraft.gui.element.GuiPasswordField;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.utils.Consumer;
+import de.johni0702.minecraft.gui.utils.Utils;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 
 public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
@@ -24,8 +25,12 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
     private GuiButton cancelButton = new GuiButton(this).setI18nLabel("replaymod.gui.cancel").setSize(150, 20);
     private GuiButton registerButton = new GuiButton(this).setI18nLabel("replaymod.gui.register").setSize(150, 20);
     private GuiTextField username = new GuiTextField(this).setSize(145, 20).setMaxLength(16).setFocused(true);
-    private GuiPasswordField password = new GuiPasswordField(this).setSize(145, 20).setNext(username).setPrevious(username)
+    private GuiPasswordField password = new GuiPasswordField(this).setSize(145, 20)
             .setMaxLength(GuiConstants.MAX_PW_LENGTH);
+
+    {
+        Utils.link(username, password);
+    }
 
     {
         Runnable doLogin = new Runnable() {

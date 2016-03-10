@@ -10,6 +10,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Consumers;
+import de.johni0702.minecraft.gui.utils.Utils;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.utils.EmailAddressUtils;
 import eu.crushedpixel.replaymod.utils.RegexUtils;
@@ -43,10 +44,7 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                         .addElements(data, new GuiLabel().setI18nText("replaymod.gui.register.confirmpw"))
                         .addElements(data, passwordConfirmation = new GuiPasswordField().setMaxLength(GuiConstants.MAX_PW_LENGTH+1).setSize(145, 20))
         );
-        usernameInput.setNext(mailInput)
-                .getNext().setNext(passwordInput)
-                .getNext().setNext(passwordConfirmation)
-                .getNext().setNext(usernameInput);
+        Utils.link(usernameInput, mailInput, passwordInput, passwordConfirmation);
 
         setLayout(new CustomLayout<GuiRegister>() {
             @Override
