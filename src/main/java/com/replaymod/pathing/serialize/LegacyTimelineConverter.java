@@ -56,10 +56,12 @@ public class LegacyTimelineConverter {
     }
 
     private static Timeline convert(PathingRegistry registry, KeyframeSet keyframeSet) {
-        Path path = registry.createTimeline().createPath();
+        Timeline timeline = registry.createTimeline();
+        Path timePath = timeline.createPath();
+        Path positionPath = timeline.createPath();
         for (Keyframe<AdvancedPosition> positionKeyframe : keyframeSet.positionKeyframes) {
             AdvancedPosition value = positionKeyframe.value;
-            com.replaymod.pathing.path.Keyframe keyframe = getKeyframe(path, positionKeyframe.realTimestamp);
+            com.replaymod.pathing.path.Keyframe keyframe = getKeyframe(positionPath, positionKeyframe.realTimestamp);
             keyframe.setValue(CameraProperties.POSITION, Triple.of(value.x, value.y, value.z));
             keyframe.setValue(CameraProperties.ROTATION, Triple.of(value.yaw, value.pitch, value.roll));
             if (value instanceof SpectatorData) {
@@ -68,10 +70,10 @@ public class LegacyTimelineConverter {
         }
         for (Keyframe<TimestampValue> timeKeyframe : keyframeSet.timeKeyframes) {
             TimestampValue value = timeKeyframe.value;
-            com.replaymod.pathing.path.Keyframe keyframe = getKeyframe(path, timeKeyframe.realTimestamp);
+            com.replaymod.pathing.path.Keyframe keyframe = getKeyframe(timePath, timeKeyframe.realTimestamp);
             keyframe.setValue(TimestampProperty.PROPERTY, (int) value.value);
         }
-        return path.getTimeline();
+        return timeline;
     }
 
     private static com.replaymod.pathing.path.Keyframe getKeyframe(Path path, long time) {

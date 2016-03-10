@@ -3,9 +3,7 @@ package com.replaymod.simplepathing.gui;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.pathing.change.AddKeyframe;
-import com.replaymod.pathing.change.CombinedChange;
-import com.replaymod.pathing.change.UpdateKeyframeProperties;
+import com.replaymod.pathing.change.*;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.interpolation.LinearInterpolator;
 import com.replaymod.pathing.path.Keyframe;
@@ -42,6 +40,9 @@ import java.io.IOException;
  * Gui plug-in to the GuiReplayOverlay for simple pathing.
  */
 public class GuiPathing {
+    public static final int TIME_PATH = 0;
+    public static final int POSITION_PATH = 1;
+
     public final GuiTexturedButton playPauseButton = new GuiTexturedButton().setSize(20, 20)
             .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE);
 
@@ -64,7 +65,8 @@ public class GuiPathing {
         public void run(int time) {
             timeline.setCursorPosition(time);
             // TODO: Keyframe selection
-            mod.setSelectedKeyframe(null);
+            mod.setSelectedPositionKeyframe(null);
+            mod.setSelectedTimeKeyframe(null);
         }
     }).setSize(Integer.MAX_VALUE, 20).setLength(30 * 60 * 1000).setMarkers();
 
@@ -182,17 +184,26 @@ public class GuiPathing {
                     player.getFuture().cancel(false);
                 } else {
                     Timeline timeline = mod.getCurrentTimeline();
-                    Path path = timeline.getPaths().get(0);
+                    Path timePath = timeline.getPaths().get(TIME_PATH);
+                    Path positionPath = timeline.getPaths().get(POSITION_PATH);
 
                     // TODO Change interpolator via Change class
                     LinearInterpolator interpolator = new LinearInterpolator();
                     interpolator.registerProperty(TimestampProperty.PROPERTY);
                     interpolator.registerProperty(CameraProperties.POSITION);
                     interpolator.registerProperty(CameraProperties.ROTATION);
-                    for (PathSegment segment : path.getSegments()) {
+                    for (PathSegment segment : timePath.getSegments()) {
                         segment.setInterpolator(interpolator);
                     }
-                    path.updateAll();
+                    interpolator = new LinearInterpolator();
+                    interpolator.registerProperty(TimestampProperty.PROPERTY);
+                    interpolator.registerProperty(CameraProperties.POSITION);
+                    interpolator.registerProperty(CameraProperties.ROTATION);
+                    for (PathSegment segment : positionPath.getSegments()) {
+                        segment.setInterpolator(interpolator);
+                    }
+                    timePath.updateAll();
+                    positionPath.updateAll();
 
                     player.start(timeline);
                 }
@@ -207,10 +218,8 @@ public class GuiPathing {
 
             @Override
             public int getY() {
-                Keyframe keyframe = mod.getSelectedKeyframe();
-                boolean present = keyframe != null
-                        && keyframe.getValue(CameraProperties.POSITION).isPresent();
-                return present ? 60 : 40;
+                Keyframe keyframe = mod.getSelectedPositionKeyframe();
+                return keyframe != null ? 60 : 40;
             }
 
             @Override
@@ -232,10 +241,8 @@ public class GuiPathing {
 
             @Override
             public int getY() {
-                Keyframe keyframe = mod.getSelectedKeyframe();
-                boolean present = keyframe != null
-                        && keyframe.getValue(TimestampProperty.PROPERTY).isPresent();
-                return present ? 100 : 80;
+                Keyframe keyframe = mod.getSelectedTimeKeyframe();
+                return keyframe != null ? 100 : 80;
             }
 
             @Override
@@ -302,42 +309,41 @@ public class GuiPathing {
     private void updateKeyframe(final boolean isTime) {
         int time = timeline.getCursorPosition();
         Timeline timeline = mod.getCurrentTimeline();
-        Path path = timeline.getPaths().get(0);
+        Path path = timeline.getPaths().get(isTime ? TIME_PATH : POSITION_PATH);
 
-        AddKeyframe addChange = null;
         Keyframe keyframe = path.getKeyframe(time);
+        Change change;
         if (keyframe == null) {
-            addChange = AddKeyframe.create(path, time);
-            addChange.apply(timeline);
+            change = AddKeyframe.create(path, time);
+            change.apply(timeline);
             keyframe = path.getKeyframe(time);
+        } else {
+            change = RemoveKeyframe.create(path, keyframe);
+            change.apply(timeline);
+            keyframe = null;
         }
 
-        UpdateKeyframeProperties.Builder builder = UpdateKeyframeProperties.create(path, keyframe);
-        if (isTime) {
-            if (keyframe.getValue(TimestampProperty.PROPERTY).isPresent()) {
-                builder.removeProperty(TimestampProperty.PROPERTY);
-            } else {
+        if (keyframe != null) {
+            UpdateKeyframeProperties.Builder builder = UpdateKeyframeProperties.create(path, keyframe);
+            if (isTime) {
                 builder.setValue(TimestampProperty.PROPERTY, replayHandler.getReplaySender().currentTimeStamp());
-            }
-        } else {
-            if (keyframe.getValue(CameraProperties.POSITION).isPresent()) {
-                builder.removeProperty(CameraProperties.POSITION);
-                builder.removeProperty(CameraProperties.ROTATION);
             } else {
                 CameraEntity camera = replayHandler.getCameraEntity();
                 builder.setValue(CameraProperties.POSITION, Triple.of(camera.posX, camera.posY, camera.posZ));
                 builder.setValue(CameraProperties.ROTATION, Triple.of(camera.rotationYaw, camera.rotationPitch, camera.roll));
             }
-        }
-        UpdateKeyframeProperties updateChange = builder.done();
-        updateChange.apply(timeline);
-        if (addChange == null) {
-            timeline.pushChange(updateChange);
+            UpdateKeyframeProperties updateChange = builder.done();
+            updateChange.apply(timeline);
+            timeline.pushChange(CombinedChange.createFromApplied(change, updateChange));
         } else {
-            timeline.pushChange(CombinedChange.createFromApplied(addChange, updateChange));
+            timeline.pushChange(change);
         }
 
-        mod.setSelectedKeyframe(keyframe);
+        if (isTime) {
+            mod.setSelectedTimeKeyframe(keyframe);
+        } else {
+            mod.setSelectedPositionKeyframe(keyframe);
+        }
     }
 
     public ReplayModSimplePathing getMod() {
