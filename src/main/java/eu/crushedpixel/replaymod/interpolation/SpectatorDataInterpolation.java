@@ -54,7 +54,7 @@ public class SpectatorDataInterpolation {
         }
         thirdPersonInfoInterpolation.prepare();
 
-        //updating the spectator keyframe's position in the world to smoothly continue the path
+        //updating the spectator property's position in the world to smoothly continue the path
         //with non-spectator position keyframes
         for(Pair<Integer, Keyframe<AdvancedPosition>> pair : points) {
             // TODO
@@ -74,7 +74,7 @@ public class SpectatorDataInterpolation {
 //            pair.getValue().getValue().apply(entityPosition);
         }
 
-        //feed the underlying keyframe list with AdvancedPosition Keyframes that are derived from the Spectator Keyframes
+        //feed the underlying property list with AdvancedPosition Keyframes that are derived from the Spectator Keyframes
         underlyingKeyframes = new KeyframeList<AdvancedPosition>();
         int i = 0;
         int firstTimestamp = -1;

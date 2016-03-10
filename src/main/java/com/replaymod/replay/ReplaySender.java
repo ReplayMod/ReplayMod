@@ -3,10 +3,10 @@ package com.replaymod.replay;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import de.johni0702.replaystudio.replay.ReplayFile;
 import eu.crushedpixel.replaymod.holders.PacketData;
-import com.replaymod.core.utils.Restrictions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -189,6 +189,10 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         } else {
             this.terminate = true;
         }
+    }
+
+    public boolean isAsyncMode() {
+        return asyncMode;
     }
 
     /**

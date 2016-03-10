@@ -153,7 +153,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
     public void onGuiClosed() {
         // TODO
 //        if(!save) {
-//            ReplayHandler.removeKeyframe(keyframe);
+//            ReplayHandler.removeKeyframe(property);
 //            ReplayHandler.addKeyframe(keyframeBackup);
 //            ReplayHandler.selectKeyframe(keyframeBackup);
 //        }
@@ -218,8 +218,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //    private static class GuiEditKeyframeMarker extends GuiEditKeyframe<Marker> {
 //        private GuiAdvancedTextField markerNameInput;
 //
-//        public GuiEditKeyframeMarker(Keyframe<Marker> keyframe) {
-//            super(keyframe, ReplayHandler.getMarkerKeyframes());
+//        public GuiEditKeyframeMarker(Keyframe<Marker> property) {
+//            super(property, ReplayHandler.getMarkerKeyframes());
 //        }
 //
 //        @Override
@@ -227,7 +227,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //            super.initGui();
 //
 //            if (!initialized) {
-//                String name = keyframe.getValue().getName();
+//                String name = property.getValue().getName();
 //                if (name == null) name = "";
 //                markerNameInput = new GuiAdvancedTextField(fontRendererObj, 0, 0, 200, 20);
 //                markerNameInput.hint = I18n.format("replaymod.gui.editkeyframe.markername");
@@ -246,7 +246,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //
 //        @Override
 //        public void onGuiClosed() {
-//            keyframe.getValue().setName(markerNameInput.getText().trim());
+//            property.getValue().setName(markerNameInput.getText().trim());
 //            super.onGuiClosed();
 //        }
 //    }
@@ -254,8 +254,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //    private static class GuiEditKeyframeTime extends GuiEditKeyframe<TimestampValue> {
 //        private GuiNumberInput kfMin, kfSec, kfMs;
 //
-//        public GuiEditKeyframeTime(Keyframe<TimestampValue> keyframe) {
-//            super(keyframe, ReplayHandler.getTimeKeyframes());
+//        public GuiEditKeyframeTime(Keyframe<TimestampValue> property) {
+//            super(property, ReplayHandler.getTimeKeyframes());
 //            screenTitle = I18n.format("replaymod.gui.editkeyframe.title.time");
 //        }
 //
@@ -264,7 +264,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //            super.initGui();
 //
 //            if (!initialized) {
-//                int time = keyframe.getValue().asInt();
+//                int time = property.getValue().asInt();
 //
 //                kfMin = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 30, 0d, null, (double)TimestampUtils.timestampToWholeMinutes(time), false, "", 1);
 //                kfSec = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 25, 0d, 59d, (double)TimestampUtils.getSecondsFromTimestamp(time), false, "", 1);
@@ -277,7 +277,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //                KeyframeValueChangeListener listener = new KeyframeValueChangeListener(this) {
 //                    @Override
 //                    public void onValueChange(double value) {
-//                        keyframe.setValue(new TimestampValue(TimestampUtils.calculateTimestamp(
+//                        property.setValue(new TimestampValue(TimestampUtils.calculateTimestamp(
 //                                kfMin.getIntValue(), kfSec.getIntValue(), kfMs.getIntValue())));
 //
 //                        super.onValueChange(value);
@@ -312,8 +312,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //        private GuiNumberInput xCoord, yCoord, zCoord, pitch, yaw, roll;
 //        private ComposedElement posInputs;
 //
-//        public GuiEditKeyframePosition(Keyframe<AdvancedPosition> keyframe) {
-//            super(keyframe, ReplayHandler.getPositionKeyframes());
+//        public GuiEditKeyframePosition(Keyframe<AdvancedPosition> property) {
+//            super(property, ReplayHandler.getPositionKeyframes());
 //            screenTitle = I18n.format("replaymod.gui.editkeyframe.title.pos");
 //        }
 //
@@ -322,7 +322,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //            super.initGui();
 //
 //            if (!initialized) {
-//                AdvancedPosition pos = keyframe.getValue();
+//                AdvancedPosition pos = property.getValue();
 //                xCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getX()), true);
 //                yCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getY()), true);
 //                zCoord = new GuiDraggingNumberInput(fontRendererObj, 0, 0, 100, null, null, RoundUtils.round2Decimals(pos.getZ()), true);
@@ -336,7 +336,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //                KeyframeValueChangeListener listener = new KeyframeValueChangeListener(this) {
 //                    @Override
 //                    public void onValueChange(double value) {
-//                        keyframe.setValue(new AdvancedPosition(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
+//                        property.setValue(new AdvancedPosition(xCoord.getPreciseValue(), yCoord.getPreciseValue(),
 //                                zCoord.getPreciseValue(), new Float(pitch.getPreciseValue()), (float) yaw.getPreciseValue(),
 //                                (float) roll.getPreciseValue()));
 //
@@ -378,7 +378,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //
 //        @Override
 //        protected void drawScreen0() {
-//            if (keyframe.getValue() instanceof SpectatorData) return;
+//            if (property.getValue() instanceof SpectatorData) return;
 //            drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.xpos"), left, virtualY + 27, Color.WHITE.getRGB());
 //            drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.ypos"), left, virtualY + 57, Color.WHITE.getRGB());
 //            drawString(fontRendererObj, I18n.format("replaymod.gui.editkeyframe.zpos"), left, virtualY + 87, Color.WHITE.getRGB());
@@ -413,8 +413,8 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //            }
 //        };
 //
-//        public GuiEditKeyframeSpectator(Keyframe<AdvancedPosition> keyframe) {
-//            super(keyframe, ReplayHandler.getPositionKeyframes());
+//        public GuiEditKeyframeSpectator(Keyframe<AdvancedPosition> property) {
+//            super(property, ReplayHandler.getPositionKeyframes());
 //            screenTitle = I18n.format("replaymod.gui.editkeyframe.title.spec");
 //        }
 //
@@ -423,7 +423,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //            super.initGui();
 //
 //            if (!initialized) {
-//                SpectatorData data = (SpectatorData)keyframe.getValue();
+//                SpectatorData data = (SpectatorData)property.getValue();
 //
 //                perspectiveButton = new GuiToggleButton(0, 0, 0, 200, 20, I18n.format("replaymod.gui.editkeyframe.spec.method")+": ", new String[]{
 //                        I18n.format("replaymod.gui.editkeyframe.spec.method.firstperson"),
@@ -481,7 +481,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //
 //        @Override
 //        public void onGuiClosed() {
-//            SpectatorData data = (SpectatorData)keyframe.getValue();
+//            SpectatorData data = (SpectatorData)property.getValue();
 //            data.setSpectatingMethod(SpectatorData.SpectatingMethod.values()[perspectiveButton.getValue()]);
 //            data.getThirdPersonInfo().shoulderCamDistance = shoulderDistanceInput.getPreciseValue();
 //            data.getThirdPersonInfo().shoulderCamPitchOffset = shoulderPitchOffsetInput.getIntValue();
@@ -506,7 +506,7 @@ public abstract class GuiEditKeyframe<T extends KeyframeValue> extends GuiScreen
 //        @Override
 //        public void onValueChange(double value) {
 //            int realTimestamp = TimestampUtils.calculateTimestamp(parent.min.getIntValue(), parent.sec.getIntValue(), parent.ms.getIntValue());
-//            parent.keyframe.setRealTimestamp(realTimestamp);
+//            parent.property.setRealTimestamp(realTimestamp);
 //
 //            ReplayHandler.fireKeyframesModifyEvent();
 //        }

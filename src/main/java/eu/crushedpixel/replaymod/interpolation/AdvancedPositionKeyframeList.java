@@ -58,11 +58,11 @@ public class AdvancedPositionKeyframeList extends KeyframeList<AdvancedPosition>
 //                TimestampValue timestampValue = ReplayHandler.getTimeKeyframes().getInterpolatedValueForTimestamp(keyframeTimestamp, true);
 //                int replayTimestamp = timestampValue == null ? 0 : timestampValue.asInt();
 //                if(firstTimestamp == -1) firstTimestamp = replayTimestamp;
-//                spectatorInterpolation.addPoint(keyframe, replayTimestamp);
+//                spectatorInterpolation.addPoint(property, replayTimestamp);
 //                if(iterator.hasNext()) {
-//                    keyframe = iterator.next();
-//                    found = keyframe.getValue() instanceof SpectatorData;
-//                    if(!found) completedKeyframes.add(keyframe);
+//                    property = iterator.next();
+//                    found = property.getValue() instanceof SpectatorData;
+//                    if(!found) completedKeyframes.add(property);
 //                } else {
 //                    found = false;
 //                }

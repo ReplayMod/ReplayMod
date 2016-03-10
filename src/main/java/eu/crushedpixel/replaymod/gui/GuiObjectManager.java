@@ -459,7 +459,7 @@ public class GuiObjectManager extends GuiScreen {
 //        public void onValueChange(double value) {
 //            NumberValue numberValue = new NumberValue(value);
 //
-//            //if keyframe selected, overwrite its value
+//            //if property selected, overwrite its value
 //            if(toModify.contains(objectKeyframeTimeline.getSelectedKeyframe())) {
 //                objectKeyframeTimeline.getSelectedKeyframe().setValue(numberValue);
 //            } else {
@@ -488,7 +488,7 @@ public class GuiObjectManager extends GuiScreen {
 //        public void onValueChange(double value) {
 //            Position position = new Position(xInput.getPreciseValue(), yInput.getPreciseValue(), zInput.getPreciseValue());
 //
-//            //if keyframe selected, overwrite its value
+//            //if property selected, overwrite its value
 //            if(toModify.contains(objectKeyframeTimeline.getSelectedKeyframe())) {
 //                objectKeyframeTimeline.getSelectedKeyframe().setValue(position);
 //            } else {

@@ -1,15 +1,15 @@
-package eu.crushedpixel.replaymod.utils;
+package com.replaymod.pathing.serialize;
 
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import eu.crushedpixel.replaymod.assets.CustomImageObject;
-import eu.crushedpixel.replaymod.holders.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.replaymod.pathing.serialize.LegacyTimelineConverter.*;
 
 public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
 
@@ -17,85 +17,105 @@ public class LegacyKeyframeSetAdapter extends TypeAdapter<KeyframeSet[]> {
         super();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public KeyframeSet[] read(JsonReader in) throws IOException {
-        List<KeyframeSet> sets = new ArrayList<KeyframeSet>();
+        List<KeyframeSet> sets = new ArrayList<>();
 
         in.beginArray();
         while(in.hasNext()) { //iterate over all array entries
 
             KeyframeSet set = new KeyframeSet();
-            List<Keyframe> keyframes = new ArrayList<Keyframe>();
+            List<Keyframe> positionKeyframes = new ArrayList<>();
+            List<Keyframe> timeKeyframes = new ArrayList<>();
 
             in.beginObject();
             while(in.hasNext()) { //iterate over all object entries
                 String jsonTag = in.nextName();
 
                 if("name".equals(jsonTag)) {
-                    set.setName(in.nextString());
+                    set.name = in.nextString();
 
                     //TODO: Adapt to new Spectator Keyframe system
                 } else if("positionKeyframes".equals(jsonTag)) {
                     in.beginArray();
                     while(in.hasNext()) {
-                        Keyframe<AdvancedPosition> newKeyframe = new Keyframe<AdvancedPosition>();
+                        Keyframe<AdvancedPosition> newKeyframe = new Keyframe<>();
                         Integer spectatedEntityID = null;
                         in.beginObject();
                         while(in.hasNext()) {
                             String jsonKeyframeTag = in.nextName();
                             if("value".equals(jsonKeyframeTag) || "position".equals(jsonKeyframeTag)) {
                                 SpectatorData spectatorData = new Gson().fromJson(in, SpectatorData.class);
-                                newKeyframe.setValue(spectatorData.normalize());
+                                if (spectatorData.spectatedEntityID != null) {
+                                    newKeyframe.value = spectatorData;
+                                } else {
+                                    newKeyframe.value = new AdvancedPosition();
+                                    newKeyframe.value.x = spectatorData.x;
+                                    newKeyframe.value.y = spectatorData.y;
+                                    newKeyframe.value.z = spectatorData.z;
+                                    newKeyframe.value.yaw = spectatorData.yaw;
+                                    newKeyframe.value.pitch = spectatorData.pitch;
+                                    newKeyframe.value.roll = spectatorData.roll;
+                                }
                             } else if("realTimestamp".equals(jsonKeyframeTag)) {
-                                newKeyframe.setRealTimestamp(in.nextInt());
+                                newKeyframe.realTimestamp = in.nextInt();
                             } else if("spectatedEntityID".equals(jsonKeyframeTag)) {
                                 spectatedEntityID = in.nextInt();
                             }
                         }
 
                         if(spectatedEntityID != null) {
-                            newKeyframe.setValue(newKeyframe.getValue().asSpectatorData(spectatedEntityID));
+                            AdvancedPosition pos = newKeyframe.value;
+                            SpectatorData spectatorData = new SpectatorData();
+                            spectatorData.spectatedEntityID = spectatedEntityID;
+                            newKeyframe.value = spectatorData;
+                            newKeyframe.value.x = pos.x;
+                            newKeyframe.value.y = pos.y;
+                            newKeyframe.value.z = pos.z;
+                            newKeyframe.value.yaw = pos.yaw;
+                            newKeyframe.value.pitch = pos.pitch;
+                            newKeyframe.value.roll = pos.roll;
                         }
 
                         in.endObject();
 
-                        keyframes.add(newKeyframe);
+                        positionKeyframes.add(newKeyframe);
                     }
                     in.endArray();
 
                 } else if("timeKeyframes".equals(jsonTag)) {
                     in.beginArray();
                     while(in.hasNext()) {
-                        Keyframe<TimestampValue> newKeyframe = new Keyframe<TimestampValue>();
+                        Keyframe<TimestampValue> newKeyframe = new Keyframe<>();
 
                         in.beginObject();
                         while(in.hasNext()) {
                             String jsonKeyframeTag = in.nextName();
                             if("timestamp".equals(jsonKeyframeTag)) {
-                                TimestampValue timestampValue = new TimestampValue(in.nextInt());
-                                newKeyframe.setValue(timestampValue);
+                                TimestampValue timestampValue = new TimestampValue();
+                                timestampValue.value = in.nextInt();
+                                newKeyframe.value = timestampValue;
                             } else if("value".equals(jsonKeyframeTag)) {
-                                TimestampValue timestampValue = new Gson().fromJson(in, TimestampValue.class);
-                                newKeyframe.setValue(timestampValue);
+                                newKeyframe.value = new Gson().fromJson(in, TimestampValue.class);
                             } else if("realTimestamp".equals(jsonKeyframeTag)) {
-                                newKeyframe.setRealTimestamp(in.nextInt());
+                                newKeyframe.realTimestamp = in.nextInt();
                             }
                         }
                         in.endObject();
 
-                        keyframes.add(newKeyframe);
+                        timeKeyframes.add(newKeyframe);
                     }
                     in.endArray();
 
                 } else if("customObjects".equals(jsonTag)) {
-                    CustomImageObject[] customObjects = new Gson().fromJson(in, CustomImageObject[].class);
-
-                    set.setCustomObjects(customObjects);
+                    set.customObjects = new Gson().fromJson(in, CustomImageObject[].class);
                 }
             }
             in.endObject();
 
-            set.setKeyframes(keyframes.toArray(new Keyframe[keyframes.size()]));
+            set.positionKeyframes = positionKeyframes.toArray(new Keyframe[positionKeyframes.size()]);
+            set.timeKeyframes = timeKeyframes.toArray(new Keyframe[timeKeyframes.size()]);
             sets.add(set);
         }
         in.endArray();

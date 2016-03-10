@@ -168,38 +168,38 @@ public class ReplayHandler {
 //        // TODO
 //    }
 //
-//    public static void addTimeKeyframe(Keyframe<TimestampValue> keyframe) {
-//        timeKeyframes.add(keyframe);
-//        selectKeyframe(keyframe);
+//    public static void addTimeKeyframe(Keyframe<TimestampValue> property) {
+//        timeKeyframes.add(property);
+//        selectKeyframe(property);
 //
 //        fireKeyframesModifyEvent();
 //    }
 //
-//    public static void addPositionKeyframe(Keyframe<AdvancedPosition> keyframe) {
-//        positionKeyframes.add(keyframe);
-//        selectKeyframe(keyframe);
+//    public static void addPositionKeyframe(Keyframe<AdvancedPosition> property) {
+//        positionKeyframes.add(property);
+//        selectKeyframe(property);
 //
 //        fireKeyframesModifyEvent();
 //    }
 //
 //    @SuppressWarnings("unchecked")
-//    public static void addKeyframe(Keyframe keyframe) {
-//        if(keyframe.getValue() instanceof AdvancedPosition) {
-//            addPositionKeyframe(keyframe);
-//        } else if(keyframe.getValue() instanceof TimestampValue) {
-//            addTimeKeyframe(keyframe);
+//    public static void addKeyframe(Keyframe property) {
+//        if(property.getValue() instanceof AdvancedPosition) {
+//            addPositionKeyframe(property);
+//        } else if(property.getValue() instanceof TimestampValue) {
+//            addTimeKeyframe(property);
 //        }
 //    }
 //
-//    public static void removeKeyframe(Keyframe keyframe) {
-//        if(keyframe.getValue() instanceof AdvancedPosition) {
-//            positionKeyframes.remove(keyframe);
-//        } else if(keyframe.getValue() instanceof TimestampValue) {
-//            timeKeyframes.remove(keyframe);
+//    public static void removeKeyframe(Keyframe property) {
+//        if(property.getValue() instanceof AdvancedPosition) {
+//            positionKeyframes.remove(property);
+//        } else if(property.getValue() instanceof TimestampValue) {
+//            timeKeyframes.remove(property);
 //        }
 //        // TODO Marker
 //
-//        if(keyframe == selectedKeyframe) {
+//        if(property == selectedKeyframe) {
 //            selectKeyframe(null);
 //        }
 //
@@ -485,14 +485,14 @@ public class ReplayHandler {
 //
 //        int prevTime, prevRealTime;
 //
-//        Keyframe<TimestampValue> keyframe = timeKeyframes.last();
+//        Keyframe<TimestampValue> property = timeKeyframes.last();
 //
-//        if(keyframe == null) {
+//        if(property == null) {
 //            prevTime = 0;
 //            prevRealTime = 0;
 //        } else {
-//            prevTime = (int)keyframe.getValue().value;
-//            prevRealTime = keyframe.getRealTimestamp();
+//            prevTime = (int)property.getValue().value;
+//            prevRealTime = property.getRealTimestamp();
 //        }
 //
 //        double speed = ignoreReplaySpeed ? 1 : ReplayMod.overlay.getSpeedSliderValue();

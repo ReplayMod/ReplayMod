@@ -47,7 +47,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 //
 //        //left mouse button
 //        if(button == 0) {
-//            ReplayHandler.selectKeyframe(closest); //can be null, deselects keyframe
+//            ReplayHandler.selectKeyframe(closest); //can be null, deselects property
 //
 //            // If we clicked on a key frame, then continue monitoring the mouse for movements
 //            long currentTime = System.currentTimeMillis();
@@ -241,7 +241,7 @@ public class GuiKeyframeTimeline extends GuiTimeline {
 //                textureY = KEYFRAME_TIME_Y;
 //                y += 5;
 //            } else {
-//                throw new UnsupportedOperationException("Unknown keyframe type: " + kf.getClass());
+//                throw new UnsupportedOperationException("Unknown property type: " + kf.getClass());
 //            }
 //
 //            if (ReplayHandler.isSelected(kf)) {

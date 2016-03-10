@@ -55,8 +55,8 @@ public class PathPreviewRenderer {
 //            AdvancedPosition previousPosition = null;
 //
 //            int i = 0;
-//            for(Keyframe<AdvancedPosition> keyframe : keyframes) {
-//                int timestamp = keyframe.getRealTimestamp();
+//            for(Keyframe<AdvancedPosition> property : keyframes) {
+//                int timestamp = property.getRealTimestamp();
 //                int nextTimestamp = timestamp;
 //
 //                if(i+1 < keyframes.size()) {

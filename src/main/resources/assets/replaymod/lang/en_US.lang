@@ -86,6 +86,9 @@ replaymod.gui.loading=Loading
 replaymod.gui.pleasewait=Please wait
 replaymod.gui.render=Render
 replaymod.gui.iphidden=Server IP Hidden
+replaymod.gui.overwrite=Overwrite
+replaymod.gui.saveas=Save as ...
+replaymod.gui.done=Done
 
 replaymod.gui.original=Original
 replaymod.gui.modified=Modified
@@ -101,6 +104,9 @@ replaymod.gui.pitch=Pitch
 replaymod.gui.yaw=Yaw
 replaymod.gui.roll=Roll
 
+replaymod.gui.camera=Camera
+replaymod.gui.position=Position
+
 replaymod.gui.unknownerror=An unknown error occured
 
 replaymod.gui.exit=Exit Replay
@@ -112,6 +118,8 @@ replaymod.gui.loggedout=LOGGED OUT
 
 replaymod.gui.mainmenu=Main Menu
 replaymod.gui.settings=Settings
+
+replaymod.gui.keyframerepo.delete=Are you sure you want to delete these keyframes?
 
 #Only change these if it's neccessary
 replaymod.gui.replayviewer=Replay Viewer
