@@ -66,7 +66,7 @@ public class TimelineSerialization {
                     writer.name("time").value(keyframe.getTime());
                     writer.name("properties").beginObject();
                     for (Property<?> property : keyframe.getProperties()) {
-                        writer.name((property.getGroup() == null ? "" : property.getGroup().getId()) + property.getId());
+                        writer.name((property.getGroup() == null ? "" : property.getGroup().getId() + ":") + property.getId());
                         writeProperty(writer, keyframe, property);
                     }
                     writer.endObject();
