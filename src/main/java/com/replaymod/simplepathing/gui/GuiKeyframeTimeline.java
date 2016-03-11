@@ -1,7 +1,7 @@
 package com.replaymod.simplepathing.gui;
 
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.path.Keyframe;
 import com.replaymod.pathing.path.Path;
@@ -37,14 +37,14 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
         renderer.bindTexture(ReplayMod.TEXTURE);
 
-        for (Keyframe keyframe : FluentIterable.from(mod.getCurrentTimeline().getPaths()).transformAndConcat(new Function<Path, Iterable<Keyframe>>() {
+        for (Keyframe keyframe : Iterables.concat(Iterables.transform(mod.getCurrentTimeline().getPaths(), new Function<Path, Iterable<Keyframe>>() {
             @Nullable
             @Override
             public Iterable<Keyframe> apply(@Nullable Path input) {
                 assert input != null;
                 return input.getKeyframes();
             }
-        })) {
+        }))) {
             if (keyframe.getTime() >= startTime && keyframe.getTime() <= endTime) {
                 double relativeTime = keyframe.getTime() - startTime;
                 int positonX = BORDER_LEFT + (int) (relativeTime / visibleTime * visibleWidth) - KEYFRAME_SIZE / 2;

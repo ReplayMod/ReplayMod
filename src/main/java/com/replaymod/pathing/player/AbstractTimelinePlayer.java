@@ -1,7 +1,7 @@
 package com.replaymod.pathing.player;
 
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -34,15 +34,15 @@ public abstract class AbstractTimelinePlayer {
     public ListenableFuture<Void> start(Timeline timeline) {
         this.timeline = timeline;
 
-        Iterator<Keyframe> iter = FluentIterable.from(timeline.getPaths())
-                .transformAndConcat(new Function<Path, Iterable<Keyframe>>() {
+        Iterator<Keyframe> iter = Iterables.concat(Iterables.transform(timeline.getPaths(),
+                new Function<Path, Iterable<Keyframe>>() {
             @Nullable
             @Override
             public Iterable<Keyframe> apply(@Nullable Path input) {
                 assert input != null;
                 return input.getKeyframes();
             }
-        }).iterator();
+        })).iterator();
         if (!iter.hasNext()) {
             lastTimestamp = 0;
         } else {
