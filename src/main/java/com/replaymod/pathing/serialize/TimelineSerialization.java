@@ -37,7 +37,7 @@ public class TimelineSerialization {
     }
 
     public Map<String, Timeline> load() throws IOException {
-        Map<String, Timeline> timelines = LegacyTimelineConverter.convert(registry, replayFile);
+        Map<String, Timeline> timelines = new LinkedHashMap<>(LegacyTimelineConverter.convert(registry, replayFile));
 
         Optional<InputStream> optionalIn = replayFile.get(FILE_ENTRY);
         if (optionalIn.isPresent()) {
