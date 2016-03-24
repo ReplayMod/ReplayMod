@@ -5,6 +5,8 @@ import com.google.common.util.concurrent.Futures;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.change.*;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
+import com.replaymod.pathing.interpolation.AbstractInterpolator;
+import com.replaymod.pathing.interpolation.CubicSplineInterpolator;
 import com.replaymod.pathing.interpolation.LinearInterpolator;
 import com.replaymod.pathing.path.Keyframe;
 import com.replaymod.pathing.path.Path;
@@ -188,15 +190,12 @@ public class GuiPathing {
                     Path positionPath = timeline.getPaths().get(POSITION_PATH);
 
                     // TODO Change interpolator via Change class
-                    LinearInterpolator interpolator = new LinearInterpolator();
+                    AbstractInterpolator interpolator = new LinearInterpolator();
                     interpolator.registerProperty(TimestampProperty.PROPERTY);
-                    interpolator.registerProperty(CameraProperties.POSITION);
-                    interpolator.registerProperty(CameraProperties.ROTATION);
                     for (PathSegment segment : timePath.getSegments()) {
                         segment.setInterpolator(interpolator);
                     }
-                    interpolator = new LinearInterpolator();
-                    interpolator.registerProperty(TimestampProperty.PROPERTY);
+                    interpolator = new CubicSplineInterpolator();
                     interpolator.registerProperty(CameraProperties.POSITION);
                     interpolator.registerProperty(CameraProperties.ROTATION);
                     for (PathSegment segment : positionPath.getSegments()) {

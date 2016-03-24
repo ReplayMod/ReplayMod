@@ -60,6 +60,8 @@ dependencies {
     compile 'org.aspectj:aspectjrt:1.8.2'
 
     compile project(':jGui')
+
+    testCompile 'junit:junit:4.11'
 }
 
 jar {
