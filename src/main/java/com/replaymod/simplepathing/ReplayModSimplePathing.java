@@ -6,6 +6,7 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.PathingRegistry;
 import com.replaymod.pathing.impl.TimelineImpl;
 import com.replaymod.pathing.interpolation.AbstractInterpolator;
+import com.replaymod.pathing.interpolation.CubicSplineInterpolator;
 import com.replaymod.pathing.interpolation.Interpolator;
 import com.replaymod.pathing.interpolation.LinearInterpolator;
 import com.replaymod.pathing.path.Keyframe;
@@ -87,6 +88,8 @@ public class ReplayModSimplePathing implements PathingRegistry {
     public void serializeInterpolator(JsonWriter writer, Interpolator interpolator) throws IOException {
         if (interpolator instanceof LinearInterpolator) {
             writer.value("linear");
+        } else if (interpolator instanceof CubicSplineInterpolator) {
+            writer.value("cubic-spline");
         } else {
             throw new IOException("Unknown interpolator type: " + interpolator);
         }
@@ -103,6 +106,10 @@ public class ReplayModSimplePathing implements PathingRegistry {
                 interpolator.registerProperty(CameraProperties.POSITION);
                 interpolator.registerProperty(CameraProperties.ROTATION);
                 return interpolator;
+            case "cubic-spline":
+                interpolator = new CubicSplineInterpolator();
+                interpolator.registerProperty(CameraProperties.POSITION);
+                interpolator.registerProperty(CameraProperties.ROTATION);
             default:
                 throw new IOException("Unknown interpolation type: " + type);
 
