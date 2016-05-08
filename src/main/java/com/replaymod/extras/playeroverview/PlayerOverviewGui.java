@@ -53,7 +53,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
     }.setLabel("").setChecked(false);
 
     {
-        setDrawBackground(false);
+        setBackground(Background.NONE);
         setTitle(new GuiLabel().setI18nText("replaymod.input.playeroverview"));
         setLayout(new CustomLayout<GuiScreen>() {
             @Override

@@ -176,7 +176,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
     private Entry selectedEntry;
 
     {
-        setDrawBackground(false);
+        setBackground(Background.NONE);
         setLayout(new CustomLayout<GuiScreen>() {
             @Override
             protected void layout(GuiScreen container, int width, int height) {
