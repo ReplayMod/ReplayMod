@@ -14,13 +14,10 @@ import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
 import eu.crushedpixel.replaymod.renderer.CustomObjectRenderer;
 import eu.crushedpixel.replaymod.renderer.PathPreviewRenderer;
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
-import eu.crushedpixel.replaymod.settings.EncodingPreset;
-import eu.crushedpixel.replaymod.settings.RenderOptions;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.sound.SoundHandler;
 import eu.crushedpixel.replaymod.utils.OpenGLUtils;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
-import eu.crushedpixel.replaymod.video.rendering.Pipelines;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
@@ -204,6 +201,7 @@ public class ReplayMod {
             String height = System.getProperty("replaymod.render.height");
             String exportCommand = System.getProperty("replaymod.render.exportcommand");
             String exportCommandArgs = System.getProperty("replaymod.render.exportcommandargs");
+            /*
             final RenderOptions options = new RenderOptions();
             if (bitrate != null) {
                 options.setBitrate(bitrate);
@@ -265,6 +263,7 @@ public class ReplayMod {
                 }
             }
             options.setMode(pipelinePreset);
+            */
 
             @SuppressWarnings("unchecked")
             Queue<ListenableFutureTask> tasks = mc.scheduledTasks;

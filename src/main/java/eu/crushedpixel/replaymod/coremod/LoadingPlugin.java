@@ -18,6 +18,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
         MixinBootstrap.init();
         MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.replaymod.json");
         MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.recording.replaymod.json");
+        MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.render.replaymod.json");
 
         CodeSource codeSource = getClass().getProtectionDomain().getCodeSource();
         if (codeSource != null) {
@@ -41,7 +42,6 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
     @Override
     public String[] getASMTransformerClass() {
         return new String[]{
-                ForceChunkLoadingCT.class.getName()
         };
     }
 

@@ -15,6 +15,7 @@ import com.replaymod.pathing.path.Timeline;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.TimestampProperty;
+import com.replaymod.render.gui.GuiRenderSettings;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
@@ -28,6 +29,7 @@ import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
@@ -47,6 +49,14 @@ public class GuiPathing {
 
     public final GuiTexturedButton playPauseButton = new GuiTexturedButton().setSize(20, 20)
             .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE);
+
+    public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
+        @Override
+        public void run() {
+            preparePathsForPlayback();
+            new GuiRenderSettings(replayHandler, mod.getCurrentTimeline()).display();
+        }
+    }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0);
 
     public final GuiTexturedButton positionKeyframeButton = new GuiTexturedButton().setSize(20, 20)
             .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE);
@@ -117,9 +127,15 @@ public class GuiPathing {
             }).addElements(null, timelineTime, timeline, scrollbar, zoomButtonPanel);
 
     public final GuiPanel panel = new GuiPanel()
-            .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5))
-            .addElements(new HorizontalLayout.Data(0.5), playPauseButton, positionKeyframeButton, timeKeyframeButton,
-                    timelinePanel);
+            .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5));
+
+    {
+        panel.addElements(new HorizontalLayout.Data(0.5), playPauseButton);
+        if (Loader.isModLoaded("replaymod-render")) {
+            panel.addElements(new HorizontalLayout.Data(0.5), renderButton);
+        }
+        panel.addElements(new HorizontalLayout.Data(0.5), positionKeyframeButton, timeKeyframeButton, timelinePanel);
+    }
 
     /**
      * IGuiClickable dummy component that is inserted at a high level.
@@ -187,22 +203,8 @@ public class GuiPathing {
                 } else {
                     Timeline timeline = mod.getCurrentTimeline();
                     Path timePath = timeline.getPaths().get(TIME_PATH);
-                    Path positionPath = timeline.getPaths().get(POSITION_PATH);
 
-                    // TODO Change interpolator via Change class
-                    AbstractInterpolator interpolator = new LinearInterpolator();
-                    interpolator.registerProperty(TimestampProperty.PROPERTY);
-                    for (PathSegment segment : timePath.getSegments()) {
-                        segment.setInterpolator(interpolator);
-                    }
-                    interpolator = new CubicSplineInterpolator();
-                    interpolator.registerProperty(CameraProperties.POSITION);
-                    interpolator.registerProperty(CameraProperties.ROTATION);
-                    for (PathSegment segment : positionPath.getSegments()) {
-                        segment.setInterpolator(interpolator);
-                    }
-                    timePath.updateAll();
-                    positionPath.updateAll();
+                    preparePathsForPlayback();
 
                     timePath.setActive(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
                     player.start(timeline);
@@ -296,6 +298,27 @@ public class GuiPathing {
                 }
             }
         });
+    }
+
+    private void preparePathsForPlayback() {
+        Timeline timeline = mod.getCurrentTimeline();
+        Path timePath = timeline.getPaths().get(TIME_PATH);
+        Path positionPath = timeline.getPaths().get(POSITION_PATH);
+
+        // TODO Change interpolator via Change class
+        AbstractInterpolator interpolator = new LinearInterpolator();
+        interpolator.registerProperty(TimestampProperty.PROPERTY);
+        for (PathSegment segment : timePath.getSegments()) {
+            segment.setInterpolator(interpolator);
+        }
+        interpolator = new CubicSplineInterpolator();
+        interpolator.registerProperty(CameraProperties.POSITION);
+        interpolator.registerProperty(CameraProperties.ROTATION);
+        for (PathSegment segment : positionPath.getSegments()) {
+            segment.setInterpolator(interpolator);
+        }
+        timePath.updateAll();
+        positionPath.updateAll();
     }
 
     public void zoomTimeline(double factor) {

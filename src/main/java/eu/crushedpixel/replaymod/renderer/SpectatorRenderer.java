@@ -1,7 +1,7 @@
 package eu.crushedpixel.replaymod.renderer;
 
+import com.replaymod.render.hooks.EntityRendererHandler;
 import eu.crushedpixel.replaymod.utils.SkinProvider;
-import eu.crushedpixel.replaymod.video.EntityRendererHandler;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -57,7 +57,7 @@ public class SpectatorRenderer {
             GlStateManager.translate((float)(-(renderPass * 2 - 1)) * f1, 0.0F, 0.0F);
         }
 
-        ((EntityRendererHandler.GluPerspective) mc.entityRenderer).gluPerspective(mc.entityRenderer.getFOVModifier(partialTicks, false),
+        ((EntityRendererHandler.GluPerspective) mc.entityRenderer).replayModRender_gluPerspective(mc.entityRenderer.getFOVModifier(partialTicks, false),
                 (float) this.mc.displayWidth / (float) this.mc.displayHeight, 0.05F, mc.entityRenderer.farPlaneDistance * 2.0F);
 
         GlStateManager.matrixMode(GL11.GL_MODELVIEW);

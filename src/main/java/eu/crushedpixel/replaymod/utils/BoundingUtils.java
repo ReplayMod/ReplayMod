@@ -1,10 +1,11 @@
 package eu.crushedpixel.replaymod.utils;
 
 import org.lwjgl.util.Dimension;
+import org.lwjgl.util.ReadableDimension;
 
 public class BoundingUtils {
 
-    public static Dimension fitIntoBounds(Dimension toFit, Dimension bounds) {
+    public static Dimension fitIntoBounds(ReadableDimension toFit, ReadableDimension bounds) {
         int width = toFit.getWidth();
         int height = toFit.getHeight();
 

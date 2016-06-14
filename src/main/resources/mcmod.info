@@ -81,6 +81,23 @@
     "logoFile": "replaymod_logo.png",
     "parent": "replaymod",
     "screenshots": [],
+    "dependencies": ["required-after:replaymod-replay", "required-after:replaymod-render"]
+  },
+  {
+    "modid": "replaymod-render",
+    "name": "Replay Mod - Render",
+    "description": "Render Module of the ReplayMod",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://replaymod.com",
+    "updateUrl": "https://replaymod.com/download",
+    "authorList": [
+      "CrushedPixel",
+      "johni0702"
+    ],
+    "logoFile": "replaymod_logo.png",
+    "parent": "replaymod",
+    "screenshots": [],
     "dependencies": ["required-after:replaymod-replay"]
   },
   {

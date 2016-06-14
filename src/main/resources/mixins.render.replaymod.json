@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.replaymod.render.mixin",
+  "mixins": [
+    "MixinEffectRenderer",
+    "MixinEntityRenderer",
+    "MixinRender",
+    "MixinRendererLivingEntity",
+    "MixinRenderGlobal",
+    "MixinRenderManager"
+  ],
+  "server": [],
+  "client": [],
+  "refmap": "mixins.replaymod.refmap.json"
+}
