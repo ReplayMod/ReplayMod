@@ -1,8 +1,8 @@
 package com.replaymod.pathing.player;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.replaymod.pathing.path.Timeline;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 /**

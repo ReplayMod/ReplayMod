@@ -1,30 +1,25 @@
 package eu.crushedpixel.replaymod.studio;
 
 import com.google.common.base.Optional;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.replaymod.pathing.serialize.LegacyKeyframeSetAdapter;
-import de.johni0702.replaystudio.PacketData;
-import de.johni0702.replaystudio.filter.ChangeTimestampFilter;
-import de.johni0702.replaystudio.filter.NeutralizerFilter;
-import de.johni0702.replaystudio.filter.RemoveFilter;
-import de.johni0702.replaystudio.filter.SquashFilter;
-import de.johni0702.replaystudio.io.ReplayOutputStream;
-import de.johni0702.replaystudio.replay.ReplayFile;
-import de.johni0702.replaystudio.replay.ReplayMetaData;
-import de.johni0702.replaystudio.replay.ZipReplayFile;
-import de.johni0702.replaystudio.stream.PacketStream;
-import de.johni0702.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.PacketData;
+import com.replaymod.replaystudio.filter.ChangeTimestampFilter;
+import com.replaymod.replaystudio.filter.NeutralizerFilter;
+import com.replaymod.replaystudio.filter.RemoveFilter;
+import com.replaymod.replaystudio.filter.SquashFilter;
+import com.replaymod.replaystudio.io.ReplayOutputStream;
+import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.replay.ZipReplayFile;
+import com.replaymod.replaystudio.stream.PacketStream;
+import com.replaymod.replaystudio.studio.ReplayStudio;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
-import eu.crushedpixel.replaymod.holders.Keyframe;
-import eu.crushedpixel.replaymod.holders.KeyframeSet;
-import eu.crushedpixel.replaymod.holders.TimestampValue;
 import net.minecraft.client.resources.I18n;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,6 +93,7 @@ public class StudioImplementation {
             }
         }
 
+        /*
         KeyframeSet[] keyframeSets = new GsonBuilder()
                 .registerTypeAdapter(KeyframeSet[].class, new LegacyKeyframeSetAdapter())
                 .create().fromJson(new InputStreamReader(in.get()), KeyframeSet[].class);
@@ -130,6 +126,7 @@ public class StudioImplementation {
         new Gson().toJson(resultSets.toArray(new KeyframeSet[resultSets.size()]), out);
         out.flush();
         out.close();
+        */
     }
 
     public static void connectReplayFiles(List<File> filesToConnect, File outputFile, ProgressUpdateListener updateListener) throws IOException {

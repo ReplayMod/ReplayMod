@@ -1,10 +1,10 @@
 package eu.crushedpixel.replaymod.studio;
 
 import com.google.gson.JsonObject;
-import de.johni0702.replaystudio.PacketData;
-import de.johni0702.replaystudio.Studio;
-import de.johni0702.replaystudio.filter.StreamFilter;
-import de.johni0702.replaystudio.stream.PacketStream;
+import com.replaymod.replaystudio.PacketData;
+import com.replaymod.replaystudio.Studio;
+import com.replaymod.replaystudio.filter.StreamFilter;
+import com.replaymod.replaystudio.stream.PacketStream;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
 
 public class ProgressFilter implements StreamFilter {

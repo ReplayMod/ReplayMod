@@ -25,16 +25,12 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 version = "1.0.5"
-group= "eu.crushedpixel.replaymod"
+group= "com.replaymod"
 archivesBaseName = "replaymod"
-
-ext {
-    libFiles = fileTree(dir: 'libs', includes: ['*.jar'])
-}
 
 minecraft {
     coreMod = 'eu.crushedpixel.replaymod.coremod.LoadingPlugin'
@@ -48,6 +44,9 @@ repositories {
         name = "SpongePowered Repo"
         url = "http://repo.spongepowered.org/maven/"
     }
+    maven {
+        url 'https://repo.spacehq.org/content/repositories/snapshots/'
+    }
 }
 
 dependencies {
@@ -55,21 +54,24 @@ dependencies {
 
     compile 'org.spongepowered:mixin:0.4.3'
     compile 'com.googlecode.mp4parser:isoparser:1.1.7'
-    compile libFiles
 
     compile 'org.aspectj:aspectjrt:1.8.2'
 
     compile project(':jGui')
+    compile project(':ReplayStudio')
 
     testCompile 'junit:junit:4.11'
 }
 
 jar {
-    dependsOn configurations.compile
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    def shade = {libFiles + files(configurations.compile.findAll { c ->
+    dependsOn configurations.compile
+    dependsOn ':ReplayStudio:shadowJar'
+
+    def shade = {files(configurations.compile.findAll { c ->
         ['mixin', 'isoparser', 'aspectjrt', 'jGui'].any {c.name.startsWith("$it-")}
-    })}
+    } + getTasks().getByPath(':ReplayStudio:shadowJar').outputs.files)}
 
     def noticeDir = file("$buildDir/NOTICE")
     doFirst {

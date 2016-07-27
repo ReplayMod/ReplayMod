@@ -1,10 +1,6 @@
 package com.replaymod.render.rendering;
 
-import com.google.common.base.Optional;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.pathing.path.Keyframe;
-import com.replaymod.pathing.path.Path;
-import com.replaymod.pathing.path.Timeline;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.VideoWriter;
@@ -15,6 +11,9 @@ import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.hooks.RenderReplayTimer;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replaystudio.pathing.path.Keyframe;
+import com.replaymod.replaystudio.pathing.path.Path;
+import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.ScaledResolution;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.FutureTask;
 
 import static com.google.common.collect.Iterables.getLast;

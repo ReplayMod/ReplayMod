@@ -1,6 +1,6 @@
 package com.replaymod.online.api.replay.holders;
 
-import de.johni0702.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

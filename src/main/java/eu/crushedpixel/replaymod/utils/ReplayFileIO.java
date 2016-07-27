@@ -2,10 +2,9 @@ package eu.crushedpixel.replaymod.utils;
 
 import com.google.gson.Gson;
 import com.replaymod.recording.packet.PacketSerializer;
-import de.johni0702.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
-import eu.crushedpixel.replaymod.holders.KeyframeSet;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -118,9 +117,6 @@ public class ReplayFileIO {
         FileUtils.write(file, json);
     }
 
-    public static void write(KeyframeSet[] keyframeRegistry, File file) throws IOException {
-        write((Object) keyframeRegistry, file);
-    }
 
     public static void write(ReplayMetaData metaData, File file) throws IOException {
         write((Object) metaData, file);

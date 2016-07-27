@@ -33,7 +33,7 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import de.johni0702.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
 import eu.crushedpixel.replaymod.registry.ResourceHelper;
 import eu.crushedpixel.replaymod.utils.DurationUtils;
 import net.minecraftforge.fml.common.FMLLog;

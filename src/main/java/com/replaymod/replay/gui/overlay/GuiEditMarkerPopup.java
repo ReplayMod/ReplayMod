@@ -10,7 +10,7 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
-import de.johni0702.replaystudio.data.Marker;
+import com.replaymod.replaystudio.data.Marker;
 
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> {
     private final ReplayHandler replayHandler;

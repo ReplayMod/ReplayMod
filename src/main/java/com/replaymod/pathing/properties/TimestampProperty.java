@@ -2,10 +2,11 @@ package com.replaymod.pathing.properties;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.replaymod.pathing.property.AbstractProperty;
-import com.replaymod.pathing.property.PropertyPart;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplaySender;
+import com.replaymod.replaystudio.pathing.property.AbstractProperty;
+import com.replaymod.replaystudio.pathing.property.PropertyPart;
+import com.replaymod.replaystudio.pathing.property.PropertyParts;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -28,8 +29,8 @@ public class TimestampProperty extends AbstractProperty<Integer> {
     }
 
     @Override
-    public void applyToGame(Integer value, @NonNull ReplayHandler replayHandler) {
-        ReplaySender replaySender = replayHandler.getReplaySender();
+    public void applyToGame(Integer value, @NonNull Object replayHandler) {
+        ReplaySender replaySender = ((ReplayHandler) replayHandler).getReplaySender();
         if (replaySender.isAsyncMode()) {
             replaySender.jumpToTime(value);
         } else {

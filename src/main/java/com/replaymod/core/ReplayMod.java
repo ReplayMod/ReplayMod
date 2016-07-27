@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.replay.ReplaySender;
+import com.replaymod.replaystudio.util.I18n;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.handlers.CrosshairRenderHandler;
 import eu.crushedpixel.replaymod.events.handlers.GuiEventHandler;
@@ -132,6 +133,8 @@ public class ReplayMod {
         // Initialize the static OpenGL info field from the minecraft main thread
         // Unfortunately lwjgl uses static methods so we have to make use of magic init calls as well
         OpenGLUtils.init();
+
+        I18n.setI18n(net.minecraft.client.resources.I18n::format);
 
         config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();

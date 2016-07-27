@@ -2,12 +2,12 @@ package eu.crushedpixel.replaymod.studio;
 
 import com.google.common.base.Optional;
 import com.google.gson.JsonObject;
-import de.johni0702.replaystudio.PacketData;
-import de.johni0702.replaystudio.Studio;
-import de.johni0702.replaystudio.filter.StreamFilter;
-import de.johni0702.replaystudio.replay.ReplayFile;
-import de.johni0702.replaystudio.replay.ReplayMetaData;
-import de.johni0702.replaystudio.stream.PacketStream;
+import com.replaymod.replaystudio.PacketData;
+import com.replaymod.replaystudio.Studio;
+import com.replaymod.replaystudio.filter.StreamFilter;
+import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.stream.PacketStream;
 import com.replaymod.core.ReplayMod;
 import org.apache.commons.io.IOUtils;
 import org.spacehq.mc.protocol.packet.ingame.server.ServerResourcePackSendPacket;

@@ -4,10 +4,10 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.pathing.PathingRegistry;
-import com.replaymod.pathing.path.Timeline;
-import com.replaymod.pathing.serialize.TimelineSerialization;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replaystudio.pathing.PathingRegistry;
+import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.*;
@@ -22,7 +22,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import de.johni0702.replaystudio.replay.ReplayFile;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
@@ -31,7 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Gui for loading and saving {@link com.replaymod.pathing.path.Timeline Timelines}.
+ * Gui for loading and saving {@link Timeline Timelines}.
  */
 public class GuiKeyframeRepository extends GuiScreen implements Closeable {
     public final GuiPanel contentPanel = new GuiPanel(this).setBackgroundColor(Colors.DARK_TRANSPARENT);
@@ -171,7 +170,8 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
     private final Map<String, Timeline> timelines = new LinkedHashMap<>();
     private final Timeline currentTimeline;
     private final SettableFuture<Timeline> future = SettableFuture.create();
-    private final TimelineSerialization serialization;
+    private final PathingRegistry registry;
+    private final ReplayFile replayFile;
 
     private Entry selectedEntry;
 
@@ -201,10 +201,11 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
     }
 
     public GuiKeyframeRepository(PathingRegistry registry, ReplayFile replayFile, Timeline currentTimeline) throws IOException {
+        this.registry = registry;
+        this.replayFile = replayFile;
         this.currentTimeline = currentTimeline;
-        this.serialization = new TimelineSerialization(registry, replayFile);
 
-        timelines.putAll(serialization.load());
+        timelines.putAll(replayFile.getTimelines(registry));
 
         for (Map.Entry<String, Timeline> entry : timelines.entrySet()) {
             list.getListPanel().addElements(null, new Entry(entry.getKey()));
@@ -228,7 +229,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
 
     public void save() {
         try {
-            serialization.save(timelines);
+            replayFile.writeTimelines(registry, timelines);
         } catch (IOException e) {
             e.printStackTrace();
             ReplayMod.instance.printWarningToChat("Error saving timelines: " + e.getMessage());

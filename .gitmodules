@@ -1,3 +1,7 @@
 [submodule "jGui"]
 	path = jGui
 	url = https://github.com/ReplayMod/jGui
+
+[submodule "ReplayStudio"]
+	path = ReplayStudio
+	url = https://github.com/ReplayMod/ReplayStudio

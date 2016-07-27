@@ -5,7 +5,7 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import de.johni0702.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.core.utils.Restrictions;
 import eu.crushedpixel.replaymod.utils.ReplayFileIO;
 import io.netty.channel.ChannelHandlerContext;

@@ -1,20 +1,20 @@
 package com.replaymod.pathing.properties;
 
-import com.google.common.base.Optional;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.replaymod.pathing.change.Change;
-import com.replaymod.pathing.property.AbstractProperty;
-import com.replaymod.pathing.property.AbstractPropertyGroup;
-import com.replaymod.pathing.property.PropertyPart;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replaystudio.pathing.change.Change;
+import com.replaymod.replaystudio.pathing.property.AbstractProperty;
+import com.replaymod.replaystudio.pathing.property.AbstractPropertyGroup;
+import com.replaymod.replaystudio.pathing.property.PropertyPart;
+import com.replaymod.replaystudio.pathing.property.PropertyParts;
 import lombok.NonNull;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 /**
@@ -29,8 +29,8 @@ public class CameraProperties extends AbstractPropertyGroup {
     }
 
     @Override
-    public Optional<Callable<ListenableFuture<Change>>> getSetter() {
-        return Optional.absent();
+    public Optional<Callable<Change>> getSetter() {
+        return Optional.empty();
     }
 
     public static class Position extends AbstractProperty<Triple<Double, Double, Double>> {
@@ -49,8 +49,8 @@ public class CameraProperties extends AbstractPropertyGroup {
         }
 
         @Override
-        public void applyToGame(Triple<Double, Double, Double> value, @NonNull ReplayHandler replayHandler) {
-            replayHandler.getCameraEntity().setCameraPosition(value.getLeft(), value.getMiddle(), value.getRight());
+        public void applyToGame(Triple<Double, Double, Double> value, @NonNull Object replayHandler) {
+            ((ReplayHandler) replayHandler).getCameraEntity().setCameraPosition(value.getLeft(), value.getMiddle(), value.getRight());
         }
 
         @Override
@@ -85,8 +85,8 @@ public class CameraProperties extends AbstractPropertyGroup {
         }
 
         @Override
-        public void applyToGame(Triple<Float, Float, Float> value, @NonNull ReplayHandler replayHandler) {
-            replayHandler.getCameraEntity().setCameraRotation(value.getLeft(), value.getMiddle(), value.getRight());
+        public void applyToGame(Triple<Float, Float, Float> value, @NonNull Object replayHandler) {
+            ((ReplayHandler) replayHandler).getCameraEntity().setCameraRotation(value.getLeft(), value.getMiddle(), value.getRight());
         }
 
         @Override

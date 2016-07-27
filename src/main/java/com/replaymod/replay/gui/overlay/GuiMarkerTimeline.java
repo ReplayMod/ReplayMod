@@ -6,7 +6,7 @@ import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
 import de.johni0702.minecraft.gui.function.Draggable;
-import de.johni0702.replaystudio.data.Marker;
+import com.replaymod.replaystudio.data.Marker;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.MathHelper;

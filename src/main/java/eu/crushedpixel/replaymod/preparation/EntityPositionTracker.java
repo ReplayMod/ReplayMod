@@ -1,10 +1,10 @@
 package eu.crushedpixel.replaymod.preparation;
 
-import de.johni0702.replaystudio.PacketData;
-import de.johni0702.replaystudio.io.ReplayInputStream;
-import de.johni0702.replaystudio.replay.ZipReplayFile;
-import de.johni0702.replaystudio.studio.ReplayStudio;
-import de.johni0702.replaystudio.util.PacketUtils;
+import com.replaymod.replaystudio.PacketData;
+import com.replaymod.replaystudio.io.ReplayInputStream;
+import com.replaymod.replaystudio.replay.ZipReplayFile;
+import com.replaymod.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.util.PacketUtils;
 import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spacehq.mc.protocol.data.game.values.entity.player.PositionElement;
