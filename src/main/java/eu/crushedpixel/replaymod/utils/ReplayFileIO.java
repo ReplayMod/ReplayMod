@@ -1,9 +1,8 @@
 package eu.crushedpixel.replaymod.utils;
 
 import com.google.gson.Gson;
-import com.replaymod.recording.packet.PacketSerializer;
-import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
 import eu.crushedpixel.replaymod.assets.CustomObjectRepository;
 import eu.crushedpixel.replaymod.holders.PacketData;
 import io.netty.buffer.ByteBuf;
@@ -27,7 +26,6 @@ import java.util.zip.ZipOutputStream;
 @SuppressWarnings("resource") //Gets handled by finalizer
 public class ReplayFileIO {
 
-    private static final PacketSerializer packetSerializer = new PacketSerializer(EnumPacketDirection.CLIENTBOUND);
     private static final byte[] uniqueBytes = new byte[]{0, 1, 1, 2, 3, 5, 8};
 
     public static File getRenderFolder() throws IOException {
@@ -96,18 +94,6 @@ public class ReplayFileIO {
         } catch(Exception e) {
             return null;
         }
-    }
-
-    public static byte[] serializePacket(Packet packet) {
-        ByteBuf bb = Unpooled.buffer();
-        packetSerializer.encode(EnumConnectionState.PLAY, packet, bb);
-        bb.readerIndex(0);
-        byte[] array = new byte[bb.readableBytes()];
-        bb.readBytes(array);
-
-        bb.readerIndex(0);
-
-        return array;
     }
 
     private static final Gson gson = new Gson();

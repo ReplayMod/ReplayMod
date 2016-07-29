@@ -5,6 +5,7 @@ import com.replaymod.recording.Setting;
 import com.replaymod.recording.gui.GuiRecordingOverlay;
 import com.replaymod.recording.packet.PacketListener;
 import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import io.netty.channel.Channel;
@@ -79,7 +80,13 @@ public class ConnectionEventHandler {
             File currentFile = new File(folder, name + ".mcpr");
             ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
 
-            packetListener = new PacketListener(replayFile, name, worldName, System.currentTimeMillis(), event.isLocal);
+            ReplayMetaData metaData = new ReplayMetaData();
+            metaData.setSingleplayer(event.isLocal);
+            metaData.setServerName(worldName);
+            metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
+            metaData.setDate(System.currentTimeMillis());
+            metaData.setMcVersion(ReplayMod.getMinecraftVersion());
+            packetListener = new PacketListener(replayFile, metaData);
             pipeline.addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
             recordingEventHandler = new RecordingEventHandler(packetListener);

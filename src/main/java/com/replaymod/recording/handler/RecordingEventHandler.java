@@ -376,7 +376,7 @@ public class RecordingEventHandler {
         if (mc.isIntegratedServerRunning()) {
             IntegratedServer server =  mc.getIntegratedServer();
             if (server != null && server.isGamePaused) {
-                packetListener.serverWasPaused = true;
+                packetListener.setServerWasPaused();
             }
         }
     }

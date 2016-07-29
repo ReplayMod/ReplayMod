@@ -1,8 +1,11 @@
 package com.replaymod.core;
 
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.util.I18n;
+import de.johni0702.minecraft.gui.container.GuiScreen;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.handlers.CrosshairRenderHandler;
 import eu.crushedpixel.replaymod.events.handlers.GuiEventHandler;
@@ -326,6 +329,23 @@ public class ReplayMod {
 
             testIfMoeshAndExitMinecraft();
         }
+
+        runLater(() -> {
+            // Restore corrupted replays
+            try {
+                File[] files = getReplayFolder().listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        if (file.isDirectory() && file.getName().endsWith(".mcpr.tmp")) {
+                            File origFile = new File(file.getParentFile(), Files.getNameWithoutExtension(file.getName()));
+                            new RestoreReplayGui(GuiScreen.wrap(mc.currentScreen), origFile).display();
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void runLater(Runnable runnable) {

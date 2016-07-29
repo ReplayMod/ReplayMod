@@ -1,64 +1,137 @@
 package com.replaymod.recording.packet;
 
-import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.core.utils.Restrictions;
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import com.replaymod.replaystudio.data.Marker;
+import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
+import eu.crushedpixel.replaymod.holders.AdvancedPosition;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreenWorking;
-import net.minecraft.client.gui.GuiYesNo;
-import net.minecraft.client.gui.GuiYesNoCallback;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.entity.DataWatcher;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.network.EnumConnectionState;
+import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
-import net.minecraft.network.play.client.C19PacketResourcePackStatus;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.HttpUtil;
-import org.apache.commons.io.FileUtils;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nonnull;
-import java.io.File;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class PacketListener extends DataListener {
+public class PacketListener extends ChannelInboundHandlerAdapter {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
+    private final ReplayFile replayFile;
+
+    private final ResourcePackRecorder resourcePackRecorder;
+
+    private final ExecutorService saveService = Executors.newSingleThreadExecutor();
+    private final DataOutputStream packetOutputStream;
+
+    private ReplayMetaData metaData;
+
     private ChannelHandlerContext context = null;
 
-    private int nextRequestId;
+    private final long startTime;
+    private long lastSentPacket;
+    private long timePassedWhilePaused;
+    private volatile boolean serverWasPaused;
 
-    public PacketListener(ReplayFile file, String name, String worldName, long startTime, boolean singleplayer) throws IOException {
-        super(file, name, worldName, startTime, singleplayer);
+    /**
+     * Used to keep track of the last metadata save job submitted to the save service and
+     * as such prevents unnecessary writes.
+     */
+    private final AtomicInteger lastSaveMetaDataId = new AtomicInteger();
+
+    public PacketListener(ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
+        this.replayFile = replayFile;
+        this.metaData = metaData;
+        this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
+        this.packetOutputStream = new DataOutputStream(replayFile.writePacketData());
+        this.startTime = metaData.getDate();
+
+        saveMetaData();
+    }
+
+    private void saveMetaData() {
+        int id = lastSaveMetaDataId.incrementAndGet();
+        saveService.submit(() -> {
+            if (lastSaveMetaDataId.get() != id) {
+                return; // Another job has been scheduled, it will do the hard work.
+            }
+            try {
+                synchronized (replayFile) {
+                    replayFile.writeMetaData(metaData);
+                }
+            } catch (IOException e) {
+                logger.error("Writing metadata:", e);
+            }
+        });
     }
 
     public void save(Packet packet) {
         try {
             if(packet instanceof S0CPacketSpawnPlayer) {
                 UUID uuid = ((S0CPacketSpawnPlayer) packet).func_179819_c();
-                players.add(uuid.toString());
+                Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
+                uuids.add(uuid.toString());
+                metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
+                saveMetaData();
             }
 
-            dataWriter.writePacket(getPacketData(packet));
+            byte[] bytes = getPacketData(packet);
+            long now = System.currentTimeMillis();
+            saveService.submit(() -> {
+                if (serverWasPaused) {
+                    timePassedWhilePaused = now - startTime - lastSentPacket;
+                    serverWasPaused = false;
+                }
+                int timestamp = (int) (now - startTime - timePassedWhilePaused);
+                lastSentPacket = timestamp;
+                try {
+                    packetOutputStream.writeInt(timestamp);
+                    packetOutputStream.writeInt(bytes.length);
+                    packetOutputStream.write(bytes);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         } catch(Exception e) {
-            e.printStackTrace();
+            logger.error("Writing packet:", e);
+        }
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        metaData.setDuration((int) lastSentPacket);
+        saveMetaData();
+
+        saveService.shutdown();
+        try {
+            saveService.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.error("Waiting for save service termination:", e);
+        }
+
+        synchronized (replayFile) {
+            try {
+                replayFile.save();
+            } catch (IOException e) {
+                logger.error("Saving replay file:", e);
+            }
         }
     }
 
@@ -72,11 +145,8 @@ public class PacketListener extends DataListener {
             }
         }
         this.context = ctx;
-        if(!alive) {
-            super.channelRead(ctx, msg);
-            return;
-        }
-        if(msg instanceof Packet) {
+
+        if (msg instanceof Packet) {
             try {
                 Packet packet = (Packet) msg;
 
@@ -88,29 +158,28 @@ public class PacketListener extends DataListener {
                     }
                 }
 
-                if(packet instanceof S0CPacketSpawnPlayer) {
-                    UUID uuid = ((S0CPacketSpawnPlayer) packet).func_179819_c();
-                    players.add(uuid.toString());
-                }
-
                 if (packet instanceof S48PacketResourcePackSend) {
-                    S48PacketResourcePackSend p = (S48PacketResourcePackSend) packet;
-                    int requestId = handleResourcePack(p);
-                    save(new S48PacketResourcePackSend("replay://" + requestId, ""));
+                    save(resourcePackRecorder.handleResourcePack((S48PacketResourcePackSend) packet));
                     return;
                 }
 
-                dataWriter.writePacket(getPacketData(packet));
+                if (packet instanceof FMLProxyPacket) {
+                    // This packet requires special handling
+                    super.channelRead(ctx, msg);
+                    return;
+                }
+
+                save(packet);
 
                 if (packet instanceof S3FPacketCustomPayload) {
                     S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
                     if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
                         packet = new S40PacketDisconnect(new ChatComponentText("Please update to view this replay."));
-                        dataWriter.writePacket(getPacketData(packet));
+                        save(packet);
                     }
                 }
             } catch(Exception e) {
-                e.printStackTrace();
+                logger.error("Handling packet for recording:", e);
             }
 
         }
@@ -119,7 +188,7 @@ public class PacketListener extends DataListener {
     }
 
     @SuppressWarnings("unchecked")
-    private byte[] getPacketData(Packet packet) {
+    private byte[] getPacketData(Packet packet) throws IOException {
         if(packet instanceof S0FPacketSpawnMob) {
             S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
             if (p.field_149043_l == null) {
@@ -144,155 +213,49 @@ public class PacketListener extends DataListener {
             }
         }
 
-        return ReplayFileIO.serializePacket(packet);
-    }
-
-    public synchronized int handleResourcePack(S48PacketResourcePackSend packet) {
-        final int requestId = nextRequestId++;
-        final NetHandlerPlayClient netHandler = mc.getNetHandler();
-        final NetworkManager netManager = netHandler.getNetworkManager();
-        final String url = packet.func_179783_a();
-        final String hash = packet.func_179784_b();
-
-        if (url.startsWith("level://")) {
-            String levelName = url.substring("level://".length());
-            File savesDir = new File(mc.mcDataDir, "saves");
-            final File levelDir = new File(savesDir, levelName);
-
-            if (levelDir.isFile()) {
-                netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
-                Futures.addCallback(mc.getResourcePackRepository().func_177319_a(levelDir), new FutureCallback() {
-                    @Override
-                    public void onSuccess(Object result) {
-                        recordResourcePack(levelDir, requestId);
-                        netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
-                    }
-
-                    @Override
-                    public void onFailure(@Nonnull Throwable throwable) {
-                        netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.FAILED_DOWNLOAD));
-                    }
-                });
-            } else {
-                netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.FAILED_DOWNLOAD));
-            }
-        } else {
-            final ServerData serverData = mc.getCurrentServerData();
-            if (serverData != null && serverData.getResourceMode() == ServerData.ServerResourceMode.ENABLED) {
-                netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
-                downloadResourcePackFuture(requestId, url, hash);
-            } else if (serverData != null && serverData.getResourceMode() != ServerData.ServerResourceMode.PROMPT) {
-                netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.DECLINED));
-            } else {
-                mc.addScheduledTask(new Runnable() {
-                    @Override
-                    public void run() {
-                        mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
-                            @Override
-                            public void confirmClicked(boolean result, int id) {
-                                if (serverData != null) {
-                                    serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
-                                }
-                                if (result) {
-                                    netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
-                                    downloadResourcePackFuture(requestId, url, hash);
-                                } else {
-                                    netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.DECLINED));
-                                }
-
-                                ServerList.func_147414_b(serverData);
-                                mc.displayGuiScreen(null);
-                            }
-                        }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0));
-                    }
-                });
-            }
+        Integer packetId = EnumConnectionState.PLAY.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
+        if (packetId == null) {
+            throw new IOException("Unknown packet type:" + packet.getClass());
         }
-        return requestId;
+        ByteBuf byteBuf = Unpooled.buffer();
+        PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+        packetBuffer.writeVarIntToBuffer(packetId);
+        packet.writePacketData(packetBuffer);
+
+        byteBuf.readerIndex(0);
+        byte[] array = new byte[byteBuf.readableBytes()];
+        byteBuf.readBytes(array);
+
+        byteBuf.release();
+        return array;
     }
 
-    private void downloadResourcePackFuture(int requestId, String url, final String hash) {
-        Futures.addCallback(downloadResourcePack(requestId, url, hash), new FutureCallback() {
-            @Override
-            public void onSuccess(Object result) {
-                mc.getNetHandler().addToSendQueue(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
-            }
+    public void addMarker() {
+        AdvancedPosition pos = new AdvancedPosition(Minecraft.getMinecraft().getRenderViewEntity());
+        int timestamp = (int) (System.currentTimeMillis() - startTime);
 
-            @Override
-            public void onFailure(@Nonnull Throwable throwable) {
-                mc.getNetHandler().addToSendQueue(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.FAILED_DOWNLOAD));
+        Marker marker = new Marker();
+        marker.setTime(timestamp);
+        marker.setX(pos.getX());
+        marker.setY(pos.getY());
+        marker.setZ(pos.getZ());
+        marker.setYaw((float) pos.getYaw());
+        marker.setPitch((float) pos.getPitch());
+        marker.setRoll((float) pos.getRoll());
+        saveService.submit(() -> {
+            synchronized (replayFile) {
+                try {
+                    Set<Marker> markers = replayFile.getMarkers().or(HashSet::new);
+                    markers.add(marker);
+                    replayFile.writeMarkers(markers);
+                } catch (IOException e) {
+                    logger.error("Writing markers:", e);
+                }
             }
         });
     }
 
-    private ListenableFuture downloadResourcePack(final int requestId, String url, String hash) {
-        final ResourcePackRepository repo = mc.mcResourcePackRepository;
-        String fileName;
-        if (hash.matches("^[a-f0-9]{40}$")) {
-            fileName = hash;
-        } else {
-            fileName = url.substring(url.lastIndexOf("/") + 1);
-
-            if (fileName.contains("?")) {
-                fileName = fileName.substring(0, fileName.indexOf("?"));
-            }
-
-            if (!fileName.endsWith(".zip")) {
-                return Futures.immediateFailedFuture(new IllegalArgumentException("Invalid filename; must end in .zip"));
-            }
-
-            fileName = "legacy_" + fileName.replaceAll("\\W", "");
-        }
-
-        final File file = new File(repo.dirServerResourcepacks, fileName);
-        repo.field_177321_h.lock();
-        try {
-            repo.func_148529_f();
-
-            if (file.exists() && hash.length() == 40) {
-                try {
-                    String fileHash = Hashing.sha1().hashBytes(Files.toByteArray(file)).toString();
-                    if (fileHash.equals(hash)) {
-                        recordResourcePack(file, requestId);
-                        return repo.func_177319_a(file);
-                    }
-
-                    logger.warn("File " + file + " had wrong hash (expected " + hash + ", found " + fileHash + "). Deleting it.");
-                    FileUtils.deleteQuietly(file);
-                } catch (IOException ioexception) {
-                    logger.warn("File " + file + " couldn\'t be hashed. Deleting it.", ioexception);
-                    FileUtils.deleteQuietly(file);
-                }
-            }
-
-            final GuiScreenWorking guiScreen = new GuiScreenWorking();
-            final Minecraft mc = Minecraft.getMinecraft();
-
-            Futures.getUnchecked(mc.addScheduledTask(new Runnable() {
-                @Override
-                public void run() {
-                    mc.displayGuiScreen(guiScreen);
-                }
-            }));
-
-            Map sessionInfo = Minecraft.getSessionInfo();
-            repo.field_177322_i = HttpUtil.func_180192_a(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
-            Futures.addCallback(repo.field_177322_i, new FutureCallback() {
-                @Override
-                public void onSuccess(Object value) {
-                    recordResourcePack(file, requestId);
-                    repo.func_177319_a(file);
-                }
-
-                @Override
-                public void onFailure(@Nonnull Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            });
-            return repo.field_177322_i;
-        } finally {
-            repo.field_177321_h.unlock();
-        }
+    public void setServerWasPaused() {
+        this.serverWasPaused = true;
     }
-
 }

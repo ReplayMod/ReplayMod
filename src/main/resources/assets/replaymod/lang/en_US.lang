@@ -121,6 +121,10 @@ replaymod.gui.settings=Settings
 
 replaymod.gui.keyframerepo.delete=Are you sure you want to delete these keyframes?
 
+replaymod.gui.restorereplay1=It seems like Minecraft has not quit normally.
+replaymod.gui.restorereplay2=The Replay "%1$s" was not saved correctly.
+replaymod.gui.restorereplay3=Do you wish to recover it?
+
 #Only change these if it's neccessary
 replaymod.gui.replayviewer=Replay Viewer
 replaymod.gui.replaycenter=Replay Center
