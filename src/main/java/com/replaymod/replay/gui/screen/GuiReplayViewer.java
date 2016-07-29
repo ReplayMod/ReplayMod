@@ -86,12 +86,9 @@ public class GuiReplayViewer extends GuiScreen {
                         }
                         final ReplayMetaData metaData = replayFile.getMetaData();
 
-                        obj.consume(new Supplier<GuiReplayEntry>() {
-                            @Override
-                            public GuiReplayEntry get() {
-                                return new GuiReplayEntry(file, metaData, theThumb);
-                            }
-                        });
+                        if (metaData != null) {
+                            obj.consume(() -> new GuiReplayEntry(file, metaData, theThumb));
+                        }
                     } catch (Exception e) {
                         FMLLog.getLogger().error("Could not load Replay File " + file.getName(), e);
                     }
