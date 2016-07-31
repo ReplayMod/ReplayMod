@@ -12,8 +12,8 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.pathing.change.*;
-import com.replaymod.replaystudio.pathing.interpolation.AbstractInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.CubicSplineInterpolator;
+import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -302,23 +302,8 @@ public class GuiPathing {
 
     private void preparePathsForPlayback() {
         Timeline timeline = mod.getCurrentTimeline();
-        Path timePath = timeline.getPaths().get(TIME_PATH);
-        Path positionPath = timeline.getPaths().get(POSITION_PATH);
-
-        // TODO Change interpolator via Change class
-        AbstractInterpolator interpolator = new LinearInterpolator();
-        interpolator.registerProperty(TimestampProperty.PROPERTY);
-        for (PathSegment segment : timePath.getSegments()) {
-            segment.setInterpolator(interpolator);
-        }
-        interpolator = new CubicSplineInterpolator();
-        interpolator.registerProperty(CameraProperties.POSITION);
-        interpolator.registerProperty(CameraProperties.ROTATION);
-        for (PathSegment segment : positionPath.getSegments()) {
-            segment.setInterpolator(interpolator);
-        }
-        timePath.updateAll();
-        positionPath.updateAll();
+        timeline.getPaths().get(TIME_PATH).updateAll();
+        timeline.getPaths().get(POSITION_PATH).updateAll();
     }
 
     public void zoomTimeline(double factor) {
@@ -357,7 +342,24 @@ public class GuiPathing {
             }
             UpdateKeyframeProperties updateChange = builder.done();
             updateChange.apply(timeline);
-            timeline.pushChange(CombinedChange.createFromApplied(change, updateChange));
+            // If this new keyframe formed the first segment, then create and set the appropriate interpolator
+            if (path.getSegments().size() == 1) {
+                PathSegment segment = path.getSegments().iterator().next();
+                Interpolator interpolator;
+                if (isTime) {
+                    interpolator = new LinearInterpolator();
+                    interpolator.registerProperty(TimestampProperty.PROPERTY);
+                } else {
+                    interpolator = new CubicSplineInterpolator();
+                    interpolator.registerProperty(CameraProperties.POSITION);
+                    interpolator.registerProperty(CameraProperties.ROTATION);
+                }
+                SetInterpolator setInterpolator = SetInterpolator.create(segment, interpolator);
+                setInterpolator.apply(timeline);
+                timeline.pushChange(CombinedChange.createFromApplied(change, updateChange, setInterpolator));
+            } else {
+                timeline.pushChange(CombinedChange.createFromApplied(change, updateChange));
+            }
         } else {
             timeline.pushChange(change);
         }

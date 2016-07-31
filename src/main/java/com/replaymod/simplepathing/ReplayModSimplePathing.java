@@ -8,7 +8,6 @@ import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.impl.TimelineImpl;
-import com.replaymod.replaystudio.pathing.interpolation.AbstractInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.CubicSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
@@ -97,19 +96,12 @@ public class ReplayModSimplePathing implements PathingRegistry {
 
     @Override
     public Interpolator deserializeInterpolator(JsonReader reader) throws IOException {
-        AbstractInterpolator interpolator;
         String type = reader.nextString();
         switch (type) {
             case "linear":
-                interpolator = new LinearInterpolator();
-                interpolator.registerProperty(TimestampProperty.PROPERTY);
-                interpolator.registerProperty(CameraProperties.POSITION);
-                interpolator.registerProperty(CameraProperties.ROTATION);
-                return interpolator;
+                return new LinearInterpolator();
             case "cubic-spline":
-                interpolator = new CubicSplineInterpolator();
-                interpolator.registerProperty(CameraProperties.POSITION);
-                interpolator.registerProperty(CameraProperties.ROTATION);
+                return new CubicSplineInterpolator();
             default:
                 throw new IOException("Unknown interpolation type: " + type);
 
