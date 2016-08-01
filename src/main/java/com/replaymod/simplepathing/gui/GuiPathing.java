@@ -6,6 +6,7 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
+import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.gui.GuiRenderSettings;
 import com.replaymod.replay.ReplayHandler;
@@ -19,18 +20,26 @@ import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.PathSegment;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.util.EntityPositionTracker;
+import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
+import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.*;
+import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTimelineTime;
 import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
+import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
@@ -38,6 +47,9 @@ import org.lwjgl.util.ReadablePoint;
 import org.lwjgl.util.WritablePoint;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -46,6 +58,8 @@ import java.io.IOException;
 public class GuiPathing {
     public static final int TIME_PATH = 0;
     public static final int POSITION_PATH = 1;
+
+    private static final Logger logger = LogManager.getLogger();
 
     public final GuiTexturedButton playPauseButton = new GuiTexturedButton().setSize(20, 20)
             .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE);
@@ -173,6 +187,8 @@ public class GuiPathing {
     private final ReplayModSimplePathing mod;
     private final ReplayHandler replayHandler;
     private final RealtimeTimelinePlayer player;
+
+    private EntityPositionTracker entityTracker;
 
     public GuiPathing(final ReplayMod core, final ReplayModSimplePathing mod, final ReplayHandler replayHandler) {
         this.mod = mod;
@@ -315,6 +331,11 @@ public class GuiPathing {
      * @param isTime {@code true} for the time property button, {@code false} for the place property button
      */
     private void updateKeyframe(final boolean isTime) {
+        if (entityTracker == null) {
+            loadEntityTracker(() -> updateKeyframe(isTime));
+            return;
+        }
+
         int time = timeline.getCursorPosition();
         Timeline timeline = mod.getCurrentTimeline();
         Path path = timeline.getPaths().get(isTime ? TIME_PATH : POSITION_PATH);
@@ -339,30 +360,63 @@ public class GuiPathing {
                 CameraEntity camera = replayHandler.getCameraEntity();
                 builder.setValue(CameraProperties.POSITION, Triple.of(camera.posX, camera.posY, camera.posZ));
                 builder.setValue(CameraProperties.ROTATION, Triple.of(camera.rotationYaw, camera.rotationPitch, camera.roll));
+                if (!replayHandler.isCameraView()) {
+                    Entity spectated = replayHandler.getOverlay().getMinecraft().getRenderViewEntity();
+                    builder.setValue(SpectatorProperty.PROPERTY, spectated.getEntityId());
+                }
             }
             UpdateKeyframeProperties updateChange = builder.done();
             updateChange.apply(timeline);
-            // If this new keyframe formed the first segment, then create and set the appropriate interpolator
-            if (path.getSegments().size() == 1) {
+            change = CombinedChange.createFromApplied(change, updateChange);
+
+            // If this new keyframe formed the first segment of the time path
+            if (isTime && path.getSegments().size() == 1) {
                 PathSegment segment = path.getSegments().iterator().next();
-                Interpolator interpolator;
-                if (isTime) {
-                    interpolator = new LinearInterpolator();
-                    interpolator.registerProperty(TimestampProperty.PROPERTY);
-                } else {
-                    interpolator = new CubicSplineInterpolator();
-                    interpolator.registerProperty(CameraProperties.POSITION);
-                    interpolator.registerProperty(CameraProperties.ROTATION);
-                }
+                Interpolator interpolator = new LinearInterpolator();
+                interpolator.registerProperty(TimestampProperty.PROPERTY);
                 SetInterpolator setInterpolator = SetInterpolator.create(segment, interpolator);
                 setInterpolator.apply(timeline);
-                timeline.pushChange(CombinedChange.createFromApplied(change, updateChange, setInterpolator));
-            } else {
-                timeline.pushChange(CombinedChange.createFromApplied(change, updateChange));
+                change = CombinedChange.createFromApplied(change, setInterpolator);
             }
-        } else {
-            timeline.pushChange(change);
         }
+
+        // Update interpolators for spectator keyframes
+        // while this is overkill, it is far simpler than updating differently for every possible case
+        if (!isTime) {
+            Interpolator interpolator = null;
+            boolean isSpectatorInterpolator = false;
+            for (PathSegment segment : path.getSegments()) {
+                if (segment.getStartKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()
+                        && segment.getEndKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()) {
+                    // Spectator segment
+                    if (!isSpectatorInterpolator) {
+                        isSpectatorInterpolator = true;
+                        interpolator = new LinearInterpolator();
+                        interpolator.registerProperty(SpectatorProperty.PROPERTY);
+                    }
+                    SetInterpolator setInterpolator = SetInterpolator.create(segment, interpolator);
+                    setInterpolator.apply(timeline);
+                    change = CombinedChange.createFromApplied(change, setInterpolator);
+                } else {
+                    // Normal segment
+                    if (isSpectatorInterpolator || interpolator == null) {
+                        isSpectatorInterpolator = false;
+                        interpolator = new CubicSplineInterpolator();
+                        interpolator.registerProperty(CameraProperties.POSITION);
+                        interpolator.registerProperty(CameraProperties.ROTATION);
+                    }
+                    SetInterpolator setInterpolator = SetInterpolator.create(segment, interpolator);
+                    setInterpolator.apply(timeline);
+                    change = CombinedChange.createFromApplied(change, setInterpolator);
+                }
+            }
+        }
+
+        Change specPosUpdate = updateSpectatorPositions();
+        specPosUpdate.apply(timeline);
+        change = CombinedChange.createFromApplied(change, specPosUpdate);
+
+        timeline.pushChange(change);
 
         if (isTime) {
             mod.setSelectedTimeKeyframe(keyframe);
@@ -371,7 +425,78 @@ public class GuiPathing {
         }
     }
 
+    private Change updateSpectatorPositions() {
+        List<Change> changes = new ArrayList<>();
+        Path positionPath = mod.getCurrentTimeline().getPaths().get(POSITION_PATH);
+        Path timePath = mod.getCurrentTimeline().getPaths().get(TIME_PATH);
+        timePath.updateAll();
+        for (Keyframe keyframe : positionPath.getKeyframes()) {
+            Optional<Integer> spectator = keyframe.getValue(SpectatorProperty.PROPERTY);
+            if (spectator.isPresent()) {
+                Optional<Integer> time = timePath.getValue(TimestampProperty.PROPERTY, keyframe.getTime());
+                if (!time.isPresent()) {
+                    continue; // No time keyframes set at this video time, cannot determine replay time
+                }
+                Location expected = entityTracker.getEntityPositionAtTimestamp(spectator.get(), time.get());
+                if (expected == null) {
+                    continue; // We don't have any data on this entity for some reason
+                }
+                Triple<Double, Double, Double> pos = keyframe.getValue(CameraProperties.POSITION).orElse(Triple.of(0D, 0D, 0D));
+                Triple<Float, Float, Float> rot = keyframe.getValue(CameraProperties.ROTATION).orElse(Triple.of(0F, 0F, 0F));
+                Location actual = new Location(pos.getLeft(), pos.getMiddle(), pos.getRight(), rot.getLeft(), rot.getRight());
+                if (!expected.equals(actual)) {
+                    changes.add(UpdateKeyframeProperties.create(positionPath, keyframe)
+                            .setValue(CameraProperties.POSITION, Triple.of(expected.getX(), expected.getY(), expected.getZ()))
+                            .setValue(CameraProperties.ROTATION, Triple.of(expected.getYaw(), expected.getPitch(), 0f)).done()
+                    );
+                }
+            }
+        }
+        return CombinedChange.create(changes.toArray(new Change[changes.size()]));
+    }
+
+    private void loadEntityTracker(Runnable runnable) {
+        LoadEntityTrackerPopup popup = new LoadEntityTrackerPopup(replayHandler.getOverlay());
+        new Thread(() -> {
+            EntityPositionTracker tracker = new EntityPositionTracker(replayHandler.getReplayFile());
+            try {
+                tracker.load(c -> popup.progressBar.setProgress((float)(double) c));
+            } catch (IOException e) {
+                logger.error("Loading entity tracker:", e);
+                mod.getCore().runLater(() -> {
+                    mod.getCore().printWarningToChat("Error loading entity tracker: %s", e.getLocalizedMessage());
+                    popup.close();
+                });
+            }
+            entityTracker = tracker;
+            mod.getCore().runLater(() -> {
+                popup.close();
+                runnable.run();
+            });
+        }).start();
+    }
+
     public ReplayModSimplePathing getMod() {
         return mod;
+    }
+
+    private class LoadEntityTrackerPopup extends AbstractGuiPopup<LoadEntityTrackerPopup> {
+        private final GuiProgressBar progressBar = new GuiProgressBar(popup).setSize(300, 20)
+                .setI18nLabel("replaymod.gui.loadentitytracker");
+
+        public LoadEntityTrackerPopup(GuiContainer container) {
+            super(container);
+            open();
+        }
+
+        @Override
+        public void close() {
+            super.close();
+        }
+
+        @Override
+        protected LoadEntityTrackerPopup getThis() {
+            return this;
+        }
     }
 }

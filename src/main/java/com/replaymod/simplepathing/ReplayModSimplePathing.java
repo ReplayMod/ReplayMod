@@ -4,6 +4,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.properties.CameraProperties;
+import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
@@ -79,6 +80,7 @@ public class ReplayModSimplePathing implements PathingRegistry {
         timeline.registerProperty(TimestampProperty.PROPERTY);
         timeline.registerProperty(CameraProperties.POSITION);
         timeline.registerProperty(CameraProperties.ROTATION);
+        timeline.registerProperty(SpectatorProperty.PROPERTY);
 
         return timeline;
     }
@@ -106,5 +108,9 @@ public class ReplayModSimplePathing implements PathingRegistry {
                 throw new IOException("Unknown interpolation type: " + type);
 
         }
+    }
+
+    public ReplayMod getCore() {
+        return core;
     }
 }

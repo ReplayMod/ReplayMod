@@ -125,6 +125,8 @@ replaymod.gui.restorereplay1=It seems like Minecraft has not quit normally.
 replaymod.gui.restorereplay2=The Replay "%1$s" was not saved correctly.
 replaymod.gui.restorereplay3=Do you wish to recover it?
 
+replaymod.gui.loadentitytracker=Loading entity positions: %%d%%%%
+
 #Only change these if it's neccessary
 replaymod.gui.replayviewer=Replay Viewer
 replaymod.gui.replaycenter=Replay Center
