@@ -15,6 +15,7 @@ import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
+import com.replaymod.simplepathing.preview.PathPreview;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -32,6 +33,8 @@ public class ReplayModSimplePathing implements PathingRegistry {
 
     private Logger logger;
 
+    private GuiPathing guiPathing;
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
@@ -39,11 +42,14 @@ public class ReplayModSimplePathing implements PathingRegistry {
         core.getSettingsRegistry().register(Setting.class);
 
         FMLCommonHandler.instance().bus().register(this);
+
+        PathPreview pathPreview = new PathPreview(this);
+        pathPreview.register();
     }
 
     @SubscribeEvent
     public void postReplayOpen(ReplayOpenEvent.Post event) {
-        new GuiPathing(core, this, event.getReplayHandler());
+        guiPathing = new GuiPathing(core, this, event.getReplayHandler());
     }
 
     private Timeline currentTimeline = createTimeline(); { currentTimeline.createPath(); currentTimeline.createPath(); }
@@ -112,5 +118,9 @@ public class ReplayModSimplePathing implements PathingRegistry {
 
     public ReplayMod getCore() {
         return core;
+    }
+
+    public GuiPathing getGuiPathing() {
+        return guiPathing;
     }
 }

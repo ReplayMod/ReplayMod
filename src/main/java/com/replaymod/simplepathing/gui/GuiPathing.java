@@ -480,6 +480,10 @@ public class GuiPathing {
         return mod;
     }
 
+    public EntityPositionTracker getEntityTracker() {
+        return entityTracker;
+    }
+
     private class LoadEntityTrackerPopup extends AbstractGuiPopup<LoadEntityTrackerPopup> {
         private final GuiProgressBar progressBar = new GuiProgressBar(popup).setSize(300, 20)
                 .setI18nLabel("replaymod.gui.loadentitytracker");

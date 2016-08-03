@@ -16,7 +16,6 @@ import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
 import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
 import eu.crushedpixel.replaymod.renderer.CustomObjectRenderer;
-import eu.crushedpixel.replaymod.renderer.PathPreviewRenderer;
 import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.sound.SoundHandler;
@@ -102,8 +101,6 @@ public class ReplayMod {
     @Deprecated
     public static TooltipRenderer tooltipRenderer;
     @Deprecated
-    public static PathPreviewRenderer pathPreviewRenderer;
-    @Deprecated
     public static CustomObjectRenderer customObjectRenderer;
     @Deprecated
     public static SoundHandler soundHandler = new SoundHandler();
@@ -177,10 +174,6 @@ public class ReplayMod {
         customObjectRenderer = new CustomObjectRenderer();
         FMLCommonHandler.instance().bus().register(customObjectRenderer);
         MinecraftForge.EVENT_BUS.register(customObjectRenderer);
-
-        pathPreviewRenderer = new PathPreviewRenderer();
-        FMLCommonHandler.instance().bus().register(pathPreviewRenderer);
-        MinecraftForge.EVENT_BUS.register(pathPreviewRenderer);
 
         crosshairRenderHandler = new CrosshairRenderHandler();
         FMLCommonHandler.instance().bus().register(crosshairRenderHandler);
