@@ -2,6 +2,7 @@ package com.replaymod.simplepathing.gui;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
@@ -46,10 +47,13 @@ import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 import org.lwjgl.util.WritablePoint;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 
 /**
@@ -189,6 +193,8 @@ public class GuiPathing {
     private final RealtimeTimelinePlayer player;
 
     private EntityPositionTracker entityTracker;
+    private Consumer<Double> entityTrackerLoadingProgress;
+    private SettableFuture<Void> entityTrackerFuture;
 
     public GuiPathing(final ReplayMod core, final ReplayModSimplePathing mod, final ReplayHandler replayHandler) {
         this.mod = mod;
@@ -314,6 +320,31 @@ public class GuiPathing {
                 }
             }
         });
+
+        // Start loading entity tracker
+        entityTrackerFuture = SettableFuture.create();
+        new Thread(() -> {
+            EntityPositionTracker tracker = new EntityPositionTracker(replayHandler.getReplayFile());
+            try {
+                long start = System.currentTimeMillis();
+                tracker.load(p -> {
+                    if (entityTrackerLoadingProgress != null) {
+                        entityTrackerLoadingProgress.accept(p);
+                    }
+                });
+                logger.info("Loaded entity tracker in " + (System.currentTimeMillis() - start) + "ms");
+            } catch (IOException e) {
+                logger.error("Loading entity tracker:", e);
+                mod.getCore().runLater(() -> {
+                    mod.getCore().printWarningToChat("Error loading entity tracker: %s", e.getLocalizedMessage());
+                    entityTrackerFuture.setException(e);
+                });
+            }
+            entityTracker = tracker;
+            mod.getCore().runLater(() -> {
+                entityTrackerFuture.set(null);
+            });
+        }).start();
     }
 
     private void preparePathsForPlayback() {
@@ -332,7 +363,20 @@ public class GuiPathing {
      */
     private void updateKeyframe(final boolean isTime) {
         if (entityTracker == null) {
-            loadEntityTracker(() -> updateKeyframe(isTime));
+            LoadEntityTrackerPopup popup = new LoadEntityTrackerPopup(replayHandler.getOverlay());
+            entityTrackerLoadingProgress = p -> popup.progressBar.setProgress(p.floatValue());
+            Futures.addCallback(entityTrackerFuture, new FutureCallback<Void>() {
+                @Override
+                public void onSuccess(@Nullable Void result) {
+                    popup.close();
+                    updateKeyframe(isTime);
+                }
+
+                @Override
+                public void onFailure(@Nonnull Throwable t) {
+                    popup.close();
+                }
+            });
             return;
         }
 
@@ -453,27 +497,6 @@ public class GuiPathing {
             }
         }
         return CombinedChange.create(changes.toArray(new Change[changes.size()]));
-    }
-
-    private void loadEntityTracker(Runnable runnable) {
-        LoadEntityTrackerPopup popup = new LoadEntityTrackerPopup(replayHandler.getOverlay());
-        new Thread(() -> {
-            EntityPositionTracker tracker = new EntityPositionTracker(replayHandler.getReplayFile());
-            try {
-                tracker.load(c -> popup.progressBar.setProgress((float)(double) c));
-            } catch (IOException e) {
-                logger.error("Loading entity tracker:", e);
-                mod.getCore().runLater(() -> {
-                    mod.getCore().printWarningToChat("Error loading entity tracker: %s", e.getLocalizedMessage());
-                    popup.close();
-                });
-            }
-            entityTracker = tracker;
-            mod.getCore().runLater(() -> {
-                popup.close();
-                runnable.run();
-            });
-        }).start();
     }
 
     public ReplayModSimplePathing getMod() {
