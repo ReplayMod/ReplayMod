@@ -8,7 +8,6 @@ import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
-import eu.crushedpixel.replaymod.events.handlers.CrosshairRenderHandler;
 import eu.crushedpixel.replaymod.events.handlers.MouseInputHandler;
 import eu.crushedpixel.replaymod.events.handlers.TickAndRenderListener;
 import eu.crushedpixel.replaymod.events.handlers.keyboard.KeyInputHandler;
@@ -104,8 +103,6 @@ public class ReplayMod {
     public static CustomObjectRenderer customObjectRenderer;
     @Deprecated
     public static SoundHandler soundHandler = new SoundHandler();
-    @Deprecated
-    public static CrosshairRenderHandler crosshairRenderHandler;
 
     private final KeyBindingRegistry keyBindingRegistry = new KeyBindingRegistry();
     private final SettingsRegistry settingsRegistry = new SettingsRegistry();
@@ -174,10 +171,6 @@ public class ReplayMod {
         customObjectRenderer = new CustomObjectRenderer();
         FMLCommonHandler.instance().bus().register(customObjectRenderer);
         MinecraftForge.EVENT_BUS.register(customObjectRenderer);
-
-        crosshairRenderHandler = new CrosshairRenderHandler();
-        FMLCommonHandler.instance().bus().register(crosshairRenderHandler);
-        MinecraftForge.EVENT_BUS.register(crosshairRenderHandler);
 
         KeybindRegistry.initialize();
 

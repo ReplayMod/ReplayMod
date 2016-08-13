@@ -18,6 +18,8 @@ import net.minecraft.stats.StatFileWriter;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -44,6 +46,7 @@ public class CameraEntity extends EntityPlayerSP {
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
         super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
         FMLCommonHandler.instance().bus().register(this);
+        MinecraftForge.EVENT_BUS.register(this);
         cameraController = ReplayModReplay.instance.createCameraController(this);
     }
 
@@ -208,6 +211,7 @@ public class CameraEntity extends EntityPlayerSP {
     public void setDead() {
         super.setDead();
         FMLCommonHandler.instance().bus().unregister(this);
+        MinecraftForge.EVENT_BUS.unregister(this);
     }
 
     @SubscribeEvent
@@ -225,6 +229,14 @@ public class CameraEntity extends EntityPlayerSP {
                     mc.gameSettings.keyBindSneak.pressTime = 0;
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
+        // The crosshair should only render if targeted entity can actually be spectated
+        if (event.type == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+            event.setCanceled(!canSpectate(mc.pointedEntity));
         }
     }
 
