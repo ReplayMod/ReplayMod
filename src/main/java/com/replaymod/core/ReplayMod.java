@@ -3,12 +3,12 @@ package com.replaymod.core;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.core.gui.RestoreReplayGui;
+import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
 import eu.crushedpixel.replaymod.events.handlers.CrosshairRenderHandler;
-import eu.crushedpixel.replaymod.events.handlers.GuiEventHandler;
 import eu.crushedpixel.replaymod.events.handlers.MouseInputHandler;
 import eu.crushedpixel.replaymod.events.handlers.TickAndRenderListener;
 import eu.crushedpixel.replaymod.events.handlers.keyboard.KeyInputHandler;
@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Queue;
 
-@Mod(modid = ReplayMod.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayMod.MOD_ID,
+        useMetadata = true,
+        guiFactory = "com.replaymod.core.gui.GuiFactory")
 public class ReplayMod {
 
     public static ModContainer getContainer() {
@@ -74,8 +76,6 @@ public class ReplayMod {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
 
-    @Deprecated
-    public static GuiEventHandler guiEventHandler;
     @Deprecated
     public static ReplaySettings replaySettings;
     @Deprecated
@@ -150,7 +150,7 @@ public class ReplayMod {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        MinecraftForge.EVENT_BUS.register(guiEventHandler = new GuiEventHandler());
+        new MainMenuHandler().register();
 
         FMLCommonHandler.instance().bus().register(keyInputHandler);
         FMLCommonHandler.instance().bus().register(keyBindingRegistry);

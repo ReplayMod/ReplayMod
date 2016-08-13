@@ -1,6 +1,5 @@
 package eu.crushedpixel.replaymod.gui.replayeditor;
 
-import com.replaymod.core.ReplayMod;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.GuiDropdown;
 import eu.crushedpixel.replaymod.holders.GuiEntryListStringEntry;
@@ -48,7 +47,6 @@ public class GuiReplayEditor extends GuiScreen {
         replayFiles = ReplayFileIO.getAllReplayFiles();
         if(replayFiles.size() == 0) {
             mc.displayGuiScreen(null);
-            ReplayMod.guiEventHandler.replayCount = 0;
             return;
         }
         for(File file : replayFiles) {
