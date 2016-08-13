@@ -73,9 +73,9 @@ public class CameraProperties extends AbstractPropertyGroup {
 
     public static class Rotation extends AbstractProperty<Triple<Float, Float, Float>> {
         public final PropertyPart<Triple<Float, Float, Float>>
-                YAW = new PropertyParts.ForFloatTriple(this, true, PropertyParts.TripleElement.LEFT),
-                PITCH = new PropertyParts.ForFloatTriple(this, true, PropertyParts.TripleElement.MIDDLE),
-                ROLL = new PropertyParts.ForFloatTriple(this, true, PropertyParts.TripleElement.RIGHT);
+                YAW = new PropertyParts.ForFloatTriple(this, true, 360, PropertyParts.TripleElement.LEFT),
+                PITCH = new PropertyParts.ForFloatTriple(this, true, 360, PropertyParts.TripleElement.MIDDLE),
+                ROLL = new PropertyParts.ForFloatTriple(this, true, 360, PropertyParts.TripleElement.RIGHT);
 
         private Rotation() {
             super("rotation", "replaymod.gui.rotation", GROUP, Triple.of(0f, 0f, 0f));
