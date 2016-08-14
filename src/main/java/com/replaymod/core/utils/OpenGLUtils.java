@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.utils;
+package com.replaymod.core.utils;
 
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;

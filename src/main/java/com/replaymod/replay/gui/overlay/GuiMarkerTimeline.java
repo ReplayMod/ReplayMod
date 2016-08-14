@@ -2,12 +2,12 @@ package com.replaymod.replay.gui.overlay;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replaystudio.util.Location;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
 import de.johni0702.minecraft.gui.function.Draggable;
 import com.replaymod.replaystudio.data.Marker;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.MathHelper;
 import org.lwjgl.util.Point;
@@ -126,9 +126,9 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
                 lastClickTime = now;
             } else if (button == 1) { // Right click
                 selectedMarker = null;
-                replayHandler.setTargetPosition(new AdvancedPosition(
+                replayHandler.setTargetPosition(new Location(
                         marker.getX(), marker.getY(), marker.getZ(),
-                        marker.getPitch(), marker.getYaw(), marker.getRoll()
+                        marker.getPitch(), marker.getYaw()
                 ));
                 replayHandler.doJump(marker.getTime(), false);
             }

@@ -4,20 +4,10 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
-import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import eu.crushedpixel.replaymod.chat.ChatMessageHandler;
-import eu.crushedpixel.replaymod.events.handlers.MouseInputHandler;
-import eu.crushedpixel.replaymod.events.handlers.TickAndRenderListener;
-import eu.crushedpixel.replaymod.events.handlers.keyboard.KeyInputHandler;
-import eu.crushedpixel.replaymod.registry.KeybindRegistry;
-import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
-import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
-import eu.crushedpixel.replaymod.renderer.CustomObjectRenderer;
-import eu.crushedpixel.replaymod.settings.ReplaySettings;
-import eu.crushedpixel.replaymod.sound.SoundHandler;
-import eu.crushedpixel.replaymod.utils.OpenGLUtils;
+import com.replaymod.render.utils.SoundHandler;
+import com.replaymod.core.utils.OpenGLUtils;
 import eu.crushedpixel.replaymod.utils.TooltipRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -25,7 +15,6 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.*;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -75,29 +64,9 @@ public class ReplayMod {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     @Deprecated
-    public static ReplaySettings replaySettings;
-    @Deprecated
     public static Configuration config;
     @Deprecated
-    public static boolean firstMainMenu = true;
-    @Deprecated
-    public static ChatMessageHandler chatMessageHandler = new ChatMessageHandler();
-    @Deprecated
-    public static KeyInputHandler keyInputHandler = new KeyInputHandler();
-    @Deprecated
-    public static MouseInputHandler mouseInputHandler = new MouseInputHandler();
-    @Deprecated
-    public static ReplaySender replaySender;
-    @Deprecated
-    public static int TP_DISTANCE_LIMIT = 128;
-    @Deprecated
-    public static ReplayFileAppender replayFileAppender;
-    @Deprecated
-    public static UploadedFileHandler uploadedFileHandler;
-    @Deprecated
     public static TooltipRenderer tooltipRenderer;
-    @Deprecated
-    public static CustomObjectRenderer customObjectRenderer;
     @Deprecated
     public static SoundHandler soundHandler = new SoundHandler();
 
@@ -117,7 +86,7 @@ public class ReplayMod {
     }
 
     public File getReplayFolder() throws IOException {
-        File folder = new File(replaySettings.getRecordingPath());
+        File folder = new File(getSettingsRegistry().get(Setting.RECORDING_PATH));
         FileUtils.forceMkdir(folder);
         return folder;
     }
@@ -133,23 +102,15 @@ public class ReplayMod {
         config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
         settingsRegistry.setConfiguration(config);
-
-        uploadedFileHandler = new UploadedFileHandler(event.getModConfigurationDirectory());
-
-        replaySettings = new ReplaySettings();
-
-        replayFileAppender = new ReplayFileAppender();
-        FMLCommonHandler.instance().bus().register(replayFileAppender);
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
+        getSettingsRegistry().register(Setting.class);
+
         new MainMenuHandler().register();
 
-        FMLCommonHandler.instance().bus().register(keyInputHandler);
         FMLCommonHandler.instance().bus().register(keyBindingRegistry);
-        FMLCommonHandler.instance().bus().register(mouseInputHandler);
-        MinecraftForge.EVENT_BUS.register(mouseInputHandler);
     }
 
     @EventHandler
@@ -158,16 +119,6 @@ public class ReplayMod {
 
         if(!FMLClientHandler.instance().hasOptifine())
             GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
-
-        TickAndRenderListener tarl = new TickAndRenderListener();
-        FMLCommonHandler.instance().bus().register(tarl);
-        MinecraftForge.EVENT_BUS.register(tarl);
-
-        customObjectRenderer = new CustomObjectRenderer();
-        FMLCommonHandler.instance().bus().register(customObjectRenderer);
-        MinecraftForge.EVENT_BUS.register(customObjectRenderer);
-
-        KeybindRegistry.initialize();
 
         tooltipRenderer = new TooltipRenderer();
 
@@ -360,7 +311,7 @@ public class ReplayMod {
     }
 
     private void printToChat(boolean warning, String message, Object... args) {
-        if (ReplayMod.replaySettings.isShowNotifications()) {
+        if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
             ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
             ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);

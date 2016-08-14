@@ -1,7 +1,6 @@
 package com.replaymod.recording.handler;
 
 import com.replaymod.recording.packet.PacketListener;
-import eu.crushedpixel.replaymod.utils.Objects;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
@@ -24,6 +23,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
+
+import java.util.Objects;
 
 public class RecordingEventHandler {
 

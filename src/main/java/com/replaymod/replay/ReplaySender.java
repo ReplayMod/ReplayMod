@@ -6,9 +6,8 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import eu.crushedpixel.replaymod.holders.PacketData;
-import eu.crushedpixel.replaymod.settings.ReplaySettings;
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -17,9 +16,7 @@ import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.Packet;
+import net.minecraft.network.*;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.world.EnumDifficulty;
@@ -253,7 +250,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
         if (msg instanceof byte[]) {
             try {
-                Packet p = ReplayFileIO.deserializePacket((byte[]) msg);
+                Packet p = deserializePacket((byte[]) msg);
 
                 if (p != null) {
                     p = processPacket(p);
@@ -297,6 +294,18 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             }
         }
 
+    }
+
+    private Packet deserializePacket(byte[] bytes) throws IOException, IllegalAccessException, InstantiationException {
+        ByteBuf bb = Unpooled.wrappedBuffer(bytes);
+        PacketBuffer pb = new PacketBuffer(bb);
+
+        int i = pb.readVarIntFromBuffer();
+
+        Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
+        p.readPacketData(pb);
+
+        return p;
     }
 
     /**
@@ -453,7 +462,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         }
 
         if (p instanceof S02PacketChat) {
-            if (ReplaySettings.ReplayOptions.showChat.getValue() != Boolean.TRUE) {
+            if (!ReplayModReplay.instance.getCore().getSettingsRegistry().get(Setting.SHOW_CHAT)) {
                 return null;
             }
         }
@@ -558,10 +567,10 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
                                 // Read the next packet if we don't already have one
                                 if (nextPacket == null) {
-                                    nextPacket = ReplayFileIO.readPacketData(dis);
+                                    nextPacket = new PacketData(dis);
                                 }
 
-                                int nextTimeStamp = nextPacket.getTimestamp();
+                                int nextTimeStamp = nextPacket.timestamp;
 
                                 // If we aren't jumping and the world has already been loaded (no dirt-screens) then wait
                                 // the required amount to get proper packet timing
@@ -578,7 +587,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                                 }
 
                                 // Process packet
-                                channelRead(ctx, nextPacket.getByteArray());
+                                channelRead(ctx, nextPacket.bytes);
                                 nextPacket = null;
 
                                 lastTimeStamp = nextTimeStamp;
@@ -725,10 +734,10 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                             nextPacket = null;
                         } else {
                             // Otherwise read one from the input stream
-                            pd = ReplayFileIO.readPacketData(dis);
+                            pd = new PacketData(dis);
                         }
 
-                        int nextTimeStamp = pd.getTimestamp();
+                        int nextTimeStamp = pd.timestamp;
                         if (nextTimeStamp > timestamp) {
                             // We are done sending all packets
                             nextPacket = pd;
@@ -736,7 +745,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                         }
 
                         // Process packet
-                        channelRead(ctx, pd.getByteArray());
+                        channelRead(ctx, pd.bytes);
 
                         // Store last timestamp
                         lastTimeStamp = nextTimeStamp;
@@ -821,6 +830,17 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             if (p.field_149100_a.length == 1 && p.field_149100_a[0] == LEGACY_ENTITY_ID) {
                 p.field_149100_a[0] = actualID;
             }
+        }
+    }
+
+    private static final class PacketData {
+        private final int timestamp;
+        private final byte[] bytes;
+
+        public PacketData(DataInputStream in) throws IOException {
+            timestamp = in.readInt();
+            bytes = new byte[in.readInt()];
+            in.readFully(bytes);
         }
     }
 }

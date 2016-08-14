@@ -1,6 +1,6 @@
 package eu.crushedpixel.replaymod.gui.elements;
 
-import eu.crushedpixel.replaymod.utils.OpenGLUtils;
+import com.replaymod.core.utils.OpenGLUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;

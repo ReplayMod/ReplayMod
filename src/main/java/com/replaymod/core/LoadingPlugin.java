@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.coremod;
+package com.replaymod.core;
 
 import net.minecraftforge.fml.relauncher.CoreModManager;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;

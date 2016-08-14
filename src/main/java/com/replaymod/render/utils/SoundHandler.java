@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.sound;
+package com.replaymod.render.utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;

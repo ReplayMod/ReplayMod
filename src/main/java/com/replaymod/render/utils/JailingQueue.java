@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.utils;
+package com.replaymod.render.utils;
 
 import com.google.common.base.Preconditions;
 

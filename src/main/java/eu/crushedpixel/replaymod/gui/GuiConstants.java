@@ -3,8 +3,6 @@ package eu.crushedpixel.replaymod.gui;
 public class GuiConstants {
 
     //didn't find a better place to put these constants
-    public static final int MIN_PW_LENGTH = 5;
-    public static final int MAX_PW_LENGTH = 1024;
 
     public static final int CENTER_DOWNLOADED_REPLAYS_BUTTON = 2001;
     public static final int CENTER_SEARCH_BUTTON = 2002;

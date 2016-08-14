@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.utils;
+package com.replaymod.render.utils;
 
 import org.apache.commons.io.IOUtils;
 

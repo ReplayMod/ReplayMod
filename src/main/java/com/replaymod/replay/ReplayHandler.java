@@ -9,9 +9,8 @@ import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
-import eu.crushedpixel.replaymod.registry.ReplayGuiRegistry;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.replaystudio.util.Location;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -69,7 +68,7 @@ public class ReplayHandler {
     /**
      * The position at which the camera should be located after the next jump.
      */
-    private AdvancedPosition targetCameraPosition;
+    private Location targetCameraPosition;
 
     private UUID spectating;
 
@@ -122,9 +121,6 @@ public class ReplayHandler {
 
         mc.timer.timerSpeed = 1;
         overlay.setVisible(false);
-
-        // These might have been hidden by the overlay, so we have to make sure they're visible again
-        ReplayGuiRegistry.show();
 
         ReplayModReplay.instance.replayHandler = null;
 
@@ -256,7 +252,7 @@ public class ReplayHandler {
         return spectating;
     }
 
-    public void setTargetPosition(AdvancedPosition pos) {
+    public void setTargetPosition(Location pos) {
         targetCameraPosition = pos;
     }
 
@@ -279,8 +275,8 @@ public class ReplayHandler {
         if (retainCameraPosition) {
             CameraEntity cam = getCameraEntity();
             if (cam != null) {
-                targetCameraPosition = new AdvancedPosition(cam.posX, cam.posY, cam.posZ,
-                        cam.rotationPitch, cam.rotationYaw, cam.roll);
+                targetCameraPosition = new Location(cam.posX, cam.posY, cam.posZ,
+                        cam.rotationPitch, cam.rotationYaw);
             } else {
                 targetCameraPosition = null;
             }

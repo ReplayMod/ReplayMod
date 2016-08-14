@@ -1,5 +1,6 @@
 package com.replaymod.extras.playeroverview;
 
+import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -12,7 +13,6 @@ import de.johni0702.minecraft.gui.function.Closeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
-import eu.crushedpixel.replaymod.utils.SkinProvider;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
@@ -83,7 +83,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
 
         Collections.sort(players, new PlayerComparator()); // Sort by name, spectators last
         for (final EntityPlayer p : players) {
-            final ResourceLocation texture = SkinProvider.getResourceLocationForPlayerUUID(p.getUniqueID());
+            final ResourceLocation texture = Utils.getResourceLocationForPlayerUUID(p.getUniqueID());
             final GuiClickable panel = new GuiClickable().setLayout(new HorizontalLayout().setSpacing(2)).addElements(
                     new HorizontalLayout.Data(0.5), new GuiImage() {
                         @Override

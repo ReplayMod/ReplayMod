@@ -6,6 +6,7 @@ import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.online.ReplayModOnline;
 import com.replaymod.online.api.ApiClient;
 import com.replaymod.online.api.ApiException;
@@ -18,6 +19,7 @@ import com.replaymod.online.api.replay.pagination.DownloadedFilePagination;
 import com.replaymod.online.api.replay.pagination.FavoritedFilePagination;
 import com.replaymod.online.api.replay.pagination.Pagination;
 import com.replaymod.online.api.replay.pagination.SearchPagination;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
 import de.johni0702.minecraft.gui.container.AbstractGuiContainer;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -33,9 +35,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import com.replaymod.replaystudio.replay.ReplayMetaData;
-import eu.crushedpixel.replaymod.registry.ResourceHelper;
-import eu.crushedpixel.replaymod.utils.DurationUtils;
 import net.minecraftforge.fml.common.FMLLog;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.core.helpers.Strings;
@@ -333,7 +332,7 @@ public class GuiReplayCenter extends GuiScreen {
         return this;
     }
 
-    private final GuiImage defaultThumbnail = new GuiImage().setTexture(ResourceHelper.getDefaultThumbnail());
+    private final GuiImage defaultThumbnail = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL);
     public class GuiReplayEntry extends AbstractGuiContainer<GuiReplayEntry> implements Comparable<GuiReplayEntry> {
         public final FileInfo fileInfo;
         public final GuiLabel name = new GuiLabel();
@@ -414,7 +413,7 @@ public class GuiReplayCenter extends GuiScreen {
                 thumbnail = new GuiImage(this).setTexture(thumbImage);
             }
             thumbnail.setSize(45 * 16 / 9, 45);
-            duration.setText(DurationUtils.convertSecondsToShortString(metaData.getDuration() / 1000));
+            duration.setText(Utils.convertSecondsToShortString(metaData.getDuration() / 1000));
             downloads.setText(fileInfo.getDownloads() + " ⬇");
             favorites.setText("⭑" + fileInfo.getFavorites());
             likes.setText("⬆" + fileInfo.getRatings().getPositive());

@@ -3,7 +3,7 @@ package com.replaymod.render;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.utils.ByteBufferPool;
-import eu.crushedpixel.replaymod.utils.StreamPipe;
+import com.replaymod.render.utils.StreamPipe;
 import eu.crushedpixel.replaymod.utils.StringUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;

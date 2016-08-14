@@ -24,9 +24,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
-import eu.crushedpixel.replaymod.registry.ResourceHelper;
-import eu.crushedpixel.replaymod.utils.DurationUtils;
-import eu.crushedpixel.replaymod.utils.ReplayFileIO;
+import com.replaymod.core.utils.Utils;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
@@ -162,11 +160,9 @@ public class GuiReplayViewer extends GuiScreen {
                         popup.getYesButton().onClick();
                     }
                 }
-            }).onTextChanged(new Consumer<String>() {
-                @Override
-                public void consume(String obj) {
-                    popup.getYesButton().setEnabled(!nameField.getText().isEmpty());
-                }
+            }).onTextChanged(obj -> {
+                popup.getYesButton().setEnabled(!nameField.getText().isEmpty()
+                        && !new File(file.getParentFile(), nameField.getText() + ".mcpr").exists());
             });
             Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
                 @Override
@@ -176,11 +172,9 @@ public class GuiReplayViewer extends GuiScreen {
                         String name = nameField.getText().trim().replace("[^a-zA-Z0-9\\.\\- ]", "_");
                         // This file is what they want
                         File targetFile = new File(file.getParentFile(), name + ".mcpr");
-                        // But if it's already used, this is what they get
-                        File renamed = ReplayFileIO.getNextFreeFile(targetFile);
                         try {
                             // Finally, try to move it
-                            FileUtils.moveFile(file, renamed);
+                            FileUtils.moveFile(file, targetFile);
                         } catch (IOException e) {
                             // We failed (might also be their OS)
                             e.printStackTrace();
@@ -268,7 +262,7 @@ public class GuiReplayViewer extends GuiScreen {
         });
     }
 
-    private final GuiImage defaultThumbnail = new GuiImage().setTexture(ResourceHelper.getDefaultThumbnail());
+    private final GuiImage defaultThumbnail = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL);
     public class GuiReplayEntry extends AbstractGuiContainer<GuiReplayEntry> implements Comparable<GuiReplayEntry> {
         public final File file;
         public final GuiLabel name = new GuiLabel();
@@ -311,7 +305,7 @@ public class GuiReplayViewer extends GuiScreen {
             } else {
                 thumbnail = new GuiImage(this).setTexture(thumbImage).setSize(30 * 16 / 9, 30);
             }
-            duration.setText(DurationUtils.convertSecondsToShortString(metaData.getDuration() / 1000));
+            duration.setText(Utils.convertSecondsToShortString(metaData.getDuration() / 1000));
             addElements(null, durationPanel);
 
             setLayout(new CustomLayout<GuiReplayEntry>() {

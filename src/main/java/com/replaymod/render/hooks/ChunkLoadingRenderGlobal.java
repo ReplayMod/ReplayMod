@@ -1,6 +1,6 @@
 package com.replaymod.render.hooks;
 
-import eu.crushedpixel.replaymod.utils.JailingQueue;
+import com.replaymod.render.utils.JailingQueue;
 import net.minecraft.client.renderer.RegionRenderCacheBuilder;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator;

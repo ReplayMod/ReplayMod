@@ -11,14 +11,15 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Consumers;
 import de.johni0702.minecraft.gui.utils.Utils;
-import eu.crushedpixel.replaymod.gui.GuiConstants;
-import eu.crushedpixel.replaymod.utils.EmailAddressUtils;
-import eu.crushedpixel.replaymod.utils.RegexUtils;
+import com.replaymod.core.utils.Patterns;
 import net.minecraft.client.gui.FontRenderer;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableColor;
 
 public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
+    public static final int MIN_PW_LENGTH = 5;
+    public static final int MAX_PW_LENGTH = 1024;
+
     private final GuiPanel inputs;
     private final GuiTextField usernameInput, mailInput;
     private final GuiPasswordField passwordInput, passwordConfirmation;
@@ -39,10 +40,10 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                         .addElements(data, mailInput = new GuiTextField().setSize(145, 20)),
                 new GuiPanel().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(10))
                         .addElements(data, new GuiLabel().setI18nText("replaymod.gui.password"))
-                        .addElements(data, passwordInput = new GuiPasswordField().setMaxLength(GuiConstants.MAX_PW_LENGTH+1).setSize(145, 20)),
+                        .addElements(data, passwordInput = new GuiPasswordField().setMaxLength(MAX_PW_LENGTH+1).setSize(145, 20)),
                 new GuiPanel().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(10))
                         .addElements(data, new GuiLabel().setI18nText("replaymod.gui.register.confirmpw"))
-                        .addElements(data, passwordConfirmation = new GuiPasswordField().setMaxLength(GuiConstants.MAX_PW_LENGTH+1).setSize(145, 20))
+                        .addElements(data, passwordConfirmation = new GuiPasswordField().setMaxLength(MAX_PW_LENGTH+1).setSize(145, 20))
         );
         Utils.link(usernameInput, mailInput, passwordInput, passwordConfirmation);
 
@@ -111,13 +112,13 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                 String status = null;
                 if (usernameInput.getText().length() < 5) {
                     status = "replaymod.gui.register.error.shortusername";
-                } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_UNDERSCORE, usernameInput.getText().trim())) {
+                } else if(!Patterns.ALPHANUMERIC_UNDERSCORE.matcher(usernameInput.getText().trim()).matches()) {
                     status = "replaymod.gui.register.error.invalidname";
-                } else if (passwordInput.getText().length() < GuiConstants.MIN_PW_LENGTH) {
+                } else if (passwordInput.getText().length() < MIN_PW_LENGTH) {
                     status = "replaymod.gui.register.error.shortpw";
-                } else if (passwordInput.getText().length() > GuiConstants.MAX_PW_LENGTH) {
+                } else if (passwordInput.getText().length() > MAX_PW_LENGTH) {
                     status = "replaymod.gui.register.error.longpw";
-                } else if (!EmailAddressUtils.isValidEmailAddress(mailInput.getText())) {
+                } else if (!com.replaymod.core.utils.Utils.isValidEmailAddress(mailInput.getText())) {
                     status = "replaymod.api.invalidmail";
                 } else if (!passwordConfirmation.getText().equals(passwordInput.getText())) {
                     status = "replaymod.gui.register.error.nomatch";

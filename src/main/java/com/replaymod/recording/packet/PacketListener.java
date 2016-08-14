@@ -4,13 +4,13 @@ import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.DataWatcher;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
@@ -231,17 +231,17 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void addMarker() {
-        AdvancedPosition pos = new AdvancedPosition(Minecraft.getMinecraft().getRenderViewEntity());
+        Entity view = Minecraft.getMinecraft().getRenderViewEntity();
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
         Marker marker = new Marker();
         marker.setTime(timestamp);
-        marker.setX(pos.getX());
-        marker.setY(pos.getY());
-        marker.setZ(pos.getZ());
-        marker.setYaw((float) pos.getYaw());
-        marker.setPitch((float) pos.getPitch());
-        marker.setRoll((float) pos.getRoll());
+        marker.setX(view.posX);
+        marker.setY(view.posY);
+        marker.setZ(view.posZ);
+        marker.setYaw(view.rotationYaw);
+        marker.setPitch(view.rotationPitch);
+        // Roll is always 0
         saveService.submit(() -> {
             synchronized (replayFile) {
                 try {

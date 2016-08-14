@@ -1,5 +1,6 @@
 package com.replaymod.render.gui;
 
+import com.replaymod.core.utils.Utils;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.VideoRenderer;
 import de.johni0702.minecraft.gui.GuiRenderer;
@@ -12,7 +13,6 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
-import eu.crushedpixel.replaymod.utils.BoundingUtils;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.I18n;
@@ -257,7 +257,7 @@ public class GuiVideoRenderer extends GuiScreen {
 
     private void renderPreviewTexture(GuiRenderer guiRenderer, ReadableDimension size,
                                       int videoWidth, int videoHeight) {
-        Dimension dimension = BoundingUtils.fitIntoBounds(new Dimension(videoWidth, videoHeight), size);
+        Dimension dimension = Utils.fitIntoBounds(new Dimension(videoWidth, videoHeight), size);
 
         int width = dimension.getWidth();
         int height = dimension.getHeight();

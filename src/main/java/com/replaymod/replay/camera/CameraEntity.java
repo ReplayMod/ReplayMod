@@ -1,10 +1,10 @@
 package com.replaymod.replay.camera;
 
 import com.replaymod.core.events.SettingsChangedEvent;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
-import eu.crushedpixel.replaymod.holders.AdvancedPosition;
-import eu.crushedpixel.replaymod.utils.SkinProvider;
+import com.replaymod.replaystudio.util.Location;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.block.material.Material;
@@ -107,8 +107,8 @@ public class CameraEntity extends EntityPlayerSP {
      * Sets the camera position and rotation to that of the specified AdvancedPosition
      * @param pos The position and rotation to set
      */
-    public void setCameraPosRot(AdvancedPosition pos) {
-        setCameraRotation((float) pos.getYaw(), (float) pos.getPitch(), (float) pos.getRoll());
+    public void setCameraPosRot(Location pos) {
+        setCameraRotation(pos.getYaw(), pos.getPitch(), roll);
         setCameraPosition(pos.getX(), pos.getY(), pos.getZ());
     }
 
@@ -238,7 +238,7 @@ public class CameraEntity extends EntityPlayerSP {
     public ResourceLocation getLocationSkin() {
         Entity view = mc.getRenderViewEntity();
         if (view != this && view instanceof EntityPlayer) {
-            return SkinProvider.getResourceLocationForPlayerUUID(view.getUniqueID());
+            return Utils.getResourceLocationForPlayerUUID(view.getUniqueID());
         }
         return super.getLocationSkin();
     }

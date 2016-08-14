@@ -2,6 +2,7 @@ package com.replaymod.online.gui;
 
 import com.google.common.base.Optional;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.online.api.ApiClient;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -13,10 +14,8 @@ import com.replaymod.online.api.replay.holders.Category;
 import eu.crushedpixel.replaymod.gui.GuiConstants;
 import eu.crushedpixel.replaymod.gui.elements.*;
 import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
-import eu.crushedpixel.replaymod.registry.ResourceHelper;
-import eu.crushedpixel.replaymod.utils.ImageUtils;
 import eu.crushedpixel.replaymod.utils.MouseUtils;
-import eu.crushedpixel.replaymod.utils.RegexUtils;
+import com.replaymod.core.utils.Patterns;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -34,7 +33,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -99,7 +97,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
             metaData = archive.getMetaData();
             Optional<BufferedImage> img = archive.getThumb();
             if(img.isPresent()) {
-                thumb = ImageUtils.scaleImage(img.get(), new Dimension(1280, 720));
+                thumb = img.get();
                 hasThumbnail = true;
             }
 
@@ -125,11 +123,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
 
         //If thumb is null, set image to placeholder
         if(thumb == null) {
-            try {
-                thumb = ImageIO.read(GuiUploadFile.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
+            thumb = Utils.DEFAULT_THUMBNAIL;
         }
     }
 
@@ -321,8 +315,6 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
                         } else {
                             uploader.uploadFile(GuiUploadFile.this, name, tags, replayFile, category, desc);
                         }
-
-                        ReplayMod.uploadedFileHandler.markAsUploaded(replayFile);
                     } catch(Exception e) {
                         messageTextField.setText(I18n.format("replaymod.gui.unknownerror"));
                         messageTextField.setTextColor(Color.RED.getRGB());
@@ -347,7 +339,6 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
                 dynTex = new DynamicTexture(thumb);
                 mc.getTextureManager().loadTexture(textureResource, dynTex);
                 dynTex.updateDynamicTexture();
-                ResourceHelper.registerResource(textureResource);
             }
 
             mc.getTextureManager().bindTexture(textureResource); //Will be freed by the ResourceHelper
@@ -388,7 +379,7 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
 
     @Override
     public void onGuiClosed() {
-        ResourceHelper.freeAllResources();
+        // Note: Currently intentionally leaks resources, will be fixed soon
         Keyboard.enableRepeatEvents(false);
         super.onGuiClosed();
     }
@@ -411,11 +402,11 @@ public class GuiUploadFile extends GuiScreen implements ProgressUpdateListener {
             enabled = false;
             name.setTextColor(Color.RED.getRGB());
             startUploadButton.hoverText = I18n.format("replaymod.gui.upload.error.name.length");
-        } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_SPACE_HYPHEN_UNDERSCORE, name.getText())) {
+        } else if(!Patterns.ALPHANUMERIC_SPACE_HYPHEN_UNDERSCORE.matcher(name.getText()).matches()) {
             enabled = false;
             name.setTextColor(Color.RED.getRGB());
             startUploadButton.hoverText = I18n.format("replaymod.gui.upload.error.name");
-        } else if(!RegexUtils.isValid(RegexUtils.ALPHANUMERIC_COMMA, tags.getText())) {
+        } else if(!Patterns.ALPHANUMERIC_COMMA.matcher(tags.getText()).matches()) {
             enabled = false;
             tags.setTextColor(Color.RED.getRGB());
             startUploadButton.hoverText = I18n.format("replaymod.gui.upload.error.tags");

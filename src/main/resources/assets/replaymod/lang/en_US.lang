@@ -280,6 +280,7 @@ replaymod.gui.settings.pathpreview=Show Path Preview
 replaymod.gui.settings.keyframecleancallback=Clear Confirmation
 replaymod.gui.settings.renderinvisible=Render invisible Entities
 replaymod.gui.settings.camera=Camera
+replaymod.gui.settings.showchat=Show Chat
 
 replaymod.gui.settings.warning.linea=WARNING: Recording settings will be
 replaymod.gui.settings.warning.lineb=applied the next time you join a world.

@@ -26,7 +26,7 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
     private GuiButton registerButton = new GuiButton(this).setI18nLabel("replaymod.gui.register").setSize(150, 20);
     private GuiTextField username = new GuiTextField(this).setSize(145, 20).setMaxLength(16).setFocused(true);
     private GuiPasswordField password = new GuiPasswordField(this).setSize(145, 20)
-            .setMaxLength(GuiConstants.MAX_PW_LENGTH);
+            .setMaxLength(GuiRegister.MAX_PW_LENGTH);
 
     {
         Utils.link(username, password);
