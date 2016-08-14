@@ -38,7 +38,7 @@ public class ReplayModReplay {
 
     private Logger logger;
 
-    private ReplayHandler replayHandler;
+    protected ReplayHandler replayHandler;
 
     public ReplayHandler getReplayHandler() {
         return replayHandler;

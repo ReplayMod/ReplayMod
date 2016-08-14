@@ -111,6 +111,10 @@ public class ReplayHandler {
 
         channel.close().awaitUninterruptibly();
 
+        if (mc.thePlayer instanceof CameraEntity) {
+            mc.thePlayer.setDead();
+        }
+
         if (mc.theWorld != null) {
             mc.theWorld.sendQuittingDisconnectingPacket();
             mc.loadWorld(null);
@@ -121,6 +125,8 @@ public class ReplayHandler {
 
         // These might have been hidden by the overlay, so we have to make sure they're visible again
         ReplayGuiRegistry.show();
+
+        ReplayModReplay.instance.replayHandler = null;
 
         FMLCommonHandler.instance().bus().post(new ReplayCloseEvent.Post(this));
     }

@@ -54,10 +54,17 @@ public class CameraEntity extends EntityPlayerSP {
      */
     private Entity lastHandRendered = null;
 
+    /**
+     * The hashCode and equals methods of Entity are not stable.
+     * Therefore we cannot register any event handlers directly in the CameraEntity class and
+     * instead have this inner class.
+     */
+    private final EventHandler eventHandler = new EventHandler();
+
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
         super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
-        FMLCommonHandler.instance().bus().register(this);
-        MinecraftForge.EVENT_BUS.register(this);
+        FMLCommonHandler.instance().bus().register(eventHandler);
+        MinecraftForge.EVENT_BUS.register(eventHandler);
         cameraController = ReplayModReplay.instance.createCameraController(this);
     }
 
@@ -260,23 +267,8 @@ public class CameraEntity extends EntityPlayerSP {
     @Override
     public void setDead() {
         super.setDead();
-        FMLCommonHandler.instance().bus().unregister(this);
-        MinecraftForge.EVENT_BUS.unregister(this);
-    }
-
-    @SubscribeEvent
-    public void onPreClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
-            update();
-            updateArmYawAndPitch();
-        }
-    }
-
-    @SubscribeEvent
-    public void onRenderUpdate(TickEvent.RenderTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
-            update();
-        }
+        FMLCommonHandler.instance().bus().unregister(eventHandler);
+        MinecraftForge.EVENT_BUS.unregister(eventHandler);
     }
 
     private void update() {
@@ -301,58 +293,75 @@ public class CameraEntity extends EntityPlayerSP {
         renderArmYaw = renderArmYaw +  (rotationYaw - renderArmYaw) * 0.5f;
     }
 
-    @SubscribeEvent
-    public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
-        // The crosshair should only render if targeted entity can actually be spectated
-        if (event.type == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
-            event.setCanceled(!canSpectate(mc.pointedEntity));
-        }
-    }
-
     public boolean canSpectate(Entity e) {
         return e != null && !e.isInvisible()
                 && (e instanceof EntityPlayer || e instanceof EntityLiving || e instanceof EntityItemFrame);
     }
 
-    @SubscribeEvent
-    public void onSettingsChanged(SettingsChangedEvent event) {
-        if (event.getKey() == Setting.CAMERA) {
-            cameraController = ReplayModReplay.instance.createCameraController(this);
-        }
-    }
-
-    @SubscribeEvent
-    public void onRenderHand(RenderHandEvent event) {
-        // Unless we are spectating another player, don't render our hand
-        if (mc.getRenderViewEntity() == this || !(mc.getRenderViewEntity() instanceof EntityPlayer)) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onRenderHandMonitor(RenderHandEvent event) {
-        Entity view = mc.getRenderViewEntity();
-        if (view instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) view;
-            // When the spectated player has changed, force equip their items to prevent the equip animation
-            if (lastHandRendered != player) {
-                lastHandRendered = player;
-
-                mc.entityRenderer.itemRenderer.prevEquippedProgress = 1;
-                mc.entityRenderer.itemRenderer.equippedProgress = 1;
-                mc.entityRenderer.itemRenderer.itemToRender = player.inventory.getCurrentItem();
-                mc.entityRenderer.itemRenderer.equippedItemSlot = player.inventory.currentItem;
-
-                mc.thePlayer.renderArmYaw = mc.thePlayer.prevRenderArmYaw = player.rotationYaw;
-                mc.thePlayer.renderArmPitch = mc.thePlayer.prevRenderArmPitch = player.rotationPitch;
+    private class EventHandler {
+        @SubscribeEvent
+        public void onPreClientTick(TickEvent.ClientTickEvent event) {
+            if (event.phase == TickEvent.Phase.START) {
+                update();
+                updateArmYawAndPitch();
             }
         }
-    }
 
-    @SubscribeEvent
-    public void onEntityViewRenderEvent(EntityViewRenderEvent.CameraSetup event) {
-        if (mc.getRenderViewEntity() == this) {
-            event.roll = roll;
+        @SubscribeEvent
+        public void onRenderUpdate(TickEvent.RenderTickEvent event) {
+            if (event.phase == TickEvent.Phase.START) {
+                update();
+            }
+        }
+
+        @SubscribeEvent
+        public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
+            // The crosshair should only render if targeted entity can actually be spectated
+            if (event.type == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+                event.setCanceled(!canSpectate(mc.pointedEntity));
+            }
+        }
+
+        @SubscribeEvent
+        public void onSettingsChanged(SettingsChangedEvent event) {
+            if (event.getKey() == Setting.CAMERA) {
+                cameraController = ReplayModReplay.instance.createCameraController(CameraEntity.this);
+            }
+        }
+
+        @SubscribeEvent
+        public void onRenderHand(RenderHandEvent event) {
+            // Unless we are spectating another player, don't render our hand
+            if (mc.getRenderViewEntity() == CameraEntity.this || !(mc.getRenderViewEntity() instanceof EntityPlayer)) {
+                event.setCanceled(true);
+            }
+        }
+
+        @SubscribeEvent(priority = EventPriority.LOWEST)
+        public void onRenderHandMonitor(RenderHandEvent event) {
+            Entity view = mc.getRenderViewEntity();
+            if (view instanceof EntityPlayer) {
+                EntityPlayer player = (EntityPlayer) view;
+                // When the spectated player has changed, force equip their items to prevent the equip animation
+                if (lastHandRendered != player) {
+                    lastHandRendered = player;
+
+                    mc.entityRenderer.itemRenderer.prevEquippedProgress = 1;
+                    mc.entityRenderer.itemRenderer.equippedProgress = 1;
+                    mc.entityRenderer.itemRenderer.itemToRender = player.inventory.getCurrentItem();
+                    mc.entityRenderer.itemRenderer.equippedItemSlot = player.inventory.currentItem;
+
+                    mc.thePlayer.renderArmYaw = mc.thePlayer.prevRenderArmYaw = player.rotationYaw;
+                    mc.thePlayer.renderArmPitch = mc.thePlayer.prevRenderArmPitch = player.rotationPitch;
+                }
+            }
+        }
+
+        @SubscribeEvent
+        public void onEntityViewRenderEvent(EntityViewRenderEvent.CameraSetup event) {
+            if (mc.getRenderViewEntity() == CameraEntity.this) {
+                event.roll = roll;
+            }
         }
     }
 }
