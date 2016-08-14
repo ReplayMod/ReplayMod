@@ -19,6 +19,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
         MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.replaymod.json");
         MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.recording.replaymod.json");
         MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.render.replaymod.json");
+        MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.replay.replaymod.json");
 
         CodeSource codeSource = getClass().getProtectionDomain().getCodeSource();
         if (codeSource != null) {

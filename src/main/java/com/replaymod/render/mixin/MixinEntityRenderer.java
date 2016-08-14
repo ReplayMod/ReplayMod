@@ -5,7 +5,6 @@ import com.replaymod.render.capturer.CubicOpenGlFrameCapturer;
 import com.replaymod.render.capturer.StereoscopicOpenGlFrameCapturer;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import com.replaymod.replay.camera.CameraEntity;
-import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -31,9 +30,6 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     public Minecraft mc;
 
     private EntityRendererHandler replayModRender_handler;
-
-    @Shadow(remap = false)
-    private SpectatorRenderer spectatorRenderer;
 
     @Override
     public void replayModRender_setHandler(EntityRendererHandler handler) {
@@ -119,12 +115,17 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             }
             Entity currentEntity = Minecraft.getMinecraft().getRenderViewEntity();
             if (currentEntity instanceof EntityPlayer && !(currentEntity instanceof CameraEntity)) {
-                renderPass = replayModRender_handler.data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE ? 1 : 0;
-                spectatorRenderer.renderSpectatorHand((EntityPlayer) currentEntity, partialTicks, renderPass);
-                ci.cancel(); // No further hand rendering needed
+                if (renderPass == 2) { // Need to update render pass
+                    renderPass = replayModRender_handler.data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE ? 1 : 0;
+                    renderHand(partialTicks, renderPass);
+                    ci.cancel();
+                } // else, render normally
             }
         }
     }
+
+    @Shadow
+    public abstract void renderHand(float partialTicks, int renderPass);
 
     @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;IF)V"))
     private void replayModRender_drawSelectionBox(RenderGlobal instance, EntityPlayer player, MovingObjectPosition mop, int alwaysZero, float partialTicks) {

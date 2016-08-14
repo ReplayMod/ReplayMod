@@ -15,7 +15,6 @@ import eu.crushedpixel.replaymod.registry.KeybindRegistry;
 import eu.crushedpixel.replaymod.registry.ReplayFileAppender;
 import eu.crushedpixel.replaymod.registry.UploadedFileHandler;
 import eu.crushedpixel.replaymod.renderer.CustomObjectRenderer;
-import eu.crushedpixel.replaymod.renderer.SpectatorRenderer;
 import eu.crushedpixel.replaymod.settings.ReplaySettings;
 import eu.crushedpixel.replaymod.sound.SoundHandler;
 import eu.crushedpixel.replaymod.utils.OpenGLUtils;
@@ -96,8 +95,6 @@ public class ReplayMod {
     @Deprecated
     public static UploadedFileHandler uploadedFileHandler;
     @Deprecated
-    public static SpectatorRenderer spectatorRenderer;
-    @Deprecated
     public static TooltipRenderer tooltipRenderer;
     @Deprecated
     public static CustomObjectRenderer customObjectRenderer;
@@ -165,8 +162,6 @@ public class ReplayMod {
         TickAndRenderListener tarl = new TickAndRenderListener();
         FMLCommonHandler.instance().bus().register(tarl);
         MinecraftForge.EVENT_BUS.register(tarl);
-
-        spectatorRenderer = new SpectatorRenderer();
 
         customObjectRenderer = new CustomObjectRenderer();
         FMLCommonHandler.instance().bus().register(customObjectRenderer);

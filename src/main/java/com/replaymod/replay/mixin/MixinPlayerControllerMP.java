@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.mixin;
+package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.ReplayModReplay;
@@ -24,10 +24,17 @@ public abstract class MixinPlayerControllerMP {
     private NetHandlerPlayClient netClientHandler;
 
     @Inject(method = "func_178892_a", at=@At("HEAD"), cancellable = true)
-    public void createReplayCamera(World worldIn, StatFileWriter statFileWriter, CallbackInfoReturnable<EntityPlayerSP> ci) {
+    private void replayModReplay_createReplayCamera(World worldIn, StatFileWriter statFileWriter, CallbackInfoReturnable<EntityPlayerSP> ci) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {
             ci.setReturnValue(new CameraEntity(mc, worldIn, netClientHandler, statFileWriter));
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "isSpectator", at=@At("HEAD"), cancellable = true)
+    private void replayModReplay_isSpectator(CallbackInfoReturnable<Boolean> ci) {
+        if (mc.thePlayer instanceof CameraEntity) { // this check should in theory not be required
+            ci.setReturnValue(mc.thePlayer.isSpectator());
         }
     }
 }

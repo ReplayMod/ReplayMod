@@ -4,6 +4,9 @@ import com.replaymod.replay.ReplayModReplay;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import org.lwjgl.input.Mouse;
 
 import java.util.Arrays;
 
@@ -23,6 +26,24 @@ public class SpectatorCameraController implements CameraController {
                 mc.gameSettings.keyBindJump, mc.gameSettings.keyBindSneak, mc.gameSettings.keyBindForward,
                 mc.gameSettings.keyBindBack, mc.gameSettings.keyBindLeft, mc.gameSettings.keyBindRight)) {
             binding.pressTime = 0;
+        }
+
+        // Prevent mouse movement
+        Mouse.updateCursor();
+
+        // Always make sure the camera is in the exact same spot as the spectated entity
+        // This is necessary as some rendering code for the hand doesn't respect the view entity
+        // and always uses mc.thePlayer
+        Entity view = mc.getRenderViewEntity();
+        if (view != null && view != camera) {
+            camera.setCameraPosRot(mc.getRenderViewEntity());
+            // If it's a player, also 'steal' its inventory so the rendering code knows what item to render
+            if (view instanceof EntityPlayer) {
+                EntityPlayer viewPlayer = (EntityPlayer) view;
+                camera.inventory = viewPlayer.inventory;
+                camera.itemInUse = viewPlayer.itemInUse;
+                camera.itemInUseCount = viewPlayer.itemInUseCount;
+            }
         }
     }
 
