@@ -39,8 +39,6 @@ public class ReplayModOnline {
 
     private Logger logger;
 
-    private File downloadsFolder = new File("replay_downloads");
-
     private ApiClient apiClient;
 
     /**
@@ -64,8 +62,8 @@ public class ReplayModOnline {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        if (!downloadsFolder.mkdirs()) {
-            logger.warn("Failed to create downloads folder: " + downloadsFolder);
+        if (!getDownloadsFolder().mkdirs()) {
+            logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
         }
 
         new GuiHandler(this).register();
@@ -103,11 +101,11 @@ public class ReplayModOnline {
     }
 
     public File getDownloadsFolder() {
-        return downloadsFolder;
+        return new File(core.getSettingsRegistry().get(Setting.DOWNLOAD_PATH));
     }
 
     public File getDownloadedFile(int id) {
-        return new File(downloadsFolder, id + ".mcpr");
+        return new File(getDownloadsFolder(), id + ".mcpr");
     }
 
     public boolean hasDownloaded(int id) {

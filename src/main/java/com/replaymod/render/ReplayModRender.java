@@ -20,10 +20,16 @@ public class ReplayModRender {
 
     private Configuration configuration;
 
+    public ReplayMod getCore() {
+        return core;
+    }
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
         configuration = new Configuration(event.getSuggestedConfigurationFile());
+
+        core.getSettingsRegistry().register(Setting.class);
     }
 
     public Configuration getConfiguration() {
