@@ -2,6 +2,7 @@ package com.replaymod.simplepathing.gui;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
@@ -229,7 +230,21 @@ public class GuiPathing {
                     preparePathsForPlayback();
 
                     timePath.setActive(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
-                    player.start(timeline);
+                    ListenableFuture<Void> future = player.start(timeline);
+                    overlay.setCloseable(false);
+                    overlay.setMouseVisible(true);
+                    Futures.addCallback(future, new FutureCallback<Void>() {
+                        @Override
+                        public void onSuccess(@Nullable Void result) {
+                            overlay.setCloseable(true);
+                        }
+
+                        @Override
+                        public void onFailure(Throwable t) {
+                            t.printStackTrace();
+                            overlay.setCloseable(true);
+                        }
+                    });
                 }
             }
         });
