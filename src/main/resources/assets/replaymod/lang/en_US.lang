@@ -206,11 +206,13 @@ replaymod.gui.upload.cancel=Cancel Upload
 replaymod.gui.upload.tagshint=Tags separated by comma
 replaymod.gui.upload.namehint=Replay Title
 replaymod.gui.upload.descriptionhint=Description
+replaymod.gui.upload.duration=Duration: %02dm%02ds
 replaymod.gui.upload.uploading=Uploading...
 replaymod.gui.upload.success=File has been successfully uploaded
 replaymod.gui.upload.canceled=Upload has been canceled
-replaymod.gui.upload.hideip=Hide Server IP
+replaymod.gui.upload.hideip2=Hide Server IP (%s)
 replaymod.gui.upload.nothumbnail=Missing Thumbnail. Please create a Thumbnail in the Replay using the %1$s key.
+replaymod.gui.upload.tryagain=Try again?
 
 replaymod.gui.upload.error.name.length=The Replay Name has to be between 5 and 30 characters long
 replaymod.gui.upload.error.name=The Replay Name may not contain special characters

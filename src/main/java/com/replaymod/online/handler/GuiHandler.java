@@ -3,13 +3,12 @@ package com.replaymod.online.handler;
 import com.replaymod.online.ReplayModOnline;
 import com.replaymod.online.gui.GuiLoginPrompt;
 import com.replaymod.online.gui.GuiReplayCenter;
-import com.replaymod.online.gui.GuiUploadFile;
+import com.replaymod.online.gui.GuiUploadReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiElement;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.resources.I18n;
@@ -23,8 +22,6 @@ import java.util.List;
 
 public class GuiHandler {
     private static final int BUTTON_REPLAY_CENTER = 17890236;
-
-    private static final Minecraft mc = Minecraft.getMinecraft();
 
     private final ReplayModOnline mod;
 
@@ -64,11 +61,11 @@ public class GuiHandler {
                     @Override
                     public void run() {
                         File replayFile = replayViewer.list.getSelected().file;
-                        GuiUploadFile uploadGui = new GuiUploadFile(mod.getApiClient(), replayFile, replayViewer);
+                        GuiUploadReplay uploadGui = new GuiUploadReplay(replayViewer, mod, replayFile);
                         if (mod.isLoggedIn()) {
-                            mc.displayGuiScreen(uploadGui);
+                            uploadGui.display();
                         } else {
-                            new GuiLoginPrompt(mod.getApiClient(), replayViewer, GuiScreen.wrap(uploadGui), true);
+                            new GuiLoginPrompt(mod.getApiClient(), replayViewer, uploadGui, true);
                         }
                     }
                 }).setSize(73, 20).setI18nLabel("replaymod.gui.upload").setDisabled();

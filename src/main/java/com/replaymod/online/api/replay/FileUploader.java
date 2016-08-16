@@ -2,17 +2,22 @@ package com.replaymod.online.api.replay;
 
 import com.google.gson.Gson;
 import com.replaymod.online.api.ApiClient;
+import com.replaymod.online.api.ApiException;
 import com.replaymod.online.api.replay.holders.ApiError;
 import com.replaymod.online.api.replay.holders.Category;
-import com.replaymod.online.gui.GuiUploadFile;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.client.resources.I18n;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 public class FileUploader {
@@ -20,36 +25,20 @@ public class FileUploader {
 
     private final ApiClient apiClient;
 
-    private boolean uploading = false;
+    private volatile boolean uploading = false;
+    private volatile boolean cancel;
     private long filesize;
     private long current;
 
-    private boolean cancel = false;
-
-    private GuiUploadFile parent;
-
-    public void uploadFile(GuiUploadFile gui, String filename, List<String> tags, File file, Category category, String description) {
-        boolean success = false;
-        String info = null;
-
+    public synchronized void uploadFile(File file, String filename, Set<String> tags, Category category,
+                                        String description, Consumer<Double> progress) throws Exception {
         try {
-            parent = gui;
-            gui.onStartUploading();
-            filesize = 0;
-
-            if(uploading) throw new RuntimeException("FileUploader is already uploading");
             uploading = true;
 
             String postData = "?auth=" + apiClient.getAuthKey() + "&category=" + category.getId();
 
             if(tags.size() > 0) {
-                postData += "&tags=";
-                for(String tag : tags) {
-                    postData += tag;
-                    if(!tag.equals(tags.get(tags.size() - 1))) {
-                        postData += ",";
-                    }
-                }
+                postData += "&tags=" + StringUtils.join(tags.toArray(new String[tags.size()]), ",");
             }
 
             if(description != null && description.length() > 0) {
@@ -88,17 +77,11 @@ public class FileUploader {
                 request.write(buf);
                 current += len;
 
-                parent.onProgressChanged(getUploadProgress());
+                progress.accept(getUploadProgress());
 
                 if(cancel) {
-                    parent.onProgressChanged(0f);
-
-                    uploading = false;
-                    current = 0;
-                    cancel = false;
-                    parent.onFinishUploading(false, I18n.format("replaymod.gui.upload.canceled"));
                     fis.close();
-                    return;
+                    throw new CancelledException();
                 }
             }
             fis.close();
@@ -109,51 +92,34 @@ public class FileUploader {
             request.flush();
             request.close();
 
-            success = false;
             int responseCode = con.getResponseCode();
-            InputStream is;
-            if(responseCode == 200) {
-                success = true;
-                is = con.getInputStream();
-            } else {
-                success = false;
-                is = con.getErrorStream();
+            InputStream is = responseCode == 200 ? con.getInputStream() : con.getErrorStream();
+            if (is == null) {
+                throw new RuntimeException("Input stream was null.");
             }
 
-            if(is != null) {
-                BufferedReader r = new BufferedReader(new InputStreamReader(is));
-                info = null;
-                String result = "";
-                while(r.ready()) {
-                    result += r.readLine();
-                }
-                if(responseCode != 200) {
-                    ApiError error = gson.fromJson(result, ApiError.class);
-                    info = error.getTranslatedDesc();
-                }
+            String result = IOUtils.toString(is);
+            if (responseCode != 200) {
+                ApiError error = gson.fromJson(result, ApiError.class);
+                throw new ApiException(error);
             }
             con.disconnect();
 
-            if(info == null) info = I18n.format("replaymod.gui.unknownerror");
-        } catch(Exception e) {
-            success = false;
-            e.printStackTrace();
         } finally {
-            parent.onFinishUploading(success, info);
             uploading = false;
+            cancel = false;
+            current = 0;
         }
     }
 
-    public float getUploadProgress() {
+    public double getUploadProgress() {
         if(!uploading || filesize == 0) return 0;
-        return (float) ((double) current / (double) filesize);
-    }
-
-    public boolean isUploading() {
-        return uploading;
+        return (double) current / filesize;
     }
 
     public void cancelUploading() {
         cancel = true;
     }
+
+    public static final class CancelledException extends Exception {}
 }
