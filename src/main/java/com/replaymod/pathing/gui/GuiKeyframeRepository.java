@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
+import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.GuiRenderer;
@@ -91,7 +92,15 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
         @Override
         public void run() {
             getMinecraft().displayGuiScreen(null);
-            future.set(timelines.get(selectedEntry.name));
+            try {
+                Timeline timeline = timelines.get(selectedEntry.name);
+                for (Path path : timeline.getPaths()) {
+                    path.updateAll();
+                }
+                future.set(timeline);
+            } catch (Throwable t) {
+                future.setException(t);
+            }
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.load").setDisabled();
     public final GuiButton renameButton = new GuiButton(buttonPanel).onClick(new Runnable() {
