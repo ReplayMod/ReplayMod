@@ -22,6 +22,7 @@ import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.PathSegment;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.pathing.property.Property;
 import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
@@ -32,7 +33,6 @@ import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTimelineTime;
-import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
@@ -91,15 +91,7 @@ public class GuiPathing {
             }
             super.draw(renderer, size, renderInfo);
         }
-    }.onClick(new IGuiTimeline.OnClick() {
-        @Override
-        public void run(int time) {
-            timeline.setCursorPosition(time);
-            // TODO: Keyframe selection
-            mod.setSelectedPositionKeyframe(null);
-            mod.setSelectedTimeKeyframe(null);
-        }
-    }).setSize(Integer.MAX_VALUE, 20).setLength(30 * 60 * 1000).setMarkers();
+    }.setSize(Integer.MAX_VALUE, 20).setLength(30 * 60 * 1000).setMarkers();
 
     public final GuiHorizontalScrollbar scrollbar = new GuiHorizontalScrollbar().setSize(Integer.MAX_VALUE, 9);
     {scrollbar.onValueChanged(new Runnable() {
@@ -399,7 +391,7 @@ public class GuiPathing {
         Timeline timeline = mod.getCurrentTimeline();
         Path path = timeline.getPaths().get(isTime ? TIME_PATH : POSITION_PATH);
 
-        Keyframe keyframe = path.getKeyframe(time);
+        Keyframe keyframe = isTime ? mod.getSelectedTimeKeyframe() : mod.getSelectedPositionKeyframe();
         Change change;
         if (keyframe == null) {
             change = AddKeyframe.create(path, time);
@@ -442,33 +434,9 @@ public class GuiPathing {
         // Update interpolators for spectator keyframes
         // while this is overkill, it is far simpler than updating differently for every possible case
         if (!isTime) {
-            Interpolator interpolator = null;
-            boolean isSpectatorInterpolator = false;
-            for (PathSegment segment : path.getSegments()) {
-                if (segment.getStartKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()
-                        && segment.getEndKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()) {
-                    // Spectator segment
-                    if (!isSpectatorInterpolator) {
-                        isSpectatorInterpolator = true;
-                        interpolator = new LinearInterpolator();
-                        interpolator.registerProperty(SpectatorProperty.PROPERTY);
-                    }
-                    SetInterpolator setInterpolator = SetInterpolator.create(segment, interpolator);
-                    setInterpolator.apply(timeline);
-                    change = CombinedChange.createFromApplied(change, setInterpolator);
-                } else {
-                    // Normal segment
-                    if (isSpectatorInterpolator || interpolator == null) {
-                        isSpectatorInterpolator = false;
-                        interpolator = new CubicSplineInterpolator();
-                        interpolator.registerProperty(CameraProperties.POSITION);
-                        interpolator.registerProperty(CameraProperties.ROTATION);
-                    }
-                    SetInterpolator setInterpolator = SetInterpolator.create(segment, interpolator);
-                    setInterpolator.apply(timeline);
-                    change = CombinedChange.createFromApplied(change, setInterpolator);
-                }
-            }
+            Change interpolators = updateInterpolators();
+            interpolators.apply(timeline);
+            change = CombinedChange.createFromApplied(change, interpolators);
         }
 
         Change specPosUpdate = updateSpectatorPositions();
@@ -484,7 +452,35 @@ public class GuiPathing {
         }
     }
 
-    private Change updateSpectatorPositions() {
+    public Change updateInterpolators() {
+        List<Change> changes = new ArrayList<>();
+        Interpolator interpolator = null;
+        boolean isSpectatorInterpolator = false;
+        for (PathSegment segment : mod.getCurrentTimeline().getPaths().get(POSITION_PATH).getSegments()) {
+            if (segment.getStartKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()
+                    && segment.getEndKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()) {
+                // Spectator segment
+                if (!isSpectatorInterpolator) {
+                    isSpectatorInterpolator = true;
+                    interpolator = new LinearInterpolator();
+                    interpolator.registerProperty(SpectatorProperty.PROPERTY);
+                }
+                changes.add(SetInterpolator.create(segment, interpolator));
+            } else {
+                // Normal segment
+                if (isSpectatorInterpolator || interpolator == null) {
+                    isSpectatorInterpolator = false;
+                    interpolator = new CubicSplineInterpolator();
+                    interpolator.registerProperty(CameraProperties.POSITION);
+                    interpolator.registerProperty(CameraProperties.ROTATION);
+                }
+                changes.add(SetInterpolator.create(segment, interpolator));
+            }
+        }
+        return CombinedChange.create(changes.toArray(new Change[changes.size()]));
+    }
+
+    public Change updateSpectatorPositions() {
         List<Change> changes = new ArrayList<>();
         Path positionPath = mod.getCurrentTimeline().getPaths().get(POSITION_PATH);
         Path timePath = mod.getCurrentTimeline().getPaths().get(TIME_PATH);
@@ -514,12 +510,66 @@ public class GuiPathing {
         return CombinedChange.create(changes.toArray(new Change[changes.size()]));
     }
 
+    public Change moveKeyframe(int pathId, Keyframe keyframe, long newTime) {
+        Timeline timeline = mod.getCurrentTimeline();
+        Path path = timeline.getPaths().get(pathId);
+        // Interpolator might be required later (only if path is the time path)
+        Optional<Interpolator> interpolator =
+                path.getSegments().stream().findFirst().map(PathSegment::getInterpolator);
+
+        // First remove the old keyframe
+        Change removeChange = RemoveKeyframe.create(path, keyframe);
+        removeChange.apply(timeline);
+
+        // and add a new one at the correct time
+        Change addChange = AddKeyframe.create(path, newTime);
+        addChange.apply(timeline);
+        path.getKeyframe(newTime);
+
+        // Then copy over all properties
+        UpdateKeyframeProperties.Builder builder = UpdateKeyframeProperties.create(path, path.getKeyframe(newTime));
+        for (Property property : keyframe.getProperties()) {
+            copyProperty(property, keyframe, builder);
+        }
+        Change propertyChange = builder.done();
+        propertyChange.apply(timeline);
+
+        // Finally set the interpolators
+        Change interpolatorChange;
+        if (pathId == GuiPathing.POSITION_PATH) {
+            // Position / Spectator keyframes need special handling
+            interpolatorChange = updateInterpolators();
+        } else {
+            // Time keyframes only need updating when only one segment of them exists
+            if (path.getSegments().size() == 1) {
+                interpolatorChange = SetInterpolator.create(path.getSegments().iterator().next(), interpolator.get());
+            } else {
+                interpolatorChange = CombinedChange.create(); // Noop change
+            }
+        }
+        interpolatorChange.apply(timeline);
+        // and update spectator positions
+        Change spectatorChange = updateSpectatorPositions();
+        spectatorChange.apply(timeline);
+
+        return CombinedChange.createFromApplied(removeChange, addChange, propertyChange, interpolatorChange, spectatorChange);
+    }
+
+    // Helper method because generics cannot be defined on blocks
+    private <T> void copyProperty(Property<T> property, Keyframe from, UpdateKeyframeProperties.Builder to) {
+        from.getValue(property).ifPresent(value -> to.setValue(property, value));
+    }
+
     public ReplayModSimplePathing getMod() {
         return mod;
     }
 
     public EntityPositionTracker getEntityTracker() {
         return entityTracker;
+    }
+
+    public void openEditKeyframePopup(Keyframe keyframe) {
+
     }
 
     private class LoadEntityTrackerPopup extends AbstractGuiPopup<LoadEntityTrackerPopup> {

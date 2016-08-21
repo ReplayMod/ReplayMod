@@ -6,22 +6,72 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
+import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replaystudio.pathing.change.Change;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.PathSegment;
+import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.pathing.property.Property;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
+import de.johni0702.minecraft.gui.function.Draggable;
+import net.minecraft.client.Minecraft;
+import org.apache.commons.lang3.tuple.Pair;
+import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
+import org.lwjgl.util.ReadablePoint;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.Optional;
 
-public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline> {
+public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline> implements Draggable {
     protected static final int KEYFRAME_SIZE = 5;
     protected static final int KEYFRAME_TEXTURE_X = 74;
     protected static final int KEYFRAME_TEXTURE_Y = 20;
+    private static final int DOUBLE_CLICK_INTERVAL = 250;
+    private static final int DRAGGING_THRESHOLD = KEYFRAME_SIZE;
 
     private final GuiPathing gui;
+
+    /**
+     * The keyframe that was last clicked on using the left mouse button.
+     */
+    private Keyframe lastClickedKeyframe;
+
+    /**
+     * Id of the path of {@link #lastClickedKeyframe}.
+     */
+    private int lastClickedPath;
+
+    /**
+     * The time at which {@link #lastClickedKeyframe} was updated.
+     * According to {@link Minecraft#getSystemTime()}.
+     */
+    private long lastClickedTime;
+
+    /**
+     * Whether to handle dragging events.
+     */
+    private boolean dragging;
+
+    /**
+     * Whether we have surpassed the initial threshold and are actually dragging the keyframe.
+     */
+    private boolean actuallyDragging;
+
+    /**
+     * Where the mouse was when {@link #dragging} started.
+     */
+    private int draggingStartX;
+
+    /**
+     * Change caused by dragging. Whenever the user moves the keyframe further, the previous change is undone
+     * and a new one is created. This way when the mouse is released, only one change is in the undo history.
+     */
+    private Change draggingChange;
 
     public GuiKeyframeTimeline(GuiPathing gui) {
         this.gui = gui;
@@ -89,6 +139,163 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
         }
 
         super.drawTimelineCursor(renderer, size);
+    }
+
+    /**
+     * Returns the keyframe at the specified position.
+     * @param position The raw position
+     * @return Pair of path id and keyframe or null when no keyframe was clicked
+     */
+    private Pair<Integer, Keyframe> getKeyframe(ReadablePoint position) {
+        int time = getTimeAt(position.getX(), position.getY());
+        if (time != -1) {
+            Point mouse = new Point(position);
+            getContainer().convertFor(this, mouse);
+            int mouseY = mouse.getY();
+            if (mouseY > BORDER_TOP && mouseY < BORDER_TOP + 2 * KEYFRAME_SIZE) {
+                Timeline timeline = gui.getMod().getCurrentTimeline();
+                int path;
+                if (mouseY <= BORDER_TOP + KEYFRAME_SIZE) {
+                    // Position keyframe
+                    path = GuiPathing.POSITION_PATH;
+                } else {
+                    // Time keyframe
+                    path = GuiPathing.TIME_PATH;
+                }
+                int visibleTime = (int) (getZoom() * getLength());
+                int tolerance = visibleTime * KEYFRAME_SIZE / (size.getWidth() - BORDER_LEFT - BORDER_RIGHT) / 2;
+                Optional<Keyframe> keyframe = timeline.getPaths().get(path).getKeyframes().stream()
+                        .filter(k -> Math.abs(k.getTime() - time) <= tolerance)
+                        .sorted(Comparator.comparing(k -> Math.abs(k.getTime() - time)))
+                        .findFirst();
+                if (keyframe.isPresent()) {
+                    return Pair.of(path, keyframe.get());
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean mouseClick(ReadablePoint position, int button) {
+        int time = getTimeAt(position.getX(), position.getY());
+        Pair<Integer, Keyframe> pathKeyframePair = getKeyframe(position);
+        if (pathKeyframePair != null) {
+            // Clicked on keyframe
+            Keyframe keyframe = pathKeyframePair.getRight();
+            if (button == 0) { // Left click
+                long now = Minecraft.getSystemTime();
+                if (lastClickedKeyframe == keyframe) {
+                    // Clicked the same keyframe again, potentially a double click
+                    if (now - lastClickedTime < DOUBLE_CLICK_INTERVAL) {
+                        // Yup, double click, open the edit keyframe gui
+                        gui.openEditKeyframePopup(keyframe);
+                        return true;
+                    }
+                }
+                // Not a double click, just update the click time and selection
+                lastClickedTime = now;
+                lastClickedKeyframe = keyframe;
+                lastClickedPath = pathKeyframePair.getLeft();
+                selectKeyframe(lastClickedPath, lastClickedKeyframe);
+                // We might be dragging
+                draggingStartX = position.getX();
+                dragging = true;
+            } else if (button == 1) { // Right click
+                for (Property property : keyframe.getProperties()) {
+                    applyPropertyToGame(property, keyframe);
+                }
+            }
+            return true;
+        } else if (time != -1) {
+            // Clicked on timeline but not on any keyframe
+            setCursorPosition(time);
+            return true;
+        }
+        // Missed timeline
+        return false;
+    }
+
+    // Helper method because generics cannot be defined on blocks
+    private <T> void applyPropertyToGame(Property<T> property, Keyframe keyframe) {
+        Optional<T> value = keyframe.getValue(property);
+        if (value.isPresent()) {
+            property.applyToGame(value.get(), ReplayModReplay.instance.getReplayHandler());
+        }
+    }
+
+    private void selectKeyframe(int path, Keyframe keyframe) {
+        if (path == GuiPathing.POSITION_PATH) {
+            gui.getMod().setSelectedPositionKeyframe(keyframe);
+            gui.getMod().setSelectedTimeKeyframe(null);
+        } else {
+            gui.getMod().setSelectedPositionKeyframe(null);
+            gui.getMod().setSelectedTimeKeyframe(keyframe);
+        }
+    }
+
+    @Override
+    public boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall) {
+        if (!dragging) {
+            return false;
+        }
+
+        if (!actuallyDragging) {
+            // Check if threshold has been passed by now
+            if (Math.abs(position.getX() - draggingStartX) >= DRAGGING_THRESHOLD) {
+                actuallyDragging = true;
+            }
+        }
+        if (actuallyDragging) {
+            // Threshold passed
+            Path path = gui.getMod().getCurrentTimeline().getPaths().get(lastClickedPath);
+            Point mouse = new Point(position);
+            getContainer().convertFor(this, mouse);
+            int mouseX = mouse.getX();
+            int width = size.getWidth();
+            int bodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
+            double segmentLength = getLength() * getZoom();
+            double segmentTime =  segmentLength * (mouseX - BORDER_LEFT) / bodyWidth;
+            int newTime = Math.min(Math.max((int) Math.round(getOffset() + segmentTime), 0), getLength());
+            if (newTime < 0) {
+                return true;
+            }
+
+            // If there already is a keyframe at the target time, then increase the time by one until there is none
+            while (path.getKeyframe(newTime) != null) {
+                newTime++;
+            }
+
+            // First undo any previous changes
+            if (draggingChange != null) {
+                draggingChange.undo(gui.getMod().getCurrentTimeline());
+            }
+
+            // Move keyframe to new position and
+            // store change for later undoing / pushing to history
+            draggingChange = gui.moveKeyframe(lastClickedPath, lastClickedKeyframe, newTime);
+
+            // Selected keyframe has been replaced
+            selectKeyframe(lastClickedPath, path.getKeyframe(newTime));
+
+            // Path has been changed
+            path.updateAll();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean mouseRelease(ReadablePoint position, int button) {
+        if (dragging) {
+            if (actuallyDragging) {
+                gui.getMod().getCurrentTimeline().pushChange(draggingChange);
+                draggingChange = null;
+                actuallyDragging = false;
+            }
+            dragging = false;
+            return true;
+        }
+        return false;
     }
 
     @Override
