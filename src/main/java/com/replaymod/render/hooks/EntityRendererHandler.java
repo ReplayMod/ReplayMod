@@ -20,6 +20,8 @@ public class EntityRendererHandler implements WorldRenderer {
 
     public CaptureData data;
 
+    public boolean omnidirectional;
+
     public EntityRendererHandler(RenderSettings settings) {
         this.settings = settings;
 
@@ -62,6 +64,11 @@ public class EntityRendererHandler implements WorldRenderer {
     @Override
     public void close() throws IOException {
         ((IEntityRenderer) mc.entityRenderer).replayModRender_setHandler(null);
+    }
+
+    @Override
+    public void setOmnidirectional(boolean omnidirectional) {
+        this.omnidirectional = omnidirectional;
     }
 
     public static final class NoCullingClippingHelper extends ClippingHelper {

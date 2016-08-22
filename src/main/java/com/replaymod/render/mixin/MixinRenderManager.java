@@ -1,6 +1,5 @@
 package com.replaymod.render.mixin;
 
-import com.replaymod.render.capturer.CubicOpenGlFrameCapturer;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -22,7 +21,7 @@ public abstract class MixinRenderManager {
     @Inject(method = "doRenderEntity", at = @At("HEAD"))
     private void replayModRender_reorientForCubicRendering(Entity entity, double dx, double dy, double dz, float iDoNotKnow, float partialTicks, boolean iDoNotCare, CallbackInfoReturnable ci) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) Minecraft.getMinecraft().entityRenderer).replayModRender_getHandler();
-        if (handler != null && handler.data instanceof CubicOpenGlFrameCapturer.Data) {
+        if (handler != null && handler.omnidirectional) {
             double pitch = -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
             double yaw = -Math.atan2(dx, dz);
             playerViewX = (float) Math.toDegrees(pitch);

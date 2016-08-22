@@ -2,15 +2,9 @@ package com.replaymod.render.rendering;
 
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.capturer.*;
-import com.replaymod.render.frame.CubicOpenGlFrame;
-import com.replaymod.render.frame.OpenGlFrame;
-import com.replaymod.render.frame.RGBFrame;
-import com.replaymod.render.frame.StereoscopicOpenGlFrame;
+import com.replaymod.render.frame.*;
 import com.replaymod.render.hooks.EntityRendererHandler;
-import com.replaymod.render.processor.CubicToRGBProcessor;
-import com.replaymod.render.processor.EquirectangularToRGBProcessor;
-import com.replaymod.render.processor.OpenGlToRGBProcessor;
-import com.replaymod.render.processor.StereoscopicToRGBProcessor;
+import com.replaymod.render.processor.*;
 import com.replaymod.render.utils.PixelBufferObject;
 import lombok.experimental.UtilityClass;
 
@@ -26,6 +20,8 @@ public class Pipelines {
                 return newCubicPipeline(renderInfo, consumer);
             case EQUIRECTANGULAR:
                 return newEquirectangularPipeline(renderInfo, consumer);
+            case ODS:
+                return newODSPipeline(renderInfo, consumer);
         }
         throw new UnsupportedOperationException("Unknown method: " + method);
     }
@@ -72,5 +68,12 @@ public class Pipelines {
             capturer = new CubicOpenGlFrameCapturer(new EntityRendererHandler(settings), renderInfo, settings.getVideoWidth() / 4);
         }
         return new Pipeline<>(capturer, new EquirectangularToRGBProcessor(settings.getVideoWidth() / 4), consumer);
+    }
+
+    public static Pipeline<ODSOpenGlFrame, RGBFrame> newODSPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
+        RenderSettings settings = renderInfo.getRenderSettings();
+        FrameCapturer<ODSOpenGlFrame> capturer =
+                new ODSFrameCapturer(new EntityRendererHandler(settings), renderInfo, settings.getVideoWidth() / 4);
+        return new Pipeline<>(capturer, new ODSToRGBProcessor(settings.getVideoWidth() / 4), consumer);
     }
 }

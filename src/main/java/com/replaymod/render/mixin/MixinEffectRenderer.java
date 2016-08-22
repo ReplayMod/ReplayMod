@@ -1,6 +1,5 @@
 package com.replaymod.render.mixin;
 
-import com.replaymod.render.capturer.CubicOpenGlFrameCapturer;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EffectRenderer;
@@ -28,7 +27,7 @@ public abstract class MixinEffectRenderer {
     private void renderParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks,
                                  float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) Minecraft.getMinecraft().entityRenderer).replayModRender_getHandler();
-        if (handler != null && handler.data instanceof CubicOpenGlFrameCapturer.Data) {
+        if (handler != null && handler.omnidirectional) {
             // Align all particles towards the camera
             double dx = fx.prevPosX + (fx.posX - fx.prevPosX) * partialTicks - view.posX;
             double dy = fx.prevPosY + (fx.posY - fx.prevPosY) * partialTicks - view.posY;

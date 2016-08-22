@@ -113,7 +113,11 @@ public class VideoRenderer implements RenderInfo {
         renderingPipeline.run();
 
         if (settings.isInject360Metadata()) {
-            MetadataInjector.inject360Metadata(settings.getOutputFile());
+            if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS) {
+                MetadataInjector.injectODSMetadata(settings.getOutputFile());
+            } else {
+                MetadataInjector.inject360Metadata(settings.getOutputFile());
+            }
         }
 
         finish();

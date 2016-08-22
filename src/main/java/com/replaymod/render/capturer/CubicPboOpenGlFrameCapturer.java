@@ -10,6 +10,7 @@ public class CubicPboOpenGlFrameCapturer extends
     public CubicPboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, int frameSize) {
         super(worldRenderer, renderInfo, CubicOpenGlFrameCapturer.Data.class, frameSize * frameSize);
         this.frameSize = frameSize;
+        worldRenderer.setOmnidirectional(true);
     }
 
     @Override

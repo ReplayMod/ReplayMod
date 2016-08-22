@@ -109,7 +109,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void replayModRender_renderSpectatorHand(float partialTicks, int renderPass, CallbackInfo ci) {
         if (replayModRender_handler != null) {
-            if (replayModRender_handler.data instanceof CubicOpenGlFrameCapturer.Data) {
+            if (replayModRender_handler.omnidirectional) {
                 ci.cancel();
                 return; // No spectator hands during 360° view, we wouldn't even know where to put it
             }
@@ -204,7 +204,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
 
     @Override
     public void replayModRender_gluPerspective(float fovY, float aspect, float zNear, float zFar) {
-        if (replayModRender_getHandler() != null && replayModRender_getHandler().data instanceof CubicOpenGlFrameCapturer.Data) {
+        if (replayModRender_getHandler() != null && replayModRender_getHandler().omnidirectional) {
             fovY = 90;
             aspect = 1;
         }
@@ -234,7 +234,8 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
                     GlStateManager.rotate(-90, 1.0F, 0.0F, 0.0F);
                     break;
             }
-
+        }
+        if (replayModRender_getHandler() != null && replayModRender_getHandler().omnidirectional) {
             // Minecraft goes back a little so we have to revert that
             GlStateManager.translate(0.0F, 0.0F, 0.1F);
         }

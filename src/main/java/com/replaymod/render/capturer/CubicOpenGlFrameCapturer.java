@@ -11,6 +11,7 @@ public class CubicOpenGlFrameCapturer extends OpenGlFrameCapturer<CubicOpenGlFra
     public CubicOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, int frameSize) {
         super(worldRenderer, renderInfo);
         this.frameSize = frameSize;
+        worldRenderer.setOmnidirectional(true);
     }
 
     @Override

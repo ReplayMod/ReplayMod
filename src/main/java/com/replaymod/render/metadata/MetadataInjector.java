@@ -29,9 +29,12 @@ public class MetadataInjector {
             "<GSpherical:Stitched>true</GSpherical:Stitched> " +
             "<GSpherical:StitchingSoftware>"+STITCHING_SOFTWARE+"</GSpherical:StitchingSoftware> " +
             "<GSpherical:ProjectionType>equirectangular</GSpherical:ProjectionType> ";
+    private static final String STEREO_XML_CONTENTS = "<GSpherical:StereoMode>top-bottom</GSpherical:StereoMode>";
     private static final String SPHERICAL_XML_FOOTER = "</rdf:SphericalVideo>";
 
     private static final String XML_360_METADATA = SPHERICAL_XML_HEADER + SPHERICAL_XML_CONTENTS + SPHERICAL_XML_FOOTER;
+    private static final String XML_ODS_METADATA = SPHERICAL_XML_HEADER + SPHERICAL_XML_CONTENTS
+            + STEREO_XML_CONTENTS + SPHERICAL_XML_FOOTER;
 
     /**
      * These bytes are taken from the variable 'spherical_uuid_id'
@@ -45,9 +48,14 @@ public class MetadataInjector {
     };
 
     private static final byte[] BYTES_360_METADATA = Bytes.concat(UUID_BYTES, XML_360_METADATA.getBytes());
+    private static final byte[] BYTES_ODS_METADATA = Bytes.concat(UUID_BYTES, XML_ODS_METADATA.getBytes());
 
     public static void inject360Metadata(File videoFile) {
         writeMetadata(videoFile, BYTES_360_METADATA);
+    }
+
+    public static void injectODSMetadata(File videoFile) {
+        writeMetadata(videoFile, BYTES_ODS_METADATA);
     }
 
     private static void writeMetadata(File videoFile, byte[] metadata) {

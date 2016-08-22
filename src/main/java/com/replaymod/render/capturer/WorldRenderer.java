@@ -6,4 +6,5 @@ import java.io.Closeable;
 
 public interface WorldRenderer extends Closeable {
     void renderWorld(ReadableDimension displaySize, float partialTicks, CaptureData data);
+    void setOmnidirectional(boolean omnidirectional);
 }

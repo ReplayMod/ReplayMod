@@ -286,6 +286,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         switch (renderMethodDropdown.getSelectedValue()) {
             case CUBIC:
             case EQUIRECTANGULAR:
+            case ODS:
                 stabilizePanel.forEach(IGuiCheckbox.class).setEnabled();
                 break;
             default:
@@ -294,7 +295,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
         // Enable/Disable inject metadata checkbox
         if (encodingPresetDropdown.getSelectedValue().getFileExtension().equals("mp4")
-                && renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.EQUIRECTANGULAR) {
+                && (renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.EQUIRECTANGULAR
+                || renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.ODS)) {
             inject360Metadata.setEnabled().setTooltip(null);
         } else {
             inject360Metadata.setDisabled().setTooltip(new GuiTooltip().setColor(Colors.RED)
@@ -324,6 +326,10 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         if (method == RenderSettings.RenderMethod.EQUIRECTANGULAR
                 && (videoWidth / 2 != videoHeight || videoWidth % 2 != 0)) {
             return "replaymod.gui.rendersettings.customresolution.warning.equirectangular";
+        }
+        if (method == RenderSettings.RenderMethod.ODS
+                && videoWidth != videoHeight) {
+            return "replaymod.gui.rendersettings.customresolution.warning.ods";
         }
         return null;
     }

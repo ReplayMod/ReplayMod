@@ -9,7 +9,7 @@ import java.io.File;
 @Data
 public class RenderSettings {
     public enum RenderMethod {
-        DEFAULT, STEREOSCOPIC, CUBIC, EQUIRECTANGULAR;
+        DEFAULT, STEREOSCOPIC, CUBIC, EQUIRECTANGULAR, ODS;
 
         @Override
         public String toString() {

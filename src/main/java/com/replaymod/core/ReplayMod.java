@@ -196,6 +196,11 @@ public class ReplayMod {
                         throw new IllegalArgumentException("Equirectangular renderer requires boolean for whether it's stable.");
                     }
                     pipelinePreset = Pipelines.Preset.EQUIRECTANGULAR;
+                } else if ("ODS".equals(type)) {
+                    if (parts.length < 2) {
+                        throw new IllegalArgumentException("ODS renderer requires boolean for whether it's stable.");
+                    }
+                    pipelinePreset = Pipelines.Preset.ODS;
                 } else {
                     throw new IllegalArgumentException("Unknown type: " + parts[0]);
                 }
