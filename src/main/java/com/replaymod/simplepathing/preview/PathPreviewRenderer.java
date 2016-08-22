@@ -36,6 +36,10 @@ public class PathPreviewRenderer {
     private static final ResourceLocation CAMERA_HEAD = new ResourceLocation("replaymod", "camera_head.png");
     private static final Minecraft mc = Minecraft.getMinecraft();
 
+    private static final int SLOW_PATH_COLOR = 0xffcccc;
+    private static final int FAST_PATH_COLOR = 0x660000;
+    private static final double FASTEST_PATH_SPEED = 0.01;
+
     private final ReplayModSimplePathing mod;
     private final ReplayHandler replayHandler;
 
@@ -81,7 +85,6 @@ public class PathPreviewRenderer {
         try {
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
-            GL11.glEnable(GL11.GL_BLEND);
 
             for (PathSegment segment : path.getSegments()) {
                 Interpolator interpolator = segment.getInterpolator();
@@ -117,7 +120,11 @@ public class PathPreviewRenderer {
                         if (optPos.isPresent()) {
                             Triple<Double, Double, Double> pos = optPos.get();
                             if (prevPos != null) {
-                                drawConnection(viewPos, prevPos, pos, 0xff0000, renderDistanceSquared);
+                                double distance = Math.sqrt(distanceSquared(prevPos, pos));
+                                double speed = Math.min(distance / (diff / steps), FASTEST_PATH_SPEED);
+                                double speedFraction = speed / FASTEST_PATH_SPEED;
+                                int color = interpolateColor(SLOW_PATH_COLOR, FAST_PATH_COLOR, speedFraction);
+                                drawConnection(viewPos, prevPos, pos, color, renderDistanceSquared);
                             }
                             prevPos = pos;
                             continue;
@@ -127,6 +134,7 @@ public class PathPreviewRenderer {
                 }
             }
 
+            GL11.glEnable(GL11.GL_BLEND);
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR);
             GL11.glDisable(GL11.GL_DEPTH_TEST);
@@ -168,6 +176,16 @@ public class PathPreviewRenderer {
         } finally {
             GlStateManager.popAttrib();
         }
+    }
+
+    private static int interpolateColor(int c1, int c2, double weight) {
+        return (interpolateColorComponent((c1 >> 16) & 0xff, (c2 >> 16) & 0xff, weight) << 16)
+                | (interpolateColorComponent((c1 >> 8) & 0xff, (c2 >> 8) & 0xff, weight) << 8)
+                | interpolateColorComponent(c1 & 0xff, c2 & 0xff, weight);
+    }
+
+    private static int interpolateColorComponent(int c1, int c2, double weight) {
+        return (int) (c1 + (1 - Math.pow(Math.E, -4 * weight)) * (c2 - c1)) & 0xff;
     }
 
     private static double distanceSquared(Triple<Double, Double, Double> p1, Triple<Double, Double, Double> p2) {
