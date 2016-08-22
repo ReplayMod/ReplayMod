@@ -168,19 +168,17 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                         .filter(k -> Math.abs(k.getTime() - time) <= tolerance)
                         .sorted(Comparator.comparing(k -> Math.abs(k.getTime() - time)))
                         .findFirst();
-                if (keyframe.isPresent()) {
-                    return Pair.of(path, keyframe.get());
-                }
+                return Pair.of(path, keyframe.orElse(null));
             }
         }
-        return null;
+        return Pair.of(null, null);
     }
 
     @Override
     public boolean mouseClick(ReadablePoint position, int button) {
         int time = getTimeAt(position.getX(), position.getY());
         Pair<Integer, Keyframe> pathKeyframePair = getKeyframe(position);
-        if (pathKeyframePair != null) {
+        if (pathKeyframePair.getRight() != null) {
             // Clicked on keyframe
             Keyframe keyframe = pathKeyframePair.getRight();
             if (button == 0) { // Left click
@@ -210,11 +208,29 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             return true;
         } else if (time != -1) {
             // Clicked on timeline but not on any keyframe
-            setCursorPosition(time);
+            if (button == 0) { // Left click
+                setCursorPosition(time);
+            } else if (button == 1) { // Right click
+                if (pathKeyframePair.getLeft() != null) {
+                    // Apply the value of the clicked path at the clicked position
+                    Timeline timeline = gui.getMod().getCurrentTimeline();
+                    Path path = timeline.getPaths().get(pathKeyframePair.getLeft());
+                    path.getKeyframes().stream().flatMap(k -> k.getProperties().stream()).distinct().forEach(
+                            p -> applyPropertyToGame(p, path, time));
+                }
+            }
             return true;
         }
         // Missed timeline
         return false;
+    }
+
+    // Helper method because generics cannot be defined on blocks
+    private <T> void applyPropertyToGame(Property<T> property, Path path, long time) {
+        Optional<T> value = path.getValue(property, time);
+        if (value.isPresent()) {
+            property.applyToGame(value.get(), ReplayModReplay.instance.getReplayHandler());
+        }
     }
 
     // Helper method because generics cannot be defined on blocks
