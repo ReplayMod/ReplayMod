@@ -189,7 +189,8 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     // Clicked the same keyframe again, potentially a double click
                     if (now - lastClickedTime < DOUBLE_CLICK_INTERVAL) {
                         // Yup, double click, open the edit keyframe gui
-                        gui.openEditKeyframePopup(keyframe);
+                        Path path = gui.getMod().getCurrentTimeline().getPaths().get(pathKeyframePair.getLeft());
+                        gui.openEditKeyframePopup(path, keyframe);
                         return true;
                     }
                 }
@@ -273,7 +274,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
             // Move keyframe to new position and
             // store change for later undoing / pushing to history
-            draggingChange = gui.moveKeyframe(lastClickedPath, lastClickedKeyframe, newTime);
+            draggingChange = gui.moveKeyframe(path, lastClickedKeyframe, newTime);
 
             // Selected keyframe has been replaced
             selectKeyframe(lastClickedPath, path.getKeyframe(newTime));

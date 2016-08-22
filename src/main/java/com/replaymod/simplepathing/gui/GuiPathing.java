@@ -510,9 +510,8 @@ public class GuiPathing {
         return CombinedChange.create(changes.toArray(new Change[changes.size()]));
     }
 
-    public Change moveKeyframe(int pathId, Keyframe keyframe, long newTime) {
+    public Change moveKeyframe(Path path, Keyframe keyframe, long newTime) {
         Timeline timeline = mod.getCurrentTimeline();
-        Path path = timeline.getPaths().get(pathId);
         // Interpolator might be required later (only if path is the time path)
         Optional<Interpolator> interpolator =
                 path.getSegments().stream().findFirst().map(PathSegment::getInterpolator);
@@ -536,7 +535,7 @@ public class GuiPathing {
 
         // Finally set the interpolators
         Change interpolatorChange;
-        if (pathId == GuiPathing.POSITION_PATH) {
+        if (path.getTimeline().getPaths().indexOf(path) == GuiPathing.POSITION_PATH) {
             // Position / Spectator keyframes need special handling
             interpolatorChange = updateInterpolators();
         } else {
@@ -568,8 +567,14 @@ public class GuiPathing {
         return entityTracker;
     }
 
-    public void openEditKeyframePopup(Keyframe keyframe) {
-
+    public void openEditKeyframePopup(Path path, Keyframe keyframe) {
+        if (keyframe.getProperties().contains(SpectatorProperty.PROPERTY)) {
+            new GuiEditKeyframe.Spectator(this, path, keyframe).open();
+        } else if (keyframe.getProperties().contains(CameraProperties.POSITION)) {
+            new GuiEditKeyframe.Position(this, path, keyframe).open();
+        } else {
+            new GuiEditKeyframe.Time(this, path, keyframe).open();
+        }
     }
 
     private class LoadEntityTrackerPopup extends AbstractGuiPopup<LoadEntityTrackerPopup> {
