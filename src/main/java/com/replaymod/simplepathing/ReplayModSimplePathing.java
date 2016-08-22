@@ -6,6 +6,7 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
+import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.impl.TimelineImpl;
@@ -50,6 +51,15 @@ public class ReplayModSimplePathing implements PathingRegistry {
     @SubscribeEvent
     public void postReplayOpen(ReplayOpenEvent.Post event) {
         guiPathing = new GuiPathing(core, this, event.getReplayHandler());
+    }
+
+    @SubscribeEvent
+    public void onReplayClose(ReplayCloseEvent.Post event) {
+        guiPathing = null;
+        currentTimeline = createTimeline();
+        currentTimeline.createPath();
+        currentTimeline.createPath();
+        selectedTimeKeyframe = selectedPositionKeyframe = null;
     }
 
     private Timeline currentTimeline = createTimeline(); { currentTimeline.createPath(); currentTimeline.createPath(); }
