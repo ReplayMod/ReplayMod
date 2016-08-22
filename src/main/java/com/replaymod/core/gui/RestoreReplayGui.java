@@ -15,6 +15,7 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,8 +64,12 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
         });
         noButton.onClick(() -> {
             try {
-                Files.move(new File(file.getParentFile(), file.getName() + ".tmp"),
-                        new File(file.getParentFile(), file.getName() + ".del"));
+                File tmp = new File(file.getParentFile(), file.getName() + ".tmp");
+                File deleted = new File(file.getParentFile(), file.getName() + ".del");
+                if (deleted.exists()) {
+                    FileUtils.deleteDirectory(deleted);
+                }
+                Files.move(tmp, deleted);
             } catch (IOException e) {
                 e.printStackTrace();
             }
