@@ -183,6 +183,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     public final GuiButton renderButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
+            // Closing this GUI ensures that settings are saved
+            getMinecraft().displayGuiScreen(null);
             try {
                 VideoRenderer videoRenderer = new VideoRenderer(save(true), replayHandler, timeline);
                 videoRenderer.renderVideo();
