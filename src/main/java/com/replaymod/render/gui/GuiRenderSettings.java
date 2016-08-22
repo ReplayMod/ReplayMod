@@ -372,6 +372,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         inject360Metadata.setChecked(settings.isInject360Metadata());
         exportCommand.setText(settings.getExportCommand());
         exportArguments.setText(settings.getExportArguments());
+
+        updateInputs();
     }
 
     public RenderSettings save(boolean saveOutputFile) {
