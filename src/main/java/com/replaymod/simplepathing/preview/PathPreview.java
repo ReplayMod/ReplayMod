@@ -1,5 +1,7 @@
 package com.replaymod.simplepathing.preview;
 
+import com.replaymod.core.ReplayMod;
+import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.events.ReplayCloseEvent;
@@ -8,6 +10,7 @@ import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.Setting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.input.Keyboard;
 
 public class PathPreview {
     private final ReplayModSimplePathing mod;
@@ -21,6 +24,13 @@ public class PathPreview {
 
     public void register() {
         FMLCommonHandler.instance().bus().register(this);
+
+        ReplayMod core = mod.getCore();
+        mod.getCore().getKeyBindingRegistry().registerKeyBinding("replaymod.input.pathpreview", Keyboard.KEY_H, () -> {
+            SettingsRegistry registry = core.getSettingsRegistry();
+            registry.set(Setting.PATH_PREVIEW, !registry.get(Setting.PATH_PREVIEW));
+            registry.save();
+        });
     }
 
     @SubscribeEvent
