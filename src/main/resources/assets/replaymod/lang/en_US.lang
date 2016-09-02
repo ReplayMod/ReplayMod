@@ -303,6 +303,7 @@ replaymod.input.pathpreview=Toggle Path Preview
 replaymod.input.assetmanager=Asset Manager
 replaymod.input.objectmanager=Object Manager
 replaymod.input.interpolation=Toggle Interpolation
+replaymod.input.settings=ReplayMod Settings
 
 # CameraControllers
 replaymod.camera.classic=Classic

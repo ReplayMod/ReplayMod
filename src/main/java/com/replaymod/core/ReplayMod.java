@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.replaystudio.util.I18n;
@@ -111,6 +112,10 @@ public class ReplayMod {
         new MainMenuHandler().register();
 
         FMLCommonHandler.instance().bus().register(keyBindingRegistry);
+
+        getKeyBindingRegistry().registerKeyBinding("replaymod.input.settings", 0, () -> {
+            new GuiReplaySettings(null, settingsRegistry).display();
+        });
     }
 
     @EventHandler
