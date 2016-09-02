@@ -37,6 +37,8 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
+import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
+import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.lang3.tuple.Triple;
@@ -352,6 +354,28 @@ public class GuiPathing {
                     core.printWarningToChat("Error loading timeline: " + e.getMessage());
                 }
             }
+        });
+
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.clearkeyframes", Keyboard.KEY_C, () -> {
+            GuiYesNoPopup popup = GuiYesNoPopup.open(overlay,
+                    new GuiLabel().setI18nText("replaymod.gui.clearcallback.title").setColor(Colors.BLACK)
+            ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no");
+            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean delete) {
+                    if (delete) {
+                        Timeline timeline = mod.createTimeline();
+                        timeline.createPath();
+                        timeline.createPath();
+                        mod.setCurrentTimeline(timeline);
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    t.printStackTrace();
+                }
+            });
         });
 
         // Start loading entity tracker
