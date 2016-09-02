@@ -82,7 +82,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
                 // If currently paused
                 if (replaySender.paused()) {
                     // then play
-                    replaySender.setReplaySpeed(getSpeed());
+                    replaySender.setReplaySpeed(getSpeedSliderValue());
                 } else {
                     // else pause
                     replaySender.setReplaySpeed(0);
@@ -93,7 +93,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
         speedSlider.onValueChanged(new Runnable() {
             @Override
             public void run() {
-                double speed = getSpeed();
+                double speed = getSpeedSliderValue();
                 speedSlider.setText(I18n.format("replaymod.gui.speed") + ": " + speed + "x");
                 ReplaySender replaySender = replayHandler.getReplaySender();
                 if (!replaySender.paused()) {
@@ -110,7 +110,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
         }).setLength(replayHandler.getReplaySender().replayLength());
     }
 
-    private double getSpeed() {
+    public double getSpeedSliderValue() {
         int value = speedSlider.getValue() + 1;
         if (value <= 9) {
             return value / 10d;

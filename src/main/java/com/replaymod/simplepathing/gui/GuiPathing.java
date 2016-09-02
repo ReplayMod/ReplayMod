@@ -378,6 +378,30 @@ public class GuiPathing {
             });
         });
 
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
+            // Current replay time
+            int time = replayHandler.getReplaySender().currentTimeStamp();
+            // Position of the cursor
+            int cursor = timeline.getCursorPosition();
+            // Get the last time keyframe before the cursor
+            mod.getCurrentTimeline().getPaths().get(TIME_PATH).getKeyframes().stream()
+                    .filter(it -> it.getTime() <= cursor).reduce((__, last) -> last).ifPresent(keyframe -> {
+                // Cursor position at the keyframe
+                int keyframeCursor = (int) keyframe.getTime();
+                // Replay time at the keyframe
+                // This is a keyframe from the time path, so it _should_ always have a time property
+                int keyframeTime = keyframe.getValue(TimestampProperty.PROPERTY).get();
+                // Replay time passed
+                int timePassed = time - keyframeTime;
+                // Speed (set to 1 when shift is held)
+                double speed = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? 1 : overlay.getSpeedSliderValue();
+                // Cursor time passed
+                int cursorPassed = (int) (timePassed / speed);
+                // Move cursor to new position
+                timeline.setCursorPosition(keyframeCursor + cursorPassed);
+            });
+        });
+
         // Start loading entity tracker
         entityTrackerFuture = SettableFuture.create();
         new Thread(() -> {
