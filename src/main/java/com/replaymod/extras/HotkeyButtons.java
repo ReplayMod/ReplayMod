@@ -4,6 +4,7 @@ import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
+import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
@@ -17,6 +18,8 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.Dimension;
+import org.lwjgl.util.ReadableDimension;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -75,15 +78,23 @@ public class HotkeyButtons implements Extra {
                 } catch (ArrayIndexOutOfBoundsException e) {
                     // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
                 }
+                GuiButton button = new GuiButton().setLabel(keyName).onClick(() -> {
+                    keyBinding.pressTime++;
+                    keyBindingRegistry.handleKeyBindings();
+                });
                 panel.addElements(null, new GuiPanel().setSize(150, 20).setLayout(new HorizontalLayout().setSpacing(2))
                         .addElements(new HorizontalLayout.Data(0.5),
-                                new GuiButton().setSize(20, 20).setLabel(keyName).onClick(new Runnable() {
+                                new GuiPanel().setLayout(new CustomLayout<GuiPanel>() {
                                     @Override
-                                    public void run() {
-                                        keyBinding.pressTime++;
-                                        keyBindingRegistry.handleKeyBindings();
+                                    protected void layout(GuiPanel container, int width, int height) {
+                                        size(button, width, height);
                                     }
-                                }),
+
+                                    @Override
+                                    public ReadableDimension calcMinSize(GuiContainer<?> container) {
+                                        return new Dimension(Math.max(10, button.getMinSize().getWidth()) + 10, 20);
+                                    }
+                                }).addElements(null, button),
                                 new GuiLabel().setI18nText(keyBinding.getKeyDescription())
                         ));
             }
