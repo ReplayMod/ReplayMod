@@ -253,7 +253,16 @@ public class GuiPathing {
         positionKeyframeButton.setTexturePosH(new ReadablePoint() {
             @Override
             public int getX() {
-                return 0;
+                Keyframe keyframe = mod.getSelectedKeyframe();
+                if (keyframe == null || !keyframe.getValue(CameraProperties.POSITION).isPresent()) {
+                    // No keyframe or wrong path
+                    keyframe = mod.getCurrentTimeline().getPaths().get(POSITION_PATH).getKeyframe(timeline.getCursorPosition());
+                }
+                if (keyframe == null) {
+                    return replayHandler.isCameraView() ? 0 : 40;
+                } else {
+                    return keyframe.getValue(SpectatorProperty.PROPERTY).isPresent() ? 40 : 0;
+                }
             }
 
             @Override
