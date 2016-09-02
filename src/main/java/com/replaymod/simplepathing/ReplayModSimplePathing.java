@@ -59,26 +59,18 @@ public class ReplayModSimplePathing implements PathingRegistry {
         currentTimeline = createTimeline();
         currentTimeline.createPath();
         currentTimeline.createPath();
-        selectedTimeKeyframe = selectedPositionKeyframe = null;
+        selectedKeyframe = null;
     }
 
     private Timeline currentTimeline = createTimeline(); { currentTimeline.createPath(); currentTimeline.createPath(); }
-    private Keyframe selectedTimeKeyframe, selectedPositionKeyframe;
+    private Keyframe selectedKeyframe;
 
-    public Keyframe getSelectedTimeKeyframe() {
-        return selectedTimeKeyframe;
+    public Keyframe getSelectedKeyframe() {
+        return selectedKeyframe;
     }
 
-    public Keyframe getSelectedPositionKeyframe() {
-        return selectedPositionKeyframe;
-    }
-
-    public void setSelectedPositionKeyframe(Keyframe selectedPositionKeyframe) {
-        this.selectedPositionKeyframe = selectedPositionKeyframe;
-    }
-
-    public void setSelectedTimeKeyframe(Keyframe selectedTimeKeyframe) {
-        this.selectedTimeKeyframe = selectedTimeKeyframe;
+    public void setSelectedKeyframe(Keyframe selected) {
+        this.selectedKeyframe = selected;
     }
 
     public void setCurrentTimeline(Timeline currentTimeline) {

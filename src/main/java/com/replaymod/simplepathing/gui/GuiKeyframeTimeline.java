@@ -100,9 +100,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             if (keyframe.getTime() >= startTime && keyframe.getTime() <= endTime) {
                 double relativeTime = keyframe.getTime() - startTime;
                 int positonX = BORDER_LEFT + (int) (relativeTime / visibleTime * visibleWidth) - KEYFRAME_SIZE / 2;
-                int u = KEYFRAME_TEXTURE_X +
-                        (mod.getSelectedTimeKeyframe() == keyframe || mod.getSelectedPositionKeyframe() == keyframe
-                                ? KEYFRAME_SIZE : 0);
+                int u = KEYFRAME_TEXTURE_X + (mod.getSelectedKeyframe() == keyframe ? KEYFRAME_SIZE : 0);
                 int v = KEYFRAME_TEXTURE_Y;
                 if (keyframe.getValue(CameraProperties.POSITION).isPresent()) {
                     if (keyframe.getValue(SpectatorProperty.PROPERTY).isPresent()) {
@@ -196,7 +194,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                 lastClickedTime = now;
                 lastClickedKeyframe = keyframe;
                 lastClickedPath = pathKeyframePair.getLeft();
-                selectKeyframe(lastClickedPath, lastClickedKeyframe);
+                gui.getMod().setSelectedKeyframe(lastClickedKeyframe);
                 // We might be dragging
                 draggingStartX = position.getX();
                 dragging = true;
@@ -238,16 +236,6 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
         Optional<T> value = keyframe.getValue(property);
         if (value.isPresent()) {
             property.applyToGame(value.get(), ReplayModReplay.instance.getReplayHandler());
-        }
-    }
-
-    private void selectKeyframe(int path, Keyframe keyframe) {
-        if (path == GuiPathing.POSITION_PATH) {
-            gui.getMod().setSelectedPositionKeyframe(keyframe);
-            gui.getMod().setSelectedTimeKeyframe(null);
-        } else {
-            gui.getMod().setSelectedPositionKeyframe(null);
-            gui.getMod().setSelectedTimeKeyframe(keyframe);
         }
     }
 
@@ -293,7 +281,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             draggingChange = gui.moveKeyframe(path, lastClickedKeyframe, newTime);
 
             // Selected keyframe has been replaced
-            selectKeyframe(lastClickedPath, path.getKeyframe(newTime));
+            gui.getMod().setSelectedKeyframe(path.getKeyframe(newTime));
 
             // Path has been changed
             path.updateAll();

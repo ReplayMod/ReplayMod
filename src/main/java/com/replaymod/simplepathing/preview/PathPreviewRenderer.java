@@ -230,7 +230,7 @@ public class PathPreviewRenderer {
         float posY = 0f;
         float size = 10f / ReplayMod.TEXTURE_SIZE;
 
-        if (keyframe == mod.getSelectedPositionKeyframe()) {
+        if (keyframe == mod.getSelectedKeyframe()) {
             posY += size;
         }
 

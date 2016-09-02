@@ -258,8 +258,12 @@ public class GuiPathing {
 
             @Override
             public int getY() {
-                Keyframe keyframe = mod.getSelectedPositionKeyframe();
-                return keyframe != null ? 60 : 40;
+                Keyframe keyframe = mod.getSelectedKeyframe();
+                if (keyframe == null || !keyframe.getValue(CameraProperties.POSITION).isPresent()) {
+                    // No keyframe selected but there might be one at exactly the position of the cursor
+                    keyframe = mod.getCurrentTimeline().getPaths().get(POSITION_PATH).getKeyframe(timeline.getCursorPosition());
+                }
+                return keyframe != null && keyframe.getValue(CameraProperties.POSITION).isPresent() ? 60 : 40;
             }
 
             @Override
@@ -281,8 +285,12 @@ public class GuiPathing {
 
             @Override
             public int getY() {
-                Keyframe keyframe = mod.getSelectedTimeKeyframe();
-                return keyframe != null ? 100 : 80;
+                Keyframe keyframe = mod.getSelectedKeyframe();
+                if (keyframe == null || !keyframe.getValue(TimestampProperty.PROPERTY).isPresent()) {
+                    // No keyframe selected but there might be one at exactly the position of the cursor
+                    keyframe = mod.getCurrentTimeline().getPaths().get(TIME_PATH).getKeyframe(timeline.getCursorPosition());
+                }
+                return keyframe != null && keyframe.getValue(TimestampProperty.PROPERTY).isPresent() ? 100 : 80;
             }
 
             @Override
@@ -400,7 +408,15 @@ public class GuiPathing {
         Timeline timeline = mod.getCurrentTimeline();
         Path path = timeline.getPaths().get(isTime ? TIME_PATH : POSITION_PATH);
 
-        Keyframe keyframe = isTime ? mod.getSelectedTimeKeyframe() : mod.getSelectedPositionKeyframe();
+        Keyframe keyframe = mod.getSelectedKeyframe();
+        if (keyframe != null && keyframe.getValue(TimestampProperty.PROPERTY).isPresent() ^ isTime) {
+            // Keyframe is on the wrong timeline
+            keyframe = null;
+        }
+        if (keyframe == null) {
+            // No keyframe selected but there may still be one at this exact time
+            keyframe = path.getKeyframe(time);
+        }
         Change change;
         if (keyframe == null) {
             change = AddKeyframe.create(path, time);
@@ -454,11 +470,7 @@ public class GuiPathing {
 
         timeline.pushChange(change);
 
-        if (isTime) {
-            mod.setSelectedTimeKeyframe(keyframe);
-        } else {
-            mod.setSelectedPositionKeyframe(keyframe);
-        }
+        mod.setSelectedKeyframe(keyframe);
     }
 
     public Change updateInterpolators() {
