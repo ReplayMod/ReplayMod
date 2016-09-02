@@ -3,7 +3,6 @@ package com.replaymod.pathing.player;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 /**
  * Timeline player using the system time.
@@ -33,7 +32,7 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
     }
 
     @Override
-    public void onTick(TickEvent.RenderTickEvent event) {
+    public void onTick(ReplayTimer.UpdatedEvent event) {
         if (secondFrame) {
             secondFrame = false;
             startTime = System.currentTimeMillis();

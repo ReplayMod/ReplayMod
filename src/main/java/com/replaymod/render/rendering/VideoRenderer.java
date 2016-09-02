@@ -1,6 +1,7 @@
 package com.replaymod.render.rendering;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.VideoWriter;
@@ -8,7 +9,6 @@ import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
-import com.replaymod.render.hooks.RenderReplayTimer;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import static com.google.common.collect.Iterables.getLast;
@@ -49,6 +50,7 @@ public class VideoRenderer implements RenderInfo {
     private boolean debugInfoWasShown;
     private Map originalSoundLevels;
 
+    private Future<Void> timelinePlayerFuture;
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
 
     private int framesDone;
@@ -130,7 +132,8 @@ public class VideoRenderer implements RenderInfo {
             drawGui();
         }
 
-        timeline.applyToGame(getVideoTime(), replayHandler);
+        // Updating the timer will cause the timeline player to update the game state
+        mc.timer.updateTimer();
 
         int elapsedTicks = mc.timer.elapsedTicks;
         while (elapsedTicks-- > 0) {
@@ -147,7 +150,7 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void setup() {
-        replayHandler.getReplaySender().setSyncModeAndWait();
+        timelinePlayerFuture = new TimelinePlayer(replayHandler).start(timeline);
 
         if (!OpenGlHelper.isFramebufferEnabled()) {
             Display.setResizable(false);
@@ -160,8 +163,6 @@ public class VideoRenderer implements RenderInfo {
             mouseWasGrabbed = true;
         }
         Mouse.setGrabbed(false);
-        mc.timer = new RenderReplayTimer(mc.timer);
-        mc.timer.timerSpeed = 1;
 
         // Mute all sounds except GUI sounds (buttons, etc.)
         Map<SoundCategory, Float> mutedSounds = new EnumMap<>(SoundCategory.class);
@@ -196,7 +197,9 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void finish() {
-        replayHandler.getReplaySender().setAsyncMode(true);
+        if (!timelinePlayerFuture.isDone()) {
+            timelinePlayerFuture.cancel(false);
+        }
 
         if (!OpenGlHelper.isFramebufferEnabled()) {
             Display.setResizable(true);
@@ -205,7 +208,6 @@ public class VideoRenderer implements RenderInfo {
         if (mouseWasGrabbed) {
             mc.mouseHelper.grabMouseCursor();
         }
-        mc.timer = ((RenderReplayTimer) mc.timer).getWrapped();
         mc.gameSettings.mapSoundLevels = originalSoundLevels;
         mc.displayGuiScreen(null);
         if (chunkLoadingRenderGlobal != null) {
@@ -308,5 +310,16 @@ public class VideoRenderer implements RenderInfo {
         videoWriter.abort();
         this.cancelled = true;
         renderingPipeline.cancel();
+    }
+
+    private class TimelinePlayer extends AbstractTimelinePlayer {
+        public TimelinePlayer(ReplayHandler replayHandler) {
+            super(replayHandler);
+        }
+
+        @Override
+        public long getTimePassed() {
+            return getVideoTime();
+        }
     }
 }

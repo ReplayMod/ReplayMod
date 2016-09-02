@@ -5,9 +5,7 @@
     "MixinGuiSpectator",
     "MixinMinecraft",
     "MixinRenderArrow",
-    "MixinRenderItem",
     "MixinRenderManager",
-    "MixinTileEntityEndPortalRenderer",
     "MixinViewFrustum"
   ],
   "server": [],

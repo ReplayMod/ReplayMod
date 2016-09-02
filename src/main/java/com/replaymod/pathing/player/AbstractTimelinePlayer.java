@@ -10,9 +10,9 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -21,8 +21,10 @@ import java.util.Iterator;
  * Plays a timeline.
  */
 public abstract class AbstractTimelinePlayer {
+    private final Minecraft mc = Minecraft.getMinecraft();
     private final ReplayHandler replayHandler;
     private Timeline timeline;
+    private long lastTime;
     private long lastTimestamp;
     private ListenableFuture<Void> future;
     private SettableFuture<Void> settableFuture;
@@ -58,6 +60,10 @@ public abstract class AbstractTimelinePlayer {
 
         replayHandler.getReplaySender().setSyncModeAndWait();
         FMLCommonHandler.instance().bus().register(this);
+        lastTime = 0;
+        mc.timer = new ReplayTimer(mc.timer);
+        mc.timer.timerSpeed = 1;
+        mc.timer.elapsedPartialTicks = mc.timer.elapsedTicks = 0;
         return future = settableFuture = SettableFuture.create();
     }
 
@@ -70,8 +76,9 @@ public abstract class AbstractTimelinePlayer {
     }
 
     @SubscribeEvent
-    public void onTick(TickEvent.RenderTickEvent event) {
+    public void onTick(ReplayTimer.UpdatedEvent event) {
         if (future.isDone()) {
+            mc.timer = ((ReplayTimer) mc.timer).getWrapped();
             replayHandler.getReplaySender().setAsyncMode(true);
             FMLCommonHandler.instance().bus().unregister(this);
             return;
@@ -80,8 +87,27 @@ public abstract class AbstractTimelinePlayer {
         if (time > lastTimestamp) {
             time = lastTimestamp;
         }
+
+        // Apply to timeline
         timeline.applyToGame(time, replayHandler);
-        if (time == lastTimestamp) {
+
+        // Update minecraft timer
+        long replayTime = replayHandler.getReplaySender().currentTimeStamp();
+        if (lastTime == 0) {
+            // First frame, no change yet
+            lastTime = replayTime;
+        }
+        float timeInTicks = replayTime / 50f;
+        float previousTimeInTicks = lastTime / 50f;
+        float passedTicks = timeInTicks - previousTimeInTicks;
+        mc.timer.elapsedPartialTicks += passedTicks;
+        mc.timer.elapsedTicks = (int) mc.timer.elapsedPartialTicks;
+        mc.timer.elapsedPartialTicks -= mc.timer.elapsedTicks;
+        mc.timer.renderPartialTicks =  mc.timer.elapsedPartialTicks;
+
+        lastTime = replayTime;
+
+        if (time >= lastTimestamp) {
             settableFuture.set(null);
         }
     }

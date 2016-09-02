@@ -2,7 +2,9 @@
   "required": true,
   "package": "com.replaymod.replay.mixin",
   "mixins": [
-    "MixinPlayerControllerMP"
+    "MixinPlayerControllerMP",
+    "MixinRenderItem",
+    "MixinTileEntityEndPortalRenderer"
   ],
   "server": [],
   "client": [],

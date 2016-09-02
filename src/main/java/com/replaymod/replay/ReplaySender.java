@@ -88,6 +88,11 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     protected int lastTimeStamp;
 
     /**
+     * @see #currentTimeStamp()
+     */
+    protected int currentTimeStamp;
+
+    /**
      * The replay file.
      */
     protected ReplayFile replayFile;
@@ -207,11 +212,18 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Return the timestamp of the last packet sent.
+     * Return a fake {@link Minecraft#getSystemTime()} value that respects slowdown/speedup/pause and works in both,
+     * sync and async mode.
+     * Note: For sync mode this returns the last value passed to {@link #sendPacketsTill(int)}.
      * @return The timestamp in milliseconds since the start of the replay
      */
     public int currentTimeStamp() {
-        return lastTimeStamp;
+        if (asyncMode) {
+            int timePassed = (int) (System.currentTimeMillis() - lastPacketSent);
+            return lastTimeStamp + (int) (timePassed * getReplaySpeed());
+        } else {
+            return lastTimeStamp;
+        }
     }
 
     /**
@@ -746,9 +758,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
                         // Process packet
                         channelRead(ctx, pd.bytes);
-
-                        // Store last timestamp
-                        lastTimeStamp = nextTimeStamp;
                     } catch (EOFException eof) {
                         // Shit! We hit the end before finishing our job! What shall we do now?
                         // well, let's just pretend we're done...
@@ -761,6 +770,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
                 // This might be required if we change to async mode anytime soon
                 lastPacketSent = System.currentTimeMillis();
+                lastTimeStamp = timestamp;
             }
         } catch (Exception e) {
             e.printStackTrace();

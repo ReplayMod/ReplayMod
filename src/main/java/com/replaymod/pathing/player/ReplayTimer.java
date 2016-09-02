@@ -1,15 +1,17 @@
-package com.replaymod.render.hooks;
+package com.replaymod.pathing.player;
 
 import com.replaymod.core.utils.WrappedTimer;
 import net.minecraft.util.Timer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.Event;
 
 /**
  * Wrapper around the current timer that prevents the timer from advancing by itself.
  */
-public class RenderReplayTimer extends WrappedTimer {
+public class ReplayTimer extends WrappedTimer {
     private final Timer state = new Timer(0);
 
-    public RenderReplayTimer(Timer wrapped) {
+    public ReplayTimer(Timer wrapped) {
         super(wrapped);
     }
 
@@ -18,9 +20,13 @@ public class RenderReplayTimer extends WrappedTimer {
         copy(this, state); // Save our current state
         super.updateTimer(); // Update current state
         copy(state, this); // Restore our old state
+        FMLCommonHandler.instance().bus().post(new UpdatedEvent());
     }
 
     public Timer getWrapped() {
         return wrapped;
+    }
+
+    public static class UpdatedEvent extends Event {
     }
 }
