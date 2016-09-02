@@ -1,5 +1,6 @@
 package com.replaymod.replay.camera;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
@@ -11,6 +12,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItemFrame;
@@ -29,6 +31,7 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -283,6 +286,14 @@ public class CameraEntity extends EntityPlayerSP {
                 // Make sure we don't exit right away
                 mc.gameSettings.keyBindSneak.pressTime = 0;
             }
+        }
+
+        Map<String, KeyBinding> keyBindings = ReplayMod.instance.getKeyBindingRegistry().getKeyBindings();
+        if (keyBindings.get("replaymod.input.rollclockwise").isKeyDown()) {
+            roll += Utils.isCtrlDown() ? 0.2 : 1;
+        }
+        if (keyBindings.get("replaymod.input.rollcounterclockwise").isKeyDown()) {
+            roll -= Utils.isCtrlDown() ? 0.2 : 1;
         }
     }
 

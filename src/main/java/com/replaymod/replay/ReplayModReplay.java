@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Mod(modid = ReplayModReplay.MOD_ID, useMetadata = true)
 public class ReplayModReplay {
@@ -104,6 +105,18 @@ public class ReplayModReplay {
                     replayHandler.getOverlay().playPauseButton.onClick();
                 }
             }
+        });
+
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollclockwise", Keyboard.KEY_L, () -> {
+            // Noop, actual handling logic in CameraEntity#update
+        });
+
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollcounterclockwise", Keyboard.KEY_J, () -> {
+            // Noop, actual handling logic in CameraEntity#update
+        });
+
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.resettilt", Keyboard.KEY_K, () -> {
+            Optional.ofNullable(replayHandler).map(ReplayHandler::getCameraEntity).ifPresent(c -> c.roll = 0);
         });
 
         cameraControllerRegistry.register("replaymod.camera.classic", new Function<CameraEntity, CameraController>() {
