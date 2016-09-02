@@ -157,6 +157,15 @@ public class GuiPathing {
      */
     private final IGuiClickable clickCatcher = new AbstractGuiClickable() {
         @Override
+        public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
+            if (player.isActive()) {
+                // Make sure the mouse is always visible during path playback
+                // even if the game closes the overlay for some reason (e.g. world change)
+                replayHandler.getOverlay().setMouseVisible(true);
+            }
+        }
+
+        @Override
         protected AbstractGuiElement getThis() {
             return this;
         }
