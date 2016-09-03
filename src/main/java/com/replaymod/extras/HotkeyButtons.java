@@ -4,6 +4,8 @@ import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
+import de.johni0702.minecraft.gui.GuiRenderer;
+import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
@@ -75,13 +77,20 @@ public class HotkeyButtons implements Extra {
             keyBindingRegistry.getKeyBindings().values().stream()
                     .sorted(Comparator.comparing(it -> I18n.format(it.getKeyDescription())))
                     .forEachOrdered(keyBinding -> {
-                String keyName = "???";
-                try {
-                    keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
-                }
-                GuiButton button = new GuiButton().setLabel(keyName).onClick(() -> {
+                GuiButton button = new GuiButton(){
+                    @Override
+                    public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
+                        // There doesn't seem to be an KeyBindingUpdate event, so we'll just update it every time
+                        String keyName = "???";
+                        try {
+                            keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
+                        }
+                        setLabel(keyName);
+                        super.draw(renderer, size, renderInfo);
+                    }
+                }.onClick(() -> {
                     keyBinding.pressTime++;
                     keyBindingRegistry.handleKeyBindings();
                 });
