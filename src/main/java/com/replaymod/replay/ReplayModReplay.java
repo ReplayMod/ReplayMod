@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.camera.*;
+import com.replaymod.replay.gui.overlay.GuiMarkerTimeline;
 import com.replaymod.replay.handler.GuiHandler;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -68,6 +69,17 @@ public class ReplayModReplay {
                         replayHandler.getMarkers().add(marker);
                         replayHandler.saveMarkers();
                     }
+                }
+            }
+        });
+
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
+            if (replayHandler != null) {
+                GuiMarkerTimeline timeline = replayHandler.getOverlay().timeline;
+                if (timeline.getSelectedMarker() != null) {
+                    replayHandler.getMarkers().remove(timeline.getSelectedMarker());
+                    replayHandler.saveMarkers();
+                    timeline.setSelectedMarker(null);
                 }
             }
         });

@@ -176,4 +176,12 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
         }
         return super.getTooltipText(renderInfo);
     }
+
+    public void setSelectedMarker(Marker selectedMarker) {
+        this.selectedMarker = selectedMarker;
+    }
+
+    public Marker getSelectedMarker() {
+        return selectedMarker;
+    }
 }
