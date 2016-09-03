@@ -6,11 +6,10 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.online.AuthenticationHash;
 import com.replaymod.online.api.replay.ReplayModApiMethods;
 import com.replaymod.online.api.replay.SearchQuery;
 import com.replaymod.online.api.replay.holders.*;
-import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
-import com.replaymod.online.AuthenticationHash;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -21,6 +20,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ApiClient {
 
@@ -135,7 +135,7 @@ public class ApiClient {
 
     private boolean cancelDownload = false;
 
-    public void downloadFile(int file, File target, ProgressUpdateListener listener) throws IOException, ApiException {
+    public void downloadFile(int file, File target, Consumer<Float> listener) throws IOException, ApiException {
         cancelDownload = false;
 
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.download_file);
@@ -168,7 +168,7 @@ public class ApiClient {
 
                     fout.write(data, 0, count);
                     read += count;
-                    listener.onProgressChanged((float)(read)/fileSize);
+                    listener.accept((float) read / fileSize);
                 }
             } finally {
                 bin.close();

@@ -2,7 +2,6 @@ package com.replaymod.extras;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.online.ReplayModOnline;
-import eu.crushedpixel.replaymod.utils.StringUtils;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.resources.I18n;
@@ -12,6 +11,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.awt.*;
+import java.util.List;
+
 
 public class VersionChecker implements Extra {
     @Mod.Instance(ReplayModOnline.MOD_ID)
@@ -43,7 +44,8 @@ public class VersionChecker implements Extra {
 
         int width = Math.max(100, event.gui.width / 2 - 100 - 10);
 
-        String[] lines = StringUtils.splitStringInMultipleRows(I18n.format("replaymod.gui.outdated"), width);
+        @SuppressWarnings("unchecked") List<String> lines =
+                event.gui.mc.fontRendererObj.listFormattedStringToWidth(I18n.format("replaymod.gui.outdated"), width);
 
         int maxLineWidth = 0;
         for(String line : lines) {
@@ -53,7 +55,7 @@ public class VersionChecker implements Extra {
             }
         }
 
-        Gui.drawRect(2, 77, 5 + maxLineWidth + 3, 80 + (lines.length * 10), 0x80FF0000);
+        Gui.drawRect(2, 77, 5 + maxLineWidth + 3, 80 + (lines.size() * 10), 0x80FF0000);
 
         int i = 0;
         for(String line : lines) {

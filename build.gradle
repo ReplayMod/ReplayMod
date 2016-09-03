@@ -54,6 +54,7 @@ dependencies {
 
     compile 'org.spongepowered:mixin:0.4.3'
     compile 'com.googlecode.mp4parser:isoparser:1.1.7'
+    compile 'org.apache.commons:commons-exec:1.3'
 
     compile 'org.aspectj:aspectjrt:1.8.2'
 
@@ -70,7 +71,7 @@ jar {
     dependsOn ':ReplayStudio:shadowJar'
 
     def shade = {files(configurations.compile.findAll { c ->
-        ['mixin', 'isoparser', 'aspectjrt', 'jGui'].any {c.name.startsWith("$it-")}
+        ['mixin', 'isoparser', 'aspectjrt', 'jGui', 'commons-exec'].any {c.name.startsWith("$it-")}
     } + getTasks().getByPath(':ReplayStudio:shadowJar').outputs.files)}
 
     def noticeDir = file("$buildDir/NOTICE")

@@ -2,6 +2,7 @@ package com.replaymod.replay;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.SpectatorCameraController;
 import com.replaymod.replay.events.ReplayCloseEvent;
@@ -9,14 +10,13 @@ import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replaystudio.util.Location;
-import eu.crushedpixel.replaymod.utils.MouseUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
@@ -26,7 +26,6 @@ import net.minecraft.network.NetworkManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import org.lwjgl.opengl.Display;
-import org.lwjgl.util.Point;
 
 import java.io.IOException;
 import java.util.*;
@@ -307,8 +306,8 @@ public class ReplayHandler {
                 mc.getFramebuffer().bindFramebuffer(true);
                 mc.entityRenderer.setupOverlayRendering();
 
-                Point point = MouseUtils.getScaledDimensions();
-                guiScreen.setWorldAndResolution(mc, point.getX(), point.getY());
+                ScaledResolution resolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+                guiScreen.setWorldAndResolution(mc, resolution.getScaledWidth(), resolution.getScaledHeight());
                 guiScreen.drawScreen(0, 0, 0);
 
                 mc.getFramebuffer().unbindFramebuffer();

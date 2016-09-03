@@ -10,12 +10,11 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
-import eu.crushedpixel.replaymod.gui.elements.listeners.ProgressUpdateListener;
 
 import java.io.File;
 import java.io.IOException;
 
-public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading> implements ProgressUpdateListener {
+public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading> {
     private final GuiScreen cancelScreen;
     private final ApiClient apiClient;
 
@@ -52,7 +51,7 @@ public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading
             public void run() {
                 final File replayFile = mod.getDownloadedFile(replayId);
                 try {
-                    apiClient.downloadFile(replayId, replayFile, GuiReplayDownloading.this);
+                    apiClient.downloadFile(replayId, replayFile, progressBar::setProgress);
                     if (replayFile.exists()) {
                         getMinecraft().addScheduledTask(new Runnable() {
                             @Override
@@ -72,17 +71,6 @@ public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading
         }).start();
     }
 
-    @Override
-    public void onProgressChanged(float progress) {
-        progressBar.setProgress(progress);
-    }
-
-    @Override
-    public void onProgressChanged(float progress, String progressString) {
-        onProgressChanged(progress);
-    }
-
-    @Override
     protected GuiReplayDownloading getThis() {
         return this;
     }

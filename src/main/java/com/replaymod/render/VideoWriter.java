@@ -4,10 +4,10 @@ import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.StreamPipe;
-import eu.crushedpixel.replaymod.utils.StringUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
+import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.util.ReadableDimension;
 
@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.Validate.isTrue;
@@ -45,11 +43,10 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
                     .replace("%FILENAME%", fileName)
                     .replace("%BITRATE%", String.valueOf(settings.getBitRate()));
 
-        List<String> command = new ArrayList<>();
-        command.add(settings.getExportCommand().isEmpty() ? "ffmpeg" : settings.getExportCommand());
-        command.addAll(StringUtils.translateCommandline(commandArgs));
+        String executable = settings.getExportCommand().isEmpty() ? "ffmpeg" : settings.getExportCommand();
         System.out.println("Starting " + settings.getExportCommand() + " with args: " + commandArgs);
-        process = new ProcessBuilder(command).directory(outputFolder).start();
+        String[] cmdline = new CommandLine(executable).addArguments(commandArgs).toStrings();
+        process = new ProcessBuilder(cmdline).directory(outputFolder).start();
         OutputStream exportLogOut = new FileOutputStream("export.log");
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();

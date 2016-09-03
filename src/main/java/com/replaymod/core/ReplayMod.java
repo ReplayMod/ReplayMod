@@ -5,11 +5,10 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
+import com.replaymod.core.utils.OpenGLUtils;
+import com.replaymod.render.utils.SoundHandler;
 import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import com.replaymod.render.utils.SoundHandler;
-import com.replaymod.core.utils.OpenGLUtils;
-import eu.crushedpixel.replaymod.utils.TooltipRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
@@ -67,8 +66,6 @@ public class ReplayMod {
     @Deprecated
     public static Configuration config;
     @Deprecated
-    public static TooltipRenderer tooltipRenderer;
-    @Deprecated
     public static SoundHandler soundHandler = new SoundHandler();
 
     private final KeyBindingRegistry keyBindingRegistry = new KeyBindingRegistry();
@@ -124,8 +121,6 @@ public class ReplayMod {
 
         if(!FMLClientHandler.instance().hasOptifine())
             GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
-
-        tooltipRenderer = new TooltipRenderer();
 
         if (System.getProperty("replaymod.render.file") != null) {
             final File file = new File(System.getProperty("replaymod.render.file"));

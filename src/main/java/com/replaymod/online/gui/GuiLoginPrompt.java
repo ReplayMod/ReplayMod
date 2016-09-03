@@ -10,7 +10,6 @@ import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.Utils;
-import eu.crushedpixel.replaymod.gui.GuiConstants;
 
 public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
 
