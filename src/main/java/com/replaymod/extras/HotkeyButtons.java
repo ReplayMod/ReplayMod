@@ -14,7 +14,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
@@ -23,6 +23,7 @@ import org.lwjgl.util.ReadableDimension;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 
 public class HotkeyButtons implements Extra {
@@ -71,7 +72,9 @@ public class HotkeyButtons implements Extra {
             }.setLayout(panelLayout = new GridLayout().setSpacingX(5).setSpacingY(5).setColumns(1));
 
             final KeyBindingRegistry keyBindingRegistry = mod.getKeyBindingRegistry();
-            for (final KeyBinding keyBinding : keyBindingRegistry.getKeyBindings().values()) {
+            keyBindingRegistry.getKeyBindings().values().stream()
+                    .sorted(Comparator.comparing(it -> I18n.format(it.getKeyDescription())))
+                    .forEachOrdered(keyBinding -> {
                 String keyName = "???";
                 try {
                     keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
@@ -97,7 +100,7 @@ public class HotkeyButtons implements Extra {
                                 }).addElements(null, button),
                                 new GuiLabel().setI18nText(keyBinding.getKeyDescription())
                         ));
-            }
+            });
 
             overlay.setLayout(new CustomLayout<GuiReplayOverlay>(overlay.getLayout()) {
                 @Override
