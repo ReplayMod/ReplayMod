@@ -6,6 +6,7 @@ import com.replaymod.render.capturer.WorldRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.ClippingHelper;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.util.ReadableDimension;
 
 import java.io.IOException;
@@ -52,6 +53,8 @@ public class EntityRendererHandler implements WorldRenderer {
     }
 
     public void renderWorld(float partialTicks, long finishTimeNano) {
+        FMLCommonHandler.instance().onRenderTickStart(partialTicks);
+
         mc.entityRenderer.updateLightmap(partialTicks);
 
         enableDepth();
@@ -59,6 +62,8 @@ public class EntityRendererHandler implements WorldRenderer {
         alphaFunc(516, 0.5F);
 
         mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
+
+        FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
     }
 
     @Override
