@@ -61,6 +61,9 @@ public class YoutubeUploader {
     @Getter
     private State state;
 
+    @Getter
+    private volatile boolean cancelled;
+
     public YoutubeUploader(Minecraft minecraft, File videoFile, int videoFrames,
                            String thumbnailFormat, byte[] thumbnailImage,
                            RenderSettings settings, VideoVisibility videoVisibility, VideoSnippet videoSnippet)
@@ -78,6 +81,8 @@ public class YoutubeUploader {
     }
 
     public ListenableFuture<Video> upload() throws IOException {
+        cancelled = false;
+
         final SettableFuture<Video> future = SettableFuture.create();
         thread = new Thread(() -> {
             try {
@@ -108,9 +113,11 @@ public class YoutubeUploader {
         return future;
     }
 
+    //I blame the Google SDK for not supporting "proper" upload cancellation
+    @SuppressWarnings("unchecked")
     public void cancel() throws InterruptedException {
-        thread.interrupt();
-        thread.join();
+        thread.stop();
+        cancelled = true;
     }
 
     private Credential auth() throws IOException {

@@ -184,11 +184,14 @@ public class GuiYoutubeUpload extends GuiScreen {
         uploadButton.setEnabled();
         if (uploading) {
             uploadButton.onClick(() -> {
-                try {
-                    upload.cancel();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                setState(false);
+                new Thread(() -> {
+                    try {
+                        upload.cancel();
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
             }).setI18nLabel("replaymod.gui.cancel");
         } else {
             uploadButton.onClick(() -> {
@@ -219,8 +222,9 @@ public class GuiYoutubeUpload extends GuiScreen {
 
                         @Override
                         public void onFailure(Throwable t) {
-                            if (t instanceof InterruptedException) {
-                                progressBar.setLabel("0%");
+                            if (t instanceof InterruptedException || upload.isCancelled()) {
+                                progressBar.setProgress(0);
+                                progressBar.setLabel("%d%%");
                             } else {
                                 t.printStackTrace();
                                 progressBar.setLabel(t.getLocalizedMessage());
