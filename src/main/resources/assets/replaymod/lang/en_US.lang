@@ -278,6 +278,7 @@ replaymod.gui.settings.lighting=Ambient Lighting
 replaymod.gui.settings.forcechunks=Force Render Chunks
 replaymod.gui.settings.resources=Server Resource Packs
 replaymod.gui.settings.interpolation=Path Interpolation
+replaymod.gui.settings.linearinterpolation=Linear Path Interpolation
 replaymod.gui.settings.pathpreview=Show Path Preview
 replaymod.gui.settings.keyframecleancallback=Clear Confirmation
 replaymod.gui.settings.renderinvisible=Render invisible Entities

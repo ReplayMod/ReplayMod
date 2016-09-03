@@ -3,6 +3,7 @@ package com.replaymod.simplepathing;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
@@ -60,6 +61,15 @@ public class ReplayModSimplePathing implements PathingRegistry {
         currentTimeline.createPath();
         currentTimeline.createPath();
         selectedKeyframe = null;
+    }
+
+    @SubscribeEvent
+    public void onSettingsChanged(SettingsChangedEvent event) {
+        if (event.getKey() == Setting.LINEAR_INTERPOLATION) {
+            if (currentTimeline != null && guiPathing != null) {
+                currentTimeline.applyChange(guiPathing.updateInterpolators());
+            }
+        }
     }
 
     private Timeline currentTimeline = createTimeline(); { currentTimeline.createPath(); currentTimeline.createPath(); }

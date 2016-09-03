@@ -26,6 +26,7 @@ import com.replaymod.replaystudio.pathing.property.Property;
 import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
+import com.replaymod.simplepathing.Setting;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -531,6 +532,7 @@ public class GuiPathing {
     }
 
     public Change updateInterpolators() {
+        boolean linearInterpolation = mod.getCore().getSettingsRegistry().get(Setting.LINEAR_INTERPOLATION);
         List<Change> changes = new ArrayList<>();
         Interpolator interpolator = null;
         boolean isSpectatorInterpolator = false;
@@ -548,7 +550,7 @@ public class GuiPathing {
                 // Normal segment
                 if (isSpectatorInterpolator || interpolator == null) {
                     isSpectatorInterpolator = false;
-                    interpolator = new CubicSplineInterpolator();
+                    interpolator = linearInterpolation ? new LinearInterpolator() : new CubicSplineInterpolator();
                     interpolator.registerProperty(CameraProperties.POSITION);
                     interpolator.registerProperty(CameraProperties.ROTATION);
                 }
