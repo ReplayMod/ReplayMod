@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.mixin;
+package com.replaymod.replay.mixin;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;

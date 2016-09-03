@@ -1,4 +1,4 @@
-package eu.crushedpixel.replaymod.mixin;
+package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.client.Minecraft;
@@ -16,6 +16,7 @@ public abstract class MixinGuiSpectator {
 
     @Inject(method = "func_175260_a", at = @At("HEAD"), cancellable = true)
     public void isInReplay(int i, CallbackInfo ci) {
+        // Prevent spectator gui from opening while in a replay
         if (field_175268_g.thePlayer instanceof CameraEntity) {
             ci.cancel();
         }
