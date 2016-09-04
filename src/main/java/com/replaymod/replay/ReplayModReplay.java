@@ -5,8 +5,10 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.ModCompat;
 import com.replaymod.replay.camera.*;
 import com.replaymod.replay.gui.overlay.GuiMarkerTimeline;
+import com.replaymod.replay.gui.screen.GuiModCompatWarning;
 import com.replaymod.replay.handler.GuiHandler;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -165,6 +167,17 @@ public class ReplayModReplay {
     }
 
     public void startReplay(ReplayFile replayFile) throws IOException {
+        startReplay(replayFile, true);
+    }
+
+    public void startReplay(ReplayFile replayFile, boolean checkModCompat) throws IOException {
+        if (checkModCompat) {
+            ModCompat.ModInfoDifference modDifference = new ModCompat.ModInfoDifference(replayFile.getModInfo());
+            if (!modDifference.getMissing().isEmpty() || !modDifference.getDiffering().isEmpty()) {
+                new GuiModCompatWarning(this, replayFile, modDifference).display();
+                return;
+            }
+        }
         replayHandler = new ReplayHandler(replayFile, true);
     }
 

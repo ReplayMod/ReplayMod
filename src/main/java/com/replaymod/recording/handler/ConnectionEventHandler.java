@@ -1,6 +1,7 @@
 package com.replaymod.recording.handler;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.ModCompat;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.gui.GuiRecordingOverlay;
 import com.replaymod.recording.packet.PacketListener;
@@ -82,6 +83,8 @@ public class ConnectionEventHandler {
             String name = sdf.format(Calendar.getInstance().getTime());
             File currentFile = new File(folder, name + ".mcpr");
             ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
+
+            replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
             ReplayMetaData metaData = new ReplayMetaData();
             metaData.setSingleplayer(event.isLocal);

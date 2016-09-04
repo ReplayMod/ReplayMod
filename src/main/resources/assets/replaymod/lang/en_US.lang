@@ -485,3 +485,15 @@ replaymod.gui.objects=Custom Objects
 #Errors
 replaymod.error.unknownrestriction1=This replay cannot be played with your current version.
 replaymod.error.unknownrestriction2=It tried to enforce %s which is unknown.
+
+#Replay Mod Incompatibility Warning
+replaymod.gui.modwarning.title=Incompatibility detected
+replaymod.gui.modwarning.message1=A possible incompatibility between your current
+replaymod.gui.modwarning.message2=Minecraft version and this Replay has been detected.
+replaymod.gui.modwarning.message3=Loading this Replay may result in errors or a crash.
+replaymod.gui.modwarning.name=Mod Name:
+replaymod.gui.modwarning.id=Mod Id:
+replaymod.gui.modwarning.missing=Missing Mods
+replaymod.gui.modwarning.version=Different Mod Versions
+replaymod.gui.modwarning.version.expected=Expected
+replaymod.gui.modwarning.version.found=Found
