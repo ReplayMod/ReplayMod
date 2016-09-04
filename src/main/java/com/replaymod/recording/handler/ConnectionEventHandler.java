@@ -68,8 +68,11 @@ public class ConnectionEventHandler {
             String worldName;
             if(event.isLocal) {
                 worldName = MinecraftServer.getServer().getWorldName();
-            } else {
+            } else if (Minecraft.getMinecraft().getCurrentServerData() != null) {
                 worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+            } else {
+                logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
+                return;
             }
             Channel channel = nm.channel();
             ChannelPipeline pipeline = channel.pipeline();

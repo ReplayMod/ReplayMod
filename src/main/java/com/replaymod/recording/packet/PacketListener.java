@@ -165,6 +165,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 if (packet instanceof FMLProxyPacket) {
                     // This packet requires special handling
+                    ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
                     super.channelRead(ctx, msg);
                     return;
                 }

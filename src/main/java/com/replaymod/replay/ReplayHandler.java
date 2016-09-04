@@ -23,6 +23,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
+import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import org.lwjgl.opengl.Display;
@@ -135,13 +136,17 @@ public class ReplayHandler {
                 t.printStackTrace();
             }
         };
-        networkManager.setNetHandler(new NetHandlerPlayClient(
-                mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player")));
+        NetHandlerPlayClient netHandlerPlayClient =
+                new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
+        networkManager.setNetHandler(netHandlerPlayClient);
+        FMLClientHandler.instance().setPlayClient(netHandlerPlayClient);
 
         channel = new EmbeddedChannel(networkManager);
-        channel.attr(NetworkDispatcher.FML_DISPATCHER).set(new NetworkDispatcher(networkManager));
+        NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
+        channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
 
-        channel.pipeline().addFirst(replaySender);
+        channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
+        channel.pipeline().addAfter("ReplayModReplay_replaySender", "fml:packet_handler", networkDispatcher);
         channel.pipeline().fireChannelActive();
     }
 
