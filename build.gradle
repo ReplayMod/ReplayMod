@@ -67,11 +67,12 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    shade project(':jGui')
     compile project(':ReplayStudio')
 
     testCompile 'junit:junit:4.11'
 }
+
+tasks['idea'].dependsOn ':ReplayStudio:preshadowJar'
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -172,6 +173,12 @@ processResources
 
 sourceSets {
     main {
+        // Directly include jGui into main build
+        // This could also be done by including it as a gradle subproject, however
+        // doing so caused classpath issues on some IntelliJ versions.
+        java {
+            srcDir 'jGui/src/main/java'
+        }
         resources {
             srcDir 'jGui/src/main/resources'
         }
