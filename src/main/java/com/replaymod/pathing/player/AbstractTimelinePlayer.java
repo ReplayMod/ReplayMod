@@ -11,7 +11,7 @@ import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nullable;
@@ -59,7 +59,7 @@ public abstract class AbstractTimelinePlayer {
         }
 
         replayHandler.getReplaySender().setSyncModeAndWait();
-        FMLCommonHandler.instance().bus().register(this);
+        MinecraftForge.EVENT_BUS.register(this);
         lastTime = 0;
         mc.timer = new ReplayTimer(mc.timer);
         mc.timer.timerSpeed = 1;
@@ -80,7 +80,7 @@ public abstract class AbstractTimelinePlayer {
         if (future.isDone()) {
             mc.timer = ((ReplayTimer) mc.timer).getWrapped();
             replayHandler.getReplaySender().setAsyncMode(true);
-            FMLCommonHandler.instance().bus().unregister(this);
+            MinecraftForge.EVENT_BUS.unregister(this);
             return;
         }
         long time = getTimePassed();

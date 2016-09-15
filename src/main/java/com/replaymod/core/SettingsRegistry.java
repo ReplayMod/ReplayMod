@@ -2,8 +2,8 @@ package com.replaymod.core;
 
 import com.replaymod.core.events.SettingsChangedEvent;
 import net.minecraft.client.resources.I18n;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -83,7 +83,7 @@ public class SettingsRegistry {
             throw new IllegalArgumentException("Default type " + key.getDefault().getClass() + " not supported.");
         }
         settings.put(key, value);
-        FMLCommonHandler.instance().bus().post(new SettingsChangedEvent(this, key));
+        MinecraftForge.EVENT_BUS.post(new SettingsChangedEvent(this, key));
     }
 
     public void save() {

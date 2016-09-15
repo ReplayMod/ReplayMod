@@ -11,7 +11,7 @@ import com.replaymod.replay.events.ReplayOpenEvent;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
@@ -44,7 +44,7 @@ public class PlayerOverview implements Extra {
             }
         });
 
-        FMLCommonHandler.instance().bus().register(this);
+        MinecraftForge.EVENT_BUS.register(this);
 
         RenderManager renderManager = mod.getMinecraft().getRenderManager();
         @SuppressWarnings("unchecked")

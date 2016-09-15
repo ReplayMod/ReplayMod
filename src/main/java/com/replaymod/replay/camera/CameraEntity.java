@@ -28,7 +28,6 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -68,7 +67,6 @@ public class CameraEntity extends EntityPlayerSP {
 
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager) {
         super(mcIn, worldIn, netHandlerPlayClient, statisticsManager);
-        FMLCommonHandler.instance().bus().register(eventHandler);
         MinecraftForge.EVENT_BUS.register(eventHandler);
         cameraController = ReplayModReplay.instance.createCameraController(this);
     }
@@ -309,7 +307,6 @@ public class CameraEntity extends EntityPlayerSP {
     @Override
     public void setDead() {
         super.setDead();
-        FMLCommonHandler.instance().bus().unregister(eventHandler);
         MinecraftForge.EVENT_BUS.unregister(eventHandler);
     }
 

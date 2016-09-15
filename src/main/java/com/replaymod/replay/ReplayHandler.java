@@ -23,8 +23,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import org.lwjgl.opengl.Display;
 
@@ -79,7 +79,7 @@ public class ReplayHandler {
         Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
         this.replayFile = replayFile;
 
-        FMLCommonHandler.instance().bus().post(new ReplayOpenEvent.Pre(this));
+        MinecraftForge.EVENT_BUS.post(new ReplayOpenEvent.Pre(this));
 
         markers = new HashSet<>(replayFile.getMarkers().or(Collections.<Marker>emptySet()));
 
@@ -90,7 +90,7 @@ public class ReplayHandler {
         overlay = new GuiReplayOverlay(this);
         overlay.setVisible(true);
 
-        FMLCommonHandler.instance().bus().post(new ReplayOpenEvent.Post(this));
+        MinecraftForge.EVENT_BUS.post(new ReplayOpenEvent.Post(this));
     }
 
     void restartedReplay() {
@@ -104,7 +104,7 @@ public class ReplayHandler {
     public void endReplay() throws IOException {
         Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
 
-        FMLCommonHandler.instance().bus().post(new ReplayCloseEvent.Pre(this));
+        MinecraftForge.EVENT_BUS.post(new ReplayCloseEvent.Pre(this));
 
         replaySender.terminateReplay();
 
@@ -127,7 +127,7 @@ public class ReplayHandler {
 
         ReplayModReplay.instance.replayHandler = null;
 
-        FMLCommonHandler.instance().bus().post(new ReplayCloseEvent.Post(this));
+        MinecraftForge.EVENT_BUS.post(new ReplayCloseEvent.Post(this));
     }
 
     private void setup() {

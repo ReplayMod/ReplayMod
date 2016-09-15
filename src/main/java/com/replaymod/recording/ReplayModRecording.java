@@ -3,7 +3,7 @@ package com.replaymod.recording;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.packet.PacketListener;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -42,7 +42,7 @@ public class ReplayModRecording {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        EventBus bus = FMLCommonHandler.instance().bus();
+        EventBus bus = MinecraftForge.EVENT_BUS;
         bus.register(connectionEventHandler = new ConnectionEventHandler(logger, core));
     }
 }
