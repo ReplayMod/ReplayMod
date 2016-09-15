@@ -186,4 +186,13 @@ sourceSets {
     }
 }
 
+task copySrg(type: Copy, dependsOn: 'genSrgs') {
+    from {project.tasks.genSrgs.mcpToSrg}
+    into 'build'
+}
+
+setupDecompWorkspace.dependsOn copySrg
+setupDevWorkspace.dependsOn copySrg
+project.tasks.idea.dependsOn copySrg
+
 defaultTasks 'build'
