@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.math.RayTraceResult;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.glu.Project;
@@ -127,10 +127,10 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     @Shadow
     public abstract void renderHand(float partialTicks, int renderPass);
 
-    @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;IF)V"))
-    private void replayModRender_drawSelectionBox(RenderGlobal instance, EntityPlayer player, MovingObjectPosition mop, int alwaysZero, float partialTicks) {
+    @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/RayTraceResult;IF)V"))
+    private void replayModRender_drawSelectionBox(RenderGlobal instance, EntityPlayer player, RayTraceResult rtr, int alwaysZero, float partialTicks) {
         if (replayModRender_handler == null) {
-            instance.drawSelectionBox(player, mop, alwaysZero, partialTicks);
+            instance.drawSelectionBox(player, rtr, alwaysZero, partialTicks);
         }
     }
 

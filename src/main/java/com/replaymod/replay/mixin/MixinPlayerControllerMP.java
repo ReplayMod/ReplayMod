@@ -1,12 +1,12 @@
 package com.replaymod.replay.mixin;
 
-import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.stats.StatFileWriter;
+import net.minecraft.stats.StatisticsManager;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,12 +21,12 @@ public abstract class MixinPlayerControllerMP {
     private Minecraft mc;
 
     @Shadow
-    private NetHandlerPlayClient netClientHandler;
+    private NetHandlerPlayClient connection;
 
-    @Inject(method = "func_178892_a", at=@At("HEAD"), cancellable = true)
-    private void replayModReplay_createReplayCamera(World worldIn, StatFileWriter statFileWriter, CallbackInfoReturnable<EntityPlayerSP> ci) {
+    @Inject(method = "createClientPlayer", at=@At("HEAD"), cancellable = true)
+    private void replayModReplay_createReplayCamera(World worldIn, StatisticsManager statisticsManager, CallbackInfoReturnable<EntityPlayerSP> ci) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {
-            ci.setReturnValue(new CameraEntity(mc, worldIn, netClientHandler, statFileWriter));
+            ci.setReturnValue(new CameraEntity(mc, worldIn, connection, statisticsManager));
             ci.cancel();
         }
     }

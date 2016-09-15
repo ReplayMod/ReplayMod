@@ -13,7 +13,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
@@ -49,8 +48,8 @@ public class ConnectionEventHandler {
     @SubscribeEvent
     public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
         try {
-            if(event.isLocal) {
-                if (MinecraftServer.getServer().getEntityWorld().getWorldType() == WorldType.DEBUG_WORLD) {
+            if(event.isLocal()) {
+                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_WORLD) {
                     logger.info("Debug World recording is not supported.");
                     return;
                 }
@@ -65,16 +64,17 @@ public class ConnectionEventHandler {
                 }
             }
 
-            NetworkManager nm = event.manager;
+            NetworkManager nm = event.getManager();
             String worldName;
-            if(event.isLocal) {
-                worldName = MinecraftServer.getServer().getWorldName();
+            if(event.isLocal()) {
+                worldName = mc.getIntegratedServer().getWorldName();
             } else if (Minecraft.getMinecraft().getCurrentServerData() != null) {
                 worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
             } else {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
                 return;
             }
+
             Channel channel = nm.channel();
             ChannelPipeline pipeline = channel.pipeline();
 
@@ -87,7 +87,7 @@ public class ConnectionEventHandler {
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
             ReplayMetaData metaData = new ReplayMetaData();
-            metaData.setSingleplayer(event.isLocal);
+            metaData.setSingleplayer(event.isLocal());
             metaData.setServerName(worldName);
             metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
             metaData.setDate(System.currentTimeMillis());

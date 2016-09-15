@@ -73,9 +73,9 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             linkState(1, "lightMapEnabled");
             linkState(2, "hurtTextureEnabled");
             final Program.Uniform uniform = shaderProgram.getUniformVariable("fogEnabled");
-            previousFogState = GlStateManager.fogState.field_179049_a;
+            previousFogState = GlStateManager.fogState.fog;
             uniform.set(previousFogState.currentState);
-            GlStateManager.fogState.field_179049_a = new BooleanState(previousFogState.capability) {
+            GlStateManager.fogState.fog = new BooleanState(previousFogState.capability) {
                 @Override
                 public void setState(boolean state) {
                     super.setState(state);
@@ -133,7 +133,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         for (int i = 0; i < 3; i++) {
             GlStateManager.textureState[i].texture2DState = previousStates[i];
         }
-        GlStateManager.fogState.field_179049_a = previousFogState;
+        GlStateManager.fogState.fog = previousFogState;
     }
 
     private class CubicStereoFrameCapturer extends CubicPboOpenGlFrameCapturer {

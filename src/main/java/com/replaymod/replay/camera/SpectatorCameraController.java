@@ -41,8 +41,9 @@ public class SpectatorCameraController implements CameraController {
             if (view instanceof EntityPlayer) {
                 EntityPlayer viewPlayer = (EntityPlayer) view;
                 camera.inventory = viewPlayer.inventory;
-                camera.itemInUse = viewPlayer.itemInUse;
-                camera.itemInUseCount = viewPlayer.itemInUseCount;
+                camera.itemStackMainHand = viewPlayer.itemStackMainHand;
+                camera.swingingHand = viewPlayer.swingingHand;
+                camera.activeItemStackUseCount = viewPlayer.activeItemStackUseCount;
             }
         }
     }

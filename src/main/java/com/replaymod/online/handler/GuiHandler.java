@@ -18,7 +18,6 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.io.File;
-import java.util.List;
 
 public class GuiHandler {
     private static final int BUTTON_REPLAY_CENTER = 17890236;
@@ -36,20 +35,18 @@ public class GuiHandler {
 
     @SubscribeEvent
     public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
-        if (!(event.gui instanceof GuiMainMenu)) {
+        if (!(event.getGui() instanceof GuiMainMenu)) {
             return;
         }
 
-        @SuppressWarnings("unchecked")
-        List<GuiButton> buttonList = event.buttonList;
-        GuiButton button = new GuiButton(BUTTON_REPLAY_CENTER, event.gui.width / 2 - 100,
-                event.gui.height / 4 + 10 + 4 * 24, I18n.format("replaymod.gui.replaycenter"));
-        buttonList.add(button);
+        GuiButton button = new GuiButton(BUTTON_REPLAY_CENTER, event.getGui().width / 2 - 100,
+                event.getGui().height / 4 + 10 + 4 * 24, I18n.format("replaymod.gui.replaycenter"));
+        event.getButtonList().add(button);
     }
 
     @SubscribeEvent
     public void injectIntoReplayViewer(GuiScreenEvent.InitGuiEvent.Post event) {
-        AbstractGuiScreen guiScreen = GuiScreen.from(event.gui);
+        AbstractGuiScreen guiScreen = GuiScreen.from(event.getGui());
         if (!(guiScreen instanceof GuiReplayViewer)) {
             return;
         }
@@ -75,15 +72,15 @@ public class GuiHandler {
 
     @SubscribeEvent
     public void onButton(GuiScreenEvent.ActionPerformedEvent.Pre event) {
-        if(!event.button.enabled) return;
+        if(!event.getButton().enabled) return;
 
-        if (event.gui instanceof GuiMainMenu) {
-            if (event.button.id == BUTTON_REPLAY_CENTER) {
+        if (event.getGui() instanceof GuiMainMenu) {
+            if (event.getButton().id == BUTTON_REPLAY_CENTER) {
                 GuiReplayCenter replayCenter = new GuiReplayCenter(mod);
                 if (mod.isLoggedIn()) {
                     replayCenter.display();
                 } else {
-                    new GuiLoginPrompt(mod.getApiClient(), GuiScreen.wrap(event.gui), replayCenter, true).display();
+                    new GuiLoginPrompt(mod.getApiClient(), GuiScreen.wrap(event.getGui()), replayCenter, true).display();
                 }
             }
         }

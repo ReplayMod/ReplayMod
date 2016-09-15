@@ -2,17 +2,18 @@
   "required": true,
   "package": "com.replaymod.replay.mixin",
   "mixins": [
-    "MixinArmorStandRenderer",
     "MixinGuiSpectator",
     "MixinPlayerControllerMP",
+    "MixinRenderArmorStand",
     "MixinRenderArrow",
-    "MixinRendererLivingEntity",
     "MixinRenderItem",
+    "MixinRenderLivingBase",
     "MixinRenderManager",
     "MixinTileEntityEndPortalRenderer",
     "MixinViewFrustum"
   ],
   "server": [],
   "client": [],
+  "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.replaymod.refmap.json"
 }

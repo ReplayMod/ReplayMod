@@ -15,8 +15,8 @@ import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.client.C19PacketResourcePackStatus;
-import net.minecraft.network.play.server.S48PacketResourcePackSend;
+import net.minecraft.network.play.client.CPacketResourcePackStatus;
+import net.minecraft.network.play.server.SPacketResourcePackSend;
 import net.minecraft.util.HttpUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -70,12 +70,12 @@ public class ResourcePackRecorder {
         }
     }
 
-    public synchronized S48PacketResourcePackSend handleResourcePack(S48PacketResourcePackSend packet) {
+    public synchronized SPacketResourcePackSend handleResourcePack(SPacketResourcePackSend packet) {
         final int requestId = nextRequestId++;
-        final NetHandlerPlayClient netHandler = mc.getNetHandler();
+        final NetHandlerPlayClient netHandler = mc.getConnection();
         final NetworkManager netManager = netHandler.getNetworkManager();
-        final String url = packet.func_179783_a();
-        final String hash = packet.func_179784_b();
+        final String url = packet.getURL();
+        final String hash = packet.getHash();
 
         if (url.startsWith("level://")) {
             String levelName = url.substring("level://".length());
@@ -83,60 +83,60 @@ public class ResourcePackRecorder {
             final File levelDir = new File(savesDir, levelName);
 
             if (levelDir.isFile()) {
-                netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
-                Futures.addCallback(mc.getResourcePackRepository().func_177319_a(levelDir), new FutureCallback() {
+                netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.ACCEPTED));
+                Futures.addCallback(mc.getResourcePackRepository().setResourcePackInstance(levelDir), new FutureCallback<Object>() {
                     @Override
                     public void onSuccess(Object result) {
                         recordResourcePack(levelDir, requestId);
-                        netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
+                        netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
                     }
 
                     @Override
                     public void onFailure(@Nonnull Throwable throwable) {
-                        netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.FAILED_DOWNLOAD));
+                        netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
                     }
                 });
             } else {
-                netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.FAILED_DOWNLOAD));
+                netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
             }
         } else {
             final ServerData serverData = mc.getCurrentServerData();
             if (serverData != null && serverData.getResourceMode() == ServerData.ServerResourceMode.ENABLED) {
-                netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
+                netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.ACCEPTED));
                 downloadResourcePackFuture(requestId, url, hash);
             } else if (serverData != null && serverData.getResourceMode() != ServerData.ServerResourceMode.PROMPT) {
-                netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.DECLINED));
+                netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.DECLINED));
             } else {
                 mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo((result, id) -> {
                     if (serverData != null) {
                         serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
                     }
                     if (result) {
-                        netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
+                        netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.ACCEPTED));
                         downloadResourcePackFuture(requestId, url, hash);
                     } else {
-                        netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.DECLINED));
+                        netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.DECLINED));
                     }
 
-                    ServerList.func_147414_b(serverData);
+                    ServerList.saveSingleServer(serverData);
                     mc.displayGuiScreen(null);
                 }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
             }
         }
 
-        return new S48PacketResourcePackSend("replay://" + requestId, "");
+        return new SPacketResourcePackSend("replay://" + requestId, "");
     }
 
     private void downloadResourcePackFuture(int requestId, String url, final String hash) {
         Futures.addCallback(downloadResourcePack(requestId, url, hash), new FutureCallback() {
             @Override
             public void onSuccess(Object result) {
-                mc.getNetHandler().addToSendQueue(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
+                mc.getConnection().sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
             }
 
             @Override
             public void onFailure(@Nonnull Throwable throwable) {
-                mc.getNetHandler().addToSendQueue(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.FAILED_DOWNLOAD));
+                mc.getConnection().sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
             }
         });
     }
@@ -161,16 +161,16 @@ public class ResourcePackRecorder {
         }
 
         final File file = new File(repo.dirServerResourcepacks, fileName);
-        repo.field_177321_h.lock();
+        repo.lock.lock();
         try {
-            repo.func_148529_f();
+            repo.clearResourcePack();
 
             if (file.exists() && hash.length() == 40) {
                 try {
                     String fileHash = Hashing.sha1().hashBytes(Files.toByteArray(file)).toString();
                     if (fileHash.equals(hash)) {
                         recordResourcePack(file, requestId);
-                        return repo.func_177319_a(file);
+                        return repo.setResourcePackInstance(file);
                     }
 
                     logger.warn("File " + file + " had wrong hash (expected " + hash + ", found " + fileHash + "). Deleting it.");
@@ -186,13 +186,13 @@ public class ResourcePackRecorder {
 
             Futures.getUnchecked(mc.addScheduledTask(() -> mc.displayGuiScreen(guiScreen)));
 
-            Map sessionInfo = Minecraft.getSessionInfo();
-            repo.field_177322_i = HttpUtil.func_180192_a(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
-            Futures.addCallback(repo.field_177322_i, new FutureCallback() {
+            Map<String, String> sessionInfo = Minecraft.getSessionInfo();
+            repo.downloadingPacks = HttpUtil.downloadResourcePack(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
+            Futures.addCallback(repo.downloadingPacks, new FutureCallback<Object>() {
                 @Override
                 public void onSuccess(Object value) {
                     recordResourcePack(file, requestId);
-                    repo.func_177319_a(file);
+                    repo.setResourcePackInstance(file);
                 }
 
                 @Override
@@ -200,9 +200,9 @@ public class ResourcePackRecorder {
                     throwable.printStackTrace();
                 }
             });
-            return repo.field_177322_i;
+            return repo.downloadingPacks;
         } finally {
-            repo.field_177321_h.unlock();
+            repo.lock.unlock();
         }
     }
 

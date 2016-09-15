@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(TileEntityEndPortalRenderer.class)
 public class MixinTileEntityEndPortalRenderer {
-    @Redirect(method = "func_180544_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))
+    @Redirect(method = "renderTileEntityAt", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))
     private long replayModReplay_getEnchantmentTime() {
         ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
         if (replayHandler != null) {

@@ -4,7 +4,7 @@ import net.minecraftforge.fml.relauncher.CoreModManager;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.spongepowered.asm.launch.MixinBootstrap;
-import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.asm.mixin.Mixins;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -16,9 +16,9 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
 
     public LoadingPlugin() {
         MixinBootstrap.init();
-        MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.recording.replaymod.json");
-        MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.render.replaymod.json");
-        MixinEnvironment.getDefaultEnvironment().addConfiguration("mixins.replay.replaymod.json");
+        Mixins.addConfiguration("mixins.recording.replaymod.json");
+        Mixins.addConfiguration("mixins.render.replaymod.json");
+        Mixins.addConfiguration("mixins.replay.replaymod.json");
 
         CodeSource codeSource = getClass().getProtectionDomain().getCodeSource();
         if (codeSource != null) {
@@ -28,7 +28,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
                 if (file.isFile()) {
                     // This forces forge to reexamine the jar file for FML mods
                     // Should eventually be handled by Mixin itself, maybe?
-                    CoreModManager.getLoadedCoremods().remove(file.getName());
+                    CoreModManager.getIgnoredMods().remove(file.getName());
                 }
             } catch (URISyntaxException e) {
                 e.printStackTrace();

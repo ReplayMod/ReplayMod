@@ -29,7 +29,10 @@ import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import org.lwjgl.opengl.Display;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -311,7 +314,7 @@ public class ReplayHandler {
                 mc.getFramebuffer().bindFramebuffer(true);
                 mc.entityRenderer.setupOverlayRendering();
 
-                ScaledResolution resolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+                ScaledResolution resolution = new ScaledResolution(mc);
                 guiScreen.setWorldAndResolution(mc, resolution.getScaledWidth(), resolution.getScaledHeight());
                 guiScreen.drawScreen(0, 0, 0);
 
@@ -328,10 +331,8 @@ public class ReplayHandler {
                 replaySender.setAsyncMode(true);
                 replaySender.setReplaySpeed(0);
 
-                mc.getNetHandler().getNetworkManager().processReceivedPackets();
-                @SuppressWarnings("unchecked")
-                List<Entity> entities = (List<Entity>) mc.theWorld.loadedEntityList;
-                for (Entity entity : entities) {
+                mc.getConnection().getNetworkManager().processReceivedPackets();
+                for (Entity entity : mc.theWorld.loadedEntityList) {
                     if (entity instanceof EntityOtherPlayerMP) {
                         EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
                         e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);

@@ -48,7 +48,7 @@
     "parent": "replaymod",
     "screenshots": [],
     "dependencies": []
-  },
+  }/*,
   {
     "modid": "replaymod-online",
     "name": "Replay Mod - Online",
@@ -116,5 +116,5 @@
     "parent": "replaymod",
     "screenshots": [],
     "dependencies": []
-  }
+  }*/
 ]

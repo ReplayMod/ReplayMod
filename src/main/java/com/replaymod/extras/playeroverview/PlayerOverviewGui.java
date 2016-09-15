@@ -16,7 +16,8 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
-import net.minecraft.potion.Potion;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
@@ -40,14 +41,14 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
     public final GuiCheckbox checkAll = new GuiCheckbox(contentPanel){
         @Override
         public void onClick() {
-            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
+            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(true);
         }
     }.setLabel("").setChecked(true);
     public final GuiCheckbox uncheckAll = new GuiCheckbox(contentPanel){
         @Override
         public void onClick() {
-            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
+            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(false);
         }
     }.setLabel("").setChecked(false);
@@ -90,7 +91,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
                             renderer.bindTexture(texture);
                             renderer.drawTexturedRect(0, 0, 8, 8, 16, 16, 8, 8, 64, 64);
-                            if (p.func_175148_a(EnumPlayerModelParts.HAT)) {
+                            if (p.isWearing(EnumPlayerModelParts.HAT)) {
                                 renderer.drawTexturedRect(0, 0, 40, 8, size.getWidth(), size.getHeight(), 8, 8, 64, 64);
                             }
                         }
@@ -139,7 +140,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
     }
 
     private static boolean isSpectator(EntityPlayer e) {
-        return e.isInvisible() && e.getActivePotionEffect(Potion.invisibility) == null;
+        return e.isInvisible() && e.getActivePotionEffect(MobEffects.INVISIBILITY) == null;
     }
 
     private static final class PlayerComparator implements Comparator<EntityPlayer> {

@@ -1,6 +1,5 @@
 package com.replaymod.render.rendering;
 
-import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.RenderSettings;
@@ -12,14 +11,15 @@ import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.metadata.MetadataInjector;
+import com.replaymod.render.utils.SoundHandler;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Timer;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -50,7 +50,7 @@ public class VideoRenderer implements RenderInfo {
     private int fps;
     private boolean mouseWasGrabbed;
     private boolean debugInfoWasShown;
-    private Map originalSoundLevels;
+    private Map<SoundCategory, Float> originalSoundLevels;
 
     private Future<Void> timelinePlayerFuture;
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
@@ -171,9 +171,9 @@ public class VideoRenderer implements RenderInfo {
         for (SoundCategory category : SoundCategory.values()) {
             mutedSounds.put(category, 0f);
         }
-        originalSoundLevels = mc.gameSettings.mapSoundLevels;
-        mutedSounds.put(SoundCategory.MASTER, (Float) originalSoundLevels.get(SoundCategory.MASTER));
-        mc.gameSettings.mapSoundLevels = mutedSounds;
+        originalSoundLevels = mc.gameSettings.soundLevels;
+        mutedSounds.put(SoundCategory.MASTER, originalSoundLevels.get(SoundCategory.MASTER));
+        mc.gameSettings.soundLevels = mutedSounds;
 
         fps = settings.getFramesPerSecond();
 
@@ -192,7 +192,7 @@ public class VideoRenderer implements RenderInfo {
 
         totalFrames = (int) (duration*fps/1000);
 
-        ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+        ScaledResolution scaled = new ScaledResolution(mc);
         gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
         chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.renderGlobal);
@@ -210,13 +210,13 @@ public class VideoRenderer implements RenderInfo {
         if (mouseWasGrabbed) {
             mc.mouseHelper.grabMouseCursor();
         }
-        mc.gameSettings.mapSoundLevels = originalSoundLevels;
+        mc.gameSettings.soundLevels = originalSoundLevels;
         mc.displayGuiScreen(null);
         if (chunkLoadingRenderGlobal != null) {
             chunkLoadingRenderGlobal.uninstall();
         }
 
-        ReplayMod.soundHandler.playRenderSuccessSound();
+        new SoundHandler().playRenderSuccessSound();
 
         new GuiRenderingDone(ReplayModRender.instance, videoWriter.getVideoFile(), totalFrames, settings).display();
     }
@@ -252,7 +252,7 @@ public class VideoRenderer implements RenderInfo {
                 throw new RuntimeException(e);
             }
 
-            ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+            ScaledResolution scaled = new ScaledResolution(mc);
             int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
             int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
             gui.toMinecraft().drawScreen(mouseX, mouseY, 0);

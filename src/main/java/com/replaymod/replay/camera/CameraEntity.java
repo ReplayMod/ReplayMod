@@ -17,10 +17,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.stats.StatFileWriter;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.stats.StatisticsManager;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -64,8 +66,8 @@ public class CameraEntity extends EntityPlayerSP {
      */
     private final EventHandler eventHandler = new EventHandler();
 
-    public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
-        super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
+    public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager) {
+        super(mcIn, worldIn, netHandlerPlayClient, statisticsManager);
         FMLCommonHandler.instance().bus().register(eventHandler);
         MinecraftForge.EVENT_BUS.register(eventHandler);
         cameraController = ReplayModReplay.instance.createCameraController(this);
@@ -256,12 +258,49 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
-    public MovingObjectPosition rayTrace(double p_174822_1_, float p_174822_3_) {
-        MovingObjectPosition pos = super.rayTrace(p_174822_1_, 1f);
+    public float getCooldownPeriod() {
+        Entity view = mc.getRenderViewEntity();
+        if (view != this && view instanceof EntityPlayer) {
+            return ((EntityPlayer) view).getCooldownPeriod();
+        }
+        return 1;
+    }
+
+    @Override
+    public float getCooledAttackStrength(float adjustTicks) {
+        Entity view = mc.getRenderViewEntity();
+        if (view != this && view instanceof EntityPlayer) {
+            return ((EntityPlayer) view).getCooledAttackStrength(adjustTicks);
+        }
+        // Default to 1 as to not render the cooldown indicator (renders for < 1)
+        return 1;
+    }
+
+    @Override
+    public EnumHand getActiveHand() {
+        Entity view = mc.getRenderViewEntity();
+        if (view != this && view instanceof EntityPlayer) {
+            return ((EntityPlayer) view).getActiveHand();
+        }
+        return super.getActiveHand();
+    }
+
+    @Override
+    public boolean isHandActive() {
+        Entity view = mc.getRenderViewEntity();
+        if (view != this && view instanceof EntityPlayer) {
+            return ((EntityPlayer) view).isHandActive();
+        }
+        return super.isHandActive();
+    }
+
+    @Override
+    public RayTraceResult rayTrace(double p_174822_1_, float p_174822_3_) {
+        RayTraceResult pos = super.rayTrace(p_174822_1_, 1f);
 
         // Make sure we can never look at blocks (-> no outline)
-        if(pos != null && pos.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
-            pos.typeOfHit = MovingObjectPosition.MovingObjectType.MISS;
+        if(pos != null && pos.typeOfHit == RayTraceResult.Type.BLOCK) {
+            pos.typeOfHit = RayTraceResult.Type.MISS;
         }
 
         return pos;
@@ -328,8 +367,12 @@ public class CameraEntity extends EntityPlayerSP {
         @SubscribeEvent
         public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
             // The crosshair should only render if targeted entity can actually be spectated
-            if (event.type == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+            if (event.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
                 event.setCanceled(!canSpectate(mc.pointedEntity));
+            }
+            // Hotbar should never be rendered
+            if (event.getType() == RenderGameOverlayEvent.ElementType.HOTBAR) {
+                event.setCanceled(true);
             }
         }
 
@@ -357,10 +400,13 @@ public class CameraEntity extends EntityPlayerSP {
                 if (lastHandRendered != player) {
                     lastHandRendered = player;
 
-                    mc.entityRenderer.itemRenderer.prevEquippedProgress = 1;
-                    mc.entityRenderer.itemRenderer.equippedProgress = 1;
-                    mc.entityRenderer.itemRenderer.itemToRender = player.inventory.getCurrentItem();
-                    mc.entityRenderer.itemRenderer.equippedItemSlot = player.inventory.currentItem;
+                    mc.entityRenderer.itemRenderer.prevEquippedProgressMainHand = 1;
+                    mc.entityRenderer.itemRenderer.prevEquippedProgressOffHand = 1;
+                    mc.entityRenderer.itemRenderer.equippedProgressMainHand = 1;
+                    mc.entityRenderer.itemRenderer.equippedProgressOffHand = 1;
+                    mc.entityRenderer.itemRenderer.itemStackMainHand = player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND);
+                    mc.entityRenderer.itemRenderer.itemStackOffHand = player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND);
+
 
                     mc.thePlayer.renderArmYaw = mc.thePlayer.prevRenderArmYaw = player.rotationYaw;
                     mc.thePlayer.renderArmPitch = mc.thePlayer.prevRenderArmPitch = player.rotationPitch;
@@ -371,7 +417,7 @@ public class CameraEntity extends EntityPlayerSP {
         @SubscribeEvent
         public void onEntityViewRenderEvent(EntityViewRenderEvent.CameraSetup event) {
             if (mc.getRenderViewEntity() == CameraEntity.this) {
-                event.roll = roll;
+                event.setRoll(roll);
             }
         }
     }

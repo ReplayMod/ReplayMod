@@ -10,13 +10,13 @@ import net.minecraft.client.renderer.chunk.RenderChunk;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class ChunkLoadingRenderGlobal {
 
     private final RenderGlobal hooked;
     private final ChunkRenderDispatcher renderDispatcher;
-    private final JailingQueue<?> workerJailingQueue;
+    private final JailingQueue<ChunkCompileTaskGenerator> workerJailingQueue;
     private final CustomChunkRenderWorker renderWorker;
     private int frame;
 
@@ -27,10 +27,10 @@ public class ChunkLoadingRenderGlobal {
         this.renderWorker = new CustomChunkRenderWorker(renderDispatcher, new RegionRenderCacheBuilder());
 
         int workerThreads = renderDispatcher.listThreadedWorkers.size();
-        BlockingQueue<Object> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
+        PriorityBlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
         workerJailingQueue = new JailingQueue<>(queueChunkUpdates);
         renderDispatcher.queueChunkUpdates = workerJailingQueue;
-        ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null);
+        ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null, 0);
         element.finish();
         for (int i = 0; i < workerThreads; i++) {
             queueChunkUpdates.add(element);
@@ -51,7 +51,6 @@ public class ChunkLoadingRenderGlobal {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void updateChunks() {
         while (renderDispatcher.runChunkUploads(0)) {
             hooked.displayListEntitiesDirty = true;
@@ -59,7 +58,7 @@ public class ChunkLoadingRenderGlobal {
 
         while (!renderDispatcher.queueChunkUpdates.isEmpty()) {
             try {
-                renderWorker.processTask((ChunkCompileTaskGenerator) renderDispatcher.queueChunkUpdates.poll());
+                renderWorker.processTask(renderDispatcher.queueChunkUpdates.poll());
             } catch (InterruptedException ignored) { }
         }
 
@@ -69,7 +68,7 @@ public class ChunkLoadingRenderGlobal {
 
             renderDispatcher.updateChunkNow(renderchunk);
 
-            renderchunk.setNeedsUpdate(false);
+            renderchunk.clearNeedsUpdate();
             iterator.remove();
         }
     }

@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GuiSpectator.class)
 public abstract class MixinGuiSpectator {
     @Shadow
-    private Minecraft field_175268_g;
+    private Minecraft mc;
 
-    @Inject(method = "func_175260_a", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "onHotbarSelected", at = @At("HEAD"), cancellable = true)
     public void isInReplay(int i, CallbackInfo ci) {
         // Prevent spectator gui from opening while in a replay
-        if (field_175268_g.thePlayer instanceof CameraEntity) {
+        if (mc.thePlayer instanceof CameraEntity) {
             ci.cancel();
         }
     }

@@ -143,6 +143,7 @@ public class InputReplayTimer extends WrappedTimer {
 
                 // Following are a ton of vanilla keyboard shortcuts, some are removed as they're useless in the
                 // replay viewer as of now
+                // TODO Update maybe add new key bindings
                 // TODO: Translate magic values to Keyboard.KEY_ constants
 
                 if (key == 32 && Keyboard.isKeyDown(61) && mc.ingameGUI != null) {

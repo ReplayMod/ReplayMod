@@ -2,15 +2,18 @@ package com.replaymod.render.utils;
 
 import com.google.common.base.Preconditions;
 
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class JailingQueue<T> extends AbstractQueue<T> implements BlockingQueue<T> {
-    private final BlockingQueue<T> delegate;
+public class JailingQueue<T> extends PriorityBlockingQueue<T> {
+    private final PriorityBlockingQueue<T> delegate;
     private final Set<Thread> jailed = new HashSet<Thread>();
 
-    public JailingQueue(BlockingQueue<T> delegate) {
+    public JailingQueue(PriorityBlockingQueue<T> delegate) {
         this.delegate = delegate;
     }
 
@@ -59,13 +62,13 @@ public class JailingQueue<T> extends AbstractQueue<T> implements BlockingQueue<T
     }
 
     @Override
-    public void put(T t) throws InterruptedException {
+    public void put(T t) {
         tryAccess();
         delegate.put(t);
     }
 
     @Override
-    public boolean offer(T t, long timeout, TimeUnit unit) throws InterruptedException {
+    public boolean offer(T t, long timeout, TimeUnit unit) {
         tryAccess();
         return delegate.offer(t, timeout, unit);
     }

@@ -38,18 +38,18 @@ public class VersionChecker implements Extra {
 
     @SubscribeEvent
     public void onDrawScreen(GuiScreenEvent.DrawScreenEvent.Post event) {
-        if (!(event.gui instanceof GuiMainMenu)) {
+        if (!(event.getGui() instanceof GuiMainMenu)) {
             return;
         }
 
-        int width = Math.max(100, event.gui.width / 2 - 100 - 10);
+        int width = Math.max(100, event.getGui().width / 2 - 100 - 10);
 
         @SuppressWarnings("unchecked") List<String> lines =
-                event.gui.mc.fontRendererObj.listFormattedStringToWidth(I18n.format("replaymod.gui.outdated"), width);
+                event.getGui().mc.fontRendererObj.listFormattedStringToWidth(I18n.format("replaymod.gui.outdated"), width);
 
         int maxLineWidth = 0;
         for(String line : lines) {
-            int lineWidth = event.gui.mc.fontRendererObj.getStringWidth(line);
+            int lineWidth = event.getGui().mc.fontRendererObj.getStringWidth(line);
             if(lineWidth > maxLineWidth) {
                 maxLineWidth = lineWidth;
             }
@@ -59,7 +59,7 @@ public class VersionChecker implements Extra {
 
         int i = 0;
         for(String line : lines) {
-            event.gui.mc.fontRendererObj.drawStringWithShadow(line, 5, 80 + (i * 10), Color.WHITE.getRGB());
+            event.getGui().mc.fontRendererObj.drawStringWithShadow(line, 5, 80 + (i * 10), Color.WHITE.getRGB());
             i++;
         }
     }
