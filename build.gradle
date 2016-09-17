@@ -28,7 +28,7 @@ apply plugin: 'org.spongepowered.mixin'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = "1.0.5"
+version = gitDescribe()
 group= "com.replaymod"
 archivesBaseName = "replaymod"
 
@@ -138,7 +138,7 @@ jar {
 	}
 }
 
-def getGitCommitHash() {
+def gitDescribe() {
     try {
         def stdout = new ByteArrayOutputStream()
         exec {
@@ -162,7 +162,7 @@ processResources
         include 'mcmod.info'
 
         // replace version and mcversion
-        expand 'version':project.version + '-' + getGitCommitHash(), 'mcversion':project.minecraft.version
+        expand 'version': project.version, 'mcversion': project.minecraft.version
     }
 
     // copy everything else, thats not the mcmod.info
