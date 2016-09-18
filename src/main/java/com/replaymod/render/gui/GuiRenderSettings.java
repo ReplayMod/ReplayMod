@@ -186,7 +186,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             // Closing this GUI ensures that settings are saved
             getMinecraft().displayGuiScreen(null);
             try {
-                VideoRenderer videoRenderer = new VideoRenderer(save(true), replayHandler, timeline);
+                VideoRenderer videoRenderer = new VideoRenderer(save(false), replayHandler, timeline);
                 videoRenderer.renderVideo();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -378,7 +378,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         updateInputs();
     }
 
-    public RenderSettings save(boolean saveOutputFile) {
+    public RenderSettings save(boolean serialize) {
         return new RenderSettings(
                 renderMethodDropdown.getSelectedValue(),
                 encodingPresetDropdown.getSelectedValue(),
@@ -386,13 +386,13 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 videoHeight.getInteger(),
                 frameRateSlider.getValue() + 10,
                 bitRateField.getInteger() << (10 * bitRateUnit.getSelected()),
-                saveOutputFile ? outputFile : null,
+                serialize ? null : outputFile,
                 nametagCheckbox.isChecked(),
-                stabilizeYaw.isChecked(),
-                stabilizePitch.isChecked(),
-                stabilizeRoll.isChecked(),
+                stabilizeYaw.isChecked() && (serialize || stabilizeYaw.isEnabled()),
+                stabilizePitch.isChecked() && (serialize || stabilizePitch.isEnabled()),
+                stabilizeRoll.isChecked() && (serialize || stabilizeRoll.isEnabled()),
                 chromaKeyingCheckbox.isChecked() ? chromaKeyingColor.getColor() : null,
-                inject360Metadata.isChecked(),
+                inject360Metadata.isChecked() && (serialize || inject360Metadata.isEnabled()),
                 exportCommand.getText(),
                 exportArguments.getText(),
                 net.minecraft.client.gui.GuiScreen.isCtrlKeyDown()
@@ -412,7 +412,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
     @Override
     public void close() {
-        RenderSettings settings = save(false);
+        RenderSettings settings = save(true);
         String json = new Gson().toJson(settings);
         Configuration config = ReplayModRender.instance.getConfiguration();
         getConfigProperty(config).set(json);
