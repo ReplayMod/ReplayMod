@@ -20,6 +20,7 @@ import com.replaymod.online.api.replay.pagination.FavoritedFilePagination;
 import com.replaymod.online.api.replay.pagination.Pagination;
 import com.replaymod.online.api.replay.pagination.SearchPagination;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.AbstractGuiContainer;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -115,6 +116,9 @@ public class GuiReplayCenter extends GuiScreen {
                 boolean disliked = dislikedReplays.contains(replayId);
 
                 loadButton.setI18nLabel(selected.downloaded ? "replaymod.gui.load" : "replaymod.gui.download");
+                if (selected.incompatible) {
+                    loadButton.setDisabled();
+                }
 
                 favoriteButton.setI18nLabel("replaymod.gui.center." + (favorited ? "unfavorite" : "favorite"));
                 // Only allow button usage for either unfavorite or favorite after they've actually downloaded it
@@ -339,6 +343,7 @@ public class GuiReplayCenter extends GuiScreen {
         public final GuiLabel author = new GuiLabel();
         public final GuiLabel date = new GuiLabel().setColor(Colors.LIGHT_GRAY);
         public final GuiLabel server = new GuiLabel().setColor(Colors.LIGHT_GRAY);
+        public final GuiLabel version = new GuiLabel().setColor(Colors.RED);
         public final GuiLabel category = new GuiLabel().setColor(Colors.GREY);
         public final GuiPanel stats = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(3));
         public final GuiLabel favorites = new GuiLabel(stats).setColor(Colors.ORANGE);
@@ -353,9 +358,10 @@ public class GuiReplayCenter extends GuiScreen {
                 pos(category, 0, y(server) + height(server) + 3);
 
                 pos(date, width - width(date), y(author));
+                pos(version, width - width(version), y(server));
                 pos(stats, width - width(stats), y(category));
             }
-        }).addElements(null, name, author, date, server, category, stats);
+        }).addElements(null, name, author, date, server, version, category, stats);
         public final GuiImage thumbnail;
         public final GuiLabel duration = new GuiLabel();
         public final GuiPanel durationPanel = new GuiPanel().setBackgroundColor(Colors.HALF_TRANSPARENT)
@@ -389,6 +395,7 @@ public class GuiReplayCenter extends GuiScreen {
         private final long dateMillis;
         private final int sortId;
         private final boolean downloaded;
+        private final boolean incompatible;
 
         public GuiReplayEntry(FileInfo fileInfo, BufferedImage thumbImage, int sortId, boolean downloaded) {
             this.fileInfo = fileInfo;
@@ -403,6 +410,10 @@ public class GuiReplayCenter extends GuiScreen {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {
                 server.setText(metaData.getServerName());
+            }
+            incompatible = !new ReplayStudio().isCompatible(fileInfo.getMetadata().getFileFormatVersion());
+            if (incompatible) {
+                version.setText("Minecraft " + fileInfo.getMetadata().getMcVersion());
             }
             dateMillis = metaData.getDate();
             date.setText(new SimpleDateFormat().format(new Date(dateMillis)));
