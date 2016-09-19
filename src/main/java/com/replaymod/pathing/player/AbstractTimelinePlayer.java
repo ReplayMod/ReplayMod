@@ -79,6 +79,7 @@ public abstract class AbstractTimelinePlayer {
     public void onTick(ReplayTimer.UpdatedEvent event) {
         if (future.isDone()) {
             mc.timer = ((ReplayTimer) mc.timer).getWrapped();
+            replayHandler.getReplaySender().setReplaySpeed(0);
             replayHandler.getReplaySender().setAsyncMode(true);
             FMLCommonHandler.instance().bus().unregister(this);
             return;
