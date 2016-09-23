@@ -98,6 +98,10 @@ public class GuiReplayViewer extends GuiScreen {
                 e.printStackTrace();
             }
         }
+    }).onSelectionDoubleClicked(() -> {
+        if (this.loadButton.isEnabled()) {
+            this.loadButton.onClick();
+        }
     }).setDrawShadow(true).setDrawSlider(true);
 
     public final GuiButton loadButton = new GuiButton().onClick(new Runnable() {
