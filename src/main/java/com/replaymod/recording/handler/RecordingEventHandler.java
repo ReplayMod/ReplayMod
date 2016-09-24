@@ -11,6 +11,8 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.server.*;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
@@ -64,6 +66,25 @@ public class RecordingEventHandler {
     public void onPlayerRespawn() {
         try {
             packetListener.save(new SPacketSpawnPlayer(mc.thePlayer));
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClientSound(SoundEvent sound, SoundCategory category,
+                              double x, double y, double z, float volume, float pitch) {
+        try {
+            // Send to all other players in ServerWorldEventHandler#playSoundToAllNearExcept
+            packetListener.save(new SPacketSoundEffect(sound, category, x, y, z, volume, pitch));
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClientEffect(int type, BlockPos pos, int data) {
+        try {
+            // Send to all other players in ServerWorldEventHandler#playEvent
+            packetListener.save(new SPacketEffect(type, pos, data, false));
         } catch(Exception e) {
             e.printStackTrace();
         }

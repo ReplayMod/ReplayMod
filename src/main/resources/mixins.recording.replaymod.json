@@ -5,7 +5,9 @@
   "server": [],
   "client": [
     "MixinNetHandlerPlayClient",
-    "MixinRenderGlobal"
+    "MixinPlayerControllerMP",
+    "MixinRenderGlobal",
+    "MixinWorldClient"
   ],
   "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.replaymod.refmap.json"
