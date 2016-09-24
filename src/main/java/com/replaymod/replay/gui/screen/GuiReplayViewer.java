@@ -6,7 +6,12 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.replaymod.core.gui.GuiReplaySettings;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.replay.ZipReplayFile;
+import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.AbstractGuiContainer;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -20,11 +25,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import com.replaymod.replaystudio.replay.ReplayFile;
-import com.replaymod.replaystudio.replay.ReplayMetaData;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
-import com.replaymod.core.utils.Utils;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
@@ -54,6 +54,9 @@ public class GuiReplayViewer extends GuiScreen {
         @Override
         public void run() {
             replayButtonPanel.forEach(IGuiButton.class).setEnabled(list.getSelected() != null);
+            if (list.getSelected() != null && list.getSelected().incompatible) {
+                loadButton.setDisabled();
+            }
         }
     }).onLoad(new Consumer<Consumer<Supplier<GuiReplayEntry>>> () {
         @Override
@@ -94,6 +97,10 @@ public class GuiReplayViewer extends GuiScreen {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }).onSelectionDoubleClicked(() -> {
+        if (this.loadButton.isEnabled()) {
+            this.loadButton.onClick();
         }
     }).setDrawShadow(true).setDrawSlider(true);
 
@@ -270,6 +277,7 @@ public class GuiReplayViewer extends GuiScreen {
         public final GuiLabel date = new GuiLabel().setColor(Colors.LIGHT_GRAY);
         public final GuiPanel infoPanel = new GuiPanel(this).setLayout(new VerticalLayout().setSpacing(2))
                 .addElements(null, name, server, date);
+        public final GuiLabel version = new GuiLabel(this).setColor(Colors.RED);
         public final GuiImage thumbnail;
         public final GuiLabel duration = new GuiLabel();
         public final GuiPanel durationPanel = new GuiPanel().setBackgroundColor(Colors.HALF_TRANSPARENT)
@@ -287,6 +295,7 @@ public class GuiReplayViewer extends GuiScreen {
                 });
 
         private final long dateMillis;
+        private final boolean incompatible;
 
         public GuiReplayEntry(File file, ReplayMetaData metaData, BufferedImage thumbImage) {
             this.file = file;
@@ -296,6 +305,10 @@ public class GuiReplayViewer extends GuiScreen {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {
                 server.setText(metaData.getServerName());
+            }
+            incompatible = !new ReplayStudio().isCompatible(metaData.getFileFormatVersion());
+            if (incompatible) {
+                version.setText("Minecraft " + metaData.getMcVersion());
             }
             dateMillis = metaData.getDate();
             date.setText(new SimpleDateFormat().format(new Date(dateMillis)));
@@ -316,6 +329,7 @@ public class GuiReplayViewer extends GuiScreen {
                     y(durationPanel, height(thumbnail) - height(durationPanel));
 
                     pos(infoPanel, width(thumbnail) + 5, 0);
+                    pos(version, width - width(version), 0);
                 }
 
                 @Override

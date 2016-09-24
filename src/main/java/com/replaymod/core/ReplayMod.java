@@ -122,6 +122,22 @@ public class ReplayMod {
         testIfMoeshAndExitMinecraft();
 
         runLater(() -> {
+            // Cleanup deleted corrupted replays
+            try {
+                File[] files = getReplayFolder().listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        if (file.isDirectory() && file.getName().endsWith(".mcpr.del")) {
+                            if (file.lastModified() + 2 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+                                FileUtils.deleteDirectory(file);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             // Restore corrupted replays
             try {
                 File[] files = getReplayFolder().listFiles();

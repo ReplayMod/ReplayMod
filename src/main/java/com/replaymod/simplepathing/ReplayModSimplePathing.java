@@ -84,6 +84,9 @@ public class ReplayModSimplePathing implements PathingRegistry {
     }
 
     public void setCurrentTimeline(Timeline currentTimeline) {
+        if (this.currentTimeline != currentTimeline) {
+            selectedKeyframe = null;
+        }
         this.currentTimeline = currentTimeline;
     }
 

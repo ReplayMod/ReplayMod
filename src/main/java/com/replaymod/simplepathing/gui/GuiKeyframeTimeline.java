@@ -208,6 +208,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             // Clicked on timeline but not on any keyframe
             if (button == 0) { // Left click
                 setCursorPosition(time);
+                gui.getMod().setSelectedKeyframe(null);
             } else if (button == 1) { // Right click
                 if (pathKeyframePair.getLeft() != null) {
                     // Apply the value of the clicked path at the clicked position
