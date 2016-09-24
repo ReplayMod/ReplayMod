@@ -6,7 +6,6 @@
     "MixinParticleManager",
     "MixinRender",
     "MixinRenderGlobal",
-    "MixinRenderLiving",
     "MixinRenderManager"
   ],
   "server": [],
