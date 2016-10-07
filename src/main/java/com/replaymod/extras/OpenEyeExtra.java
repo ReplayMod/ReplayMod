@@ -1,0 +1,142 @@
+package com.replaymod.extras;
+
+import com.replaymod.core.ReplayMod;
+import com.replaymod.core.Setting;
+import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
+import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.container.GuiScreen;
+import de.johni0702.minecraft.gui.element.GuiButton;
+import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.function.Tickable;
+import de.johni0702.minecraft.gui.layout.CustomLayout;
+import de.johni0702.minecraft.gui.layout.HorizontalLayout;
+import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
+import de.johni0702.minecraft.gui.utils.Colors;
+import net.minecraftforge.fml.common.Loader;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+
+public class OpenEyeExtra implements Extra {
+    private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + Loader.MC_VERSION;
+    private static final Setting<Boolean> ASK_FOR_OPEN_EYE = new Setting<>("advanced", "askForOpenEye", null, true);
+
+    private ReplayMod mod;
+
+    @Override
+    public void register(ReplayMod mod) throws Exception {
+        this.mod = mod;
+        mod.getSettingsRegistry().register(ASK_FOR_OPEN_EYE);
+
+        if (!Loader.isModLoaded("OpenEye") && mod.getSettingsRegistry().get(ASK_FOR_OPEN_EYE)) {
+            mod.runLater(() -> new OfferGui(GuiScreen.wrap(mod.getMinecraft().currentScreen)).display());
+        }
+    }
+
+    private class OfferGui extends AbstractGuiScreen<OfferGui> {
+        public final GuiScreen parent;
+        public final GuiPanel textPanel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(3))
+                .addElements(new VerticalLayout.Data(0.5),
+                        new GuiLabel().setI18nText("replaymod.gui.offeropeneye1"),
+                        new GuiLabel().setI18nText("replaymod.gui.offeropeneye2"),
+                        new GuiLabel().setI18nText("replaymod.gui.offeropeneye3"),
+                        new GuiLabel().setI18nText("replaymod.gui.offeropeneye4"),
+                        new GuiLabel().setI18nText("replaymod.gui.offeropeneye5"),
+                        new GuiLabel().setI18nText("replaymod.gui.offeropeneye6"),
+                        new GuiLabel().setI18nText("replaymod.gui.offeropeneye7"),
+                        new GuiLabel().setI18nText("replaymod.gui.offeropeneye8"));
+        public final GuiPanel buttonPanel = new GuiPanel()
+                .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5));
+        public final GuiPanel contentPanel = new GuiPanel(this).setLayout(new VerticalLayout().setSpacing(20))
+                .addElements(new VerticalLayout.Data(0.5), textPanel, buttonPanel);
+        public final GuiButton yesButton = new GuiButton(buttonPanel).setSize(150, 20).setI18nLabel("gui.yes");
+        public final GuiButton noButton = new GuiButton(buttonPanel).setSize(150, 20).setI18nLabel("gui.no");
+
+        public OfferGui(GuiScreen parent) {
+            this.parent = parent;
+
+            yesButton.onClick(() -> {
+                GuiPopup popup = new GuiPopup(OfferGui.this);
+                new Thread(() -> {
+                    try {
+                        File targetFile = new File("mods/" + Loader.MC_VERSION, "OpenEye.jar");
+                        FileUtils.forceMkdir(targetFile.getParentFile());
+
+                        ReadableByteChannel in = Channels.newChannel(new URL(DOWNLOAD_URL).openStream());
+                        FileChannel out = new FileOutputStream(targetFile).getChannel();
+                        out.transferFrom(in, 0, Long.MAX_VALUE);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    } finally {
+                        mod.runLater(() -> {
+                            popup.close();
+                            parent.display();
+                        });
+                    }
+                }).start();
+            });
+            noButton.onClick(() -> {
+                mod.getSettingsRegistry().set(ASK_FOR_OPEN_EYE, false);
+                mod.getSettingsRegistry().save();
+                parent.display();
+            });
+
+            setLayout(new CustomLayout<OfferGui>() {
+                @Override
+                protected void layout(OfferGui container, int width, int height) {
+                    pos(contentPanel, width / 2 - width(contentPanel) / 2, height / 2 - height(contentPanel) / 2);
+                }
+            });
+        }
+
+        @Override
+        protected OfferGui getThis() {
+            return this;
+        }
+    }
+
+    private static final class GuiPopup extends AbstractGuiPopup<GuiPopup> {
+        GuiPopup(GuiContainer container) {
+            super(container);
+            popup.addElements(null, new GuiIndicator().setColor(Colors.BLACK));
+            setBackgroundColor(Colors.DARK_TRANSPARENT);
+            open();
+        }
+
+        @Override
+        public void close() {
+            super.close();
+        }
+
+        @Override
+        protected GuiPopup getThis() {
+            return this;
+        }
+
+        private static final class GuiIndicator extends GuiLabel implements Tickable {
+            private int tick;
+
+            @Override
+            public void tick() {
+                tick++;
+                setText(new String[]{
+                        "Ooooo",
+                        "oOooo",
+                        "ooOoo",
+                        "oooOo",
+                        "ooooO",
+                        "oooOo",
+                        "ooOoo",
+                        "oOooo",
+                }[tick / 5 % 8]);
+            }
+        }
+    }
+}
