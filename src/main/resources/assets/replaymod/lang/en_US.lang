@@ -497,3 +497,13 @@ replaymod.gui.modwarning.missing=Missing Mods
 replaymod.gui.modwarning.version=Different Mod Versions
 replaymod.gui.modwarning.version.expected=Expected
 replaymod.gui.modwarning.version.found=Found
+
+#OpenEye
+replaymod.gui.offeropeneye1=Do you want to install OpenEye?
+replaymod.gui.offeropeneye2=OpenEye is a mod that collects anonymous information
+replaymod.gui.offeropeneye3=about the mods being run and any crashes that happen.
+replaymod.gui.offeropeneye4=
+replaymod.gui.offeropeneye5=OpenEye can be disabled at any time and is completely optional.
+replaymod.gui.offeropeneye6=More information is available at https://openeye.openmods.info/faq
+replaymod.gui.offeropeneye7=Clicking Yes will download OpenEye and place it in your mods folder.
+replaymod.gui.offeropeneye8=It will then be active the next time you start Minecraft.

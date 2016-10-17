@@ -1,3 +1,5 @@
+import groovy.json.JsonOutput
+
 import java.util.zip.ZipInputStream
 
 buildscript {
@@ -195,5 +197,86 @@ task copySrg(type: Copy, dependsOn: 'genSrgs') {
 setupDecompWorkspace.dependsOn copySrg
 setupDevWorkspace.dependsOn copySrg
 project.tasks.idea.dependsOn copySrg
+
+def generateVersionsJson() {
+    // List all tags
+    def stdout = new ByteArrayOutputStream()
+    project.exec {
+        commandLine 'git', 'for-each-ref', '--sort=taggerdate', '--format=%(refname:short)', 'refs/tags'
+        standardOutput = stdout
+    }
+    def versions = stdout.toString().tokenize('\n').reverse()
+    def mcVersions = versions.collect {it.substring(0, it.indexOf('-'))}.unique().reverse()
+
+    def root = [
+            homepage: 'https://www.replaymod.com/download/',
+            promos: [:]
+    ]
+    mcVersions.forEach { mcVersion ->
+        def mcVersionRoot = [:]
+        def latest
+        def recommended
+        versions.forEach {
+            def (thisMcVersion, modVersion, preVersion) = it.tokenize('-')
+            if (thisMcVersion == mcVersion) {
+                mcVersionRoot[it] = "See https://github.com/ReplayMod/ReplayMod/releases/$it"
+                if (latest == null) latest = it
+                if (preVersion == null) {
+                    if (recommended == null) recommended = it
+                }
+            }
+        }
+        root[mcVersion] = mcVersionRoot
+        root.promos[mcVersion + '-latest'] = latest
+        if (recommended != null) {
+            root.promos[mcVersion + '-recommended'] = recommended
+        }
+    }
+    root
+}
+
+task doRelease() {
+    doLast {
+        // Parse version
+        def version = project.releaseVersion as String
+        if (project.version.endsWith('*')) {
+            throw new InvalidUserDataException('Git working tree is dirty. Make sure to commit all changes.')
+        }
+        def (mcVersion, modVersion, preVersion) = version.tokenize('-')
+        preVersion = preVersion != null && preVersion.startsWith('b') ? preVersion.substring(1) : null
+
+        // Create new tag
+        if (preVersion != null) {
+            project.exec {
+                commandLine 'git', 'tag',
+                        '-m', "Pre-release $preVersion of $modVersion for Minecraft $mcVersion",
+                        "$mcVersion-$modVersion-b$preVersion"
+            }
+        } else {
+            project.exec {
+                commandLine 'git', 'tag',
+                        '-m', "Release $modVersion for Minecraft $mcVersion",
+                        "$mcVersion-$modVersion"
+            }
+        }
+
+        // Switch to master branch to update versions.json
+        project.exec { commandLine 'git', 'checkout', 'master' }
+
+        // Generate versions.json content
+        def versionsRoot = generateVersionsJson()
+        def versionsJson = JsonOutput.prettyPrint(JsonOutput.toJson(versionsRoot))
+
+        // Write versions.json
+        new File('versions.json').write(versionsJson)
+
+        // Commit changes
+        project.exec { commandLine 'git', 'add', 'versions.json' }
+        project.exec { commandLine 'git', 'commit', '-m', "Update versions.json for $version" }
+
+        // Return to previous branch
+        project.exec { commandLine 'git', 'checkout', '-' }
+    }
+}
 
 defaultTasks 'build'

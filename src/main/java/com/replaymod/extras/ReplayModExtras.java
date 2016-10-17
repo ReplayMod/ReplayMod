@@ -29,6 +29,7 @@ public class ReplayModExtras {
             FullBrightness.class,
             HotkeyButtons.class,
             LocalizationExtra.class,
+            OpenEyeExtra.class,
             VersionChecker.class
     );
 
