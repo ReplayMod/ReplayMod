@@ -14,7 +14,6 @@ import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Dimension;
@@ -22,8 +21,6 @@ import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 
 import java.nio.ByteBuffer;
-
-import static net.minecraft.client.renderer.GlStateManager.bindTexture;
 
 public class GuiVideoRenderer extends GuiScreen {
     private static final ResourceLocation NO_PREVIEW_TEXTURE = new ResourceLocation("replaymod", "logo.jpg");
@@ -232,13 +229,7 @@ public class GuiVideoRenderer extends GuiScreen {
         final int videoHeight = videoSize.getHeight();
 
         if (previewTexture == null) {
-            previewTexture = new DynamicTexture(videoWidth, videoHeight) {
-                @Override
-                public void updateDynamicTexture() {
-                    bindTexture(getGlTextureId());
-                    TextureUtil.uploadTextureSub(0, getTextureData(), videoWidth, videoHeight, 0, 0, true, false, false);
-                }
-            };
+            previewTexture = new DynamicTexture(videoWidth, videoHeight);
         }
 
         if (previewTextureDirty) {
@@ -273,7 +264,10 @@ public class GuiVideoRenderer extends GuiScreen {
             buffer.mark();
             synchronized (this) {
                 int[] data = previewTexture.getTextureData();
-                for (int i = 0; i < data.length; i++) {
+                // Optifine changes the texture data array to be three times as long (for use by shaders),
+                // we only want to initialize the first third which is why we use the length of the buffer instead
+                // of the length of the data array
+                for (int i = 0; buffer.remaining() > 0; i++) {
                     data[i] = 0xff << 24 | (buffer.get() & 0xff) << 16 | (buffer.get() & 0xff) << 8 |  (buffer.get() & 0xff);
                 }
                 previewTextureDirty = true;
