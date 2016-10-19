@@ -91,7 +91,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     }).setSize(122, 20).setSteps(110);
     public final GuiPanel videoResolutionPanel = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(2))
-            .addElements(null, videoWidth, new GuiLabel().setText("*"), videoHeight);
+            .addElements(new HorizontalLayout.Data(0.5), videoWidth, new GuiLabel().setText("*"), videoHeight);
 
     public final GuiNumberField bitRateField = new GuiNumberField().setValue(10).setSize(50, 20);
     public final GuiDropdownMenu<String> bitRateUnit = new GuiDropdownMenu<String>()
