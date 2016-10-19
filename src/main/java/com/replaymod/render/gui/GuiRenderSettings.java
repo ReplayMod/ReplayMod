@@ -130,7 +130,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                             new GuiPanel().addElements(null, bitRateField, bitRateUnit).setLayout(new HorizontalLayout()),
                             frameRateSlider).setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3)),
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.outputfile"), outputFileButton)
-            .setLayout(new GridLayout().setCellsEqualSize(false).setColumns(2).setSpacingX(5).setSpacingY(3));
+            .setLayout(new GridLayout().setCellsEqualSize(false).setColumns(2).setSpacingX(5).setSpacingY(5));
 
     public final GuiCheckbox nametagCheckbox = new GuiCheckbox()
             .setI18nLabel("replaymod.gui.rendersettings.nametags");
