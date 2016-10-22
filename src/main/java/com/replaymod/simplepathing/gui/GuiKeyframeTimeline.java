@@ -243,6 +243,15 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     @Override
     public boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall) {
         if (!dragging) {
+            if (button == 0) {
+                // Left click, the user might try to move the cursor by clicking and holding
+                int time = getTimeAt(position.getX(), position.getY());
+                if (time != -1) {
+                    // and they are still on the timeline, so update the time appropriately
+                    setCursorPosition(time);
+                    return true;
+                }
+            }
             return false;
         }
 
