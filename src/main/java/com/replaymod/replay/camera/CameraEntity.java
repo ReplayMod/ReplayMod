@@ -238,6 +238,14 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
+    public boolean shouldRenderInPass(int pass) {
+        // Never render the camera
+        // This is necessary to hide the player head in third person mode and to not
+        // cause any unwanted shadows when rendering with shaders.
+        return false;
+    }
+
+    @Override
     public ResourceLocation getLocationSkin() {
         Entity view = mc.getRenderViewEntity();
         if (view != this && view instanceof EntityPlayer) {
