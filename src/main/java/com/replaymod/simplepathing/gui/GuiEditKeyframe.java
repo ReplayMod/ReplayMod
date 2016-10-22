@@ -13,16 +13,19 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiNumberField;
 import de.johni0702.minecraft.gui.element.IGuiLabel;
+import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import org.apache.commons.lang3.tuple.Triple;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.ReadablePoint;
 
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
-public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> {
+public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements Typeable {
     private static GuiNumberField newGuiNumberField() {
         return new GuiNumberField().setPrecision(0).setValidateOnFocusChange(true);
     }
@@ -82,6 +85,15 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             path.getTimeline().pushChange(change);
             close();
         });
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (keyCode == Keyboard.KEY_ESCAPE) {
+            cancelButton.onClick();
+            return true;
+        }
+        return false;
     }
 
     @Override
