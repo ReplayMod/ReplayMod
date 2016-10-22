@@ -284,6 +284,15 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             videoHeight.setTextColor(Colors.RED);
         }
 
+        // Enable/Disable bitrate input field and dropdown
+        if (encodingPresetDropdown.getSelectedValue().hasBitrateSetting()) {
+            bitRateField.setEnabled();
+            bitRateUnit.setEnabled();
+        } else {
+            bitRateField.setDisabled();
+            bitRateUnit.setDisabled();
+        }
+
         // Enable/Disable camera stabilization checkboxes
         switch (renderMethodDropdown.getSelectedValue()) {
             case CUBIC:
