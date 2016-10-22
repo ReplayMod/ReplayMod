@@ -403,6 +403,15 @@ public class GuiPathing {
             });
         });
 
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
+            if (!overlay.isVisible()) {
+                return;
+            }
+            if (mod.getSelectedKeyframe() != null) {
+                updateKeyframe(mod.getSelectedKeyframe().getValue(TimestampProperty.PROPERTY).isPresent());
+            }
+        });
+
         // Start loading entity tracker
         entityTrackerFuture = SettableFuture.create();
         new Thread(() -> {
