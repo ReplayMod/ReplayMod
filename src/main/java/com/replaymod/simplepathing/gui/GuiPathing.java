@@ -235,7 +235,9 @@ public class GuiPathing {
                     if (!preparePathsForPlayback()) return;
 
                     timePath.setActive(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
-                    ListenableFuture<Void> future = player.start(timeline);
+                    // Start from cursor time unless the control key is pressed (then start from beginning)
+                    int startTime = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)? 0 : GuiPathing.this.timeline.getCursorPosition();
+                    ListenableFuture<Void> future = player.start(timeline, startTime);
                     overlay.setCloseable(false);
                     overlay.setMouseVisible(true);
                     Futures.addCallback(future, new FutureCallback<Void>() {

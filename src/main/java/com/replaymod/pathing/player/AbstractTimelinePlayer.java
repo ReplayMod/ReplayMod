@@ -24,6 +24,7 @@ public abstract class AbstractTimelinePlayer {
     private final Minecraft mc = Minecraft.getMinecraft();
     private final ReplayHandler replayHandler;
     private Timeline timeline;
+    protected long startOffset;
     private long lastTime;
     private long lastTimestamp;
     private ListenableFuture<Void> future;
@@ -31,6 +32,11 @@ public abstract class AbstractTimelinePlayer {
 
     public AbstractTimelinePlayer(ReplayHandler replayHandler) {
         this.replayHandler = replayHandler;
+    }
+
+    public ListenableFuture<Void> start(Timeline timeline, long from) {
+        startOffset = from;
+        return start(timeline);
     }
 
     public ListenableFuture<Void> start(Timeline timeline) {
