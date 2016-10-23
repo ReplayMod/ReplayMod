@@ -19,6 +19,7 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import de.johni0702.minecraft.gui.utils.Consumer;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.ReadablePoint;
@@ -71,9 +72,10 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         this.path = path;
 
         long time = keyframe.getTime();
-        timeMinField.setValue(time / 1000 / 60);
-        timeSecField.setValue(time / 1000 % 60);
-        timeMSecField.setValue(time % 1000);
+        Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
+        timeMinField.setValue(time / 1000 / 60).onTextChanged(updateSaveButtonState);
+        timeSecField.setValue(time / 1000 % 60).onTextChanged(updateSaveButtonState);
+        timeMSecField.setValue(time % 1000).onTextChanged(updateSaveButtonState);
 
         title.setI18nText("replaymod.gui.editkeyframe.title." + type);
         saveButton.onClick(() -> {
@@ -85,6 +87,14 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             path.getTimeline().pushChange(change);
             close();
         });
+    }
+
+    private boolean canSave() {
+        long newTime = (timeMinField.getInteger() * 60 + timeSecField.getInteger()) * 1000 + timeMSecField.getInteger();
+        if (newTime != keyframe.getTime() && path.getKeyframe(newTime) != null) {
+            return false;
+        }
+        return true;
     }
 
     @Override
