@@ -35,6 +35,7 @@ import java.util.Queue;
 
 @Mod(modid = ReplayMod.MOD_ID,
         useMetadata = true,
+        updateJSON = "https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json",
         guiFactory = "com.replaymod.core.gui.GuiFactory")
 public class ReplayMod {
 
