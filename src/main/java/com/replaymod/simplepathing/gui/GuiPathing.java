@@ -38,6 +38,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
+import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.entity.Entity;
@@ -75,7 +76,7 @@ public class GuiPathing {
     public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
         @Override
         public void run() {
-            preparePathsForPlayback();
+            if (!preparePathsForPlayback()) return;
             new GuiRenderSettings(replayHandler, mod.getCurrentTimeline()).display();
         }
     }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0);
@@ -231,7 +232,7 @@ public class GuiPathing {
                     Timeline timeline = mod.getCurrentTimeline();
                     Path timePath = timeline.getPaths().get(TIME_PATH);
 
-                    preparePathsForPlayback();
+                    if (!preparePathsForPlayback()) return;
 
                     timePath.setActive(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
                     ListenableFuture<Void> future = player.start(timeline);
@@ -438,10 +439,27 @@ public class GuiPathing {
         }).start();
     }
 
-    private void preparePathsForPlayback() {
+    private boolean preparePathsForPlayback() {
         Timeline timeline = mod.getCurrentTimeline();
         timeline.getPaths().get(TIME_PATH).updateAll();
         timeline.getPaths().get(POSITION_PATH).updateAll();
+
+        // Make sure time keyframes's values are monotonically increasing
+        int lastTime = 0;
+        for (Keyframe keyframe : timeline.getPaths().get(TIME_PATH).getKeyframes()) {
+            int time = keyframe.getValue(TimestampProperty.PROPERTY).orElseThrow(IllegalStateException::new);
+            if (time < lastTime) {
+                // We are going backwards in time
+                GuiInfoPopup.open(replayHandler.getOverlay(),
+                        "replaymod.error.negativetime1",
+                        "replaymod.error.negativetime2",
+                        "replaymod.error.negativetime3");
+                return false;
+            }
+            lastTime = time;
+        }
+
+        return true;
     }
 
     public void zoomTimeline(double factor) {
