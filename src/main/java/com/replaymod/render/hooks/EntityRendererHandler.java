@@ -5,13 +5,11 @@ import com.replaymod.render.capturer.CaptureData;
 import com.replaymod.render.capturer.WorldRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.culling.ClippingHelper;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import org.lwjgl.util.ReadableDimension;
 
 import java.io.IOException;
-
-import static net.minecraft.client.renderer.GlStateManager.*;
 
 public class EntityRendererHandler implements WorldRenderer {
     public final Minecraft mc = Minecraft.getMinecraft();
@@ -29,39 +27,27 @@ public class EntityRendererHandler implements WorldRenderer {
         ((IEntityRenderer) mc.entityRenderer).replayModRender_setHandler(this);
     }
 
-    public void withDisplaySize(int displayWidth, int displayHeight, Runnable runnable) {
-        final int prevWidth = mc.displayWidth;
-        final int prevHeight = mc.displayHeight;
-        mc.displayWidth = displayWidth;
-        mc.displayHeight = displayHeight;
-
-        runnable.run();
-
-        mc.displayWidth = prevWidth;
-        mc.displayHeight = prevHeight;
-    }
-
     @Override
-    public void renderWorld(ReadableDimension displaySize, final float partialTicks, CaptureData data) {
+    public void renderWorld(final float partialTicks, CaptureData data) {
         this.data = data;
-        withDisplaySize(displaySize.getWidth(), displaySize.getHeight(), new Runnable() {
-            @Override
-            public void run() {
-                renderWorld(partialTicks, 0);
-            }
-        });
+        renderWorld(partialTicks, 0);
     }
 
     public void renderWorld(float partialTicks, long finishTimeNano) {
         FMLCommonHandler.instance().onRenderTickStart(partialTicks);
 
-        mc.entityRenderer.updateLightmap(partialTicks);
+        // the Shaders Mod does an initializing call in the EntityRenderer#renderWorld method
+        if (FMLClientHandler.instance().hasOptifine()) {
+            mc.entityRenderer.renderWorld(partialTicks, finishTimeNano);
+        } else {
+            mc.entityRenderer.updateLightmap(partialTicks);
 
-        enableDepth();
-        enableAlpha();
-        alphaFunc(516, 0.5F);
+            GlStateManager.enableDepth();
+            GlStateManager.enableAlpha();
+            GlStateManager.alphaFunc(516, 0.5F);
 
-        mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
+            mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
+        }
 
         FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
     }
@@ -74,13 +60,6 @@ public class EntityRendererHandler implements WorldRenderer {
     @Override
     public void setOmnidirectional(boolean omnidirectional) {
         this.omnidirectional = omnidirectional;
-    }
-
-    public static final class NoCullingClippingHelper extends ClippingHelper {
-        @Override
-        public boolean isBoxInFrustum(double p_78553_1_, double p_78553_3_, double p_78553_5_, double p_78553_7_, double p_78553_9_, double p_78553_11_) {
-            return true;
-        }
     }
 
     public interface GluPerspective {
