@@ -6,7 +6,6 @@ import com.replaymod.render.capturer.WorldRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.io.IOException;
@@ -36,18 +35,13 @@ public class EntityRendererHandler implements WorldRenderer {
     public void renderWorld(float partialTicks, long finishTimeNano) {
         FMLCommonHandler.instance().onRenderTickStart(partialTicks);
 
-        // the Shaders Mod does an initializing call in the EntityRenderer#renderWorld method
-        if (FMLClientHandler.instance().hasOptifine()) {
-            mc.entityRenderer.renderWorld(partialTicks, finishTimeNano);
-        } else {
-            mc.entityRenderer.updateLightmap(partialTicks);
+        mc.entityRenderer.updateLightmap(partialTicks);
 
-            GlStateManager.enableDepth();
-            GlStateManager.enableAlpha();
-            GlStateManager.alphaFunc(516, 0.5F);
+        GlStateManager.enableDepth();
+        GlStateManager.enableAlpha();
+        GlStateManager.alphaFunc(516, 0.5F);
 
-            mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
-        }
+        mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
 
         FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
     }
