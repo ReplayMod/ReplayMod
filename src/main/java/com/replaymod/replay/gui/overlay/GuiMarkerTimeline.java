@@ -133,6 +133,8 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
                 replayHandler.doJump(marker.getTime(), false);
             }
             return true;
+        } else {
+            selectedMarker = null;
         }
         return super.mouseClick(position, button);
     }

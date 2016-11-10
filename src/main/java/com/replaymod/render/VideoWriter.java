@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import org.apache.commons.exec.CommandLine;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.lwjgl.util.ReadableDimension;
@@ -34,6 +35,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         this.settings = settings;
 
         File outputFolder = settings.getOutputFile().getParentFile();
+        FileUtils.forceMkdir(outputFolder);
         String fileName = settings.getOutputFile().getName();
 
         commandArgs = settings.getExportArguments()

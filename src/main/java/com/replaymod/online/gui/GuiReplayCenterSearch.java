@@ -11,15 +11,18 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.element.GuiToggleButton;
 import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
+import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.resources.I18n;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.ReadablePoint;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiReplayCenterSearch extends AbstractGuiPopup<GuiReplayCenterSearch> {
+public class GuiReplayCenterSearch extends AbstractGuiPopup<GuiReplayCenterSearch> implements Typeable {
     private final GuiReplayCenter replayCenter;
     private final ApiClient apiClient;
     public final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.center.search.filters").setColor(Colors.BLACK);
@@ -99,5 +102,14 @@ public class GuiReplayCenterSearch extends AbstractGuiPopup<GuiReplayCenterSearc
     @Override
     protected GuiReplayCenterSearch getThis() {
         return this;
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (keyCode == Keyboard.KEY_ESCAPE) {
+            cancelButton.onClick();
+            return true;
+        }
+        return false;
     }
 }

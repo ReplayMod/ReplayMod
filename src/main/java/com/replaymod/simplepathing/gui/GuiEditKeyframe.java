@@ -13,16 +13,20 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiNumberField;
 import de.johni0702.minecraft.gui.element.IGuiLabel;
+import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import de.johni0702.minecraft.gui.utils.Consumer;
 import org.apache.commons.lang3.tuple.Triple;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.ReadablePoint;
 
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
-public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> {
+public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements Typeable {
     private static GuiNumberField newGuiNumberField() {
         return new GuiNumberField().setPrecision(0).setValidateOnFocusChange(true);
     }
@@ -68,9 +72,10 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         this.path = path;
 
         long time = keyframe.getTime();
-        timeMinField.setValue(time / 1000 / 60);
-        timeSecField.setValue(time / 1000 % 60);
-        timeMSecField.setValue(time % 1000);
+        Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
+        timeMinField.setValue(time / 1000 / 60).onTextChanged(updateSaveButtonState);
+        timeSecField.setValue(time / 1000 % 60).onTextChanged(updateSaveButtonState);
+        timeMSecField.setValue(time % 1000).onTextChanged(updateSaveButtonState);
 
         title.setI18nText("replaymod.gui.editkeyframe.title." + type);
         saveButton.onClick(() -> {
@@ -82,6 +87,23 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             path.getTimeline().pushChange(change);
             close();
         });
+    }
+
+    private boolean canSave() {
+        long newTime = (timeMinField.getInteger() * 60 + timeSecField.getInteger()) * 1000 + timeMSecField.getInteger();
+        if (newTime != keyframe.getTime() && path.getKeyframe(newTime) != null) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (keyCode == Keyboard.KEY_ESCAPE) {
+            cancelButton.onClick();
+            return true;
+        }
+        return false;
     }
 
     @Override

@@ -38,6 +38,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
+import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.entity.Entity;
@@ -69,22 +70,69 @@ public class GuiPathing {
 
     private static final Logger logger = LogManager.getLogger();
 
-    public final GuiTexturedButton playPauseButton = new GuiTexturedButton().setSize(20, 20)
-            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE);
+    public final GuiTexturedButton playPauseButton = new GuiTexturedButton() {
+        @Override
+        public GuiElement getTooltip(RenderInfo renderInfo) {
+            GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
+            if (tooltip != null) {
+                if (player.isActive()) {
+                    tooltip.setI18nText("replaymod.gui.ingame.menu.pausepath");
+                } else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
+                    tooltip.setI18nText("replaymod.gui.ingame.menu.playpathfromstart");
+                } else {
+                    tooltip.setI18nText("replaymod.gui.ingame.menu.playpath");
+                }
+            }
+            return tooltip;
+        }
+    }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTooltip(new GuiTooltip());
 
     public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
         @Override
         public void run() {
-            preparePathsForPlayback();
+            if (!preparePathsForPlayback()) return;
             new GuiRenderSettings(replayHandler, mod.getCurrentTimeline()).display();
         }
-    }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0);
+    }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
+            .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.renderpath"));
 
-    public final GuiTexturedButton positionKeyframeButton = new GuiTexturedButton().setSize(20, 20)
-            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE);
+    public final GuiTexturedButton positionKeyframeButton = new GuiTexturedButton() {
+        @Override
+        public GuiElement getTooltip(RenderInfo renderInfo) {
+            GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
+            if (tooltip != null) {
+                if (getTextureNormal().getY() == 40) { // Add keyframe
+                    if (getTextureNormal().getX() == 0) { // Position
+                        tooltip.setI18nText("replaymod.gui.ingame.menu.addposkeyframe");
+                    } else { // Spectator
+                        tooltip.setI18nText("replaymod.gui.ingame.menu.addspeckeyframe");
+                    }
+                } else { // Remove keyframe
+                    if (getTextureNormal().getX() == 0) { // Position
+                        tooltip.setI18nText("replaymod.gui.ingame.menu.removeposkeyframe");
+                    } else { // Spectator
+                        tooltip.setI18nText("replaymod.gui.ingame.menu.removespeckeyframe");
+                    }
+                }
+            }
+            return tooltip;
+        }
+    }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTooltip(new GuiTooltip());
 
-    public final GuiTexturedButton timeKeyframeButton = new GuiTexturedButton().setSize(20, 20)
-            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE);
+    public final GuiTexturedButton timeKeyframeButton = new GuiTexturedButton() {
+        @Override
+        public GuiElement getTooltip(RenderInfo renderInfo) {
+            GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
+            if (tooltip != null) {
+                if (getTextureNormal().getY() == 80) { // Add time keyframe
+                    tooltip.setI18nText("replaymod.gui.ingame.menu.addtimekeyframe");
+                } else { // Remove time keyframe
+                    tooltip.setI18nText("replaymod.gui.ingame.menu.removetimekeyframe");
+                }
+            }
+            return tooltip;
+        }
+    }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTooltip(new GuiTooltip());
 
     public final GuiKeyframeTimeline timeline = new GuiKeyframeTimeline(this){
         @Override
@@ -113,14 +161,16 @@ public class GuiPathing {
         public void run() {
             zoomTimeline(2d / 3d);
         }
-    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 20);
+    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 20)
+            .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomin"));
 
     public final GuiTexturedButton zoomOutButton = new GuiTexturedButton().setSize(9, 9).onClick(new Runnable() {
         @Override
         public void run() {
             zoomTimeline(3d / 2d);
         }
-    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 30);
+    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 30)
+            .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomout"));
 
     public final GuiPanel zoomButtonPanel = new GuiPanel()
             .setLayout(new VerticalLayout(VerticalLayout.Alignment.CENTER).setSpacing(2))
@@ -231,10 +281,12 @@ public class GuiPathing {
                     Timeline timeline = mod.getCurrentTimeline();
                     Path timePath = timeline.getPaths().get(TIME_PATH);
 
-                    preparePathsForPlayback();
+                    if (!preparePathsForPlayback()) return;
 
                     timePath.setActive(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
-                    ListenableFuture<Void> future = player.start(timeline);
+                    // Start from cursor time unless the control key is pressed (then start from beginning)
+                    int startTime = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)? 0 : GuiPathing.this.timeline.getCursorPosition();
+                    ListenableFuture<Void> future = player.start(timeline, startTime);
                     overlay.setCloseable(false);
                     overlay.setMouseVisible(true);
                     Futures.addCallback(future, new FutureCallback<Void>() {
@@ -403,6 +455,15 @@ public class GuiPathing {
             });
         });
 
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
+            if (!overlay.isVisible()) {
+                return;
+            }
+            if (mod.getSelectedKeyframe() != null) {
+                updateKeyframe(mod.getSelectedKeyframe().getValue(TimestampProperty.PROPERTY).isPresent());
+            }
+        });
+
         // Start loading entity tracker
         entityTrackerFuture = SettableFuture.create();
         new Thread(() -> {
@@ -429,10 +490,27 @@ public class GuiPathing {
         }).start();
     }
 
-    private void preparePathsForPlayback() {
+    private boolean preparePathsForPlayback() {
         Timeline timeline = mod.getCurrentTimeline();
         timeline.getPaths().get(TIME_PATH).updateAll();
         timeline.getPaths().get(POSITION_PATH).updateAll();
+
+        // Make sure time keyframes's values are monotonically increasing
+        int lastTime = 0;
+        for (Keyframe keyframe : timeline.getPaths().get(TIME_PATH).getKeyframes()) {
+            int time = keyframe.getValue(TimestampProperty.PROPERTY).orElseThrow(IllegalStateException::new);
+            if (time < lastTime) {
+                // We are going backwards in time
+                GuiInfoPopup.open(replayHandler.getOverlay(),
+                        "replaymod.error.negativetime1",
+                        "replaymod.error.negativetime2",
+                        "replaymod.error.negativetime3");
+                return false;
+            }
+            lastTime = time;
+        }
+
+        return true;
     }
 
     public void zoomTimeline(double factor) {

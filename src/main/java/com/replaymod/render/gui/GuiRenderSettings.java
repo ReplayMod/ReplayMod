@@ -91,7 +91,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     }).setSize(122, 20).setSteps(110);
     public final GuiPanel videoResolutionPanel = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(2))
-            .addElements(null, videoWidth, new GuiLabel().setText("*"), videoHeight);
+            .addElements(new HorizontalLayout.Data(0.5), videoWidth, new GuiLabel().setText("*"), videoHeight);
 
     public final GuiNumberField bitRateField = new GuiNumberField().setValue(10).setSize(50, 20);
     public final GuiDropdownMenu<String> bitRateUnit = new GuiDropdownMenu<String>()
@@ -130,7 +130,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                             new GuiPanel().addElements(null, bitRateField, bitRateUnit).setLayout(new HorizontalLayout()),
                             frameRateSlider).setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3)),
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.outputfile"), outputFileButton)
-            .setLayout(new GridLayout().setCellsEqualSize(false).setColumns(2).setSpacingX(5).setSpacingY(3));
+            .setLayout(new GridLayout().setCellsEqualSize(false).setColumns(2).setSpacingX(5).setSpacingY(5));
 
     public final GuiCheckbox nametagCheckbox = new GuiCheckbox()
             .setI18nLabel("replaymod.gui.rendersettings.nametags");
@@ -282,6 +282,15 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             renderButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(error));
             videoWidth.setTextColor(Colors.RED);
             videoHeight.setTextColor(Colors.RED);
+        }
+
+        // Enable/Disable bitrate input field and dropdown
+        if (encodingPresetDropdown.getSelectedValue().hasBitrateSetting()) {
+            bitRateField.setEnabled();
+            bitRateUnit.setEnabled();
+        } else {
+            bitRateField.setDisabled();
+            bitRateUnit.setDisabled();
         }
 
         // Enable/Disable camera stabilization checkboxes

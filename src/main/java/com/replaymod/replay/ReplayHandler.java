@@ -62,7 +62,7 @@ public class ReplayHandler {
      */
     private boolean suppressCameraMovements;
 
-    private final Set<Marker> markers;
+    private final List<Marker> markers;
 
     private final GuiReplayOverlay overlay;
 
@@ -81,7 +81,7 @@ public class ReplayHandler {
 
         MinecraftForge.EVENT_BUS.post(new ReplayOpenEvent.Pre(this));
 
-        markers = new HashSet<>(replayFile.getMarkers().or(Collections.<Marker>emptySet()));
+        markers = new ArrayList<>(replayFile.getMarkers().or(Collections.emptySet()));
 
         replaySender = new ReplaySender(this, replayFile, asyncMode);
 
@@ -188,9 +188,9 @@ public class ReplayHandler {
     /**
      * Returns all markers.
      * When changed, {@link #saveMarkers()} should be called to save the changes.
-     * @return Set of markers
+     * @return Collection of markers in no particular order
      */
-    public Set<Marker> getMarkers() {
+    public Collection<Marker> getMarkers() {
         return markers;
     }
 
@@ -199,7 +199,7 @@ public class ReplayHandler {
      */
     public void saveMarkers() {
         try {
-            replayFile.writeMarkers(markers);
+            replayFile.writeMarkers(new HashSet<>(markers));
         } catch (IOException e) {
             e.printStackTrace();
         }

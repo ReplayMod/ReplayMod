@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.settings.KeyBinding;
@@ -238,12 +239,29 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
+    public boolean shouldRenderInPass(int pass) {
+        // Never render the camera
+        // This is necessary to hide the player head in third person mode and to not
+        // cause any unwanted shadows when rendering with shaders.
+        return false;
+    }
+
+    @Override
     public ResourceLocation getLocationSkin() {
         Entity view = mc.getRenderViewEntity();
         if (view != this && view instanceof EntityPlayer) {
             return Utils.getResourceLocationForPlayerUUID(view.getUniqueID());
         }
         return super.getLocationSkin();
+    }
+
+    @Override
+    public String getSkinType() {
+        Entity view = mc.getRenderViewEntity();
+        if (view != this && view instanceof AbstractClientPlayer) {
+            return ((AbstractClientPlayer) view).getSkinType();
+        }
+        return super.getSkinType();
     }
 
     @Override
