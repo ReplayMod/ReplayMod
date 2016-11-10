@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -47,14 +46,6 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
         if (replayModRender_handler.getSettings().getChromaKeyingColor() != null) {
             ci.cancel();
         }
-    }
-
-    @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/culling/Frustum;setPosition(DDD)V"))
-    public void replayModRender_createNoCullingFrustum(Frustum frustum, double x, double y, double z) {
-        if (replayModRender_handler != null) {
-            frustum.clippingHelper = new EntityRendererHandler.NoCullingClippingHelper();
-        }
-        frustum.setPosition(x, y, z);
     }
 
     @Inject(method = "orientCamera", at = @At("HEAD"))

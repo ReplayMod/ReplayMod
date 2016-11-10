@@ -29,10 +29,7 @@ import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import org.lwjgl.opengl.Display;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;

@@ -38,6 +38,8 @@ public abstract class MixinRenderGlobal {
                 replayModRender_hook.updateChunks();
             } while (displayListEntitiesDirty);
 
+            displayListEntitiesDirty = true;
+
             replayModRender_passThroughSetupTerrain = false;
             ci.cancel();
         }
