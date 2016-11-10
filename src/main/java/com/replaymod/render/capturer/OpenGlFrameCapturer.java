@@ -4,6 +4,7 @@ import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.Frame;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.utils.ByteBufferPool;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import org.lwjgl.opengl.GL11;
@@ -23,6 +24,8 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     protected final RenderInfo renderInfo;
     protected int framesDone;
     private Framebuffer frameBuffer;
+
+    private final Minecraft mc = Minecraft.getMinecraft();
 
     public OpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         this.worldRenderer = worldRenderer;
@@ -56,7 +59,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
 
     protected Framebuffer frameBuffer() {
         if (frameBuffer == null) {
-            frameBuffer = new Framebuffer(getFrameWidth(), getFrameHeight(), true);
+            frameBuffer = Minecraft.getMinecraft().getFramebuffer();
         }
         return frameBuffer;
     }
@@ -71,13 +74,15 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     }
 
     protected OpenGlFrame renderFrame(int frameId, float partialTicks, D captureData) {
+        resize(getFrameWidth(), getFrameHeight());
+
         pushMatrix();
         frameBuffer().bindFramebuffer(true);
 
         clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         enableTexture2D();
 
-        worldRenderer.renderWorld(frameSize, partialTicks, captureData);
+        worldRenderer.renderWorld(partialTicks, captureData);
 
         frameBuffer().unbindFramebuffer();
         popMatrix();
@@ -102,11 +107,18 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         return new OpenGlFrame(frameId, new Dimension(getFrameWidth(), getFrameHeight()), buffer);
     }
 
+    protected void resize(int width, int height) {
+        if (width != mc.displayWidth || height != mc.displayHeight) {
+            setWindowSize(width, height);
+        }
+    }
+
+    private void setWindowSize(int width, int height) {
+        mc.resize(width, height);
+    }
+
     @Override
     public void close() throws IOException {
         worldRenderer.close();
-        if (frameBuffer != null) {
-            frameBuffer.deleteFramebuffer();
-        }
     }
 }

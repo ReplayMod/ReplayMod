@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "package": "com.replaymod.compat.shaders.mixin",
+  "mixins": [],
+  "server": [],
+  "client": [
+    "MixinShaderEntityRenderer",
+    "MixinShaderRenderChunk",
+    "MixinShaderRenderGlobal"
+  ],
+  "refmap": "mixins.replaymod.refmap.json"
+}
