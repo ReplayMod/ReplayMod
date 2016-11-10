@@ -485,6 +485,9 @@ replaymod.gui.objects=Custom Objects
 #Errors
 replaymod.error.unknownrestriction1=This replay cannot be played with your current version.
 replaymod.error.unknownrestriction2=It tried to enforce %s which is unknown.
+replaymod.error.negativetime1=Some of your time keyframes are out of order.
+replaymod.error.negativetime2=Going backwards in time is not supported.
+replaymod.error.negativetime3=The invalid parts are marked in red.
 
 #Replay Mod Incompatibility Warning
 replaymod.gui.modwarning.title=Incompatibility detected

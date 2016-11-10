@@ -48,7 +48,7 @@
     "parent": "replaymod",
     "screenshots": [],
     "dependencies": []
-  }/*,
+  },
   {
     "modid": "replaymod-online",
     "name": "Replay Mod - Online",
@@ -116,5 +116,22 @@
     "parent": "replaymod",
     "screenshots": [],
     "dependencies": []
-  }*/
+  },
+  {
+      "modid": "replaymod-compat",
+      "name": "Replay Mod - Compatibility",
+      "description": "Compatibility Module of the ReplayMod - Adds compatibility with other mods",
+      "version": "${version}",
+      "mcversion": "${mcversion}",
+      "url": "https://replaymod.com",
+      "updateUrl": "https://replaymod.com/download",
+      "authorList": [
+        "CrushedPixel",
+        "johni0702"
+      ],
+      "logoFile": "replaymod_logo.png",
+      "parent": "replaymod",
+      "screenshots": [],
+      "dependencies": []
+    }
 ]

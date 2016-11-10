@@ -101,6 +101,8 @@ public class GuiReplayViewer extends GuiScreen {
     }).onSelectionDoubleClicked(() -> {
         if (this.loadButton.isEnabled()) {
             this.loadButton.onClick();
+            // Disable load button to prevent the player from opening the replay twice at the same time
+            this.loadButton.setDisabled();
         }
     }).setDrawShadow(true).setDrawSlider(true);
 

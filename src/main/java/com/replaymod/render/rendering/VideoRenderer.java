@@ -19,6 +19,7 @@ import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Timer;
 import org.lwjgl.input.Mouse;
@@ -61,6 +62,9 @@ public class VideoRenderer implements RenderInfo {
     private final GuiVideoRenderer gui;
     private boolean paused;
     private boolean cancelled;
+
+    private Framebuffer guiFramebuffer;
+    private int displayWidth, displayHeight;
 
     public VideoRenderer(RenderSettings settings, ReplayHandler replayHandler, Timeline timeline) throws IOException {
         this.settings = settings;
@@ -130,6 +134,13 @@ public class VideoRenderer implements RenderInfo {
 
     @Override
     public float updateForNextFrame() {
+        // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
+        int displayWidthBefore = mc.displayWidth;
+        int displayHeightBefore = mc.displayHeight;
+
+        mc.displayWidth = displayWidth;
+        mc.displayHeight = displayHeight;
+
         if (!settings.isHighPerformance() || framesDone % fps == 0) {
             drawGui();
         }
@@ -141,6 +152,10 @@ public class VideoRenderer implements RenderInfo {
         while (elapsedTicks-- > 0) {
             tick();
         }
+
+        // change Minecraft's display size back
+        mc.displayWidth = displayWidthBefore;
+        mc.displayHeight = displayHeightBefore;
 
         framesDone++;
         return mc.timer.renderPartialTicks;
@@ -192,10 +207,12 @@ public class VideoRenderer implements RenderInfo {
 
         totalFrames = (int) (duration*fps/1000);
 
-        ScaledResolution scaled = new ScaledResolution(mc);
-        gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
+        updateDisplaySize();
 
         chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.renderGlobal);
+
+        // Set up our own framebuffer to render the GUI to
+        guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true);
     }
 
     private void finish() {
@@ -219,6 +236,9 @@ public class VideoRenderer implements RenderInfo {
         new SoundHandler().playRenderSuccessSound();
 
         new GuiRenderingDone(ReplayModRender.instance, videoWriter.getVideoFile(), totalFrames, settings).display();
+
+        // Finally, resize the Minecraft framebuffer to the actual width/height of the window
+        mc.resize(displayWidth, displayHeight);
     }
 
     private void tick() {
@@ -238,11 +258,21 @@ public class VideoRenderer implements RenderInfo {
 
     public void drawGui() {
         do {
+            // Resize the GUI framebuffer if the display size changed
+            if (!settings.isHighPerformance() && displaySizeChanged()) {
+                updateDisplaySize();
+                guiFramebuffer.createBindFramebuffer(mc.displayWidth, mc.displayHeight);
+            }
+
             pushMatrix();
             clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             enableTexture2D();
-            mc.getFramebuffer().bindFramebuffer(true);
+            guiFramebuffer.bindFramebuffer(true);
+
             mc.entityRenderer.setupOverlayRendering();
+
+            ScaledResolution scaled = new ScaledResolution(mc);
+            gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
             try {
                 gui.toMinecraft().handleInput();
@@ -252,17 +282,16 @@ public class VideoRenderer implements RenderInfo {
                 throw new RuntimeException(e);
             }
 
-            ScaledResolution scaled = new ScaledResolution(mc);
             int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
             int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
+
             gui.toMinecraft().drawScreen(mouseX, mouseY, 0);
 
-            mc.getFramebuffer().unbindFramebuffer();
+            guiFramebuffer.unbindFramebuffer();
             popMatrix();
             pushMatrix();
-            mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
+            guiFramebuffer.framebufferRender(displayWidth, displayHeight);
             popMatrix();
-
 
             // if not in high performance mode, update the gui size if screen size changed
             // otherwise just swap the progress gui to screen
@@ -283,6 +312,15 @@ public class VideoRenderer implements RenderInfo {
                 }
             }
         } while (paused);
+    }
+
+    private boolean displaySizeChanged() {
+        return displayWidth != Display.getWidth() || displayHeight != Display.getHeight();
+    }
+
+    private void updateDisplaySize() {
+        displayWidth = Display.getWidth();
+        displayHeight = Display.getHeight();
     }
 
     public int getFramesDone() {

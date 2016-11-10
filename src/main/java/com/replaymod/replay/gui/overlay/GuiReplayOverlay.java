@@ -7,8 +7,10 @@ import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiOverlay;
 import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiSlider;
 import de.johni0702.minecraft.gui.element.GuiTexturedButton;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -27,8 +29,20 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
     public final GuiPanel topPanel = new GuiPanel(this)
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.LEFT).setSpacing(5));
-    public final GuiTexturedButton playPauseButton = new GuiTexturedButton().setSize(20, 20)
-            .setTexture(ReplayMod.TEXTURE, TEXTURE_SIZE);
+    public final GuiTexturedButton playPauseButton = new GuiTexturedButton() {
+        @Override
+        public GuiElement getTooltip(RenderInfo renderInfo) {
+            GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
+            if (tooltip != null) {
+                if (getTextureNormal().getY() == 0) { // Play button
+                    tooltip.setI18nText("replaymod.gui.ingame.menu.unpause");
+                } else { // Pause button
+                    tooltip.setI18nText("replaymod.gui.ingame.menu.pause");
+                }
+            }
+            return tooltip;
+        }
+    }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, TEXTURE_SIZE).setTooltip(new GuiTooltip());
     public final GuiSlider speedSlider = new GuiSlider().setSize(100, 20).setSteps(37); // 0.0 is not included
     public final GuiMarkerTimeline timeline;
 

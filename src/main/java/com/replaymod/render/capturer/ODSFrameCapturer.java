@@ -6,11 +6,11 @@ import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.shader.Program;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
 import java.io.IOException;
@@ -30,6 +30,8 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
     private final BooleanState[] previousStates = new BooleanState[3];
     private final BooleanState previousFogState;
+
+    private final Minecraft mc = Minecraft.getMinecraft();
 
     public ODSFrameCapturer(WorldRenderer worldRenderer, final RenderInfo renderInfo, int frameSize) {
         RenderInfo fakeInfo = new RenderInfo() {
@@ -143,6 +145,8 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
         @Override
         protected OpenGlFrame renderFrame(int frameId, float partialTicks, CubicOpenGlFrameCapturer.Data captureData) {
+            resize(getFrameWidth(), getFrameHeight());
+
             pushMatrix();
             frameBuffer().bindFramebuffer(true);
 
@@ -150,7 +154,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             enableTexture2D();
 
             directionVariable.set(captureData.ordinal());
-            worldRenderer.renderWorld(new Dimension(getFrameWidth(), getFrameHeight()), partialTicks, null);
+            worldRenderer.renderWorld(partialTicks, null);
 
             frameBuffer().unbindFramebuffer();
             popMatrix();

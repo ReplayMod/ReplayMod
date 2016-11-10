@@ -5,14 +5,17 @@ import com.replaymod.replay.ReplayHandler;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.*;
+import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import com.replaymod.replaystudio.data.Marker;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.ReadablePoint;
 
-public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> {
+public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
     private final ReplayHandler replayHandler;
     private final Marker marker;
 
@@ -106,5 +109,14 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> {
     @Override
     protected GuiEditMarkerPopup getThis() {
         return this;
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (keyCode == Keyboard.KEY_ESCAPE) {
+            cancelButton.onClick();
+            return true;
+        }
+        return false;
     }
 }

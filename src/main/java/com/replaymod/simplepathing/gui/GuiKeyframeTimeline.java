@@ -121,22 +121,40 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     || !segment.getInterpolator().getKeyframeProperties().contains(SpectatorProperty.PROPERTY)) {
                 continue; // Not a spectator segment
             }
-            long startFrameTime = segment.getStartKeyframe().getTime();
-            long endFrameTime = segment.getEndKeyframe().getTime();
-            if (startFrameTime >= endTime || endFrameTime <= startTime) {
-                continue; // Segment out of display range
-            }
+            drawQuadOnSegment(renderer, visibleWidth, segment, BORDER_TOP + 1, 0xFF0088FF);
+        }
 
-            double relativeStart = startFrameTime - startTime;
-            double relativeEnd = endFrameTime - startTime;
-            int startX = BORDER_LEFT + Math.max(0, (int) (relativeStart / visibleTime * visibleWidth) + KEYFRAME_SIZE / 2 + 1);
-            int endX = BORDER_LEFT + Math.min(visibleWidth, (int) (relativeEnd / visibleTime * visibleWidth) - KEYFRAME_SIZE / 2);
-            if (startX < endX) {
-                renderer.drawRect(startX + 1, BORDER_TOP + 1, endX - startX - 2, KEYFRAME_SIZE - 2, 0xFF0088FF);
+        // Draw red quads on time path segments that would require time going backwards
+        for (PathSegment segment : mod.getCurrentTimeline().getPaths().get(GuiPathing.TIME_PATH).getSegments()) {
+            long startTimestamp = segment.getStartKeyframe().getValue(TimestampProperty.PROPERTY).orElseThrow(IllegalStateException::new);
+            long endTimestamp = segment.getEndKeyframe().getValue(TimestampProperty.PROPERTY).orElseThrow(IllegalStateException::new);
+            if (endTimestamp >= startTimestamp) {
+                continue; // All is fine, time is not moving backwards
             }
+            drawQuadOnSegment(renderer, visibleWidth, segment, BORDER_TOP + KEYFRAME_SIZE + 1, 0xFFFF0000);
         }
 
         super.drawTimelineCursor(renderer, size);
+    }
+
+    private void drawQuadOnSegment(GuiRenderer renderer, int visibleWidth, PathSegment segment, int y, int color) {
+        int startTime = getOffset();
+        int visibleTime = (int) (getZoom() * getLength());
+        int endTime = getOffset() + visibleTime;
+
+        long startFrameTime = segment.getStartKeyframe().getTime();
+        long endFrameTime = segment.getEndKeyframe().getTime();
+        if (startFrameTime >= endTime || endFrameTime <= startTime) {
+            return; // Segment out of display range
+        }
+
+        double relativeStart = startFrameTime - startTime;
+        double relativeEnd = endFrameTime - startTime;
+        int startX = BORDER_LEFT + Math.max(0, (int) (relativeStart / visibleTime * visibleWidth) + KEYFRAME_SIZE / 2 + 1);
+        int endX = BORDER_LEFT + Math.min(visibleWidth, (int) (relativeEnd / visibleTime * visibleWidth) - KEYFRAME_SIZE / 2);
+        if (startX < endX) {
+            renderer.drawRect(startX + 1, y, endX - startX - 2, KEYFRAME_SIZE - 2, color);
+        }
     }
 
     /**
@@ -243,6 +261,15 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     @Override
     public boolean mouseDrag(ReadablePoint position, int button, long timeSinceLastCall) {
         if (!dragging) {
+            if (button == 0) {
+                // Left click, the user might try to move the cursor by clicking and holding
+                int time = getTimeAt(position.getX(), position.getY());
+                if (time != -1) {
+                    // and they are still on the timeline, so update the time appropriately
+                    setCursorPosition(time);
+                    return true;
+                }
+            }
             return false;
         }
 
