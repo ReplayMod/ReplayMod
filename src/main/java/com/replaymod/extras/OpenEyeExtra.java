@@ -25,7 +25,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
 public class OpenEyeExtra implements Extra {
-    private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + Loader.MC_VERSION;
+    private static final String DOWNLOAD_URL = "http://www.replaymod.com/dl/openeye/" + Loader.MC_VERSION;
     private static final Setting<Boolean> ASK_FOR_OPEN_EYE = new Setting<>("advanced", "askForOpenEye", null, true);
 
     private ReplayMod mod;
