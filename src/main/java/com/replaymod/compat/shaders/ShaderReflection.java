@@ -23,80 +23,31 @@ public class ShaderReflection {
     public static Method config_isShaders;
 
     static {
-        initFrameTimeCounter();
-
-        initIsShadowPass();
-
-        initBeginRender();
-
-        initChunksToUpdateForced();
-
-        initConfigIsShaders();
-    }
-
-    private static void initFrameTimeCounter() {
         try {
             shaders_frameTimeCounter = Class.forName("shadersmod.client.Shaders")
                     .getDeclaredField("frameTimeCounter");
             shaders_frameTimeCounter.setAccessible(true);
-        } catch (ClassNotFoundException ignore) {
-            // no shaders mod installed
-        } catch (NoSuchFieldException e) {
-            // the field wasn't found. Has it been renamed?
-            e.printStackTrace();
-        }
-    }
 
-    private static void initIsShadowPass() {
-        try {
             shaders_isShadowPass = Class.forName("shadersmod.client.Shaders")
                     .getDeclaredField("isShadowPass");
             shaders_isShadowPass.setAccessible(true);
-        } catch (ClassNotFoundException ignore) {
-            // no shaders mod installed
-        } catch (NoSuchFieldException e) {
-            // the field wasn't found. Has it been renamed?
-            e.printStackTrace();
-        }
-    }
 
-    private static void initBeginRender() {
-        try {
             shaders_beginRender = Class.forName("shadersmod.client.Shaders")
                     .getDeclaredMethod("beginRender", Minecraft.class, float.class, long.class);
-            shaders_frameTimeCounter.setAccessible(true);
-        } catch (ClassNotFoundException ignore) {
-            // no shaders mod installed
-        } catch (NoSuchMethodException e) {
-            // the method wasn't found. Has it been renamed?
-            e.printStackTrace();
-        }
-    }
+            shaders_beginRender.setAccessible(true);
 
-    private static void initChunksToUpdateForced() {
-        try {
             renderGlobal_chunksToUpdateForced = Class.forName("net.minecraft.client.renderer.RenderGlobal")
                     .getDeclaredField("chunksToUpdateForced");
             renderGlobal_chunksToUpdateForced.setAccessible(true);
-        } catch (ClassNotFoundException ignore) {
-            // no shaders mod installed
-        } catch (NoSuchFieldException e) {
-            // the field wasn't found. Has it been renamed?
-            e.printStackTrace();
-        }
-    }
 
-    private static void initConfigIsShaders() {
-        try {
             config_isShaders = Class.forName("Config")
                     .getDeclaredMethod("isShaders");
             config_isShaders.setAccessible(true);
         } catch (ClassNotFoundException ignore) {
             // no shaders mod installed
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException | NoSuchFieldException e) {
             // the method wasn't found. Has it been renamed?
             e.printStackTrace();
         }
     }
-
 }
