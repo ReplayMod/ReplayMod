@@ -452,6 +452,8 @@ public class GuiPathing {
                 int cursorPassed = (int) (timePassed / speed);
                 // Move cursor to new position
                 timeline.setCursorPosition(keyframeCursor + cursorPassed);
+                // Deselect keyframe to allow the user to add a new one right away
+                mod.setSelectedKeyframe(null);
             });
         });
 
