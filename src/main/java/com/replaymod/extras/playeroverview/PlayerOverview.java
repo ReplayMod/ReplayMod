@@ -3,6 +3,7 @@ package com.replaymod.extras.playeroverview;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.extras.Extra;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.camera.CameraEntity;
@@ -39,6 +40,16 @@ public class PlayerOverview implements Extra {
                             return !(input instanceof CameraEntity); // Exclude the camera entity
                         }
                     });
+                    if (!Utils.isCtrlDown()) {
+                        // Hide all players that have an UUID v2 (commonly used for NPCs)
+                        Iterator<EntityPlayer> iter = players.iterator();
+                        while (iter.hasNext()) {
+                            UUID uuid = iter.next().getGameProfile().getId();
+                            if (uuid != null && uuid.version() == 2) {
+                                iter.remove();
+                            }
+                        }
+                    }
                     new PlayerOverviewGui(PlayerOverview.this, players).display();
                 }
             }
