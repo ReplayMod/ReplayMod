@@ -3,6 +3,7 @@ package com.replaymod.recording.mixin;
 import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.network.play.server.S07PacketRespawn;
 import net.minecraft.network.play.server.S38PacketPlayerListItem;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,12 +13,17 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Mixin(NetHandlerPlayClient.class)
 public abstract class MixinNetHandlerPlayClient {
 
     @Shadow
     private Minecraft gameController;
+
+    @Shadow
+    private Map<UUID, NetworkPlayerInfo> playerInfoMap;
 
     public RecordingEventHandler getRecordingEventHandler() {
         return ((RecordingEventHandler.RecordingEventSender) gameController.renderGlobal).getRecordingEventHandler();
@@ -30,14 +36,19 @@ public abstract class MixinNetHandlerPlayClient {
      * @param packet The packet
      * @param ci Callback info
      */
-    @Inject(method = "handlePlayerListItem", at=@At("RETURN"))
+    @Inject(method = "handlePlayerListItem", at=@At("HEAD"))
     public void recordOwnJoin(S38PacketPlayerListItem packet, CallbackInfo ci) {
+        if (gameController.thePlayer == null) return;
+
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null && packet.func_179768_b() == S38PacketPlayerListItem.Action.ADD_PLAYER) {
             @SuppressWarnings("unchecked")
             List<S38PacketPlayerListItem.AddPlayerData> dataList = packet.func_179767_a();
             for (S38PacketPlayerListItem.AddPlayerData data : dataList) {
-                if (data.func_179962_a().getId().equals(Minecraft.getMinecraft().thePlayer.getGameProfile().getId())) {
+                if (data.func_179962_a() == null || data.func_179962_a().getId() == null) continue;
+                // Only add spawn packet for our own player and only if he isn't known yet
+                if (data.func_179962_a().getId().equals(Minecraft.getMinecraft().thePlayer.getGameProfile().getId())
+                        && !playerInfoMap.containsKey(data.func_179962_a().getId())) {
                     handler.onPlayerJoin();
                 }
             }
