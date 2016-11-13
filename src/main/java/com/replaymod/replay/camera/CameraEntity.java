@@ -69,7 +69,11 @@ public class CameraEntity extends EntityPlayerSP {
         super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
         FMLCommonHandler.instance().bus().register(eventHandler);
         MinecraftForge.EVENT_BUS.register(eventHandler);
-        cameraController = ReplayModReplay.instance.createCameraController(this);
+        if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
+            cameraController = ReplayModReplay.instance.createCameraController(this);
+        } else {
+            cameraController = new SpectatorCameraController(this);
+        }
     }
 
     /**
@@ -151,7 +155,9 @@ public class CameraEntity extends EntityPlayerSP {
             // This is important if the spectated player respawns as their
             // entity is recreated and we have to spectate a new entity
             UUID spectating = ReplayModReplay.instance.getReplayHandler().getSpectatedUUID();
-            if (spectating != null && (view.getUniqueID() != spectating || view.worldObj != worldObj)) {
+            if (spectating != null && (view.getUniqueID() != spectating
+                    || view.worldObj != worldObj)
+                    || worldObj.getEntityByID(view.getEntityId()) != view) {
                 view = worldObj.getPlayerEntityByUUID(spectating);
                 if (view != null) {
                     mc.setRenderViewEntity(view);
@@ -354,7 +360,11 @@ public class CameraEntity extends EntityPlayerSP {
         @SubscribeEvent
         public void onSettingsChanged(SettingsChangedEvent event) {
             if (event.getKey() == Setting.CAMERA) {
-                cameraController = ReplayModReplay.instance.createCameraController(CameraEntity.this);
+                if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
+                    cameraController = ReplayModReplay.instance.createCameraController(CameraEntity.this);
+                } else {
+                    cameraController = new SpectatorCameraController(CameraEntity.this);
+                }
             }
         }
 
