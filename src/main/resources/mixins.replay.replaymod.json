@@ -10,7 +10,8 @@
     "MixinRenderItem",
     "MixinRenderManager",
     "MixinTileEntityEndPortalRenderer",
-    "MixinViewFrustum"
+    "MixinViewFrustum",
+    "MixinWorldClient"
   ],
   "server": [],
   "client": [],
