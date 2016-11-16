@@ -292,6 +292,12 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
+    public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
+        // Do not open any block GUIs for the camera entities
+        // Note: Vanilla GUIs are filtered out on a packet level, this only applies to mod GUIs
+    }
+
+    @Override
     public void setDead() {
         super.setDead();
         FMLCommonHandler.instance().bus().unregister(eventHandler);
