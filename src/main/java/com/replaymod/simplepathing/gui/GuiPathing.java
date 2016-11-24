@@ -431,7 +431,7 @@ public class GuiPathing {
             });
         });
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
+        core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
             // Current replay time
             int time = replayHandler.getReplaySender().currentTimeStamp();
             // Position of the cursor
