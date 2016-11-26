@@ -49,7 +49,8 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         System.out.println("Starting " + settings.getExportCommand() + " with args: " + commandArgs);
         String[] cmdline = new CommandLine(executable).addArguments(commandArgs).toStrings();
         process = new ProcessBuilder(cmdline).directory(outputFolder).start();
-        OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream("export.log"), ffmpegLog);
+        File exportLogFile = new File(Minecraft.getMinecraft().mcDataDir, "export.log");
+        OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream(exportLogFile), ffmpegLog);
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();
         outputStream = process.getOutputStream();

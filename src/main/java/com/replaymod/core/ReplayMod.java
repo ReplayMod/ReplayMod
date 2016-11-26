@@ -85,7 +85,8 @@ public class ReplayMod {
     }
 
     public File getReplayFolder() throws IOException {
-        File folder = new File(getSettingsRegistry().get(Setting.RECORDING_PATH));
+        String path = getSettingsRegistry().get(Setting.RECORDING_PATH);
+        File folder = new File(path.startsWith("./") ? getMinecraft().mcDataDir : null, path);
         FileUtils.forceMkdir(folder);
         return folder;
     }

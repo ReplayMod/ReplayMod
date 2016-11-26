@@ -7,7 +7,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
-import com.replaymod.render.Setting;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
@@ -410,7 +409,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
     private File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
         String fileName = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
-        File folder = new File(ReplayModRender.instance.getCore().getSettingsRegistry().get(Setting.RENDER_PATH));
+        File folder = ReplayModRender.instance.getVideoFolder();
         return new File(folder, fileName + "." + encodingPreset.getFileExtension());
     }
 

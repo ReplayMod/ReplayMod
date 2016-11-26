@@ -8,10 +8,10 @@ import com.replaymod.online.gui.GuiSaveModifiedReplay;
 import com.replaymod.online.handler.GuiHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayCloseEvent;
-import de.johni0702.minecraft.gui.container.GuiScreen;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
+import de.johni0702.minecraft.gui.container.GuiScreen;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+
+import static net.minecraft.client.Minecraft.getMinecraft;
 
 @Mod(modid = ReplayModOnline.MOD_ID, useMetadata = true)
 public class ReplayModOnline {
@@ -101,7 +103,8 @@ public class ReplayModOnline {
     }
 
     public File getDownloadsFolder() {
-        return new File(core.getSettingsRegistry().get(Setting.DOWNLOAD_PATH));
+        String path = core.getSettingsRegistry().get(Setting.DOWNLOAD_PATH);
+        return new File(path.startsWith("./") ? getMinecraft().mcDataDir : null, path);
     }
 
     public File getDownloadedFile(int id) {
