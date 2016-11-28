@@ -1,5 +1,6 @@
 package com.replaymod.compat;
 
+import com.replaymod.compat.optifine.DisableFastRender;
 import com.replaymod.compat.shaders.ShaderBeginRender;
 import com.replaymod.core.ReplayMod;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -18,6 +19,7 @@ public class ReplayModCompat {
     public void init(FMLInitializationEvent event) {
         EventBus bus = FMLCommonHandler.instance().bus();
         bus.register(new ShaderBeginRender());
+        bus.register(new DisableFastRender());
     }
 
 }
