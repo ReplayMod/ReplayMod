@@ -24,6 +24,8 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
+import static net.minecraft.client.Minecraft.getMinecraft;
+
 @Mod(modid = ReplayModOnline.MOD_ID, useMetadata = true)
 public class ReplayModOnline {
     public static final String MOD_ID = "replaymod-online";
@@ -101,7 +103,8 @@ public class ReplayModOnline {
     }
 
     public File getDownloadsFolder() {
-        return new File(core.getSettingsRegistry().get(Setting.DOWNLOAD_PATH));
+        String path = core.getSettingsRegistry().get(Setting.DOWNLOAD_PATH);
+        return new File(path.startsWith("./") ? getMinecraft().mcDataDir : null, path);
     }
 
     public File getDownloadedFile(int id) {

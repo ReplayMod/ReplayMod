@@ -69,7 +69,11 @@ public class CameraEntity extends EntityPlayerSP {
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager) {
         super(mcIn, worldIn, netHandlerPlayClient, statisticsManager);
         MinecraftForge.EVENT_BUS.register(eventHandler);
-        cameraController = ReplayModReplay.instance.createCameraController(this);
+        if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
+            cameraController = ReplayModReplay.instance.createCameraController(this);
+        } else {
+            cameraController = new SpectatorCameraController(this);
+        }
     }
 
     /**
@@ -151,7 +155,9 @@ public class CameraEntity extends EntityPlayerSP {
             // This is important if the spectated player respawns as their
             // entity is recreated and we have to spectate a new entity
             UUID spectating = ReplayModReplay.instance.getReplayHandler().getSpectatedUUID();
-            if (spectating != null && (view.getUniqueID() != spectating || view.worldObj != worldObj)) {
+            if (spectating != null && (view.getUniqueID() != spectating
+                    || view.worldObj != worldObj)
+                    || worldObj.getEntityByID(view.getEntityId()) != view) {
                 view = worldObj.getPlayerEntityByUUID(spectating);
                 if (view != null) {
                     mc.setRenderViewEntity(view);
@@ -323,6 +329,12 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
+    public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
+        // Do not open any block GUIs for the camera entities
+        // Note: Vanilla GUIs are filtered out on a packet level, this only applies to mod GUIs
+    }
+
+    @Override
     public void setDead() {
         super.setDead();
         MinecraftForge.EVENT_BUS.unregister(eventHandler);
@@ -394,7 +406,11 @@ public class CameraEntity extends EntityPlayerSP {
         @SubscribeEvent
         public void onSettingsChanged(SettingsChangedEvent event) {
             if (event.getKey() == Setting.CAMERA) {
-                cameraController = ReplayModReplay.instance.createCameraController(CameraEntity.this);
+                if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
+                    cameraController = ReplayModReplay.instance.createCameraController(CameraEntity.this);
+                } else {
+                    cameraController = new SpectatorCameraController(CameraEntity.this);
+                }
             }
         }
 

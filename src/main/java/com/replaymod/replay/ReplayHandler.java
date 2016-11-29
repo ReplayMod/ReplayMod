@@ -280,7 +280,7 @@ public class ReplayHandler {
             CameraEntity cam = getCameraEntity();
             if (cam != null) {
                 targetCameraPosition = new Location(cam.posX, cam.posY, cam.posZ,
-                        cam.rotationPitch, cam.rotationYaw);
+                        cam.rotationYaw, cam.rotationPitch);
             } else {
                 targetCameraPosition = null;
             }
