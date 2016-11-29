@@ -431,7 +431,7 @@ public class GuiPathing {
             });
         });
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
+        core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
             // Current replay time
             int time = replayHandler.getReplaySender().currentTimeStamp();
             // Position of the cursor
@@ -452,6 +452,8 @@ public class GuiPathing {
                 int cursorPassed = (int) (timePassed / speed);
                 // Move cursor to new position
                 timeline.setCursorPosition(keyframeCursor + cursorPassed);
+                // Deselect keyframe to allow the user to add a new one right away
+                mod.setSelectedKeyframe(null);
             });
         });
 

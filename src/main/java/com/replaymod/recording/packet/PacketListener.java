@@ -132,6 +132,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         synchronized (replayFile) {
             try {
                 replayFile.save();
+                replayFile.close();
             } catch (IOException e) {
                 logger.error("Saving replay file:", e);
             }

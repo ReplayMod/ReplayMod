@@ -9,6 +9,7 @@ import net.minecraft.util.ReportedException;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
 import java.util.Collection;
@@ -19,16 +20,25 @@ import java.util.Map;
 public class KeyBindingRegistry {
     private Map<String, KeyBinding> keyBindings = new HashMap<String, KeyBinding>();
     private Multimap<KeyBinding, Runnable> keyBindingHandlers = ArrayListMultimap.create();
+    private Multimap<KeyBinding, Runnable> repeatedKeyBindingHandlers = ArrayListMultimap.create();
     private Multimap<Integer, Runnable> rawHandlers = ArrayListMultimap.create();
 
     public void registerKeyBinding(String name, int keyCode, Runnable whenPressed) {
+        keyBindingHandlers.put(registerKeyBinding(name, keyCode), whenPressed);
+    }
+
+    public void registerRepeatedKeyBinding(String name, int keyCode, Runnable whenPressed) {
+        repeatedKeyBindingHandlers.put(registerKeyBinding(name, keyCode), whenPressed);
+    }
+
+    private KeyBinding registerKeyBinding(String name, int keyCode) {
         KeyBinding keyBinding = keyBindings.get(name);
         if (keyBinding == null) {
             keyBinding = new KeyBinding(name, keyCode, "replaymod.title");
             keyBindings.put(name, keyBinding);
             ClientRegistry.registerKeyBinding(keyBinding);
         }
-        keyBindingHandlers.put(keyBinding, whenPressed);
+        return keyBinding;
     }
 
     public void registerRaw(int keyCode, Runnable whenPressed) {
@@ -45,20 +55,38 @@ public class KeyBindingRegistry {
         handleRaw();
     }
 
+    @SubscribeEvent
+    public void onTick(TickEvent.RenderTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        handleRepeatedKeyBindings();
+    }
+
+    public void handleRepeatedKeyBindings() {
+        for (Map.Entry<KeyBinding, Collection<Runnable>> entry : repeatedKeyBindingHandlers.asMap().entrySet()) {
+            if (entry.getKey().isKeyDown()) {
+                invokeKeyBindingHandlers(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
     public void handleKeyBindings() {
         for (Map.Entry<KeyBinding, Collection<Runnable>> entry : keyBindingHandlers.asMap().entrySet()) {
             while (entry.getKey().isPressed()) {
-                for (final Runnable runnable : entry.getValue()) {
-                    try {
-                        runnable.run();
-                    } catch (Throwable cause) {
-                        CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Key Binding");
-                        CrashReportCategory category = crashReport.makeCategory("Key Binding");
-                        category.addCrashSection("Key Binding", entry.getKey());
-                        category.setDetail("Handler", runnable::toString);
-                        throw new ReportedException(crashReport);
-                    }
-                }
+                invokeKeyBindingHandlers(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private void invokeKeyBindingHandlers(KeyBinding keyBinding, Collection<Runnable> handlers) {
+        for (final Runnable runnable : handlers) {
+            try {
+                runnable.run();
+            } catch (Throwable cause) {
+                CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Key Binding");
+                CrashReportCategory category = crashReport.makeCategory("Key Binding");
+                category.addCrashSection("Key Binding", keyBinding);
+                category.setDetail("Handler", runnable::toString);
+                throw new ReportedException(crashReport);
             }
         }
     }

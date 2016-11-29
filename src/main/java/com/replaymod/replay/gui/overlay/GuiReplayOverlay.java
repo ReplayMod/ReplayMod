@@ -19,6 +19,7 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 import org.lwjgl.util.WritablePoint;
@@ -153,6 +154,23 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
                 setMouseVisible(true);
             }
         }
+        if (Keyboard.getEventKeyState()) {
+            // Handle the F1 key binding while the overlay is opened as a gui screen
+            if (isMouseVisible() && Keyboard.getEventKey() == Keyboard.KEY_F1) {
+                gameSettings.hideGUI = !gameSettings.hideGUI;
+            }
+        }
+    }
+
+    @Override
+    public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
+        // Do not render overlay when user pressed F1 and we are not currently in some popup
+        if (getMinecraft().gameSettings.hideGUI && isAllowUserInput()) {
+            // Note that this only applies to when the mouse is visible, otherwise
+            // the draw method isn't called in the first place
+            return;
+        }
+        super.draw(renderer, size, renderInfo);
     }
 
     @Override
