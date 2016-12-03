@@ -186,7 +186,7 @@ public class ResourcePackRecorder {
 
             Futures.getUnchecked(mc.addScheduledTask(() -> mc.displayGuiScreen(guiScreen)));
 
-            Map<String, String> sessionInfo = ResourcePackRepository.func_190115_a();
+            Map<String, String> sessionInfo = ResourcePackRepository.getDownloadHeaders();
             repo.downloadingPacks = HttpUtil.downloadResourcePack(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
             Futures.addCallback(repo.downloadingPacks, new FutureCallback<Object>() {
                 @Override

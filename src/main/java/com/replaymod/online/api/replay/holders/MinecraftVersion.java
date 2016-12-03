@@ -4,7 +4,8 @@ public enum MinecraftVersion {
 
     MC_1_8("Minecraft 1.8", "1.8"),
     MC_1_9_4("Minecraft 1.9.4", "1.9.4"),
-    MC_1_10_2("Minecraft 1.10.2", "1.10.2");
+    MC_1_10_2("Minecraft 1.10.2", "1.10.2"),
+    MC_1_11("Minecraft 1.11", "1.11");
 
     private String niceName, apiName;
 

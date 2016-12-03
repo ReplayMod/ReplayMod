@@ -31,7 +31,7 @@ public abstract class MixinViewFrustum {
     }
 
     /**
-     * Instead of calling {@link RenderChunk#setOrigin(int, int, int)} we recreate the render chunk
+     * Instead of calling {@link RenderChunk#setPosition(int, int, int)} we recreate the render chunk
      * which seems to solve the problem that chunks are invisible when you leave an area and return
      * to it.
      * Any better fixes are welcome.
@@ -59,7 +59,7 @@ public abstract class MixinViewFrustum {
                         // Recreate render chunk instead of setting its position
                         (renderChunks[(j1 * this.countChunksY + l1) * this.countChunksX + l] =
                                 renderChunkFactory.create(world, renderGlobal, 0)
-                        ).setOrigin(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+                        ).setPosition(blockpos.getX(), blockpos.getY(), blockpos.getZ());
                     }
                 }
             }

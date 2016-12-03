@@ -128,7 +128,7 @@ public class ReplayHandler {
     }
 
     private void setup() {
-        mc.ingameGUI.getChatGUI().clearChatMessages();
+        mc.ingameGUI.getChatGUI().clearChatMessages(true);
 
         NetworkManager networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND) {
             @Override
