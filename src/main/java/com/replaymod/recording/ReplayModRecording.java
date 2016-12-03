@@ -5,6 +5,7 @@ import com.replaymod.core.utils.Restrictions;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.packet.PacketListener;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraft.network.NetworkManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -16,6 +17,9 @@ import org.lwjgl.input.Keyboard;
 @Mod(modid = ReplayModRecording.MOD_ID, useMetadata = true)
 public class ReplayModRecording {
     public static final String MOD_ID = "replaymod-recording";
+
+    @Mod.Instance(MOD_ID)
+    public static ReplayModRecording instance;
 
     @Mod.Instance(ReplayMod.MOD_ID)
     private static ReplayMod core;
@@ -48,5 +52,9 @@ public class ReplayModRecording {
         bus.register(connectionEventHandler = new ConnectionEventHandler(logger, core));
 
         NetworkRegistry.INSTANCE.newSimpleChannel(Restrictions.PLUGIN_CHANNEL);
+    }
+
+    public void initiateRecording(NetworkManager networkManager) {
+        connectionEventHandler.onConnectedToServerEvent(networkManager);
     }
 }

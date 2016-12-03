@@ -4,7 +4,9 @@
   "mixins": [],
   "server": [],
   "client": [
+    "MixinNetHandlerLoginClient",
     "MixinNetHandlerPlayClient",
+    "MixinNetworkDispatcher",
     "MixinRenderGlobal"
   ],
   "refmap": "mixins.replaymod.refmap.json"
