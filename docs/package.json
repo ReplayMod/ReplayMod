@@ -1,0 +1,13 @@
+{
+  "name": "replaymod-docs",
+  "version": "0.0.0",
+  "description": "",
+  "main": "convert.js",
+  "author": "Jonas Herzig <me@johni0702.de>",
+  "license": "GPLv3",
+  "dependencies": {
+    "md-jml": "~2.0.1",
+    "array-findindex-polyfill": "~0.1.0",
+    "string.prototype.endswith": "~0.2.0"
+  }
+}

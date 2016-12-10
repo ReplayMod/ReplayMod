@@ -9,13 +9,10 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelPipeline;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.world.WorldType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import org.apache.logging.log4j.Logger;
 
@@ -45,10 +42,10 @@ public class ConnectionEventHandler {
         this.core = core;
     }
 
-    @SubscribeEvent
-    public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
+    public void onConnectedToServerEvent(NetworkManager networkManager) {
         try {
-            if(event.isLocal()) {
+            boolean local = networkManager.isLocalChannel();
+            if (local) {
                 if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_WORLD) {
                     logger.info("Debug World recording is not supported.");
                     return;
@@ -64,9 +61,8 @@ public class ConnectionEventHandler {
                 }
             }
 
-            NetworkManager nm = event.getManager();
             String worldName;
-            if(event.isLocal()) {
+            if (local) {
                 worldName = mc.getIntegratedServer().getWorldName();
             } else if (Minecraft.getMinecraft().getCurrentServerData() != null) {
                 worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
@@ -74,9 +70,6 @@ public class ConnectionEventHandler {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
                 return;
             }
-
-            Channel channel = nm.channel();
-            ChannelPipeline pipeline = channel.pipeline();
 
             File folder = core.getReplayFolder();
 
@@ -87,13 +80,13 @@ public class ConnectionEventHandler {
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
             ReplayMetaData metaData = new ReplayMetaData();
-            metaData.setSingleplayer(event.isLocal());
+            metaData.setSingleplayer(local);
             metaData.setServerName(worldName);
             metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
             packetListener = new PacketListener(replayFile, metaData);
-            pipeline.addBefore(packetHandlerKey, "replay_recorder", packetListener);
+            networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
             recordingEventHandler = new RecordingEventHandler(packetListener);
             recordingEventHandler.register();

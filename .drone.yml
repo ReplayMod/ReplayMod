@@ -1,0 +1,18 @@
+pipeline:
+  clone:
+    image: plugins/git
+    tags: true
+  build:
+    image: openjdk:8
+    commands:
+      - JAVA_OPTS=-Xmx1516M ./gradlew setupDecompWorkspace
+      - ./gradlew :build
+  archive:
+    image: plugins/s3
+    acl: public-read
+    region: "us-east-1"
+    bucket: "replaymod"
+    path_style: true
+    source: build/libs/*
+    strip_prefix: build/libs/
+    target: /
