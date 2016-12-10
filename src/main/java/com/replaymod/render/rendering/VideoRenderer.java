@@ -6,6 +6,7 @@ import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
 import com.replaymod.render.capturer.RenderInfo;
+import com.replaymod.render.events.ReplayRenderEvent;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
@@ -22,6 +23,7 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Timer;
+import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Dimension;
@@ -86,6 +88,8 @@ public class VideoRenderer implements RenderInfo {
      * @return {@code true} if rendering was successful, {@code false} if the user aborted rendering (or the window was closed)
      */
     public boolean renderVideo() {
+        MinecraftForge.EVENT_BUS.post(new ReplayRenderEvent.Pre(this));
+
         setup();
 
         // Because this might take some time to prepare we'll render the GUI at least once to not confuse the user
@@ -129,6 +133,9 @@ public class VideoRenderer implements RenderInfo {
         }
 
         finish();
+
+        MinecraftForge.EVENT_BUS.post(new ReplayRenderEvent.Post(this));
+
         return !cancelled;
     }
 
