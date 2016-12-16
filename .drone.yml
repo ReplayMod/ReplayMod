@@ -3,7 +3,7 @@ pipeline:
     image: plugins/git
     tags: true
   build:
-    image: openjdk:8
+    image: maven:3.3.9-jdk-8
     commands:
       - JAVA_OPTS=-Xmx1516M ./gradlew setupDecompWorkspace
       - ./gradlew :build
