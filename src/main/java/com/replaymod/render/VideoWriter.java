@@ -43,7 +43,8 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
                     .replace("%HEIGHT%", String.valueOf(settings.getVideoHeight()))
                     .replace("%FPS%", String.valueOf(settings.getFramesPerSecond()))
                     .replace("%FILENAME%", fileName)
-                    .replace("%BITRATE%", String.valueOf(settings.getBitRate()));
+                    .replace("%BITRATE%", String.valueOf(settings.getBitRate()))
+                    .replace("%FILTERS%", settings.getVideoFilters());
 
         String executable = settings.getExportCommand().isEmpty() ? "ffmpeg" : settings.getExportCommand();
         System.out.println("Starting " + settings.getExportCommand() + " with args: " + commandArgs);
