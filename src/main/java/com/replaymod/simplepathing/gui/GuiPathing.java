@@ -512,6 +512,13 @@ public class GuiPathing {
             lastTime = time;
         }
 
+        // Make sure there are at least two position- and two time-keyframes
+        if (timeline.getPaths().get(POSITION_PATH).getSegments().isEmpty()
+                || timeline.getPaths().get(TIME_PATH).getSegments().isEmpty()) {
+            GuiInfoPopup.open(replayHandler.getOverlay(), "replaymod.chat.morekeyframes");
+            return false;
+        }
+
         return true;
     }
 
