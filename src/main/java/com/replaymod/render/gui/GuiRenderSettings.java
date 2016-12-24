@@ -32,13 +32,14 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import org.lwjgl.util.Color;
 import org.lwjgl.util.Dimension;
+import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -266,12 +267,10 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         this.timeline = timeline;
 
         String json = getConfigProperty(ReplayModRender.instance.getConfiguration()).getString();
-        RenderSettings settings = new GsonBuilder().registerTypeAdapter(RenderSettings.class, new InstanceCreator<RenderSettings>() {
-                    @Override
-                    public RenderSettings createInstance(Type type) {
-                        return getDefaultRenderSettings();
-                    }
-                }).create().fromJson(json, RenderSettings.class);
+        RenderSettings settings = new GsonBuilder()
+                .registerTypeAdapter(RenderSettings.class, (InstanceCreator<RenderSettings>) type -> getDefaultRenderSettings())
+                .registerTypeAdapter(ReadableColor.class, new Gson().getAdapter(Color.class))
+                .create().fromJson(json, RenderSettings.class);
         load(settings);
     }
 
