@@ -255,6 +255,8 @@ replaymod.gui.editor.trim.description=Removes the beginning and end of a Replay 
 replaymod.gui.editor.connect.description=Connects multiple Replays in the specified order
 replaymod.gui.editor.modify.description=Provides several filters to modify Replay Files
 
+replaymod.gui.editor.trim.marker=Select Event Marker
+
 replaymod.gui.editor.progress.title=Editing Replay File...
 replaymod.gui.editor.progress.pleasewait=Please wait while the Replay is being edited.
 
