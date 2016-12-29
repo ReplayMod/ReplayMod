@@ -21,8 +21,7 @@ public class ReplayModRecording {
     @Mod.Instance(MOD_ID)
     public static ReplayModRecording instance;
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
+    private ReplayMod core;
 
     private Logger logger;
 
@@ -31,6 +30,7 @@ public class ReplayModRecording {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
+        core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
 

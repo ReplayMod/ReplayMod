@@ -30,8 +30,7 @@ import java.io.IOException;
 public class ReplayModSimplePathing implements PathingRegistry {
     public static final String MOD_ID = "replaymod-simplepathing";
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
+    private ReplayMod core;
 
     private Logger logger;
 
@@ -40,6 +39,7 @@ public class ReplayModSimplePathing implements PathingRegistry {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
+        core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
 

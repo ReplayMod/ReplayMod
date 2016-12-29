@@ -19,9 +19,6 @@ public class ReplayModExtras {
     @Mod.Instance(MOD_ID)
     public static ReplayModExtras instance;
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
-
     private static final List<Class<? extends Extra>> builtin = Arrays.asList(
             PlayerOverview.class,
             UriSchemeExtra.class,
@@ -44,7 +41,7 @@ public class ReplayModExtras {
         for (Class<? extends Extra> cls : builtin) {
             try {
                 Extra extra = cls.newInstance();
-                extra.register(core);
+                extra.register(ReplayMod.instance);
             } catch (Throwable t) {
                 logger.warn("Failed to load extra " + cls.getName() + ": ", t);
             }
