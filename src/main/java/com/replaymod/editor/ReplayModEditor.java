@@ -15,14 +15,14 @@ public class ReplayModEditor {
     @Mod.Instance(MOD_ID)
     public static ReplayModEditor instance;
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
+    private ReplayMod core;
 
     public static Logger LOGGER;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         ReplayModEditor.LOGGER = event.getModLog();
+        core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
     }

@@ -10,14 +10,12 @@ import de.johni0702.minecraft.gui.element.IGuiImage;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
 public class FullBrightness implements Extra {
-    @Mod.Instance(ReplayModReplay.MOD_ID)
-    private static ReplayModReplay module;
+    private ReplayModReplay module;
 
     private final IGuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 90, 20, 19, 13).setSize(19, 13);
 
@@ -27,6 +25,7 @@ public class FullBrightness implements Extra {
 
     @Override
     public void register(final ReplayMod mod) throws Exception {
+        this.module = ReplayModReplay.instance;
         this.gameSettings = mod.getMinecraft().gameSettings;
 
         mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.lighting", Keyboard.KEY_Z, new Runnable() {

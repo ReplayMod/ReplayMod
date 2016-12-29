@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 
@@ -21,14 +20,15 @@ import java.io.IOException;
 import java.util.*;
 
 public class PlayerOverview implements Extra {
-    @Mod.Instance(ReplayModReplay.MOD_ID)
-    private static ReplayModReplay module;
+    private ReplayModReplay module;
 
     private final Set<UUID> hiddenPlayers = new HashSet<>();
     private boolean savingEnabled;
 
     @Override
     public void register(final ReplayMod mod) throws Exception {
+        this.module = ReplayModReplay.instance;
+
         mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.playeroverview", Keyboard.KEY_B, new Runnable() {
             @Override
             public void run() {

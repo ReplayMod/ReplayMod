@@ -33,11 +33,9 @@ public class ReplayModOnline {
     @Mod.Instance(MOD_ID)
     public static ReplayModOnline instance;
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
+    private ReplayMod core;
 
-    @Mod.Instance(ReplayModReplay.MOD_ID)
-    private static ReplayModReplay replayModule;
+    private ReplayModReplay replayModule;
 
     private Logger logger;
 
@@ -53,6 +51,8 @@ public class ReplayModOnline {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
+        core = ReplayMod.instance;
+        replayModule = ReplayModReplay.instance;
 
         core.getSettingsRegistry().register(Setting.class);
 
