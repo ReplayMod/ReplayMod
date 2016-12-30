@@ -67,8 +67,10 @@ public class ReplayModOnline {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        if (!getDownloadsFolder().mkdirs()) {
-            logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
+        if (!getDownloadsFolder().exists()){
+            if (!getDownloadsFolder().mkdirs()) {
+                logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
+            }
         }
 
         new GuiHandler(this).register();
