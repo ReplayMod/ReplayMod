@@ -12,7 +12,10 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
-@Mod(modid = ReplayModRender.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModRender.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModRender {
     public static final String MOD_ID = "replaymod-render";
 

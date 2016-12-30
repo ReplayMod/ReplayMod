@@ -39,6 +39,8 @@ minecraft {
     version = '1.8-11.14.4.1563'
     runDir = "eclipse"
     mappings = "snapshot_nodoc_20141130"
+    replace '@MOD_VERSION@', project.version
+    replace '@MC_VERSION@', project.minecraft.version
 }
 
 repositories {

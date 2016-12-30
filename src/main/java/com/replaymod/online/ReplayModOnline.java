@@ -26,7 +26,10 @@ import java.io.IOException;
 
 import static net.minecraft.client.Minecraft.getMinecraft;
 
-@Mod(modid = ReplayModOnline.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModOnline.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModOnline {
     public static final String MOD_ID = "replaymod-online";
 

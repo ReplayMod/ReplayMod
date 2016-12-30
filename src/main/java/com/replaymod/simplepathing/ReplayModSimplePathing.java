@@ -26,7 +26,10 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
-@Mod(modid = ReplayModSimplePathing.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModSimplePathing.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModSimplePathing implements PathingRegistry {
     public static final String MOD_ID = "replaymod-simplepathing";
 

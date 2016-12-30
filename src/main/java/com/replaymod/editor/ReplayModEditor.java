@@ -8,7 +8,10 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = ReplayModEditor.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModEditor.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModEditor {
     public static final String MOD_ID = "replaymod-editor";
 
