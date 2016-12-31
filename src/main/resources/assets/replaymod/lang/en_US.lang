@@ -432,6 +432,12 @@ replaymod.gui.rendersettings.antialiasing.x2=2x
 replaymod.gui.rendersettings.antialiasing.x4=4x
 replaymod.gui.rendersettings.antialiasing.x8=8x
 
+#Render Queue GUI
+replaymod.gui.renderqueue.title=Render Queue
+replaymod.gui.renderqueue.open=Open Queue
+replaymod.gui.renderqueue.jobname=Job Name:
+replaymod.gui.renderqueue.add=Add current configuration
+
 #Rendering GUI
 replaymod.gui.rendering.title=Rendering Video
 replaymod.gui.rendering.pause=Pause Rendering

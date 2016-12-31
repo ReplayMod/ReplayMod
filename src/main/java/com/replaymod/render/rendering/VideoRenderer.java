@@ -2,6 +2,7 @@ package com.replaymod.render.rendering;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
+import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
@@ -55,6 +56,7 @@ public class VideoRenderer implements RenderInfo {
     private boolean debugInfoWasShown;
     private Map originalSoundLevels;
 
+    private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
 
@@ -174,7 +176,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void setup() {
-        timelinePlayerFuture = new TimelinePlayer(replayHandler).start(timeline);
+        timelinePlayer = new TimelinePlayer(replayHandler);
+        timelinePlayerFuture = timelinePlayer.start(timeline);
 
         if (!OpenGlHelper.isFramebufferEnabled()) {
             Display.setResizable(false);
@@ -229,6 +232,8 @@ public class VideoRenderer implements RenderInfo {
         if (!timelinePlayerFuture.isDone()) {
             timelinePlayerFuture.cancel(false);
         }
+        // Tear down of the timeline player might only happen the next tick after it was cancelled
+        timelinePlayer.onTick(new ReplayTimer.UpdatedEvent());
 
         if (!OpenGlHelper.isFramebufferEnabled()) {
             Display.setResizable(true);

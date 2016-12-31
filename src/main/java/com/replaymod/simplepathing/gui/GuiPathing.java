@@ -23,6 +23,7 @@ import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.PathSegment;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.pathing.property.Property;
+import com.replaymod.replaystudio.pathing.serialize.TimelineSerialization;
 import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
@@ -41,6 +42,7 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.lang3.tuple.Triple;
@@ -56,9 +58,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+
+import static com.replaymod.core.utils.Utils.error;
+import static com.replaymod.simplepathing.ReplayModSimplePathing.LOGGER;
 
 
 /**
@@ -91,7 +97,19 @@ public class GuiPathing {
         @Override
         public void run() {
             if (!preparePathsForPlayback()) return;
-            new GuiRenderSettings(replayHandler, mod.getCurrentTimeline()).display();
+
+            // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
+            Timeline timeline = mod.getCurrentTimeline();
+            try {
+                TimelineSerialization serialization = new TimelineSerialization(mod, null);
+                String serialized = serialization.serialize(Collections.singletonMap("", timeline));
+                timeline = serialization.deserialize(serialized).get("");
+            } catch (Throwable t) {
+                error(LOGGER, replayHandler.getOverlay(), CrashReport.makeCrashReport(t, "Cloning timeline"), () -> {});
+                return;
+            }
+
+            new GuiRenderSettings(replayHandler, timeline).display();
         }
     }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.renderpath"));

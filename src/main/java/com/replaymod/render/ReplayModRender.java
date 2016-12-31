@@ -1,16 +1,22 @@
 package com.replaymod.render;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.render.utils.RenderJob;
+import com.replaymod.replay.events.ReplayCloseEvent;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod(modid = ReplayModRender.MOD_ID,
         version = "@MOD_VERSION@",
@@ -24,9 +30,10 @@ public class ReplayModRender {
 
     private ReplayMod core;
 
-    private Logger logger;
+    public static Logger LOGGER;
 
     private Configuration configuration;
+    private final List<RenderJob> renderQueue = new ArrayList<>();
 
     public ReplayMod getCore() {
         return core;
@@ -34,11 +41,18 @@ public class ReplayModRender {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
         core = ReplayMod.instance;
         configuration = new Configuration(event.getSuggestedConfigurationFile());
 
+        FMLCommonHandler.instance().bus().register(this);
+
         core.getSettingsRegistry().register(Setting.class);
+    }
+
+    @SubscribeEvent
+    public void onReplayClose(ReplayCloseEvent.Post event) {
+        renderQueue.clear();
     }
 
     public File getVideoFolder() {
@@ -54,5 +68,9 @@ public class ReplayModRender {
 
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    public List<RenderJob> getRenderQueue() {
+        return renderQueue;
     }
 }

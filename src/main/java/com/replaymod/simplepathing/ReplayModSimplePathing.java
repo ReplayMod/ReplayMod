@@ -35,13 +35,13 @@ public class ReplayModSimplePathing implements PathingRegistry {
 
     private ReplayMod core;
 
-    private Logger logger;
+    public static Logger LOGGER;
 
     private GuiPathing guiPathing;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
         core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);

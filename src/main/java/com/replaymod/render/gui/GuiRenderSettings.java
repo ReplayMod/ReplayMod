@@ -185,6 +185,12 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
 
     public final GuiPanel buttonPanel = new GuiPanel(contentPanel).setLayout(new HorizontalLayout().setSpacing(4));
+    public final GuiButton queueButton = new GuiButton(buttonPanel).onClick(new Runnable() {
+        @Override
+        public void run() {
+            new GuiRenderQueue(GuiRenderSettings.this, GuiRenderSettings.this, replayHandler, timeline).open();
+        }
+    }).setSize(100, 20).setI18nLabel("replaymod.gui.renderqueue.open");
     public final GuiButton renderButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
@@ -204,13 +210,13 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 throw new ReportedException(crashReport);
             }
         }
-    }).setSize(148, 20).setI18nLabel("replaymod.gui.render");
+    }).setSize(100, 20).setI18nLabel("replaymod.gui.render");
     public final GuiButton cancelButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
             getMinecraft().displayGuiScreen(null);
         }
-    }).setSize(148, 20).setI18nLabel("replaymod.gui.cancel");
+    }).setSize(100, 20).setI18nLabel("replaymod.gui.cancel");
 
     {
         setBackground(Background.NONE);
@@ -436,5 +442,9 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     private Property getConfigProperty(Configuration configuration) {
         return configuration.get("rendersettings", "settings", "{}",
                 "Last state of the render settings GUI. Internal use only.");
+    }
+
+    public ReplayHandler getReplayHandler() {
+        return replayHandler;
     }
 }
