@@ -32,6 +32,10 @@ Next, download this **Batch Script** to quickly install FFmpeg: <https://replaym
 Put the downloaded script into the folder where you extracted FFmpeg and run itt by double-clicking it.
 If you see a success message in the console, you've sucessfully installed **FFmpeg**!
 
+Alternatively, starting with ReplayMod 2.0.0-b5, you can also extract the downloaded `.7z` file into a `ffmpeg` folder
+(you have to create it, it doesn't exist by default) in your `.minecraft` folder. No need to run any **Batch Script**.
+The FFmpeg executable should end up at `.minecraft/ffmpeg/bin/ffmpeg.exe`.
+
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.
 
