@@ -63,7 +63,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         setBackgroundColor(Colors.DARK_TRANSPARENT);
 
         popup.setLayout(new VerticalLayout().setSpacing(10))
-                .addElements(new VerticalLayout.Data(0.5), title, inputs, timePanel, buttons);
+                .addElements(new VerticalLayout.Data(0.5, false), title, inputs, timePanel, buttons);
     }
 
     public GuiEditKeyframe(GuiPathing gui, Path path, Keyframe keyframe, String type) {
@@ -179,13 +179,13 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     }
 
     public static class Position extends GuiEditKeyframe<Position> {
-        public final GuiNumberField xField = newGuiNumberField().setSize(150, 20).setPrecision(10);
-        public final GuiNumberField yField = newGuiNumberField().setSize(150, 20).setPrecision(10);
-        public final GuiNumberField zField = newGuiNumberField().setSize(150, 20).setPrecision(10);
+        public final GuiNumberField xField = newGuiNumberField().setSize(60, 20).setPrecision(5);
+        public final GuiNumberField yField = newGuiNumberField().setSize(60, 20).setPrecision(5);
+        public final GuiNumberField zField = newGuiNumberField().setSize(60, 20).setPrecision(5);
 
-        public final GuiNumberField yawField = newGuiNumberField().setSize(150, 20).setPrecision(5);
-        public final GuiNumberField pitchField = newGuiNumberField().setSize(150, 20).setPrecision(5);
-        public final GuiNumberField rollField = newGuiNumberField().setSize(150, 20).setPrecision(5);
+        public final GuiNumberField yawField = newGuiNumberField().setSize(60, 20).setPrecision(5);
+        public final GuiNumberField pitchField = newGuiNumberField().setSize(60, 20).setPrecision(5);
+        public final GuiNumberField rollField = newGuiNumberField().setSize(60, 20).setPrecision(5);
 
         {
             inputs.setLayout(new GridLayout().setCellsEqualSize(false).setColumns(4).setSpacingX(3).setSpacingY(5))
