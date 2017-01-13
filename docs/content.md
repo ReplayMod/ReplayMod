@@ -54,6 +54,18 @@ In General, the Replay Mod _should_ be compatible with most Forge Mods.
 is no longer compatible with Minecraft Forge starting with 1.9.4. As such it is not compatible with the Replay Mod either.
 Please use [Optifine](https://optifine.net/) instead.
 
+### Custom Main Menu [custom-main-menu]
+The [Custom Main Menu](https://mods.curse.com/mc-mods/minecraft/226406-custom-main-menu) mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
+If you are familiar with it, the button ids for the Replay Mod are: **17890234** (text: `replaymod.gui.replayviewer`), **17890235** (text: `replaymod.gui.replayviewer`) and **17890236** (text: `replaymod.gui.replaycenter`)
+
+Due to the nature of this Custom Main Menu mod, buttons added to the Main Menu by 3rd party mods like the **Replay Mod** will not show up by default.  
+Thus, to access the Replay Viewer/Editor/Center, you need to manually configure the position for those buttons.  
+To do so, you need to modify the Custom Main Menu configuration file.
+Usually, you can find it at `.minecraft/config/CustomMainMenu/mainmenu.json` (if you're using a mod pack launcher, it normally has its own .minecraft folder).  
+For an explanation of this config file, have a look at Custom Main Menu's page.
+
+You can find a list of already modified config files [here](https://gist.github.com/Johni0702/3f3fab81dbf7ada83d045d9fe8f345aa).
+
 ## Troubleshooting [troubleshooting]
 If you need help installing the **Replay Mod** or **FFmpeg**, please read [this forum thread](https://www.replaymod.com/forum/thread/220) 
 by [bela333](https://www.replaymod.com/user/bela333) - it covers most of the problems that users encountered so far.
