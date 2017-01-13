@@ -5,6 +5,7 @@ import com.google.gson.stream.JsonWriter;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.pathing.properties.CameraProperties;
+import com.replaymod.pathing.properties.ExplicitInterpolationProperty;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.events.ReplayCloseEvent;
@@ -16,6 +17,7 @@ import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.pathing.property.Property;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -24,7 +26,10 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
 
 @Mod(modid = ReplayModSimplePathing.MOD_ID,
         version = "@MOD_VERSION@",
@@ -68,7 +73,7 @@ public class ReplayModSimplePathing implements PathingRegistry {
 
     @SubscribeEvent
     public void onSettingsChanged(SettingsChangedEvent event) {
-        if (event.getKey() == Setting.LINEAR_INTERPOLATION) {
+        if (event.getKey() == Setting.DEFAULT_INTERPOLATION) {
             if (currentTimeline != null && guiPathing != null) {
                 currentTimeline.applyChange(guiPathing.updateInterpolators());
             }
@@ -105,6 +110,7 @@ public class ReplayModSimplePathing implements PathingRegistry {
         timeline.registerProperty(CameraProperties.POSITION);
         timeline.registerProperty(CameraProperties.ROTATION);
         timeline.registerProperty(SpectatorProperty.PROPERTY);
+        timeline.registerProperty(ExplicitInterpolationProperty.PROPERTY);
 
         return timeline;
     }
@@ -132,6 +138,35 @@ public class ReplayModSimplePathing implements PathingRegistry {
                 throw new IOException("Unknown interpolation type: " + type);
 
         }
+    }
+
+    /**
+     * Clones an interpolator by de- and reserializing it.
+     * @param interpolator The interpolator to clone
+     * @return The cloned interpolator
+     * @throws IOException
+     */
+    public Interpolator cloneInterpolator(Interpolator interpolator) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintWriter printWriter = new PrintWriter(baos);
+
+        JsonWriter jsonWriter = new JsonWriter(printWriter);
+        jsonWriter.beginArray();
+        serializeInterpolator(jsonWriter, interpolator);
+        jsonWriter.endArray();
+        jsonWriter.flush();
+
+        String json = baos.toString();
+
+        JsonReader jsonReader = new JsonReader(new StringReader(json));
+        jsonReader.beginArray();
+        Interpolator cloned = deserializeInterpolator(jsonReader);
+
+        for (Property p : interpolator.getKeyframeProperties()) {
+            cloned.registerProperty(p);
+        }
+
+        return cloned;
     }
 
     public ReplayMod getCore() {

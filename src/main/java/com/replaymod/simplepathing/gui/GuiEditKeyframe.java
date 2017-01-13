@@ -1,18 +1,24 @@
 package com.replaymod.simplepathing.gui;
 
 import com.replaymod.pathing.properties.CameraProperties;
+import com.replaymod.pathing.properties.ExplicitInterpolationProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.change.Change;
 import com.replaymod.replaystudio.pathing.change.CombinedChange;
+import com.replaymod.replaystudio.pathing.change.SetInterpolator;
 import com.replaymod.replaystudio.pathing.change.UpdateKeyframeProperties;
+import com.replaymod.replaystudio.pathing.interpolation.CubicSplineInterpolator;
+import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
+import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
+import com.replaymod.replaystudio.pathing.path.PathSegment;
+import com.replaymod.simplepathing.Setting;
+import com.replaymod.simplepathing.gui.GuiEditKeyframe.Position.InterpolationPanel.InterpolatorType;
 import de.johni0702.minecraft.gui.container.GuiPanel;
-import de.johni0702.minecraft.gui.element.GuiButton;
-import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.element.GuiNumberField;
-import de.johni0702.minecraft.gui.element.IGuiLabel;
+import de.johni0702.minecraft.gui.element.*;
+import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -20,16 +26,29 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import net.minecraft.client.resources.I18n;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.ReadablePoint;
 
+import java.util.Map;
+
+import static com.replaymod.simplepathing.gui.GuiEditKeyframe.Position.InterpolationPanel.InterpolatorSettingsPanel.CubicInterpolatorSettingsPanel;
+import static com.replaymod.simplepathing.gui.GuiEditKeyframe.Position.InterpolationPanel.InterpolatorSettingsPanel.LinearInterpolatorSettingsPanel;
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
 public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements Typeable {
     private static GuiNumberField newGuiNumberField() {
         return new GuiNumberField().setPrecision(0).setValidateOnFocusChange(true);
     }
+
+    protected static final Logger logger = LogManager.getLogger();
+
+    protected final GuiPathing guiPathing;
 
     protected final Keyframe keyframe;
     protected final Path path;
@@ -68,6 +87,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
     public GuiEditKeyframe(GuiPathing gui, Path path, Keyframe keyframe, String type) {
         super(ReplayModReplay.instance.getReplayHandler().getOverlay());
+        this.guiPathing = gui;
         this.keyframe = keyframe;
         this.path = path;
 
@@ -187,8 +207,11 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         public final GuiNumberField pitchField = newGuiNumberField().setSize(60, 20).setPrecision(5);
         public final GuiNumberField rollField = newGuiNumberField().setSize(60, 20).setPrecision(5);
 
+        public final InterpolationPanel interpolationPanel = new InterpolationPanel(guiPathing);
+
         {
-            inputs.setLayout(new GridLayout().setCellsEqualSize(false).setColumns(4).setSpacingX(3).setSpacingY(5))
+            GuiPanel positionInputs = new GuiPanel()
+                    .setLayout(new GridLayout().setCellsEqualSize(false).setColumns(4).setSpacingX(3).setSpacingY(5))
                     .addElements(new GridLayout.Data(1, 0.5),
                             new GuiLabel().setI18nText("replaymod.gui.editkeyframe.xpos"), xField,
                             new GuiLabel().setI18nText("replaymod.gui.editkeyframe.camyaw"), yawField,
@@ -196,6 +219,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                             new GuiLabel().setI18nText("replaymod.gui.editkeyframe.campitch"), pitchField,
                             new GuiLabel().setI18nText("replaymod.gui.editkeyframe.zpos"), zField,
                             new GuiLabel().setI18nText("replaymod.gui.editkeyframe.camroll"), rollField);
+
+            inputs.setLayout(new VerticalLayout().setSpacing(10)).addElements(new VerticalLayout.Data(0.5, false),
+                    positionInputs, interpolationPanel);
         }
 
         public Position(GuiPathing gui, Path path, Keyframe keyframe) {
@@ -219,17 +245,193 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
         @Override
         protected Change save() {
-            Change change = UpdateKeyframeProperties.create(path, keyframe)
+            Change setInterpolatorChange = null;
+
+            UpdateKeyframeProperties.Builder builder = UpdateKeyframeProperties.create(path, keyframe)
                     .setValue(CameraProperties.POSITION, Triple.of(xField.getDouble(), yField.getDouble(), zField.getDouble()))
                     .setValue(CameraProperties.ROTATION, Triple.of(yawField.getFloat(), pitchField.getFloat(), rollField.getFloat()))
-                    .done();
-            change.apply(path.getTimeline());
-            return change;
+                    .removeProperty(ExplicitInterpolationProperty.PROPERTY);
+
+            // if the interpolator is not the default, set the ExplicitInterpolationProperty flag
+            if (interpolationPanel.getInterpolatorType() != InterpolatorType.DEFAULT) {
+                PathSegment toModify = null;
+                for (PathSegment segment : path.getSegments()) {
+                    if (segment.getStartKeyframe() == keyframe) {
+                        toModify = segment;
+                        break;
+                    }
+                }
+
+                if (toModify != null) {
+                    builder.setValue(ExplicitInterpolationProperty.PROPERTY, new Object());
+
+                    Interpolator interpolator = interpolationPanel.getInterpolatorSettingsPanel().createInterpolator();
+                    interpolator.registerProperty(CameraProperties.POSITION);
+                    interpolator.registerProperty(CameraProperties.ROTATION);
+
+                    setInterpolatorChange = SetInterpolator.create(toModify, interpolator);
+                } else {
+                    logger.warn("The Path segment to modify was not found. Setting interpolator to default.");
+                }
+            }
+
+            Change keyframePropertiesChange = builder.done();
+            keyframePropertiesChange.apply(path.getTimeline());
+
+            if (setInterpolatorChange == null) {
+                return keyframePropertiesChange;
+            } else {
+                setInterpolatorChange.apply(path.getTimeline());
+                guiPathing.updateInterpolators();
+                path.updateAll();
+            }
+
+            return CombinedChange.createFromApplied(keyframePropertiesChange, setInterpolatorChange);
         }
 
         @Override
         protected Position getThis() {
             return this;
+        }
+
+        public static class InterpolationPanel extends de.johni0702.minecraft.gui.container.AbstractGuiContainer<InterpolationPanel> {
+
+            private final GuiPathing guiPathing;
+
+            @Getter
+            private InterpolatorSettingsPanel interpolatorSettingsPanel;
+
+            private GuiDropdownMenu<InterpolatorType> dropdown;
+
+            @AllArgsConstructor
+            public enum InterpolatorType {
+                DEFAULT("default", null),
+                CUBIC("cubic", CubicSplineInterpolator.class),
+                LINEAR("linear", LinearInterpolator.class);
+
+                private String localizationKey;
+
+                @Getter
+                private Class<? extends Interpolator> interpolatorClass;
+
+                @Override
+                public String toString() {
+                    return I18n.format(String.format("replaymod.gui.editkeyframe.interpolator.%1$s.name", localizationKey));
+                }
+
+                public String getI18nDescription() {
+                    return String.format("replaymod.gui.editkeyframe.interpolator.%1$s.desc", localizationKey);
+                }
+
+                public static InterpolatorType fromString(String string) {
+                    for (InterpolatorType t : values()) {
+                        if (t.toString().equals(string)) return t;
+                    }
+                    return CUBIC; //the default
+                }
+
+            }
+
+            public InterpolationPanel(GuiPathing guiPathing) {
+                this.guiPathing = guiPathing;
+
+                setLayout(new VerticalLayout());
+
+                dropdown = new GuiDropdownMenu<InterpolatorType>().setValues(InterpolatorType.values()).setHeight(20);
+                dropdown.onSelection((index) -> setSettingsPanel(dropdown.getSelectedValue()));
+
+                // set hover tooltips
+                for (Map.Entry<InterpolatorType, IGuiClickable> e : dropdown.getDropdownEntries().entrySet()) {
+                    e.getValue().setTooltip(new GuiTooltip().setI18nText(e.getKey().getI18nDescription()));
+                }
+
+                GuiPanel dropdownPanel = new GuiPanel()
+                        .setLayout(new GridLayout().setCellsEqualSize(false).setColumns(2).setSpacingX(3).setSpacingY(5))
+                        .addElements(new GridLayout.Data(1, 0.5),
+                                new GuiLabel().setI18nText("replaymod.gui.editkeyframe.interpolator"), dropdown);
+
+
+                addElements(new VerticalLayout.Data(0.5, false), dropdownPanel);
+
+                dropdown.onSelection(0); // trigger the callback once to display settings panel
+            }
+
+            public void setSettingsPanel(InterpolatorType type) {
+                removeElement(this.interpolatorSettingsPanel);
+
+                InterpolatorSettingsPanel settingsPanel = null;
+                switch (getInterpolatorTypeNoDefault(type)) {
+                    case CUBIC:
+                        settingsPanel = new CubicInterpolatorSettingsPanel();
+                        break;
+                    case LINEAR:
+                        settingsPanel = new LinearInterpolatorSettingsPanel();
+                        break;
+                }
+
+                addElements(new GridLayout.Data(0.5, 0.5), settingsPanel);
+
+                this.interpolatorSettingsPanel = settingsPanel;
+            }
+
+            protected InterpolatorType getInterpolatorTypeNoDefault(InterpolatorType interpolatorType) {
+                if (interpolatorType == InterpolatorType.DEFAULT || interpolatorType == null) {
+                    InterpolatorType defaultType = InterpolatorType.fromString(
+                            guiPathing.getMod().getCore().getSettingsRegistry().get(Setting.DEFAULT_INTERPOLATION));
+                    return defaultType;
+                }
+                return interpolatorType;
+            }
+
+            public InterpolatorType getInterpolatorType() {
+                return dropdown.getSelectedValue();
+            }
+
+            @Override
+            protected InterpolationPanel getThis() {
+                return this;
+            }
+
+            public static abstract class InterpolatorSettingsPanel<I extends Interpolator, T extends InterpolatorSettingsPanel> extends de.johni0702.minecraft.gui.container.GuiPanel {
+
+                public abstract void loadSettings(I interpolator);
+
+                public abstract I createInterpolator();
+
+                public static class CubicInterpolatorSettingsPanel extends InterpolatorSettingsPanel<CubicSplineInterpolator, CubicInterpolatorSettingsPanel> {
+
+                    @Override
+                    public void loadSettings(CubicSplineInterpolator interpolator) {
+                    }
+
+                    @Override
+                    public CubicSplineInterpolator createInterpolator() {
+                        return new CubicSplineInterpolator();
+                    }
+
+                    @Override
+                    protected InterpolatorSettingsPanel<CubicSplineInterpolator, CubicInterpolatorSettingsPanel> getThis() {
+                        return this;
+                    }
+                }
+
+                public static class LinearInterpolatorSettingsPanel extends InterpolatorSettingsPanel<LinearInterpolator, LinearInterpolatorSettingsPanel> {
+
+                    @Override
+                    public void loadSettings(LinearInterpolator interpolator) {
+                    }
+
+                    @Override
+                    public LinearInterpolator createInterpolator() {
+                        return new LinearInterpolator();
+                    }
+
+                    @Override
+                    protected InterpolatorSettingsPanel<LinearInterpolator, LinearInterpolatorSettingsPanel> getThis() {
+                        return this;
+                    }
+                }
+            }
         }
     }
 }

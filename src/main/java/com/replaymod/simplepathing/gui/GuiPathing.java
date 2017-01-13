@@ -5,9 +5,11 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
+import com.replaymod.pathing.properties.ExplicitInterpolationProperty;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.gui.GuiRenderSettings;
@@ -28,6 +30,7 @@ import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.Setting;
+import com.replaymod.simplepathing.gui.GuiEditKeyframe.Position.InterpolationPanel.InterpolatorType;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -57,10 +60,7 @@ import org.lwjgl.util.WritablePoint;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static com.replaymod.core.utils.Utils.error;
@@ -637,11 +637,48 @@ public class GuiPathing {
     }
 
     public Change updateInterpolators() {
-        boolean linearInterpolation = mod.getCore().getSettingsRegistry().get(Setting.LINEAR_INTERPOLATION);
+        InterpolatorType type = InterpolatorType.fromString(mod.getCore().getSettingsRegistry().get(Setting.DEFAULT_INTERPOLATION));
+
+        Interpolator defaultInterpolator = null;
+
+        // Iterate over all existing segments until the first interpolator
+        // of the same type without the fixed flag is found and clone it.
+        // This way, the default interpolator's settings can be saved on a per-camera-path basis.
+        // This is useful for interpolators that have customizable properties.
+        Collection<PathSegment> pathSegments = mod.getCurrentTimeline().getPaths().get(POSITION_PATH).getSegments();
+
+        for (PathSegment segment : pathSegments) {
+            if (segment.getStartKeyframe().getValue(ExplicitInterpolationProperty.PROPERTY).isPresent()) continue;
+            if (segment.getInterpolator() == null) continue;
+            if (type == InterpolatorType.DEFAULT || type.getInterpolatorClass().equals(segment.getInterpolator().getClass())) {
+                try {
+                    defaultInterpolator = mod.cloneInterpolator(segment.getInterpolator());
+                    break;
+                } catch (IOException e) {
+                    Utils.error(LOGGER, replayHandler.getOverlay(),
+                            CrashReport.makeCrashReport(e, "Cloning fixed interpolator"), null);
+                }
+            }
+        }
+
+        // if no segment with the default interpolator was found,
+        // create a new one with default settings
+        if (defaultInterpolator == null) {
+            switch (type) {
+                case LINEAR:
+                    defaultInterpolator = new LinearInterpolator();
+                    break;
+                case CUBIC:
+                default:
+                    defaultInterpolator = new CubicSplineInterpolator();
+                    break;
+            }
+        }
+
         List<Change> changes = new ArrayList<>();
         Interpolator interpolator = null;
         boolean isSpectatorInterpolator = false;
-        for (PathSegment segment : mod.getCurrentTimeline().getPaths().get(POSITION_PATH).getSegments()) {
+        for (PathSegment segment : pathSegments) {
             if (segment.getStartKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()
                     && segment.getEndKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()) {
                 // Spectator segment
@@ -653,11 +690,23 @@ public class GuiPathing {
                 changes.add(SetInterpolator.create(segment, interpolator));
             } else {
                 // Normal segment
-                if (isSpectatorInterpolator || interpolator == null) {
+                boolean explicit = segment.getStartKeyframe().getValue(ExplicitInterpolationProperty.PROPERTY).isPresent();
+                if (isSpectatorInterpolator || interpolator == null || explicit) {
                     isSpectatorInterpolator = false;
-                    interpolator = linearInterpolation ? new LinearInterpolator() : new CubicSplineInterpolator();
-                    interpolator.registerProperty(CameraProperties.POSITION);
-                    interpolator.registerProperty(CameraProperties.ROTATION);
+
+                    if (segment.getInterpolator() == null || !explicit) {
+                        interpolator = defaultInterpolator;
+                        interpolator.registerProperty(CameraProperties.POSITION);
+                        interpolator.registerProperty(CameraProperties.ROTATION);
+                    } else {
+                        try {
+                            interpolator = mod.cloneInterpolator(segment.getInterpolator());
+                        } catch (IOException e) {
+                            Utils.error(LOGGER, replayHandler.getOverlay(),
+                                    CrashReport.makeCrashReport(e, "Cloning fixed interpolator"), null);
+                            interpolator = defaultInterpolator;
+                        }
+                    }
                 }
                 changes.add(SetInterpolator.create(segment, interpolator));
             }
@@ -697,9 +746,17 @@ public class GuiPathing {
 
     public Change moveKeyframe(Path path, Keyframe keyframe, long newTime) {
         Timeline timeline = mod.getCurrentTimeline();
-        // Interpolator might be required later (only if path is the time path)
-        Optional<Interpolator> interpolator =
+        // InterpolatorType might be required later (only if path is the time path)
+        Optional<Interpolator> firstInterpolator =
                 path.getSegments().stream().findFirst().map(PathSegment::getInterpolator);
+
+        // The interpolator before the segment
+        Optional<Interpolator> interpolatorBefore =
+                path.getSegments().stream().filter(s -> s.getEndKeyframe() == keyframe).findFirst().map(PathSegment::getInterpolator);
+
+        // The interpolator that follows the segment
+        Optional<Interpolator> interpolatorAfter =
+                path.getSegments().stream().filter(s -> s.getStartKeyframe() == keyframe).findFirst().map(PathSegment::getInterpolator);
 
         // First remove the old keyframe
         Change removeChange = RemoveKeyframe.create(path, keyframe);
@@ -708,7 +765,7 @@ public class GuiPathing {
         // and add a new one at the correct time
         Change addChange = AddKeyframe.create(path, newTime);
         addChange.apply(timeline);
-        path.getKeyframe(newTime);
+        Keyframe newKeyframe = path.getKeyframe(newTime);
 
         // Then copy over all properties
         UpdateKeyframeProperties.Builder builder = UpdateKeyframeProperties.create(path, path.getKeyframe(newTime));
@@ -718,25 +775,51 @@ public class GuiPathing {
         Change propertyChange = builder.done();
         propertyChange.apply(timeline);
 
-        // Finally set the interpolators
-        Change interpolatorChange;
+        // Set the interpolator of the segment before the keyframe to what it was
+        Change interpolatorBeforeChange;
+
+        Optional<PathSegment> segmentBefore = path.getSegments().stream().filter(s -> s.getEndKeyframe() == newKeyframe).findFirst();
+        if (segmentBefore.isPresent() && interpolatorBefore.isPresent()) {
+            interpolatorBeforeChange = SetInterpolator.create(segmentBefore.get(), interpolatorBefore.get());
+        } else {
+            interpolatorBeforeChange = CombinedChange.create();
+        }
+
+        interpolatorBeforeChange.apply(timeline);
+
+        // Set the interpolator of the segment after the keyframe to what it was
+        Change interpolatorAfterChange;
+
+        Optional<PathSegment> segmentAfter = path.getSegments().stream().filter(s -> s.getStartKeyframe() == newKeyframe).findFirst();
+        if (segmentAfter.isPresent() && interpolatorAfter.isPresent()) {
+            interpolatorAfterChange = SetInterpolator.create(segmentAfter.get(), interpolatorAfter.get());
+        } else {
+            interpolatorAfterChange = CombinedChange.create();
+        }
+
+        interpolatorAfterChange.apply(timeline);
+
+        // Finally update the interpolators
+        Change interpolatorUpdateChange;
         if (path.getTimeline().getPaths().indexOf(path) == GuiPathing.POSITION_PATH) {
             // Position / Spectator keyframes need special handling
-            interpolatorChange = updateInterpolators();
+            interpolatorUpdateChange = updateInterpolators();
         } else {
             // Time keyframes only need updating when only one segment of them exists
             if (path.getSegments().size() == 1) {
-                interpolatorChange = SetInterpolator.create(path.getSegments().iterator().next(), interpolator.get());
+                interpolatorUpdateChange = SetInterpolator.create(path.getSegments().iterator().next(), firstInterpolator.get());
             } else {
-                interpolatorChange = CombinedChange.create(); // Noop change
+                interpolatorUpdateChange = CombinedChange.create(); // Noop change
             }
         }
-        interpolatorChange.apply(timeline);
+
+        interpolatorUpdateChange.apply(timeline);
         // and update spectator positions
         Change spectatorChange = updateSpectatorPositions();
         spectatorChange.apply(timeline);
 
-        return CombinedChange.createFromApplied(removeChange, addChange, propertyChange, interpolatorChange, spectatorChange);
+        return CombinedChange.createFromApplied(removeChange, addChange, propertyChange,
+                interpolatorBeforeChange, interpolatorAfterChange, interpolatorUpdateChange, spectatorChange);
     }
 
     // Helper method because generics cannot be defined on blocks
