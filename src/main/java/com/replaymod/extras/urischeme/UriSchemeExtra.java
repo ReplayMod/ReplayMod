@@ -4,7 +4,6 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.extras.Extra;
 import com.replaymod.online.ReplayModOnline;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -13,14 +12,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class UriSchemeExtra implements Extra {
-    @Mod.Instance(ReplayModOnline.MOD_ID)
-    private static ReplayModOnline module;
+    private ReplayModOnline module;
 
     private ReplayMod mod;
 
     @Override
     public void register(final ReplayMod mod) throws Exception {
         this.mod = mod;
+        this.module = ReplayModOnline.instance;
 
         UriScheme uriScheme = UriScheme.create();
         if (uriScheme == null) {

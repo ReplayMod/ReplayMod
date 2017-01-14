@@ -101,6 +101,23 @@
     "dependencies": ["required-after:replaymod-replay"]
   },
   {
+    "modid": "replaymod-editor",
+    "name": "Replay Mod - Replay Editor",
+    "description": "Replay Editor Module of the ReplayMod",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://replaymod.com",
+    "updateUrl": "https://replaymod.com/download",
+    "authorList": [
+      "CrushedPixel",
+      "johni0702"
+    ],
+    "logoFile": "replaymod_logo.png",
+    "parent": "replaymod",
+    "screenshots": [],
+    "dependencies": []
+  },
+  {
     "modid": "replaymod-extras",
     "name": "Replay Mod - Extras",
     "description": "Extras Module of the ReplayMod - Small but neat additions",

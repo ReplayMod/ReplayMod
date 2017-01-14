@@ -26,20 +26,23 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
-@Mod(modid = ReplayModSimplePathing.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModSimplePathing.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModSimplePathing implements PathingRegistry {
     public static final String MOD_ID = "replaymod-simplepathing";
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
+    private ReplayMod core;
 
-    private Logger logger;
+    public static Logger LOGGER;
 
     private GuiPathing guiPathing;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
+        core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
 
