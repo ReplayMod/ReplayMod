@@ -26,7 +26,10 @@ import java.io.IOException;
 
 import static net.minecraft.client.Minecraft.getMinecraft;
 
-@Mod(modid = ReplayModOnline.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModOnline.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModOnline {
     public static final String MOD_ID = "replaymod-online";
 
@@ -64,8 +67,10 @@ public class ReplayModOnline {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        if (!getDownloadsFolder().mkdirs()) {
-            logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
+        if (!getDownloadsFolder().exists()){
+            if (!getDownloadsFolder().mkdirs()) {
+                logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
+            }
         }
 
         new GuiHandler(this).register();

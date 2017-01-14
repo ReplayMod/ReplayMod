@@ -2,7 +2,14 @@
 ## Installing the Replay Mod [replaymod]
 The **ReplayMod** requires **Minecraft Forge** to be installed.
 
-For the use with the **Replay Mod**, we recommend using Forge Version `1.8-11.14.3.1450`, which can be downloaded [here](http://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.8.html)
+Depending on your **Replay Mod** version we recommend the following **Forge** versions:
+
+- Replay Mod 2.0.0 or later for Minecraft 1.11: Forge [1.11-13.19.1.2189](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.11.html)
+- Replay Mod 2.0.0 or later for Minecraft 1.10.2: Forge [1.10.2-12.18.2.2099](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.10.2.html)
+- Replay Mod 2.0.0 or later for Minecraft 1.9.4: Forge [1.9.4-12.17.0.1976](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.9.4.html)
+- Replay Mod 2.0.0 or later for Minecraft 1.8: Forge [1.8-11.14.4.1563](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.8.html)
+- Replay Mod 1.0.8 or older for Minecraft 1.8: Forge [1.8-11.14.3.1450](http://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.8.html)
+
 Other Forge Versions might, but don't necessarily work.
 
 If you don't know how to install Forge, follow [this tutorial](https://www.youtube.com/watch?v=4i7-RystzC4).
@@ -25,6 +32,10 @@ Next, download this **Batch Script** to quickly install FFmpeg: <https://replaym
 Put the downloaded script into the folder where you extracted FFmpeg and run itt by double-clicking it.
 If you see a success message in the console, you've sucessfully installed **FFmpeg**!
 
+Alternatively, starting with ReplayMod 2.0.0-b5, you can also extract the downloaded `.7z` file into a `ffmpeg` folder
+(you have to create it, it doesn't exist by default) in your `.minecraft` folder. No need to run any **Batch Script**.
+The FFmpeg executable should end up at `.minecraft/ffmpeg/bin/ffmpeg.exe`.
+
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.
 
@@ -37,25 +48,34 @@ If in doubt, consult the documentation of your distribution.
 ## Compatibility with other Mods [compatibility]
 ### General information [general]
 In General, the Replay Mod _should_ be compatible with most Forge Mods.
-However, due to the way that recording works, many Mods that add new Blocks, Mobs or Game Mechanics are not supported.  
-Mods that simply modify the client (like the [PixelCam Mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/2327429-pixelcam-camera-studio-for-minecraft-1-8)
-or the [CommandGroups Mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/2443430-command-groups-mod-order-label-and-color-command)) usually work.
-
-### Optifine [optifine]
-The **Replay Mod** is compatible with `Optifine 1.8.0 HD U D5`, which can be downloaded at <https://optifine.net/downloads>.  
-Other Optifine versions for Minecraft 1.8.0 might, but don't have to be compatible as well.
-
-> **Warning:** If you have Optifine installed, you **can not render videos** from within the Replay Mod.  
-This might change in future Replay Mod versions.
 
 ### Shaders Mod [shaders]
-You can use the Replay Mod together with [karyonix' Shaders Mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/1286604-shaders-mod-updated-by-karyonix),
-but rendering videos results in **possible crashes** and **malformed videos**.
-Therefore, you have to **uninstall the Shaders Mod before rendering**.
+[Karyonix' Shaders Mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/1286604-shaders-mod-updated-by-karyonix)
+is no longer compatible with Minecraft Forge starting with 1.9.4. As such it is not compatible with the Replay Mod either.
+Please use [Optifine](https://optifine.net/) instead.
+
+### Custom Main Menu [custom-main-menu]
+The [Custom Main Menu](https://mods.curse.com/mc-mods/minecraft/226406-custom-main-menu) mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
+If you are familiar with it, the button ids for the Replay Mod are: **17890234** (text: `replaymod.gui.replayviewer`), **17890235** (text: `replaymod.gui.replayviewer`) and **17890236** (text: `replaymod.gui.replaycenter`)
+
+Due to the nature of this Custom Main Menu mod, buttons added to the Main Menu by 3rd party mods like the **Replay Mod** will not show up by default.  
+Thus, to access the Replay Viewer/Editor/Center, you need to manually configure the position for those buttons.  
+To do so, you need to modify the Custom Main Menu configuration file.
+Usually, you can find it at `.minecraft/config/CustomMainMenu/mainmenu.json` (if you're using a mod pack launcher, it normally has its own .minecraft folder).  
+For an explanation of this config file, have a look at Custom Main Menu's page.
+
+You can find a list of already modified config files [here](https://gist.github.com/Johni0702/3f3fab81dbf7ada83d045d9fe8f345aa).
 
 ## Troubleshooting [troubleshooting]
 If you need help installing the **Replay Mod** or **FFmpeg**, please read [this forum thread](https://www.replaymod.com/forum/thread/220) 
 by [bela333](https://www.replaymod.com/user/bela333) - it covers most of the problems that users encountered so far.
+
+## Settings [settings]
+To access the **Replay Mod Settings** from the Main Menu click the **"Mods"** button, select the **Replay Mod** from the list and
+the click the **"Config"** button.
+
+When in a Replay, you can either bind a hotkey to the **Replay Mod Settings** in Minecraft's Control settings
+or use the hotkey GUI by clicking on the arrow button in the lower left corner.
 
 # Recording [recording]
 ![](img/recording-indicator.jpg)
@@ -87,6 +107,8 @@ While in the Replay, you can freely move around using the movement keys (`WASD, 
 You can move through block similar to Spectator Mode.
 
 Using the **Mouse Wheel**, you can modify your flying speed. Scrolling **up** causes you to fly faster, while scrolling **down** slows you down.
+
+If you prefer the camera to be controlled similar to vanilla Creative Mode, you can change that in the **Replay Settings**.
 
 ### Camera Roll [roll]
 ![](img/camera-tilted.jpg)
@@ -251,12 +273,14 @@ The **Keyframe Repository** with two **Path Presets**
 
 Using the `X` key, you can open the **Keyframe Repository**. Every Replay File has a separate Keyframe Repository which can contain several **Keyframe Presets**.
 
-To save the Keyframes currently on your Timeline, click the **"Save current Path"** button.
-You can change the Preset's name using the Text Input Field in the upper right corner.  
-To load a Keyframe Preset, select a Preset from the list on the left side and click the **"Load"** button.  
+To save the Keyframes currently on your Timeline, click the **"Save as..."** button.
+You can change a Preset's name, select it from the list and click the **"Rename"** button.
+To load a Keyframe Preset, select a Preset from the list and click the **"Load"** button.
 Using the **"Remove"** button, you can permanently delete a Keyframe Preset from the **Keyframe Repository**.
 
 ## Custom Objects [objects]
+
+> Custom Objects are not available in the 2.0.0 versions. They are expected to return eventually.
 
 [YouTube](_Xdpg828fbE)
 
@@ -416,12 +440,10 @@ There are **7 Encoding Presets** you can choose from:
 
 ### Advanced Settings [advanced]
 ![](img/rendersettings-advanced.jpg)
-The **Advanced Render Settings** Screen
+The **Advanced Render Settings**
 
-By clicking the **"Advanced Settings" Button** in the lower right corner, you can access more settings.
-
-#### Hide Nametags [nametags]
-If you don't want to see Entity's Nametags in the rendered video, simply tick the checkbox. Hidden Nametags also include Nametags of **Armor Stands** and **Mobs**, **not only Players**!
+#### Render Nametags [nametags]
+If you don't want to see Entity's Nametags in the rendered video, simply un-tick the checkbox. Hidden Nametags also include Nametags of **Armor Stands** and **Mobs**, **not only Players**!
 
 #### Stabilize Camera [stabilize]
 This setting is only applicable for **Cubic Rendering** and **Equirectangular Rendering**.  
@@ -443,14 +465,14 @@ Using a **Video Editing Software** like **Adobe After Effects** or **Sony Vegas*
 
 ### Command Line Settings [commandline]
 ![](img/rendersettings-commandline.jpg)
-The **Command Line Render Settings** Screen
+The **Command Line Render Settings**
 
 
 > **Note**: This is for advanced users only. If you do not know what your're doing, leave these settings as they are.
 
 The **Replay Mod** runs [FFmpeg](http://ffmpeg.org/) via the **Command Line** to encode videos.
 
-You can customize both the **executed Command** and the **Command Line Arguments** in the **Command Line Settings** Tag of the **Render Settings Screen**.
+You can customize both the **executed Command** and the **Command Line Arguments** in the **Command Line Settings** part of the **Render Settings Screen**.
 
 #### Custom Command [command]
 If you leave the left input field blank, `ffmpeg` will be used as **command**. If you haven't set your **PATH variable** to link to your FFmpeg distribution, simply enter the full path to your FFmpeg executable (e.g. `C:/ffmpeg/ffmpeg.exe` or `/usr/local/bin/ffmpeg`).
@@ -532,7 +554,7 @@ By clicking on a player's **Name or Head**, you can **spectate** this player.
 
 Next to each player, there's a **checkbox** using which you can toggle the player's **visibility**.
 This way, you can hide certain players from the Replay.  
-Above the individual checkboxes, there are two checkbox buttons - one to **hide all players** and one to **show all players**.
+Below the individual checkboxes, there are two checkbox buttons - one to **hide all players** and one to **show all players**.
 
 If you want to **save the player visibility settings**, check **"Remember Hidden Players" checkbox**.
 If checked, invisible players will stay invisible after closing the Replay (this can of course be reverted),

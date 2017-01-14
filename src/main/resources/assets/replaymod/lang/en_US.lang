@@ -255,6 +255,8 @@ replaymod.gui.editor.trim.description=Removes the beginning and end of a Replay 
 replaymod.gui.editor.connect.description=Connects multiple Replays in the specified order
 replaymod.gui.editor.modify.description=Provides several filters to modify Replay Files
 
+replaymod.gui.editor.trim.marker=Select Event Marker
+
 replaymod.gui.editor.progress.title=Editing Replay File...
 replaymod.gui.editor.progress.pleasewait=Please wait while the Replay is being edited.
 
@@ -423,6 +425,18 @@ replaymod.gui.rendersettings.presets.mp4.potato=MP4 - Potato Quality
 replaymod.gui.rendersettings.presets.webm.custom=WEBM - Custom Bitrate
 replaymod.gui.rendersettings.presets.mkv.lossless=MKV - Lossless
 replaymod.gui.rendersettings.presets.png=PNG Sequence
+
+replaymod.gui.rendersettings.antialiasing=Anti-Aliasing
+replaymod.gui.rendersettings.antialiasing.none=None
+replaymod.gui.rendersettings.antialiasing.x2=2x
+replaymod.gui.rendersettings.antialiasing.x4=4x
+replaymod.gui.rendersettings.antialiasing.x8=8x
+
+#Render Queue GUI
+replaymod.gui.renderqueue.title=Render Queue
+replaymod.gui.renderqueue.open=Open Queue
+replaymod.gui.renderqueue.jobname=Job Name:
+replaymod.gui.renderqueue.add=Add current configuration
 
 #Rendering GUI
 replaymod.gui.rendering.title=Rendering Video

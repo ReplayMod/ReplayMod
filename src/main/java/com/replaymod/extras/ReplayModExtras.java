@@ -12,7 +12,10 @@ import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 import java.util.List;
 
-@Mod(modid = ReplayModExtras.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModExtras.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModExtras {
     public static final String MOD_ID = "replaymod-extras";
 
