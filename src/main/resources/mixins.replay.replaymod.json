@@ -15,5 +15,6 @@
   ],
   "server": [],
   "client": [],
+  "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.replaymod.refmap.json"
 }
