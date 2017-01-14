@@ -74,8 +74,8 @@ public class ResourcePackRecorder {
         final int requestId = nextRequestId++;
         final NetHandlerPlayClient netHandler = mc.getNetHandler();
         final NetworkManager netManager = netHandler.getNetworkManager();
-        final String url = packet.func_179783_a();
-        final String hash = packet.func_179784_b();
+        final String url = packet.getURL();
+        final String hash = packet.getHash();
 
         if (url.startsWith("level://")) {
             String levelName = url.substring("level://".length());
@@ -84,7 +84,7 @@ public class ResourcePackRecorder {
 
             if (levelDir.isFile()) {
                 netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
-                Futures.addCallback(mc.getResourcePackRepository().func_177319_a(levelDir), new FutureCallback() {
+                Futures.addCallback(mc.getResourcePackRepository().setResourcePackInstance(levelDir), new FutureCallback<Object>() {
                     @Override
                     public void onSuccess(Object result) {
                         recordResourcePack(levelDir, requestId);
@@ -161,16 +161,16 @@ public class ResourcePackRecorder {
         }
 
         final File file = new File(repo.dirServerResourcepacks, fileName);
-        repo.field_177321_h.lock();
+        repo.lock.lock();
         try {
-            repo.func_148529_f();
+            repo.clearResourcePack();
 
             if (file.exists() && hash.length() == 40) {
                 try {
                     String fileHash = Hashing.sha1().hashBytes(Files.toByteArray(file)).toString();
                     if (fileHash.equals(hash)) {
                         recordResourcePack(file, requestId);
-                        return repo.func_177319_a(file);
+                        return repo.setResourcePackInstance(file);
                     }
 
                     logger.warn("File " + file + " had wrong hash (expected " + hash + ", found " + fileHash + "). Deleting it.");
@@ -186,13 +186,13 @@ public class ResourcePackRecorder {
 
             Futures.getUnchecked(mc.addScheduledTask(() -> mc.displayGuiScreen(guiScreen)));
 
-            Map sessionInfo = Minecraft.getSessionInfo();
-            repo.field_177322_i = HttpUtil.func_180192_a(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
-            Futures.addCallback(repo.field_177322_i, new FutureCallback() {
+            Map<String, String> sessionInfo = Minecraft.getSessionInfo();
+            repo.downloadingPacks = HttpUtil.downloadResourcePack(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
+            Futures.addCallback(repo.downloadingPacks, new FutureCallback<Object>() {
                 @Override
                 public void onSuccess(Object value) {
                     recordResourcePack(file, requestId);
-                    repo.func_177319_a(file);
+                    repo.setResourcePackInstance(file);
                 }
 
                 @Override
@@ -200,9 +200,9 @@ public class ResourcePackRecorder {
                     throwable.printStackTrace();
                 }
             });
-            return repo.field_177322_i;
+            return repo.downloadingPacks;
         } finally {
-            repo.field_177321_h.unlock();
+            repo.lock.unlock();
         }
     }
 

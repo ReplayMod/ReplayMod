@@ -12,13 +12,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(EffectRenderer.class)
 public abstract class MixinEffectRenderer {
-    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;func_180434_a(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
+    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;renderParticle(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
     private void renderNormalParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks,
                                 float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
         renderParticle(fx, worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
     }
 
-    @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;func_180434_a(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
+    @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;renderParticle(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
     private void renderLitParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks,
                                  float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
         renderParticle(fx, worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
@@ -42,6 +42,6 @@ public abstract class MixinEffectRenderer {
             rotYZ = (float) (-rotZ * Math.sin(pitch));
             rotXY = (float) (rotX * Math.sin(pitch));
         }
-        fx.func_180434_a(worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
+        fx.renderParticle(worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
     }
 }

@@ -16,7 +16,7 @@ public class ChunkLoadingRenderGlobal {
 
     private final RenderGlobal hooked;
     private final ChunkRenderDispatcher renderDispatcher;
-    private final JailingQueue<?> workerJailingQueue;
+    private final JailingQueue<ChunkCompileTaskGenerator> workerJailingQueue;
     private final CustomChunkRenderWorker renderWorker;
     private int frame;
 
@@ -27,7 +27,7 @@ public class ChunkLoadingRenderGlobal {
         this.renderWorker = new CustomChunkRenderWorker(renderDispatcher, new RegionRenderCacheBuilder());
 
         int workerThreads = renderDispatcher.listThreadedWorkers.size();
-        BlockingQueue<Object> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
+        BlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
         workerJailingQueue = new JailingQueue<>(queueChunkUpdates);
         renderDispatcher.queueChunkUpdates = workerJailingQueue;
         ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null);
@@ -51,7 +51,6 @@ public class ChunkLoadingRenderGlobal {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void updateChunks() {
         while (renderDispatcher.runChunkUploads(0)) {
             hooked.displayListEntitiesDirty = true;
@@ -59,7 +58,7 @@ public class ChunkLoadingRenderGlobal {
 
         while (!renderDispatcher.queueChunkUpdates.isEmpty()) {
             try {
-                renderWorker.processTask((ChunkCompileTaskGenerator) renderDispatcher.queueChunkUpdates.poll());
+                renderWorker.processTask(renderDispatcher.queueChunkUpdates.poll());
             } catch (InterruptedException ignored) { }
         }
 

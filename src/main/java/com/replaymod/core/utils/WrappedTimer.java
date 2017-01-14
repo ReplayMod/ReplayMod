@@ -27,7 +27,7 @@ public class WrappedTimer extends Timer {
         to.elapsedPartialTicks = from.elapsedPartialTicks;
         to.lastSyncSysClock = from.lastSyncSysClock;
         to.lastSyncHRClock = from.lastSyncHRClock;
-        to.field_74285_i = from.field_74285_i;
+        to.counter = from.counter;
         to.timeSyncAdjustment = from.timeSyncAdjustment;
     }
 }

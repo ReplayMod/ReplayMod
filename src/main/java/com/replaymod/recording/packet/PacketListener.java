@@ -85,7 +85,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     public void save(Packet packet) {
         try {
             if(packet instanceof S0CPacketSpawnPlayer) {
-                UUID uuid = ((S0CPacketSpawnPlayer) packet).func_179819_c();
+                UUID uuid = ((S0CPacketSpawnPlayer) packet).getPlayer();
                 Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
                 uuids.add(uuid.toString());
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
@@ -153,7 +153,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 if(packet instanceof S0DPacketCollectItem) {
                     if(mc.thePlayer != null ||
-                            ((S0DPacketCollectItem) packet).func_149353_d() == mc.thePlayer.getEntityId()) {
+                            ((S0DPacketCollectItem) packet).getEntityID() == mc.thePlayer.getEntityId()) {
                         super.channelRead(ctx, msg);
                         return;
                     }
@@ -205,11 +205,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
         if(packet instanceof S0CPacketSpawnPlayer) {
             S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
-            if (p.field_148960_i == null) {
-                p.field_148960_i = new DataWatcher(null);
+            if (p.watcher == null) {
+                p.watcher = new DataWatcher(null);
                 if(p.func_148944_c() != null) {
-                    for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_148944_c()) {
-                        p.field_148960_i.addObject(wo.getDataValueId(), wo.getObject());
+                    for(DataWatcher.WatchableObject wo : p.func_148944_c()) {
+                        p.watcher.addObject(wo.getDataValueId(), wo.getObject());
                     }
                 }
             }

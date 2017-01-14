@@ -14,7 +14,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.*;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -31,7 +36,6 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Queue;
 
 @Mod(modid = ReplayMod.MOD_ID,
         useMetadata = true,
@@ -126,150 +130,7 @@ public class ReplayMod {
         if(!FMLClientHandler.instance().hasOptifine())
             GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
 
-        if (System.getProperty("replaymod.render.file") != null) {
-            final File file = new File(System.getProperty("replaymod.render.file"));
-            if (!file.exists()) {
-                throw new IOException("File \"" + file.getPath() + "\" not found.");
-            }
-
-            final String path = System.getProperty("replaymod.render.path");
-            String type = System.getProperty("replaymod.render.type");
-            String bitrate = System.getProperty("replaymod.render.bitrate");
-            String fps = System.getProperty("replaymod.render.fps");
-            String waitForChunks = System.getProperty("replaymod.render.waitforchunks");
-            String linearMovement = System.getProperty("replaymod.render.linearmovement");
-            String skyColor = System.getProperty("replaymod.render.skycolor");
-            String width = System.getProperty("replaymod.render.width");
-            String height = System.getProperty("replaymod.render.height");
-            String exportCommand = System.getProperty("replaymod.render.exportcommand");
-            String exportCommandArgs = System.getProperty("replaymod.render.exportcommandargs");
-            /*
-            final RenderOptions options = new RenderOptions();
-            if (bitrate != null) {
-                options.setBitrate(bitrate);
-            }
-            if (fps != null) {
-                options.setFps(Integer.parseInt(fps));
-            }
-            if (waitForChunks != null) {
-                options.setWaitForChunks(Boolean.parseBoolean(waitForChunks));
-            }
-            if (linearMovement != null) {
-                options.setLinearMovement(Boolean.parseBoolean(linearMovement));
-            }
-            if (skyColor != null) {
-                if (skyColor.startsWith("0x")) {
-                    options.setSkyColor(Integer.parseInt(skyColor.substring(2), 16));
-                } else {
-                    options.setSkyColor(Integer.parseInt(skyColor));
-                }
-            }
-            if (width != null) {
-                options.setWidth(Integer.parseInt(width));
-            }
-            if (height != null) {
-                options.setHeight(Integer.parseInt(height));
-            }
-
-            if (exportCommand != null) {
-                options.setExportCommand(exportCommand);
-            }
-            if (exportCommandArgs != null) {
-                options.setExportCommandArgs(exportCommandArgs);
-            } else {
-                options.setExportCommandArgs(EncodingPreset.MP4DEFAULT.getCommandLineArgs());
-            }
-
-            options.setOutputFile(new File(String.valueOf(System.currentTimeMillis())));
-
-            Pipelines.Preset pipelinePreset = Pipelines.Preset.DEFAULT;
-            if (type != null) {
-                String[] parts = type.split(":");
-                type = parts[0].toUpperCase();
-                if ("NORMAL".equals(type) || "DEFAULT".equals(type)) {
-                    pipelinePreset = Pipelines.Preset.DEFAULT;
-                } else if ("STEREO".equals(type) || "STEREOSCOPIC".equals(type)) {
-                    pipelinePreset = Pipelines.Preset.STEREOSCOPIC;
-                } else if ("CUBIC".equals(type)) {
-                    if (parts.length < 2) {
-                        throw new IllegalArgumentException("Cubic renderer requires boolean for whether it's stable.");
-                    }
-                    pipelinePreset = Pipelines.Preset.CUBIC;
-                } else if ("EQUIRECTANGULAR".equals(type)) {
-                    if (parts.length < 2) {
-                        throw new IllegalArgumentException("Equirectangular renderer requires boolean for whether it's stable.");
-                    }
-                    pipelinePreset = Pipelines.Preset.EQUIRECTANGULAR;
-                } else if ("ODS".equals(type)) {
-                    if (parts.length < 2) {
-                        throw new IllegalArgumentException("ODS renderer requires boolean for whether it's stable.");
-                    }
-                    pipelinePreset = Pipelines.Preset.ODS;
-                } else {
-                    throw new IllegalArgumentException("Unknown type: " + parts[0]);
-                }
-            }
-            options.setMode(pipelinePreset);
-            */
-
-            @SuppressWarnings("unchecked")
-            Queue<ListenableFutureTask> tasks = mc.scheduledTasks;
-            synchronized (mc.scheduledTasks) {
-                tasks.add(ListenableFutureTask.create(new Runnable() {
-                    @Override
-                    public void run() {
-                        String renderDistance = System.getProperty("replaymod.render.mc.renderdistance");
-                        String clouds = System.getProperty("replaymod.render.mc.clouds");
-                        if (renderDistance != null) {
-                            mc.gameSettings.renderDistanceChunks = Integer.parseInt(renderDistance);
-                        }
-                        if (clouds != null) {
-                            mc.gameSettings.clouds = Boolean.parseBoolean(clouds);
-                        }
-
-                        System.out.println("Loading replay...");
-                        // TODO
-//                        try {
-//                            ReplayHandler.startReplay(file, false);
-//                        } catch (Throwable t) {
-//                            t.printStackTrace();
-//                            FMLCommonHandler.instance().exitJava(1, false);
-//                        }
-//
-//                        int index = 0;
-//                        if (path != null) {
-//                            for (KeyframeSet set : ReplayHandler.getKeyframeRepository()) {
-//                                if (set.getName().equals(path)) {
-//                                    break;
-//                                }
-//                                index++;
-//                            }
-//                            if (index >= ReplayHandler.getKeyframeRepository().length) {
-//                                throw new IllegalArgumentException("No path named \"" + path + "\".");
-//                            }
-//                        } else if (ReplayHandler.getKeyframeRepository().length == 0) {
-//                            throw new IllegalArgumentException("Replay file has no paths defined.");
-//                        }
-//                        ReplayHandler.useKeyframePresetFromRepository(index);
-//
-//                        System.out.println("Rendering started...");
-//                        try {
-//                            ReplayProcess.startReplayProcess(options, true);
-//                        } catch (Throwable t) {
-//                            t.printStackTrace();
-//                            FMLCommonHandler.instance().exitJava(1, false);
-//                        }
-//                        if (mc.hasCrashed) {
-//                            System.out.println(mc.crashReporter.getCompleteReport());
-//                        }
-//                        System.out.println("Rendering done. Shutting down...");
-//                        mc.shutdown();
-                    }
-                }, null));
-            }
-
-            testIfMoeshAndExitMinecraft();
-        }
+        testIfMoeshAndExitMinecraft();
 
         runLater(() -> {
             // Cleanup deleted corrupted replays
@@ -306,10 +167,8 @@ public class ReplayMod {
     }
 
     public void runLater(Runnable runnable) {
-        @SuppressWarnings("unchecked")
-        Queue<ListenableFutureTask> tasks = mc.scheduledTasks;
         synchronized (mc.scheduledTasks) {
-            tasks.add(ListenableFutureTask.create(runnable, null));
+            mc.scheduledTasks.add(ListenableFutureTask.create(runnable, null));
         }
     }
 
