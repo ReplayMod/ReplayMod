@@ -1,6 +1,8 @@
 package com.replaymod.render;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import net.minecraft.client.resources.I18n;
 import org.lwjgl.util.ReadableColor;
 
@@ -45,7 +47,7 @@ public class RenderSettings {
         }
 
         public String getValue() {
-            return "-y -f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - " + preset;
+            return "-y -f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - %FILTERS%" + preset;
         }
 
         public String getFileExtension() {
@@ -64,6 +66,19 @@ public class RenderSettings {
         }
     }
 
+    @AllArgsConstructor
+    public enum AntiAliasing {
+        NONE(1), X2(2), X4(4), X8(8);
+
+        @Getter
+        private final int factor;
+
+        @Override
+        public String toString() {
+            return I18n.format("replaymod.gui.rendersettings.antialiasing." + name().toLowerCase());
+        }
+    }
+
     private final RenderMethod renderMethod;
     private final EncodingPreset encodingPreset;
     private final int videoWidth;
@@ -78,9 +93,48 @@ public class RenderSettings {
     private final boolean stabilizeRoll;
     private final ReadableColor chromaKeyingColor;
     private final boolean inject360Metadata;
+    private final AntiAliasing antiAliasing;
 
     private final String exportCommand;
     private final String exportArguments;
 
     private final boolean highPerformance;
+
+    /**
+     * @return the width of the output video during rendering, including the upscale for Anti-Aliasing.
+     */
+    public int getVideoWidth() {
+        return videoWidth * antiAliasing.getFactor();
+    }
+
+    /**
+     * @return the height of the output video during rendering, including the upscale for Anti-Aliasing.
+     */
+    public int getVideoHeight() {
+        return videoHeight * antiAliasing.getFactor();
+    }
+
+    /**
+     * @return the actual width of the output video.
+     */
+    public int getTargetVideoWidth() {
+        return videoWidth;
+    }
+
+    /**
+     * @return the actual height of the output video.
+     */
+    public int getTargetVideoHeight() {
+        return videoHeight;
+    }
+
+    public String getVideoFilters() {
+        if (antiAliasing == AntiAliasing.NONE) {
+            return "";
+        } else {
+            double factor = 1.0 / antiAliasing.getFactor();
+            return String.format("-vf scale=iw*%1$s:ih*%1$s ", factor);
+        }
+    }
+
 }

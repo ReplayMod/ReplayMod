@@ -12,15 +12,15 @@ import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 import java.util.List;
 
-@Mod(modid = ReplayModExtras.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModExtras.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModExtras {
     public static final String MOD_ID = "replaymod-extras";
 
     @Mod.Instance(MOD_ID)
     public static ReplayModExtras instance;
-
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
 
     private static final List<Class<? extends Extra>> builtin = Arrays.asList(
             PlayerOverview.class,
@@ -44,7 +44,7 @@ public class ReplayModExtras {
         for (Class<? extends Extra> cls : builtin) {
             try {
                 Extra extra = cls.newInstance();
-                extra.register(core);
+                extra.register(ReplayMod.instance);
             } catch (Throwable t) {
                 logger.warn("Failed to load extra " + cls.getName() + ": ", t);
             }

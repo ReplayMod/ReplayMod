@@ -12,7 +12,6 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.awt.image.BufferedImage;
@@ -26,11 +25,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class LocalizationExtra implements Extra {
-    @Mod.Instance(ReplayModOnline.MOD_ID)
-    private static ReplayModOnline module;
+    private ReplayModOnline module;
 
     @Override
     public void register(ReplayMod mod) throws Exception {
+        this.module = ReplayModOnline.instance;
+
         final Minecraft mc = mod.getMinecraft();
         Thread localizedResourcePackLoader = new Thread(new Runnable() {
             @Override

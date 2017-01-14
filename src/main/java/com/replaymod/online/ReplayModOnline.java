@@ -26,18 +26,19 @@ import java.io.IOException;
 
 import static net.minecraft.client.Minecraft.getMinecraft;
 
-@Mod(modid = ReplayModOnline.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModOnline.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModOnline {
     public static final String MOD_ID = "replaymod-online";
 
     @Mod.Instance(MOD_ID)
     public static ReplayModOnline instance;
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
+    private ReplayMod core;
 
-    @Mod.Instance(ReplayModReplay.MOD_ID)
-    private static ReplayModReplay replayModule;
+    private ReplayModReplay replayModule;
 
     private Logger logger;
 
@@ -53,6 +54,8 @@ public class ReplayModOnline {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
+        core = ReplayMod.instance;
+        replayModule = ReplayModReplay.instance;
 
         core.getSettingsRegistry().register(Setting.class);
 
@@ -64,8 +67,10 @@ public class ReplayModOnline {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        if (!getDownloadsFolder().mkdirs()) {
-            logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
+        if (!getDownloadsFolder().exists()){
+            if (!getDownloadsFolder().mkdirs()) {
+                logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
+            }
         }
 
         new GuiHandler(this).register();

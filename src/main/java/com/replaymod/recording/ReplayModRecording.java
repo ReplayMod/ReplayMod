@@ -14,15 +14,17 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
-@Mod(modid = ReplayModRecording.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModRecording.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModRecording {
     public static final String MOD_ID = "replaymod-recording";
 
     @Mod.Instance(MOD_ID)
     public static ReplayModRecording instance;
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
+    private ReplayMod core;
 
     private Logger logger;
 
@@ -31,6 +33,7 @@ public class ReplayModRecording {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
+        core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
 

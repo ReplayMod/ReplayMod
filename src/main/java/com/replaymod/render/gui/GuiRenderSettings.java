@@ -32,13 +32,14 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import org.lwjgl.util.Color;
 import org.lwjgl.util.Dimension;
+import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -149,13 +150,18 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     public final GuiCheckbox inject360Metadata = new GuiCheckbox()
             .setI18nLabel("replaymod.gui.rendersettings.360metadata");
 
+    public final GuiDropdownMenu<RenderSettings.AntiAliasing> antiAliasingDropdown = new GuiDropdownMenu<RenderSettings.AntiAliasing>()
+            .setSize(200, 20).setValues(RenderSettings.AntiAliasing.values()).setSelected(RenderSettings.AntiAliasing.NONE);
+
     public final GuiPanel advancedPanel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(15))
             .addElements(null, nametagCheckbox, new GuiPanel().setLayout(
                     new GridLayout().setCellsEqualSize(false).setColumns(2).setSpacingX(5).setSpacingY(15))
                     .addElements(new GridLayout.Data(0, 0.5),
                             new GuiLabel().setI18nText("replaymod.gui.rendersettings.stabilizecamera"), stabilizePanel,
                             chromaKeyingCheckbox, chromaKeyingColor,
-                            inject360Metadata));
+                            inject360Metadata,
+                            new GuiLabel(), // to show the anti-aliasing options in a new line
+                            new GuiLabel().setI18nText("replaymod.gui.rendersettings.antialiasing"), antiAliasingDropdown));
 
     public final GuiTextField exportCommand = new GuiTextField().setI18nHint("replaymod.gui.rendersettings.command")
             .setSize(55, 20).setMaxLength(100);
@@ -179,6 +185,12 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
 
     public final GuiPanel buttonPanel = new GuiPanel(contentPanel).setLayout(new HorizontalLayout().setSpacing(4));
+    public final GuiButton queueButton = new GuiButton(buttonPanel).onClick(new Runnable() {
+        @Override
+        public void run() {
+            new GuiRenderQueue(GuiRenderSettings.this, GuiRenderSettings.this, replayHandler, timeline).open();
+        }
+    }).setSize(100, 20).setI18nLabel("replaymod.gui.renderqueue.open");
     public final GuiButton renderButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
@@ -198,13 +210,13 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 throw new ReportedException(crashReport);
             }
         }
-    }).setSize(148, 20).setI18nLabel("replaymod.gui.render");
+    }).setSize(100, 20).setI18nLabel("replaymod.gui.render");
     public final GuiButton cancelButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
             getMinecraft().displayGuiScreen(null);
         }
-    }).setSize(148, 20).setI18nLabel("replaymod.gui.cancel");
+    }).setSize(100, 20).setI18nLabel("replaymod.gui.cancel");
 
     {
         setBackground(Background.NONE);
@@ -261,12 +273,10 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         this.timeline = timeline;
 
         String json = getConfigProperty(ReplayModRender.instance.getConfiguration()).getString();
-        RenderSettings settings = new GsonBuilder().registerTypeAdapter(RenderSettings.class, new InstanceCreator<RenderSettings>() {
-                    @Override
-                    public RenderSettings createInstance(Type type) {
-                        return getDefaultRenderSettings();
-                    }
-                }).create().fromJson(json, RenderSettings.class);
+        RenderSettings settings = new GsonBuilder()
+                .registerTypeAdapter(RenderSettings.class, (InstanceCreator<RenderSettings>) type -> getDefaultRenderSettings())
+                .registerTypeAdapter(ReadableColor.class, new Gson().getAdapter(Color.class))
+                .create().fromJson(json, RenderSettings.class);
         load(settings);
     }
 
@@ -347,8 +357,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     public void load(RenderSettings settings) {
         renderMethodDropdown.setSelected(settings.getRenderMethod());
         encodingPresetDropdown.setSelected(settings.getEncodingPreset());
-        videoWidth.setValue(settings.getVideoWidth());
-        videoHeight.setValue(settings.getVideoHeight());
+        videoWidth.setValue(settings.getTargetVideoWidth());
+        videoHeight.setValue(settings.getTargetVideoHeight());
         frameRateSlider.setValue(settings.getFramesPerSecond() - 10);
         if (settings.getBitRate() % (1 << 20) == 0) {
             bitRateField.setValue(settings.getBitRate() >> 20);
@@ -380,6 +390,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             chromaKeyingColor.setColor(settings.getChromaKeyingColor());
         }
         inject360Metadata.setChecked(settings.isInject360Metadata());
+        antiAliasingDropdown.setSelected(settings.getAntiAliasing());
         exportCommand.setText(settings.getExportCommand());
         exportArguments.setText(settings.getExportArguments());
 
@@ -401,6 +412,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 stabilizeRoll.isChecked() && (serialize || stabilizeRoll.isEnabled()),
                 chromaKeyingCheckbox.isChecked() ? chromaKeyingColor.getColor() : null,
                 inject360Metadata.isChecked() && (serialize || inject360Metadata.isEnabled()),
+                antiAliasingDropdown.getSelectedValue(),
                 exportCommand.getText(),
                 exportArguments.getText(),
                 net.minecraft.client.gui.GuiScreen.isCtrlKeyDown()
@@ -415,7 +427,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
     private RenderSettings getDefaultRenderSettings() {
         return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT, 1920, 1080, 60, 10 << 20, null,
-                true, false, false, false, null, false, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
+                true, false, false, false, null, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
     }
 
     @Override
@@ -430,5 +442,9 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     private Property getConfigProperty(Configuration configuration) {
         return configuration.get("rendersettings", "settings", "{}",
                 "Last state of the render settings GUI. Internal use only.");
+    }
+
+    public ReplayHandler getReplayHandler() {
+        return replayHandler;
     }
 }

@@ -28,15 +28,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
-@Mod(modid = ReplayModReplay.MOD_ID, useMetadata = true)
+@Mod(modid = ReplayModReplay.MOD_ID,
+        version = "@MOD_VERSION@",
+        acceptedMinecraftVersions = "@MC_VERSION@",
+        useMetadata = true)
 public class ReplayModReplay {
     public static final String MOD_ID = "replaymod-replay";
 
     @Mod.Instance(MOD_ID)
     public static ReplayModReplay instance;
 
-    @Mod.Instance(ReplayMod.MOD_ID)
-    private static ReplayMod core;
+    private ReplayMod core;
 
     private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 
@@ -51,6 +53,7 @@ public class ReplayModReplay {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
+        core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
 
