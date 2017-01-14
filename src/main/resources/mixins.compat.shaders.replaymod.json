@@ -6,7 +6,8 @@
   "client": [
     "MixinShaderEntityRenderer",
     "MixinShaderRenderChunk",
-    "MixinShaderRenderGlobal"
+    "MixinShaderRenderGlobal",
+    "MixinShadersRender"
   ],
   "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.replaymod.refmap.json"
