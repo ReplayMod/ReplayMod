@@ -17,7 +17,7 @@ public class Restrictions {
     public String handle(SPacketCustomPayload packet) {
         PacketBuffer buffer = packet.getBufferData();
         while (buffer.isReadable()) {
-            String name = buffer.readStringFromBuffer(64);
+            String name = buffer.readString(64);
             boolean active = buffer.readBoolean();
 //            if ("no_xray".equals(name)) {
 //                noXray = active;

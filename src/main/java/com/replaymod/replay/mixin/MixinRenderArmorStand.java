@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinRenderArmorStand {
     @Inject(method = "canRenderName", at = @At("HEAD"), cancellable = true)
     private void replayModReplay_canRenderInvisibleName(EntityArmorStand entity, CallbackInfoReturnable<Boolean> ci) {
-        EntityPlayer thePlayer = Minecraft.getMinecraft().thePlayer;
+        EntityPlayer thePlayer = Minecraft.getMinecraft().player;
         if (thePlayer instanceof CameraEntity && entity.isInvisible()) {
             ci.setReturnValue(false);
         }

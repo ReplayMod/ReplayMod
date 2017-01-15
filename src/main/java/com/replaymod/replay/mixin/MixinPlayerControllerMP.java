@@ -33,8 +33,8 @@ public abstract class MixinPlayerControllerMP {
 
     @Inject(method = "isSpectator", at=@At("HEAD"), cancellable = true)
     private void replayModReplay_isSpectator(CallbackInfoReturnable<Boolean> ci) {
-        if (mc.thePlayer instanceof CameraEntity) { // this check should in theory not be required
-            ci.setReturnValue(mc.thePlayer.isSpectator());
+        if (mc.player instanceof CameraEntity) { // this check should in theory not be required
+            ci.setReturnValue(mc.player.isSpectator());
         }
     }
 }

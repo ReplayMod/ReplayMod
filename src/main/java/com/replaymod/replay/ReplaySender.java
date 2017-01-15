@@ -257,8 +257,8 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         // Entity#addedToChunk is not set and it is therefore not updated every tick.
         // To counteract this, we need to manually update it's position if it hasn't been added
         // to any chunk yet.
-        if (mc.theWorld != null) {
-            for (EntityPlayer playerEntity : mc.theWorld.playerEntities) {
+        if (mc.world != null) {
+            for (EntityPlayer playerEntity : mc.world.playerEntities) {
                 if (!playerEntity.addedToChunk && playerEntity instanceof EntityOtherPlayerMP) {
                     playerEntity.onLivingUpdate();
                 }
@@ -292,7 +292,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                     // If we do not give minecraft time to tick, there will be dead entity artifacts left in the world
                     // Therefore we have to remove all loaded, dead entities manually if we are in sync mode.
                     // We do this after every SpawnX packet and after the destroy entities packet.
-                    if (!asyncMode && mc.theWorld != null) {
+                    if (!asyncMode && mc.world != null) {
                         if (p instanceof SPacketSpawnPlayer
                                 || p instanceof SPacketSpawnObject
                                 || p instanceof SPacketSpawnMob
@@ -300,7 +300,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                                 || p instanceof SPacketSpawnPainting
                                 || p instanceof SPacketSpawnExperienceOrb
                                 || p instanceof SPacketDestroyEntities) {
-                            World world = mc.theWorld;
+                            World world = mc.world;
                             for (int i = 0; i < world.loadedEntityList.size(); ++i) {
                                 Entity entity = world.loadedEntityList.get(i);
                                 if (entity.isDead) {
@@ -331,7 +331,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         ByteBuf bb = Unpooled.wrappedBuffer(bytes);
         PacketBuffer pb = new PacketBuffer(bb);
 
-        int i = pb.readVarIntFromBuffer();
+        int i = pb.readVarInt();
 
         Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
         p.readPacketData(pb);
@@ -460,7 +460,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                 @Override
                 @SuppressWarnings("unchecked")
                 public Void call() {
-                    if (mc.theWorld == null || !mc.isCallingFromMinecraftThread()) {
+                    if (mc.world == null || !mc.isCallingFromMinecraftThread()) {
                         synchronized(mc.scheduledTasks) {
                             mc.scheduledTasks.add(ListenableFutureTask.create(this));
                         }

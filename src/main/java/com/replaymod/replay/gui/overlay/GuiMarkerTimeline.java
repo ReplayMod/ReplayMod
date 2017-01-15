@@ -58,7 +58,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
 
     protected void drawMarker(GuiRenderer renderer, ReadableDimension size, Marker marker) {
         int visibleLength = (int) (getLength() * getZoom());
-        int markerPos = MathHelper.clamp_int(marker.getTime(), getOffset(), getOffset() + visibleLength);
+        int markerPos = MathHelper.clamp(marker.getTime(), getOffset(), getOffset() + visibleLength);
         double positionInVisible = markerPos - getOffset();
         double fractionOfVisible = positionInVisible / visibleLength;
         int markerX = (int) (BORDER_LEFT + fractionOfVisible * (size.getWidth() - BORDER_LEFT - BORDER_RIGHT));
@@ -99,7 +99,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
         int visibleLength = (int) (getLength() * getZoom());
         int contentWidth = lastSize.getWidth() - BORDER_LEFT - BORDER_RIGHT;
         for (Marker marker : replayHandler.getMarkers()) {
-            int markerPos = MathHelper.clamp_int(marker.getTime(), getOffset(), getOffset() + visibleLength);
+            int markerPos = MathHelper.clamp(marker.getTime(), getOffset(), getOffset() + visibleLength);
             double positionInVisible = markerPos - getOffset();
             double fractionOfVisible = positionInVisible / visibleLength;
             int markerX = (int) (BORDER_LEFT + fractionOfVisible * contentWidth);

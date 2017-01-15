@@ -110,12 +110,12 @@ public class ReplayHandler {
 
         channel.close().awaitUninterruptibly();
 
-        if (mc.thePlayer instanceof CameraEntity) {
-            mc.thePlayer.setDead();
+        if (mc.player instanceof CameraEntity) {
+            mc.player.setDead();
         }
 
-        if (mc.theWorld != null) {
-            mc.theWorld.sendQuittingDisconnectingPacket();
+        if (mc.world != null) {
+            mc.world.sendQuittingDisconnectingPacket();
             mc.loadWorld(null);
         }
 
@@ -241,7 +241,7 @@ public class ReplayHandler {
      * @return {@code true} if the camera is the view entity, {@code false} otherwise
      */
     public boolean isCameraView() {
-        return mc.thePlayer instanceof CameraEntity && mc.thePlayer == mc.getRenderViewEntity();
+        return mc.player instanceof CameraEntity && mc.player == mc.getRenderViewEntity();
     }
 
     /**
@@ -249,7 +249,7 @@ public class ReplayHandler {
      * @return The camera entity or {@code null} if it does not yet exist
      */
     public CameraEntity getCameraEntity() {
-        return mc.thePlayer instanceof CameraEntity ? (CameraEntity) mc.thePlayer : null;
+        return mc.player instanceof CameraEntity ? (CameraEntity) mc.player : null;
     }
 
     public UUID getSpectatedUUID() {
@@ -329,7 +329,7 @@ public class ReplayHandler {
                 replaySender.setReplaySpeed(0);
 
                 mc.getConnection().getNetworkManager().processReceivedPackets();
-                for (Entity entity : mc.theWorld.loadedEntityList) {
+                for (Entity entity : mc.world.loadedEntityList) {
                     if (entity instanceof EntityOtherPlayerMP) {
                         EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
                         e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);

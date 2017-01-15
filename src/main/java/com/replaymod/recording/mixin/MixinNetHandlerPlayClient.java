@@ -37,14 +37,14 @@ public abstract class MixinNetHandlerPlayClient {
      */
     @Inject(method = "handlePlayerListItem", at=@At("HEAD"))
     public void recordOwnJoin(SPacketPlayerListItem packet, CallbackInfo ci) {
-        if (gameController.thePlayer == null) return;
+        if (gameController.player == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null && packet.getAction() == SPacketPlayerListItem.Action.ADD_PLAYER) {
             for (SPacketPlayerListItem.AddPlayerData data : packet.getEntries()) {
                 if (data.getProfile() == null || data.getProfile().getId() == null) continue;
                 // Only add spawn packet for our own player and only if he isn't known yet
-                if (data.getProfile().getId().equals(Minecraft.getMinecraft().thePlayer.getGameProfile().getId())
+                if (data.getProfile().getId().equals(Minecraft.getMinecraft().player.getGameProfile().getId())
                         && !playerInfoMap.containsKey(data.getProfile().getId())) {
                     handler.onPlayerJoin();
                 }
