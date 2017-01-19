@@ -27,8 +27,20 @@ import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -49,6 +61,42 @@ public class Utils {
             e.printStackTrace();
         }
         DEFAULT_THUMBNAIL = thumbnail;
+    }
+
+
+    /**
+     * Neither the root certificate of LetsEncrypt nor the root that cross-signed it is included in the default
+     * Java keystore prior to 8u101.
+     * Therefore whenever a connection to the replaymod.com site is made, this SSLContext has to be used instead.
+     * It has been constructed to include the necessary root certificates.
+     * @see #SSL_SOCKET_FACTORY
+     */
+    public static final SSLContext SSL_CONTEXT;
+
+    /**
+     * @see #SSL_CONTEXT
+     */
+    public static final SSLSocketFactory SSL_SOCKET_FACTORY;
+
+    static {
+        // Largely from https://community.letsencrypt.org/t/134/37
+        try (InputStream in = Utils.class.getResourceAsStream("/dst_root_ca_x3.pem")){
+            Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(in);
+
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keyStore.load(null, null);
+            keyStore.setCertificateEntry("1", certificate);
+
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(keyStore);
+
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, trustManagerFactory.getTrustManagers(), null);
+            SSL_CONTEXT = ctx;
+            SSL_SOCKET_FACTORY = ctx.getSocketFactory();
+        } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException | KeyManagementException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String convertSecondsToShortString(int seconds) {
