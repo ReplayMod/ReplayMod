@@ -56,7 +56,7 @@ Please use [Optifine](https://optifine.net/) instead.
 
 ### Custom Main Menu [custom-main-menu]
 The [Custom Main Menu](https://mods.curse.com/mc-mods/minecraft/226406-custom-main-menu) mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
-If you are familiar with it, the button ids for the Replay Mod are: **17890234** (text: `replaymod.gui.replayviewer`), **17890235** (text: `replaymod.gui.replayviewer`) and **17890236** (text: `replaymod.gui.replaycenter`)
+If you are familiar with it, the button ids for the Replay Mod are: **17890234** (text: `replaymod.gui.replayviewer`), **17890237** (text: `replaymod.gui.replayeditor`) and **17890236** (text: `replaymod.gui.replaycenter`)
 
 Due to the nature of this Custom Main Menu mod, buttons added to the Main Menu by 3rd party mods like the **Replay Mod** will not show up by default.  
 Thus, to access the Replay Viewer/Editor/Center, you need to manually configure the position for those buttons.  
