@@ -16,6 +16,10 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.ReadablePoint;
 
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
+    private static GuiNumberField newGuiNumberField() {
+        return new GuiNumberField().setSize(150, 20).setValidateOnFocusChange(true);
+    }
+
     private final ReplayHandler replayHandler;
     private final Marker marker;
 
@@ -23,15 +27,15 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
 
     public final GuiTextField nameField = new GuiTextField().setSize(150, 20);
     // TODO: Replace with a min/sec/msec field
-    public final GuiNumberField timeField = new GuiNumberField().setSize(150, 20).setPrecision(0);
+    public final GuiNumberField timeField = newGuiNumberField().setPrecision(0);
 
-    public final GuiNumberField xField = new GuiNumberField().setSize(150, 20).setPrecision(10);
-    public final GuiNumberField yField = new GuiNumberField().setSize(150, 20).setPrecision(10);
-    public final GuiNumberField zField = new GuiNumberField().setSize(150, 20).setPrecision(10);
+    public final GuiNumberField xField = newGuiNumberField().setPrecision(10);
+    public final GuiNumberField yField = newGuiNumberField().setPrecision(10);
+    public final GuiNumberField zField = newGuiNumberField().setPrecision(10);
 
-    public final GuiNumberField yawField = new GuiNumberField().setSize(150, 20).setPrecision(5);
-    public final GuiNumberField pitchField = new GuiNumberField().setSize(150, 20).setPrecision(5);
-    public final GuiNumberField rollField = new GuiNumberField().setSize(150, 20).setPrecision(5);
+    public final GuiNumberField yawField = newGuiNumberField().setPrecision(5);
+    public final GuiNumberField pitchField = newGuiNumberField().setPrecision(5);
+    public final GuiNumberField rollField = newGuiNumberField().setPrecision(5);
 
     public final GuiPanel inputs = GuiPanel.builder()
             .layout(new GridLayout().setColumns(2).setSpacingX(7).setSpacingY(3))
