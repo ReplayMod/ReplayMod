@@ -5,37 +5,35 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.utils.Utils;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
-import com.replaymod.pathing.properties.ExplicitInterpolationProperty;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.gui.GuiRenderSettings;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
-import com.replaymod.replaystudio.pathing.change.*;
-import com.replaymod.replaystudio.pathing.interpolation.CubicSplineInterpolator;
-import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
-import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
-import com.replaymod.replaystudio.pathing.path.PathSegment;
 import com.replaymod.replaystudio.pathing.path.Timeline;
-import com.replaymod.replaystudio.pathing.property.Property;
 import com.replaymod.replaystudio.pathing.serialize.TimelineSerialization;
 import com.replaymod.replaystudio.util.EntityPositionTracker;
-import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
-import com.replaymod.simplepathing.Setting;
-import com.replaymod.simplepathing.gui.GuiEditKeyframe.Position.InterpolationPanel.InterpolatorType;
+import com.replaymod.simplepathing.SPTimeline;
+import com.replaymod.simplepathing.SPTimeline.SPPath;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
-import de.johni0702.minecraft.gui.element.*;
+import de.johni0702.minecraft.gui.element.AbstractGuiClickable;
+import de.johni0702.minecraft.gui.element.AbstractGuiElement;
+import de.johni0702.minecraft.gui.element.GuiElement;
+import de.johni0702.minecraft.gui.element.GuiHorizontalScrollbar;
+import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.element.GuiTexturedButton;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
+import de.johni0702.minecraft.gui.element.IGuiClickable;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTimelineTime;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
@@ -46,9 +44,7 @@ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.Loader;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
@@ -60,7 +56,7 @@ import org.lwjgl.util.WritablePoint;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
 import java.util.function.Consumer;
 
 import static com.replaymod.core.utils.Utils.error;
@@ -71,9 +67,6 @@ import static com.replaymod.simplepathing.ReplayModSimplePathing.LOGGER;
  * Gui plug-in to the GuiReplayOverlay for simple pathing.
  */
 public class GuiPathing {
-    public static final int TIME_PATH = 0;
-    public static final int POSITION_PATH = 1;
-
     private static final Logger logger = LogManager.getLogger();
 
     public final GuiTexturedButton playPauseButton = new GuiTexturedButton() {
@@ -99,10 +92,11 @@ public class GuiPathing {
             if (!preparePathsForPlayback()) return;
 
             // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
-            Timeline timeline = mod.getCurrentTimeline();
+            SPTimeline spTimeline = mod.getCurrentTimeline();
+            Timeline timeline;
             try {
-                TimelineSerialization serialization = new TimelineSerialization(mod, null);
-                String serialized = serialization.serialize(Collections.singletonMap("", timeline));
+                TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
+                String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
                 timeline = serialization.deserialize(serialized).get("");
             } catch (Throwable t) {
                 error(LOGGER, replayHandler.getOverlay(), CrashReport.makeCrashReport(t, "Cloning timeline"), () -> {});
@@ -296,15 +290,14 @@ public class GuiPathing {
                 if (player.isActive()) {
                     player.getFuture().cancel(false);
                 } else {
-                    Timeline timeline = mod.getCurrentTimeline();
-                    Path timePath = timeline.getPaths().get(TIME_PATH);
+                    Path timePath = mod.getCurrentTimeline().getTimePath();
 
                     if (!preparePathsForPlayback()) return;
 
                     timePath.setActive(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
                     // Start from cursor time unless the control key is pressed (then start from beginning)
                     int startTime = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)? 0 : GuiPathing.this.timeline.getCursorPosition();
-                    ListenableFuture<Void> future = player.start(timeline, startTime);
+                    ListenableFuture<Void> future = player.start(mod.getCurrentTimeline().getTimeline(), startTime);
                     overlay.setCloseable(false);
                     overlay.setMouseVisible(true);
                     Futures.addCallback(future, new FutureCallback<Void>() {
@@ -326,26 +319,28 @@ public class GuiPathing {
         positionKeyframeButton.setTexturePosH(new ReadablePoint() {
             @Override
             public int getX() {
-                Keyframe keyframe = mod.getSelectedKeyframe();
-                if (keyframe == null || !keyframe.getValue(CameraProperties.POSITION).isPresent()) {
+                SPPath keyframePath = mod.getSelectedPath();
+                long keyframeTime = mod.getSelectedTime();
+                if (keyframePath != SPPath.POSITION) {
                     // No keyframe or wrong path
-                    keyframe = mod.getCurrentTimeline().getPaths().get(POSITION_PATH).getKeyframe(timeline.getCursorPosition());
+                    keyframeTime = timeline.getCursorPosition();
+                    keyframePath = mod.getCurrentTimeline().isPositionKeyframe(keyframeTime) ? SPPath.POSITION : null;
                 }
-                if (keyframe == null) {
+                if (keyframePath != SPPath.POSITION) {
                     return replayHandler.isCameraView() ? 0 : 40;
                 } else {
-                    return keyframe.getValue(SpectatorProperty.PROPERTY).isPresent() ? 40 : 0;
+                    return mod.getCurrentTimeline().isSpectatorKeyframe(keyframeTime) ? 40 : 0;
                 }
             }
 
             @Override
             public int getY() {
-                Keyframe keyframe = mod.getSelectedKeyframe();
-                if (keyframe == null || !keyframe.getValue(CameraProperties.POSITION).isPresent()) {
+                SPPath keyframePath = mod.getSelectedPath();
+                if (keyframePath != SPPath.POSITION) {
                     // No keyframe selected but there might be one at exactly the position of the cursor
-                    keyframe = mod.getCurrentTimeline().getPaths().get(POSITION_PATH).getKeyframe(timeline.getCursorPosition());
+                    keyframePath = mod.getCurrentTimeline().isPositionKeyframe(timeline.getCursorPosition()) ? SPPath.POSITION : null;
                 }
-                return keyframe != null && keyframe.getValue(CameraProperties.POSITION).isPresent() ? 60 : 40;
+                return keyframePath == SPPath.POSITION ? 60 : 40;
             }
 
             @Override
@@ -355,7 +350,7 @@ public class GuiPathing {
         }).onClick(new Runnable() {
             @Override
             public void run() {
-                updateKeyframe(false);
+                updateKeyframe(SPPath.POSITION);
             }
         });
 
@@ -367,12 +362,12 @@ public class GuiPathing {
 
             @Override
             public int getY() {
-                Keyframe keyframe = mod.getSelectedKeyframe();
-                if (keyframe == null || !keyframe.getValue(TimestampProperty.PROPERTY).isPresent()) {
+                SPPath keyframePath = mod.getSelectedPath();
+                if (keyframePath != SPPath.TIME) {
                     // No keyframe selected but there might be one at exactly the position of the cursor
-                    keyframe = mod.getCurrentTimeline().getPaths().get(TIME_PATH).getKeyframe(timeline.getCursorPosition());
+                    keyframePath = mod.getCurrentTimeline().isTimeKeyframe(timeline.getCursorPosition()) ? SPPath.TIME : null;
                 }
-                return keyframe != null && keyframe.getValue(TimestampProperty.PROPERTY).isPresent() ? 100 : 80;
+                return keyframePath == SPPath.TIME ? 100 : 80;
             }
 
             @Override
@@ -382,7 +377,7 @@ public class GuiPathing {
         }).onClick(new Runnable() {
             @Override
             public void run() {
-                updateKeyframe(true);
+                updateKeyframe(SPPath.TIME);
             }
         });
 
@@ -404,12 +399,12 @@ public class GuiPathing {
                 }
                 try {
                     GuiKeyframeRepository gui = new GuiKeyframeRepository(
-                            mod, replayHandler.getReplayFile(), mod.getCurrentTimeline());
+                            mod.getCurrentTimeline(), replayHandler.getReplayFile(), mod.getCurrentTimeline().getTimeline());
                     Futures.addCallback(gui.getFuture(), new FutureCallback<Timeline>() {
                         @Override
                         public void onSuccess(Timeline result) {
                             if (result != null) {
-                                mod.setCurrentTimeline(result);
+                                mod.setCurrentTimeline(new SPTimeline(result));
                             }
                         }
 
@@ -435,10 +430,10 @@ public class GuiPathing {
                 @Override
                 public void onSuccess(Boolean delete) {
                     if (delete) {
-                        Timeline timeline = mod.createTimeline();
-                        timeline.createPath();
-                        timeline.createPath();
-                        mod.setCurrentTimeline(timeline);
+                        mod.clearCurrentTimeline();
+                        if (entityTracker != null) {
+                            mod.getCurrentTimeline().setEntityTracker(entityTracker);
+                        }
                     }
                 }
 
@@ -455,7 +450,7 @@ public class GuiPathing {
             // Position of the cursor
             int cursor = timeline.getCursorPosition();
             // Get the last time keyframe before the cursor
-            mod.getCurrentTimeline().getPaths().get(TIME_PATH).getKeyframes().stream()
+            mod.getCurrentTimeline().getTimePath().getKeyframes().stream()
                     .filter(it -> it.getTime() <= cursor).reduce((__, last) -> last).ifPresent(keyframe -> {
                 // Cursor position at the keyframe
                 int keyframeCursor = (int) keyframe.getTime();
@@ -471,7 +466,7 @@ public class GuiPathing {
                 // Move cursor to new position
                 timeline.setCursorPosition(keyframeCursor + cursorPassed);
                 // Deselect keyframe to allow the user to add a new one right away
-                mod.setSelectedKeyframe(null);
+                mod.setSelected(null, 0);
             });
         });
 
@@ -479,8 +474,8 @@ public class GuiPathing {
             if (!overlay.isVisible()) {
                 return;
             }
-            if (mod.getSelectedKeyframe() != null) {
-                updateKeyframe(mod.getSelectedKeyframe().getValue(TimestampProperty.PROPERTY).isPresent());
+            if (mod.getSelectedPath() != null) {
+                updateKeyframe(mod.getSelectedPath());
             }
         });
 
@@ -511,13 +506,12 @@ public class GuiPathing {
     }
 
     private boolean preparePathsForPlayback() {
-        Timeline timeline = mod.getCurrentTimeline();
-        timeline.getPaths().get(TIME_PATH).updateAll();
-        timeline.getPaths().get(POSITION_PATH).updateAll();
+        SPTimeline timeline = mod.getCurrentTimeline();
+        timeline.getTimeline().getPaths().forEach(Path::updateAll);
 
         // Make sure time keyframes's values are monotonically increasing
         int lastTime = 0;
-        for (Keyframe keyframe : timeline.getPaths().get(TIME_PATH).getKeyframes()) {
+        for (Keyframe keyframe : timeline.getTimePath().getKeyframes()) {
             int time = keyframe.getValue(TimestampProperty.PROPERTY).orElseThrow(IllegalStateException::new);
             if (time < lastTime) {
                 // We are going backwards in time
@@ -531,8 +525,8 @@ public class GuiPathing {
         }
 
         // Make sure there are at least two position- and two time-keyframes
-        if (timeline.getPaths().get(POSITION_PATH).getSegments().isEmpty()
-                || timeline.getPaths().get(TIME_PATH).getSegments().isEmpty()) {
+        if (timeline.getPositionPath().getSegments().isEmpty()
+                || timeline.getTimePath().getSegments().isEmpty()) {
             GuiInfoPopup.open(replayHandler.getOverlay(), "replaymod.chat.morekeyframes");
             return false;
         }
@@ -544,19 +538,19 @@ public class GuiPathing {
         scrollbar.setZoom(scrollbar.getZoom() * factor);
     }
 
-    /**
-     * Called when either one of the property buttons is pressed.
-     * @param isTime {@code true} for the time property button, {@code false} for the place property button
-     */
-    private void updateKeyframe(final boolean isTime) {
+    public boolean ensureEntityTracker(Runnable withDelayedTracker) {
         if (entityTracker == null) {
+            LOGGER.debug("Entity tracker not yet loaded, delaying...");
             LoadEntityTrackerPopup popup = new LoadEntityTrackerPopup(replayHandler.getOverlay());
             entityTrackerLoadingProgress = p -> popup.progressBar.setProgress(p.floatValue());
             Futures.addCallback(entityTrackerFuture, new FutureCallback<Void>() {
                 @Override
                 public void onSuccess(@Nullable Void result) {
                     popup.close();
-                    updateKeyframe(isTime);
+                    if (mod.getCurrentTimeline().getEntityTracker() == null) {
+                        mod.getCurrentTimeline().setEntityTracker(entityTracker);
+                    }
+                    withDelayedTracker.run();
                 }
 
                 @Override
@@ -564,267 +558,63 @@ public class GuiPathing {
                     popup.close();
                 }
             });
-            return;
+            return false;
         }
+        if (mod.getCurrentTimeline().getEntityTracker() == null) {
+            mod.getCurrentTimeline().setEntityTracker(entityTracker);
+        }
+        return true;
+    }
+
+    /**
+     * Called when either one of the property buttons is pressed.
+     * @param path {@code TIME} for the time property button, {@code POSITION} for the place property button
+     */
+    private void updateKeyframe(SPPath path) {
+        LOGGER.debug("Updating keyframe on path {}" + path);
+        if (!ensureEntityTracker(() -> updateKeyframe(path))) return;
 
         int time = timeline.getCursorPosition();
-        Timeline timeline = mod.getCurrentTimeline();
-        Path path = timeline.getPaths().get(isTime ? TIME_PATH : POSITION_PATH);
+        SPTimeline timeline = mod.getCurrentTimeline();
 
-        Keyframe keyframe = mod.getSelectedKeyframe();
-        if (keyframe != null && keyframe.getValue(TimestampProperty.PROPERTY).isPresent() ^ isTime) {
-            // Keyframe is on the wrong timeline
-            keyframe = null;
-        }
-        if (keyframe == null) {
-            // No keyframe selected but there may still be one at this exact time
-            keyframe = path.getKeyframe(time);
-        }
-        Change change;
-        if (keyframe == null) {
-            change = AddKeyframe.create(path, time);
-            change.apply(timeline);
-            keyframe = path.getKeyframe(time);
-        } else {
-            change = RemoveKeyframe.create(path, keyframe);
-            change.apply(timeline);
-            keyframe = null;
-        }
-
-        if (keyframe != null) {
-            UpdateKeyframeProperties.Builder builder = UpdateKeyframeProperties.create(path, keyframe);
-            if (isTime) {
-                builder.setValue(TimestampProperty.PROPERTY, replayHandler.getReplaySender().currentTimeStamp());
-            } else {
-                CameraEntity camera = replayHandler.getCameraEntity();
-                builder.setValue(CameraProperties.POSITION, Triple.of(camera.posX, camera.posY, camera.posZ));
-                builder.setValue(CameraProperties.ROTATION, Triple.of(camera.rotationYaw, camera.rotationPitch, camera.roll));
-                if (!replayHandler.isCameraView()) {
-                    Entity spectated = replayHandler.getOverlay().getMinecraft().getRenderViewEntity();
-                    builder.setValue(SpectatorProperty.PROPERTY, spectated.getEntityId());
+        switch (path) {
+            case TIME:
+                if (mod.getSelectedPath() == path) {
+                    LOGGER.debug("Selected keyframe is time keyframe -> removing keyframe");
+                    timeline.removeTimeKeyframe(mod.getSelectedTime());
+                    mod.setSelected(null, 0);
+                } else if (timeline.isTimeKeyframe(time)) {
+                    LOGGER.debug("Keyframe at cursor position is time keyframe -> removing keyframe");
+                    timeline.removeTimeKeyframe(time);
+                    mod.setSelected(null, 0);
+                } else {
+                    LOGGER.debug("No time keyframe found -> adding new keyframe");
+                    timeline.addTimeKeyframe(time, replayHandler.getReplaySender().currentTimeStamp());
+                    mod.setSelected(path, time);
                 }
-            }
-            UpdateKeyframeProperties updateChange = builder.done();
-            updateChange.apply(timeline);
-            change = CombinedChange.createFromApplied(change, updateChange);
-
-            // If this new keyframe formed the first segment of the time path
-            if (isTime && path.getSegments().size() == 1) {
-                PathSegment segment = path.getSegments().iterator().next();
-                Interpolator interpolator = new LinearInterpolator();
-                interpolator.registerProperty(TimestampProperty.PROPERTY);
-                SetInterpolator setInterpolator = SetInterpolator.create(segment, interpolator);
-                setInterpolator.apply(timeline);
-                change = CombinedChange.createFromApplied(change, setInterpolator);
-            }
-        }
-
-        // Update interpolators for spectator keyframes
-        // while this is overkill, it is far simpler than updating differently for every possible case
-        if (!isTime) {
-            Change interpolators = updateInterpolators();
-            interpolators.apply(timeline);
-            change = CombinedChange.createFromApplied(change, interpolators);
-        }
-
-        Change specPosUpdate = updateSpectatorPositions();
-        specPosUpdate.apply(timeline);
-        change = CombinedChange.createFromApplied(change, specPosUpdate);
-
-        timeline.pushChange(change);
-
-        mod.setSelectedKeyframe(keyframe);
-    }
-
-    public Change updateInterpolators() {
-        InterpolatorType type = InterpolatorType.fromString(mod.getCore().getSettingsRegistry().get(Setting.DEFAULT_INTERPOLATION));
-
-        Interpolator defaultInterpolator = null;
-
-        // Iterate over all existing segments until the first interpolator
-        // of the same type without the fixed flag is found and clone it.
-        // This way, the default interpolator's settings can be saved on a per-camera-path basis.
-        // This is useful for interpolators that have customizable properties.
-        Collection<PathSegment> pathSegments = mod.getCurrentTimeline().getPaths().get(POSITION_PATH).getSegments();
-
-        for (PathSegment segment : pathSegments) {
-            if (segment.getStartKeyframe().getValue(ExplicitInterpolationProperty.PROPERTY).isPresent()) continue;
-            if (segment.getInterpolator() == null) continue;
-            if (type == InterpolatorType.DEFAULT || type.getInterpolatorClass().equals(segment.getInterpolator().getClass())) {
-                try {
-                    defaultInterpolator = mod.cloneInterpolator(segment.getInterpolator());
-                    break;
-                } catch (IOException e) {
-                    Utils.error(LOGGER, replayHandler.getOverlay(),
-                            CrashReport.makeCrashReport(e, "Cloning fixed interpolator"), null);
-                }
-            }
-        }
-
-        // if no segment with the default interpolator was found,
-        // create a new one with default settings
-        if (defaultInterpolator == null) {
-            switch (type) {
-                case LINEAR:
-                    defaultInterpolator = new LinearInterpolator();
-                    break;
-                case CUBIC:
-                default:
-                    defaultInterpolator = new CubicSplineInterpolator();
-                    break;
-            }
-        }
-
-        List<Change> changes = new ArrayList<>();
-        Interpolator interpolator = null;
-        boolean isSpectatorInterpolator = false;
-        for (PathSegment segment : pathSegments) {
-            if (segment.getStartKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()
-                    && segment.getEndKeyframe().getValue(SpectatorProperty.PROPERTY).isPresent()) {
-                // Spectator segment
-                if (!isSpectatorInterpolator) {
-                    isSpectatorInterpolator = true;
-                    interpolator = new LinearInterpolator();
-                    interpolator.registerProperty(SpectatorProperty.PROPERTY);
-                }
-                changes.add(SetInterpolator.create(segment, interpolator));
-            } else {
-                // Normal segment
-                boolean explicit = segment.getStartKeyframe().getValue(ExplicitInterpolationProperty.PROPERTY).isPresent();
-                if (isSpectatorInterpolator || interpolator == null || explicit) {
-                    isSpectatorInterpolator = false;
-
-                    if (segment.getInterpolator() == null || !explicit) {
-                        interpolator = defaultInterpolator;
-                        interpolator.registerProperty(CameraProperties.POSITION);
-                        interpolator.registerProperty(CameraProperties.ROTATION);
-                    } else {
-                        try {
-                            interpolator = mod.cloneInterpolator(segment.getInterpolator());
-                        } catch (IOException e) {
-                            Utils.error(LOGGER, replayHandler.getOverlay(),
-                                    CrashReport.makeCrashReport(e, "Cloning fixed interpolator"), null);
-                            interpolator = defaultInterpolator;
-                        }
+                break;
+            case POSITION:
+                if (mod.getSelectedPath() == path) {
+                    LOGGER.debug("Selected keyframe is position keyframe -> removing keyframe");
+                    timeline.removePositionKeyframe(mod.getSelectedTime());
+                    mod.setSelected(null, 0);
+                } else if (timeline.isPositionKeyframe(time)) {
+                    LOGGER.debug("Keyframe at cursor position is position keyframe -> removing keyframe");
+                    timeline.removePositionKeyframe(time);
+                    mod.setSelected(null, 0);
+                } else {
+                    LOGGER.debug("No position keyframe found -> adding new keyframe");
+                    CameraEntity camera = replayHandler.getCameraEntity();
+                    int spectatedId = -1;
+                    if (!replayHandler.isCameraView()) {
+                        spectatedId = replayHandler.getOverlay().getMinecraft().getRenderViewEntity().getEntityId();
                     }
+                    timeline.addPositionKeyframe(time, camera.posX, camera.posY, camera.posZ,
+                            camera.rotationYaw, camera.rotationPitch, camera.roll, spectatedId);
+                    mod.setSelected(path, time);
                 }
-                changes.add(SetInterpolator.create(segment, interpolator));
-            }
+                break;
         }
-        return CombinedChange.create(changes.toArray(new Change[changes.size()]));
-    }
-
-    public Change updateSpectatorPositions() {
-        List<Change> changes = new ArrayList<>();
-        Path positionPath = mod.getCurrentTimeline().getPaths().get(POSITION_PATH);
-        Path timePath = mod.getCurrentTimeline().getPaths().get(TIME_PATH);
-        timePath.updateAll();
-        for (Keyframe keyframe : positionPath.getKeyframes()) {
-            Optional<Integer> spectator = keyframe.getValue(SpectatorProperty.PROPERTY);
-            if (spectator.isPresent()) {
-                Optional<Integer> time = timePath.getValue(TimestampProperty.PROPERTY, keyframe.getTime());
-                if (!time.isPresent()) {
-                    continue; // No time keyframes set at this video time, cannot determine replay time
-                }
-                Location expected = entityTracker.getEntityPositionAtTimestamp(spectator.get(), time.get());
-                if (expected == null) {
-                    continue; // We don't have any data on this entity for some reason
-                }
-                Triple<Double, Double, Double> pos = keyframe.getValue(CameraProperties.POSITION).orElse(Triple.of(0D, 0D, 0D));
-                Triple<Float, Float, Float> rot = keyframe.getValue(CameraProperties.ROTATION).orElse(Triple.of(0F, 0F, 0F));
-                Location actual = new Location(pos.getLeft(), pos.getMiddle(), pos.getRight(), rot.getLeft(), rot.getRight());
-                if (!expected.equals(actual)) {
-                    changes.add(UpdateKeyframeProperties.create(positionPath, keyframe)
-                            .setValue(CameraProperties.POSITION, Triple.of(expected.getX(), expected.getY(), expected.getZ()))
-                            .setValue(CameraProperties.ROTATION, Triple.of(expected.getYaw(), expected.getPitch(), 0f)).done()
-                    );
-                }
-            }
-        }
-        return CombinedChange.create(changes.toArray(new Change[changes.size()]));
-    }
-
-    public Change moveKeyframe(Path path, Keyframe keyframe, long newTime) {
-        Timeline timeline = mod.getCurrentTimeline();
-        // InterpolatorType might be required later (only if path is the time path)
-        Optional<Interpolator> firstInterpolator =
-                path.getSegments().stream().findFirst().map(PathSegment::getInterpolator);
-
-        // The interpolator before the segment
-        Optional<Interpolator> interpolatorBefore =
-                path.getSegments().stream().filter(s -> s.getEndKeyframe() == keyframe).findFirst().map(PathSegment::getInterpolator);
-
-        // The interpolator that follows the segment
-        Optional<Interpolator> interpolatorAfter =
-                path.getSegments().stream().filter(s -> s.getStartKeyframe() == keyframe).findFirst().map(PathSegment::getInterpolator);
-
-        // First remove the old keyframe
-        Change removeChange = RemoveKeyframe.create(path, keyframe);
-        removeChange.apply(timeline);
-
-        // and add a new one at the correct time
-        Change addChange = AddKeyframe.create(path, newTime);
-        addChange.apply(timeline);
-        Keyframe newKeyframe = path.getKeyframe(newTime);
-
-        // Then copy over all properties
-        UpdateKeyframeProperties.Builder builder = UpdateKeyframeProperties.create(path, path.getKeyframe(newTime));
-        for (Property property : keyframe.getProperties()) {
-            copyProperty(property, keyframe, builder);
-        }
-        Change propertyChange = builder.done();
-        propertyChange.apply(timeline);
-
-        // Set the interpolator of the segment before the keyframe to what it was
-        Change interpolatorBeforeChange;
-
-        Optional<PathSegment> segmentBefore = path.getSegments().stream().filter(s -> s.getEndKeyframe() == newKeyframe).findFirst();
-        if (segmentBefore.isPresent() && interpolatorBefore.isPresent()) {
-            interpolatorBeforeChange = SetInterpolator.create(segmentBefore.get(), interpolatorBefore.get());
-        } else {
-            interpolatorBeforeChange = CombinedChange.create();
-        }
-
-        interpolatorBeforeChange.apply(timeline);
-
-        // Set the interpolator of the segment after the keyframe to what it was
-        Change interpolatorAfterChange;
-
-        Optional<PathSegment> segmentAfter = path.getSegments().stream().filter(s -> s.getStartKeyframe() == newKeyframe).findFirst();
-        if (segmentAfter.isPresent() && interpolatorAfter.isPresent()) {
-            interpolatorAfterChange = SetInterpolator.create(segmentAfter.get(), interpolatorAfter.get());
-        } else {
-            interpolatorAfterChange = CombinedChange.create();
-        }
-
-        interpolatorAfterChange.apply(timeline);
-
-        // Finally update the interpolators
-        Change interpolatorUpdateChange;
-        if (path.getTimeline().getPaths().indexOf(path) == GuiPathing.POSITION_PATH) {
-            // Position / Spectator keyframes need special handling
-            interpolatorUpdateChange = updateInterpolators();
-        } else {
-            // Time keyframes only need updating when only one segment of them exists
-            if (path.getSegments().size() == 1) {
-                interpolatorUpdateChange = SetInterpolator.create(path.getSegments().iterator().next(), firstInterpolator.get());
-            } else {
-                interpolatorUpdateChange = CombinedChange.create(); // Noop change
-            }
-        }
-
-        interpolatorUpdateChange.apply(timeline);
-        // and update spectator positions
-        Change spectatorChange = updateSpectatorPositions();
-        spectatorChange.apply(timeline);
-
-        return CombinedChange.createFromApplied(removeChange, addChange, propertyChange,
-                interpolatorBeforeChange, interpolatorAfterChange, interpolatorUpdateChange, spectatorChange);
-    }
-
-    // Helper method because generics cannot be defined on blocks
-    private <T> void copyProperty(Property<T> property, Keyframe from, UpdateKeyframeProperties.Builder to) {
-        from.getValue(property).ifPresent(value -> to.setValue(property, value));
     }
 
     public ReplayModSimplePathing getMod() {
@@ -835,13 +625,15 @@ public class GuiPathing {
         return entityTracker;
     }
 
-    public void openEditKeyframePopup(Path path, Keyframe keyframe) {
+    public void openEditKeyframePopup(SPPath path, long time) {
+        if (!ensureEntityTracker(() -> openEditKeyframePopup(path, time))) return;
+        Keyframe keyframe = mod.getCurrentTimeline().getKeyframe(path, time);
         if (keyframe.getProperties().contains(SpectatorProperty.PROPERTY)) {
-            new GuiEditKeyframe.Spectator(this, path, keyframe).open();
+            new GuiEditKeyframe.Spectator(this, path, keyframe.getTime()).open();
         } else if (keyframe.getProperties().contains(CameraProperties.POSITION)) {
-            new GuiEditKeyframe.Position(this, path, keyframe).open();
+            new GuiEditKeyframe.Position(this, path, keyframe.getTime()).open();
         } else {
-            new GuiEditKeyframe.Time(this, path, keyframe).open();
+            new GuiEditKeyframe.Time(this, path, keyframe.getTime()).open();
         }
     }
 

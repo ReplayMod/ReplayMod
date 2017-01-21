@@ -1,23 +1,29 @@
 package com.replaymod.simplepathing.gui;
 
 import com.replaymod.pathing.properties.CameraProperties;
-import com.replaymod.pathing.properties.ExplicitInterpolationProperty;
+import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.change.Change;
 import com.replaymod.replaystudio.pathing.change.CombinedChange;
-import com.replaymod.replaystudio.pathing.change.SetInterpolator;
-import com.replaymod.replaystudio.pathing.change.UpdateKeyframeProperties;
 import com.replaymod.replaystudio.pathing.interpolation.CubicSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.PathSegment;
+import com.replaymod.simplepathing.InterpolatorType;
+import com.replaymod.simplepathing.SPTimeline;
+import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.Setting;
-import com.replaymod.simplepathing.gui.GuiEditKeyframe.Position.InterpolationPanel.InterpolatorType;
+import de.johni0702.minecraft.gui.container.AbstractGuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
-import de.johni0702.minecraft.gui.element.*;
+import de.johni0702.minecraft.gui.element.GuiButton;
+import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.element.GuiNumberField;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
+import de.johni0702.minecraft.gui.element.IGuiClickable;
+import de.johni0702.minecraft.gui.element.IGuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
@@ -26,19 +32,16 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.client.resources.I18n;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.ReadablePoint;
 
 import java.util.Map;
+import java.util.Optional;
 
-import static com.replaymod.simplepathing.gui.GuiEditKeyframe.Position.InterpolationPanel.InterpolatorSettingsPanel.CubicInterpolatorSettingsPanel;
-import static com.replaymod.simplepathing.gui.GuiEditKeyframe.Position.InterpolationPanel.InterpolatorSettingsPanel.LinearInterpolatorSettingsPanel;
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
 public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements Typeable {
@@ -50,6 +53,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
     protected final GuiPathing guiPathing;
 
+    protected final long time;
     protected final Keyframe keyframe;
     protected final Path path;
 
@@ -85,13 +89,13 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 .addElements(new VerticalLayout.Data(0.5, false), title, inputs, timePanel, buttons);
     }
 
-    public GuiEditKeyframe(GuiPathing gui, Path path, Keyframe keyframe, String type) {
+    public GuiEditKeyframe(GuiPathing gui, SPPath path, long time, String type) {
         super(ReplayModReplay.instance.getReplayHandler().getOverlay());
         this.guiPathing = gui;
-        this.keyframe = keyframe;
-        this.path = path;
+        this.time = time;
+        this.path = gui.getMod().getCurrentTimeline().getPath(path);
+        this.keyframe = this.path.getKeyframe(time);
 
-        long time = keyframe.getTime();
         Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
         timeMinField.setValue(time / 1000 / 60).onTextChanged(updateSaveButtonState);
         timeSecField.setValue(time / 1000 % 60).onTextChanged(updateSaveButtonState);
@@ -101,10 +105,11 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         saveButton.onClick(() -> {
             Change change = save();
             long newTime = (timeMinField.getInteger() * 60 + timeSecField.getInteger()) * 1000 + timeMSecField.getInteger();
-            if (newTime != keyframe.getTime()) {
-                change = CombinedChange.createFromApplied(change, gui.moveKeyframe(path, keyframe, newTime));
+            if (newTime != time) {
+                change = CombinedChange.createFromApplied(change,
+                        gui.getMod().getCurrentTimeline().moveKeyframe(path, time, newTime));
             }
-            path.getTimeline().pushChange(change);
+            gui.getMod().getCurrentTimeline().getTimeline().pushChange(change);
             close();
         });
     }
@@ -134,7 +139,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     protected abstract Change save();
 
     public static class Spectator extends GuiEditKeyframe<Spectator> {
-        public Spectator(GuiPathing gui, Path path, Keyframe keyframe) {
+        public Spectator(GuiPathing gui, SPPath path, long keyframe) {
             super(gui, path, keyframe, "spec");
 
             link(timeMinField, timeSecField, timeMSecField);
@@ -167,10 +172,10 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                             timestampMSecField, new GuiLabel().setI18nText("replaymod.gui.milliseconds"));
         }
 
-        public Time(GuiPathing gui, Path path, Keyframe keyframe) {
+        public Time(GuiPathing gui, SPPath path, long keyframe) {
             super(gui, path, keyframe, "time");
 
-            keyframe.getValue(TimestampProperty.PROPERTY).ifPresent(time -> {
+            this.keyframe.getValue(TimestampProperty.PROPERTY).ifPresent(time -> {
                 timestampMinField.setValue(time / 1000 / 60);
                 timestampSecField.setValue(time / 1000 % 60);
                 timestampMSecField.setValue(time % 1000);
@@ -185,11 +190,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         protected Change save() {
             int time = (timestampMinField.getInteger() * 60 + timestampSecField.getInteger()) * 1000
                     + timestampMSecField.getInteger();
-            Change change = UpdateKeyframeProperties.create(path, keyframe)
-                    .setValue(TimestampProperty.PROPERTY, time)
-                    .done();
-            change.apply(path.getTimeline());
-            return change;
+            return guiPathing.getMod().getCurrentTimeline().updateTimeKeyframe(keyframe.getTime(), time);
         }
 
         @Override
@@ -207,7 +208,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         public final GuiNumberField pitchField = newGuiNumberField().setSize(60, 20).setPrecision(5);
         public final GuiNumberField rollField = newGuiNumberField().setSize(60, 20).setPrecision(5);
 
-        public final InterpolationPanel interpolationPanel = new InterpolationPanel(guiPathing);
+        public final InterpolationPanel interpolationPanel = new InterpolationPanel();
 
         {
             GuiPanel positionInputs = new GuiPanel()
@@ -224,15 +225,15 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                     positionInputs, interpolationPanel);
         }
 
-        public Position(GuiPathing gui, Path path, Keyframe keyframe) {
+        public Position(GuiPathing gui, SPPath path, long keyframe) {
             super(gui, path, keyframe, "pos");
 
-            keyframe.getValue(CameraProperties.POSITION).ifPresent(pos -> {
+            this.keyframe.getValue(CameraProperties.POSITION).ifPresent(pos -> {
                 xField.setValue(pos.getLeft());
                 yField.setValue(pos.getMiddle());
                 zField.setValue(pos.getRight());
             });
-            keyframe.getValue(CameraProperties.ROTATION).ifPresent(rot -> {
+            this.keyframe.getValue(CameraProperties.ROTATION).ifPresent(rot -> {
                 yawField.setValue(rot.getLeft());
                 pitchField.setValue(rot.getMiddle());
                 rollField.setValue(rot.getRight());
@@ -245,48 +246,17 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
         @Override
         protected Change save() {
-            Change setInterpolatorChange = null;
-
-            UpdateKeyframeProperties.Builder builder = UpdateKeyframeProperties.create(path, keyframe)
-                    .setValue(CameraProperties.POSITION, Triple.of(xField.getDouble(), yField.getDouble(), zField.getDouble()))
-                    .setValue(CameraProperties.ROTATION, Triple.of(yawField.getFloat(), pitchField.getFloat(), rollField.getFloat()))
-                    .removeProperty(ExplicitInterpolationProperty.PROPERTY);
-
-            // if the interpolator is not the default, set the ExplicitInterpolationProperty flag
-            if (interpolationPanel.getInterpolatorType() != InterpolatorType.DEFAULT) {
-                PathSegment toModify = null;
-                for (PathSegment segment : path.getSegments()) {
-                    if (segment.getStartKeyframe() == keyframe) {
-                        toModify = segment;
-                        break;
-                    }
-                }
-
-                if (toModify != null) {
-                    builder.setValue(ExplicitInterpolationProperty.PROPERTY, new Object());
-
-                    Interpolator interpolator = interpolationPanel.getInterpolatorSettingsPanel().createInterpolator();
-                    interpolator.registerProperty(CameraProperties.POSITION);
-                    interpolator.registerProperty(CameraProperties.ROTATION);
-
-                    setInterpolatorChange = SetInterpolator.create(toModify, interpolator);
-                } else {
-                    logger.warn("The Path segment to modify was not found. Setting interpolator to default.");
-                }
-            }
-
-            Change keyframePropertiesChange = builder.done();
-            keyframePropertiesChange.apply(path.getTimeline());
-
-            if (setInterpolatorChange == null) {
-                return keyframePropertiesChange;
+            SPTimeline timeline = guiPathing.getMod().getCurrentTimeline();
+            Change positionChange = timeline.updatePositionKeyframe(time,
+                    xField.getDouble(), yField.getDouble(), zField.getDouble(),
+                    yawField.getFloat(), pitchField.getFloat(), rollField.getFloat()
+            );
+            if (interpolationPanel.getInterpolatorType() == InterpolatorType.DEFAULT) {
+                return CombinedChange.createFromApplied(positionChange, timeline.setInterpolatorToDefault(time));
             } else {
-                setInterpolatorChange.apply(path.getTimeline());
-                guiPathing.updateInterpolators();
-                path.updateAll();
+                Interpolator interpolator = interpolationPanel.getSettingsPanel().createInterpolator();
+                return CombinedChange.createFromApplied(positionChange, timeline.setInterpolator(time, interpolator));
             }
-
-            return CombinedChange.createFromApplied(keyframePropertiesChange, setInterpolatorChange);
         }
 
         @Override
@@ -294,51 +264,20 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             return this;
         }
 
-        public static class InterpolationPanel extends de.johni0702.minecraft.gui.container.AbstractGuiContainer<InterpolationPanel> {
-
-            private final GuiPathing guiPathing;
+        public class InterpolationPanel extends AbstractGuiContainer<InterpolationPanel> {
 
             @Getter
-            private InterpolatorSettingsPanel interpolatorSettingsPanel;
+            private SettingsPanel settingsPanel;
 
             private GuiDropdownMenu<InterpolatorType> dropdown;
 
-            @AllArgsConstructor
-            public enum InterpolatorType {
-                DEFAULT("default", null),
-                CUBIC("cubic", CubicSplineInterpolator.class),
-                LINEAR("linear", LinearInterpolator.class);
-
-                private String localizationKey;
-
-                @Getter
-                private Class<? extends Interpolator> interpolatorClass;
-
-                @Override
-                public String toString() {
-                    return I18n.format(String.format("replaymod.gui.editkeyframe.interpolator.%1$s.name", localizationKey));
-                }
-
-                public String getI18nDescription() {
-                    return String.format("replaymod.gui.editkeyframe.interpolator.%1$s.desc", localizationKey);
-                }
-
-                public static InterpolatorType fromString(String string) {
-                    for (InterpolatorType t : values()) {
-                        if (t.toString().equals(string)) return t;
-                    }
-                    return CUBIC; //the default
-                }
-
-            }
-
-            public InterpolationPanel(GuiPathing guiPathing) {
-                this.guiPathing = guiPathing;
-
+            public InterpolationPanel() {
                 setLayout(new VerticalLayout());
 
-                dropdown = new GuiDropdownMenu<InterpolatorType>().setValues(InterpolatorType.values()).setHeight(20);
-                dropdown.onSelection((index) -> setSettingsPanel(dropdown.getSelectedValue()));
+                dropdown = new GuiDropdownMenu<InterpolatorType>()
+                        .setToString(s -> I18n.format(s.getI18nName()))
+                        .setValues(InterpolatorType.values()).setHeight(20)
+                        .onSelection(i -> setSettingsPanel(dropdown.getSelectedValue()));
 
                 // set hover tooltips
                 for (Map.Entry<InterpolatorType, IGuiClickable> e : dropdown.getDropdownEntries().entrySet()) {
@@ -353,25 +292,35 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
                 addElements(new VerticalLayout.Data(0.5, false), dropdownPanel);
 
-                dropdown.onSelection(0); // trigger the callback once to display settings panel
+                Optional<PathSegment> segment = path.getSegments().stream()
+                        .filter(s -> s.getStartKeyframe() == keyframe).findFirst();
+                if (segment.isPresent()) {
+                    if (keyframe.getValue(ExplicitInterpolationProperty.PROPERTY).isPresent()) {
+                        Interpolator interpolator = segment.get().getInterpolator();
+                        InterpolatorType type = InterpolatorType.fromClass(interpolator.getClass());
+                        dropdown.setSelected(type); // trigger the callback once to display settings panel
+                    } else {
+                        setSettingsPanel(InterpolatorType.DEFAULT);
+                    }
+                } else {
+                    // Disable dropdown if this is the last keyframe
+                    dropdown.setDisabled();
+                }
             }
 
             public void setSettingsPanel(InterpolatorType type) {
-                removeElement(this.interpolatorSettingsPanel);
+                removeElement(this.settingsPanel);
 
-                InterpolatorSettingsPanel settingsPanel = null;
                 switch (getInterpolatorTypeNoDefault(type)) {
                     case CUBIC:
-                        settingsPanel = new CubicInterpolatorSettingsPanel();
+                        settingsPanel = new CubicSettingsPanel();
                         break;
                     case LINEAR:
-                        settingsPanel = new LinearInterpolatorSettingsPanel();
+                        settingsPanel = new LinearSettingsPanel();
                         break;
                 }
 
                 addElements(new GridLayout.Data(0.5, 0.5), settingsPanel);
-
-                this.interpolatorSettingsPanel = settingsPanel;
             }
 
             protected InterpolatorType getInterpolatorTypeNoDefault(InterpolatorType interpolatorType) {
@@ -392,44 +341,44 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 return this;
             }
 
-            public static abstract class InterpolatorSettingsPanel<I extends Interpolator, T extends InterpolatorSettingsPanel> extends de.johni0702.minecraft.gui.container.GuiPanel {
+            public abstract class SettingsPanel<I extends Interpolator, T extends SettingsPanel<I, T>> extends AbstractGuiContainer<T> {
 
                 public abstract void loadSettings(I interpolator);
 
                 public abstract I createInterpolator();
+            }
 
-                public static class CubicInterpolatorSettingsPanel extends InterpolatorSettingsPanel<CubicSplineInterpolator, CubicInterpolatorSettingsPanel> {
+            public class CubicSettingsPanel extends SettingsPanel<CubicSplineInterpolator, CubicSettingsPanel> {
 
-                    @Override
-                    public void loadSettings(CubicSplineInterpolator interpolator) {
-                    }
-
-                    @Override
-                    public CubicSplineInterpolator createInterpolator() {
-                        return new CubicSplineInterpolator();
-                    }
-
-                    @Override
-                    protected InterpolatorSettingsPanel<CubicSplineInterpolator, CubicInterpolatorSettingsPanel> getThis() {
-                        return this;
-                    }
+                @Override
+                public void loadSettings(CubicSplineInterpolator interpolator) {
                 }
 
-                public static class LinearInterpolatorSettingsPanel extends InterpolatorSettingsPanel<LinearInterpolator, LinearInterpolatorSettingsPanel> {
+                @Override
+                public CubicSplineInterpolator createInterpolator() {
+                    return new CubicSplineInterpolator();
+                }
 
-                    @Override
-                    public void loadSettings(LinearInterpolator interpolator) {
-                    }
+                @Override
+                protected CubicSettingsPanel getThis() {
+                    return this;
+                }
+            }
 
-                    @Override
-                    public LinearInterpolator createInterpolator() {
-                        return new LinearInterpolator();
-                    }
+            public class LinearSettingsPanel extends SettingsPanel<LinearInterpolator, LinearSettingsPanel> {
 
-                    @Override
-                    protected InterpolatorSettingsPanel<LinearInterpolator, LinearInterpolatorSettingsPanel> getThis() {
-                        return this;
-                    }
+                @Override
+                public void loadSettings(LinearInterpolator interpolator) {
+                }
+
+                @Override
+                public LinearInterpolator createInterpolator() {
+                    return new LinearInterpolator();
+                }
+
+                @Override
+                protected LinearSettingsPanel getThis() {
+                    return this;
                 }
             }
         }
