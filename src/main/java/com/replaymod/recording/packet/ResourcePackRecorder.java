@@ -9,6 +9,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreenWorking;
 import net.minecraft.client.gui.GuiYesNo;
+import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -26,6 +27,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -52,6 +54,9 @@ public class ResourcePackRecorder {
             boolean doWrite = false; // Whether we are the first and have to write it
             synchronized (replayFile) { // Need to read, modify and write the resource pack index atomically
                 Map<Integer, String> index = replayFile.getResourcePackIndex();
+                if (index == null) {
+                    index = new HashMap<>();
+                }
                 if (!index.containsValue(hash)) {
                     // Hash is unknown, we have to write the resource pack ourselves
                     doWrite = true;
@@ -107,19 +112,24 @@ public class ResourcePackRecorder {
             } else if (serverData != null && serverData.getResourceMode() != ServerData.ServerResourceMode.PROMPT) {
                 netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.DECLINED));
             } else {
-                mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo((result, id) -> {
-                    if (serverData != null) {
-                        serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
-                    }
-                    if (result) {
-                        netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
-                        downloadResourcePackFuture(requestId, url, hash);
-                    } else {
-                        netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.DECLINED));
-                    }
+                // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
+                //noinspection Convert2Lambda
+                mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
+                    @Override
+                    public void confirmClicked(boolean result, int id) {
+                        if (serverData != null) {
+                            serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
+                        }
+                        if (result) {
+                            netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.ACCEPTED));
+                            ResourcePackRecorder.this.downloadResourcePackFuture(requestId, url, hash);
+                        } else {
+                            netManager.sendPacket(new C19PacketResourcePackStatus(hash, C19PacketResourcePackStatus.Action.DECLINED));
+                        }
 
-                    ServerList.func_147414_b(serverData);
-                    mc.displayGuiScreen(null);
+                        ServerList.func_147414_b(serverData);
+                        mc.displayGuiScreen(null);
+                    }
                 }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
             }
         }
