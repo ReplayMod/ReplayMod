@@ -1,7 +1,6 @@
 package com.replaymod.simplepathing.gui;
 
 import com.replaymod.pathing.properties.CameraProperties;
-import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.change.Change;
@@ -16,6 +15,7 @@ import com.replaymod.simplepathing.InterpolatorType;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.Setting;
+import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
 import de.johni0702.minecraft.gui.container.AbstractGuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
@@ -251,10 +251,11 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                     xField.getDouble(), yField.getDouble(), zField.getDouble(),
                     yawField.getFloat(), pitchField.getFloat(), rollField.getFloat()
             );
+            Interpolator interpolator = interpolationPanel.getSettingsPanel().createInterpolator();
             if (interpolationPanel.getInterpolatorType() == InterpolatorType.DEFAULT) {
-                return CombinedChange.createFromApplied(positionChange, timeline.setInterpolatorToDefault(time));
+                return CombinedChange.createFromApplied(positionChange, timeline.setInterpolatorToDefault(time),
+                        timeline.setDefaultInterpolator(interpolator));
             } else {
-                Interpolator interpolator = interpolationPanel.getSettingsPanel().createInterpolator();
                 return CombinedChange.createFromApplied(positionChange, timeline.setInterpolator(time, interpolator));
             }
         }
@@ -295,12 +296,16 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 Optional<PathSegment> segment = path.getSegments().stream()
                         .filter(s -> s.getStartKeyframe() == keyframe).findFirst();
                 if (segment.isPresent()) {
+                    Interpolator interpolator = segment.get().getInterpolator();
+                    InterpolatorType type = InterpolatorType.fromClass(interpolator.getClass());
                     if (keyframe.getValue(ExplicitInterpolationProperty.PROPERTY).isPresent()) {
-                        Interpolator interpolator = segment.get().getInterpolator();
-                        InterpolatorType type = InterpolatorType.fromClass(interpolator.getClass());
                         dropdown.setSelected(type); // trigger the callback once to display settings panel
                     } else {
                         setSettingsPanel(InterpolatorType.DEFAULT);
+                    }
+                    if (getInterpolatorTypeNoDefault(type).getInterpolatorClass().isInstance(interpolator)) {
+                        //noinspection unchecked
+                        settingsPanel.loadSettings(interpolator);
                     }
                 } else {
                     // Disable dropdown if this is the last keyframe

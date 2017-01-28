@@ -5,7 +5,6 @@ import com.google.common.collect.Iterables;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.replaymod.pathing.properties.CameraProperties;
-import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
@@ -25,6 +24,7 @@ import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.pathing.property.Property;
 import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.replaystudio.util.Location;
+import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
 import lombok.Getter;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -106,6 +106,26 @@ public class SPTimeline implements PathingRegistry {
         if (entityTracker != null) {
             timeline.pushChange(updateInterpolators());
         }
+    }
+
+    public Change setDefaultInterpolator(Interpolator interpolator) {
+        Preconditions.checkState(defaultInterpolatorType != null, "Default interpolator type not set.");
+        Validate.isInstanceOf(defaultInterpolatorType.getInterpolatorClass(), interpolator);
+
+        registerPositionInterpolatorProperties(interpolator);
+
+        Change change = CombinedChange.create(
+                positionPath.getSegments().stream()
+                        // Ignore explicitly set segments
+                        .filter(s -> !s.getStartKeyframe().getValue(ExplicitInterpolationProperty.PROPERTY).isPresent())
+                        // Ignore spectator segments
+                        .filter(s -> !isSpectatorSegment(s))
+                        // Update interpolator for every remaining segment
+                        // This will create a fragmented interpolator which is split by the updateInterpolators call
+                        .map(s -> SetInterpolator.create(s, interpolator)).toArray(Change[]::new)
+        );
+        change.apply(timeline);
+        return CombinedChange.createFromApplied(change, updateInterpolators());
     }
 
     public boolean isTimeKeyframe(long time) {
