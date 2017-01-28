@@ -96,8 +96,8 @@ public class PathPreviewRenderer {
                 if (spectator && entityTracker == null) {
                     continue; // Cannot render spectator positions when entity tracker is not yet loaded
                 }
-                // Spectator segments have 20 lines per second whereas normal segments have a fixed 100
-                long steps = spectator ? diff / 50 : 100;
+                // Spectator segments have 20 lines per second (at least 10) whereas normal segments have a fixed 100
+                long steps = spectator ? Math.max(diff / 50, 10) : 100;
                 Triple<Double, Double, Double> prevPos = null;
                 for (int i = 0; i <= steps; i++) {
                     long time = start.getTime() + diff * i / steps;
