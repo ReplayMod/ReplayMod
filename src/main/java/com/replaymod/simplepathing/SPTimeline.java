@@ -2,6 +2,8 @@ package com.replaymod.simplepathing;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.replaymod.pathing.properties.CameraProperties;
@@ -14,6 +16,7 @@ import com.replaymod.replaystudio.pathing.change.CombinedChange;
 import com.replaymod.replaystudio.pathing.change.SetInterpolator;
 import com.replaymod.replaystudio.pathing.change.UpdateKeyframeProperties;
 import com.replaymod.replaystudio.pathing.impl.TimelineImpl;
+import com.replaymod.replaystudio.pathing.interpolation.CatmullRomSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.CubicSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
@@ -68,7 +71,7 @@ public class SPTimeline implements PathingRegistry {
 
     @Getter
     private EntityPositionTracker entityTracker;
-    private InterpolatorType defaultInterpolatorType = InterpolatorType.CUBIC;
+    private InterpolatorType defaultInterpolatorType = InterpolatorType.fromString("invalid string returns default");
 
     public SPTimeline() {
         this(createInitialTimeline());
@@ -573,6 +576,11 @@ public class SPTimeline implements PathingRegistry {
             writer.value("linear");
         } else if (interpolator instanceof CubicSplineInterpolator) {
             writer.value("cubic-spline");
+        } else if (interpolator instanceof CatmullRomSplineInterpolator) {
+            writer.beginObject();
+            writer.name("type").value("catmull-rom-spline");
+            writer.name("alpha").value(((CatmullRomSplineInterpolator) interpolator).getAlpha());
+            writer.endObject();
         } else {
             throw new IOException("Unknown interpolator type: " + interpolator);
         }
@@ -580,12 +588,30 @@ public class SPTimeline implements PathingRegistry {
 
     @Override
     public Interpolator deserializeInterpolator(JsonReader reader) throws IOException {
-        String type = reader.nextString();
+        String type;
+        JsonObject args;
+        switch (reader.peek()) {
+            case STRING:
+                type = reader.nextString();
+                args = null;
+                break;
+            case BEGIN_OBJECT:
+                args = new JsonParser().parse(reader).getAsJsonObject();
+                type = args.get("type").getAsString();
+                break;
+            default:
+                throw new IOException("Unexpected token: " + reader.peek());
+        }
         switch (type) {
             case "linear":
                 return new LinearInterpolator();
             case "cubic-spline":
                 return new CubicSplineInterpolator();
+            case "catmull-rom-spline":
+                if (args == null || !args.has("alpha")) {
+                    throw new IOException("Missing alpha value for catmull-rom-spline.");
+                }
+                return new CatmullRomSplineInterpolator(args.get("alpha").getAsDouble());
             default:
                 throw new IOException("Unknown interpolation type: " + type);
 

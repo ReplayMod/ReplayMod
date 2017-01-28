@@ -5,6 +5,7 @@ import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.change.Change;
 import com.replaymod.replaystudio.pathing.change.CombinedChange;
+import com.replaymod.replaystudio.pathing.interpolation.CatmullRomSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.CubicSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
@@ -317,6 +318,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 removeElement(this.settingsPanel);
 
                 switch (getInterpolatorTypeNoDefault(type)) {
+                    case CATMULL_ROM:
+                        settingsPanel = new CatmullRomSettingsPanel();
+                        break;
                     case CUBIC:
                         settingsPanel = new CubicSettingsPanel();
                         break;
@@ -351,6 +355,33 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 public abstract void loadSettings(I interpolator);
 
                 public abstract I createInterpolator();
+            }
+
+            public class CatmullRomSettingsPanel extends SettingsPanel<CatmullRomSplineInterpolator, CatmullRomSettingsPanel> {
+                public final GuiLabel alphaLabel = new GuiLabel().setColor(Colors.BLACK)
+                        .setI18nText("replaymod.gui.editkeyframe.interpolator.catmullrom.alpha");
+                public final GuiNumberField alphaField = new GuiNumberField().setSize(100, 20).setPrecision(5)
+                        .setMinValue(0).setValidateOnFocusChange(true);
+
+                {
+                    setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER));
+                    addElements(new HorizontalLayout.Data(0.5), alphaLabel, alphaField);
+                }
+
+                @Override
+                public void loadSettings(CatmullRomSplineInterpolator interpolator) {
+                    alphaField.setValue(interpolator.getAlpha());
+                }
+
+                @Override
+                public CatmullRomSplineInterpolator createInterpolator() {
+                    return new CatmullRomSplineInterpolator(alphaField.getDouble());
+                }
+
+                @Override
+                protected CatmullRomSettingsPanel getThis() {
+                    return this;
+                }
             }
 
             public class CubicSettingsPanel extends SettingsPanel<CubicSplineInterpolator, CubicSettingsPanel> {

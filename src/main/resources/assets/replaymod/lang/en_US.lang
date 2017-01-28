@@ -292,6 +292,7 @@ replaymod.gui.settings.title=Replay Mod Settings
 
 replaymod.gui.settings.interpolation.linear=Linear
 replaymod.gui.settings.interpolation.cubic=Cubic
+replaymod.gui.settings.interpolation.catmullrom=Catmull Rom
 
 replaymod.gui.settings.bitrate=Video Bitrate
 replaymod.gui.settings.framerate=Video Framerate
@@ -376,6 +377,9 @@ replaymod.gui.editkeyframe.spec.method.shoulder.smoothness=Path Smoothness
 replaymod.gui.editkeyframe.interpolator=Interpolator
 replaymod.gui.editkeyframe.interpolator.default.name=Default Interpolator
 replaymod.gui.editkeyframe.interpolator.default.desc=Uses the default interpolator defined in the Replay Mod Settings.
+replaymod.gui.editkeyframe.interpolator.catmullrom.name=Catmull Rom Spline Interpolator
+replaymod.gui.editkeyframe.interpolator.catmullrom.desc=Calculates a catmull rom spline with customizable alpha value for precise tightness and smoothness of the camera path.
+replaymod.gui.editkeyframe.interpolator.catmullrom.alpha=Alpha:
 replaymod.gui.editkeyframe.interpolator.cubic.name=Cubic Spline Interpolator
 replaymod.gui.editkeyframe.interpolator.cubic.desc=Calculates a cubic equation matrix for all points for a smooth camera path.
 replaymod.gui.editkeyframe.interpolator.linear.name=Linear Interpolator

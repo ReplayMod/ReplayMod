@@ -5,6 +5,7 @@ import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replaystudio.pathing.change.Change;
+import com.replaymod.replaystudio.pathing.interpolation.CatmullRomSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
@@ -508,6 +509,37 @@ public class SPTimelineTest {
         assertValidInterpolators(SPPath.POSITION, 4);
         impl.moveKeyframe(SPPath.POSITION, 14, 20);
         assertValidInterpolators(SPPath.POSITION, 4);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetDefaultInterpolatorDifferentType() {
+        addPosition(0, 0);
+        addPosition(1, 1);
+        impl.setDefaultInterpolator(new CatmullRomSplineInterpolator(42));
+    }
+
+    @Test
+    public void testSetDefaultInterpolatorSameType() {
+        impl.setDefaultInterpolatorType(InterpolatorType.CATMULL_ROM);
+        addPosition(0, 0);
+        addSpectator(1, 1);
+        addSpectator(2, 2);
+        addPosition(3, 3);
+        addPosition(4, 3);
+        impl.setDefaultInterpolator(new CatmullRomSplineInterpolator(42));
+        assertValidInterpolators(SPPath.POSITION, 3);
+        assertIsCatmullRom(0, 42);
+        assertIsCatmullRom(2, 42);
+        assertIsCatmullRom(3, 42);
+    }
+
+    private void assertIsCatmullRom(int index, double alpha) {
+        String str = prettyPrintInterpolators(impl, SPPath.POSITION);
+        Interpolator interpolator = Iterables.get(impl.getPositionPath().getSegments(), index).getInterpolator();
+        assertTrue("Expected segment " + index + " to be catmull rom interpolator: " + str,
+                 interpolator instanceof CatmullRomSplineInterpolator);
+        assertTrue("Expected interpolator of segment segment " + index + " to have alpha " + alpha + ": " + str,
+                ((CatmullRomSplineInterpolator) interpolator).getAlpha() == 42);
     }
 
     private void addPosition(int time, int expectedNumberOfInterpolators) {

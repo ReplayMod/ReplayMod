@@ -1,5 +1,6 @@
 package com.replaymod.simplepathing;
 
+import com.replaymod.replaystudio.pathing.interpolation.CatmullRomSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.CubicSplineInterpolator;
 import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.interpolation.LinearInterpolator;
@@ -11,6 +12,7 @@ import java.util.function.Supplier;
 @AllArgsConstructor
 public enum InterpolatorType {
     DEFAULT("default", null, null),
+    CATMULL_ROM("catmullrom", CatmullRomSplineInterpolator.class, () -> new CatmullRomSplineInterpolator(0.5)),
     CUBIC("cubic", CubicSplineInterpolator.class, CubicSplineInterpolator::new),
     LINEAR("linear", LinearInterpolator.class, LinearInterpolator::new);
 
@@ -34,7 +36,7 @@ public enum InterpolatorType {
         for (InterpolatorType t : values()) {
             if (t.getI18nName().equals(string)) return t;
         }
-        return CUBIC; //the default
+        return CATMULL_ROM; //the default
     }
 
     public static InterpolatorType fromClass(Class<? extends Interpolator> cls) {
