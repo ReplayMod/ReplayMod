@@ -14,6 +14,7 @@ public enum InterpolatorType {
     CUBIC("cubic", CubicSplineInterpolator.class, CubicSplineInterpolator::new),
     LINEAR("linear", LinearInterpolator.class, LinearInterpolator::new);
 
+    @Getter
     private String localizationKey;
 
     @Getter
