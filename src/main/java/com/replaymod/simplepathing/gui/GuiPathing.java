@@ -311,12 +311,14 @@ public class GuiPathing {
                         @Override
                         public void onSuccess(@Nullable Void result) {
                             overlay.setCloseable(true);
+                            timePath.setActive(true);
                         }
 
                         @Override
                         public void onFailure(Throwable t) {
                             t.printStackTrace();
                             overlay.setCloseable(true);
+                            timePath.setActive(true);
                         }
                     });
                 }
