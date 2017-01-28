@@ -11,7 +11,10 @@ import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
@@ -56,6 +59,7 @@ public class PlayerOverview implements Extra {
         });
 
         FMLCommonHandler.instance().bus().register(this);
+        MinecraftForge.EVENT_BUS.register(this);
 
         RenderManager renderManager = mod.getMinecraft().getRenderManager();
         @SuppressWarnings("unchecked")
@@ -90,6 +94,14 @@ public class PlayerOverview implements Extra {
     @SubscribeEvent
     public void onReplayClose(ReplayCloseEvent.Pre event) throws IOException {
         hiddenPlayers.clear();
+    }
+
+    @SubscribeEvent
+    public void oRenderHand(RenderHandEvent event) {
+        Entity view = module.getCore().getMinecraft().getRenderViewEntity();
+        if (view != null && isHidden(view.getUniqueID())) {
+            event.setCanceled(true);
+        }
     }
 
     public boolean isSavingEnabled() {
