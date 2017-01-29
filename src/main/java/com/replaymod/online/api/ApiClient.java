@@ -15,12 +15,18 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.imageio.ImageIO;
+import javax.net.ssl.HttpsURLConnection;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.net.HttpURLConnection;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
 
 public class ApiClient {
 
@@ -130,7 +136,11 @@ public class ApiClient {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_thumbnail);
         builder.put("id", file);
         URL url = new URL(builder.toString());
-        return ImageIO.read(url);
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setSSLSocketFactory(SSL_SOCKET_FACTORY);
+        try (InputStream in = connection.getInputStream()) {
+            return ImageIO.read(in);
+        }
     }
 
     private boolean cancelDownload = false;
@@ -143,7 +153,8 @@ public class ApiClient {
         builder.put("id", file);
         String url = builder.toString();
         URL website = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) website.openConnection();
+        HttpsURLConnection con = (HttpsURLConnection) website.openConnection();
+        con.setSSLSocketFactory(SSL_SOCKET_FACTORY);
 
         int fileSize = con.getContentLength();
 

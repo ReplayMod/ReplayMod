@@ -17,6 +17,7 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.io.FileUtils;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
@@ -24,8 +25,10 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
+import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
+
 public class OpenEyeExtra implements Extra {
-    private static final String DOWNLOAD_URL = "http://www.replaymod.com/dl/openeye/" + Loader.MC_VERSION;
+    private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + Loader.MC_VERSION;
     private static final Setting<Boolean> ASK_FOR_OPEN_EYE = new Setting<>("advanced", "askForOpenEye", null, true);
 
     private ReplayMod mod;
@@ -69,7 +72,9 @@ public class OpenEyeExtra implements Extra {
                         File targetFile = new File("mods/" + Loader.MC_VERSION, "OpenEye.jar");
                         FileUtils.forceMkdir(targetFile.getParentFile());
 
-                        ReadableByteChannel in = Channels.newChannel(new URL(DOWNLOAD_URL).openStream());
+                        HttpsURLConnection connection = (HttpsURLConnection) new URL(DOWNLOAD_URL).openConnection();
+                        connection.setSSLSocketFactory(SSL_SOCKET_FACTORY);
+                        ReadableByteChannel in = Channels.newChannel(connection.getInputStream());
                         FileChannel out = new FileOutputStream(targetFile).getChannel();
                         out.transferFrom(in, 0, Long.MAX_VALUE);
                     } catch (Throwable e) {

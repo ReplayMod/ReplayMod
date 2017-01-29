@@ -1,5 +1,6 @@
 package com.replaymod.editor.gui;
 
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.gson.JsonObject;
@@ -34,6 +35,7 @@ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.crash.CrashReport;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.util.ReadableDimension;
 
@@ -119,10 +121,21 @@ public class GuiReplayEditor extends GuiScreen {
     public void save(File inputFile, PacketStream.FilterInfo...filters) {
         save(FilenameUtils.getBaseName(inputFile.getName()), (outputFile) -> {
             Studio studio = new ReplayStudio();
-            try (ReplayFile outputReplay = new ZipReplayFile(studio, inputFile, outputFile);
-                 ReplayOutputStream out = outputReplay.writePacketData()) {
-                // The input replay file MUST be closed before saving the output file
-                try (ReplayFile inputReplay = new ZipReplayFile(studio, inputFile);
+            File tmpDir = null;
+            try {
+                File actualOutputFile  = outputFile;
+                if (outputFile.getCanonicalPath().equals(inputFile.getCanonicalPath())) {
+                    // Input and output files are identical. Due to the way the ZipReplayFile stores its temporary
+                    // data, the same replay file must not be opened twice for writing (tmp files will be deleted once
+                    // either one is closed or, on Windows, will throw an exception when deleted).
+                    tmpDir = Files.createTempDir();
+                    outputFile = new File(tmpDir, "replay.mcpr");
+                    LOGGER.debug("Output file is identical to input file, using temporary output file {} instead",
+                            outputFile);
+                }
+                try (ReplayFile outputReplay = new ZipReplayFile(studio, inputFile, outputFile);
+                     ReplayOutputStream out = outputReplay.writePacketData();
+                     ReplayFile inputReplay = new ZipReplayFile(studio, inputFile);
                      ReplayInputStream in = inputReplay.getPacketData()) {
                     ReplayMetaData metaData = inputReplay.getMetaData();
                     PacketStream stream = studio.createReplayStream(in, true);
@@ -154,11 +167,21 @@ public class GuiReplayEditor extends GuiScreen {
                     // Update duration of new replay
                     metaData.setDuration((int) lastTimestamp);
                     outputReplay.writeMetaData(metaData);
+
+                    out.close();
+                    outputReplay.save();
                 }
-                out.close();
-                outputReplay.save();
+                if (outputFile != actualOutputFile) {
+                    LOGGER.debug("Moving temporary output file {} to {}");
+                    FileUtils.forceDelete(actualOutputFile);
+                    FileUtils.moveFile(outputFile, actualOutputFile);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } finally {
+                if (tmpDir != null && !FileUtils.deleteQuietly(tmpDir)) {
+                    LOGGER.warn("Failed to delete temporary directory {}", tmpDir);
+                }
             }
         });
     }

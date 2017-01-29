@@ -7,11 +7,13 @@ import com.google.gson.JsonParser;
 import com.replaymod.online.api.replay.holders.ApiError;
 import org.apache.commons.io.IOUtils;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+
+import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
 
 public class SimpleApiClient {
 
@@ -72,10 +74,11 @@ public class SimpleApiClient {
         // read response
         String responseContent = null;
         InputStream is = null;
-        HttpURLConnection httpUrlConnection = null;
+        HttpsURLConnection httpUrlConnection = null;
         try {
             URL url = new URL(urlString);
-            httpUrlConnection = (HttpURLConnection) url.openConnection();
+            httpUrlConnection = (HttpsURLConnection) url.openConnection();
+            httpUrlConnection.setSSLSocketFactory(SSL_SOCKET_FACTORY);
 
             httpUrlConnection.setRequestMethod("GET");
 

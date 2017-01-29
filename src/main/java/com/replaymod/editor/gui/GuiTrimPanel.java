@@ -39,6 +39,10 @@ import static com.replaymod.editor.ReplayModEditor.LOGGER;
 import static java.util.Optional.ofNullable;
 
 public class GuiTrimPanel extends GuiPanel {
+    private static GuiNumberField newGuiNumberField() {
+        return new GuiNumberField().setMaxLength(2).setSize(20, 20).setValidateOnFocusChange(true);
+    }
+
     // Special value indicating no replay files were found
     private static final File NO_REPLAY = new File(".");
     // Special value for the initial "Select Marker Keyframe" entry
@@ -50,16 +54,16 @@ public class GuiTrimPanel extends GuiPanel {
             .setMinSize(new Dimension(200, 20)).onSelection(i -> updateSelectedReplay())
             .setToString(f -> f == NO_REPLAY ? "" : FilenameUtils.getBaseName(f.getName()));
 
-    public final GuiNumberField startHour = new GuiNumberField().setSize(20, 20).setMaxLength(2);
-    public final GuiNumberField startMin = new GuiNumberField().setSize(20, 20).setMaxLength(2);
-    public final GuiNumberField startSec = new GuiNumberField().setSize(20, 20).setMaxLength(2);
-    public final GuiNumberField startMilli = new GuiNumberField().setSize(40, 20).setMaxLength(4);
+    public final GuiNumberField startHour = newGuiNumberField();
+    public final GuiNumberField startMin = newGuiNumberField();
+    public final GuiNumberField startSec = newGuiNumberField();
+    public final GuiNumberField startMilli = newGuiNumberField().setSize(40, 20).setMaxLength(4);
     public final GuiDropdownMenu<Marker> startMarker = new GuiDropdownMenu<>();
 
-    public final GuiNumberField endHour = new GuiNumberField().setSize(20, 20).setMaxLength(2);
-    public final GuiNumberField endMin = new GuiNumberField().setSize(20, 20).setMaxLength(2);
-    public final GuiNumberField endSec = new GuiNumberField().setSize(20, 20).setMaxLength(2);
-    public final GuiNumberField endMilli = new GuiNumberField().setSize(40, 20).setMaxLength(4);
+    public final GuiNumberField endHour = newGuiNumberField();
+    public final GuiNumberField endMin = newGuiNumberField();
+    public final GuiNumberField endSec = newGuiNumberField();
+    public final GuiNumberField endMilli = newGuiNumberField().setSize(40, 20).setMaxLength(4);
     public final GuiDropdownMenu<Marker> endMarker = new GuiDropdownMenu<>();
 
     public final GuiPanel timePanel = new GuiPanel(this)
