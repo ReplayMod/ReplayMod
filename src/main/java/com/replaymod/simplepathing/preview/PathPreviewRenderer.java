@@ -9,10 +9,10 @@ import com.replaymod.replaystudio.pathing.interpolation.Interpolator;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.PathSegment;
-import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
+import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -68,11 +68,11 @@ public class PathPreviewRenderer {
         if (guiPathing == null) return;
         EntityPositionTracker entityTracker = guiPathing.getEntityTracker();
 
-        Timeline timeline = mod.getCurrentTimeline();
+        SPTimeline timeline = mod.getCurrentTimeline();
         if (timeline == null) return;
-        Path path = timeline.getPaths().get(GuiPathing.POSITION_PATH);
+        Path path = timeline.getPositionPath();
         if (path.getKeyframes().isEmpty()) return;
-        Path timePath = timeline.getPaths().get(GuiPathing.TIME_PATH);
+        Path timePath = timeline.getTimePath();
 
         path.update();
 
@@ -97,8 +97,8 @@ public class PathPreviewRenderer {
                 if (spectator && entityTracker == null) {
                     continue; // Cannot render spectator positions when entity tracker is not yet loaded
                 }
-                // Spectator segments have 20 lines per second whereas normal segments have a fixed 100
-                long steps = spectator ? diff / 50 : 100;
+                // Spectator segments have 20 lines per second (at least 10) whereas normal segments have a fixed 100
+                long steps = spectator ? Math.max(diff / 50, 10) : 100;
                 Triple<Double, Double, Double> prevPos = null;
                 for (int i = 0; i <= steps; i++) {
                     long time = start.getTime() + diff * i / steps;
@@ -240,7 +240,7 @@ public class PathPreviewRenderer {
         float posY = 0f;
         float size = 10f / ReplayMod.TEXTURE_SIZE;
 
-        if (keyframe == mod.getSelectedKeyframe()) {
+        if (mod.isSelected(keyframe)) {
             posY += size;
         }
 

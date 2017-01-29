@@ -253,6 +253,15 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
+    public boolean isInvisible() {
+        Entity view = mc.getRenderViewEntity();
+        if (view != this) {
+            return view.isInvisible();
+        }
+        return super.isInvisible();
+    }
+
+    @Override
     public ResourceLocation getLocationSkin() {
         Entity view = mc.getRenderViewEntity();
         if (view != this && view instanceof EntityPlayer) {
