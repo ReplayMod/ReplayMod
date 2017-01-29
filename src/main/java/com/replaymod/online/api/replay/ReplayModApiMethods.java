@@ -2,7 +2,7 @@ package com.replaymod.online.api.replay;
 
 public class ReplayModApiMethods {
 
-    public static final String REPLAYMOD_BASE_URL = "http://ReplayMod.com/api/";
+    public static final String REPLAYMOD_BASE_URL = "https://ReplayMod.com/api/";
 
     public static final String register = REPLAYMOD_BASE_URL+"register";
     public static final String check_authkey = REPLAYMOD_BASE_URL+"check_authkey";
