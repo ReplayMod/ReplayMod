@@ -80,8 +80,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 }
             }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.EncodingPreset.values());
 
-    public final GuiNumberField videoWidth = new GuiNumberField().setSize(50, 20).setMinValue(1);
-    public final GuiNumberField videoHeight = new GuiNumberField().setSize(50, 20).setMinValue(1);
+    public final GuiNumberField videoWidth = new GuiNumberField().setSize(50, 20).setMinValue(1).setValidateOnFocusChange(true);
+    public final GuiNumberField videoHeight = new GuiNumberField().setSize(50, 20).setMinValue(1).setValidateOnFocusChange(true);
     public final GuiSlider frameRateSlider = new GuiSlider().onValueChanged(new Runnable() {
         @Override
         public void run() {
@@ -93,7 +93,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(2))
             .addElements(new HorizontalLayout.Data(0.5), videoWidth, new GuiLabel().setText("*"), videoHeight);
 
-    public final GuiNumberField bitRateField = new GuiNumberField().setValue(10).setSize(50, 20);
+    public final GuiNumberField bitRateField = new GuiNumberField().setValue(10).setSize(50, 20).setValidateOnFocusChange(true);
     public final GuiDropdownMenu<String> bitRateUnit = new GuiDropdownMenu<String>()
             .setSize(50, 20).setValues("bps", "kbps", "mbps").setSelected("mbps");
 

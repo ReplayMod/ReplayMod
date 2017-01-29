@@ -9,15 +9,17 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Set;
 import java.util.function.Consumer;
+
+import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
 
 @RequiredArgsConstructor
 public class FileUploader {
@@ -48,7 +50,8 @@ public class FileUploader {
             postData += "&name=" + URLEncoder.encode(filename, "UTF-8");
 
             String url = ReplayModApiMethods.upload_file + postData;
-            HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) new URL(url).openConnection();
+            con.setSSLSocketFactory(SSL_SOCKET_FACTORY);
             con.setUseCaches(false);
             con.setDoOutput(true);
             con.setRequestMethod("POST");

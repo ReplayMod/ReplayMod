@@ -3,6 +3,7 @@ package com.replaymod.core.gui;
 import com.google.common.io.Files;
 import com.replaymod.replaystudio.PacketData;
 import com.replaymod.replaystudio.io.ReplayInputStream;
+import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
@@ -45,15 +46,19 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
                 ReplayMetaData metaData = replayFile.getMetaData();
                 if (metaData != null && metaData.getDuration() == 0) {
                     // Try to restore replay duration
-                    try (ReplayInputStream in = replayFile.getPacketData()) {
+                    // We need to re-write the packet data in case there are any incomplete packets dangling at the end
+                    try (ReplayInputStream in = replayFile.getPacketData();
+                         ReplayOutputStream out = replayFile.writePacketData()) {
                         PacketData last = null;
                         while ((last = in.readPacket()) != null) {
                             metaData.setDuration((int) last.getTime());
+                            out.write(last);
                         }
-                        replayFile.writeMetaData(metaData);
                     } catch (Throwable t) {
                         t.printStackTrace();
                     }
+                    // Write back the actual duration
+                    replayFile.writeMetaData(metaData);
                 }
                 replayFile.save();
                 replayFile.close();

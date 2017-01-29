@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -52,6 +53,9 @@ public class ResourcePackRecorder {
             boolean doWrite = false; // Whether we are the first and have to write it
             synchronized (replayFile) { // Need to read, modify and write the resource pack index atomically
                 Map<Integer, String> index = replayFile.getResourcePackIndex();
+                if (index == null) {
+                    index = new HashMap<>();
+                }
                 if (!index.containsValue(hash)) {
                     // Hash is unknown, we have to write the resource pack ourselves
                     doWrite = true;

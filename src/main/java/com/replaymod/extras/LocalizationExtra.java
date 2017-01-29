@@ -82,7 +82,7 @@ public class LocalizationExtra implements Extra {
                 availableLanguages.put(langcode, prop);
                 return true;
             } catch (ApiException e) {
-                if (e.getError().getId() != 16) { // This language has not been translated
+                if (e.getError() == null || e.getError().getId() != 16) { // This language has not been translated
                     e.printStackTrace();
                 }
             } catch(ConnectException ce) {
