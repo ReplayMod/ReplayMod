@@ -1,7 +1,5 @@
 package com.replaymod.simplepathing.gui;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
@@ -11,9 +9,10 @@ import com.replaymod.replaystudio.pathing.change.Change;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.PathSegment;
-import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.pathing.property.Property;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
+import com.replaymod.simplepathing.SPTimeline;
+import com.replaymod.simplepathing.SPTimeline.SPPath;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
 import de.johni0702.minecraft.gui.function.Draggable;
@@ -23,7 +22,6 @@ import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 
-import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Optional;
 
@@ -37,14 +35,14 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     private final GuiPathing gui;
 
     /**
-     * The keyframe that was last clicked on using the left mouse button.
+     * The keyframe (time on timeline) that was last clicked on using the left mouse button.
      */
-    private Keyframe lastClickedKeyframe;
+    private long lastClickedKeyframe;
 
     /**
-     * Id of the path of {@link #lastClickedKeyframe}.
+     * Path of {@link #lastClickedKeyframe}.
      */
-    private int lastClickedPath;
+    private SPPath lastClickedPath;
 
     /**
      * The time at which {@link #lastClickedKeyframe} was updated.
@@ -89,18 +87,13 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
         renderer.bindTexture(ReplayMod.TEXTURE);
 
-        for (Keyframe keyframe : Iterables.concat(Iterables.transform(mod.getCurrentTimeline().getPaths(), new Function<Path, Iterable<Keyframe>>() {
-            @Nullable
-            @Override
-            public Iterable<Keyframe> apply(@Nullable Path input) {
-                assert input != null;
-                return input.getKeyframes();
-            }
-        }))) {
+        SPTimeline timeline = mod.getCurrentTimeline();
+
+        timeline.getTimeline().getPaths().stream().flatMap(path -> path.getKeyframes().stream()).forEach(keyframe -> {
             if (keyframe.getTime() >= startTime && keyframe.getTime() <= endTime) {
                 double relativeTime = keyframe.getTime() - startTime;
                 int positonX = BORDER_LEFT + (int) (relativeTime / visibleTime * visibleWidth) - KEYFRAME_SIZE / 2;
-                int u = KEYFRAME_TEXTURE_X + (mod.getSelectedKeyframe() == keyframe ? KEYFRAME_SIZE : 0);
+                int u = KEYFRAME_TEXTURE_X + (mod.isSelected(keyframe) ? KEYFRAME_SIZE : 0);
                 int v = KEYFRAME_TEXTURE_Y;
                 if (keyframe.getValue(CameraProperties.POSITION).isPresent()) {
                     if (keyframe.getValue(SpectatorProperty.PROPERTY).isPresent()) {
@@ -113,10 +106,10 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     renderer.drawTexturedRect(positonX, BORDER_TOP + KEYFRAME_SIZE, u, v, KEYFRAME_SIZE, KEYFRAME_SIZE);
                 }
             }
-        }
+        });
 
         // Draw colored quads on spectator path segments
-        for (PathSegment segment : mod.getCurrentTimeline().getPaths().get(GuiPathing.POSITION_PATH).getSegments()) {
+        for (PathSegment segment : timeline.getPositionPath().getSegments()) {
             if (segment.getInterpolator() == null
                     || !segment.getInterpolator().getKeyframeProperties().contains(SpectatorProperty.PROPERTY)) {
                 continue; // Not a spectator segment
@@ -125,7 +118,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
         }
 
         // Draw red quads on time path segments that would require time going backwards
-        for (PathSegment segment : mod.getCurrentTimeline().getPaths().get(GuiPathing.TIME_PATH).getSegments()) {
+        for (PathSegment segment : timeline.getTimePath().getSegments()) {
             long startTimestamp = segment.getStartKeyframe().getValue(TimestampProperty.PROPERTY).orElseThrow(IllegalStateException::new);
             long endTimestamp = segment.getEndKeyframe().getValue(TimestampProperty.PROPERTY).orElseThrow(IllegalStateException::new);
             if (endTimestamp >= startTimestamp) {
@@ -162,29 +155,28 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
      * @param position The raw position
      * @return Pair of path id and keyframe or null when no keyframe was clicked
      */
-    private Pair<Integer, Keyframe> getKeyframe(ReadablePoint position) {
+    private Pair<SPPath, Long> getKeyframe(ReadablePoint position) {
         int time = getTimeAt(position.getX(), position.getY());
         if (time != -1) {
             Point mouse = new Point(position);
             getContainer().convertFor(this, mouse);
             int mouseY = mouse.getY();
             if (mouseY > BORDER_TOP && mouseY < BORDER_TOP + 2 * KEYFRAME_SIZE) {
-                Timeline timeline = gui.getMod().getCurrentTimeline();
-                int path;
+                SPPath path;
                 if (mouseY <= BORDER_TOP + KEYFRAME_SIZE) {
                     // Position keyframe
-                    path = GuiPathing.POSITION_PATH;
+                    path = SPPath.POSITION;
                 } else {
                     // Time keyframe
-                    path = GuiPathing.TIME_PATH;
+                    path = SPPath.TIME;
                 }
                 int visibleTime = (int) (getZoom() * getLength());
-                int tolerance = visibleTime * KEYFRAME_SIZE / (size.getWidth() - BORDER_LEFT - BORDER_RIGHT) / 2;
-                Optional<Keyframe> keyframe = timeline.getPaths().get(path).getKeyframes().stream()
+                int tolerance = visibleTime * KEYFRAME_SIZE / (getLastSize().getWidth() - BORDER_LEFT - BORDER_RIGHT) / 2;
+                Optional<Keyframe> keyframe = gui.getMod().getCurrentTimeline().getPath(path).getKeyframes().stream()
                         .filter(k -> Math.abs(k.getTime() - time) <= tolerance)
                         .sorted(Comparator.comparing(k -> Math.abs(k.getTime() - time)))
                         .findFirst();
-                return Pair.of(path, keyframe.orElse(null));
+                return Pair.of(path, keyframe.map(Keyframe::getTime).orElse(null));
             }
         }
         return Pair.of(null, null);
@@ -193,30 +185,31 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     @Override
     public boolean mouseClick(ReadablePoint position, int button) {
         int time = getTimeAt(position.getX(), position.getY());
-        Pair<Integer, Keyframe> pathKeyframePair = getKeyframe(position);
+        Pair<SPPath, Long> pathKeyframePair = getKeyframe(position);
         if (pathKeyframePair.getRight() != null) {
+            SPPath path = pathKeyframePair.getLeft();
             // Clicked on keyframe
-            Keyframe keyframe = pathKeyframePair.getRight();
+            long keyframeTime = pathKeyframePair.getRight();
             if (button == 0) { // Left click
                 long now = Minecraft.getSystemTime();
-                if (lastClickedKeyframe == keyframe) {
+                if (lastClickedKeyframe == keyframeTime) {
                     // Clicked the same keyframe again, potentially a double click
                     if (now - lastClickedTime < DOUBLE_CLICK_INTERVAL) {
                         // Yup, double click, open the edit keyframe gui
-                        Path path = gui.getMod().getCurrentTimeline().getPaths().get(pathKeyframePair.getLeft());
-                        gui.openEditKeyframePopup(path, keyframe);
+                        gui.openEditKeyframePopup(path, keyframeTime);
                         return true;
                     }
                 }
                 // Not a double click, just update the click time and selection
                 lastClickedTime = now;
-                lastClickedKeyframe = keyframe;
-                lastClickedPath = pathKeyframePair.getLeft();
-                gui.getMod().setSelectedKeyframe(lastClickedKeyframe);
+                lastClickedKeyframe = keyframeTime;
+                lastClickedPath = path;
+                gui.getMod().setSelected(lastClickedPath, lastClickedKeyframe);
                 // We might be dragging
                 draggingStartX = position.getX();
                 dragging = true;
             } else if (button == 1) { // Right click
+                Keyframe keyframe = gui.getMod().getCurrentTimeline().getKeyframe(path, keyframeTime);
                 for (Property property : keyframe.getProperties()) {
                     applyPropertyToGame(property, keyframe);
                 }
@@ -226,12 +219,11 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             // Clicked on timeline but not on any keyframe
             if (button == 0) { // Left click
                 setCursorPosition(time);
-                gui.getMod().setSelectedKeyframe(null);
+                gui.getMod().setSelected(null, 0);
             } else if (button == 1) { // Right click
                 if (pathKeyframePair.getLeft() != null) {
                     // Apply the value of the clicked path at the clicked position
-                    Timeline timeline = gui.getMod().getCurrentTimeline();
-                    Path path = timeline.getPaths().get(pathKeyframePair.getLeft());
+                    Path path = gui.getMod().getCurrentTimeline().getPath(pathKeyframePair.getLeft());
                     path.getKeyframes().stream().flatMap(k -> k.getProperties().stream()).distinct().forEach(
                             p -> applyPropertyToGame(p, path, time));
                 }
@@ -280,12 +272,13 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             }
         }
         if (actuallyDragging) {
+            if (!gui.ensureEntityTracker(() -> mouseDrag(position, button, timeSinceLastCall))) return true;
             // Threshold passed
-            Path path = gui.getMod().getCurrentTimeline().getPaths().get(lastClickedPath);
+            SPTimeline timeline = gui.getMod().getCurrentTimeline();
             Point mouse = new Point(position);
             getContainer().convertFor(this, mouse);
             int mouseX = mouse.getX();
-            int width = size.getWidth();
+            int width = getLastSize().getWidth();
             int bodyWidth = width - BORDER_LEFT - BORDER_RIGHT;
             double segmentLength = getLength() * getZoom();
             double segmentTime =  segmentLength * (mouseX - BORDER_LEFT) / bodyWidth;
@@ -295,24 +288,21 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             }
 
             // If there already is a keyframe at the target time, then increase the time by one until there is none
-            while (path.getKeyframe(newTime) != null) {
+            while (timeline.getKeyframe(lastClickedPath, newTime) != null) {
                 newTime++;
             }
 
             // First undo any previous changes
             if (draggingChange != null) {
-                draggingChange.undo(gui.getMod().getCurrentTimeline());
+                draggingChange.undo(timeline.getTimeline());
             }
 
             // Move keyframe to new position and
             // store change for later undoing / pushing to history
-            draggingChange = gui.moveKeyframe(path, lastClickedKeyframe, newTime);
+            draggingChange = timeline.moveKeyframe(lastClickedPath, lastClickedKeyframe, newTime);
 
             // Selected keyframe has been replaced
-            gui.getMod().setSelectedKeyframe(path.getKeyframe(newTime));
-
-            // Path has been changed
-            path.updateAll();
+            gui.getMod().setSelected(lastClickedPath, newTime);
         }
         return true;
     }
@@ -321,7 +311,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     public boolean mouseRelease(ReadablePoint position, int button) {
         if (dragging) {
             if (actuallyDragging) {
-                gui.getMod().getCurrentTimeline().pushChange(draggingChange);
+                gui.getMod().getCurrentTimeline().getTimeline().pushChange(draggingChange);
                 draggingChange = null;
                 actuallyDragging = false;
             }
