@@ -109,6 +109,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             if (newTime != time) {
                 change = CombinedChange.createFromApplied(change,
                         gui.getMod().getCurrentTimeline().moveKeyframe(path, time, newTime));
+                if (gui.getMod().getSelectedPath() == path && gui.getMod().getSelectedTime() == time) {
+                    gui.getMod().setSelected(path, newTime);
+                }
             }
             gui.getMod().getCurrentTimeline().getTimeline().pushChange(change);
             close();
