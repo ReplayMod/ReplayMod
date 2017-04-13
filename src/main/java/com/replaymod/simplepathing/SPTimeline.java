@@ -340,13 +340,15 @@ public class SPTimeline implements PathingRegistry {
         Optional<Interpolator> firstInterpolator =
                 path.getSegments().stream().findFirst().map(PathSegment::getInterpolator);
 
-        // The interpolator of the previous segment
-        Optional<Interpolator> interpolatorBefore =
-                path.getSegments().stream().filter(s -> s.getEndKeyframe() == keyframe).findFirst().map(PathSegment::getInterpolator);
-
-        // The interpolator of the following segment
-        Optional<Interpolator> interpolatorAfter =
-                path.getSegments().stream().filter(s -> s.getStartKeyframe() == keyframe).findFirst().map(PathSegment::getInterpolator);
+        // The interpolator that will be lost once we remove the old keyframe and has to be restored afterwards
+        Optional<Interpolator> lostInterpolator = path.getSegments().stream().filter(s -> {
+            // If this is the last keyframe,
+            if (Iterables.getLast(path.getKeyframes()) == keyframe) {
+                return s.getEndKeyframe() == keyframe; // the previous interpolator will be lost
+            } else { // otherwise
+                return s.getStartKeyframe() == keyframe; // the following interpolator will be lost
+            }
+        }).findFirst().map(PathSegment::getInterpolator);
 
         // First remove the old keyframe
         Change removeChange = create(path, keyframe);
@@ -369,18 +371,27 @@ public class SPTimeline implements PathingRegistry {
         Keyframe newKf = path.getKeyframe(newTime);
         if (Iterables.getLast(path.getKeyframes()) != newKf) { // Unless this is the last keyframe
             // the interpolator of the following segment has been lost and needs to be restored
-            restoreInterpolatorChange = interpolatorAfter.<Change>flatMap(interpolator ->
+            restoreInterpolatorChange = lostInterpolator.<Change>flatMap(interpolator ->
                     path.getSegments().stream().filter(s -> s.getStartKeyframe() == newKf).findFirst().map(segment ->
                             SetInterpolator.create(segment, interpolator)
                     )
             ).orElseGet(CombinedChange::create);
         } else { // If it is the last keyframe however,
             // the interpolator of the previous segment has been lost and needs to be restored
-            restoreInterpolatorChange = interpolatorBefore.<Change>flatMap(interpolator ->
-                    path.getSegments().stream().filter(s -> s.getEndKeyframe() == newKf).findFirst().map(segment ->
-                            SetInterpolator.create(segment, interpolator)
-                    )
-            ).orElseGet(CombinedChange::create);
+            restoreInterpolatorChange = path.getSegments().stream().filter(s -> s.getEndKeyframe() == newKf)
+                    .findFirst().flatMap(segment -> lostInterpolator.map(interpolator -> {
+                        // additionally, if the interpolation of this keyframe was set to explicit, that property
+                        // has to be transferred to the start keyframe of the new segment
+                        if (newKf.getValue(ExplicitInterpolationProperty.PROPERTY).isPresent()) {
+                            return CombinedChange.create(
+                                    SetInterpolator.create(segment, interpolator),
+                                    UpdateKeyframeProperties.create(path, segment.getStartKeyframe())
+                                            .setValue(ExplicitInterpolationProperty.PROPERTY, ObjectUtils.NULL).done()
+                            );
+                        } else {
+                            return SetInterpolator.create(segment, interpolator);
+                        }
+            })).orElseGet(CombinedChange::create);
         }
         restoreInterpolatorChange.apply(timeline);
 
