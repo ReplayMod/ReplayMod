@@ -188,6 +188,13 @@ sourceSets {
         }
         refMap = "mixins.replaymod.refmap.json"
     }
+    integrationTest {
+        compileClasspath += main.runtimeClasspath + main.output
+        java {
+            srcDir file('src/integration-test/java')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
 }
 
 task copySrg(type: Copy, dependsOn: 'genSrgs') {
@@ -198,6 +205,30 @@ task copySrg(type: Copy, dependsOn: 'genSrgs') {
 setupDecompWorkspace.dependsOn copySrg
 setupDevWorkspace.dependsOn copySrg
 project.tasks.idea.dependsOn copySrg
+
+task runIntegrationTest(type: JavaExec, dependsOn: ["makeStart", "jar"]) {
+    main = 'GradleStart'
+    standardOutput = System.out
+    errorOutput = System.err
+    workingDir file(minecraft.runDir)
+
+    def testDir = new File(minecraft.runDir, "integration-test")
+    doFirst {
+        testDir.deleteDir()
+        testDir.mkdirs()
+    }
+
+    doLast {
+        testDir.deleteDir()
+    }
+
+    afterEvaluate {
+        def runClient = tasks.getByName("runClient")
+        runIntegrationTest.jvmArgs = runClient.jvmArgs + "-Dfml.noGrab=true"
+        runIntegrationTest.args = runClient.args + "--gameDir" + testDir.canonicalPath
+        runIntegrationTest.classpath runClient.classpath + sourceSets.integrationTest.output
+    }
+}
 
 def generateVersionsJson() {
     // List all tags

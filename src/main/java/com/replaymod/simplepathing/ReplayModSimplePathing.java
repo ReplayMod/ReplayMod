@@ -22,6 +22,9 @@ import org.apache.logging.log4j.Logger;
 public class ReplayModSimplePathing {
     public static final String MOD_ID = "replaymod-simplepathing";
 
+    @Mod.Instance(MOD_ID)
+    public static ReplayModSimplePathing instance;
+
     private ReplayMod core;
 
     public static Logger LOGGER;

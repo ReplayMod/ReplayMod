@@ -43,7 +43,7 @@ public class OpenEyeExtra implements Extra {
         }
     }
 
-    private class OfferGui extends AbstractGuiScreen<OfferGui> {
+    public class OfferGui extends AbstractGuiScreen<OfferGui> {
         public final GuiScreen parent;
         public final GuiPanel textPanel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(3))
                 .addElements(new VerticalLayout.Data(0.5),
@@ -107,7 +107,7 @@ public class OpenEyeExtra implements Extra {
         }
     }
 
-    private static final class GuiPopup extends AbstractGuiPopup<GuiPopup> {
+    public static final class GuiPopup extends AbstractGuiPopup<GuiPopup> {
         GuiPopup(GuiContainer container) {
             super(container);
             popup.addElements(null, new GuiIndicator().setColor(Colors.BLACK));
