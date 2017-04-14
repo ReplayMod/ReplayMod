@@ -1,6 +1,7 @@
 package com.replaymod.core;
 
 import com.replaymod.core.regression.RegressionTest60;
+import com.replaymod.core.regression.RegressionTest61;
 import com.replaymod.core.regression.RegressionTest62;
 import com.replaymod.extra.DownloadOpenEye;
 import com.replaymod.online.SkipLogin;
@@ -45,6 +46,7 @@ public class ReplayModIntegrationTest {
                 new LoadReplay(),
 
                 new RegressionTest60(),
+                new RegressionTest61(),
                 new RegressionTest62(),
 
                 // new AbstractTask() {}, // Uncomment to not exit on success (useful for writing more tests)

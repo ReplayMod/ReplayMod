@@ -255,6 +255,10 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                     xField.getDouble(), yField.getDouble(), zField.getDouble(),
                     yawField.getFloat(), pitchField.getFloat(), rollField.getFloat()
             );
+            if (interpolationPanel.getSettingsPanel() == null) {
+                // The last keyframe doesn't have interpolator settings because there is no segment following it
+                return positionChange;
+            }
             Interpolator interpolator = interpolationPanel.getSettingsPanel().createInterpolator();
             if (interpolationPanel.getInterpolatorType() == InterpolatorType.DEFAULT) {
                 return CombinedChange.createFromApplied(positionChange, timeline.setInterpolatorToDefault(time),
