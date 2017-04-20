@@ -300,9 +300,15 @@ public class GuiPathing {
                     ListenableFuture<Void> future = player.start(mod.getCurrentTimeline().getTimeline(), startTime);
                     overlay.setCloseable(false);
                     overlay.setMouseVisible(true);
+                    core.printInfoToChat("replaymod.chat.pathstarted");
                     Futures.addCallback(future, new FutureCallback<Void>() {
                         @Override
                         public void onSuccess(@Nullable Void result) {
+                            if (future.isCancelled()) {
+                                core.printInfoToChat("replaymod.chat.pathinterrupted");
+                            } else {
+                                core.printInfoToChat("replaymod.chat.pathfinished");
+                            }
                             overlay.setCloseable(true);
                             timePath.setActive(true);
                         }
