@@ -1,7 +1,5 @@
 import groovy.json.JsonOutput
 
-import java.util.zip.ZipInputStream
-
 buildscript {
     repositories {
         mavenCentral()
@@ -102,27 +100,6 @@ jar {
         }
     }
     from noticeDir
-
-    def langDir = file("$buildDir/languages")
-    doFirst {
-	try {
-        langDir.deleteDir()
-        langDir.mkdirs()
-        def dir = new File(langDir, 'assets/replaymod/lang/')
-        dir.mkdirs()
-        def zip = new ZipInputStream(new URL('http://replaymod.com/api/grab_languages').openStream())
-        def e;
-        while ((e = zip.nextEntry) != null) {
-            new File(dir, e.getName()) << zip
-            zip.closeEntry()
-        }
-	} catch(Exception e) {
-	    e.printStackTrace();
-	}
-    }
-    from (langDir) {
-        exclude '**/en_US.lang'
-    }
 
     from ({shade().collect { it.isDirectory() ? it : zipTree(it) }}) {
         exclude '**/NOTICE*'
