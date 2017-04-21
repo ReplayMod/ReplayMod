@@ -56,10 +56,11 @@ public class ReplayModRecording {
         EventBus bus = FMLCommonHandler.instance().bus();
         bus.register(connectionEventHandler = new ConnectionEventHandler(logger, core));
 
-        @ChannelHandler.Sharable
-        class RestrictionsChannelHandler extends ChannelDuplexHandler {}
         NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
     }
+
+    @ChannelHandler.Sharable
+    private static class RestrictionsChannelHandler extends ChannelDuplexHandler {}
 
     public void initiateRecording(NetworkManager networkManager) {
         connectionEventHandler.onConnectedToServerEvent(networkManager);
