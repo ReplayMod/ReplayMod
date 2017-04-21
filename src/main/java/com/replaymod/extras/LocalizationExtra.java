@@ -1,102 +1,106 @@
 package com.replaymod.extras;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.online.ReplayModOnline;
-import com.replaymod.online.api.ApiClient;
-import com.replaymod.online.api.ApiException;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import static com.replaymod.extras.ReplayModExtras.LOGGER;
 
 public class LocalizationExtra implements Extra {
-    private ReplayModOnline module;
+    private static final String ZIP_FILE_URL = "https://github.com/ReplayMod/Translations/archive/master.zip";
+    private static final String LANG_PREFIX = "Translations-master/";
 
     @Override
     public void register(ReplayMod mod) throws Exception {
-        this.module = ReplayModOnline.instance;
-
         final Minecraft mc = mod.getMinecraft();
-        Thread localizedResourcePackLoader = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
+        if (Boolean.parseBoolean(System.getProperty("replaymod.offline", "false"))) {
+            return;
+        }
+        Thread localizedResourcePackLoader = new Thread(() -> {
+            try {
+                // Download zip of lang files
+                LOGGER.debug("Downloading languages from {}", ZIP_FILE_URL);
+                Map<String, byte[]> languages = new HashMap<>();
+                try (InputStream urlIn = new URL(ZIP_FILE_URL).openStream();
+                     ZipInputStream in = new ZipInputStream(urlIn)) {
+                    ZipEntry entry;
+                    while ((entry = in.getNextEntry()) != null) {
+                        String name = entry.getName();
+                        if (!name.startsWith(LANG_PREFIX) || !name.endsWith(".lang")) {
+                           continue;
+                        }
+                        name = name.substring(LANG_PREFIX.length());
+                        languages.put(name, IOUtils.toByteArray(in));
+                        LOGGER.debug("Added language file {}", name);
+                    }
+                }
+                LOGGER.debug("Downloaded {} languages", languages.size());
+
+                // Add lang files as resource pack
+                mc.addScheduledTask(() -> {
                     @SuppressWarnings("unchecked")
                     List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
-                    defaultResourcePacks.add(new LocalizedResourcePack(module.getApiClient()));
-                    mc.addScheduledTask(new Runnable() {
-                        @Override
-                        public void run() {
-                            mc.refreshResources();
-                        }
-                    });
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
+                    defaultResourcePacks.add(new LocalizedResourcePack(languages));
+                    mc.getLanguageManager().onResourceManagerReload(mc.getResourceManager());
+                    LOGGER.debug("Added language files to resource packs and reloaded LanguageManager");
+                });
+            } catch (Throwable t) {
+                LOGGER.error("Loading localized resource pack:", t);
             }
         }, "localizedResourcePackLoader");
+        localizedResourcePackLoader.setDaemon(true);
         localizedResourcePackLoader.start();
     }
 
-    @RequiredArgsConstructor
     public static class LocalizedResourcePack implements IResourcePack {
-        private final ApiClient apiClient;
-        private Map<String, String> availableLanguages = new HashMap<>();
-        private boolean websiteAvailable = true;
+        private final Pattern LANG_PATTERN = Pattern.compile("^lang/([.+].lang)$");
+        private final Map<String, byte[]> languages;
+
+        public LocalizedResourcePack(Map<String, byte[]> languages) {
+            this.languages = languages;
+        }
 
         @Override
         public InputStream getInputStream(ResourceLocation loc) {
-            if(!loc.getResourcePath().endsWith(".lang")) return null;
-            String langcode = loc.getResourcePath().split("/")[1].split("\\.")[0];
-            if(availableLanguages.containsKey(langcode)) return new ByteArrayInputStream(availableLanguages.get(langcode).getBytes(Charsets.UTF_8));
+            if (!"replaymod".equals(loc.getResourceDomain())) return null;
+            Matcher matcher = LANG_PATTERN.matcher(loc.getResourcePath());
+            if (matcher.matches()) {
+                byte[] bytes = languages.get(matcher.group());
+                if (bytes != null) {
+                    return new ByteArrayInputStream(bytes);
+                }
+            }
             return null;
         }
 
         @Override
         public boolean resourceExists(ResourceLocation loc) {
-            if(!(loc.getResourcePath().endsWith(".lang"))) return false;
-            String langcode = loc.getResourcePath().split("/")[1].split("\\.")[0];
-            if(availableLanguages.containsKey(langcode)) return true;
-            if(!websiteAvailable) return false;
-            try {
-                if (Boolean.parseBoolean(System.getProperty("replaymod.offline", "false"))) {
-                    return false;
-                }
-                String lang = apiClient.getTranslation(langcode);
-                String prop = StringEscapeUtils.unescapeHtml4(lang);
-                availableLanguages.put(langcode, prop);
-                return true;
-            } catch (ApiException e) {
-                if (e.getError() == null || e.getError().getId() != 16) { // This language has not been translated
-                    e.printStackTrace();
-                }
-            } catch(ConnectException ce) {
-                websiteAvailable = false;
-                ce.printStackTrace();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-            return false;
+            // Assumes that getInputStream returns a ByteArrayInputStream that doesn't need to be closed
+            return getInputStream(loc) != null;
         }
 
         @Override
         public Set getResourceDomains() {
-            return ImmutableSet.of("minecraft", "replaymod");
+            return ImmutableSet.of("replaymod");
         }
 
         @Override
