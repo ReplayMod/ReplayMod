@@ -18,7 +18,6 @@ import java.util.List;
 
 public class GuiHandler {
     private static final int BUTTON_EXIT_SERVER = 1;
-    private static final int BUTTON_RETURN_TO_GAME = 4;
     private static final int BUTTON_ACHIEVEMENTS = 5;
     private static final int BUTTON_STATS = 6;
     private static final int BUTTON_OPEN_TO_LAN = 7;
@@ -49,6 +48,7 @@ public class GuiHandler {
             // Pause replay when menu is opened
             mod.getReplayHandler().getReplaySender().setReplaySpeed(0);
 
+            GuiButton achievements = null, stats = null, openToLan = null;
             @SuppressWarnings("unchecked")
             List<GuiButton> buttonList = event.buttonList;
             for(GuiButton b : new ArrayList<>(buttonList)) {
@@ -60,14 +60,38 @@ public class GuiHandler {
                         break;
                     // Remove "Achievements", "Stats" and "Open to LAN" buttons
                     case BUTTON_ACHIEVEMENTS:
+                        buttonList.remove(achievements = b);
+                        break;
                     case BUTTON_STATS:
+                        buttonList.remove(stats = b);
+                        break;
                     case BUTTON_OPEN_TO_LAN:
-                        buttonList.remove(b);
+                        buttonList.remove(openToLan = b);
+                        break;
                 }
-                // Move all buttons except the "Return to game" button upwards
-                if (b.id != BUTTON_RETURN_TO_GAME) {
-                    b.yPosition -= 48;
-                }
+            }
+            if (achievements != null && stats != null) {
+                moveAllButtonsDirectlyBelowUpwards(buttonList, achievements.yPosition,
+                        achievements.xPosition, stats.xPosition + stats.width);
+            }
+            if (openToLan != null) {
+                moveAllButtonsDirectlyBelowUpwards(buttonList, openToLan.yPosition,
+                        openToLan.xPosition, openToLan.xPosition + openToLan.width);
+            }
+        }
+    }
+
+    /**
+     * Moves all buttons that are within a rectangle below a certain y coordinate upwards by 24 units.
+     * @param buttons List of buttons
+     * @param belowY The Y limit
+     * @param xStart Left x limit of the rectangle
+     * @param xEnd Right x limit of the rectangle
+     */
+    private void moveAllButtonsDirectlyBelowUpwards(List<GuiButton> buttons, int belowY, int xStart, int xEnd) {
+        for (GuiButton button : buttons) {
+            if (button.yPosition >= belowY && button.xPosition <= xEnd && button.xPosition + button.width >= xStart) {
+                button.yPosition -= 24;
             }
         }
     }
