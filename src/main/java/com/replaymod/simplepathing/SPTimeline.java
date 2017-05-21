@@ -71,7 +71,7 @@ public class SPTimeline implements PathingRegistry {
 
     @Getter
     private EntityPositionTracker entityTracker;
-    private InterpolatorType defaultInterpolatorType = InterpolatorType.fromString("invalid string returns default");
+    private InterpolatorType defaultInterpolatorType;
 
     public SPTimeline() {
         this(createInitialTimeline());

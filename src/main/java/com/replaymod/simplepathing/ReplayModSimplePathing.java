@@ -46,7 +46,7 @@ public class ReplayModSimplePathing {
 
     @SubscribeEvent
     public void postReplayOpen(ReplayOpenEvent.Post event) {
-        currentTimeline = new SPTimeline();
+        clearCurrentTimeline();
         guiPathing = new GuiPathing(core, this, event.getReplayHandler());
     }
 
@@ -85,11 +85,11 @@ public class ReplayModSimplePathing {
     public void setCurrentTimeline(SPTimeline newTimeline) {
         selectedPath = null;
         currentTimeline = newTimeline;
+        updateDefaultInterpolatorType();
     }
 
     public void clearCurrentTimeline() {
         setCurrentTimeline(new SPTimeline());
-        updateDefaultInterpolatorType();
     }
 
     public SPTimeline getCurrentTimeline() {

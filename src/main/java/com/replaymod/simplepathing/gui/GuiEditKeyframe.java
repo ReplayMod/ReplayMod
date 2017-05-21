@@ -310,6 +310,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                         dropdown.setSelected(type); // trigger the callback once to display settings panel
                     } else {
                         setSettingsPanel(InterpolatorType.DEFAULT);
+                        type = InterpolatorType.DEFAULT;
                     }
                     if (getInterpolatorTypeNoDefault(type).getInterpolatorClass().isInstance(interpolator)) {
                         //noinspection unchecked
