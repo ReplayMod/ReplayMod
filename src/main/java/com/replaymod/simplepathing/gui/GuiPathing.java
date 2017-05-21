@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
@@ -564,7 +565,9 @@ public class GuiPathing {
 
                 @Override
                 public void onFailure(@Nonnull Throwable t) {
-                    popup.close();
+                    String message = "Failed to load entity tracker, pathing will be unavailable.";
+                    GuiReplayOverlay overlay = replayHandler.getOverlay();
+                    Utils.error(LOGGER, overlay, CrashReport.makeCrashReport(t, message), popup::close);
                 }
             });
             return false;
