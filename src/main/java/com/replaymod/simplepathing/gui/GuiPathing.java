@@ -499,12 +499,13 @@ public class GuiPathing {
                     }
                 });
                 logger.info("Loaded entity tracker in " + (System.currentTimeMillis() - start) + "ms");
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 logger.error("Loading entity tracker:", e);
                 mod.getCore().runLater(() -> {
                     mod.getCore().printWarningToChat("Error loading entity tracker: %s", e.getLocalizedMessage());
                     entityTrackerFuture.setException(e);
                 });
+                return;
             }
             entityTracker = tracker;
             mod.getCore().runLater(() -> {
