@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.TimeoutException;
 
 import static com.replaymod.core.ReplayModIntegrationTest.LOGGER;
-import static com.replaymod.core.Utils.addCallback;
+import static com.replaymod.core.utils.Utils.addCallback;
 
 public abstract class AbstractTask implements Task {
     public static Task create(Consumer<AbstractTask> init) {

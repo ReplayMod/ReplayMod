@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
 import static com.replaymod.core.ReplayModIntegrationTest.LOGGER;
+import static com.replaymod.core.utils.Utils.addCallback;
 
 public class CompositeTask implements Task {
     private SettableFuture<Void> future;
@@ -28,7 +29,7 @@ public class CompositeTask implements Task {
                     Task task = children[childIndex];
                     LOGGER.info("Running task {}", task);
                     ListenableFuture<Void> childFuture = task.execute();
-                    Utils.addCallback(childFuture, done -> executeChild(childIndex + 1), err -> future.setException(err));
+                    addCallback(childFuture, done -> executeChild(childIndex + 1), err -> future.setException(err));
                 } catch (Throwable t) {
                     future.setException(t);
                 }

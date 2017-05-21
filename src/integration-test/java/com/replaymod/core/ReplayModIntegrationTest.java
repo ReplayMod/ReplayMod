@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import static com.replaymod.core.AbstractTask.mc;
 import static com.replaymod.core.ReplayModIntegrationTest.MOD_ID;
-import static com.replaymod.core.Utils.addCallback;
+import static com.replaymod.core.utils.Utils.addCallback;
 
 /**
  * Helper mod that initiates the integration tests.

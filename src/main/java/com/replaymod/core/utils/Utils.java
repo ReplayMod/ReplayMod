@@ -2,6 +2,7 @@ package com.replaymod.core.utils;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiScrollable;
@@ -25,6 +26,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import javax.net.ssl.SSLContext;
@@ -45,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static net.minecraft.client.Minecraft.getMinecraft;
 
@@ -147,6 +150,20 @@ public class Utils {
 
     public static boolean isCtrlDown() {
         return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+    }
+
+    public static <T> void addCallback(ListenableFuture<T> future, Consumer<T> onSuccess, Consumer<Throwable> onFailure) {
+        Futures.addCallback(future, new FutureCallback<T>() {
+            @Override
+            public void onSuccess(@Nullable T result) {
+                onSuccess.accept(result);
+            }
+
+            @Override
+            public void onFailure(@Nonnull Throwable t) {
+                onFailure.accept(t);
+            }
+        });
     }
 
     public static GuiInfoPopup error(Logger logger, GuiContainer container, CrashReport crashReport, Runnable onClose) {
