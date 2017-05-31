@@ -4,6 +4,8 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.packet.PacketListener;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraft.network.NetworkManager;
 import net.minecraftforge.fml.common.Mod;
@@ -54,8 +56,11 @@ public class ReplayModRecording {
         EventBus bus = MinecraftForge.EVENT_BUS;
         bus.register(connectionEventHandler = new ConnectionEventHandler(logger, core));
 
-        NetworkRegistry.INSTANCE.newSimpleChannel(Restrictions.PLUGIN_CHANNEL);
+        NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
     }
+
+    @ChannelHandler.Sharable
+    private static class RestrictionsChannelHandler extends ChannelDuplexHandler {}
 
     public void initiateRecording(NetworkManager networkManager) {
         connectionEventHandler.onConnectedToServerEvent(networkManager);

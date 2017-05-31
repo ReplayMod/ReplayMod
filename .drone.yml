@@ -7,7 +7,6 @@ pipeline:
     commands:
       - curl --fail --create-dirs -o $HOME/.gradle/init.d/mirror.gradle https://maven.johni0702.de/config/gradle
       - curl --fail --create-dirs -o $HOME/.m2/settings.xml https://maven.johni0702.de/config/maven
-      - JAVA_OPTS=-Xmx1516M ./gradlew setupDecompWorkspace
       - ./gradlew :build
   archive:
     image: plugins/s3
