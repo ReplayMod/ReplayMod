@@ -32,11 +32,11 @@ public class ReplayModExtras {
             OpenEyeExtra.class
     );
 
-    private Logger logger;
+    public static Logger LOGGER;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
     }
 
     @Mod.EventHandler
@@ -46,7 +46,7 @@ public class ReplayModExtras {
                 Extra extra = cls.newInstance();
                 extra.register(ReplayMod.instance);
             } catch (Throwable t) {
-                logger.warn("Failed to load extra " + cls.getName() + ": ", t);
+                LOGGER.warn("Failed to load extra " + cls.getName() + ": ", t);
             }
         }
     }

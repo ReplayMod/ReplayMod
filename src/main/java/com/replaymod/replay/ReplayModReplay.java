@@ -6,7 +6,11 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
-import com.replaymod.replay.camera.*;
+import com.replaymod.replay.camera.CameraController;
+import com.replaymod.replay.camera.CameraControllerRegistry;
+import com.replaymod.replay.camera.CameraEntity;
+import com.replaymod.replay.camera.ClassicCameraController;
+import com.replaymod.replay.camera.VanillaCameraController;
 import com.replaymod.replay.gui.overlay.GuiMarkerTimeline;
 import com.replaymod.replay.gui.screen.GuiModCompatWarning;
 import com.replaymod.replay.handler.GuiHandler;
@@ -99,6 +103,7 @@ public class ReplayModReplay {
                         @Override
                         public void onSuccess(NoGuiScreenshot result) {
                             try {
+                                core.printInfoToChat("replaymod.chat.savingthumb");
                                 replayHandler.getReplayFile().writeThumb(result.getImage());
                                 core.printInfoToChat("replaymod.chat.savedthumb");
                             } catch (IOException e) {
@@ -109,6 +114,7 @@ public class ReplayModReplay {
                         @Override
                         public void onFailure(Throwable t) {
                             t.printStackTrace();
+                            core.printWarningToChat("replaymod.chat.failedthumb");
                         }
                     });
                 }

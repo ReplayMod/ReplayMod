@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -11,7 +12,11 @@ import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
-import de.johni0702.minecraft.gui.container.*;
+import de.johni0702.minecraft.gui.container.AbstractGuiClickableContainer;
+import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.container.GuiScreen;
+import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiTextField;
@@ -41,9 +46,16 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
     public final GuiButton overwriteButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
-            timelines.put(selectedEntry.name, currentTimeline);
-            overwriteButton.setDisabled();
-            save();
+            GuiYesNoPopup popup = GuiYesNoPopup.open(GuiKeyframeRepository.this,
+                    new GuiLabel().setI18nText("replaymod.gui.keyframerepo.overwrite").setColor(Colors.BLACK)
+            ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no");
+            Utils.addCallback(popup.getFuture(), doIt -> {
+                if (doIt) {
+                    timelines.put(selectedEntry.name, currentTimeline);
+                    overwriteButton.setDisabled();
+                    save();
+                }
+            }, Throwable::printStackTrace);
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.overwrite").setDisabled();
     public final GuiButton saveAsButton = new GuiButton(buttonPanel).onClick(new Runnable() {
