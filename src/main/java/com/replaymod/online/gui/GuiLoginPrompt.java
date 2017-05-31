@@ -21,7 +21,7 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
     private GuiLabel noAccountLabel = new GuiLabel(this).setI18nText("replaymod.gui.login.noacc");
     private GuiLabel statusLabel = new GuiLabel(this);
     private GuiButton loginButton = new GuiButton(this).setI18nLabel("replaymod.gui.login").setSize(150, 20).setEnabled(false);
-    private GuiButton cancelButton = new GuiButton(this).setI18nLabel("replaymod.gui.cancel").setSize(150, 20);
+    public GuiButton cancelButton = new GuiButton(this).setI18nLabel("replaymod.gui.cancel").setSize(150, 20);
     private GuiButton registerButton = new GuiButton(this).setI18nLabel("replaymod.gui.register").setSize(150, 20);
     private GuiTextField username = new GuiTextField(this).setSize(145, 20).setMaxLength(16).setFocused(true);
     private GuiPasswordField password = new GuiPasswordField(this).setSize(145, 20)

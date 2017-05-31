@@ -28,6 +28,7 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiImage;
 import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.IGuiButton;
 import de.johni0702.minecraft.gui.element.advanced.GuiResourceLoadingList;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
@@ -109,6 +110,7 @@ public class GuiReplayCenter extends GuiScreen {
         public void run() {
             GuiReplayEntry selected = list.getSelected();
             replayButtonPanel.forEach(IGuiButton.class).setEnabled(selected != null);
+            replayButtonPanel.forEach(IGuiButton.class).setTooltip(null);
             if (selected != null) {
                 int replayId = selected.fileInfo.getId();
                 boolean favorited = favoritedReplays.contains(replayId);
@@ -123,10 +125,22 @@ public class GuiReplayCenter extends GuiScreen {
                 favoriteButton.setI18nLabel("replaymod.gui.center." + (favorited ? "unfavorite" : "favorite"));
                 // Only allow button usage for either unfavorite or favorite after they've actually downloaded it
                 favoriteButton.setEnabled(favorited || selected.downloaded);
+                if (favoriteButton.isEnabled()) {
+                    favoriteButton.setTooltip(null);
+                } else {
+                    favoriteButton.setTooltip(new GuiTooltip().setI18nText("replaymod.gui.center.downloadrequired"));
+                }
 
                 // Similar for like/dislike buttons
                 likeButton.setEnabled(selected.downloaded);
                 dislikeButton.setEnabled(selected.downloaded);
+                if (likeButton.isEnabled()) {
+                    likeButton.setTooltip(null);
+                    dislikeButton.setTooltip(null);
+                } else {
+                    likeButton.setTooltip(new GuiTooltip().setI18nText("replaymod.gui.center.downloadrequired"));
+                    dislikeButton.setTooltip(new GuiTooltip().setI18nText("replaymod.gui.center.downloadrequired"));
+                }
                 likeButton.setI18nLabel("replaymod.gui." + (liked ? "removelike" : "like"));
                 dislikeButton.setI18nLabel("replaymod.gui." + (disliked ? "removedislike" : "dislike"));
             }

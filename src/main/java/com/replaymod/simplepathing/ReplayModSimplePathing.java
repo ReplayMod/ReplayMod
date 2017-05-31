@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.input.Keyboard;
 
 @Mod(modid = ReplayModSimplePathing.MOD_ID,
         version = "@MOD_VERSION@",
@@ -21,6 +22,9 @@ import org.apache.logging.log4j.Logger;
         useMetadata = true)
 public class ReplayModSimplePathing {
     public static final String MOD_ID = "replaymod-simplepathing";
+
+    @Mod.Instance(MOD_ID)
+    public static ReplayModSimplePathing instance;
 
     private ReplayMod core;
 
@@ -39,11 +43,24 @@ public class ReplayModSimplePathing {
 
         PathPreview pathPreview = new PathPreview(this);
         pathPreview.register();
+
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.keyframerepository", Keyboard.KEY_X, () -> {
+            if (guiPathing != null) guiPathing.keyframeRepoButtonPressed();
+        });
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.clearkeyframes", Keyboard.KEY_C, () -> {
+            if (guiPathing != null) guiPathing.clearKeyframesButtonPressed();
+        });
+        core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
+            if (guiPathing != null) guiPathing.syncTimeButtonPressed();
+        });
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
+            if (guiPathing != null) guiPathing.deleteButtonPressed();
+        });
     }
 
     @SubscribeEvent
     public void postReplayOpen(ReplayOpenEvent.Post event) {
-        currentTimeline = new SPTimeline();
+        clearCurrentTimeline();
         guiPathing = new GuiPathing(core, this, event.getReplayHandler());
     }
 
@@ -82,11 +99,11 @@ public class ReplayModSimplePathing {
     public void setCurrentTimeline(SPTimeline newTimeline) {
         selectedPath = null;
         currentTimeline = newTimeline;
+        updateDefaultInterpolatorType();
     }
 
     public void clearCurrentTimeline() {
         setCurrentTimeline(new SPTimeline());
-        updateDefaultInterpolatorType();
     }
 
     public SPTimeline getCurrentTimeline() {

@@ -1,10 +1,12 @@
 package com.replaymod.simplepathing.gui;
 
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
@@ -255,6 +257,7 @@ public class GuiPathing {
         }
     };
 
+    private final ReplayMod core;
     private final ReplayModSimplePathing mod;
     private final ReplayHandler replayHandler;
     private final RealtimeTimelinePlayer player;
@@ -264,6 +267,7 @@ public class GuiPathing {
     private SettableFuture<Void> entityTrackerFuture;
 
     public GuiPathing(final ReplayMod core, final ReplayModSimplePathing mod, final ReplayHandler replayHandler) {
+        this.core = core;
         this.mod = mod;
         this.replayHandler = replayHandler;
         this.player = new RealtimeTimelinePlayer(replayHandler);
@@ -300,9 +304,15 @@ public class GuiPathing {
                     ListenableFuture<Void> future = player.start(mod.getCurrentTimeline().getTimeline(), startTime);
                     overlay.setCloseable(false);
                     overlay.setMouseVisible(true);
+                    core.printInfoToChat("replaymod.chat.pathstarted");
                     Futures.addCallback(future, new FutureCallback<Void>() {
                         @Override
                         public void onSuccess(@Nullable Void result) {
+                            if (future.isCancelled()) {
+                                core.printInfoToChat("replaymod.chat.pathinterrupted");
+                            } else {
+                                core.printInfoToChat("replaymod.chat.pathfinished");
+                            }
                             overlay.setCloseable(true);
                             timePath.setActive(true);
                         }
@@ -393,94 +403,90 @@ public class GuiPathing {
             }
         });
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.keyframerepository", Keyboard.KEY_X, new Runnable() {
-            @Override
-            public void run() {
-                if (!overlay.isVisible()) {
-                    return;
-                }
-                try {
-                    GuiKeyframeRepository gui = new GuiKeyframeRepository(
-                            mod.getCurrentTimeline(), replayHandler.getReplayFile(), mod.getCurrentTimeline().getTimeline());
-                    Futures.addCallback(gui.getFuture(), new FutureCallback<Timeline>() {
-                        @Override
-                        public void onSuccess(Timeline result) {
-                            if (result != null) {
-                                mod.setCurrentTimeline(new SPTimeline(result));
-                            }
-                        }
+        startLoadingEntityTracker();
+    }
 
-                        @Override
-                        public void onFailure(Throwable t) {
-                            t.printStackTrace();
-                            core.printWarningToChat("Error loading timeline: " + t.getMessage());
-                        }
-                    });
-                    gui.display();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    core.printWarningToChat("Error loading timeline: " + e.getMessage());
-                }
-            }
-        });
-
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.clearkeyframes", Keyboard.KEY_C, () -> {
-            GuiYesNoPopup popup = GuiYesNoPopup.open(overlay,
-                    new GuiLabel().setI18nText("replaymod.gui.clearcallback.title").setColor(Colors.BLACK)
-            ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no");
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
+    public void keyframeRepoButtonPressed() {
+        try {
+            GuiKeyframeRepository gui = new GuiKeyframeRepository(
+                    mod.getCurrentTimeline(), replayHandler.getReplayFile(), mod.getCurrentTimeline().getTimeline());
+            Futures.addCallback(gui.getFuture(), new FutureCallback<Timeline>() {
                 @Override
-                public void onSuccess(Boolean delete) {
-                    if (delete) {
-                        mod.clearCurrentTimeline();
-                        if (entityTracker != null) {
-                            mod.getCurrentTimeline().setEntityTracker(entityTracker);
-                        }
+                public void onSuccess(Timeline result) {
+                    if (result != null) {
+                        mod.setCurrentTimeline(new SPTimeline(result));
                     }
                 }
 
                 @Override
                 public void onFailure(Throwable t) {
                     t.printStackTrace();
+                    core.printWarningToChat("Error loading timeline: " + t.getMessage());
                 }
             });
-        });
+            gui.display();
+        } catch (IOException e) {
+            e.printStackTrace();
+            core.printWarningToChat("Error loading timeline: " + e.getMessage());
+        }
+    }
 
-        core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
-            // Current replay time
-            int time = replayHandler.getReplaySender().currentTimeStamp();
-            // Position of the cursor
-            int cursor = timeline.getCursorPosition();
-            // Get the last time keyframe before the cursor
-            mod.getCurrentTimeline().getTimePath().getKeyframes().stream()
-                    .filter(it -> it.getTime() <= cursor).reduce((__, last) -> last).ifPresent(keyframe -> {
-                // Cursor position at the keyframe
-                int keyframeCursor = (int) keyframe.getTime();
-                // Replay time at the keyframe
-                // This is a keyframe from the time path, so it _should_ always have a time property
-                int keyframeTime = keyframe.getValue(TimestampProperty.PROPERTY).get();
-                // Replay time passed
-                int timePassed = time - keyframeTime;
-                // Speed (set to 1 when shift is held)
-                double speed = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? 1 : overlay.getSpeedSliderValue();
-                // Cursor time passed
-                int cursorPassed = (int) (timePassed / speed);
-                // Move cursor to new position
-                timeline.setCursorPosition(keyframeCursor + cursorPassed);
-                // Deselect keyframe to allow the user to add a new one right away
-                mod.setSelected(null, 0);
-            });
-        });
-
-        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
-            if (!overlay.isVisible()) {
-                return;
+    public void clearKeyframesButtonPressed() {
+        GuiYesNoPopup popup = GuiYesNoPopup.open(replayHandler.getOverlay(),
+                new GuiLabel().setI18nText("replaymod.gui.clearcallback.title").setColor(Colors.BLACK)
+        ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no");
+        Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean delete) {
+                if (delete) {
+                    mod.clearCurrentTimeline();
+                    if (entityTracker != null) {
+                        mod.getCurrentTimeline().setEntityTracker(entityTracker);
+                    }
+                }
             }
-            if (mod.getSelectedPath() != null) {
-                updateKeyframe(mod.getSelectedPath());
+
+            @Override
+            public void onFailure(Throwable t) {
+                t.printStackTrace();
             }
         });
+    }
 
+    public void syncTimeButtonPressed() {
+        // Current replay time
+        int time = replayHandler.getReplaySender().currentTimeStamp();
+        // Position of the cursor
+        int cursor = timeline.getCursorPosition();
+        // Get the last time keyframe before the cursor
+        mod.getCurrentTimeline().getTimePath().getKeyframes().stream()
+                .filter(it -> it.getTime() <= cursor).reduce((__, last) -> last).ifPresent(keyframe -> {
+            // Cursor position at the keyframe
+            int keyframeCursor = (int) keyframe.getTime();
+            // Replay time at the keyframe
+            // This is a keyframe from the time path, so it _should_ always have a time property
+            int keyframeTime = keyframe.getValue(TimestampProperty.PROPERTY).get();
+            // Replay time passed
+            int timePassed = time - keyframeTime;
+            // Speed (set to 1 when shift is held)
+            double speed = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? 1 : replayHandler.getOverlay().getSpeedSliderValue();
+            // Cursor time passed
+            int cursorPassed = (int) (timePassed / speed);
+            // Move cursor to new position
+            timeline.setCursorPosition(keyframeCursor + cursorPassed);
+            // Deselect keyframe to allow the user to add a new one right away
+            mod.setSelected(null, 0);
+        });
+    }
+
+    public void deleteButtonPressed() {
+        if (mod.getSelectedPath() != null) {
+            updateKeyframe(mod.getSelectedPath());
+        }
+    }
+
+    private void startLoadingEntityTracker() {
+        Preconditions.checkState(entityTrackerFuture == null);
         // Start loading entity tracker
         entityTrackerFuture = SettableFuture.create();
         new Thread(() -> {
@@ -493,12 +499,13 @@ public class GuiPathing {
                     }
                 });
                 logger.info("Loaded entity tracker in " + (System.currentTimeMillis() - start) + "ms");
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 logger.error("Loading entity tracker:", e);
                 mod.getCore().runLater(() -> {
                     mod.getCore().printWarningToChat("Error loading entity tracker: %s", e.getLocalizedMessage());
                     entityTrackerFuture.setException(e);
                 });
+                return;
             }
             entityTracker = tracker;
             mod.getCore().runLater(() -> {
@@ -557,7 +564,9 @@ public class GuiPathing {
 
                 @Override
                 public void onFailure(@Nonnull Throwable t) {
-                    popup.close();
+                    String message = "Failed to load entity tracker, pathing will be unavailable.";
+                    GuiReplayOverlay overlay = replayHandler.getOverlay();
+                    Utils.error(LOGGER, overlay, CrashReport.makeCrashReport(t, message), popup::close);
                 }
             });
             return false;

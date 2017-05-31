@@ -474,6 +474,27 @@ public class SPTimelineTest {
     }
 
     @Test
+    public void testMoveKeyframeSimple() {
+        addPosition(0, 0);
+        addPosition(1, 1);
+        setInterpolator(0, new LinearInterpolator(), 1);
+        assertIsLinear(0);
+
+        impl.moveKeyframe(SPPath.POSITION, 0, 2);
+        assertValidInterpolators(SPPath.POSITION, 1);
+        assertIsLinear(0);
+        impl.moveKeyframe(SPPath.POSITION, 2, 0);
+        assertValidInterpolators(SPPath.POSITION, 1);
+        assertIsLinear(0);
+
+        addPosition(2, 1);
+        impl.moveKeyframe(SPPath.POSITION, 0, 3);
+        assertValidInterpolators(SPPath.POSITION, 1);
+        assertIsLinear(0);
+        assertIsLinear(1);
+    }
+
+    @Test
     public void testMoveKeyframe() {
         addPosition(1, 0);
         addPosition(3, 1);
