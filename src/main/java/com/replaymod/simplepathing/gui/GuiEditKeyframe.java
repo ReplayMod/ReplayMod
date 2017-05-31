@@ -109,6 +109,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             if (newTime != time) {
                 change = CombinedChange.createFromApplied(change,
                         gui.getMod().getCurrentTimeline().moveKeyframe(path, time, newTime));
+                if (gui.getMod().getSelectedPath() == path && gui.getMod().getSelectedTime() == time) {
+                    gui.getMod().setSelected(path, newTime);
+                }
             }
             gui.getMod().getCurrentTimeline().getTimeline().pushChange(change);
             close();
@@ -252,6 +255,10 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                     xField.getDouble(), yField.getDouble(), zField.getDouble(),
                     yawField.getFloat(), pitchField.getFloat(), rollField.getFloat()
             );
+            if (interpolationPanel.getSettingsPanel() == null) {
+                // The last keyframe doesn't have interpolator settings because there is no segment following it
+                return positionChange;
+            }
             Interpolator interpolator = interpolationPanel.getSettingsPanel().createInterpolator();
             if (interpolationPanel.getInterpolatorType() == InterpolatorType.DEFAULT) {
                 return CombinedChange.createFromApplied(positionChange, timeline.setInterpolatorToDefault(time),
@@ -303,6 +310,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                         dropdown.setSelected(type); // trigger the callback once to display settings panel
                     } else {
                         setSettingsPanel(InterpolatorType.DEFAULT);
+                        type = InterpolatorType.DEFAULT;
                     }
                     if (getInterpolatorTypeNoDefault(type).getInterpolatorClass().isInstance(interpolator)) {
                         //noinspection unchecked
