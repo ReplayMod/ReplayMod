@@ -17,7 +17,12 @@ import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import de.johni0702.minecraft.gui.element.*;
+import de.johni0702.minecraft.gui.element.GuiButton;
+import de.johni0702.minecraft.gui.element.GuiCheckbox;
+import de.johni0702.minecraft.gui.element.GuiImage;
+import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.element.GuiTextField;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTextArea;
@@ -234,6 +239,8 @@ public class GuiUploadReplay extends GuiScreen {
         });
 
         validateInputs();
+        name.onTextChanged(s -> validateInputs());
+        tags.onTextChanged(s -> validateInputs());
     }
 
     public void validateInputs() {

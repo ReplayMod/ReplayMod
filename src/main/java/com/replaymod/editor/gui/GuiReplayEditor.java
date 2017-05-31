@@ -59,6 +59,9 @@ public class GuiReplayEditor extends GuiScreen {
     public GuiButton currentTabButton;
     public GuiPanel currentTabPanel;
 
+    public final GuiLabel warningLabel = new GuiLabel(this).setColor(Colors.RED)
+            .setI18nText("replaymod.gui.editor.disclaimer");
+
     public final GuiPanel tabButtons = new GuiPanel(this).setLayout(new GridLayout().setSpacingX(5));
     public final List<GuiPanel> tabPanels = new ArrayList<>();
 
@@ -84,15 +87,18 @@ public class GuiReplayEditor extends GuiScreen {
                 // Move all inactive panels aside
                 tabPanels.forEach(e -> pos(e, Integer.MIN_VALUE, Integer.MIN_VALUE));
 
+                pos(warningLabel, 10, 22);
+                size(warningLabel, width - 20, 10);
+
+                pos(tabButtons, 10, y(warningLabel) + height(warningLabel) + 2);
+                size(tabButtons, width - 20, 20);
+
                 pos(buttonPanel, width - 10 - width(buttonPanel), height - 10 - height(buttonPanel));
 
                 if (currentTabPanel != null) {
-                    pos(currentTabPanel, 10, 50);
+                    pos(currentTabPanel, 10, y(tabButtons) + height(tabButtons) + 10);
                     size(currentTabPanel, width - 20, y(buttonPanel) - 10 - y(currentTabPanel));
                 }
-
-                pos(tabButtons, 10, 20);
-                size(tabButtons, width - 20, 20);
             }
         });
     }

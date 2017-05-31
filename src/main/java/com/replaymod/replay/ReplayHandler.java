@@ -209,6 +209,9 @@ public class ReplayHandler {
      */
     public void spectateEntity(Entity e) {
         CameraEntity cameraEntity = getCameraEntity();
+        if (cameraEntity == null) {
+            return; // Cannot spectate if we have no camera
+        }
         if (e == null || e == cameraEntity) {
             spectating = null;
             e = cameraEntity;
