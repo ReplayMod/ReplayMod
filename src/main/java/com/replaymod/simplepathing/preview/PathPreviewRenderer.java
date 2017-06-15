@@ -15,9 +15,9 @@ import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
@@ -204,7 +204,7 @@ public class PathPreviewRenderer {
         if (distanceSquared(view, pos2) > renderDistanceSquared) return;
 
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer vertexBuffer = tessellator.getBuffer();
+        BufferBuilder vertexBuffer = tessellator.getBuffer();
         vertexBuffer.setTranslation(-view.getLeft(), -view.getMiddle(), -view.getRight());
 
         vertexBuffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
@@ -231,7 +231,7 @@ public class PathPreviewRenderer {
                            Triple<Double, Double, Double> pos,
                            Keyframe keyframe) {
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer vertexBuffer = tessellator.getBuffer();
+        BufferBuilder vertexBuffer = tessellator.getBuffer();
         vertexBuffer.setTranslation(0, 0, 0);
 
         mc.renderEngine.bindTexture(TEXTURE);
@@ -280,7 +280,7 @@ public class PathPreviewRenderer {
                             Triple<Double, Double, Double> pos,
                             Triple<Float, Float, Float> rot) {
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer vertexBuffer = tessellator.getBuffer();
+        BufferBuilder vertexBuffer = tessellator.getBuffer();
         vertexBuffer.setTranslation(0, 0, 0);
 
         mc.renderEngine.bindTexture(CAMERA_HEAD);

@@ -3,6 +3,7 @@ package com.replaymod.replay;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.SpectatorCameraController;
 import com.replaymod.replay.events.ReplayCloseEvent;
@@ -119,7 +120,7 @@ public class ReplayHandler {
             mc.loadWorld(null);
         }
 
-        mc.timer.timerSpeed = 1;
+        mc.timer.field_194149_e = WrappedTimer.DEFAULT_MS_PER_TICK;
         overlay.setVisible(false);
 
         ReplayModReplay.instance.replayHandler = null;
@@ -141,13 +142,14 @@ public class ReplayHandler {
         networkManager.setNetHandler(netHandlerPlayClient);
         FMLClientHandler.instance().setPlayClient(netHandlerPlayClient);
 
-        channel = new EmbeddedChannel(networkManager);
+        channel = new EmbeddedChannel();
         NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
         channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
 
         channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
-        channel.pipeline().addAfter("ReplayModReplay_replaySender", "fml:packet_handler", networkDispatcher);
+        channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
+        networkDispatcher.clientToServerHandshake();
     }
 
     public ReplayFile getReplayFile() {

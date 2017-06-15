@@ -43,7 +43,7 @@ public class NoGuiScreenshot {
                     mc.getFramebuffer().bindFramebuffer(true);
                     GlStateManager.enableTexture2D();
 
-                    mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks, System.nanoTime());
+                    mc.entityRenderer.updateCameraAndRender(mc.timer.field_194147_b, System.nanoTime());
 
                     mc.getFramebuffer().unbindFramebuffer();
                     GlStateManager.popMatrix();

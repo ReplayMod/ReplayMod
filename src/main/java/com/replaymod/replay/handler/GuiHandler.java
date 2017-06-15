@@ -17,7 +17,7 @@ import java.util.List;
 
 public class GuiHandler {
     private static final int BUTTON_EXIT_SERVER = 1;
-    private static final int BUTTON_ACHIEVEMENTS = 5;
+    private static final int BUTTON_ADVANCEMENTS = 5;
     private static final int BUTTON_STATS = 6;
     private static final int BUTTON_OPEN_TO_LAN = 7;
 
@@ -55,8 +55,8 @@ public class GuiHandler {
                         b.displayString = I18n.format("replaymod.gui.exit");
                         b.id = BUTTON_EXIT_REPLAY;
                         break;
-                    // Remove "Achievements", "Stats" and "Open to LAN" buttons
-                    case BUTTON_ACHIEVEMENTS:
+                    // Remove "Advancements", "Stats" and "Open to LAN" buttons
+                    case BUTTON_ADVANCEMENTS:
                         buttonList.remove(achievements = b);
                         break;
                     case BUTTON_STATS:

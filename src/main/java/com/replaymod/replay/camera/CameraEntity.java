@@ -19,6 +19,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.stats.RecipeBook;
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
@@ -66,8 +67,8 @@ public class CameraEntity extends EntityPlayerSP {
      */
     private final EventHandler eventHandler = new EventHandler();
 
-    public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager) {
-        super(mcIn, worldIn, netHandlerPlayClient, statisticsManager);
+    public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
+        super(mcIn, worldIn, netHandlerPlayClient, statisticsManager, recipeBook);
         MinecraftForge.EVENT_BUS.register(eventHandler);
         if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
             cameraController = ReplayModReplay.instance.createCameraController(this);

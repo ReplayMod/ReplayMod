@@ -34,7 +34,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.helpers.Strings;
+import org.apache.logging.log4j.util.Strings;
 import org.lwjgl.Sys;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;

@@ -15,8 +15,18 @@ public class GuiFactory implements IModGuiFactory {
     }
 
     @Override
+    public boolean hasConfigGui() {
+        return true;
+    }
+
+    @Override
+    public GuiScreen createConfigGui(GuiScreen parentScreen) {
+        return new GuiReplaySettings(parentScreen, ReplayMod.instance.getSettingsRegistry()).toMinecraft();
+    }
+
+    @Override
     public Class<? extends GuiScreen> mainConfigGuiClass() {
-        return ConfigGuiWrapper.class;
+        return null;
     }
 
     @Override
@@ -27,18 +37,5 @@ public class GuiFactory implements IModGuiFactory {
     @Override
     public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
         return null;
-    }
-
-    public static class ConfigGuiWrapper extends GuiScreen {
-        private final GuiScreen parent;
-
-        public ConfigGuiWrapper(GuiScreen parent) {
-            this.parent = parent;
-        }
-
-        @Override
-        public void initGui() {
-            new GuiReplaySettings(parent, ReplayMod.instance.getSettingsRegistry()).display();
-        }
     }
 }

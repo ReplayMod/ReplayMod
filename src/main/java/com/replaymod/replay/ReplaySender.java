@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import io.netty.buffer.ByteBuf;
@@ -518,7 +519,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      * @return {@code true} if it is paused, {@code false} otherwise
      */
     public boolean paused() {
-        return mc.timer.timerSpeed == 0;
+        return mc.timer.field_194149_e == Float.POSITIVE_INFINITY;
     }
 
     /**
@@ -538,7 +539,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      */
     public void setReplaySpeed(final double d) {
         if(d != 0) this.replaySpeed = d;
-        mc.timer.timerSpeed = (float) d;
+        mc.timer.field_194149_e = WrappedTimer.DEFAULT_MS_PER_TICK / (float) d;
     }
 
     /////////////////////////////////////////////////////////

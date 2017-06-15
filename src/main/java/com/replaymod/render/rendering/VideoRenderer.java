@@ -1,5 +1,6 @@
 package com.replaymod.render.rendering;
 
+import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
@@ -111,8 +112,8 @@ public class VideoRenderer implements RenderInfo {
 
             if (videoStart > 1000) {
                 int replayTime = videoStart - 1000;
-                timer.elapsedPartialTicks = timer.renderPartialTicks = 0;
-                timer.timerSpeed = 1;
+                timer.field_194147_b = 0;
+                timer.field_194149_e = WrappedTimer.DEFAULT_MS_PER_TICK;
                 while (replayTime < videoStart) {
                     timer.elapsedTicks = 1;
                     replayTime += 50;
@@ -167,7 +168,7 @@ public class VideoRenderer implements RenderInfo {
         mc.displayHeight = displayHeightBefore;
 
         framesDone++;
-        return mc.timer.renderPartialTicks;
+        return mc.timer.field_194147_b;
     }
 
     @Override

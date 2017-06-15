@@ -20,6 +20,7 @@ public abstract class MixinShaderRenderChunk {
      */
     @Inject(method = "isPlayerUpdate", at = @At("HEAD"), cancellable = true)
     private void replayModCompat_disableIsPlayerUpdate(CallbackInfoReturnable<Boolean> ci) {
+        // TODO: Update to 1.12 once optifine is available
         if (((EntityRendererHandler.IEntityRenderer) mc.entityRenderer).replayModRender_getHandler() == null) return;
         ci.setReturnValue(true);
     }

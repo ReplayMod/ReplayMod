@@ -6,6 +6,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -68,8 +69,8 @@ public abstract class AbstractTimelinePlayer {
         MinecraftForge.EVENT_BUS.register(this);
         lastTime = 0;
         mc.timer = new ReplayTimer(mc.timer);
-        mc.timer.timerSpeed = 1;
-        mc.timer.elapsedPartialTicks = mc.timer.elapsedTicks = 0;
+        mc.timer.field_194149_e = WrappedTimer.DEFAULT_MS_PER_TICK;
+        mc.timer.field_194147_b = mc.timer.elapsedTicks = 0;
         return future = settableFuture = SettableFuture.create();
     }
 
@@ -107,10 +108,9 @@ public abstract class AbstractTimelinePlayer {
         float timeInTicks = replayTime / 50f;
         float previousTimeInTicks = lastTime / 50f;
         float passedTicks = timeInTicks - previousTimeInTicks;
-        mc.timer.elapsedPartialTicks += passedTicks;
-        mc.timer.elapsedTicks = (int) mc.timer.elapsedPartialTicks;
-        mc.timer.elapsedPartialTicks -= mc.timer.elapsedTicks;
-        mc.timer.renderPartialTicks =  mc.timer.elapsedPartialTicks;
+        mc.timer.field_194147_b += passedTicks;
+        mc.timer.elapsedTicks = (int) mc.timer.field_194147_b;
+        mc.timer.field_194147_b -= mc.timer.elapsedTicks;
 
         lastTime = replayTime;
 
