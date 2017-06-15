@@ -397,7 +397,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                         if (!file.exists()) {
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
-                        mc.getResourcePackRepository().setResourcePackInstance(file);
+                        mc.getResourcePackRepository().setServerResourcePack(file);
                     }
                 }
                 return null;
@@ -519,7 +519,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      * @return {@code true} if it is paused, {@code false} otherwise
      */
     public boolean paused() {
-        return mc.timer.field_194149_e == Float.POSITIVE_INFINITY;
+        return mc.timer.tickLength == Float.POSITIVE_INFINITY;
     }
 
     /**
@@ -539,7 +539,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      */
     public void setReplaySpeed(final double d) {
         if(d != 0) this.replaySpeed = d;
-        mc.timer.field_194149_e = WrappedTimer.DEFAULT_MS_PER_TICK / (float) d;
+        mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK / (float) d;
     }
 
     /////////////////////////////////////////////////////////

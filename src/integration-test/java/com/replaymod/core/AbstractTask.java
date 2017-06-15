@@ -299,7 +299,7 @@ public abstract class AbstractTask implements Task {
                     return;
                 }
 
-                clickNow(button.xPosition + 5, button.yPosition + 5);
+                clickNow(button.x + 5, button.y + 5);
             } catch (IllegalAccessException | NoSuchFieldException e) {
                 future.setException(e);
             }

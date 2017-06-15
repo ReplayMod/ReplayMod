@@ -112,8 +112,8 @@ public class VideoRenderer implements RenderInfo {
 
             if (videoStart > 1000) {
                 int replayTime = videoStart - 1000;
-                timer.field_194147_b = 0;
-                timer.field_194149_e = WrappedTimer.DEFAULT_MS_PER_TICK;
+                timer.renderPartialTicks = 0;
+                timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
                 while (replayTime < videoStart) {
                     timer.elapsedTicks = 1;
                     replayTime += 50;
@@ -168,7 +168,7 @@ public class VideoRenderer implements RenderInfo {
         mc.displayHeight = displayHeightBefore;
 
         framesDone++;
-        return mc.timer.field_194147_b;
+        return mc.timer.renderPartialTicks;
     }
 
     @Override

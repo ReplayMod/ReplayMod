@@ -22,9 +22,9 @@ public class WrappedTimer extends Timer {
 
     protected void copy(Timer from, Timer to) {
         to.elapsedTicks = from.elapsedTicks;
-        to.field_194147_b = from.field_194147_b; // elapsedPartialTicks
+        to.renderPartialTicks = from.renderPartialTicks;
         to.lastSyncSysClock = from.lastSyncSysClock;
-        to.field_194148_c = from.field_194148_c; // lastTickDiff
-        to.field_194149_e = from.field_194149_e; // msPerTick
+        to.elapsedPartialTicks = from.elapsedPartialTicks;
+        to.tickLength = from.tickLength;
     }
 }

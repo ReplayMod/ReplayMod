@@ -235,7 +235,7 @@ public class RecordingEventHandler {
     public void onPickupItem(ItemPickupEvent event) {
         try {
             packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId(),
-                    event.pickedUp.getEntityItem().getMaxStackSize()));
+                    event.pickedUp.getItem().getMaxStackSize()));
         } catch(Exception e) {
             e.printStackTrace();
         }

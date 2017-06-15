@@ -69,8 +69,8 @@ public abstract class AbstractTimelinePlayer {
         MinecraftForge.EVENT_BUS.register(this);
         lastTime = 0;
         mc.timer = new ReplayTimer(mc.timer);
-        mc.timer.field_194149_e = WrappedTimer.DEFAULT_MS_PER_TICK;
-        mc.timer.field_194147_b = mc.timer.elapsedTicks = 0;
+        mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
+        mc.timer.renderPartialTicks = mc.timer.elapsedTicks = 0;
         return future = settableFuture = SettableFuture.create();
     }
 
@@ -108,9 +108,9 @@ public abstract class AbstractTimelinePlayer {
         float timeInTicks = replayTime / 50f;
         float previousTimeInTicks = lastTime / 50f;
         float passedTicks = timeInTicks - previousTimeInTicks;
-        mc.timer.field_194147_b += passedTicks;
-        mc.timer.elapsedTicks = (int) mc.timer.field_194147_b;
-        mc.timer.field_194147_b -= mc.timer.elapsedTicks;
+        mc.timer.renderPartialTicks += passedTicks;
+        mc.timer.elapsedTicks = (int) mc.timer.renderPartialTicks;
+        mc.timer.renderPartialTicks -= mc.timer.elapsedTicks;
 
         lastTime = replayTime;
 

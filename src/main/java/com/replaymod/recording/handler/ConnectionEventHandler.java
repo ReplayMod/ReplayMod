@@ -46,7 +46,7 @@ public class ConnectionEventHandler {
         try {
             boolean local = networkManager.isLocalChannel();
             if (local) {
-                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_WORLD) {
+                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
                     logger.info("Debug World recording is not supported.");
                     return;
                 }

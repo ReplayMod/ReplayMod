@@ -120,7 +120,7 @@ public class ReplayHandler {
             mc.loadWorld(null);
         }
 
-        mc.timer.field_194149_e = WrappedTimer.DEFAULT_MS_PER_TICK;
+        mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
         overlay.setVisible(false);
 
         ReplayModReplay.instance.replayHandler = null;
@@ -301,7 +301,7 @@ public class ReplayHandler {
                     @Override
                     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
                         drawBackground(0);
-                        drawCenteredString(fontRendererObj, I18n.format("replaymod.gui.pleasewait"),
+                        drawCenteredString(fontRenderer, I18n.format("replaymod.gui.pleasewait"),
                                 width / 2, height / 2, 0xffffffff);
                     }
                 };
