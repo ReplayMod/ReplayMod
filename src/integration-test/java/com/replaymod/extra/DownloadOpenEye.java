@@ -10,6 +10,10 @@ import java.nio.file.NoSuchFileException;
 public class DownloadOpenEye extends AbstractTask {
     @Override
     protected void init() {
+        if ("1".equals(System.getenv("RM_INTEGRATION_TEST_NO_OPENEYE"))) {
+            runLater(() -> future.set(null));
+            return;
+        }
         expectGui(OpenEyeExtra.OfferGui.class, offerGui -> {
             click(offerGui.yesButton);
             expectGuiClosed(20 * 1000, () -> {
