@@ -34,7 +34,7 @@ archivesBaseName = "replaymod"
 
 minecraft {
     coreMod = 'com.replaymod.core.LoadingPlugin'
-    version = '1.12-14.21.0.2327'
+    version = '1.12-14.21.0.2375'
     runDir = "eclipse"
     mappings = "snapshot_20170615"
     replace '@MOD_VERSION@', project.version
