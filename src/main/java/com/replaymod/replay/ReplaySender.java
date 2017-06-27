@@ -50,6 +50,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
             // TODO Update possibly more?
+            SPacketRecipeBook.class,
+            SPacketAdvancementInfo.class,
+            SPacketSelectAdvancementsTab.class,
             SPacketUpdateHealth.class,
             SPacketOpenWindow.class,
             SPacketCloseWindow.class,
