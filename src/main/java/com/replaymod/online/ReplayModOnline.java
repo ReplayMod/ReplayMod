@@ -40,7 +40,7 @@ public class ReplayModOnline {
 
     private ReplayModReplay replayModule;
 
-    private Logger logger;
+    public static Logger LOGGER;
 
     private ApiClient apiClient;
 
@@ -53,7 +53,7 @@ public class ReplayModOnline {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
         core = ReplayMod.instance;
         replayModule = ReplayModReplay.instance;
 
@@ -69,7 +69,7 @@ public class ReplayModOnline {
     public void init(FMLInitializationEvent event) {
         if (!getDownloadsFolder().exists()){
             if (!getDownloadsFolder().mkdirs()) {
-                logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
+                LOGGER.warn("Failed to create downloads folder: " + getDownloadsFolder());
             }
         }
 
@@ -96,7 +96,7 @@ public class ReplayModOnline {
     }
 
     public Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 
     public ApiClient getApiClient() {

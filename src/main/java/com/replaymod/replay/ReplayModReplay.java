@@ -46,7 +46,7 @@ public class ReplayModReplay {
 
     private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 
-    private Logger logger;
+    public static Logger LOGGER;
 
     protected ReplayHandler replayHandler;
 
@@ -56,7 +56,7 @@ public class ReplayModReplay {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
         core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
@@ -195,7 +195,7 @@ public class ReplayModReplay {
     }
 
     public Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 
     public CameraControllerRegistry getCameraControllerRegistry() {

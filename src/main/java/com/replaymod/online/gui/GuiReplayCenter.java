@@ -37,7 +37,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import net.minecraftforge.fml.common.FMLLog;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.core.helpers.Strings;
 import org.lwjgl.util.Dimension;
@@ -50,6 +49,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import static com.replaymod.online.ReplayModOnline.LOGGER;
 
 public class GuiReplayCenter extends GuiScreen {
     private final ReplayModOnline mod;
@@ -336,7 +337,7 @@ public class GuiReplayCenter extends GuiScreen {
                             }
                         });
                     } catch (Exception e) {
-                        FMLLog.getLogger().error("Could not load Replay File " + fileInfo.getId(), e);
+                        LOGGER.error("Could not load Replay File {}", fileInfo.getId(), e);
                     }
                 }
             }

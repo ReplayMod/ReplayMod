@@ -28,7 +28,6 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
-import net.minecraftforge.fml.common.FMLLog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
@@ -46,6 +45,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
 public class GuiReplayViewer extends GuiScreen {
     private final ReplayModReplay mod;
@@ -91,7 +92,7 @@ public class GuiReplayViewer extends GuiScreen {
                             obj.consume(() -> new GuiReplayEntry(file, metaData, theThumb));
                         }
                     } catch (Exception e) {
-                        FMLLog.getLogger().error("Could not load Replay File " + file.getName(), e);
+                        LOGGER.error("Could not load Replay File {}", file.getName(), e);
                     }
                 }
             } catch (IOException e) {
