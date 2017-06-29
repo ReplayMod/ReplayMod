@@ -13,7 +13,8 @@
         "1.11-recommended": "1.11-2.0.0",
         "1.11.2-latest": "1.11.2-2.0.0",
         "1.11.2-recommended": "1.11.2-2.0.0",
-        "1.12-latest": "1.12-2.0.0-b7"
+        "1.12-latest": "1.12-2.0.0",
+        "1.12-recommended": "1.12-2.0.0"
     },
     "1.8": {
         "1.8-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.8-2.0.0",
@@ -57,6 +58,7 @@
         "1.11.2-2.0.0-b5": "See https://github.com/ReplayMod/ReplayMod/releases/1.11.2-2.0.0-b5"
     },
     "1.12": {
+        "1.12-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.12-2.0.0",
         "1.12-2.0.0-b7": "See https://github.com/ReplayMod/ReplayMod/releases/1.12-2.0.0-b7"
     }
 }
