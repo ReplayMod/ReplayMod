@@ -507,7 +507,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     @SuppressWarnings("unchecked")
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
-        ctx.attr(NetworkManager.PROTOCOL_ATTRIBUTE_KEY).set(EnumConnectionState.PLAY);
+        ctx.channel().attr(NetworkManager.PROTOCOL_ATTRIBUTE_KEY).set(EnumConnectionState.PLAY);
         super.channelActive(ctx);
     }
 
