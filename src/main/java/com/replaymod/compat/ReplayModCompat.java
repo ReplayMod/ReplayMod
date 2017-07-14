@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.eventhandler.EventBus;
 @Mod(modid = ReplayModCompat.MOD_ID,
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
+        acceptableRemoteVersions = "*",
         useMetadata = true)
 public class ReplayModCompat {
     public static final String MOD_ID = "replaymod-compat";

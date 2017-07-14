@@ -35,6 +35,7 @@ import java.util.Optional;
 @Mod(modid = ReplayModReplay.MOD_ID,
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
+        acceptableRemoteVersions = "*",
         useMetadata = true)
 public class ReplayModReplay {
     public static final String MOD_ID = "replaymod-replay";
