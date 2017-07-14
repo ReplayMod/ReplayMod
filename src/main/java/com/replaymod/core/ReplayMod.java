@@ -36,6 +36,7 @@ import java.util.List;
         useMetadata = true,
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
+        acceptableRemoteVersions = "*",
         updateJSON = "https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json",
         guiFactory = "com.replaymod.core.gui.GuiFactory")
 public class ReplayMod {
