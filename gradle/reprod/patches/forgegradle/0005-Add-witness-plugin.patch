@@ -1,0 +1,90 @@
+From ffd1f38113d2ec550ae23be13df35c678bea5543 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Mon, 7 Aug 2017 19:53:15 +0200
+Subject: [PATCH 5/5] Add witness plugin
+
+---
+ build.gradle | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
+
+diff --git a/build.gradle b/build.gradle
+index 0bf7941..d1530fd 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,7 +1,14 @@
++buildscript {
++    dependencies {
++        classpath files('../gradle-witness.jar')
++    }
++}
++
+ apply plugin: 'java'
+ apply plugin: 'idea'
+ apply plugin: 'eclipse'
+ apply plugin: 'maven'
++apply plugin: 'witness'
+ 
+ group = 'net.minecraftforge.gradle'
+ version = '2.3-SNAPSHOT'
+@@ -81,6 +88,58 @@ dependencies {
+     testCompile 'junit:junit:4.12'
+ }
+ 
++dependencyVerification {
++    includedConfigurations += [configurations.shade, configurations.testCompile]
++    verify = [
++        'org.ow2.asm:asm-debug-all:5.1:f7ac3f642c36c406543bb56ae3db3a53f263f71bd857b04709986e2d5798c8c4',
++        'net.sf.opencsv:opencsv:2.3:dc0ba5bff6140dc92339973026a0ecbddc2a3b01bdd46ed9d16becc2f6d78de6',
++        'com.cloudbees:diff4j:1.1:e6509db2167c983d254d3530c66a060443e91a6ca38df9fdc4ef2a88ad813fa5',
++        'com.github.abrarsyed.jastyle:jAstyle:1.3:4cad4ee2f1c379fa1f6496912fe026d8a4f2febf0a140ff867206b00a22f988f',
++        'net.sf.trove4j:trove4j:2.1.0:294fb88c272598b9a5dcae15f13d228e64134256de941fbc28917a994beeb075',
++        'com.github.jponge:lzma-java:1.3:75ccc0e24d37ed5b8916e1bcffad1e067c2b1cfa21b635287f968db5c3c1963a',
++        'com.nothome:javaxdelta:2.0.1:a661dfcb749053fc26eada2a0a8e619a8ead1ca9eda29e1698687aa2cdd80152',
++        'com.google.code.gson:gson:2.2.4:c0328cd07ca9e363a5acd00c1cf4afe8cf554bd6d373834981ba05cebec687fb',
++        'com.github.tony19:named-regexp:0.2.3:c6ebd74cd6108b8c372c95b842725ee5bd6d3303ba26cb00f18bc92f80b47956',
++        'net.minecraftforge:forgeflower:1.0.342-SNAPSHOT:ad7e63b8732da2c10d5923cc567386b8f172848259c3c2627298e6cd702df938',
++        'net.md-5:SpecialSource:1.7.4:b47c5d5810643426a3147ddb2195ef2ab67c80b167e7c2ac64a5d0dee8c030dd',
++        'org.apache.httpcomponents:httpclient:4.3.3:9844cc9b5440d65a88d28bcba9d771374d2dfdab898848cda164611091633013',
++        'org.apache.httpcomponents:httpmime:4.3.3:61434dbb2314cbb8d28025feb6ae53bbc45d1042daa34371d8911e1e7f570b36',
++        'de.oceanlabs.mcp:RetroGuard:3.6.6:22c45060f350fcaa94e503f4a420cf8237c26c0fcdb4ada4aa98389b75c7b231',
++        'de.oceanlabs.mcp:mcinjector:3.4-SNAPSHOT:4ad11e0943fb343225dace0000215113c8cbdede6949fa8ba653bdcf770cb028',
++        'net.minecraftforge.srg2source:Srg2Source:4.0-SNAPSHOT:99893440fe20bafc8193a790889239d4cc60dbe8b8be1e7698a31eaa3853e2fd',
++        'org.jvnet.localizer:localizer:1.12:212f6eaa0491dd7359dc33c3a72e82a23b096e1890d984b4d92395abc9a6bf7f',
++        'commons-io:commons-io:1.4:a7f713593007813bf07d19bd1df9f81c86c0719e9a0bb2ef1b98b78313fc940d',
++        'trove:trove:1.0.2:ad68a86cfd0255a2bc0525ce11ec49640caea7e34ff91eb89c3193dcccd77f05',
++        'net.sf.jopt-simple:jopt-simple:5.0.1:9f0c8d50fa4b79b6ff1502dbec8502179d6b9497cacbe17a13074001aed537ec',
++        'org.apache.httpcomponents:httpcore:4.3.2:abd02320e2356f89d054dae4cf02306bef20a9cf7865b3ac94ec7552b4f1528b',
++        'commons-logging:commons-logging:1.1.3:70903f6fc82e9908c8da9f20443f61d90f0870a312642991fe8462a0b9391784',
++        'commons-codec:commons-codec:1.6:54b34e941b8e1414bd3e40d736efd3481772dc26db3296f6aa45cec9f6203d86',
++        'org.eclipse.equinox:common:3.6.200-v20130402-1505:843414d0e457898b1615e4c9118f86ae0cf30dd5166b8b0a1d206fbdab5fbbae',
++        'org.eclipse.text:org.eclipse.text:3.5.101:1bacf311ac3d39cc53b03f8de7a4ccffc89c208938f0004a90c652383e927f18',
++        'org.eclipse.core:resources:3.2.1-R32x_v20060914:73f9a1a2403f7f9c44d11431c40be4641295f3620570bfef2168a66c5de68fee',
++        'org.eclipse.jdt:org.eclipse.jdt.core:3.12.0.v20160315-2126:2082ffb0bb8f276ca164a6363e394f902163a81b7df44ede13aed33d84fdf27e',
++        'fr.inria.gforge.spoon:spoon-core:5.1.0:08e0b3db3d116301f16142c88932daf954ac447427d609710c2a5ee8dfcfa1f7',
++        'org.eclipse.equinox:registry:3.5.400-v20140428-1507:a6833a81795978d4ad8d2e54597171e2a3447fd6983b8e902710aa1dc946fa24',
++        'org.eclipse.equinox:app:1.3.200-v20130910-1609:7b2ad6c43d922f3ba0d18d99879d1d56d6a994ba7b639d5d6276f1a167b6a7ac',
++        'org.eclipse.core:org.eclipse.core.commands:3.6.0:e46a6444a6d7c0fe70f196ce42d9700c4514b68bf55bae296b2e3c287883ffdc',
++        'org.eclipse.equinox:org.eclipse.equinox.common:3.6.0:32b046de57df2f4887fc5a2c343740d9d12c7fe17541e2cede73cfa4ccbc2436',
++        'org.eclipse.core.runtime:compatibility:3.1.200-v20070502:ddf19054374a2617ba9c10d7a5ec8eeaeb8f62c2c6e430144e81da15718bb585',
++        'org.eclipse.core:expressions:3.3.0-v20070606-0010:4a73a4a0ebf5ca5f7e9d5e8978b24cd72ebacd5b561de961517f4c976aa7e30f',
++        'org.eclipse.core:filesystem:1.1.0-v20070606:b418d15acf94545248f4bd55b4a9b62fc49246488758729d6b3ff52ae149df24',
++        'com.martiansoftware:jsap:2.1:331746fa62cfbc3368260c5a2e660936ad11be612308c120a044e120361d474e',
++        'log4j:log4j:1.2.17:1d31696445697720527091754369082a6651bd49781b6005deb94e56753406f9',
++        'org.eclipse.update:configurator:3.2.100-v20070615:88b506fa09a810b19517a2d45cb8f5eaa76c22b18abfbdcf36cd07aebfd56cb0',
++        'com.google.guava:guava:19.0:58d4cc2e05ebb012bbac568b032f75623be1cb6fb096f3c60c72a86f7f057de4',
++        'org.eclipse:osgi:3.10.0-v20140606-1445:fa1d59411d4d2667d8f15638af7c0ac44539234c0982c27a2b65ba06c32a0b3e',
++        'org.eclipse.core:jobs:3.6.0-v20140424-0053:ef971ecb154fba0cc06d913448640fb2e5ab3f9079c1c7854385d1c30d81a94f',
++        'org.eclipse.equinox:preferences:3.5.200-v20140224-1527:6498d32ab6503b49a44e0a0bfe1c2ac28ffb7e8f88acbdb4dda89d73092d8ca7',
++        'org.eclipse.core:contenttype:3.4.200-v20140207-1251:4dd6ec1376693bd8ac4e2ceacc7be70880920978f3fef31db4968e6ade001c87',
++        'org.eclipse.core:runtime:3.10.0-v20140318-2214:363ad8af4d8fc7f208b6fa640e490c7ba84b2aa78c26809e569bb1b0737ce9cb',
++        'junit:junit:4.12:59721f0805e223d84b90677887d9ff567dc534d7c502ca903c0c2b17f05c116a',
++        'org.hamcrest:hamcrest-core:1.3:66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9',
++    ]
++}
++
+ task wrapper(type: Wrapper) {
+     gradleVersion = '2.14'
+ }
+-- 
+2.5.5
+

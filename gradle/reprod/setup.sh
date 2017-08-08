@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+cd gradle/reprod
+
+sha256val () {
+    sha256sum $1 | cut -d' ' -f1
+}
+
+setup_dep () {
+    dep=$1
+    url=$2
+    commit=$3
+    jar=$4
+    jarhash=$5
+
+    [ -f "deps/$dep.jar" ] && [ "$(sha256val "deps/$dep.jar")" == "$jarhash" ] && return
+    rm -rf "deps/$dep.jar"
+
+    if [ ! -d "deps/$dep" ] || [ "$(git -C "deps/$dep" rev-parse $commit^{commit})" != "$commit" ]; then
+        rm -rf "deps/$dep"
+        mkdir -p "deps/$dep"
+        pushd "deps/$dep"
+            git clone "$url" .
+            git fetch origin $commit
+            git checkout "$commit"
+        popd
+    fi
+
+    pushd "deps/$dep"
+        git reset --hard "$commit"
+        find ../../patches/$dep/ -name *.patch | sort | xargs -r git am
+        git reset --soft "$commit" # Because forgegradle includes the commit hash in the jar
+
+        rm -rf gradle/wrapper gradlew
+        [ ! -d gradle ] && mkdir gradle
+        cp -r ../../../wrapper gradle/
+        cp ../../../wrapper/gradle-wrapper.properties gradle/wrapper/
+        cp ../../../../gradlew .
+
+        chmod +x gradlew
+        ./gradlew build -x test
+
+        actual_hash=$(sha256val "build/libs/$jar")
+        if [ "$actual_hash" != "$jarhash" ]; then
+            echo "Failed to verify checksum of build artifact of dependency: $dep"
+            echo "Expected: $jarhash"
+            echo "But was:  $actual_hash"
+            exit 1
+        fi
+
+        cp "build/libs/$jar" "../$dep.jar"
+    popd
+}
+
+# Required for all
+setup_dep "gradle-witness" "https://github.com/ReplayMod/gradle-witness.git" "c162a15841c2eba54b182fa81733c0aa9227f023" "gradle-witness.jar" "5e9ce687248029bf6364010168a65a4ad66fcb712dbd5ba69c59697ef564964b"
+
+# Required for mixin
+setup_dep "shadow" "https://github.com/johnrengelman/shadow.git" "60d0f28103be076dc991a624bf79ca7a13835973" "shadow.jar" "0a7a280d5f7c58ff513f448537ceb77eda788df6cbdeacd60f63f70142ff39b3"
+setup_dep "fernflower" "https://github.com/fesh0r/fernflower.git" "85f61bee8194ab69afa746b965973a18eda67608" "fernflower.jar" "577c2c4e04f0026675cacb25ec525f2ccba5de2eecac525b28bed18f9ccfd790"
+
+# Required for RM
+setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "3d81c8e202ec435056fb2068fdc34cfefa99be2d" "mixingradle-0.4-SNAPSHOT.jar" "a2b23727ed920ef2b9098f55634ede8d2ae5d04d910c0d572e45c33cff1cd281"
+setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "a228a836a2dc5ce546d2d53c48760f52f082d7ad" "ForgeGradle-2.3-SNAPSHOT.jar" "c885787f66811bf8edf0ced326d20c56428b447e8f0d29f37679f381d3e1f7ff"
+setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "b558323da3bd6ce94aeb442bfd7357f6c40d2fd4" "mixin-0.6.11-SNAPSHOT.jar" "0563b206db37f2f22b024b1736084afa2f30b0193b1a14e89cf9d99a3db26e1d"
+
+rm -rf tmp
+mkdir tmp
+pushd tmp
+	cp ../../../build.gradle build.gradle
+	git init
+	git add build.gradle
+	git commit -m "Add build.gradle"
+	git am ../patches/replaymod/*.patch
+popd

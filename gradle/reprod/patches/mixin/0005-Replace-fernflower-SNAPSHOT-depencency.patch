@@ -1,0 +1,27 @@
+From c66ba83e4b27f6f094c2dcdaaac095d3ca69b41c Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Tue, 8 Aug 2017 19:35:08 +0200
+Subject: [PATCH 5/7] Replace fernflower SNAPSHOT depencency
+
+---
+ build.gradle | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index f8598a3..e9a965b 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -143,8 +143,8 @@ dependencies {
+     fernflowerCompile 'commons-io:commons-io:2.4'
+     fernflowerCompile 'org.apache.logging.log4j:log4j-core:2.0-beta9'
+     fernflowerCompile 'com.google.guava:guava:17.0'
+-    fernflowerCompile 'org.jetbrains.java.decompiler:fernflower:sponge-SNAPSHOT'
+-    compile 'org.jetbrains.java.decompiler:fernflower:sponge-SNAPSHOT'
++    fernflowerCompile files('../fernflower.jar')
++    compile files('../fernflower.jar')
+ 
+     compile('net.minecraft:launchwrapper:1.11') {
+         exclude module: 'lwjgl'
+-- 
+2.5.5
+

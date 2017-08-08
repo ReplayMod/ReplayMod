@@ -1,0 +1,71 @@
+From 6a90175bbe1a7cbb9d0eb6bb0bbb27ad451f4587 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Tue, 8 Aug 2017 19:20:46 +0200
+Subject: [PATCH 7/7] Add witness plugin
+
+---
+ build.gradle | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+
+diff --git a/build.gradle b/build.gradle
+index e9a965b..737be9e 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -2,6 +2,7 @@
+ buildscript {
+     dependencies {
+         classpath files('../shadow.jar')
++        classpath files('../gradle-witness.jar')
+     }
+ }
+ 
+@@ -11,6 +12,7 @@ apply plugin: 'maven'
+ apply plugin: 'eclipse'
+ apply plugin: 'idea'
+ apply plugin: 'com.github.johnrengelman.shadow'
++apply plugin: 'witness'
+ 
+ // Default tasks
+ defaultTasks 'licenseFormat', 'check', 'build'
+@@ -158,6 +160,38 @@ dependencies {
+     bridgeCompile 'org.apache.logging.log4j:log4j-core:2.0-beta9'
+ }
+ 
++dependencyVerification {
++    includedConfigurations += [configurations.asm, configurations.jarjar, configurations.apCompile, configurations.agentCompile, configurations.fernflowerCompile, configurations.bridgeCompile]
++    verify = [
++        'com.googlecode.jarjar:jarjar:1.1:4838f4f29a027522363cef1bcda1b48808880b0de4953fab6db4121ee27b649b',
++        'com.google.guava:guava:17.0:8c36a80ea613d0b6b8040a17cf837c5bbe3677bc1b06a058a6c174fdb787ebbc',
++        'com.google.code.gson:gson:2.2.4:c0328cd07ca9e363a5acd00c1cf4afe8cf554bd6d373834981ba05cebec687fb',
++        'commons-io:commons-io:2.4:cc6a41dc3eaacc9e440a6bd0d2890b20d36b4ee408fe2d67122f328bb6e01581',
++        'net.minecraft:launchwrapper:1.11:e74b65b8948446982a506a96176dd8baf4688237ba4903f56ca6f667b6c7ee42',
++        'org.apache.logging.log4j:log4j-core:2.0-beta9:dcde6033b205433d6e9855c93740f798951fa3a3f252035a768d9f356fde806d',
++        'org.apache.logging.log4j:log4j-api:2.0-beta9:eb0ca9bdd938f80711152a758d6bc331a8b0d769199d457294dc67ed03f73498',
++        'net.sf.jopt-simple:jopt-simple:4.5:64335a48be6b142a7d0c13ec5c82a707857aa58c0234e6eda3eaca0e96eea51b',
++        'org.ow2.asm:asm-debug-all:5.0.3:2969356ac1e40fe4141948c563690238f5d79d76aec7fd873536867a331ede81',
++        'org.ow2.asm:asm-debug-all:5.0.3-sources:1e9ee309d909b3dbf33291fcfd36c76adba4ed1215b8156c3ac61a774cc86bf1',
++        'com.googlecode.jarjar:jarjar:1.1:4838f4f29a027522363cef1bcda1b48808880b0de4953fab6db4121ee27b649b',
++        'com.google.guava:guava:17.0:8c36a80ea613d0b6b8040a17cf837c5bbe3677bc1b06a058a6c174fdb787ebbc',
++        'net.minecraft:launchwrapper:1.11:e74b65b8948446982a506a96176dd8baf4688237ba4903f56ca6f667b6c7ee42',
++        'org.apache.logging.log4j:log4j-core:2.0-beta9:dcde6033b205433d6e9855c93740f798951fa3a3f252035a768d9f356fde806d',
++        'org.ow2.asm:asm-debug-all:5.0.3:2969356ac1e40fe4141948c563690238f5d79d76aec7fd873536867a331ede81',
++        'org.apache.logging.log4j:log4j-api:2.0-beta9:eb0ca9bdd938f80711152a758d6bc331a8b0d769199d457294dc67ed03f73498',
++        'net.sf.jopt-simple:jopt-simple:4.5:64335a48be6b142a7d0c13ec5c82a707857aa58c0234e6eda3eaca0e96eea51b',
++        'commons-io:commons-io:2.4:cc6a41dc3eaacc9e440a6bd0d2890b20d36b4ee408fe2d67122f328bb6e01581',
++        'org.apache.logging.log4j:log4j-core:2.0-beta9:dcde6033b205433d6e9855c93740f798951fa3a3f252035a768d9f356fde806d',
++        'com.google.guava:guava:17.0:8c36a80ea613d0b6b8040a17cf837c5bbe3677bc1b06a058a6c174fdb787ebbc',
++        'org.apache.logging.log4j:log4j-api:2.0-beta9:eb0ca9bdd938f80711152a758d6bc331a8b0d769199d457294dc67ed03f73498',
++        'org.ow2.asm:asm-commons:5.0.3:18c1e092230233c9d29e46f21943d769bdb48130cc279e4b0e663f423948c2da',
++        'org.apache.logging.log4j:log4j-core:2.0-beta9:dcde6033b205433d6e9855c93740f798951fa3a3f252035a768d9f356fde806d',
++        'org.ow2.asm:asm-tree:5.0.3:347a7a9400f9964e87c91d3980e48eebdc8d024bc3b36f7f22189c662853a51c',
++        'org.apache.logging.log4j:log4j-api:2.0-beta9:eb0ca9bdd938f80711152a758d6bc331a8b0d769199d457294dc67ed03f73498',
++        'org.ow2.asm:asm:5.0.3:71c4f78e437b8fdcd9cc0dfd2abea8c089eb677005a6a5cff320206cc52b46cc',
++    ]
++}
++
+ // Filter, process, and include resources
+ processResources {
+     // Include in final JAR
+-- 
+2.5.5
+

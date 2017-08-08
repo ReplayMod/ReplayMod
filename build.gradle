@@ -109,7 +109,7 @@ jar {
         exclude { new File(file('jGui/src/main/resources'), it.relativePath.pathString).exists() }
         eachFile {
             if (getName() == 'LICENSE.txt') {
-                setName(getFile().getParentFile().getName().split('-')[0] + '-LICENSE.txt')
+                setName(getFile().getParentFile().getName().split('.jar_')[0] + '-LICENSE.txt')
             }
         }
     }
@@ -165,7 +165,7 @@ sourceSets {
         resources {
             srcDir 'jGui/src/main/resources'
         }
-        refMap = "mixins.replaymod.refmap.json"
+        ext.refMap = "mixins.replaymod.refmap.json"
     }
     integrationTest {
         compileClasspath += main.runtimeClasspath + main.output

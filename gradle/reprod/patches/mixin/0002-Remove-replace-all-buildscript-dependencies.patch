@@ -1,0 +1,59 @@
+From c245b961e83176a1731a7eaf1f1f3ffbefa1afb7 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Tue, 8 Aug 2017 19:08:56 +0200
+Subject: [PATCH 2/7] Remove/replace all buildscript dependencies
+
+---
+ build.gradle | 24 +-----------------------
+ 1 file changed, 1 insertion(+), 23 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index e0c46ea..165dbe4 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,17 +1,12 @@
+ // Gradle repositories and dependencies
+ buildscript {
+-    repositories {
+-        jcenter()
+-    }
+     dependencies {
+-        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
+-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
++        classpath files('../shadow.jar')
+     }
+ }
+ 
+ // Apply plugin
+ apply plugin: 'java'
+-apply plugin: 'license'
+ apply plugin: 'checkstyle'
+ apply plugin: 'maven'
+ apply plugin: 'eclipse'
+@@ -175,23 +170,6 @@ tasks.withType(AbstractArchiveTask) {
+     reproducibleFileOrder = true
+ }
+ 
+-// License header formatting
+-license {
+-    ext {
+-        name = project.name
+-        organization = project.organization
+-        url = project.url
+-    }
+-    include '**/*.java'
+-    header file("HEADER.txt")
+-    sourceSets = project.sourceSets
+-    ignoreFailures false
+-    strictCheck true
+-    mapping {
+-        java = 'SLASHSTAR_STYLE'
+-    }
+-}
+-
+ checkstyle {
+     configProperties = [
+         "name"        : project.name,
+-- 
+2.5.5
+

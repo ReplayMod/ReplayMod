@@ -1,0 +1,44 @@
+From 7c2f6c0d86940142671615402ba758185448e3cf Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Mon, 7 Aug 2017 20:05:30 +0200
+Subject: [PATCH 3/3] Add witness plugin
+
+---
+ build.gradle | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/build.gradle b/build.gradle
+index 40169df..93f9764 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,6 +1,13 @@
++buildscript {
++    dependencies {
++        classpath files('../gradle-witness.jar')
++    }
++}
++
+ apply plugin: 'groovy'
+ apply plugin: 'maven'
+ apply plugin: 'eclipse'
++apply plugin: 'witness'
+ 
+ group = 'org.spongepowered'
+ version = '0.4-SNAPSHOT'
+@@ -23,6 +30,13 @@ dependencies {
+     deployerJars 'org.apache.maven.wagon:wagon-ftp:2.7'
+ }
+ 
++dependencyVerification {
++    verify = [
++        'com.google.guava:guava:17.0:8c36a80ea613d0b6b8040a17cf837c5bbe3677bc1b06a058a6c174fdb787ebbc',
++        'org.ow2.asm:asm-debug-all:5.0.3:2969356ac1e40fe4141948c563690238f5d79d76aec7fd873536867a331ede81',
++    ]
++}
++
+ processResources {
+    from 'LICENSE.txt'
+ }
+-- 
+2.5.5
+

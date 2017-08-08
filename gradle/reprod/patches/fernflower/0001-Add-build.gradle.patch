@@ -1,0 +1,42 @@
+From a1b7d25752424f267f5e9d299babc0403dbf7752 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Tue, 8 Aug 2017 19:44:44 +0200
+Subject: [PATCH] Add build.gradle
+
+---
+ build.gradle | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 build.gradle
+
+diff --git a/build.gradle b/build.gradle
+new file mode 100644
+index 0000000..22fa679
+--- /dev/null
++++ b/build.gradle
+@@ -0,0 +1,23 @@
++apply plugin: 'java'
++
++sourceCompatibility = 1.8
++
++sourceSets {
++    main {
++        java {
++            srcDirs = ['src']
++        }
++    }
++}
++
++jar {
++    manifest {
++        attributes 'Main-Class': 'org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler'
++    }
++}
++
++tasks.withType(AbstractArchiveTask) {
++    preserveFileTimestamps = false
++    reproducibleFileOrder = true
++}
++
+-- 
+2.5.5
+

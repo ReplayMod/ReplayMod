@@ -1,0 +1,43 @@
+From 493dbd8ed387d661eef3e33ee614c79d7487f1bd Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Mon, 7 Aug 2017 20:41:05 +0200
+Subject: [PATCH 1/5] Replace buildscript dependencies with manually built ones
+
+---
+ build.gradle | 19 ++-----------------
+ 1 file changed, 2 insertions(+), 17 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index ee24828..42d0607 100755
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,24 +1,9 @@
+ import groovy.json.JsonOutput
+ 
+ buildscript {
+-    repositories {
+-        mavenCentral()
+-        maven {
+-            name = "forge"
+-            url = "http://files.minecraftforge.net/maven"
+-        }
+-        maven {
+-            name = "sponge"
+-            url = "https://repo.spongepowered.org/maven"
+-        }
+-        maven {
+-            name = "sonatype"
+-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+-        }
+-    }
+     dependencies {
+-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+-        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
++        classpath files('gradle/reprod/deps/forgegradle.jar')
++        classpath files('gradle/reprod/deps/mixingradle.jar')
+     }
+ }
+ 
+-- 
+2.5.5
+

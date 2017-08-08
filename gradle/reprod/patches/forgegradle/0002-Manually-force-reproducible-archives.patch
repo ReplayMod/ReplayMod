@@ -1,0 +1,53 @@
+From 2f3f4c59239b66e4ce09d2bbef39d7ce4eda44e9 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Mon, 7 Aug 2017 19:53:46 +0200
+Subject: [PATCH 2/5] Manually force reproducible archives
+
+For some reason shading one of the libs isn't done in an
+reproducible way (produces different jar whenever jar task is run).
+---
+ build.gradle | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/build.gradle b/build.gradle
+index 468733e..91ea99a 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -122,6 +122,10 @@ processResources {
+     }
+ }
+ 
++import java.util.jar.JarEntry
++import java.util.jar.JarFile
++import java.util.jar.JarOutputStream
++
+ jar {
+ 
+     configurations.shade.each { dep ->
+@@ -136,6 +140,23 @@ jar {
+         attributes 'group':project.group
+         attributes 'Implementation-Version': project.version + getGitHash()
+     }
++
++    // For some reason using gradle's reproducibleFileOrder and preserveFileTimestamps just isn't enough
++    doLast {
++        File newFile = new File(archivePath.parent, 'tmp-' + archiveName)
++        newFile.withOutputStream { fout ->
++            JarOutputStream out = new JarOutputStream(fout)
++            JarFile jf = new JarFile(archivePath)
++            jf.entries().unique {it.name}.sort {it.name}.each {
++                def copy = new JarEntry(it.name)
++                copy.time = 0
++                out.putNextEntry(copy)
++                out << jf.getInputStream(it)
++            }
++            out.finish()
++        }
++        newFile.renameTo archivePath
++    }
+ }
+ 
+ tasks.withType(AbstractArchiveTask) {
+-- 
+2.5.5
+

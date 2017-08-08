@@ -1,0 +1,117 @@
+From 8105c498cb064c102197cf13d7efe4ebb1da65a7 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Tue, 8 Aug 2017 18:51:27 +0200
+Subject: [PATCH 2/4] Remove non-essential parts of build.gradle
+
+---
+ build.gradle | 78 ------------------------------------------------------------
+ 1 file changed, 78 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index 2292a4d..1b06411 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,48 +1,4 @@
+-import org.gradle.wrapper.Download
+-import org.gradle.wrapper.GradleUserHomeLookup
+-import org.gradle.wrapper.Install
+-import org.gradle.wrapper.PathAssembler
+-import org.gradle.wrapper.WrapperConfiguration
+-import org.gradle.wrapper.WrapperExecutor
+-import org.gradle.wrapper.Logger
+-
+-buildscript {
+-    repositories {
+-        jcenter()
+-        maven {
+-            url "https://plugins.gradle.org/m2/"
+-        }
+-    }
+-    dependencies {
+-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
+-        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:3.0.0"
+-        classpath "com.gradle.publish:plugin-publish-plugin:0.9.1"
+-        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+-        classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.11'
+-        classpath 'org.asciidoctor:asciidoctorj-groovy-dsl:1.0.0.preview2'
+-        classpath "com.bluepapa32:gradle-watch-plugin:0.1.5"
+-        classpath "org.kordamp.gradle:livereload-gradle-plugin:0.2.1"
+-        classpath 'org.ajoberstar:gradle-git:1.5.0'
+-    }
+-}
+-
+-plugins {
+-    id 'com.gradle.build-scan' version '1.0'
+-}
+-
+-buildScan {
+-    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
+-    licenseAgree = 'yes'
+-}
+-
+ apply plugin: 'groovy'
+-apply plugin: 'idea'
+-apply plugin: 'project-report'
+-
+-apply from: file('gradle/docs.gradle')
+-apply from: file('gradle/publish.gradle')
+-apply from: file('gradle/asciidoc.gradle')
+-apply from: file('gradle/ghPages.gradle')
+ 
+ repositories {
+     mavenLocal()
+@@ -60,24 +16,6 @@ dependencies {
+     compile 'org.apache.ant:ant:1.9.4'
+     compile 'org.codehaus.plexus:plexus-utils:2.0.6'
+     compile 'org.codehaus.groovy:groovy-backports-compat23:2.4.4'
+-
+-
+-    testCompile gradleTestKit()
+-    testCompile("org.spockframework:spock-core:1.0-groovy-2.4") {
+-        exclude module: 'groovy-all'
+-    }
+-    testCompile 'xmlunit:xmlunit:1.3'
+-    testCompile 'commons-lang:commons-lang:2.6'
+-    testCompile 'com.google.guava:guava:17.0'
+-}
+-
+-test {
+-    dependsOn publishToMavenLocal
+-    if (System.env.CI == 'true') {
+-        testLogging.showStandardStreams = true
+-        minHeapSize "1g"
+-        maxHeapSize "1g"
+-    }
+ }
+ 
+ jar {
+@@ -85,12 +23,6 @@ jar {
+     from rootProject.file('NOTICE')
+ }
+ 
+-idea {
+-    project {
+-        languageLevel = '1.6'
+-    }
+-}
+-
+ tasks.withType(AbstractArchiveTask) {
+     preserveFileTimestamps = false
+     reproducibleFileOrder = true
+@@ -99,13 +31,3 @@ tasks.withType(AbstractArchiveTask) {
+ sourceCompatibility = '1.6'
+ targetCompatibility = '1.6'
+ 
+-task installWrappers << {
+-    WrapperExecutor wrapperExecutor = WrapperExecutor.forWrapperPropertiesFile(file('gradle/wrapper/gradle-wrapper.properties'), System.out)
+-    ['1.12', '2.0', '2.5', '2.11', '2.12', '2.13', '2.14', '3.0'].each {
+-        WrapperConfiguration config = wrapperExecutor.config
+-        config.setDistribution(new URI("https://services.gradle.org/distributions/gradle-$it-bin.zip"))
+-        Install install = new Install(new Logger(true), new Download(new Logger(true), "gradlew", it),
+-                new PathAssembler(GradleUserHomeLookup.gradleUserHome()))
+-        install.createDist(config)
+-    }
+-}
+-- 
+2.5.5
+

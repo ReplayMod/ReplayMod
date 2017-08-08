@@ -1,0 +1,28 @@
+From 66c234d97042d31771df1c3633e1c7cb662e4882 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Tue, 8 Aug 2017 19:00:22 +0200
+Subject: [PATCH 1/4] Configure gradle to build reproducible archives
+
+---
+ build.gradle | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/build.gradle b/build.gradle
+index 3d2095e..2292a4d 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -91,6 +91,11 @@ idea {
+     }
+ }
+ 
++tasks.withType(AbstractArchiveTask) {
++    preserveFileTimestamps = false
++    reproducibleFileOrder = true
++}
++
+ sourceCompatibility = '1.6'
+ targetCompatibility = '1.6'
+ 
+-- 
+2.5.5
+
