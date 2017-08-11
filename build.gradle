@@ -38,7 +38,9 @@ minecraft {
     runDir = "eclipse"
     mappings = "snapshot_nodoc_20141130"
     replace '@MOD_VERSION@', project.version
-    replace '@MC_VERSION@', project.minecraft.version
+    // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
+    // a newer srg-compatible MC version (that may be using a different protocol version)
+    replace '@MC_VERSION@', "[ ${project.minecraft.version} ]"
 }
 
 repositories {
