@@ -57,7 +57,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
                     .replace("%FILTERS%", settings.getVideoFilters());
 
         String executable = settings.getExportCommand().isEmpty() ? findFFmpeg() : settings.getExportCommand();
-        System.out.println("Starting " + executable + " with args: " + commandArgs);
+        LOGGER.info("Starting {} with args: {}", executable, commandArgs);
         String[] cmdline = new CommandLine(executable).addArguments(commandArgs).toStrings();
         process = new ProcessBuilder(cmdline).directory(outputFolder).start();
         File exportLogFile = new File(Minecraft.getMinecraft().mcDataDir, "export.log");
