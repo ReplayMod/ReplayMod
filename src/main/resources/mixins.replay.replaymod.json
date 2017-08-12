@@ -2,7 +2,6 @@
   "required": true,
   "package": "com.replaymod.replay.mixin",
   "mixins": [
-    "MixinArmorStandRenderer",
     "MixinGuiSpectator",
     "MixinPlayerControllerMP",
     "MixinRenderArrow",
