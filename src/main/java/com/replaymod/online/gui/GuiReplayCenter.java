@@ -37,7 +37,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.core.helpers.Strings;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
@@ -418,7 +417,7 @@ public class GuiReplayCenter extends GuiScreen {
             this.downloaded = downloaded;
             ReplayMetaData metaData = fileInfo.getMetadata();
 
-            name.setText(ChatFormatting.UNDERLINE + FilenameUtils.getBaseName(fileInfo.getName()));
+            name.setText(ChatFormatting.UNDERLINE + Utils.fileNameToReplayName(fileInfo.getName()));
             author.setI18nText("replaymod.gui.center.author",
                     "" + ChatFormatting.GRAY + ChatFormatting.ITALIC, fileInfo.getOwner());
             if (Strings.isEmpty(metaData.getServerName())) {

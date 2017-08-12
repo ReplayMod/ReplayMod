@@ -29,7 +29,6 @@ import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.logging.log4j.LogManager;
@@ -156,7 +155,7 @@ public class GuiReplayViewer extends GuiScreen {
         @Override
         public void run() {
             final File file = list.getSelected().file;
-            String name = FilenameUtils.getBaseName(file.getName());
+            String name = Utils.fileNameToReplayName(file.getName());
             final GuiTextField nameField = new GuiTextField().setSize(200, 20).setFocused(true).setText(name);
             final GuiYesNoPopup popup = GuiYesNoPopup.open(GuiReplayViewer.this,
                     new GuiLabel().setI18nText("replaymod.gui.viewer.rename.name").setColor(Colors.BLACK),
@@ -172,16 +171,16 @@ public class GuiReplayViewer extends GuiScreen {
                 }
             }).onTextChanged(obj -> {
                 popup.getYesButton().setEnabled(!nameField.getText().isEmpty()
-                        && !new File(file.getParentFile(), nameField.getText() + ".mcpr").exists());
+                        && !new File(file.getParentFile(), Utils.replayNameToFileName(nameField.getText())).exists());
             });
             Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
                 @Override
                 public void onSuccess(Boolean delete) {
                     if (delete) {
                         // Sanitize their input
-                        String name = nameField.getText().trim().replace("[^a-zA-Z0-9\\.\\- ]", "_");
+                        String name = nameField.getText().trim();
                         // This file is what they want
-                        File targetFile = new File(file.getParentFile(), name + ".mcpr");
+                        File targetFile = new File(file.getParentFile(), Utils.replayNameToFileName(name));
                         try {
                             // Finally, try to move it
                             FileUtils.moveFile(file, targetFile);
@@ -303,7 +302,7 @@ public class GuiReplayViewer extends GuiScreen {
         public GuiReplayEntry(File file, ReplayMetaData metaData, BufferedImage thumbImage) {
             this.file = file;
 
-            name.setText(ChatFormatting.UNDERLINE + FilenameUtils.getBaseName(file.getName()));
+            name.setText(ChatFormatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
             if (Strings.isEmpty(metaData.getServerName())) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {

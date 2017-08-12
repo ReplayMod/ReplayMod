@@ -38,7 +38,6 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -135,7 +134,7 @@ public class GuiUploadReplay extends GuiScreen {
         }
 
         // Apply to gui
-        name.setText(FilenameUtils.getBaseName(file.getName()));
+        name.setText(Utils.fileNameToReplayName(file.getName()));
         int secs = metaData.getDuration() / 1000;
         durationLabel.setI18nText("replaymod.gui.upload.duration", secs / 60, secs % 60);
         hideServerIP.setEnabled(!metaData.isSingleplayer());

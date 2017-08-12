@@ -1,5 +1,6 @@
 package com.replaymod.core.utils;
 
+import com.google.common.net.PercentEscaper;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -16,11 +17,14 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import lombok.SneakyThrows;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ResourceLocation;
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
@@ -36,6 +40,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -135,6 +141,22 @@ public class Utils {
 
     public static boolean isValidEmailAddress(String mail) {
         return mail.matches("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$");
+    }
+
+    private static final PercentEscaper REPLAY_NAME_ENCODER = new PercentEscaper(".-_ ", false);
+
+    public static String replayNameToFileName(String replayName) {
+        return REPLAY_NAME_ENCODER.escape(replayName) + ".mcpr";
+    }
+
+    @SneakyThrows(UnsupportedEncodingException.class)
+    public static String fileNameToReplayName(String fileName) {
+        String baseName = FilenameUtils.getBaseName(fileName);
+        try {
+            return URLDecoder.decode(baseName, Charsets.UTF_8.name());
+        } catch (IllegalArgumentException e) {
+            return baseName;
+        }
     }
 
     public static ResourceLocation getResourceLocationForPlayerUUID(UUID uuid) {
