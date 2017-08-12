@@ -83,7 +83,10 @@ public class ReplayModOnline {
         // Initial login prompt
         if (!core.getSettingsRegistry().get(Setting.SKIP_LOGIN_PROMPT)) {
             if (!isLoggedIn()) {
-                core.runLater(() -> new GuiLoginPrompt(apiClient, GuiScreen.wrap(getMinecraft().currentScreen), null, false).display());
+                core.runLater(() -> {
+                    GuiScreen parent = GuiScreen.wrap(getMinecraft().currentScreen);
+                    new GuiLoginPrompt(apiClient, parent, parent, false).display();
+                });
             }
         }
     }
