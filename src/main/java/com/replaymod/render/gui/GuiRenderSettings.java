@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
+import com.replaymod.render.VideoWriter;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
@@ -29,7 +30,6 @@ import de.johni0702.minecraft.gui.utils.Utils;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import org.lwjgl.util.Color;
@@ -39,10 +39,12 @@ import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+
+import static com.replaymod.core.utils.Utils.error;
+import static com.replaymod.render.ReplayModRender.LOGGER;
 
 public class GuiRenderSettings extends GuiScreen implements Closeable {
     public final GuiPanel contentPanel = new GuiPanel(this).setBackgroundColor(Colors.DARK_TRANSPARENT);
@@ -199,15 +201,21 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             try {
                 VideoRenderer videoRenderer = new VideoRenderer(save(false), replayHandler, timeline);
                 videoRenderer.renderVideo();
-            } catch (IOException e) {
-                e.printStackTrace();
-
+            } catch (VideoWriter.NoFFmpegException e) {
+                LOGGER.error("Rendering video:", e);
                 GuiErrorScreen errorScreen = new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"),
                         I18n.format("replaymod.gui.rendering.error.message"));
                 getMinecraft().displayGuiScreen(errorScreen);
+            } catch (VideoWriter.FFmpegStartupException e) {
+                GuiExportFailed.tryToRecover(e, newSettings -> {
+                    // Update settings with fixed ffmpeg arguments
+                    exportArguments.setText(newSettings.getExportArguments());
+                    // Restart rendering, this will also save the changed ffmpeg arguments
+                    renderButton.onClick();
+                });
             } catch (Throwable t) {
-                CrashReport crashReport = CrashReport.makeCrashReport(t, "Rendering video");
-                throw new ReportedException(crashReport);
+                error(LOGGER, GuiRenderSettings.this, CrashReport.makeCrashReport(t, "Rendering video"), () -> {});
+                display(); // Re-show the render settings gui and the new error popup
             }
         }
     }).setSize(100, 20).setI18nLabel("replaymod.gui.render");

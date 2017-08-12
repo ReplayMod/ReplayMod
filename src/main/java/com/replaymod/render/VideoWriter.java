@@ -2,6 +2,7 @@ package com.replaymod.render;
 
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameConsumer;
+import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.StreamPipe;
 import net.minecraft.client.Minecraft;
@@ -32,6 +33,7 @@ import static org.apache.commons.lang3.Validate.isTrue;
 
 public class VideoWriter implements FrameConsumer<RGBFrame> {
 
+    private final VideoRenderer renderer;
     private final RenderSettings settings;
     private final Process process;
     private final OutputStream outputStream;
@@ -41,8 +43,9 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
 
     private ByteArrayOutputStream ffmpegLog = new ByteArrayOutputStream(4096);
 
-    public VideoWriter(final RenderSettings settings) throws IOException {
-        this.settings = settings;
+    public VideoWriter(final VideoRenderer renderer) throws IOException {
+        this.renderer = renderer;
+        this.settings = renderer.getRenderSettings();
 
         File outputFolder = settings.getOutputFile().getParentFile();
         FileUtils.forceMkdir(outputFolder);
@@ -59,7 +62,11 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         String executable = settings.getExportCommand().isEmpty() ? findFFmpeg() : settings.getExportCommand();
         LOGGER.info("Starting {} with args: {}", executable, commandArgs);
         String[] cmdline = new CommandLine(executable).addArguments(commandArgs).toStrings();
-        process = new ProcessBuilder(cmdline).directory(outputFolder).start();
+        try {
+            process = new ProcessBuilder(cmdline).directory(outputFolder).start();
+        } catch (IOException e) {
+            throw new NoFFmpegException(e);
+        }
         File exportLogFile = new File(Minecraft.getMinecraft().mcDataDir, "export.log");
         OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream(exportLogFile), ffmpegLog);
         new StreamPipe(process.getInputStream(), exportLogOut).start();
@@ -152,6 +159,16 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
             if (aborted) {
                 return;
             }
+            try {
+                // Check whether this is a failure right at the beginning of the rendering process
+                // or at some later point (ffmpeg won't print the output file until the first frame
+                // has been written to stdin, so we can't already check for invalid args in <init>).
+                getVideoFile();
+            } catch (FFmpegStartupException e) {
+                // Possibly invalid ffmpeg arguments
+                renderer.setFailure(e);
+                return;
+            }
             CrashReport report = CrashReport.makeCrashReport(t, "Exporting frame");
             CrashReportCategory exportDetails = report.makeCategory("Export details");
             exportDetails.addCrashSection("Export command", settings.getExportCommand());
@@ -173,7 +190,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         aborted = true;
     }
 
-    public File getVideoFile() {
+    public File getVideoFile() throws FFmpegStartupException {
         String log = ffmpegLog.toString();
         for (String line : log.split("\n")) {
             if (line.startsWith("Output #0")) {
@@ -181,6 +198,30 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
                 return new File(settings.getOutputFile().getParentFile(), fileName);
             }
         }
-        throw new IllegalStateException("No output file found.");
+        throw new FFmpegStartupException(settings, log);
+    }
+
+    public static class NoFFmpegException extends IOException {
+        public NoFFmpegException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    public static class FFmpegStartupException extends IOException {
+        private final RenderSettings settings;
+        private final String log;
+
+        public FFmpegStartupException(RenderSettings settings, String log) {
+            this.settings = settings;
+            this.log = log;
+        }
+
+        public RenderSettings getSettings() {
+            return settings;
+        }
+
+        public String getLog() {
+            return log;
+        }
     }
 }
