@@ -12,7 +12,7 @@ import java.io.InputStream;
 
 public class SoundHandler {
 
-    private final ResourceLocation successSoundLocation = new ResourceLocation("replaymod", "renderSuccess.wav");
+    private final ResourceLocation successSoundLocation = new ResourceLocation("replaymod", "render_success.wav");
 
     public void playRenderSuccessSound() {
         playSound(successSoundLocation);
