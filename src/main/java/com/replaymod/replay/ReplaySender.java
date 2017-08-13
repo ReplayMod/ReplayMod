@@ -721,6 +721,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             }
 
             synchronized (this) {
+                if (timestamp == lastTimeStamp) { // Do nothing if we're already there
+                    return;
+                }
                 if (timestamp < lastTimeStamp) { // Restart the replay if we need to go backwards in time
                     hasWorldLoaded = false;
                     lastTimeStamp = 0;
