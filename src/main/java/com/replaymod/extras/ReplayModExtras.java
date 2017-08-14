@@ -10,7 +10,10 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Mod(modid = ReplayModExtras.MOD_ID,
         version = "@MOD_VERSION@",
@@ -33,6 +36,8 @@ public class ReplayModExtras {
             OpenEyeExtra.class
     );
 
+    private final Map<Class<? extends Extra>, Extra> instances = new HashMap<>();
+
     public static Logger LOGGER;
 
     @Mod.EventHandler
@@ -46,9 +51,14 @@ public class ReplayModExtras {
             try {
                 Extra extra = cls.newInstance();
                 extra.register(ReplayMod.instance);
+                instances.put(cls, extra);
             } catch (Throwable t) {
                 LOGGER.warn("Failed to load extra " + cls.getName() + ": ", t);
             }
         }
+    }
+
+    public <T extends Extra> Optional<T> get(Class<T> cls) {
+        return Optional.ofNullable(instances.get(cls)).map(cls::cast);
     }
 }
