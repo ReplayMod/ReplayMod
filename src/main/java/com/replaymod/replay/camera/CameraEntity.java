@@ -417,5 +417,42 @@ public class CameraEntity extends EntityPlayerSP {
                 event.roll = roll;
             }
         }
+
+        private boolean heldItemTooltipsWasTrue;
+
+        @SubscribeEvent
+        public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
+            switch (event.type) {
+                case ALL:
+                    heldItemTooltipsWasTrue = mc.gameSettings.heldItemTooltips;
+                    mc.gameSettings.heldItemTooltips = false;
+                    break;
+                case ARMOR:
+                case HEALTH:
+                case FOOD:
+                case AIR:
+                case HOTBAR:
+                case EXPERIENCE:
+                case HEALTHMOUNT:
+                case JUMPBAR:
+                    event.setCanceled(true);
+                    break;
+                case HELMET:
+                case PORTAL:
+                case CROSSHAIRS:
+                case BOSSHEALTH:
+                case TEXT:
+                case CHAT:
+                case PLAYER_LIST:
+                case DEBUG:
+                    break;
+            }
+        }
+
+        @SubscribeEvent
+        public void postRenderGameOverlay(RenderGameOverlayEvent.Post event) {
+            if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
+            mc.gameSettings.heldItemTooltips = heldItemTooltipsWasTrue;
+        }
     }
 }
