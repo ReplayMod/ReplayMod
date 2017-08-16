@@ -1,5 +1,6 @@
 package com.replaymod.compat;
 
+import com.replaymod.compat.bettersprinting.DisableBetterSprinting;
 import com.replaymod.compat.optifine.DisableFastRender;
 import com.replaymod.compat.oranges17animations.HideInvisibleEntities;
 import com.replaymod.compat.shaders.ShaderBeginRender;
@@ -22,6 +23,7 @@ public class ReplayModCompat {
         bus.register(new ShaderBeginRender());
         bus.register(new DisableFastRender());
         bus.register(new HideInvisibleEntities());
+        DisableBetterSprinting.register();
     }
 
 }

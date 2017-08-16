@@ -5,6 +5,7 @@ import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
+import com.replaymod.replay.events.ReplayChatMessageEvent;
 import com.replaymod.replaystudio.util.Location;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.stats.StatFileWriter;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -346,6 +348,12 @@ public class CameraEntity extends EntityPlayerSP {
     public boolean canSpectate(Entity e) {
         return e != null && !e.isInvisible()
                 && (e instanceof EntityPlayer || e instanceof EntityLiving || e instanceof EntityItemFrame);
+    }
+
+    @Override
+    public void addChatMessage(IChatComponent message) {
+        if (MinecraftForge.EVENT_BUS.post(new ReplayChatMessageEvent(this))) return;
+        super.addChatMessage(message);
     }
 
     private class EventHandler {
