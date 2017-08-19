@@ -242,6 +242,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         try {
             channelInactive(ctx);
             ctx.channel().pipeline().close();
+            FileUtils.deleteDirectory(tempResourcePackFolder);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -488,12 +489,6 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         this.ctx = ctx;
         ctx.attr(NetworkManager.attrKeyConnectionState).set(EnumConnectionState.PLAY);
         super.channelActive(ctx);
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        FileUtils.deleteDirectory(tempResourcePackFolder);
-        super.channelInactive(ctx);
     }
 
     /**
