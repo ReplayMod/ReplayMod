@@ -2,7 +2,7 @@ package com.replaymod.replay;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
-import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -30,7 +30,6 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * Sends replay packets to netty channels.
@@ -440,22 +439,19 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                 }
             }
 
-            new Callable<Void>() {
+            new Runnable() {
                 @Override
                 @SuppressWarnings("unchecked")
-                public Void call() {
+                public void run() {
                     if (mc.theWorld == null || !mc.isCallingFromMinecraftThread()) {
-                        synchronized(mc.scheduledTasks) {
-                            mc.scheduledTasks.add(ListenableFutureTask.create(this));
-                        }
-                        return null;
+                        ReplayMod.instance.runLater(this);
+                        return;
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
                     cent.setCameraPosition(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
-                    return null;
                 }
-            }.call();
+            }.run();
         }
 
         if(p instanceof S2BPacketChangeGameState) {
