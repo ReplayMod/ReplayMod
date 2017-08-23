@@ -8,9 +8,10 @@ import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.gui.GuiErrorScreen;
@@ -37,7 +38,7 @@ import java.util.Map;
  * the replay restart from the beginning.
  */
 @Sharable
-public class ReplaySender extends ChannelInboundHandlerAdapter {
+public class ReplaySender extends ChannelDuplexHandler {
 
     /**
      * Previously packets for the client player were inserted using one fixed entity id (this one).
@@ -485,6 +486,25 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         this.ctx = ctx;
         ctx.attr(NetworkManager.attrKeyConnectionState).set(EnumConnectionState.PLAY);
         super.channelActive(ctx);
+    }
+
+    @Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        // The embedded channel's event loop will consider every thread to be in it and as such provides no
+        // guarantees that only one thread is using the pipeline at any one time.
+        // For reading the replay sender (either sync or async) is the only thread ever writing.
+        // For writing it may very well happen that multiple threads want to use the pipline at the same time.
+        // It's unclear whether the EmbeddedChannel is supposed to be thread-safe (the behavior of the event loop
+        // does suggest that). However it seems like it either isn't (likely) or there is a race condition.
+        // See: https://www.replaymod.com/forum/thread/1752#post8045 (https://paste.replaymod.com/lotacatuwo)
+        // To work around this issue, we just outright drop all write/flush requests (they aren't needed anyway).
+        // This still leaves channel handlers upstream with the threading issue but they all seem to cope well with it.
+        promise.setSuccess();
+    }
+
+    @Override
+    public void flush(ChannelHandlerContext ctx) throws Exception {
+        // See write method above
     }
 
     /**
