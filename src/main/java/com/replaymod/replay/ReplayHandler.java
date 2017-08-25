@@ -124,6 +124,8 @@ public class ReplayHandler {
 
         ReplayModReplay.instance.replayHandler = null;
 
+        mc.displayGuiScreen(null);
+
         FMLCommonHandler.instance().bus().post(new ReplayCloseEvent.Post(this));
     }
 

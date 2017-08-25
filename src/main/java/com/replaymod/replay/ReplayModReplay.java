@@ -181,6 +181,9 @@ public class ReplayModReplay {
     }
 
     public void startReplay(ReplayFile replayFile, boolean checkModCompat) throws IOException {
+        if (replayHandler != null) {
+            replayHandler.endReplay();
+        }
         if (checkModCompat) {
             ModCompat.ModInfoDifference modDifference = new ModCompat.ModInfoDifference(replayFile.getModInfo());
             if (!modDifference.getMissing().isEmpty() || !modDifference.getDiffering().isEmpty()) {
