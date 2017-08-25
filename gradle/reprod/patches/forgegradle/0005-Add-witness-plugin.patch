@@ -26,7 +26,7 @@ index 0bf7941..d1530fd 100644
  
  group = 'net.minecraftforge.gradle'
  version = '2.3-SNAPSHOT'
-@@ -81,6 +88,58 @@ dependencies {
+@@ -81,6 +88,55 @@ dependencies {
      testCompile 'junit:junit:4.12'
  }
  
@@ -48,7 +48,7 @@ index 0bf7941..d1530fd 100644
 +        'org.apache.httpcomponents:httpmime:4.3.3:61434dbb2314cbb8d28025feb6ae53bbc45d1042daa34371d8911e1e7f570b36',
 +        'de.oceanlabs.mcp:RetroGuard:3.6.6:22c45060f350fcaa94e503f4a420cf8237c26c0fcdb4ada4aa98389b75c7b231',
 +        'de.oceanlabs.mcp:mcinjector:3.4-SNAPSHOT:4ad11e0943fb343225dace0000215113c8cbdede6949fa8ba653bdcf770cb028',
-+        'net.minecraftforge.srg2source:Srg2Source:4.0-SNAPSHOT:99893440fe20bafc8193a790889239d4cc60dbe8b8be1e7698a31eaa3853e2fd',
++        'net.minecraftforge.srg2source:Srg2Source:4.0-SNAPSHOT:6c9134708589bf7ea8300b2c077445a13d02446dcfd24af78240388fde38845e',
 +        'org.jvnet.localizer:localizer:1.12:212f6eaa0491dd7359dc33c3a72e82a23b096e1890d984b4d92395abc9a6bf7f',
 +        'commons-io:commons-io:1.4:a7f713593007813bf07d19bd1df9f81c86c0719e9a0bb2ef1b98b78313fc940d',
 +        'trove:trove:1.0.2:ad68a86cfd0255a2bc0525ce11ec49640caea7e34ff91eb89c3193dcccd77f05',
@@ -60,7 +60,6 @@ index 0bf7941..d1530fd 100644
 +        'org.eclipse.text:org.eclipse.text:3.5.101:1bacf311ac3d39cc53b03f8de7a4ccffc89c208938f0004a90c652383e927f18',
 +        'org.eclipse.core:resources:3.2.1-R32x_v20060914:73f9a1a2403f7f9c44d11431c40be4641295f3620570bfef2168a66c5de68fee',
 +        'org.eclipse.jdt:org.eclipse.jdt.core:3.12.0.v20160315-2126:2082ffb0bb8f276ca164a6363e394f902163a81b7df44ede13aed33d84fdf27e',
-+        'fr.inria.gforge.spoon:spoon-core:5.1.0:08e0b3db3d116301f16142c88932daf954ac447427d609710c2a5ee8dfcfa1f7',
 +        'org.eclipse.equinox:registry:3.5.400-v20140428-1507:a6833a81795978d4ad8d2e54597171e2a3447fd6983b8e902710aa1dc946fa24',
 +        'org.eclipse.equinox:app:1.3.200-v20130910-1609:7b2ad6c43d922f3ba0d18d99879d1d56d6a994ba7b639d5d6276f1a167b6a7ac',
 +        'org.eclipse.core:org.eclipse.core.commands:3.6.0:e46a6444a6d7c0fe70f196ce42d9700c4514b68bf55bae296b2e3c287883ffdc',
@@ -68,8 +67,6 @@ index 0bf7941..d1530fd 100644
 +        'org.eclipse.core.runtime:compatibility:3.1.200-v20070502:ddf19054374a2617ba9c10d7a5ec8eeaeb8f62c2c6e430144e81da15718bb585',
 +        'org.eclipse.core:expressions:3.3.0-v20070606-0010:4a73a4a0ebf5ca5f7e9d5e8978b24cd72ebacd5b561de961517f4c976aa7e30f',
 +        'org.eclipse.core:filesystem:1.1.0-v20070606:b418d15acf94545248f4bd55b4a9b62fc49246488758729d6b3ff52ae149df24',
-+        'com.martiansoftware:jsap:2.1:331746fa62cfbc3368260c5a2e660936ad11be612308c120a044e120361d474e',
-+        'log4j:log4j:1.2.17:1d31696445697720527091754369082a6651bd49781b6005deb94e56753406f9',
 +        'org.eclipse.update:configurator:3.2.100-v20070615:88b506fa09a810b19517a2d45cb8f5eaa76c22b18abfbdcf36cd07aebfd56cb0',
 +        'com.google.guava:guava:19.0:58d4cc2e05ebb012bbac568b032f75623be1cb6fb096f3c60c72a86f7f057de4',
 +        'org.eclipse:osgi:3.10.0-v20140606-1445:fa1d59411d4d2667d8f15638af7c0ac44539234c0982c27a2b65ba06c32a0b3e',

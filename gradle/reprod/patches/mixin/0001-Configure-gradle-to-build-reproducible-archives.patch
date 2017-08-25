@@ -11,13 +11,15 @@ diff --git a/build.gradle b/build.gradle
 index 4f0aa28..e0c46ea 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -170,6 +170,11 @@ processResources {
+@@ -170,6 +170,13 @@ processResources {
     from 'LICENSE.txt'
  }
  
 +tasks.withType(AbstractArchiveTask) {
 +    preserveFileTimestamps = false
 +    reproducibleFileOrder = true
++    dirMode = 0775
++    fileMode = 0664
 +}
 +
  // License header formatting

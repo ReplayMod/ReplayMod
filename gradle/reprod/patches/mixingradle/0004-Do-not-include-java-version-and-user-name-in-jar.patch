@@ -1,0 +1,26 @@
+From 6de53f46b4b14c7667e7cff8010bde040ae7967b Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Fri, 25 Aug 2017 18:34:39 +0200
+Subject: [PATCH] Do not include java version and user name in jar
+
+---
+ build.gradle | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index db80dfa..2f5e041 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -42,8 +42,7 @@ processResources {
+ }
+ 
+ jar.manifest.mainAttributes (
+-    "Built-By": System.properties['user.name'],
+-    "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
++    "Built-By": 'ReplayMod reprod',
+     "Implementation-Title": name,
+     "Implementation-Version": version
+ )
+-- 
+2.13.2
+

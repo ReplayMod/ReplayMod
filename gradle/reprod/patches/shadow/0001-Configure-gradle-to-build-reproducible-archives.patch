@@ -11,13 +11,15 @@ diff --git a/build.gradle b/build.gradle
 index 3d2095e..2292a4d 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -91,6 +91,11 @@ idea {
+@@ -91,6 +91,13 @@ idea {
      }
  }
  
 +tasks.withType(AbstractArchiveTask) {
 +    preserveFileTimestamps = false
 +    reproducibleFileOrder = true
++    dirMode = 0775
++    fileMode = 0664
 +}
 +
  sourceCompatibility = '1.6'

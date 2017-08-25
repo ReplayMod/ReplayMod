@@ -11,13 +11,15 @@ diff --git a/build.gradle b/build.gradle
 index 3127c7f..c34a8a2 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -71,6 +71,11 @@ task groovydocJar(type: Jar, dependsOn: groovydoc) {
+@@ -71,6 +71,13 @@ task groovydocJar(type: Jar, dependsOn: groovydoc) {
      classifier = 'groovydoc'
  }
  
 +tasks.withType(AbstractArchiveTask) {
 +    preserveFileTimestamps = false
 +    reproducibleFileOrder = true
++    dirMode = 0775
++    fileMode = 0664
 +}
 +
  artifacts {

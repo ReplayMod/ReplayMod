@@ -58,13 +58,13 @@ setup_dep () {
 setup_dep "gradle-witness" "https://github.com/ReplayMod/gradle-witness.git" "c162a15841c2eba54b182fa81733c0aa9227f023" "gradle-witness.jar" "5e9ce687248029bf6364010168a65a4ad66fcb712dbd5ba69c59697ef564964b"
 
 # Required for mixin
-setup_dep "shadow" "https://github.com/johnrengelman/shadow.git" "60d0f28103be076dc991a624bf79ca7a13835973" "shadow.jar" "0a7a280d5f7c58ff513f448537ceb77eda788df6cbdeacd60f63f70142ff39b3"
+setup_dep "shadow" "https://github.com/johnrengelman/shadow.git" "60d0f28103be076dc991a624bf79ca7a13835973" "shadow.jar" "eec0417a8cd44457551c80335cd384a187647b6429ed7b5ae3ce1b26f78a2c1f"
 setup_dep "fernflower" "https://github.com/fesh0r/fernflower.git" "85f61bee8194ab69afa746b965973a18eda67608" "fernflower.jar" "577c2c4e04f0026675cacb25ec525f2ccba5de2eecac525b28bed18f9ccfd790"
 
 # Required for RM
-setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "3d81c8e202ec435056fb2068fdc34cfefa99be2d" "mixingradle-0.4-SNAPSHOT.jar" "a2b23727ed920ef2b9098f55634ede8d2ae5d04d910c0d572e45c33cff1cd281"
-setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "a228a836a2dc5ce546d2d53c48760f52f082d7ad" "ForgeGradle-2.3-SNAPSHOT.jar" "c885787f66811bf8edf0ced326d20c56428b447e8f0d29f37679f381d3e1f7ff"
-setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "b558323da3bd6ce94aeb442bfd7357f6c40d2fd4" "mixin-0.6.11-SNAPSHOT.jar" "0563b206db37f2f22b024b1736084afa2f30b0193b1a14e89cf9d99a3db26e1d"
+setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "3d81c8e202ec435056fb2068fdc34cfefa99be2d" "mixingradle-0.4-SNAPSHOT.jar" "8b3508867128a5d564631635dff898a36f9aca8db54b7bb3af6f4924e3f4bead"
+setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "a228a836a2dc5ce546d2d53c48760f52f082d7ad" "ForgeGradle-2.3-SNAPSHOT.jar" "aaa19067cd51397756be850bd3e621667b535c0e897fc77e1bb1eb72550e4a63"
+setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "b558323da3bd6ce94aeb442bfd7357f6c40d2fd4" "mixin-0.6.11-SNAPSHOT.jar" "8ec6ce24b8192f043976344305ba6afbc35b052056f1559ca5914a77c5eae71d"
 
 rm -rf tmp
 mkdir tmp

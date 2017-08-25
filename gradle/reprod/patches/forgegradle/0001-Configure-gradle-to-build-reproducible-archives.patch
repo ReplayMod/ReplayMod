@@ -11,13 +11,15 @@ diff --git a/build.gradle b/build.gradle
 index 78a2be1..468733e 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -138,6 +138,11 @@ jar {
+@@ -138,6 +138,13 @@ jar {
      }
  }
  
 +tasks.withType(AbstractArchiveTask) {
 +    preserveFileTimestamps = false
 +    reproducibleFileOrder = true
++    dirMode = 0775
++    fileMode = 0664
 +}
 +
  javadoc {

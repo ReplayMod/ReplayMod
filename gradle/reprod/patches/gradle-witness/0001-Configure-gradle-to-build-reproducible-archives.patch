@@ -11,13 +11,15 @@ diff --git a/build.gradle b/build.gradle
 index 988a3bf..b75571c 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -8,3 +8,8 @@ dependencies {
+@@ -8,3 +8,10 @@ dependencies {
  sourceCompatibility = '1.7'
  targetCompatibility = '1.7'
  
 +tasks.withType(AbstractArchiveTask) {
 +    preserveFileTimestamps = false
 +    reproducibleFileOrder = true
++    dirMode = 0775
++    fileMode = 0664
 +}
 +
 -- 

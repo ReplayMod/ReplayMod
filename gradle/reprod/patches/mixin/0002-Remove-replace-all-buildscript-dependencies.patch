@@ -30,8 +30,8 @@ index e0c46ea..165dbe4 100644
  apply plugin: 'checkstyle'
  apply plugin: 'maven'
  apply plugin: 'eclipse'
-@@ -175,23 +170,6 @@ tasks.withType(AbstractArchiveTask) {
-     reproducibleFileOrder = true
+@@ -177,23 +172,6 @@ tasks.withType(AbstractArchiveTask) {
+     fileMode = 0664
  }
  
 -// License header formatting

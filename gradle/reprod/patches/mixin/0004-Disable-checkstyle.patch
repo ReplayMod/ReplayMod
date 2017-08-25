@@ -19,8 +19,8 @@ index 0f189ec..f8598a3 100644
  apply plugin: 'maven'
  apply plugin: 'eclipse'
  apply plugin: 'idea'
-@@ -170,17 +169,6 @@ tasks.withType(AbstractArchiveTask) {
-     reproducibleFileOrder = true
+@@ -172,17 +171,6 @@ tasks.withType(AbstractArchiveTask) {
+     fileMode = 0664
  }
  
 -checkstyle {
