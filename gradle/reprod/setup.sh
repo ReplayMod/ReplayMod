@@ -4,8 +4,10 @@ set -x
 
 cd gradle/reprod
 
+SHA256SUM="sha256sum"
+command -v "$SHA256SUM" > /dev/null 2>&1 || SHA256SUM="shasum -a 256" # OSX
 sha256val () {
-    sha256sum $1 | cut -d' ' -f1
+    $SHA256SUM $1 | cut -d' ' -f1
 }
 
 setup_dep () {
@@ -30,7 +32,8 @@ setup_dep () {
 
     pushd "deps/$dep"
         git reset --hard "$commit"
-        find ../../patches/$dep/ -name *.patch | sort | xargs -r git am
+        patches=$(find ../../patches/$dep/ -name *.patch | sort)
+        [ "$patches" != "" ] && echo "$patches" | xargs git am
         git reset --soft "$commit" # Because forgegradle includes the commit hash in the jar
 
         rm -rf gradle/wrapper gradlew
