@@ -365,6 +365,13 @@ public class ReplaySender extends ChannelDuplexHandler {
 
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
+        if (p instanceof S3FPacketCustomPayload) {
+            S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
+            if ("MC|BOpen".equals(packet.getChannelName())) {
+                return null;
+            }
+        }
+
         convertLegacyEntityIds(p);
 
         if(p instanceof S48PacketResourcePackSend) {
