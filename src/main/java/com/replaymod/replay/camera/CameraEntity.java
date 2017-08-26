@@ -5,6 +5,7 @@ import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
+import com.replaymod.replay.events.ReplayChatMessageEvent;
 import com.replaymod.replaystudio.util.Location;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -385,6 +387,12 @@ public class CameraEntity extends EntityPlayerSP {
                 && (e instanceof EntityPlayer || e instanceof EntityLiving || e instanceof EntityItemFrame);
     }
 
+    @Override
+    public void sendMessage(ITextComponent message) {
+        if (MinecraftForge.EVENT_BUS.post(new ReplayChatMessageEvent(this))) return;
+        super.sendMessage(message);
+    }
+
     private class EventHandler {
         @SubscribeEvent
         public void onPreClientTick(TickEvent.ClientTickEvent event) {
@@ -460,6 +468,46 @@ public class CameraEntity extends EntityPlayerSP {
             if (mc.getRenderViewEntity() == CameraEntity.this) {
                 event.setRoll(roll);
             }
+        }
+
+        private boolean heldItemTooltipsWasTrue;
+
+        @SubscribeEvent
+        public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
+            switch (event.getType()) {
+                case ALL:
+                    heldItemTooltipsWasTrue = mc.gameSettings.heldItemTooltips;
+                    mc.gameSettings.heldItemTooltips = false;
+                    break;
+                case ARMOR:
+                case HEALTH:
+                case FOOD:
+                case AIR:
+                case HOTBAR:
+                case EXPERIENCE:
+                case HEALTHMOUNT:
+                case JUMPBAR:
+                case POTION_ICONS:
+                    event.setCanceled(true);
+                    break;
+                case HELMET:
+                case PORTAL:
+                case CROSSHAIRS:
+                case BOSSHEALTH:
+                case BOSSINFO:
+                case SUBTITLES:
+                case TEXT:
+                case CHAT:
+                case PLAYER_LIST:
+                case DEBUG:
+                    break;
+            }
+        }
+
+        @SubscribeEvent
+        public void postRenderGameOverlay(RenderGameOverlayEvent.Post event) {
+            if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
+            mc.gameSettings.heldItemTooltips = heldItemTooltipsWasTrue;
         }
     }
 }

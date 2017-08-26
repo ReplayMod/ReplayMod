@@ -36,7 +36,6 @@ import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.crash.CrashReport;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
@@ -125,7 +124,7 @@ public class GuiReplayEditor extends GuiScreen {
     }
 
     public void save(File inputFile, PacketStream.FilterInfo...filters) {
-        save(FilenameUtils.getBaseName(inputFile.getName()), (outputFile) -> {
+        save(Utils.fileNameToReplayName(inputFile.getName()), (outputFile) -> {
             Studio studio = new ReplayStudio();
             File tmpDir = null;
             try {
@@ -220,7 +219,7 @@ public class GuiReplayEditor extends GuiScreen {
                         Utils.error(LOGGER, GuiReplayEditor.this, CrashReport.makeCrashReport(e, "Getting replay folder"), null);
                         return;
                     }
-                    File targetFile = new File(replayFolder, name + ".mcpr");
+                    File targetFile = new File(replayFolder, Utils.replayNameToFileName(name));
                     if (targetFile.exists()) {
                         LOGGER.trace("Selected file already exists, asking for confirmation");
                         Futures.addCallback(GuiYesNoPopup.open(GuiReplayEditor.this,

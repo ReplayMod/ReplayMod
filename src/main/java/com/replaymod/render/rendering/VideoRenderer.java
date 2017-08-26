@@ -40,6 +40,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import static com.google.common.collect.Iterables.getLast;
+import static com.replaymod.render.ReplayModRender.LOGGER;
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -67,6 +68,7 @@ public class VideoRenderer implements RenderInfo {
     private final GuiVideoRenderer gui;
     private boolean paused;
     private boolean cancelled;
+    private volatile Throwable failureCause;
 
     private Framebuffer guiFramebuffer;
     private int displayWidth, displayHeight;
@@ -77,7 +79,7 @@ public class VideoRenderer implements RenderInfo {
         this.timeline = timeline;
         this.gui = new GuiVideoRenderer(this);
         this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this,
-                videoWriter = new VideoWriter(settings) {
+                videoWriter = new VideoWriter(this) {
             @Override
             public void consume(RGBFrame frame) {
                 gui.updatePreview(frame);
@@ -90,7 +92,7 @@ public class VideoRenderer implements RenderInfo {
      * Render this video.
      * @return {@code true} if rendering was successful, {@code false} if the user aborted rendering (or the window was closed)
      */
-    public boolean renderVideo() {
+    public boolean renderVideo() throws Throwable {
         MinecraftForge.EVENT_BUS.post(new ReplayRenderEvent.Pre(this));
 
         setup();
@@ -138,6 +140,10 @@ public class VideoRenderer implements RenderInfo {
         finish();
 
         MinecraftForge.EVENT_BUS.post(new ReplayRenderEvent.Post(this));
+
+        if (failureCause != null) {
+            throw failureCause;
+        }
 
         return !cancelled;
     }
@@ -248,7 +254,13 @@ public class VideoRenderer implements RenderInfo {
 
         new SoundHandler().playRenderSuccessSound();
 
-        new GuiRenderingDone(ReplayModRender.instance, videoWriter.getVideoFile(), totalFrames, settings).display();
+        try {
+            if (!hasFailed()) {
+                new GuiRenderingDone(ReplayModRender.instance, videoWriter.getVideoFile(), totalFrames, settings).display();
+            }
+        } catch (VideoWriter.FFmpegStartupException e) {
+            setFailure(e);
+        }
 
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
         mc.resize(displayWidth, displayHeight);
@@ -324,7 +336,7 @@ public class VideoRenderer implements RenderInfo {
                     return;
                 }
             }
-        } while (paused);
+        } while (paused && !hasFailed());
     }
 
     private boolean displaySizeChanged() {
@@ -363,6 +375,20 @@ public class VideoRenderer implements RenderInfo {
         videoWriter.abort();
         this.cancelled = true;
         renderingPipeline.cancel();
+    }
+
+    public boolean hasFailed() {
+        return failureCause != null;
+    }
+
+    public synchronized void setFailure(Throwable cause) {
+        if (this.failureCause != null) {
+            LOGGER.error("Further failure during failed rendering: ", cause);
+        } else {
+            LOGGER.error("Failure during rendering: ", cause);
+            this.failureCause = cause;
+            cancel();
+        }
     }
 
     private class TimelinePlayer extends AbstractTimelinePlayer {

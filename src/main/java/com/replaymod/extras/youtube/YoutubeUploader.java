@@ -36,6 +36,8 @@ import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.replaymod.extras.ReplayModExtras.LOGGER;
+
 public class YoutubeUploader {
     private static final String CLIENT_ID = "743126594724-mfe7pj1k7e47uu5pk4503c8st9vj9ibu.apps.googleusercontent.com";
     private static final String CLIENT_SECRET = "gMwcy3mRYCRamCIjJIYP7rqc";
@@ -137,7 +139,7 @@ public class YoutubeUploader {
 
             CommandLine commandLine = new CommandLine(settings.getExportCommand());
             commandLine.addArguments(args);
-            System.out.println("Re-encoding for ODS with " + settings.getExportCommand() + args);
+            LOGGER.info("Re-encoding for ODS with {} {}", settings.getExportCommand(), args);
             Process process = new ProcessBuilder(commandLine.toStrings()).directory(videoFile.getParentFile()).start();
 
             final AtomicBoolean active = new AtomicBoolean(true);
@@ -149,7 +151,7 @@ public class YoutubeUploader {
                         char c = (char) in.read();
                         if (c == '\r') {
                             String str = sb.toString();
-                            System.out.println(str);
+                            LOGGER.debug("[FFmpeg] {}", str);
                             if (str.startsWith("frame=")) {
                                 str = str.substring(6).trim();
                                 str = str.substring(0, str.indexOf(' '));

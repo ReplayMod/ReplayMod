@@ -29,6 +29,7 @@ import static net.minecraft.client.Minecraft.getMinecraft;
 @Mod(modid = ReplayModOnline.MOD_ID,
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
+        acceptableRemoteVersions = "*",
         useMetadata = true)
 public class ReplayModOnline {
     public static final String MOD_ID = "replaymod-online";
@@ -40,7 +41,7 @@ public class ReplayModOnline {
 
     private ReplayModReplay replayModule;
 
-    private Logger logger;
+    public static Logger LOGGER;
 
     private ApiClient apiClient;
 
@@ -53,7 +54,7 @@ public class ReplayModOnline {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
         core = ReplayMod.instance;
         replayModule = ReplayModReplay.instance;
 
@@ -69,7 +70,7 @@ public class ReplayModOnline {
     public void init(FMLInitializationEvent event) {
         if (!getDownloadsFolder().exists()){
             if (!getDownloadsFolder().mkdirs()) {
-                logger.warn("Failed to create downloads folder: " + getDownloadsFolder());
+                LOGGER.warn("Failed to create downloads folder: " + getDownloadsFolder());
             }
         }
 
@@ -82,7 +83,10 @@ public class ReplayModOnline {
         // Initial login prompt
         if (!core.getSettingsRegistry().get(Setting.SKIP_LOGIN_PROMPT)) {
             if (!isLoggedIn()) {
-                core.runLater(() -> new GuiLoginPrompt(apiClient, GuiScreen.wrap(getMinecraft().currentScreen), null, false).display());
+                core.runLater(() -> {
+                    GuiScreen parent = GuiScreen.wrap(getMinecraft().currentScreen);
+                    new GuiLoginPrompt(apiClient, parent, parent, false).display();
+                });
             }
         }
     }
@@ -96,7 +100,7 @@ public class ReplayModOnline {
     }
 
     public Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 
     public ApiClient getApiClient() {
