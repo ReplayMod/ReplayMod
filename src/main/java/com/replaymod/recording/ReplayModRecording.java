@@ -19,6 +19,7 @@ import org.lwjgl.input.Keyboard;
 @Mod(modid = ReplayModRecording.MOD_ID,
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
+        acceptableRemoteVersions = "*",
         useMetadata = true)
 public class ReplayModRecording {
     public static final String MOD_ID = "replaymod-recording";
