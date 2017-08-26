@@ -125,6 +125,8 @@ public class ReplayHandler {
 
         ReplayModReplay.instance.replayHandler = null;
 
+        mc.displayGuiScreen(null);
+
         MinecraftForge.EVENT_BUS.post(new ReplayCloseEvent.Post(this));
     }
 

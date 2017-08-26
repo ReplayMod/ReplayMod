@@ -1,8 +1,11 @@
 package com.replaymod.render.gui;
 
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.render.ReplayModRender;
+import com.replaymod.render.VideoWriter;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.ReplayHandler;
@@ -11,6 +14,7 @@ import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiClickableContainer;
+import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiVerticalList;
@@ -25,12 +29,10 @@ import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.List;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
@@ -62,7 +64,8 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                             renameButton, removeButton),
                     closeButton);
 
-    private final GuiContainer container;
+    private final AbstractGuiScreen container;
+    private final ReplayHandler replayHandler;
     private Entry selectedEntry;
 
     {
@@ -84,9 +87,10 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
         }).addElements(null, title, list, buttonPanel);
     }
 
-    public GuiRenderQueue(GuiContainer container, GuiRenderSettings guiRenderSettings, ReplayHandler replayHandler, Timeline timeline) {
+    public GuiRenderQueue(AbstractGuiScreen container, GuiRenderSettings guiRenderSettings, ReplayHandler replayHandler, Timeline timeline) {
         super(container);
         this.container = container;
+        this.replayHandler = replayHandler;
         LOGGER.trace("Opening render queue popup");
 
         setBackgroundColor(Colors.DARK_TRANSPARENT);
@@ -188,28 +192,44 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
 
         renderButton.onClick(() -> {
             LOGGER.trace("Render button clicked");
-            // Close all GUIs (so settings in GuiRenderSettings are saved)
-            getMinecraft().displayGuiScreen(null);
-            // Start rendering
-            for (RenderJob renderJob : queue) {
-                LOGGER.info("Starting render job {}", renderJob);
-                try {
-                    VideoRenderer videoRenderer = new VideoRenderer(renderJob.getSettings(), replayHandler, renderJob.getTimeline());
-                    videoRenderer.renderVideo();
-                } catch (IOException e) {
-                    LOGGER.error("Rendering video:", e);
-                    GuiErrorScreen errorScreen = new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"),
-                            I18n.format("replaymod.gui.rendering.error.message"));
-                    getMinecraft().displayGuiScreen(errorScreen);
-                    return;
-                } catch (Throwable t) {
-                    CrashReport crashReport = CrashReport.makeCrashReport(t, "Rendering video");
-                    throw new ReportedException(crashReport);
-                }
-            }
+            processQueue(queue);
         });
 
         updateButtons();
+    }
+
+    private void processQueue(Iterable<RenderJob> queue) {
+        // Close all GUIs (so settings in GuiRenderSettings are saved)
+        getMinecraft().displayGuiScreen(null);
+        // Start rendering
+        int jobsDone = 0;
+        for (RenderJob renderJob : queue) {
+            LOGGER.info("Starting render job {}", renderJob);
+            try {
+                VideoRenderer videoRenderer = new VideoRenderer(renderJob.getSettings(), replayHandler, renderJob.getTimeline());
+                videoRenderer.renderVideo();
+            } catch (VideoWriter.NoFFmpegException e) {
+                LOGGER.error("Rendering video:", e);
+                GuiErrorScreen errorScreen = new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"),
+                        I18n.format("replaymod.gui.rendering.error.message"));
+                getMinecraft().displayGuiScreen(errorScreen);
+                return;
+            } catch (VideoWriter.FFmpegStartupException e) {
+                int jobsToSkip = jobsDone;
+                GuiExportFailed.tryToRecover(e, newSettings -> {
+                    // Update current job with fixed ffmpeg arguments
+                    renderJob.setSettings(newSettings);
+                    // Restart queue, skipping the already completed jobs
+                    processQueue(Iterables.skip(queue, jobsToSkip));
+                });
+                return;
+            } catch (Throwable t) {
+                Utils.error(LOGGER, this, CrashReport.makeCrashReport(t, "Rendering video"), () -> {});
+                container.display(); // Re-show the queue popup and the new error popup
+                return;
+            }
+            jobsDone++;
+        }
     }
 
     @Override

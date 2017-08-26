@@ -3,6 +3,7 @@
   "package": "com.replaymod.render.mixin",
   "mixins": [
     "MixinEntityRenderer",
+    "MixinFrustum",
     "MixinParticleManager",
     "MixinRender",
     "MixinRenderGlobal",

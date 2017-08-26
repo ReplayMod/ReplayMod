@@ -47,7 +47,7 @@ public class ReplayModReplay {
 
     private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 
-    private Logger logger;
+    public static Logger LOGGER;
 
     protected ReplayHandler replayHandler;
 
@@ -57,7 +57,7 @@ public class ReplayModReplay {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
+        LOGGER = event.getModLog();
         core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
@@ -181,6 +181,9 @@ public class ReplayModReplay {
     }
 
     public void startReplay(ReplayFile replayFile, boolean checkModCompat) throws IOException {
+        if (replayHandler != null) {
+            replayHandler.endReplay();
+        }
         if (checkModCompat) {
             ModCompat.ModInfoDifference modDifference = new ModCompat.ModInfoDifference(replayFile.getModInfo());
             if (!modDifference.getMissing().isEmpty() || !modDifference.getDiffering().isEmpty()) {
@@ -196,7 +199,7 @@ public class ReplayModReplay {
     }
 
     public Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 
     public CameraControllerRegistry getCameraControllerRegistry() {

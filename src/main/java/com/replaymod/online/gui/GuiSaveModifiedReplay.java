@@ -2,6 +2,7 @@ package com.replaymod.online.gui;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.replaymod.core.utils.Utils;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
@@ -27,7 +28,7 @@ public class GuiSaveModifiedReplay extends GuiScreen {
         @Override
         public void run() {
             String resultName = name.getText().trim().replace("[^a-zA-Z0-9\\.\\- ]", "_");
-            final File resultFile = new File(file.getParentFile(), resultName + ".mcpr");
+            final File resultFile = new File(file.getParentFile(), Utils.replayNameToFileName(resultName));
             if (resultFile.exists()) {
                 Futures.addCallback(GuiYesNoPopup.open(GuiSaveModifiedReplay.this,
                         new GuiLabel().setI18nText("replaymod.gui.replaymodified.warning1", resultName).setColor(Colors.BLACK),
