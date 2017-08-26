@@ -2,15 +2,16 @@ package com.replaymod.replay;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
-import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.gui.GuiErrorScreen;
@@ -30,7 +31,6 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * Sends replay packets to netty channels.
@@ -38,7 +38,7 @@ import java.util.concurrent.Callable;
  * the replay restart from the beginning.
  */
 @Sharable
-public class ReplaySender extends ChannelInboundHandlerAdapter {
+public class ReplaySender extends ChannelDuplexHandler {
 
     /**
      * Previously packets for the client player were inserted using one fixed entity id (this one).
@@ -242,6 +242,7 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
         try {
             channelInactive(ctx);
             ctx.channel().pipeline().close();
+            FileUtils.deleteDirectory(tempResourcePackFolder);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -364,6 +365,13 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
 
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
+        if (p instanceof S3FPacketCustomPayload) {
+            S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
+            if ("MC|BOpen".equals(packet.getChannelName())) {
+                return null;
+            }
+        }
+
         convertLegacyEntityIds(p);
 
         if(p instanceof S48PacketResourcePackSend) {
@@ -439,22 +447,19 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
                 }
             }
 
-            new Callable<Void>() {
+            new Runnable() {
                 @Override
                 @SuppressWarnings("unchecked")
-                public Void call() {
+                public void run() {
                     if (mc.theWorld == null || !mc.isCallingFromMinecraftThread()) {
-                        synchronized(mc.scheduledTasks) {
-                            mc.scheduledTasks.add(ListenableFutureTask.create(this));
-                        }
-                        return null;
+                        ReplayMod.instance.runLater(this);
+                        return;
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
                     cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
-                    return null;
                 }
-            }.call();
+            }.run();
         }
 
         if(p instanceof S2BPacketChangeGameState) {
@@ -491,9 +496,22 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        FileUtils.deleteDirectory(tempResourcePackFolder);
-        super.channelInactive(ctx);
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        // The embedded channel's event loop will consider every thread to be in it and as such provides no
+        // guarantees that only one thread is using the pipeline at any one time.
+        // For reading the replay sender (either sync or async) is the only thread ever writing.
+        // For writing it may very well happen that multiple threads want to use the pipline at the same time.
+        // It's unclear whether the EmbeddedChannel is supposed to be thread-safe (the behavior of the event loop
+        // does suggest that). However it seems like it either isn't (likely) or there is a race condition.
+        // See: https://www.replaymod.com/forum/thread/1752#post8045 (https://paste.replaymod.com/lotacatuwo)
+        // To work around this issue, we just outright drop all write/flush requests (they aren't needed anyway).
+        // This still leaves channel handlers upstream with the threading issue but they all seem to cope well with it.
+        promise.setSuccess();
+    }
+
+    @Override
+    public void flush(ChannelHandlerContext ctx) throws Exception {
+        // See write method above
     }
 
     /**
@@ -721,6 +739,9 @@ public class ReplaySender extends ChannelInboundHandlerAdapter {
             }
 
             synchronized (this) {
+                if (timestamp == lastTimeStamp) { // Do nothing if we're already there
+                    return;
+                }
                 if (timestamp < lastTimeStamp) { // Restart the replay if we need to go backwards in time
                     hasWorldLoaded = false;
                     lastTimeStamp = 0;

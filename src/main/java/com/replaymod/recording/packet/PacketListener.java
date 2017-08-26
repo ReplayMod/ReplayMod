@@ -91,6 +91,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
                 saveMetaData();
             }
+            if (packet instanceof S46PacketSetCompressionLevel) {
+                return; // Replay data is never compressed on the packet level
+            }
 
             byte[] bytes = getPacketData(packet);
             long now = System.currentTimeMillis();
