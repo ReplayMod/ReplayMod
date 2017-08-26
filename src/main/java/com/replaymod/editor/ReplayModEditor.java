@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 @Mod(modid = ReplayModEditor.MOD_ID,
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
+        acceptableRemoteVersions = "*",
         useMetadata = true)
 public class ReplayModEditor {
     public static final String MOD_ID = "replaymod-editor";

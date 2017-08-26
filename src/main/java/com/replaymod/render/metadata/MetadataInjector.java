@@ -4,7 +4,6 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
 import com.google.common.primitives.Bytes;
 import com.googlecode.mp4parser.BasicContainer;
-import net.minecraftforge.fml.common.FMLLog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -12,6 +11,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import static com.replaymod.render.ReplayModRender.LOGGER;
 
 public class MetadataInjector {
 
@@ -96,7 +97,7 @@ public class MetadataInjector {
             videoFileOutputStream = new FileOutputStream(videoFile);
             tempIsoFile.getBox(videoFileOutputStream.getChannel());
         } catch(Exception e) {
-            FMLLog.getLogger().error("360 Degree Metadata couldn't be injected", e);
+            LOGGER.error("360 Degree Metadata couldn't be injected", e);
         } finally {
             IOUtils.closeQuietly(tempIsoFile);
             IOUtils.closeQuietly(videoFileOutputStream);
