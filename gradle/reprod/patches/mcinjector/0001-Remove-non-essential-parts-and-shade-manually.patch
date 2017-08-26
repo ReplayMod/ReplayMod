@@ -1,0 +1,127 @@
+From 85e6315018dd8ff9f613b1f0c4d00c5b0c6c37d6 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Sat, 26 Aug 2017 17:27:06 +0200
+Subject: [PATCH 1/2] Remove non-essential parts and shade manually
+
+---
+ build.gradle | 92 +-----------------------------------------------------------
+ 1 file changed, 1 insertion(+), 91 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index 2e5f949..b6c63bb 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,15 +1,5 @@
+-buildscript {
+-    repositories {
+-        mavenCentral()
+-    }
+-    dependencies {
+-        classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+-    }
+-}
+-
+ apply plugin: 'java'
+ apply plugin: 'eclipse'
+-apply plugin: 'fatjar'
+ apply plugin: 'maven'
+ 
+ group = 'de.oceanlabs.mcp'
+@@ -22,93 +12,13 @@ repositories {
+ }
+ 
+ jar {
++    from ({files(configurations.compile).collect {it.isDirectory() ? filesTree(it) : zipTree(it)}})
+     manifest.attributes('Main-Class': 'de.oceanlabs.mcp.mcinjector.MCInjector')
+ }
+-fatJar {
+-    classifier 'fatjar'
+-    manifest.attributes('Main-Class': 'de.oceanlabs.mcp.mcinjector.MCInjector')
+-}
+-
+-artifacts {
+-    archives jar
+-    archives fatJar
+-}
+ 
+ dependencies {
+     compile 'org.ow2.asm:asm-debug-all:5.0.4'
+     compile 'net.sf.jopt-simple:jopt-simple:4.5'
+     compile 'com.google.code.gson:gson:2.2.4'
+ }
+-configurations { deployJars }
+-uploadArchives {
+-    repositories {
+-        add project.repositories.mavenLocal()
+-    }
+-    repositories.mavenDeployer {
+-        configuration = configurations.deployJars
+ 
+-        if (project.hasProperty("filesmaven")) {
+-            logger.info('Publishing to files server')
+-            repository(url: project.filesmaven.url) {
+-                authentication(userName: project.filesmaven.username, privateKey: project.filesmaven.key)
+-            }
+-        } else {
+-            logger.info('Publishing to repo folder')
+-            repository(url: 'file://localhost/' + project.file('repo').getAbsolutePath())
+-        }
+-
+-        pom {
+-            groupId = project.group
+-            version = project.version
+-            artifactId = project.archivesBaseName
+-        }
+-        pom.project {
+-            name project.archivesBaseName
+-            packaging 'jar'
+-            description 'Java class metadata injector'
+-            url 'https://github.com/ModCoderPack/MCInjector'
+-
+-            scm {
+-                url 'https://github.com/ModCoderPack/MCInjector'
+-                connection 'scm:git:git://github.com/ModCoderPack/MCInjector.git'
+-                developerConnection 'scm:git:git@github.com:ModCoderPack/MCInjector.git'
+-            }
+-
+-            issueManagement {
+-                system 'github'
+-                url 'https://github.com/ModCoderPack/MCInjector/issues'
+-            }
+-
+-            licenses {
+-                license {
+-                    name ''
+-                    url ''
+-                    distribution 'repo'
+-                }
+-            }
+-
+-            developers {
+-                developer {
+-                    id 'Fesh0r'
+-                    name 'Fesh0r'
+-                    roles { role 'developer' }
+-                }
+-                developer {
+-                    id 'Searge'
+-                    name 'Searge'
+-                    roles { role 'developer' }
+-                }
+-                developer {
+-                    id 'cpw'
+-                    name 'cpw'
+-                    roles { role 'developer' }
+-                }
+-                developer {
+-                    id 'LexManos'
+-                    name 'Lex Manos'
+-                    roles { role 'developer' }
+-                }
+-            }
+-        }
+-    }
+-}
+-- 
+2.5.5
+

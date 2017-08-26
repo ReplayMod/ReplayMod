@@ -1,0 +1,25 @@
+From b0ca1d31124a2c27f8e29d44cf3f59b1bb1f070e Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Sat, 26 Aug 2017 17:07:06 +0200
+Subject: [PATCH 3/3] Replace groovy dep with localGroovy()
+
+---
+ build.gradle | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build.gradle b/build.gradle
+index 07d5ce5..1515570 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -22,7 +22,7 @@ repositories {
+ }
+ 
+ dependencies {
+-    compileOnly'org.codehaus.groovy:groovy-all:2.4.7:indy'
++    compile localGroovy()
+ }
+ 
+ tasks.withType(GroovyCompile) {
+-- 
+2.5.5
+

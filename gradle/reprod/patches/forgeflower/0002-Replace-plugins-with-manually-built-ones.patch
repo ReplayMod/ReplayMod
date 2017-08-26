@@ -1,0 +1,28 @@
+From 3c7c6fa56f1b70129c0eb4c178aff3805bc8f03a Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Sat, 26 Aug 2017 17:12:58 +0200
+Subject: [PATCH] Replace plugins with manually built ones
+
+---
+ build.gradle | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index da78c2f..6dd1fb4 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,6 +1,9 @@
+-plugins {
+-    id 'net.minecrell.gitpatcher' version '0.9.0'
++buildscript {
++    dependencies {
++        classpath files('../gitpatcher.jar')
++    }
+ }
++apply plugin: 'net.minecrell.gitpatcher'
+ 
+ patches {
+     submodule = 'FernFlower'
+-- 
+2.5.5
+

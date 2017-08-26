@@ -1,0 +1,30 @@
+From 0b256e84ff52a8a83b629cdfd404b4d28d0d8450 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Sat, 26 Aug 2017 17:33:25 +0200
+Subject: [PATCH 1/2] Configure gradle to build reproducible archives
+
+---
+ build.gradle | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/build.gradle b/build.gradle
+index 8a9dfbe..fda0b61 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -22,6 +22,13 @@ archivesBaseName = 'Srg2Source'
+ targetCompatibility = '1.6'
+ sourceCompatibility = '1.6'
+ 
++tasks.withType(AbstractArchiveTask) {
++    preserveFileTimestamps = false
++    reproducibleFileOrder = true
++    dirMode = 0775
++    fileMode = 0664
++}
++
+ configurations {
+     deployerJars
+ }
+-- 
+2.5.5
+

@@ -1,0 +1,79 @@
+From ff9f001be5beca28f04ec0669a300b9c6d06836c Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Sat, 26 Aug 2017 17:01:51 +0200
+Subject: [PATCH 2/3] Remove non-essential parts of build.gradle
+
+---
+ build.gradle | 52 ----------------------------------------------------
+ 1 file changed, 52 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index bc6d5bb..07d5ce5 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,14 +1,6 @@
+ plugins {
+     id 'java-gradle-plugin'
+     id 'groovy'
+-
+-    id 'eclipse'
+-    id 'idea'
+-
+-    id 'maven-publish'
+-    id 'com.gradle.plugin-publish' version '0.9.5'
+-
+-    id 'net.minecrell.licenser' version '0.3'
+ }
+ 
+ group = 'net.minecrell'
+@@ -37,47 +29,3 @@ tasks.withType(GroovyCompile) {
+     groovyOptions.optimizationOptions.indy = true
+ }
+ 
+-license {
+-    header = file('LICENSE')
+-    include '**/*.java'
+-    include '**/*.groovy'
+-}
+-
+-task sourceJar(type: Jar) {
+-    classifier = 'sources'
+-    from sourceSets.main.allSource
+-}
+-
+-publishing {
+-    publications {
+-        mavenJava(MavenPublication) {
+-            from components.java
+-
+-            artifact sourceJar
+-
+-            repositories {
+-                maven {
+-                    url = System.getenv('REPO_' + (version.endsWith('-SNAPSHOT') ? 'SNAPSHOTS' : 'RELEASES')) ?: "$buildDir/repo"
+-                }
+-            }
+-        }
+-    }
+-}
+-
+-pluginBundle {
+-    website = 'https://github.com/Minecrell/gitpatcher'
+-    vcsUrl = website
+-    description = project.description
+-    tags = ['git']
+-
+-    plugins {
+-        gitpatcherPlugin {
+-            id = 'net.minecrell.gitpatcher'
+-            displayName = 'gitpatcher'
+-        }
+-    }
+-}
+-
+-task wrapper(type: Wrapper) {
+-    gradleVersion = '3.3'
+-}
+-- 
+2.5.5
+
