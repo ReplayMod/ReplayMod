@@ -25,6 +25,7 @@ public class LinuxUriScheme extends UriScheme {
                 "Icon=" + iconFile.getAbsolutePath().replace("\\", "\\\\").replace("\"", "\\\"") + "\n" +
                 "Type=Application\n" +
                 "Terminal=false\n" +
+                "NoDisplay=true\n" +
                 "MimeType=x-scheme-handler/replaymod;";
 
         FileOutputStream out = new FileOutputStream(file);

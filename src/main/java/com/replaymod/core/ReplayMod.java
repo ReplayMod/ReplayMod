@@ -26,6 +26,9 @@ import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -36,6 +39,7 @@ import java.util.List;
         useMetadata = true,
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
+        acceptableRemoteVersions = "*",
         updateJSON = "https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json",
         guiFactory = "com.replaymod.core.gui.GuiFactory")
 public class ReplayMod {
@@ -159,9 +163,36 @@ public class ReplayMod {
         });
     }
 
+    /**
+     * Set when the currently running code has been scheduled by runLater.
+     * If this is the case, subsequent calls to runLater have to be delayed until all scheduled tasks have been
+     * processed, otherwise a livelock may occur.
+     */
+    private boolean inRunLater = false;
+
     public void runLater(Runnable runnable) {
+        if (mc.isCallingFromMinecraftThread() && inRunLater) {
+            EventBus bus = MinecraftForge.EVENT_BUS;
+            bus.register(new Object() {
+                @SubscribeEvent
+                public void onRenderTick(TickEvent.RenderTickEvent event) {
+                    if (event.phase == TickEvent.Phase.START) {
+                        runLater(runnable);
+                        bus.unregister(this);
+                    }
+                }
+            });
+            return;
+        }
         synchronized (mc.scheduledTasks) {
-            mc.scheduledTasks.add(ListenableFutureTask.create(runnable, null));
+            mc.scheduledTasks.add(ListenableFutureTask.create(() -> {
+                inRunLater = true;
+                try {
+                    runnable.run();
+                } finally {
+                    inRunLater = false;
+                }
+            }, null));
         }
     }
 

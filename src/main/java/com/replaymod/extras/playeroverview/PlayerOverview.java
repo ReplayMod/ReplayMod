@@ -9,8 +9,6 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -58,12 +56,6 @@ public class PlayerOverview implements Extra {
         });
 
         MinecraftForge.EVENT_BUS.register(this);
-
-        RenderManager renderManager = mod.getMinecraft().getRenderManager();
-        @SuppressWarnings("unchecked")
-        Map<String, RenderPlayer> skinMap = renderManager.skinMap;
-        skinMap.put("default", new PlayerRenderHook(this, renderManager, false));
-        skinMap.put("slim", new PlayerRenderHook(this, renderManager, true));
     }
 
     public boolean isHidden(UUID uuid) {

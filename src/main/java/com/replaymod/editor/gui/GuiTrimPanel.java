@@ -20,7 +20,6 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.lwjgl.util.Dimension;
@@ -52,7 +51,7 @@ public class GuiTrimPanel extends GuiPanel {
 
     public final GuiDropdownMenu<File> inputReplays = new GuiDropdownMenu<File>(this)
             .setMinSize(new Dimension(200, 20)).onSelection(i -> updateSelectedReplay())
-            .setToString(f -> f == NO_REPLAY ? "" : FilenameUtils.getBaseName(f.getName()));
+            .setToString(f -> f == NO_REPLAY ? "" : Utils.fileNameToReplayName(f.getName()));
 
     public final GuiNumberField startHour = newGuiNumberField();
     public final GuiNumberField startMin = newGuiNumberField();
