@@ -48,7 +48,7 @@ index a0d350b..b12a46d 100644
 +    from (files(configurations.shade).collect {it.isDirectory() ? filesTree(it) : zipTree(it)})
  }
  
- tasks.withType(AbstractArchiveTask) {
+ sourceCompatibility = '1.6'
 -- 
 2.5.5
 

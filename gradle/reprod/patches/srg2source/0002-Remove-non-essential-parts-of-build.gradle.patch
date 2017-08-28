@@ -28,9 +28,9 @@ index fda0b61..eefeafe 100644
  apply plugin: 'java'
  apply plugin: 'idea'
  apply plugin: 'eclipse'
-@@ -29,10 +16,6 @@ tasks.withType(AbstractArchiveTask) {
-     fileMode = 0664
- }
+@@ -22,10 +9,6 @@ configurations {
+ targetCompatibility = '1.6'
+ sourceCompatibility = '1.6'
  
 -configurations {
 -    deployerJars
@@ -39,7 +39,7 @@ index fda0b61..eefeafe 100644
  dependencies {
      testCompile "junit:junit:4.12"
      
-@@ -56,9 +39,6 @@ dependencies {
+@@ -45,9 +28,6 @@ dependencies {
      
      // Potential Eclipse AST replacement (not used yet)
      //compile 'fr.inria.gforge.spoon:spoon-core:5.1.0'
@@ -49,7 +49,7 @@ index fda0b61..eefeafe 100644
  }
  
  repositories {
-@@ -84,86 +64,3 @@ jar {
+@@ -73,86 +53,3 @@ jar {
      exclude 'data/**'
  }
  

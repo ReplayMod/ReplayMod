@@ -13,7 +13,7 @@ new file mode 100644
 index 0000000..22fa679
 --- /dev/null
 +++ b/build.gradle
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,18 @@
 +apply plugin: 'java'
 +
 +sourceCompatibility = 1.8
@@ -30,13 +30,6 @@ index 0000000..22fa679
 +    manifest {
 +        attributes 'Main-Class': 'org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler'
 +    }
-+}
-+
-+tasks.withType(AbstractArchiveTask) {
-+    preserveFileTimestamps = false
-+    reproducibleFileOrder = true
-+    dirMode = 0775
-+    fileMode = 0664
 +}
 +
 -- 

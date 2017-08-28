@@ -30,8 +30,8 @@ index e0c46ea..165dbe4 100644
  apply plugin: 'checkstyle'
  apply plugin: 'maven'
  apply plugin: 'eclipse'
-@@ -177,23 +172,6 @@ tasks.withType(AbstractArchiveTask) {
-     fileMode = 0664
+@@ -170,23 +165,6 @@ tasks.withType(AbstractArchiveTask) {
+    from 'LICENSE.txt'
  }
  
 -// License header formatting

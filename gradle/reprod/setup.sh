@@ -2,7 +2,7 @@
 set -e
 set -x
 
-cd gradle/reprod
+pushd gradle/reprod
 
 SHA256SUM="sha256sum"
 command -v "$SHA256SUM" > /dev/null 2>&1 || SHA256SUM="shasum -a 256" # OSX
@@ -44,7 +44,7 @@ setup_dep () {
         cp ../../../../gradlew .
 
         chmod +x gradlew
-        ./gradlew build -x test
+        ./gradlew -I ../../init.gradle build -x test
 
         actual_hash=$(sha256val "$jar")
         if [ "$actual_hash" != "$jarhash" ]; then
@@ -87,3 +87,7 @@ pushd tmp
 	git commit -m "Add build.gradle"
 	git am ../patches/replaymod/*.patch
 popd
+
+popd # Back to root
+
+./gradlew -Preprod -I gradle/reprod/init.gradle "$@"

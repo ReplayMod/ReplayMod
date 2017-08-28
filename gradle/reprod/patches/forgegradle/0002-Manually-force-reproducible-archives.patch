@@ -47,7 +47,7 @@ index 468733e..91ea99a 100644
 +    }
  }
  
- tasks.withType(AbstractArchiveTask) {
+ javadoc {
 -- 
 2.5.5
 

@@ -7,8 +7,7 @@
 ##############################################################################
 
 if [ "$REPRODUCIBLE_BUILD" == "1" ] && [ -f ./gradle/reprod/setup.sh ] && [ "$1" != "-Preprod" ]; then
-    ./gradle/reprod/setup.sh || exit
-    ./gradlew -Preprod "$@"
+    ./gradle/reprod/setup.sh "$@"
     exit
 fi
 
