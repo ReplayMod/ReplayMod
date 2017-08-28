@@ -1,3 +1,7 @@
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
+
 def convertRepoToHttp = { repo ->
     if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
         URL url = repo.url.toURL()
@@ -16,5 +20,24 @@ allprojects {
         reproducibleFileOrder = true
         dirMode = 0775
         fileMode = 0664
+    }
+    // The shadow plugin doesn't seem to support the above
+    def shadowJar = tasks.findByPath ':shadowJar'
+    if (shadowJar != null) {
+        shadowJar.doLast {
+            File newFile = new File(archivePath.parent, 'tmp-' + archiveName)
+            newFile.withOutputStream { fout ->
+                JarOutputStream out = new JarOutputStream(fout)
+                JarFile jf = new JarFile(archivePath)
+                jf.entries().unique {it.name}.sort {it.name}.each {
+                    def copy = new JarEntry(it.name)
+                    copy.time = 0
+                    out.putNextEntry(copy)
+                    out << jf.getInputStream(it)
+                }
+                out.finish()
+            }
+            newFile.renameTo archivePath
+        }
     }
 }

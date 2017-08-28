@@ -1,0 +1,42 @@
+From 2acc7a8cbfcafa23671b669ba4ae50539cf11872 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Mon, 28 Aug 2017 20:56:39 +0200
+Subject: [PATCH] Replace ReplayStudio dep with manually built one
+
+---
+ build.gradle | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index 2104fb8..fb02c7f 100755
+--- a/build.gradle
++++ b/build.gradle
+@@ -53,24 +53,20 @@ dependencies {
+ 
+     shade 'org.aspectj:aspectjrt:1.8.2'
+ 
+-    compile project(':ReplayStudio')
++    shade files('gradle/reprod/deps/replaystudio.jar')
+ 
+     testCompile 'junit:junit:4.11'
+ }
+ 
+-tasks['idea'].dependsOn ':ReplayStudio:preshadowJar'
+-
+ jar {
+     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+ 
+     dependsOn configurations.compile
+     dependsOn configurations.shade
+-    dependsOn ':ReplayStudio:shadowJar'
+ 
+     def shade = {files(
+             configurations.compile.findAll {it.name.startsWith 'mixin-'}
+                     + configurations.shade
+-                    + getTasks().getByPath(':ReplayStudio:shadowJar').outputs.files
+     )}
+ 
+     def noticeDir = file("$buildDir/NOTICE")
+-- 
+2.5.5
+

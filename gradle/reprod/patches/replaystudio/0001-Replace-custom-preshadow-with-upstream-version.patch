@@ -1,0 +1,25 @@
+From 5e4d9a2f79250283004c4398498fd17006bad219 Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Mon, 28 Aug 2017 21:14:10 +0200
+Subject: [PATCH 1/2] Replace custom preshadow with upstream version
+
+---
+ build.gradle | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build.gradle b/build.gradle
+index c2f496e..dc84f48 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -23,7 +23,7 @@ apply plugin: 'idea'
+ apply plugin: 'com.github.johnrengelman.shadow'
+ apply plugin: 'license'
+ apply plugin: 'maven'
+-apply from: 'gradle/preshadow.gradle'
++apply plugin: 'ch.raffael.preshadow'
+ 
+ // Methods to determine detailed version string
+ def gitDescribe() {
+-- 
+2.5.5
+

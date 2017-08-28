@@ -57,7 +57,8 @@ setup_dep () {
             exit 1
         fi
 
-        cp "$jar" "../$dep.jar"
+        # Subshell to allow for expansion of *
+        cp "$(echo $jar)" "../$dep.jar"
     popd
 }
 
@@ -83,6 +84,7 @@ setup_dep "srg2source" "https://github.com/MinecraftForge/Srg2Source.git" "ea4ea
 setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "3d81c8e202ec435056fb2068fdc34cfefa99be2d" "build/libs/mixingradle-0.4-SNAPSHOT.jar" "8b3508867128a5d564631635dff898a36f9aca8db54b7bb3af6f4924e3f4bead"
 setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "a228a836a2dc5ce546d2d53c48760f52f082d7ad" "build/libs/ForgeGradle-2.3-SNAPSHOT.jar" "94bf0d8be7e68a3d9828c8208024c21f2c171663dd7d56b95b3459bfc67273c0"
 setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "b558323da3bd6ce94aeb442bfd7357f6c40d2fd4" "build/libs/mixin-0.6.11-SNAPSHOT.jar" "8ec6ce24b8192f043976344305ba6afbc35b052056f1559ca5914a77c5eae71d"
+setup_dep "replaystudio" "https://github.com/ReplayMod/ReplayStudio.git" "82bd8aa34e0ddb04d179299b582e960dc19a66f8" "build/libs/ReplayStudio-*all.jar" "c416c52ea3470d34dd2f9e26fb67836cef717b2c033ca0637af30d9f5e3bb31b"
 
 rm -rf tmp
 mkdir tmp

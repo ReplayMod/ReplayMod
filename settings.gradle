@@ -1,5 +1,5 @@
-include 'ReplayStudio'
-
 if (System.getenv('REPRODUCIBLE_BUILD') == '1') {
     rootProject.buildFileName = 'gradle/reprod/tmp/build.gradle'
+} else {
+    include 'ReplayStudio'
 }
