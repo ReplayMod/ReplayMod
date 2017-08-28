@@ -1,4 +1,16 @@
+def convertRepoToHttp = { repo ->
+    if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
+        URL url = repo.url.toURL()
+        repo.url = new URL("http", url.getHost(), url.getPort(), url.getFile()).toURI()
+    }
+}
+
 allprojects {
+    buildscript {
+       repositories.all convertRepoToHttp
+    }
+    repositories.all convertRepoToHttp
+
     tasks.withType(AbstractArchiveTask) {
         preserveFileTimestamps = false
         reproducibleFileOrder = true

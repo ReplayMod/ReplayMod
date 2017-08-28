@@ -2,6 +2,9 @@
 set -e
 set -x
 
+PROXY_PORT="25678"
+PROXY_SETTINGS="-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=$PROXY_PORT -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=$PROXY_PORT"
+
 pushd gradle/reprod
 
 SHA256SUM="sha256sum"
@@ -44,7 +47,7 @@ setup_dep () {
         cp ../../../../gradlew .
 
         chmod +x gradlew
-        ./gradlew -I ../../init.gradle build -x test
+        ./gradlew $PROXY_SETTINGS -I ../../init.gradle build -x test
 
         actual_hash=$(sha256val "$jar")
         if [ "$actual_hash" != "$jarhash" ]; then
@@ -58,8 +61,11 @@ setup_dep () {
     popd
 }
 
-# Required for all
-setup_dep "gradle-witness" "https://github.com/ReplayMod/gradle-witness.git" "c162a15841c2eba54b182fa81733c0aa9227f023" "build/libs/gradle-witness.jar" "5e9ce687248029bf6364010168a65a4ad66fcb712dbd5ba69c59697ef564964b"
+# Setup http(s) proxy
+setup_dep "proxy-witness" "https://github.com/johni0702/proxy-witness" "1efb77a52517201181615ee8e64b5c771b35a52b" "build/libs/proxy-witness.jar" "da68227e9e8599746f87b1982d88b9aed619c76496913942b4e9b1dc6f4916b9"
+java -jar deps/proxy-witness.jar "$PROXY_PORT" checksums.txt > proxy.log 2>&1 &
+proxy_pid=$!
+trap "kill $proxy_pid" EXIT
 
 # Required for mixin
 setup_dep "shadow" "https://github.com/johnrengelman/shadow.git" "60d0f28103be076dc991a624bf79ca7a13835973" "build/libs/shadow.jar" "eec0417a8cd44457551c80335cd384a187647b6429ed7b5ae3ce1b26f78a2c1f"
@@ -90,4 +96,4 @@ popd
 
 popd # Back to root
 
-./gradlew -Preprod -I gradle/reprod/init.gradle "$@"
+./gradlew -Preprod $PROXY_SETTINGS -I gradle/reprod/init.gradle "$@"

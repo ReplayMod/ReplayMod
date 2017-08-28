@@ -11,7 +11,7 @@ diff --git a/build.gradle b/build.gradle
 index a0d350b..b12a46d 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -12,17 +12,22 @@ repositories {
+@@ -12,22 +12,28 @@ repositories {
      jcenter()
  }
  
@@ -40,8 +40,6 @@ index a0d350b..b12a46d 100644
 +    shade 'org.codehaus.groovy:groovy-backports-compat23:2.4.4'
  }
  
- dependencyVerification {
-@@ -42,6 +47,7 @@ dependencyVerification {
  jar {
      from rootProject.file('LICENSE')
      from rootProject.file('NOTICE')
