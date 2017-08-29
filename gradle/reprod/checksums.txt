@@ -138,7 +138,7 @@ a95c958f0c052e0a94d20de1d30a9151f68e66b19bdbea60a58cd41539558874 /de/oceanlabs/m
 5bbf57acadec0f5ea930b793772bbbf2885098aed8d2ecf6290c170a7cd9f33e /de/oceanlabs/mcp/mcp_snapshot/20170615-1.12/mcp_snapshot-20170615-1.12.zip
 22c45060f350fcaa94e503f4a420cf8237c26c0fcdb4ada4aa98389b75c7b231 /de/oceanlabs/mcp/RetroGuard/3.6.6/RetroGuard-3.6.6.jar
 d6f165bb39aaa20ee14fdcbbdb0b8fffae38067087f333ec6e0acd3f6666b2ad /de/oceanlabs/mcp/RetroGuard/3.6.6/RetroGuard-3.6.6.pom
-a6063db740f50399c92942f41fd7d60d8afcf916d6c7a52dac69c7fa63598579 /de/oceanlabs/mcp/versions.json
+* /de/oceanlabs/mcp/versions.json
 fd5ad66cdd0a496d281b26c699f4511da7c3f95083659ebb7bae22dab876581a /io/netty/netty-all/4.1.9.Final/netty-all-4.1.9.Final.jar
 8ec38a54fc6ed53201d507c6690805878158bcab25c2f476a74c0ccb1d78870b /io/netty/netty-all/4.1.9.Final/netty-all-4.1.9.Final.pom
 117ff8d9069d0278585c284ab0817f826f018d9cf4e30f7e1b11f4fbc73013d1 /io/netty/netty-parent/4.1.9.Final/netty-parent-4.1.9.Final.pom
