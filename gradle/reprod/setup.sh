@@ -69,11 +69,7 @@ proxy_pid=$!
 trap "kill $proxy_pid" EXIT
 
 # Required for mixin
-setup_dep "shadow" "https://github.com/johnrengelman/shadow.git" "60d0f28103be076dc991a624bf79ca7a13835973" "build/libs/shadow.jar" "eec0417a8cd44457551c80335cd384a187647b6429ed7b5ae3ce1b26f78a2c1f"
 setup_dep "fernflower" "https://github.com/fesh0r/fernflower.git" "85f61bee8194ab69afa746b965973a18eda67608" "build/libs/fernflower.jar" "577c2c4e04f0026675cacb25ec525f2ccba5de2eecac525b28bed18f9ccfd790"
-
-# Required for forgeflower
-setup_dep "gitpatcher" "https://github.com/Minecrell/gitpatcher.git" "e815821d516bac0da01d579575f895b2a8abefe7" "build/libs/gitpatcher-0.9.0.jar" "95cc738b92b5f37466593880177e236519c9b2f10e3d38f97e36fd3ad3bd4448"
 
 # Required for forgegradle
 setup_dep "forgeflower" "https://github.com/MinecraftForge/ForgeFlower.git" "32a04b9840fb6b10a8e2c178af86e20bdb85e366" "ForgeFlower/build/libs/forgeflower-1.0.342-SNAPSHOT.jar" "4b32e3140decbe39eaf77399f0390fbece6b3a1f3ff3424e4754adefe1c7c932"

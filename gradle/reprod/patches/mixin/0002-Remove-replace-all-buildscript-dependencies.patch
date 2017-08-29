@@ -11,16 +11,11 @@ diff --git a/build.gradle b/build.gradle
 index e0c46ea..165dbe4 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -1,17 +1,12 @@
- // Gradle repositories and dependencies
- buildscript {
--    repositories {
--        jcenter()
--    }
+@@ -5,13 +5,11 @@
+     }
      dependencies {
 -        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
--        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
-+        classpath files('../shadow.jar')
+         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
      }
  }
  
