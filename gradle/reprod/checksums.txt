@@ -162,7 +162,7 @@ b47c5d5810643426a3147ddb2195ef2ab67c80b167e7c2ac64a5d0dee8c030dd /net/md-5/Speci
 5f374f8ae7afff8dbc23aff14e59c5bd585c230afe9a8dcaa7b928e8cb16a27e /net/md-5/SpecialSource/1.7.4/SpecialSource-1.7.4.pom
 606b825e3920a1b7e8e2652a37e432f2b3066539e803a46212c5505a709cbff2 /net/minecraftforge/forge/1.12.1-14.22.0.2444/forge-1.12.1-14.22.0.2444.pom
 c8396b067c800425d4f4e97ec6879262f2133b5c53575c6b82c4eb6feb22f2a1 /net/minecraftforge/forge/1.12.1-14.22.0.2444/forge-1.12.1-14.22.0.2444-userdev.jar
-a5ae2dc3177eddf8f19ccfee248eff3b3f76e38f4fb76a88bf99f96e81094924 /net/minecraftforge/forge/json
+* /net/minecraftforge/forge/json
 e74b65b8948446982a506a96176dd8baf4688237ba4903f56ca6f667b6c7ee42 /net/minecraft/launchwrapper/1.11/launchwrapper-1.11.jar
 616c4971035d1e6ab4809e16daabb02aa308c1dc001c06dd547c7d3b2e916999 /net/minecraft/launchwrapper/1.11/launchwrapper-1.11.pom
 57f402b626d16cc2705bf2a37add7adbb074f0ca3b3102fa6e23aa303dae682f /net/minecraft/launchwrapper/1.12/launchwrapper-1.12.jar
