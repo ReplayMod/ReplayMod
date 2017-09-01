@@ -48,9 +48,7 @@ repositories {
         name = "SpongePowered Repo"
         url = "http://repo.spongepowered.org/maven/"
     }
-    maven {
-        url 'https://repo.spacehq.org/content/repositories/snapshots/'
-    }
+    maven { url 'https://jitpack.io' }
 }
 
 configurations {
@@ -71,24 +69,20 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    compile project(':ReplayStudio')
+    shade 'com.github.replaymod:ReplayStudio:2df8d8b'
 
     testCompile 'junit:junit:4.11'
 }
-
-tasks['idea'].dependsOn ':ReplayStudio:preshadowJar'
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     dependsOn configurations.compile
     dependsOn configurations.shade
-    dependsOn ':ReplayStudio:shadowJar'
 
     def shade = {files(
             configurations.compile.findAll {it.name.startsWith 'mixin-'}
                     + configurations.shade
-                    + getTasks().getByPath(':ReplayStudio:shadowJar').outputs.files
     )}
 
     def noticeDir = file("$buildDir/NOTICE")
