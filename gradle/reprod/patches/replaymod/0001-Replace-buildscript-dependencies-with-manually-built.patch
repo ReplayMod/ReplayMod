@@ -31,8 +31,8 @@ index ee24828..42d0607 100755
 -        }
 -    }
      dependencies {
--        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
--        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
+-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
+-        classpath 'org.spongepowered:mixingradle:0.3-SNAPSHOT'
 +        classpath files('gradle/reprod/deps/forgegradle.jar')
 +        classpath files('gradle/reprod/deps/mixingradle.jar')
      }

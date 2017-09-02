@@ -11,7 +11,7 @@ diff --git a/build.gradle b/build.gradle
 index db80dfa..2f5e041 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -42,8 +42,7 @@ processResources {
+@@ -59,8 +59,7 @@ processResources {
  }
  
  jar.manifest.mainAttributes (

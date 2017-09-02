@@ -12,8 +12,8 @@ diff --git a/src/main/java/net/minecraftforge/gradle/common/BasePlugin.java b/sr
 index df369f1..e3e50c0 100644
 --- a/src/main/java/net/minecraftforge/gradle/common/BasePlugin.java
 +++ b/src/main/java/net/minecraftforge/gradle/common/BasePlugin.java
-@@ -393,6 +393,13 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
-         deps.add(CONFIG_FFI_DEPS, deps.localGroovy());
+@@ -350,6 +350,13 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
+         // not required.. but you probably wanan implement this
      }
  
 +    private static String http(String url) {
@@ -26,7 +26,7 @@ index df369f1..e3e50c0 100644
      @SuppressWarnings("serial")
      private void makeCommonTasks()
      {
-@@ -402,7 +409,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
+@@ -358,7 +365,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
                  @Override
                  public String call()
                  {
@@ -35,7 +35,7 @@ index df369f1..e3e50c0 100644
                  }
              });
              getVersionJson.setFile(delayedFile(JSON_VERSION));
-@@ -486,7 +493,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
+@@ -435,7 +442,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
                  @Override
                  public String call()
                  {
@@ -44,7 +44,7 @@ index df369f1..e3e50c0 100644
                  }
              });
  
-@@ -500,7 +507,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
+@@ -449,7 +456,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
                  @Override
                  public String call()
                  {
@@ -61,15 +61,15 @@ index b42b1c2..a0753e0 100644
  
  
      // urls
--    public static final String URL_MC_MANIFEST     = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-+    public static final String URL_MC_MANIFEST     = "http://launchermeta.mojang.com/mc/game/version_manifest.json";
-     public static final String URL_FF              = "http://files.minecraftforge.net/fernflower-fix-1.0.zip";
-     public static final String URL_ASSETS          = "http://resources.download.minecraft.net";
--    public static final String URL_LIBRARY         = "https://libraries.minecraft.net/"; // Mojang's Cloudflare front end
-+    public static final String URL_LIBRARY         = "http://libraries.minecraft.net/"; // Mojang's Cloudflare front end
-     //public static final String URL_LIBRARY         = "https://minecraft-libraries.s3.amazonaws.com/"; // Mojang's AWS server, as Cloudflare is having issues, TODO: Switch back to above when their servers are fixed.
-     public static final String URL_FORGE_MAVEN     = "http://files.minecraftforge.net/maven";
-     public static final List<String> URLS_MCP_JSON = Arrays.asList(
+-    public static final String URL_MC_MANIFEST  = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
++    public static final String URL_MC_MANIFEST  = "http://launchermeta.mojang.com/mc/game/version_manifest.json";
+     public static final String URL_FF           = "http://files.minecraftforge.net/fernflower-fix-1.0.zip";
+     public static final String URL_ASSETS       = "http://resources.download.minecraft.net";
+-    public static final String URL_LIBRARY      = "https://libraries.minecraft.net/";
++    public static final String URL_LIBRARY      = "http://libraries.minecraft.net/";
+     public static final String URL_FORGE_MAVEN  = "http://files.minecraftforge.net/maven";
+     public static final String URL_MCP_JSON     = "http://export.mcpbot.bspk.rs/versions.json";
+ 
 -- 
 2.5.5
 

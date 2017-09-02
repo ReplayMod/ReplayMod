@@ -15,7 +15,7 @@ index bfadecd..774a015 100644
      shade 'com.nothome:javaxdelta:2.0.1' // GDIFF implementation for BinPatches
      shade 'com.google.code.gson:gson:2.2.4' // Used instead of Argo for buuilding changelog.
      shade 'com.github.tony19:named-regexp:0.2.3' // 1.7 Named regexp features
--    shade 'net.minecraftforge:forgeflower:1.0.342-SNAPSHOT' // Fernflower Forge edition
+-    shade 'net.minecraftforge:fernflower:2.0-SNAPSHOT' // Fernflower Forge edition
 +    shade files('../forgeflower.jar') // Fernflower Forge edition
  
      shade 'net.md-5:SpecialSource:1.7.4' // deobf and reobs
@@ -25,7 +25,7 @@ index bfadecd..774a015 100644
      // mcp stuff
      shade 'de.oceanlabs.mcp:RetroGuard:3.6.6'
 -    shade 'de.oceanlabs.mcp:mcinjector:3.4-SNAPSHOT'
--    shade 'net.minecraftforge.srg2source:Srg2Source:4.0-SNAPSHOT'
+-    shade 'net.minecraftforge.srg2source:Srg2Source:3.3-SNAPSHOT'
 +    shade files('../mcinjector.jar')
 +    shade files('../srg2source.jar')
  
