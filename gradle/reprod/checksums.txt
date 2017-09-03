@@ -8,6 +8,8 @@ a30a3f89fbbea23deb5290e832eb0d12a8171ae8ba4461af2b936ed0245ee697 /com/fasterxml/
 cd62bdfd946618c26b49451084361edf79cd6ddb3eae1a485ecb05319295896d /com/github/abrarsyed/jastyle/jAstyle/1.3/jAstyle-1.3.pom
 33b3d79f3e27d33c46411ab7b7d81f43f12756e18c8936063f18b1a950a5f84b /com/github/jengelman/gradle/plugins/shadow/1.2.3/shadow-1.2.3.jar
 f00facfc855e7d5517fc57553614b4690e61df9ab44f6e93ff583ae201b5a3aa /com/github/jengelman/gradle/plugins/shadow/1.2.3/shadow-1.2.3.pom
+27fc3b7f0436f532c9d798dbc006d7e0b9b7c9b436f8d977f122665c633e9892 /com/github/johni0702/gradle-ecj-plugin/795736c/gradle-ecj-plugin-795736c.jar
+f98b3e07c6b6a32dd6f9f70f5cef4ac9be42a9a6c850ceb8f33767da94706635 /com/github/johni0702/gradle-ecj-plugin/795736c/gradle-ecj-plugin-795736c.pom
 1e7bfcc83540c5af0fbab37ce316711380d142108f96db380e18a11e111cccf0 /com/github/johni0702/gradle-reproducible-builds-plugin/4989ae9/gradle-reproducible-builds-plugin-4989ae9.jar
 8fe6e84a98417cbdc7df47b3afd5c368d7fb3139b4f0e16ac6f1496d85c24b18 /com/github/johni0702/gradle-reproducible-builds-plugin/4989ae9/gradle-reproducible-builds-plugin-4989ae9.pom
 75ccc0e24d37ed5b8916e1bcffad1e067c2b1cfa21b635287f968db5c3c1963a /com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar
@@ -333,6 +335,8 @@ d68a303f399eeef919b681c43885481c46bf3cfe39f4ede369f7433087bbe14c /org/eclipse/eq
 a6833a81795978d4ad8d2e54597171e2a3447fd6983b8e902710aa1dc946fa24 /org/eclipse/equinox/registry/3.5.400-v20140428-1507/registry-3.5.400-v20140428-1507.jar
 cb7c954965e6b2946c2f7be78c1e089b530e0444b1fefc2d8079a5681362bfa1 /org/eclipse/equinox/registry/3.5.400-v20140428-1507/registry-3.5.400-v20140428-1507.pom
 d7cd093fdad45c7cc979f44f7166f259607b41cf44a8afe77561594cef4c39d3 /org/eclipse/equinox/registry/maven-metadata.xml
+9cddda75f4a1b4469e73f44e7b61a3e897d0f657df4797f9106ffe88c4eeade0 /org/eclipse/jdt/core/compiler/ecj/4.6.1/ecj-4.6.1.jar
+536c45e8804de01321c478cfb994377f81f1e32897636616fa21b877fd137c6f /org/eclipse/jdt/core/compiler/ecj/4.6.1/ecj-4.6.1.pom
 5a91ef99dc827e77c8dae1481bd5a92a0ce877304f2b25151ba4e0834e8a917d /org/eclipse/jdt/org.eclipse.jdt.core/3.10.0.v20131029-1755/org.eclipse.jdt.core-3.10.0.v20131029-1755.jar
 5591ec1f9826a0506b33cb2a7bceceaf4058f667c0d5e8fd1a348c36540d9dcb /org/eclipse/jdt/org.eclipse.jdt.core/3.10.0.v20131029-1755/org.eclipse.jdt.core-3.10.0.v20131029-1755.pom
 d6aba7a1569952e082630de6907f460f476c20d97032cb9f7e4f3e14ddb928e7 /org/eclipse/jetty/jetty-parent/14/jetty-parent-14.pom

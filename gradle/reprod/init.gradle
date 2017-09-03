@@ -8,6 +8,7 @@ initscript {
    }
    dependencies {
         classpath 'com.github.johni0702:gradle-reproducible-builds-plugin:4989ae9'
+        classpath 'com.github.johni0702:gradle-ecj-plugin:795736c'
    }
 }
 
@@ -22,6 +23,12 @@ allprojects {
     buildscript {
        repositories.all convertRepoToHttp
     }
+    repositories { mavenCentral() } // for ecj
     repositories.all convertRepoToHttp
     apply plugin: de.johni0702.gradle.ReproducibleBuildsPlugin, to: project
+    apply plugin: xink.gradle.ecj.EcjPlugin, to: project
+
+    ecj {
+        warn = ['none']
+    }
 }
