@@ -21,6 +21,7 @@ setup_dep () {
     jarhash=$5
 
     [ -f "deps/$dep.jar" ] && [ "$(sha256val "deps/$dep.jar")" == "$jarhash" ] && return
+    [ -f "deps/$dep.jar" ] && [ "*" == "$jarhash" ] && return
     rm -rf "deps/$dep.jar"
 
     if [ ! -d "deps/$dep" ] || [ "$(git -C "deps/$dep" rev-parse $commit^{commit})" != "$commit" ]; then
@@ -47,10 +48,14 @@ setup_dep () {
         cp ../../../../gradlew .
 
         chmod +x gradlew
-        ./gradlew $PROXY_SETTINGS -I ../../init.gradle build -x test -x javadoc
+        if [ "$dep" == "proxy-witness" ]; then
+            ./gradlew $PROXY_SETTINGS build -x test -x javadoc
+        else
+            ./gradlew $PROXY_SETTINGS -I ../../init.gradle build -x test -x javadoc
+        fi
 
         actual_hash=$(sha256val "$jar")
-        if [ "$actual_hash" != "$jarhash" ]; then
+        if [ "*" != "$jarhash" ] && [ "$actual_hash" != "$jarhash" ]; then
             echo "Failed to verify checksum of build artifact of dependency: $dep"
             echo "Expected: $jarhash"
             echo "But was:  $actual_hash"
@@ -63,7 +68,7 @@ setup_dep () {
 }
 
 # Setup http(s) proxy
-setup_dep "proxy-witness" "https://github.com/johni0702/proxy-witness" "17ebb2e22f812faed9a28bae6bf1d8b28f798d56" "build/libs/proxy-witness.jar" "f6846fda75a35a55a38db7c3b8215ef43377c33af0ac8118318716223da10ecc"
+setup_dep "proxy-witness" "https://github.com/johni0702/proxy-witness" "17ebb2e22f812faed9a28bae6bf1d8b28f798d56" "build/libs/proxy-witness.jar" "*"
 java -Dproxywitness.httpUris=http://export.mcpbot.bspk.rs/versions.json -jar deps/proxy-witness.jar "$PROXY_PORT" checksums.txt > proxy.log 2>&1 &
 proxy_pid=$!
 trap "kill $proxy_pid" EXIT

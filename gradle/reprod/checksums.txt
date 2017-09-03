@@ -8,6 +8,8 @@ a30a3f89fbbea23deb5290e832eb0d12a8171ae8ba4461af2b936ed0245ee697 /com/fasterxml/
 cd62bdfd946618c26b49451084361edf79cd6ddb3eae1a485ecb05319295896d /com/github/abrarsyed/jastyle/jAstyle/1.3/jAstyle-1.3.pom
 33b3d79f3e27d33c46411ab7b7d81f43f12756e18c8936063f18b1a950a5f84b /com/github/jengelman/gradle/plugins/shadow/1.2.3/shadow-1.2.3.jar
 f00facfc855e7d5517fc57553614b4690e61df9ab44f6e93ff583ae201b5a3aa /com/github/jengelman/gradle/plugins/shadow/1.2.3/shadow-1.2.3.pom
+1e7bfcc83540c5af0fbab37ce316711380d142108f96db380e18a11e111cccf0 /com/github/johni0702/gradle-reproducible-builds-plugin/4989ae9/gradle-reproducible-builds-plugin-4989ae9.jar
+8fe6e84a98417cbdc7df47b3afd5c368d7fb3139b4f0e16ac6f1496d85c24b18 /com/github/johni0702/gradle-reproducible-builds-plugin/4989ae9/gradle-reproducible-builds-plugin-4989ae9.pom
 75ccc0e24d37ed5b8916e1bcffad1e067c2b1cfa21b635287f968db5c3c1963a /com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar
 fbcba81b21a8bc3c0761e4798fa05285444b43d681c03c9af49f9b2e1ecb0184 /com/github/jponge/lzma-java/1.3/lzma-java-1.3.pom
 f38a7028bbac3f6c6b15cb40d533c96c6e8fdb54fc93d922cfa1931b25fa8c5c /com/github/replaymod/ReplayStudio/2df8d8b/ReplayStudio-2df8d8b.jar
