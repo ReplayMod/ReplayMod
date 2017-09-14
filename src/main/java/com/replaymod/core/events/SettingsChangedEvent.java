@@ -1,9 +1,9 @@
 package com.replaymod.core.events;
 
 import com.replaymod.core.SettingsRegistry;
+import cpw.mods.fml.common.eventhandler.Event;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraftforge.fml.common.eventhandler.Event;
 
 @RequiredArgsConstructor
 public class SettingsChangedEvent extends Event {

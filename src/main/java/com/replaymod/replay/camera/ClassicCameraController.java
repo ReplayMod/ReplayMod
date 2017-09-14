@@ -34,7 +34,7 @@ public class ClassicCameraController implements CameraController {
         boolean forward = false, backward = false, left = false, right = false, up = false, down = false;
         speedup = false;
         for(KeyBinding kb : Minecraft.getMinecraft().gameSettings.keyBindings) {
-            if(!kb.isKeyDown()) continue;
+            if(!kb.getIsKeyPressed()) continue;
             if(kb.getKeyDescription().equals("key.forward")) {
                 forward = true;
                 speedup = true;
@@ -161,7 +161,7 @@ public class ClassicCameraController implements CameraController {
         Vec3 dbf = direction;
 
         if(dirBefore != null) {
-            direction = dirBefore.normalize().add(direction);
+            direction = dirBefore.normalize().addVector(direction.xCoord, direction.yCoord, direction.zCoord);
         }
 
         dirBefore = dbf;
@@ -174,7 +174,7 @@ public class ClassicCameraController implements CameraController {
         float f3 = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
         float f4 = -MathHelper.cos(-pitch * 0.017453292F);
         float f5 = MathHelper.sin(-pitch * 0.017453292F);
-        return new Vec3((double)(f3 * f4), (double)f5, (double)(f2 * f4));
+        return Vec3.createVectorHelper((double)(f3 * f4), (double)f5, (double)(f2 * f4));
     }
 
     public enum MoveDirection {

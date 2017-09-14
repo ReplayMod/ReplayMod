@@ -3,6 +3,7 @@ package com.replaymod.pathing.player;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 /**
  * Timeline player using the system time.
@@ -32,6 +33,7 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
     }
 
     @Override
+    @SubscribeEvent // 1.7.10 doesn't yet deal properly with inherited, overridden event handlers
     public void onTick(ReplayTimer.UpdatedEvent event) {
         if (secondFrame) {
             secondFrame = false;

@@ -4,10 +4,10 @@ import com.replaymod.render.RenderSettings;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
+import com.replaymod.render.hooks.GLStateTracker;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.shader.Program;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
@@ -15,9 +15,13 @@ import org.lwjgl.util.ReadableDimension;
 
 import java.io.IOException;
 
-import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glPopMatrix;
+import static org.lwjgl.opengl.GL11.glPushMatrix;
 
 public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
     private static final ResourceLocation vertexResource = new ResourceLocation("replaymod", "shader/ods.vert");
@@ -28,8 +32,8 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
     private final Program.Uniform directionVariable;
     private final Program.Uniform leftEyeVariable;
 
-    private final BooleanState[] previousStates = new BooleanState[3];
-    private final BooleanState previousFogState;
+    private final GLStateTracker.EnabledState[] previousStates = new GLStateTracker.EnabledState[2];
+    private final GLStateTracker.EnabledState previousFogState;
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
@@ -40,6 +44,11 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             @Override
             public ReadableDimension getFrameSize() {
                 return renderInfo.getFrameSize();
+            }
+
+            @Override
+            public int getFramesDone() {
+                return renderInfo.getFramesDone();
             }
 
             @Override
@@ -73,15 +82,14 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             setTexture("lightMap", 1);
             linkState(0, "textureEnabled");
             linkState(1, "lightMapEnabled");
-            linkState(2, "hurtTextureEnabled");
             final Program.Uniform uniform = shaderProgram.getUniformVariable("fogEnabled");
-            previousFogState = GlStateManager.fogState.field_179049_a;
-            uniform.set(previousFogState.currentState);
-            GlStateManager.fogState.field_179049_a = new BooleanState(previousFogState.capability) {
+            previousFogState = GLStateTracker.getInstance().fog;
+            uniform.set(previousFogState.isEnabled());
+            GLStateTracker.getInstance().fog = new GLStateTracker.EnabledState() {
                 @Override
-                public void setState(boolean state) {
-                    super.setState(state);
-                    uniform.set(state);
+                public void setEnabled(boolean enabled) {
+                    super.setEnabled(enabled);
+                    uniform.set(enabled);
                 }
             };
             shaderProgram.stopUsing();
@@ -96,13 +104,13 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
     private void linkState(int id, String var) {
         final Program.Uniform uniform = shaderProgram.getUniformVariable(var);
-        previousStates[id] = GlStateManager.textureState[id].texture2DState;
-        uniform.set(previousStates[id].currentState);
-        GlStateManager.textureState[id].texture2DState = new BooleanState(previousStates[id].capability) {
+        previousStates[id] = GLStateTracker.getInstance().texture[id];
+        uniform.set(previousStates[id].isEnabled());
+        GLStateTracker.getInstance().texture[id] = new GLStateTracker.EnabledState() {
             @Override
-            public void setState(boolean state) {
-                super.setState(state);
-                uniform.set(state);
+            public void setEnabled(boolean enabled) {
+                super.setEnabled(enabled);
+                uniform.set(enabled);
             }
         };
     }
@@ -132,10 +140,10 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         left.close();
         right.close();
         shaderProgram.delete();
-        for (int i = 0; i < 3; i++) {
-            GlStateManager.textureState[i].texture2DState = previousStates[i];
+        for (int i = 0; i < previousStates.length; i++) {
+            GLStateTracker.getInstance().texture[i] = previousStates[i];
         }
-        GlStateManager.fogState.field_179049_a = previousFogState;
+        GLStateTracker.getInstance().fog = previousFogState;
     }
 
     private class CubicStereoFrameCapturer extends CubicPboOpenGlFrameCapturer {
@@ -147,17 +155,17 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         protected OpenGlFrame renderFrame(int frameId, float partialTicks, CubicOpenGlFrameCapturer.Data captureData) {
             resize(getFrameWidth(), getFrameHeight());
 
-            pushMatrix();
+            glPushMatrix();
             frameBuffer().bindFramebuffer(true);
 
-            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            enableTexture2D();
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_TEXTURE_2D);
 
             directionVariable.set(captureData.ordinal());
             worldRenderer.renderWorld(partialTicks, null);
 
             frameBuffer().unbindFramebuffer();
-            popMatrix();
+            glPopMatrix();
 
             return captureFrame(frameId, captureData);
         }

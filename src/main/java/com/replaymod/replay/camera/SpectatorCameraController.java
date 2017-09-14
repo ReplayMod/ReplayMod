@@ -34,9 +34,9 @@ public class SpectatorCameraController implements CameraController {
         // Always make sure the camera is in the exact same spot as the spectated entity
         // This is necessary as some rendering code for the hand doesn't respect the view entity
         // and always uses mc.thePlayer
-        Entity view = mc.getRenderViewEntity();
+        Entity view = mc.renderViewEntity;
         if (view != null && view != camera) {
-            camera.setCameraPosRot(mc.getRenderViewEntity());
+            camera.setCameraPosRot(mc.renderViewEntity);
             // If it's a player, also 'steal' its inventory so the rendering code knows what item to render
             if (view instanceof EntityPlayer) {
                 EntityPlayer viewPlayer = (EntityPlayer) view;

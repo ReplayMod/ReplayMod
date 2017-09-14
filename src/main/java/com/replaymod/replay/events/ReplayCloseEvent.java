@@ -1,9 +1,9 @@
 package com.replaymod.replay.events;
 
 import com.replaymod.replay.ReplayHandler;
+import cpw.mods.fml.common.eventhandler.Event;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraftforge.fml.common.eventhandler.Event;
 
 @RequiredArgsConstructor
 public abstract class ReplayCloseEvent extends Event {

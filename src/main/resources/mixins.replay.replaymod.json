@@ -2,14 +2,10 @@
   "required": true,
   "package": "com.replaymod.replay.mixin",
   "mixins": [
-    "MixinGuiSpectator",
     "MixinPlayerControllerMP",
-    "MixinRenderArrow",
     "MixinRendererLivingEntity",
     "MixinRenderItem",
-    "MixinRenderManager",
     "MixinTileEntityEndPortalRenderer",
-    "MixinViewFrustum",
     "MixinWorldClient"
   ],
   "server": [],

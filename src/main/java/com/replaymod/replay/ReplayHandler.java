@@ -1,39 +1,41 @@
 package com.replaymod.replay;
 
 import com.google.common.base.Preconditions;
-import com.mojang.authlib.GameProfile;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.SpectatorCameraController;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
+import com.replaymod.replay.gui.screen.GuiOpeningReplay;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.util.Location;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.EnumPacketDirection;
+import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.NetworkManager;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.*;
 
-import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 public class ReplayHandler {
 
@@ -132,24 +134,29 @@ public class ReplayHandler {
     private void setup() {
         mc.ingameGUI.getChatGUI().clearChatMessages();
 
-        NetworkManager networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND) {
+        NetworkManager networkManager = new NetworkManager(true) {
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
                 t.printStackTrace();
             }
         };
-        NetHandlerPlayClient netHandlerPlayClient =
-                new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
-        networkManager.setNetHandler(netHandlerPlayClient);
-        FMLClientHandler.instance().setPlayClient(netHandlerPlayClient);
+        networkManager.setNetHandler(new NetHandlerLoginClient(networkManager, mc, null));
 
-        channel = new EmbeddedChannel(networkManager);
-        NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
-        channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
+        mc.displayGuiScreen(new GuiOpeningReplay(networkManager));
 
+        ChannelOutboundHandlerAdapter dummyHandler = new ChannelOutboundHandlerAdapter();
+        channel = new EmbeddedChannel(dummyHandler);
+        channel.pipeline().remove(dummyHandler);
         channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
-        channel.pipeline().addAfter("ReplayModReplay_replaySender", "fml:packet_handler", networkDispatcher);
+        channel.pipeline().addAfter("ReplayModReplay_replaySender", "packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
+
+        // Call twice to force-overwrite the NetworkManager's internal state
+        networkManager.setConnectionState(EnumConnectionState.PLAY);
+        networkManager.getNetHandler().onConnectionStateTransition(EnumConnectionState.LOGIN, EnumConnectionState.PLAY);
+        networkManager.setConnectionState(EnumConnectionState.PLAY);
+
+        FMLNetworkHandler.fmlClientHandshake(networkManager);
     }
 
     public ReplayFile getReplayFile() {
@@ -209,7 +216,7 @@ public class ReplayHandler {
      * When the entity is {@code null} or the camera entity, the camera becomes the view entity.
      * @param e The entity to spectate
      */
-    public void spectateEntity(Entity e) {
+    public void spectateEntity(EntityLivingBase e) {
         CameraEntity cameraEntity = getCameraEntity();
         if (cameraEntity == null) {
             return; // Cannot spectate if we have no camera
@@ -227,15 +234,15 @@ public class ReplayHandler {
             cameraEntity.setCameraController(new SpectatorCameraController(cameraEntity));
         }
 
-        if (mc.getRenderViewEntity() != e) {
-            mc.setRenderViewEntity(e);
+        if (mc.renderViewEntity != e) {
+            mc.renderViewEntity = e;
             cameraEntity.setCameraPosRot(e);
         }
     }
 
     /**
      * Set the camera as the view entity.
-     * This is equivalent to {@link #spectateEntity(Entity) spectateEntity(null)}.
+     * This is equivalent to {@link #spectateEntity(EntityLivingBase) spectateEntity(null)}.
      */
     public void spectateCamera() {
         spectateEntity(null);
@@ -246,7 +253,7 @@ public class ReplayHandler {
      * @return {@code true} if the camera is the view entity, {@code false} otherwise
      */
     public boolean isCameraView() {
-        return mc.thePlayer instanceof CameraEntity && mc.thePlayer == mc.getRenderViewEntity();
+        return mc.thePlayer instanceof CameraEntity && mc.thePlayer == mc.renderViewEntity;
     }
 
     /**
@@ -310,9 +317,9 @@ public class ReplayHandler {
                 replaySender.setSyncModeAndWait();
 
                 // Perform the rendering using OpenGL
-                pushMatrix();
-                clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                enableTexture2D();
+                GL11.glPushMatrix();
+                GL11.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                GL11.glEnable(GL_TEXTURE_2D);
                 mc.getFramebuffer().bindFramebuffer(true);
                 mc.entityRenderer.setupOverlayRendering();
 
@@ -321,10 +328,10 @@ public class ReplayHandler {
                 guiScreen.drawScreen(0, 0, 0);
 
                 mc.getFramebuffer().unbindFramebuffer();
-                popMatrix();
-                pushMatrix();
+                GL11.glPopMatrix();
+                GL11.glPushMatrix();
                 mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
-                popMatrix();
+                GL11.glPopMatrix();
 
                 Display.update();
 
@@ -349,11 +356,7 @@ public class ReplayHandler {
                     entity.prevRotationYaw = entity.rotationYaw;
                     entity.prevRotationPitch = entity.rotationPitch;
                 }
-                try {
-                    mc.runTick();
-                } catch (IOException e) {
-                    e.printStackTrace(); // This should never be thrown but whatever
-                }
+                mc.runTick();
 
                 //finally, updating the camera's position (which is not done by the sync jumping)
                 moveCameraToTargetPosition();

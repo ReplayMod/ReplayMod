@@ -1,9 +1,9 @@
 package com.replaymod.pathing.player;
 
 import com.replaymod.core.utils.WrappedTimer;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.Event;
 import net.minecraft.util.Timer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.Event;
 
 /**
  * Wrapper around the current timer that prevents the timer from advancing by itself.

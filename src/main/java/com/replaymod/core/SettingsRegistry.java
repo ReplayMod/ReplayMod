@@ -1,9 +1,9 @@
 package com.replaymod.core;
 
 import com.replaymod.core.events.SettingsChangedEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

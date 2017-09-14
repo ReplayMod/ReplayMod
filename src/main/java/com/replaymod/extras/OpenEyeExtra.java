@@ -2,6 +2,7 @@ package com.replaymod.extras;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.Setting;
+import cpw.mods.fml.common.Loader;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -14,7 +15,6 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
-import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.io.FileUtils;
 
 import javax.net.ssl.HttpsURLConnection;

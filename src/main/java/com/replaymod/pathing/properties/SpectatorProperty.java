@@ -8,6 +8,7 @@ import com.replaymod.replaystudio.pathing.property.PropertyPart;
 import com.replaymod.replaystudio.pathing.property.PropertyParts;
 import lombok.NonNull;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.world.World;
 
 import java.io.IOException;
@@ -36,7 +37,9 @@ public class SpectatorProperty extends AbstractProperty<Integer> {
         // Lookup entity by id, returns null if an entity with the id does not exists
         Entity target = world.getEntityByID(value);
         // Spectate entity, when called with null, returns to camera
-        handler.spectateEntity(target);
+        if (target instanceof EntityLivingBase) {
+            handler.spectateEntity((EntityLivingBase) target);
+        }
     }
 
     @Override

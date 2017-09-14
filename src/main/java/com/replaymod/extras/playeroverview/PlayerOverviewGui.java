@@ -20,7 +20,6 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Dimension;
@@ -46,14 +45,14 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
     public final GuiCheckbox checkAll = new GuiCheckbox(contentPanel){
         @Override
         public void onClick() {
-            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
+            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(BUTTON_SOUND, 1.0F));
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(true);
         }
     }.setLabel("").setChecked(true).setTooltip(new GuiTooltip().setI18nText("replaymod.gui.playeroverview.showall"));
     public final GuiCheckbox uncheckAll = new GuiCheckbox(contentPanel){
         @Override
         public void onClick() {
-            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
+            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(BUTTON_SOUND, 1.0F));
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(false);
         }
     }.setLabel("").setChecked(false).setTooltip(new GuiTooltip().setI18nText("replaymod.gui.playeroverview.hideall"));
@@ -96,12 +95,10 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
                             renderer.bindTexture(texture);
                             renderer.drawTexturedRect(0, 0, 8, 8, 16, 16, 8, 8, 64, 64);
-                            if (p.func_175148_a(EnumPlayerModelParts.HAT)) {
-                                renderer.drawTexturedRect(0, 0, 40, 8, size.getWidth(), size.getHeight(), 8, 8, 64, 64);
-                            }
+                            renderer.drawTexturedRect(0, 0, 40, 8, size.getWidth(), size.getHeight(), 8, 8, 64, 64);
                         }
                     }.setSize(16, 16),
-                    new GuiLabel().setText(p.getName()).setColor(isSpectator(p) ? Colors.DKGREY : Colors.WHITE)
+                    new GuiLabel().setText(p.getDisplayName()).setColor(isSpectator(p) ? Colors.DKGREY : Colors.WHITE)
             ).onClick(new Runnable() {
                 @Override
                 public void run() {
@@ -153,7 +150,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
         public int compare(EntityPlayer o1, EntityPlayer o2) {
             if (isSpectator(o1) && !isSpectator(o2)) return 1;
             if (isSpectator(o2) && !isSpectator(o1)) return -1;
-            return o1.getName().compareToIgnoreCase(o2.getName());
+            return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
         }
     }
 }

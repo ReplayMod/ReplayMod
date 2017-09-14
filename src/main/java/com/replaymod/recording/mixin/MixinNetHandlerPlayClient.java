@@ -3,27 +3,19 @@ package com.replaymod.recording.mixin;
 import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S07PacketRespawn;
-import net.minecraft.network.play.server.S38PacketPlayerListItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 @Mixin(NetHandlerPlayClient.class)
 public abstract class MixinNetHandlerPlayClient {
 
     @Shadow
     private Minecraft gameController;
-
-    @Shadow
-    private Map<UUID, NetworkPlayerInfo> playerInfoMap;
 
     public RecordingEventHandler getRecordingEventHandler() {
         return ((RecordingEventHandler.RecordingEventSender) gameController.renderGlobal).getRecordingEventHandler();
@@ -32,33 +24,22 @@ public abstract class MixinNetHandlerPlayClient {
     /**
      * Record the own player entity joining the world.
      * We cannot use the {@link net.minecraftforge.event.entity.EntityJoinWorldEvent} because the entity id
-     * of the player is set afterwards and the tablist entry might not yet be sent.
+     * of the player is set afterwards
      * @param packet The packet
      * @param ci Callback info
      */
-    @Inject(method = "handlePlayerListItem", at=@At("HEAD"))
-    public void recordOwnJoin(S38PacketPlayerListItem packet, CallbackInfo ci) {
-        if (gameController.thePlayer == null) return;
-
+    @Inject(method = "handleJoinGame", at=@At("RETURN"))
+    public void recordOwnJoin(S01PacketJoinGame packet, CallbackInfo ci) {
         RecordingEventHandler handler = getRecordingEventHandler();
-        if (handler != null && packet.func_179768_b() == S38PacketPlayerListItem.Action.ADD_PLAYER) {
-            @SuppressWarnings("unchecked")
-            List<S38PacketPlayerListItem.AddPlayerData> dataList = packet.func_179767_a();
-            for (S38PacketPlayerListItem.AddPlayerData data : dataList) {
-                if (data.func_179962_a() == null || data.func_179962_a().getId() == null) continue;
-                // Only add spawn packet for our own player and only if he isn't known yet
-                if (data.func_179962_a().getId().equals(Minecraft.getMinecraft().thePlayer.getGameProfile().getId())
-                        && !playerInfoMap.containsKey(data.func_179962_a().getId())) {
-                    handler.onPlayerJoin();
-                }
-            }
+        if (handler != null) {
+            handler.onPlayerJoin();
         }
     }
 
     /**
      * Record the own player entity respawning.
      * We cannot use the {@link net.minecraftforge.event.entity.EntityJoinWorldEvent} because that would also include
-     * the first spawn which is already handled by {@link #recordOwnJoin(S38PacketPlayerListItem, CallbackInfo)}.
+     * the first spawn which is already handled by {@link #recordOwnJoin(S01PacketJoinGame, CallbackInfo)}.
      * @param packet The packet
      * @param ci Callback info
      */

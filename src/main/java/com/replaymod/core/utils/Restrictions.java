@@ -1,7 +1,10 @@
 package com.replaymod.core.utils;
 
+import io.netty.buffer.Unpooled;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
+
+import java.io.IOException;
 
 /**
  * Restrictions set by the server,
@@ -14,8 +17,8 @@ public class Restrictions {
     private boolean onlyFirstPerson;
     private boolean onlyRecordingPlayer;
 
-    public String handle(S3FPacketCustomPayload packet) {
-        PacketBuffer buffer = packet.getBufferData();
+    public String handle(S3FPacketCustomPayload packet) throws IOException {
+        PacketBuffer buffer = new PacketBuffer(Unpooled.wrappedBuffer(packet.func_149168_d()));
         while (buffer.isReadable()) {
             String name = buffer.readStringFromBuffer(64);
             boolean active = buffer.readBoolean();

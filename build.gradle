@@ -8,22 +8,16 @@ buildscript {
             url = "http://files.minecraftforge.net/maven"
         }
         maven {
-            name = "sponge"
-            url = "https://repo.spongepowered.org/maven"
-        }
-        maven {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.3-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'forge'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -32,11 +26,18 @@ version = gitDescribe()
 group= "com.replaymod"
 archivesBaseName = "replaymod"
 
+ext {
+    mixinConfigs = [
+            'compat.shaders', 'extras.playeroverview', 'recording', 'render', 'replay'
+    ].collect {"mixins.${it}.replaymod.json"}
+    mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
+    mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
+}
+
 minecraft {
-    coreMod = 'com.replaymod.core.LoadingPlugin'
-    version = '1.8-11.14.4.1563'
+    version = '1.7.10-10.13.4.1558-1.7.10'
     runDir = "eclipse"
-    mappings = "snapshot_nodoc_20141130"
+    mappings = "stable_12"
     replace '@MOD_VERSION@', project.version
     // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
     // a newer srg-compatible MC version (that may be using a different protocol version)
@@ -49,7 +50,7 @@ repositories {
         url = "http://repo.spongepowered.org/maven/"
     }
     maven {
-        url 'https://repo.spacehq.org/content/repositories/snapshots/'
+        url 'https://jitpack.io'
     }
 }
 
@@ -71,24 +72,22 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    compile project(':ReplayStudio')
+    shade 'com.github.replaymod:ReplayStudio:181140c'
 
     testCompile 'junit:junit:4.11'
 }
-
-tasks['idea'].dependsOn ':ReplayStudio:preshadowJar'
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     dependsOn configurations.compile
     dependsOn configurations.shade
-    dependsOn ':ReplayStudio:shadowJar'
+
+    from project.mixinRefMap
 
     def shade = {files(
             configurations.compile.findAll {it.name.startsWith 'mixin-'}
                     + configurations.shade
-                    + getTasks().getByPath(':ReplayStudio:shadowJar').outputs.files
     )}
 
     def noticeDir = file("$buildDir/NOTICE")
@@ -117,6 +116,8 @@ jar {
     manifest {
          attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
                  'TweakOrder': '0',
+                 'MixinConfigs': project.mixinConfigs.join(','),
+                 'FMLCorePlugin': 'com.replaymod.core.LoadingPlugin',
                  'FMLAT': 'replaymod_at.cfg'
 	}
 }
@@ -156,6 +157,8 @@ processResources
 
 sourceSets {
     main {
+        // Required so resources are loaded correctly in dev env
+        output.resourcesDir = output.classesDir
         // Directly include jGui into main build
         // This could also be done by including it as a gradle subproject, however
         // doing so caused classpath issues on some IntelliJ versions.
@@ -165,7 +168,6 @@ sourceSets {
         resources {
             srcDir 'jGui/src/main/resources'
         }
-        refMap = "mixins.replaymod.refmap.json"
     }
     integrationTest {
         compileClasspath += main.runtimeClasspath + main.output
@@ -179,6 +181,21 @@ sourceSets {
 task copySrg(type: Copy, dependsOn: 'genSrgs') {
     from {project.tasks.genSrgs.mcpToSrg}
     into 'build'
+}
+
+reobf.doFirst {
+    if (project.mixinSrg.exists()) {
+        addExtraSrgFile project.mixinSrg
+    }
+}
+
+compileJava.dependsOn copySrg
+compileJava {
+    options.compilerArgs += [
+            "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
+            "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}",
+            "-AreobfSrgFile=${project.file('build/mcp-srg.srg').canonicalPath}"
+    ]
 }
 
 setupDecompWorkspace.dependsOn copySrg

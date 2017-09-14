@@ -12,21 +12,21 @@ import com.replaymod.render.events.ReplayRenderEvent;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.Timer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
@@ -40,9 +40,9 @@ import java.util.concurrent.FutureTask;
 
 import static com.google.common.collect.Iterables.getLast;
 import static com.replaymod.render.ReplayModRender.LOGGER;
-import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 public class VideoRenderer implements RenderInfo {
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -59,7 +59,6 @@ public class VideoRenderer implements RenderInfo {
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
-    private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
 
     private int framesDone;
     private int totalFrames;
@@ -228,8 +227,6 @@ public class VideoRenderer implements RenderInfo {
         ScaledResolution scaled = new ScaledResolution(mc, displayWidth, displayHeight);
         gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
-        chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.renderGlobal);
-
         // Set up our own framebuffer to render the GUI to
         guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true);
     }
@@ -250,9 +247,6 @@ public class VideoRenderer implements RenderInfo {
         }
         mc.gameSettings.mapSoundLevels = originalSoundLevels;
         mc.displayGuiScreen(null);
-        if (chunkLoadingRenderGlobal != null) {
-            chunkLoadingRenderGlobal.uninstall();
-        }
 
         ReplayMod.soundHandler.playRenderSuccessSound();
 
@@ -276,11 +270,7 @@ public class VideoRenderer implements RenderInfo {
         }
 
         mc.currentScreen = gui.toMinecraft();
-        try {
-            mc.runTick();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        mc.runTick();
     }
 
     public void drawGui() {
@@ -291,9 +281,9 @@ public class VideoRenderer implements RenderInfo {
                 guiFramebuffer.createBindFramebuffer(mc.displayWidth, mc.displayHeight);
             }
 
-            pushMatrix();
-            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            enableTexture2D();
+            GL11.glPushMatrix();
+            GL11.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            GL11.glEnable(GL_TEXTURE_2D);
             guiFramebuffer.bindFramebuffer(true);
 
             mc.entityRenderer.setupOverlayRendering();
@@ -301,13 +291,7 @@ public class VideoRenderer implements RenderInfo {
             ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
             gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
-            try {
-                gui.toMinecraft().handleInput();
-            } catch (IOException e) {
-                // That's a strange exception from this kind of method O_o
-                // It isn't actually thrown here, so we'll deal with it the easy way
-                throw new RuntimeException(e);
-            }
+            gui.toMinecraft().handleInput();
 
             int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
             int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
@@ -315,17 +299,17 @@ public class VideoRenderer implements RenderInfo {
             gui.toMinecraft().drawScreen(mouseX, mouseY, 0);
 
             guiFramebuffer.unbindFramebuffer();
-            popMatrix();
-            pushMatrix();
+            GL11.glPopMatrix();
+            GL11.glPushMatrix();
             guiFramebuffer.framebufferRender(displayWidth, displayHeight);
-            popMatrix();
+            GL11.glPopMatrix();
 
             // if not in high performance mode, update the gui size if screen size changed
             // otherwise just swap the progress gui to screen
             if (settings.isHighPerformance()) {
                 Display.update();
             } else {
-                mc.updateDisplay();
+                mc.resetSize();
             }
             if (Mouse.isGrabbed()) {
                 Mouse.setGrabbed(false);

@@ -2,11 +2,12 @@ package com.replaymod.render.hooks;
 
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.capturer.CaptureData;
+import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
+import cpw.mods.fml.common.FMLCommonHandler;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
@@ -16,12 +17,16 @@ public class EntityRendererHandler implements WorldRenderer {
     @Getter
     protected final RenderSettings settings;
 
+    @Getter
+    private final RenderInfo renderInfo;
+
     public CaptureData data;
 
     public boolean omnidirectional;
 
-    public EntityRendererHandler(RenderSettings settings) {
+    public EntityRendererHandler(RenderSettings settings, RenderInfo renderInfo) {
         this.settings = settings;
+        this.renderInfo = renderInfo;
 
         ((IEntityRenderer) mc.entityRenderer).replayModRender_setHandler(this);
     }
@@ -37,11 +42,11 @@ public class EntityRendererHandler implements WorldRenderer {
 
         mc.entityRenderer.updateLightmap(partialTicks);
 
-        GlStateManager.enableDepth();
-        GlStateManager.enableAlpha();
-        GlStateManager.alphaFunc(516, 0.5F);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GL11.glAlphaFunc(516, 0.5F);
 
-        mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
+        mc.entityRenderer.renderWorld(partialTicks, finishTimeNano);
 
         FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
     }

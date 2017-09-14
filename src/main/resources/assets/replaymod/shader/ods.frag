@@ -10,7 +10,6 @@ uniform sampler2D lightMap;
 
 uniform bool textureEnabled;
 uniform bool lightMapEnabled;
-uniform bool hurtTextureEnabled;
 uniform bool fogEnabled;
 
 void main() {
@@ -20,9 +19,6 @@ void main() {
     }
     if (lightMapEnabled) {
         color *= texture2D(lightMap, lightMapCoord.st);
-    }
-    if (hurtTextureEnabled) {
-        color = vec4(mix(color.rgb, vec3(1, 0, 0), 0.3), color.a);
     }
     if (fogEnabled) {
 	    color.rgb = mix(color.rgb, gl_Fog.color.rgb, clamp((gl_FogFragCoord - gl_Fog.start) * gl_Fog.scale, 0.0, 1.0));

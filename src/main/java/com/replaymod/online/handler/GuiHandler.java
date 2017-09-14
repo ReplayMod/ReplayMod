@@ -5,6 +5,8 @@ import com.replaymod.online.gui.GuiLoginPrompt;
 import com.replaymod.online.gui.GuiReplayCenter;
 import com.replaymod.online.gui.GuiUploadReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
@@ -14,8 +16,6 @@ import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.io.File;
 import java.util.List;

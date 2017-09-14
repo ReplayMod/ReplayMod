@@ -3,6 +3,9 @@ package com.replaymod.core;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import de.johni0702.minecraft.gui.container.AbstractGuiOverlay;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -16,9 +19,6 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
 import java.lang.reflect.Field;
@@ -84,9 +84,20 @@ public abstract class AbstractTask implements Task {
 
     private void expectGuiClosed0(int timeout, Runnable onClosed) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        class EventHandler {
+        FMLCommonHandler.instance().bus().register(new GuiEventHandler(timeout, stackTrace, onClosed));
+    }
+        public class GuiEventHandler {
             final net.minecraft.client.gui.GuiScreen currentScreen = mc.currentScreen;
+            private final int timeout;
+            private final StackTraceElement[] stackTrace;
+            private final Runnable onClosed;
             int framesPassed;
+
+            public GuiEventHandler(int timeout, StackTraceElement[] stackTrace, Runnable onClosed) {
+                this.timeout = timeout;
+                this.stackTrace = stackTrace;
+                this.onClosed = onClosed;
+            }
 
             @SubscribeEvent
             public void onGuiOpen(TickEvent.RenderTickEvent event) {
@@ -106,8 +117,6 @@ public abstract class AbstractTask implements Task {
                 }
             }
         }
-        FMLCommonHandler.instance().bus().register(new EventHandler());
-    }
 
     public void expectPopupClosed(Runnable onClosed) {
         expectPopupClosed0(10, onClosed);
@@ -119,12 +128,24 @@ public abstract class AbstractTask implements Task {
 
     private void expectPopupClosed0(int timeout, Runnable onClosed) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        AbstractGuiPopup popup = getPopup(mc.currentScreen);
-        if (popup == null) {
-            throw new IllegalStateException("No popup found.");
-        }
-        class EventHandler {
+        FMLCommonHandler.instance().bus().register(new PopupEventHandler(timeout, stackTrace, onClosed));
+    }
+        public class PopupEventHandler {
+            private final int timeout;
+            private final StackTraceElement[] stackTrace;
+            private final Runnable onClosed;
+            private final AbstractGuiPopup popup;
             int framesPassed;
+
+            public PopupEventHandler(int timeout, StackTraceElement[] stackTrace, Runnable onClosed) {
+                this.timeout = timeout;
+                this.stackTrace = stackTrace;
+                this.onClosed = onClosed;
+                this.popup = getPopup(mc.currentScreen);
+                if (this.popup == null) {
+                    throw new IllegalStateException("No popup found.");
+                }
+            }
 
             @SubscribeEvent
             public void onGuiOpen(TickEvent.RenderTickEvent event) {
@@ -143,8 +164,6 @@ public abstract class AbstractTask implements Task {
                 }
             }
         }
-        FMLCommonHandler.instance().bus().register(new EventHandler());
-    }
 
     private AbstractGuiPopup getPopup(net.minecraft.client.gui.GuiScreen minecraft) {
         GuiContainer<?> container = GuiOverlay.from(minecraft);
@@ -165,9 +184,20 @@ public abstract class AbstractTask implements Task {
 
     public <T> void expectGui(Class<T> guiClass, Consumer<T> onOpen) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        class EventHandler {
+        FMLCommonHandler.instance().bus().register(new ExpectGuiEventHandler<T>(guiClass, stackTrace, onOpen));
+    }
+        public class ExpectGuiEventHandler<T> {
+            private final Class<T> guiClass;
+            private final StackTraceElement[] stackTrace;
+            private final Consumer<T> onOpen;
             net.minecraft.client.gui.GuiScreen currentScreen;
             int framesPassed;
+
+            public ExpectGuiEventHandler(Class<T> guiClass, StackTraceElement[] stackTrace, Consumer<T> onOpen) {
+                this.guiClass = guiClass;
+                this.stackTrace = stackTrace;
+                this.onOpen = onOpen;
+            }
 
             @SubscribeEvent
             public void onGuiOpen(TickEvent.RenderTickEvent event) {
@@ -210,16 +240,15 @@ public abstract class AbstractTask implements Task {
                         return;
                     }
                 }
-                class UnexpectedGuiException extends Exception {
-                    UnexpectedGuiException(Object foundGui) {
-                        super("Expected instance of " + guiClass + " but found " + foundGui);
-                        setStackTrace(Arrays.copyOfRange(stackTrace, 2, stackTrace.length));
-                    }
-                }
-                future.setException(new UnexpectedGuiException(foundGui == null ? currentScreen : foundGui));
+                future.setException(new UnexpectedGuiException(guiClass, stackTrace,
+                        foundGui == null ? currentScreen : foundGui));
             }
         }
-        FMLCommonHandler.instance().bus().register(new EventHandler());
+    class UnexpectedGuiException extends Exception {
+        UnexpectedGuiException(Class<?> guiClass, StackTraceElement[] stackTrace, Object foundGui) {
+            super("Expected instance of " + guiClass + " but found " + foundGui);
+            setStackTrace(Arrays.copyOfRange(stackTrace, 2, stackTrace.length));
+        }
     }
 
     private void clickNow(int x, int y) {

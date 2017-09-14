@@ -15,9 +15,9 @@ import org.lwjgl.util.WritableDimension;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData> implements FrameCapturer<F> {
     protected final WorldRenderer worldRenderer;
@@ -76,16 +76,16 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     protected OpenGlFrame renderFrame(int frameId, float partialTicks, D captureData) {
         resize(getFrameWidth(), getFrameHeight());
 
-        pushMatrix();
+        GL11.glPushMatrix();
         frameBuffer().bindFramebuffer(true);
 
-        clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        enableTexture2D();
+        GL11.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        GL11.glEnable(GL_TEXTURE_2D);
 
         worldRenderer.renderWorld(partialTicks, captureData);
 
         frameBuffer().unbindFramebuffer();
-        popMatrix();
+        GL11.glPopMatrix();
 
         return captureFrame(frameId, captureData);
     }

@@ -7,32 +7,29 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
 import com.replaymod.replay.events.ReplayChatMessageEvent;
 import com.replaymod.replaystudio.util.Location;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.item.EntityItemFrame;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.stats.StatFileWriter;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Session;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.Map;
 import java.util.UUID;
@@ -43,7 +40,7 @@ import java.util.function.Function;
  * During a replay {@link Minecraft#thePlayer} should be an instance of this class.
  * Camera movement is controlled by a separate {@link CameraController}.
  */
-public class CameraEntity extends EntityPlayerSP {
+public class CameraEntity extends EntityClientPlayerMP {
     /**
      * Roll of this camera in degrees.
      */
@@ -67,8 +64,9 @@ public class CameraEntity extends EntityPlayerSP {
      */
     private final EventHandler eventHandler = new EventHandler();
 
-    public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
-        super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
+    public CameraEntity(Minecraft mcIn, World worldIn, Session session, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
+        super(mcIn, worldIn, session, netHandlerPlayClient, statFileWriter);
+        entityUniqueID = UUID.randomUUID(); // Need to not have the same UUID as the player who recorded the replay
         FMLCommonHandler.instance().bus().register(eventHandler);
         MinecraftForge.EVENT_BUS.register(eventHandler);
         if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
@@ -127,31 +125,33 @@ public class CameraEntity extends EntityPlayerSP {
      * @param to The entity whose position to copy
      */
     public void setCameraPosRot(Entity to) {
+        if (to == this) return;
+        float yOffset = 1.62f; // Magic value (eye height) from EntityRenderer#orientCamera
         prevPosX = to.prevPosX;
-        prevPosY = to.prevPosY;
+        prevPosY = to.prevPosY + yOffset;
         prevPosZ = to.prevPosZ;
         prevRotationYaw = to.prevRotationYaw;
         prevRotationPitch = to.prevRotationPitch;
         posX = to.posX;
-        posY = to.posY;
+        posY = to.posY + yOffset;
         posZ = to.posZ;
         rotationYaw = to.rotationYaw;
         rotationPitch = to.rotationPitch;
         lastTickPosX = to.lastTickPosX;
-        lastTickPosY = to.lastTickPosY;
+        lastTickPosY = to.lastTickPosY + yOffset;
         lastTickPosZ = to.lastTickPosZ;
         updateBoundingBox();
     }
 
     private void updateBoundingBox() {
-        setEntityBoundingBox(new AxisAlignedBB(
+        this.boundingBox.setBounds(
                 posX - width / 2, posY, posZ - width / 2,
-                posX + width / 2, posY + height, posZ + width / 2));
+                posX + width / 2, posY + height, posZ + width / 2);
     }
 
     @Override
     public void onUpdate() {
-        Entity view = mc.getRenderViewEntity();
+        EntityLivingBase view = mc.renderViewEntity;
         if (view != null) {
             // Make sure we're always spectating the right entity
             // This is important if the spectated player respawns as their
@@ -167,9 +167,9 @@ public class CameraEntity extends EntityPlayerSP {
                 }
                 view = worldObj.getPlayerEntityByUUID(spectating);
                 if (view != null) {
-                    mc.setRenderViewEntity(view);
+                    mc.renderViewEntity = view;
                 } else {
-                    mc.setRenderViewEntity(this);
+                    mc.renderViewEntity = this;
                     return;
                 }
             }
@@ -192,7 +192,7 @@ public class CameraEntity extends EntityPlayerSP {
 
     @Override
     public void setAngles(float yaw, float pitch) {
-        if (mc.getRenderViewEntity() == this) {
+        if (mc.renderViewEntity == this) {
             // Only update camera rotation when the camera is the view
             super.setAngles(yaw, pitch);
         }
@@ -209,8 +209,8 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
-    public boolean isInLava() {
-        return falseUnlessSpectating(Entity::isInLava); // Make sure no lava overlay is rendered
+    public boolean handleLavaMovement() {
+        return falseUnlessSpectating(Entity::handleLavaMovement); // Make sure no lava overlay is rendered
     }
 
     @Override
@@ -224,7 +224,7 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     private boolean falseUnlessSpectating(Function<Entity, Boolean> property) {
-        Entity view = mc.getRenderViewEntity();
+        Entity view = mc.renderViewEntity;
         if (view != null && view != this) {
             return property.apply(view);
         }
@@ -237,19 +237,16 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
-    protected void createRunningParticles() {
-        // We do not produce any particles, we are a camera
-    }
-
-    @Override
     public boolean canBeCollidedWith() {
         return false; // We are a camera, we cannot collide
     }
 
+    /* TODO 1.7.10: isSpectator has been added in 1.8, this is probably going to require lots of manual changes
     @Override
     public boolean isSpectator() {
         return ReplayModReplay.instance.getReplayHandler().isCameraView(); // Make sure we're treated as spectator
     }
+    */
 
     @Override
     public boolean shouldRenderInPass(int pass) {
@@ -261,7 +258,7 @@ public class CameraEntity extends EntityPlayerSP {
 
     @Override
     public boolean isInvisible() {
-        Entity view = mc.getRenderViewEntity();
+        Entity view = mc.renderViewEntity;
         if (view != this) {
             return view.isInvisible();
         }
@@ -270,7 +267,7 @@ public class CameraEntity extends EntityPlayerSP {
 
     @Override
     public ResourceLocation getLocationSkin() {
-        Entity view = mc.getRenderViewEntity();
+        Entity view = mc.renderViewEntity;
         if (view != this && view instanceof EntityPlayer) {
             return Utils.getResourceLocationForPlayerUUID(view.getUniqueID());
         }
@@ -278,17 +275,8 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
-    public String getSkinType() {
-        Entity view = mc.getRenderViewEntity();
-        if (view != this && view instanceof AbstractClientPlayer) {
-            return ((AbstractClientPlayer) view).getSkinType();
-        }
-        return super.getSkinType();
-    }
-
-    @Override
     public float getSwingProgress(float renderPartialTicks) {
-        Entity view = mc.getRenderViewEntity();
+        Entity view = mc.renderViewEntity;
         if (view != this && view instanceof EntityPlayer) {
             return ((EntityPlayer) view).getSwingProgress(renderPartialTicks);
         }
@@ -328,17 +316,17 @@ public class CameraEntity extends EntityPlayerSP {
 
         if (mc.gameSettings.keyBindAttack.isPressed() || mc.gameSettings.keyBindUseItem.isPressed()) {
             if (canSpectate(mc.pointedEntity)) {
-                ReplayModReplay.instance.getReplayHandler().spectateEntity(mc.pointedEntity);
+                ReplayModReplay.instance.getReplayHandler().spectateEntity((EntityLivingBase) mc.pointedEntity);
                 // Make sure we don't exit right away
                 mc.gameSettings.keyBindSneak.pressTime = 0;
             }
         }
 
         Map<String, KeyBinding> keyBindings = ReplayMod.instance.getKeyBindingRegistry().getKeyBindings();
-        if (keyBindings.get("replaymod.input.rollclockwise").isKeyDown()) {
+        if (keyBindings.get("replaymod.input.rollclockwise").getIsKeyPressed()) {
             roll += Utils.isCtrlDown() ? 0.2 : 1;
         }
-        if (keyBindings.get("replaymod.input.rollcounterclockwise").isKeyDown()) {
+        if (keyBindings.get("replaymod.input.rollcounterclockwise").getIsKeyPressed()) {
             roll -= Utils.isCtrlDown() ? 0.2 : 1;
         }
     }
@@ -352,7 +340,7 @@ public class CameraEntity extends EntityPlayerSP {
 
     public boolean canSpectate(Entity e) {
         return e != null && !e.isInvisible()
-                && (e instanceof EntityPlayer || e instanceof EntityLiving || e instanceof EntityItemFrame);
+                && e instanceof EntityPlayer; // 1.7.10 has no general concept of eye height
     }
 
     @Override
@@ -361,7 +349,10 @@ public class CameraEntity extends EntityPlayerSP {
         super.addChatMessage(message);
     }
 
-    private class EventHandler {
+    // All event handlers need to be public in 1.7.10
+    public class EventHandler {
+        private EventHandler() {}
+
         @SubscribeEvent
         public void onPreClientTick(TickEvent.ClientTickEvent event) {
             if (event.phase == TickEvent.Phase.START) {
@@ -399,14 +390,14 @@ public class CameraEntity extends EntityPlayerSP {
         @SubscribeEvent
         public void onRenderHand(RenderHandEvent event) {
             // Unless we are spectating another player, don't render our hand
-            if (mc.getRenderViewEntity() == CameraEntity.this || !(mc.getRenderViewEntity() instanceof EntityPlayer)) {
+            if (mc.renderViewEntity == CameraEntity.this || !(mc.renderViewEntity instanceof EntityPlayer)) {
                 event.setCanceled(true);
             }
         }
 
         @SubscribeEvent(priority = EventPriority.LOWEST)
         public void onRenderHandMonitor(RenderHandEvent event) {
-            Entity view = mc.getRenderViewEntity();
+            Entity view = mc.renderViewEntity;
             if (view instanceof EntityPlayer) {
                 EntityPlayer player = (EntityPlayer) view;
                 // When the spectated player has changed, force equip their items to prevent the equip animation
@@ -424,12 +415,14 @@ public class CameraEntity extends EntityPlayerSP {
             }
         }
 
+        /* TODO 1.7.10: This event has been added in 1.8, has to be replaced with mixin
         @SubscribeEvent
         public void onEntityViewRenderEvent(EntityViewRenderEvent.CameraSetup event) {
             if (mc.getRenderViewEntity() == CameraEntity.this) {
                 event.roll = roll;
             }
         }
+        */
 
         private boolean heldItemTooltipsWasTrue;
 

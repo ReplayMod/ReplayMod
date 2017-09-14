@@ -1,10 +1,9 @@
 package com.replaymod.core.utils;
 
 import com.replaymod.replaystudio.data.ModInfo;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.registry.GameData;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.registry.GameData;
 
 import java.util.*;
 import java.util.function.Function;
@@ -17,12 +16,17 @@ public class ModCompat {
         Map<String, ModContainer> ignoreCaseMap = Loader.instance().getModList().stream()
                 .collect(Collectors.toMap(m -> m.getModId().toLowerCase(), Function.identity()));
         return Stream.concat(
-                ((Set<ResourceLocation>) GameData.getBlockRegistry().getKeys()).stream(),
-                ((Set<ResourceLocation>) GameData.getItemRegistry().getKeys()).stream()
-        ).map(ResourceLocation::getResourceDomain).filter(s -> !s.equals("minecraft")).distinct()
+                ((Set<String>) GameData.getBlockRegistry().getKeys()).stream(),
+                ((Set<String>) GameData.getItemRegistry().getKeys()).stream()
+        ).map(ModCompat::getResourceDomain).filter(s -> !s.equals("minecraft")).distinct()
                 .map(String::toLowerCase).map(ignoreCaseMap::get).filter(mod -> mod != null)
                 .map(mod -> new ModInfo(mod.getModId(), mod.getName(), mod.getVersion()))
                 .collect(Collectors.toList());
+    }
+
+    private static String getResourceDomain(String name) {
+        if (!name.contains(":")) return null; // Still using old names without namespace, can't do anything, ignore
+        return name.split(":", 2)[0];
     }
 
     public static final class ModInfoDifference {

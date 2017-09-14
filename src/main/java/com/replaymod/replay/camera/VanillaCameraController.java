@@ -39,7 +39,7 @@ public class VanillaCameraController implements CameraController {
         if (partialTicksPassed == 0) return;
         Vector3f direction = new Vector3f(0, 0, 0);
         for (int i = 0; i < 6; i++) { // First, get movement direction depending on keys pressed
-            if (bindings[i].isKeyDown()) {
+            if (bindings[i].getIsKeyPressed()) {
                 Vector3f.add(direction, DIRECTIONS[i], direction);
             }
         }

@@ -3,9 +3,9 @@ package com.replaymod.editor;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.editor.handler.GuiHandler;
 import com.replaymod.online.Setting;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = ReplayModEditor.MOD_ID,

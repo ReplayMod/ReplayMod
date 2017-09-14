@@ -24,6 +24,7 @@ import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
+import cpw.mods.fml.common.Loader;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -46,7 +47,6 @@ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.crash.CrashReport;
-import net.minecraftforge.fml.common.Loader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
@@ -618,7 +618,7 @@ public class GuiPathing {
                     CameraEntity camera = replayHandler.getCameraEntity();
                     int spectatedId = -1;
                     if (!replayHandler.isCameraView()) {
-                        spectatedId = replayHandler.getOverlay().getMinecraft().getRenderViewEntity().getEntityId();
+                        spectatedId = replayHandler.getOverlay().getMinecraft().renderViewEntity.getEntityId();
                     }
                     timeline.addPositionKeyframe(time, camera.posX, camera.posY, camera.posZ,
                             camera.rotationYaw, camera.rotationPitch, camera.roll, spectatedId);

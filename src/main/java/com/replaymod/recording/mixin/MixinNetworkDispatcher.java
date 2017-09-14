@@ -1,11 +1,11 @@
 package com.replaymod.recording.mixin;
 
 import com.replaymod.recording.handler.FMLHandshakeFilter;
+import cpw.mods.fml.common.network.handshake.FMLHandshakeCodec;
+import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
+import cpw.mods.fml.relauncher.Side;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
-import net.minecraftforge.fml.common.network.handshake.FMLHandshakeCodec;
-import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
-import net.minecraftforge.fml.relauncher.Side;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

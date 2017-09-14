@@ -2,14 +2,14 @@ package com.replaymod.recording.gui;
 
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.recording.Setting;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.opengl.GL11;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
@@ -45,8 +45,7 @@ public class GuiRecordingOverlay {
             FontRenderer fontRenderer = mc.fontRendererObj;
             fontRenderer.drawString(I18n.format("replaymod.gui.recording").toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
             mc.renderEngine.bindTexture(TEXTURE);
-            GlStateManager.resetColor();
-            GlStateManager.enableAlpha();
+            GL11.glEnable(GL11.GL_ALPHA_TEST);
             Gui.drawModalRectWithCustomSizedTexture(10, 10, 58, 20, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
         }
     }

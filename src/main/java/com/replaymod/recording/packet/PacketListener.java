@@ -4,6 +4,7 @@ import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
+import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,12 +13,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.ChatComponentText;
-import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -85,14 +84,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     public void save(Packet packet) {
         try {
             if(packet instanceof S0CPacketSpawnPlayer) {
-                UUID uuid = ((S0CPacketSpawnPlayer) packet).func_179819_c();
+                UUID uuid = ((S0CPacketSpawnPlayer) packet).field_148955_b.getId();
                 Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
                 uuids.add(uuid.toString());
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
                 saveMetaData();
-            }
-            if (packet instanceof S46PacketSetCompressionLevel) {
-                return; // Replay data is never compressed on the packet level
             }
 
             byte[] bytes = getPacketData(packet);
@@ -162,14 +158,17 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     }
                 }
 
-                if (packet instanceof S48PacketResourcePackSend) {
-                    save(resourcePackRecorder.handleResourcePack((S48PacketResourcePackSend) packet));
-                    return;
+                if (packet instanceof S3FPacketCustomPayload) {
+                    S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
+                    if ("MC|RPack".equals(p.func_149169_c())) {
+                        save(resourcePackRecorder.handleResourcePack(p));
+                        return;
+                    }
                 }
 
                 if (packet instanceof FMLProxyPacket) {
                     // This packet requires special handling
-                    ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
+                    save(((FMLProxyPacket) packet).toS3FPacket());
                     super.channelRead(ctx, msg);
                     return;
                 }
@@ -178,7 +177,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 if (packet instanceof S3FPacketCustomPayload) {
                     S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
-                    if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
+                    if (Restrictions.PLUGIN_CHANNEL.equals(p.func_149169_c())) {
                         packet = new S40PacketDisconnect(new ChatComponentText("Please update to view this replay."));
                         save(packet);
                     }
@@ -218,7 +217,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             }
         }
 
-        Integer packetId = EnumConnectionState.PLAY.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
+        Integer packetId = (Integer) EnumConnectionState.PLAY.func_150755_b().inverse().get(packet.getClass());
         if (packetId == null) {
             throw new IOException("Unknown packet type:" + packet.getClass());
         }
@@ -236,7 +235,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void addMarker() {
-        Entity view = Minecraft.getMinecraft().getRenderViewEntity();
+        Entity view = Minecraft.getMinecraft().renderViewEntity;
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
         Marker marker = new Marker();

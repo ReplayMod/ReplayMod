@@ -3,11 +3,11 @@ package com.replaymod.extras.youtube;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.extras.Extra;
 import com.replaymod.render.gui.GuiRenderingDone;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class YoutubeUpload implements Extra {
     @Override

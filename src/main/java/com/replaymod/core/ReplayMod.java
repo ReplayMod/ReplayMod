@@ -7,32 +7,38 @@ import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.core.utils.OpenGLUtils;
 import com.replaymod.render.utils.SoundHandler;
+import com.replaymod.replay.InputReplayTimer;
 import com.replaymod.replaystudio.util.I18n;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.eventhandler.EventBus;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.*;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.EventBus;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
@@ -41,7 +47,6 @@ import java.util.Queue;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
-        updateJSON = "https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json",
         guiFactory = "com.replaymod.core.gui.GuiFactory")
 public class ReplayMod {
 
@@ -54,10 +59,10 @@ public class ReplayMod {
     private static String parseMinecraftVersion() {
         CrashReport crashReport = new CrashReport("", new Throwable());
         @SuppressWarnings("unchecked")
-        List<CrashReportCategory.Entry> list = crashReport.getCategory().children;
+        List<CrashReportCategory.Entry> list = crashReport.getCategory().field_85077_c;
         for (CrashReportCategory.Entry entry : list) {
-            if ("Minecraft Version".equals(entry.getKey())) {
-                return entry.getValue();
+            if ("Minecraft Version".equals(entry.func_85089_a())) {
+                return entry.func_85090_b();
             }
         }
         return "Unknown";
@@ -116,6 +121,7 @@ public class ReplayMod {
 
         new MainMenuHandler().register();
 
+        FMLCommonHandler.instance().bus().register(this);
         FMLCommonHandler.instance().bus().register(keyBindingRegistry);
 
         getKeyBindingRegistry().registerKeyBinding("replaymod.input.settings", 0, () -> {
@@ -127,8 +133,10 @@ public class ReplayMod {
     public void postInit(FMLPostInitializationEvent event) throws IOException {
         settingsRegistry.save(); // Save default values to disk
 
+        /* TODO 1.7.10: MC crashes when setting render distance to > 16
         if(!FMLClientHandler.instance().hasOptifine())
             GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
+            */
 
         if (System.getProperty("replaymod.render.file") != null) {
             final File file = new File(System.getProperty("replaymod.render.file"));
@@ -316,24 +324,17 @@ public class ReplayMod {
      */
     private boolean inRunLater = false;
 
+    // 1.7.10: Cannot use MC's because it is processed only during ticks (so not at all when replay is paused)
+    private final Queue<ListenableFutureTask<?>> scheduledTasks = new ArrayDeque<>();
+
     public void runLater(Runnable runnable) {
         if (mc.isCallingFromMinecraftThread() && inRunLater) {
             EventBus bus = FMLCommonHandler.instance().bus();
-            bus.register(new Object() {
-                @SubscribeEvent
-                public void onRenderTick(TickEvent.RenderTickEvent event) {
-                    if (event.phase == TickEvent.Phase.START) {
-                        runLater(runnable);
-                        bus.unregister(this);
-                    }
-                }
-            });
+            bus.register(new RunLaterHelper(runnable));
             return;
         }
-        @SuppressWarnings("unchecked")
-        Queue<ListenableFutureTask> tasks = mc.scheduledTasks;
-        synchronized (mc.scheduledTasks) {
-            tasks.add(ListenableFutureTask.create(() -> {
+        synchronized (scheduledTasks) {
+            scheduledTasks.add(ListenableFutureTask.create(() -> {
                 inRunLater = true;
                 try {
                     runnable.run();
@@ -341,6 +342,28 @@ public class ReplayMod {
                     inRunLater = false;
                 }
             }, null));
+        }
+    }
+
+    // in 1.7.10 apparently events can't be delivered to anonymous classes
+    @RequiredArgsConstructor
+    public class RunLaterHelper {
+        private final Runnable runnable;
+        @SubscribeEvent
+        public void onRenderTick(TickEvent.RenderTickEvent event) {
+            if (event.phase == TickEvent.Phase.START) {
+                runLater(runnable);
+                FMLCommonHandler.instance().bus().unregister(this);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void runScheduledTasks(InputReplayTimer.RunScheduledTasks event) {
+        synchronized (scheduledTasks) {
+            while (!scheduledTasks.isEmpty()) {
+                scheduledTasks.poll().run();
+            }
         }
     }
 

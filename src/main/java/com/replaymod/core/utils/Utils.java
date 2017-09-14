@@ -18,10 +18,11 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import lombok.SneakyThrows;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.network.NetworkPlayerInfo;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FilenameUtils;
@@ -160,14 +161,11 @@ public class Utils {
     }
 
     public static ResourceLocation getResourceLocationForPlayerUUID(UUID uuid) {
-        NetworkPlayerInfo info = getMinecraft().getNetHandler().getPlayerInfo(uuid);
-        ResourceLocation skinLocation;
-        if (info != null && info.hasLocationSkin()) {
-            skinLocation = info.getLocationSkin();
-        } else {
-            skinLocation = DefaultPlayerSkin.getDefaultSkin(uuid);
+        EntityPlayer player = Minecraft.getMinecraft().theWorld.getPlayerEntityByUUID(uuid);
+        if (player == null || !(player instanceof AbstractClientPlayer)) {
+            return AbstractClientPlayer.locationStevePng;
         }
-        return skinLocation;
+        return ((AbstractClientPlayer) player).getLocationSkin();
     }
 
     public static boolean isCtrlDown() {

@@ -3,19 +3,19 @@ package com.replaymod.replay;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraEntity;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.Event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.Timer;
 import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-
-import java.io.IOException;
 
 public class InputReplayTimer extends WrappedTimer {
     private final ReplayModReplay mod;
@@ -31,6 +31,9 @@ public class InputReplayTimer extends WrappedTimer {
     public void updateTimer() {
         super.updateTimer();
 
+        // 1.7.10: We have to run the scheduled executables (ours only) because MC would only run them every tick
+        FMLCommonHandler.instance().bus().post(new RunScheduledTasks());
+
         // If we are in a replay, we have to manually process key and mouse events as the
         // tick speed may vary or there may not be any ticks at all (when the replay is paused)
         if (mod.getReplayHandler() != null) {
@@ -43,11 +46,7 @@ public class InputReplayTimer extends WrappedTimer {
                     handleKeyEvent();
                 }
             } else {
-                try {
-                    mc.currentScreen.handleInput();
-                } catch (IOException e) { // *SIGH*
-                    e.printStackTrace();
-                }
+                mc.currentScreen.handleInput();
             }
         }
     }
@@ -89,17 +88,14 @@ public class InputReplayTimer extends WrappedTimer {
                 mc.setIngameFocus();
             }
         } else {
-            try {
-                mc.currentScreen.handleMouseInput();
-            } catch (IOException e) { // WHO IS RESPONSIBLE FOR THIS MESS?!?
-                e.printStackTrace();
-            }
+            mc.currentScreen.handleMouseInput();
         }
 
         FMLCommonHandler.instance().fireMouseInput();
     }
 
     protected void handleKeyEvent() {
+        // TODO 1.7.10: This might be missing some 1.7.10-only key bindings or implement some of them incorrectly
         int key = Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey();
         boolean pressed = Keyboard.getEventKeyState();
 
@@ -127,15 +123,11 @@ public class InputReplayTimer extends WrappedTimer {
         if (pressed) {
             // This might be subject to change as vanilla shaders are still kinda unused in 1.8
             if (key == Keyboard.KEY_F4 && mc.entityRenderer != null) {
-                mc.entityRenderer.switchUseShader();
+                mc.entityRenderer.activateNextShader();
             }
 
             if (mc.currentScreen != null) {
-                try {
-                    mc.currentScreen.handleKeyboardInput();
-                } catch (IOException e) { // AND WHO THOUGHT THIS WAS A GREAT IDEA?
-                    e.printStackTrace();
-                }
+                mc.currentScreen.handleKeyboardInput();
             } else {
                 if (key == Keyboard.KEY_ESCAPE) {
                     mc.displayInGameMenu();
@@ -167,7 +159,7 @@ public class InputReplayTimer extends WrappedTimer {
                 }
 
                 if (key == 48 && Keyboard.isKeyDown(61)) {
-                    mc.getRenderManager().setDebugBoundingBox(!mc.getRenderManager().isDebugBoundingBox());
+                    RenderManager.debugBoundingBox = !RenderManager.debugBoundingBox;
                 }
 
                 if (key == 25 && Keyboard.isKeyDown(61)) {
@@ -186,14 +178,6 @@ public class InputReplayTimer extends WrappedTimer {
 
                 if (mc.gameSettings.keyBindTogglePerspective.isPressed()) {
                     mc.gameSettings.thirdPersonView = (mc.gameSettings.thirdPersonView + 1) % 3;
-
-                    if (mc.entityRenderer != null) { // Extra check, not in vanilla code
-                        if (mc.gameSettings.thirdPersonView == 0) {
-                            mc.entityRenderer.loadEntityShader(mc.getRenderViewEntity());
-                        } else if (mc.gameSettings.thirdPersonView == 1) {
-                            mc.entityRenderer.loadEntityShader(null);
-                        }
-                    }
                 }
             }
 
@@ -213,4 +197,6 @@ public class InputReplayTimer extends WrappedTimer {
 
         FMLCommonHandler.instance().fireKeyInput();
     }
+
+    public static class RunScheduledTasks extends Event {}
 }

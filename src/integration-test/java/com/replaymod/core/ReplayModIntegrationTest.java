@@ -10,10 +10,10 @@ import com.replaymod.recording.ExitSPWorld;
 import com.replaymod.replay.ExitReplay;
 import com.replaymod.replay.LoadReplay;
 import com.replaymod.replay.OpenReplayViewer;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 
 import static com.replaymod.core.AbstractTask.mc;

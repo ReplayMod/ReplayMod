@@ -15,11 +15,38 @@ import io.netty.channel.ChannelPromise;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.gui.GuiErrorScreen;
+import net.minecraft.client.resources.FileResourcePack;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.*;
-import net.minecraft.network.play.server.*;
-import net.minecraft.util.ClassInheritanceMultiMap;
+import net.minecraft.network.EnumConnectionState;
+import net.minecraft.network.Packet;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.network.play.server.S06PacketUpdateHealth;
+import net.minecraft.network.play.server.S07PacketRespawn;
+import net.minecraft.network.play.server.S08PacketPlayerPosLook;
+import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
+import net.minecraft.network.play.server.S0EPacketSpawnObject;
+import net.minecraft.network.play.server.S0FPacketSpawnMob;
+import net.minecraft.network.play.server.S10PacketSpawnPainting;
+import net.minecraft.network.play.server.S11PacketSpawnExperienceOrb;
+import net.minecraft.network.play.server.S13PacketDestroyEntities;
+import net.minecraft.network.play.server.S1FPacketSetExperience;
+import net.minecraft.network.play.server.S21PacketChunkData;
+import net.minecraft.network.play.server.S2APacketParticles;
+import net.minecraft.network.play.server.S2BPacketChangeGameState;
+import net.minecraft.network.play.server.S2CPacketSpawnGlobalEntity;
+import net.minecraft.network.play.server.S2DPacketOpenWindow;
+import net.minecraft.network.play.server.S2EPacketCloseWindow;
+import net.minecraft.network.play.server.S2FPacketSetSlot;
+import net.minecraft.network.play.server.S30PacketWindowItems;
+import net.minecraft.network.play.server.S36PacketSignEditorOpen;
+import net.minecraft.network.play.server.S37PacketStatistics;
+import net.minecraft.network.play.server.S39PacketPlayerAbilities;
+import net.minecraft.network.play.server.S3FPacketCustomPayload;
+import net.minecraft.network.play.server.S40PacketDisconnect;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.EnumDifficulty;
@@ -28,10 +55,15 @@ import net.minecraft.world.WorldSettings.GameType;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,14 +79,6 @@ import java.util.Map;
 public class ReplaySender extends ChannelDuplexHandler {
 
     /**
-     * Previously packets for the client player were inserted using one fixed entity id (this one).
-     * This is no longer the case however to provide backwards compatibility, we have to convert
-     * these old packets to use the normal entity id.
-     * Need to punch someone? -> CrushedPixel
-     */
-    public static final int LEGACY_ENTITY_ID = Integer.MIN_VALUE + 9001;
-
-    /**
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
@@ -66,9 +90,7 @@ public class ReplaySender extends ChannelDuplexHandler {
             S36PacketSignEditorOpen.class,
             S37PacketStatistics.class,
             S1FPacketSetExperience.class,
-            S43PacketCamera.class,
-            S39PacketPlayerAbilities.class,
-            S45PacketTitle.class);
+            S39PacketPlayerAbilities.class);
 
     private static int TP_DISTANCE_LIMIT = 128;
 
@@ -123,7 +145,7 @@ public class ReplaySender extends ChannelDuplexHandler {
     /**
      * Whether we need to restart the current replay. E.g. when jumping backwards in time
      */
-    protected boolean startFromBeginning = true;
+    protected boolean startFromBeginning;
 
     /**
      * Whether to terminate the replay. This only has an effect on the async mode and is {@code true} during sync mode.
@@ -321,7 +343,7 @@ public class ReplaySender extends ChannelDuplexHandler {
 
         int i = pb.readVarIntFromBuffer();
 
-        Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
+        Packet p = Packet.generatePacket(EnumConnectionState.PLAY.func_150755_b(), i);
         p.readPacketData(pb);
 
         return p;
@@ -335,7 +357,7 @@ public class ReplaySender extends ChannelDuplexHandler {
     protected Packet processPacket(Packet p) throws Exception {
         if (p instanceof S3FPacketCustomPayload) {
             S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
-            if (Restrictions.PLUGIN_CHANNEL.equals(packet.getChannelName())) {
+            if (Restrictions.PLUGIN_CHANNEL.equals(packet.func_149169_c())) {
                 final String unknown = replayHandler.getRestrictions().handle(packet);
                 if (unknown == null) {
                     return null;
@@ -373,52 +395,51 @@ public class ReplaySender extends ChannelDuplexHandler {
 
         if (p instanceof S3FPacketCustomPayload) {
             S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
-            if ("MC|BOpen".equals(packet.getChannelName())) {
+            if ("MC|BOpen".equals(packet.func_149169_c())) {
                 return null;
             }
-        }
-
-        convertLegacyEntityIds(p);
-
-        if(p instanceof S48PacketResourcePackSend) {
-            S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
-            String url = packet.func_179783_a();
-            if (url.startsWith("replay://")) {
-                int id = Integer.parseInt(url.substring("replay://".length()));
-                Map<Integer, String> index = replayFile.getResourcePackIndex();
-                if (index != null) {
-                    String hash = index.get(id);
-                    if (hash != null) {
-                        File file = new File(tempResourcePackFolder, hash + ".zip");
-                        if (!file.exists()) {
-                            IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
+            if ("MC|RPack".equals(packet.func_149169_c())) {
+                String url = new String(packet.func_149168_d(), Charsets.UTF_8);
+                if (url.startsWith("replay://")) {
+                    int id = Integer.parseInt(url.substring("replay://".length()));
+                    Map<Integer, String> index = replayFile.getResourcePackIndex();
+                    if (index != null) {
+                        String hash = index.get(id);
+                        if (hash != null) {
+                            File file = new File(tempResourcePackFolder, hash + ".zip");
+                            if (!file.exists()) {
+                                IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
+                            }
+                            ResourcePackRepository repo = mc.getResourcePackRepository();
+                            repo.field_148533_g = false;
+                            repo.field_148532_f = new FileResourcePack(file);
+                            Minecraft.getMinecraft().scheduleResourcesRefresh();
                         }
-                        mc.getResourcePackRepository().func_177319_a(file);
                     }
+                    return null;
                 }
-                return null;
             }
         }
 
         if(p instanceof S01PacketJoinGame) {
             S01PacketJoinGame packet = (S01PacketJoinGame) p;
             allowMovement = true;
-            int entId = packet.getEntityId();
+            int entId = packet.func_149197_c();
             actualID = entId;
             entId = -1789435; // Camera entity id should be negative which is an invalid id and can't be used by servers
-            int dimension = packet.getDimension();
-            EnumDifficulty difficulty = packet.getDifficulty();
-            int maxPlayers = packet.getMaxPlayers();
-            WorldType worldType = packet.getWorldType();
+            int dimension = packet.func_149194_f();
+            EnumDifficulty difficulty = packet.func_149192_g();
+            int maxPlayers = packet.func_149193_h();
+            WorldType worldType = packet.func_149196_i();
 
-            p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension,
-                    difficulty, maxPlayers, worldType, false);
+            p = new S01PacketJoinGame(entId, GameType.ADVENTURE, false, dimension,
+                    difficulty, maxPlayers, worldType);
         }
 
         if(p instanceof S07PacketRespawn) {
             S07PacketRespawn respawn = (S07PacketRespawn) p;
             p = new S07PacketRespawn(respawn.func_149082_c(),
-                    respawn.func_149081_d(), respawn.func_149080_f(), GameType.SPECTATOR);
+                    respawn.func_149081_d(), respawn.func_149080_f(), GameType.ADVENTURE);
 
             allowMovement = true;
         }
@@ -435,14 +456,6 @@ public class ReplaySender extends ChannelDuplexHandler {
             if(replayHandler.shouldSuppressCameraMovements()) return null;
 
             CameraEntity cent = replayHandler.getCameraEntity();
-
-            for (Object relative : ppl.func_179834_f()) {
-                if (relative == S08PacketPlayerPosLook.EnumFlags.X
-                        || relative == S08PacketPlayerPosLook.EnumFlags.Y
-                        || relative == S08PacketPlayerPosLook.EnumFlags.Z) {
-                    return null; // At least one of the coordinates is relative, so we don't care
-                }
-            }
 
             if(cent != null) {
                 if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > TP_DISTANCE_LIMIT) ||
@@ -497,7 +510,6 @@ public class ReplaySender extends ChannelDuplexHandler {
     @SuppressWarnings("unchecked")
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
-        ctx.attr(NetworkManager.attrKeyConnectionState).set(EnumConnectionState.PLAY);
         super.channelActive(ctx);
     }
 
@@ -821,7 +833,7 @@ public class ReplaySender extends ChannelDuplexHandler {
                 if (!chunk.isEmpty()) {
                     List<Entity> entitiesInChunk = new ArrayList<>();
                     // Gather all entities in that chunk
-                    for (ClassInheritanceMultiMap entityList : chunk.getEntityLists()) {
+                    for (List entityList : chunk.entityLists) {
                         @SuppressWarnings("unchecked")
                         Collection<Entity> typedEntityList = entityList;
                         entitiesInChunk.addAll(typedEntityList);
@@ -849,68 +861,6 @@ public class ReplaySender extends ChannelDuplexHandler {
             }
         }
         return p; // During synchronous playback everything is sent normally
-    }
-
-    /**
-     * This is necessary to convert packets from old replays to new replays.
-     * @param packet The packet to be transformed.
-     * @see #LEGACY_ENTITY_ID
-     */
-    private void convertLegacyEntityIds(Packet packet) {
-        if (packet instanceof S0CPacketSpawnPlayer) {
-            S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
-            if (p.field_148957_a == LEGACY_ENTITY_ID) {
-                p.field_148957_a = actualID;
-            }
-        } else if (packet instanceof S18PacketEntityTeleport) {
-            S18PacketEntityTeleport p = (S18PacketEntityTeleport) packet;
-            if (p.field_149458_a == LEGACY_ENTITY_ID) {
-                p.field_149458_a = actualID;
-            }
-        } else if (packet instanceof S14PacketEntity.S17PacketEntityLookMove) {
-            S14PacketEntity.S17PacketEntityLookMove p = (S14PacketEntity.S17PacketEntityLookMove) packet;
-            if (p.field_149074_a == LEGACY_ENTITY_ID) {
-                p.field_149074_a = actualID;
-            }
-        } else if (packet instanceof S19PacketEntityHeadLook) {
-            S19PacketEntityHeadLook p = (S19PacketEntityHeadLook) packet;
-            if (p.field_149384_a == LEGACY_ENTITY_ID) {
-                p.field_149384_a = actualID;
-            }
-        } else if (packet instanceof S12PacketEntityVelocity) {
-            S12PacketEntityVelocity p = (S12PacketEntityVelocity) packet;
-            if (p.field_149417_a == LEGACY_ENTITY_ID) {
-                p.field_149417_a = actualID;
-            }
-        } else if (packet instanceof S0BPacketAnimation) {
-            S0BPacketAnimation p = (S0BPacketAnimation) packet;
-            if (p.entityId == LEGACY_ENTITY_ID) {
-                p.entityId = actualID;
-            }
-        } else if (packet instanceof S04PacketEntityEquipment) {
-            S04PacketEntityEquipment p = (S04PacketEntityEquipment) packet;
-            if (p.field_149394_a == LEGACY_ENTITY_ID) {
-                p.field_149394_a = actualID;
-            }
-        } else if (packet instanceof S1BPacketEntityAttach) {
-            S1BPacketEntityAttach p = (S1BPacketEntityAttach) packet;
-            if (p.field_149408_a == LEGACY_ENTITY_ID) {
-                p.field_149408_a = actualID;
-            }
-            if (p.field_149406_b == LEGACY_ENTITY_ID) {
-                p.field_149406_b = actualID;
-            }
-        } else if (packet instanceof S0DPacketCollectItem) {
-            S0DPacketCollectItem p = (S0DPacketCollectItem) packet;
-            if (p.field_149356_b == LEGACY_ENTITY_ID) {
-                p.field_149356_b = actualID;
-            }
-        } else if (packet instanceof S13PacketDestroyEntities) {
-            S13PacketDestroyEntities p = (S13PacketDestroyEntities) packet;
-            if (p.field_149100_a.length == 1 && p.field_149100_a[0] == LEGACY_ENTITY_ID) {
-                p.field_149100_a[0] = actualID;
-            }
-        }
     }
 
     private static final class PacketData {

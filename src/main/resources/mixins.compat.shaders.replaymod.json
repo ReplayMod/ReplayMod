@@ -4,9 +4,7 @@
   "mixins": [],
   "server": [],
   "client": [
-    "MixinShaderEntityRenderer",
-    "MixinShaderRenderChunk",
-    "MixinShaderRenderGlobal",
+    "MixinShaders",
     "MixinShadersRender"
   ],
   "compatibilityLevel": "JAVA_8",

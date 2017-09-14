@@ -5,9 +5,9 @@
     "MixinEffectRenderer",
     "MixinEntityRenderer",
     "MixinFrustum",
+    "MixinOpenGlHelper",
     "MixinRender",
     "MixinRendererLivingEntity",
-    "MixinRenderGlobal",
     "MixinRenderManager"
   ],
   "server": [],

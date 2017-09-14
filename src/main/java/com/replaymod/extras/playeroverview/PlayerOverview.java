@@ -1,7 +1,6 @@
 package com.replaymod.extras.playeroverview;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.extras.Extra;
@@ -9,16 +8,23 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class PlayerOverview implements Extra {
     private ReplayModReplay module;
@@ -35,12 +41,10 @@ public class PlayerOverview implements Extra {
             public void run() {
                 if (module.getReplayHandler() != null) {
                     @SuppressWarnings("unchecked")
-                    List<EntityPlayer> players = mod.getMinecraft().theWorld.getPlayers(EntityPlayer.class, new Predicate() {
-                        @Override
-                        public boolean apply(Object input) {
-                            return !(input instanceof CameraEntity); // Exclude the camera entity
-                        }
-                    });
+                    List<EntityPlayer> players = mod.getMinecraft().theWorld.playerEntities;
+                    players = players.stream()
+                            .filter(it -> !(it instanceof CameraEntity)) // Exclude the camera entity
+                            .collect(Collectors.toList());
                     if (!Utils.isCtrlDown()) {
                         // Hide all players that have an UUID v2 (commonly used for NPCs)
                         Iterator<EntityPlayer> iter = players.iterator();
@@ -90,8 +94,15 @@ public class PlayerOverview implements Extra {
 
     @SubscribeEvent
     public void oRenderHand(RenderHandEvent event) {
-        Entity view = module.getCore().getMinecraft().getRenderViewEntity();
+        Entity view = module.getCore().getMinecraft().renderViewEntity;
         if (view != null && isHidden(view.getUniqueID())) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void preRenderPlayer(RenderPlayerEvent.Pre event) {
+        if (isHidden(event.entityPlayer.getUniqueID())) {
             event.setCanceled(true);
         }
     }

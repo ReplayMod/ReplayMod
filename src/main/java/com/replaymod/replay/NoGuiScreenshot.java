@@ -8,9 +8,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ScreenShotHelper;
 import org.apache.commons.io.FileUtils;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -40,18 +40,18 @@ public class NoGuiScreenshot {
                     mc.gameSettings.hideGUI = true;
 
                     // Render frame without GUI
-                    GlStateManager.pushMatrix();
-                    GlStateManager.clear(16640);
+                    GL11.glPushMatrix();
+                    GL11.glClear(16640);
                     mc.getFramebuffer().bindFramebuffer(true);
-                    GlStateManager.enableTexture2D();
+                    GL11.glEnable(GL11.GL_TEXTURE_2D);
 
                     mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks);
 
                     mc.getFramebuffer().unbindFramebuffer();
-                    GlStateManager.popMatrix();
-                    GlStateManager.pushMatrix();
+                    GL11.glPopMatrix();
+                    GL11.glPushMatrix();
                     mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
-                    GlStateManager.popMatrix();
+                    GL11.glPopMatrix();
                 } catch (Throwable t) {
                     future.setException(t);
                     return;

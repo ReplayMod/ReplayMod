@@ -1,10 +1,11 @@
 package com.replaymod.compat.optifine;
 
 import com.replaymod.render.events.ReplayRenderEvent;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+// TODO 1.7.10: Is this still necessary (probably, but needs checking)?
 public class DisableFastRender {
 
     private final Minecraft mc = Minecraft.getMinecraft();

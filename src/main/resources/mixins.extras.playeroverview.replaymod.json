@@ -4,7 +4,7 @@
   "mixins": [],
   "server": [],
   "client": [
-    "MixinRender"
+    "MixinRenderPlayer"
   ],
   "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.replaymod.refmap.json"

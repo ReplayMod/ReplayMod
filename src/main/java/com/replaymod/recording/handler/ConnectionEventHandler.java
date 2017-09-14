@@ -10,11 +10,10 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.network.FMLNetworkEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.world.WorldType;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
@@ -47,10 +46,6 @@ public class ConnectionEventHandler {
         try {
             boolean local = networkManager.isLocalChannel();
             if (local) {
-                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_WORLD) {
-                    logger.info("Debug World recording is not supported.");
-                    return;
-                }
                 if(!core.getSettingsRegistry().get(Setting.RECORD_SINGLEPLAYER)) {
                     logger.info("Singleplayer Recording is disabled");
                     return;
@@ -96,14 +91,14 @@ public class ConnectionEventHandler {
             guiOverlay.register();
 
             core.printInfoToChat("replaymod.chat.recordingstarted");
-        } catch(Exception e) {
+        } catch(Throwable e) {
             e.printStackTrace();
             core.printWarningToChat("replaymod.chat.recordingfailed");
         }
     }
 
     @SubscribeEvent
-    public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
+    public void onDisconnectedFromServerEvent(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         if (packetListener != null) {
             guiOverlay.unregister();
             guiOverlay = null;

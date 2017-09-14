@@ -2,8 +2,8 @@ package com.replaymod.replay;
 
 import com.replaymod.core.AbstractTask;
 import com.replaymod.extras.playeroverview.PlayerOverviewGui;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
 import java.util.concurrent.TimeoutException;
@@ -34,7 +34,7 @@ public class SpectatePlayer extends AbstractTask {
                 future.setException(new TimeoutException("Camera hasn't stopped spectating."));
                 return;
             }
-            if (mc.getRenderViewEntity() == mc.thePlayer) {
+            if (mc.renderViewEntity == mc.thePlayer) {
                 future.set(null);
             }
         }
