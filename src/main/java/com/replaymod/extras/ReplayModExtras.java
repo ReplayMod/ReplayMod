@@ -45,6 +45,7 @@ public class ReplayModExtras {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER = event.getModLog();
+        ReplayMod.instance.getSettingsRegistry().register(Setting.class);
     }
 
     @Mod.EventHandler
