@@ -99,3 +99,20 @@ popd
 popd # Back to root
 
 ./gradlew -Preprod $PROXY_SETTINGS -I gradle/reprod/init.gradle "$@"
+
+if [ "$SIGNED_JAR" == "1" ]; then
+    echo "Trying fetch signature for resulting jar file.."
+    # Note: This requires there to be one and only one jar file (ignoring source artifacts)
+    jar="build/libs/$(ls build/libs | grep -v sources)"
+    jar_hash=$(sha256val "$jar")
+    pushd gradle/reprod/tmp
+    mkdir sign_tmp
+    pushd sign_tmp
+        # Signatures are generated using:
+        # jarsigner -sigfile johni -signedjar signed.jar unsigned.jar replaymod
+        # jar xf signed.jar META-INF/MANIFEST.MF META-INF/JOHNI.SF META-INF/JOHNI.RSA
+        # tar cJf signature.tar.xz META-INF
+        wget -O - "https://www.johni0702.de/replaymod/signature/$jar_hash" | tar xJ
+        jar uMf "../../../../$jar" META-INF/
+    popd
+fi
