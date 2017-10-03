@@ -7,7 +7,7 @@ initscript {
         maven { url 'http://jitpack.io' }
    }
    dependencies {
-        classpath 'com.github.johni0702:gradle-reproducible-builds-plugin:4989ae9'
+        classpath 'com.github.johni0702:gradle-reproducible-builds-plugin:a524ada'
         classpath 'com.github.johni0702:gradle-ecj-plugin:795736c'
    }
 }

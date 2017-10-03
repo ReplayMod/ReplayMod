@@ -10,8 +10,8 @@ cd62bdfd946618c26b49451084361edf79cd6ddb3eae1a485ecb05319295896d /com/github/abr
 f00facfc855e7d5517fc57553614b4690e61df9ab44f6e93ff583ae201b5a3aa /com/github/jengelman/gradle/plugins/shadow/1.2.3/shadow-1.2.3.pom
 27fc3b7f0436f532c9d798dbc006d7e0b9b7c9b436f8d977f122665c633e9892 /com/github/johni0702/gradle-ecj-plugin/795736c/gradle-ecj-plugin-795736c.jar
 f98b3e07c6b6a32dd6f9f70f5cef4ac9be42a9a6c850ceb8f33767da94706635 /com/github/johni0702/gradle-ecj-plugin/795736c/gradle-ecj-plugin-795736c.pom
-1e7bfcc83540c5af0fbab37ce316711380d142108f96db380e18a11e111cccf0 /com/github/johni0702/gradle-reproducible-builds-plugin/4989ae9/gradle-reproducible-builds-plugin-4989ae9.jar
-8fe6e84a98417cbdc7df47b3afd5c368d7fb3139b4f0e16ac6f1496d85c24b18 /com/github/johni0702/gradle-reproducible-builds-plugin/4989ae9/gradle-reproducible-builds-plugin-4989ae9.pom
+11f4032947acc6ef1be538031cb0ea4d2fdfd50d97a0391af27bff3274a239f2 /com/github/johni0702/gradle-reproducible-builds-plugin/a524ada/gradle-reproducible-builds-plugin-a524ada.jar
+03e3dff7f9b3ac6cd3b87684fd36a2f6996a4b164a2f8fab9c22c01cb7bfb84b /com/github/johni0702/gradle-reproducible-builds-plugin/a524ada/gradle-reproducible-builds-plugin-a524ada.pom
 75ccc0e24d37ed5b8916e1bcffad1e067c2b1cfa21b635287f968db5c3c1963a /com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar
 fbcba81b21a8bc3c0761e4798fa05285444b43d681c03c9af49f9b2e1ecb0184 /com/github/jponge/lzma-java/1.3/lzma-java-1.3.pom
 f38a7028bbac3f6c6b15cb40d533c96c6e8fdb54fc93d922cfa1931b25fa8c5c /com/github/replaymod/ReplayStudio/2df8d8b/ReplayStudio-2df8d8b.jar
