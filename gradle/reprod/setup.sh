@@ -24,6 +24,19 @@ setup_dep () {
     [ -f "deps/$dep.jar" ] && [ "*" == "$jarhash" ] && return
     rm -rf "deps/$dep.jar"
 
+    if [ "*" != "$jarhash" ] && [ "$OFFLINE" != "1" ]; then
+        # Try to fetch the pre-built artifact
+        if wget -O "deps/dl.tmp" "https://www.johni0702.de/replaymod/artifact/$jarhash"; then
+            # Verify downloaded jar file
+            if [ "$(sha256val "deps/dl.tmp")" == "$jarhash" ]; then
+                # Got valid pre-built artifact, use it
+                mv "deps/dl.tmp" "deps/$dep.jar"
+                return
+            fi
+        fi
+    fi
+
+
     if [ ! -d "deps/$dep" ] || [ "$(git -C "deps/$dep" rev-parse $commit^{commit})" != "$commit" ]; then
         rm -rf "deps/$dep"
         mkdir -p "deps/$dep"
