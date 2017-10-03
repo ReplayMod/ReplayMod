@@ -12,11 +12,11 @@ index bfadecd..774a015 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -67,7 +67,7 @@ dependencies {
-     shade 'com.nothome:javaxdelta:2.0.1' // GDIFF implementation for BinPatches
-     shade 'com.google.code.gson:gson:2.2.4' // Used instead of Argo for buuilding changelog.
-     shade 'com.github.tony19:named-regexp:0.2.3' // 1.7 Named regexp features
--    shade 'net.minecraftforge:fernflower:2.0-SNAPSHOT' // Fernflower Forge edition
-+    shade files('../forgeflower.jar') // Fernflower Forge edition
+     compile 'com.nothome:javaxdelta:2.0.1' // GDIFF implementation for BinPatches
+     compile 'com.google.code.gson:gson:2.2.4' // Used instead of Argo for buuilding changelog.
+     compile 'com.github.tony19:named-regexp:0.2.3' // 1.7 Named regexp features
+-    compile 'net.minecraftforge:fernflower:2.0-SNAPSHOT' // Fernflower Forge edition
++    compile 'reprod:forgeflower:0' // Fernflower Forge edition
  
      shade 'net.md-5:SpecialSource:1.7.4' // deobf and reobs
      // compile 'net.md-5:SpecialSource:1.7.4' // when md5 publishes
@@ -26,8 +26,8 @@ index bfadecd..774a015 100644
      shade 'de.oceanlabs.mcp:RetroGuard:3.6.6'
 -    shade 'de.oceanlabs.mcp:mcinjector:3.4-SNAPSHOT'
 -    shade 'net.minecraftforge.srg2source:Srg2Source:3.3-SNAPSHOT'
-+    shade files('../mcinjector.jar')
-+    shade files('../srg2source.jar')
++    shade 'reprod:mcinjector:0'
++    shade 'reprod:srg2source:0'
  
      //Stuff used in the GradleStart classes
      compileOnly 'com.mojang:authlib:1.5.16'

@@ -11,12 +11,12 @@ diff --git a/build.gradle b/build.gradle
 index ee24828..42d0607 100755
 --- a/build.gradle
 +++ b/build.gradle
-@@ -1,24 +1,9 @@
+@@ -1,24 +1,17 @@
  import groovy.json.JsonOutput
  
  buildscript {
--    repositories {
--        mavenCentral()
+     repositories {
+         mavenCentral()
 -        maven {
 -            name = "forge"
 -            url = "http://files.minecraftforge.net/maven"
@@ -25,16 +25,17 @@ index ee24828..42d0607 100755
 -            name = "sponge"
 -            url = "https://repo.spongepowered.org/maven"
 -        }
--        maven {
--            name = "sonatype"
--            url = "https://oss.sonatype.org/content/repositories/snapshots/"
--        }
--    }
+         maven {
+             name = "sonatype"
+             url = "https://oss.sonatype.org/content/repositories/snapshots/"
+         }
++        maven { url 'gradle/reprod/deps/repo' }
+     }
      dependencies {
 -        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
 -        classpath 'org.spongepowered:mixingradle:0.3-SNAPSHOT'
-+        classpath files('gradle/reprod/deps/forgegradle.jar')
-+        classpath files('gradle/reprod/deps/mixingradle.jar')
++        classpath 'reprod:forgegradle:0'
++        classpath 'reprod:mixingradle:0'
      }
  }
  

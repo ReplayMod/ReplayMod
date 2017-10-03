@@ -27,11 +27,10 @@ index 2e5f949..b6c63bb 100644
  apply plugin: 'maven'
  
  group = 'de.oceanlabs.mcp'
-@@ -22,93 +12,13 @@ repositories {
+@@ -22,93 +12,12 @@ repositories {
  }
  
  jar {
-+    from ({files(configurations.compile).collect {it.isDirectory() ? filesTree(it) : zipTree(it)}})
      manifest.attributes('Main-Class': 'de.oceanlabs.mcp.mcinjector.MCInjector')
  }
 -fatJar {

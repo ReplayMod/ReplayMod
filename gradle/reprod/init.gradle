@@ -27,8 +27,27 @@ allprojects {
     repositories.all convertRepoToHttp
     apply plugin: de.johni0702.gradle.ReproducibleBuildsPlugin, to: project
     apply plugin: xink.gradle.ecj.EcjPlugin, to: project
+    apply plugin: 'maven', to: project
 
     ecj {
         warn = ['none']
     }
+
+    repositories {
+        maven {
+            url(project.file('gradle/reprod').exists() ? 'gradle/reprod/deps/repo' : '../repo')
+        }
+    }
+    task createPom {
+        doLast {
+            pom {
+                project {
+                    groupId 'reprod'
+                    artifactId project.file('.').name
+                    version '0'
+                }
+            }.writeTo("pom.xml")
+        }
+    }
+    build.dependsOn createPom
 }

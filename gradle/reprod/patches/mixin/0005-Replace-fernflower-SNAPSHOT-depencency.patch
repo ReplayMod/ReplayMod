@@ -17,8 +17,8 @@ index f8598a3..e9a965b 100644
      fernflowerCompile 'com.google.guava:guava:17.0'
 -    fernflowerCompile 'org.jetbrains.java.decompiler:fernflower:sponge-SNAPSHOT'
 -    compile 'org.jetbrains.java.decompiler:fernflower:sponge-SNAPSHOT'
-+    fernflowerCompile files('../fernflower.jar')
-+    compile files('../fernflower.jar')
++    fernflowerCompile 'reprod:fernflower:0'
++    compile 'reprod:fernflower:0'
  
      compile('net.minecraft:launchwrapper:1.11') {
          exclude module: 'lwjgl'
