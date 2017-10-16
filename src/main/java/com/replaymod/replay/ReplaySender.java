@@ -829,7 +829,11 @@ public class ReplaySender extends ChannelDuplexHandler {
                     for (Entity entity : entitiesInChunk) {
                         // Skip interpolation of position updates coming from server
                         // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
-                        entity.onUpdate();
+                        // Needs to be called at least 4 times thanks to
+                        // EntityOtherPlayerMP#otherPlayerMPPosRotationIncrements (max vanilla value is 3)
+                        for (int i = 0; i < 4; i++) {
+                            entity.onUpdate();
+                        }
 
                         // Check whether the entity has left the chunk
                         int chunkX = MathHelper.floor_double(entity.posX / 16);
