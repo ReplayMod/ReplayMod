@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "package": "com.replaymod.compat.mapwriter.mixin",
+  "mixins": [],
+  "server": [],
+  "client": [
+    "MixinMinecraft"
+  ],
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.replaymod.refmap.json"
+}
