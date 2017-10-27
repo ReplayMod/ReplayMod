@@ -46,6 +46,9 @@ allprojects {
                     artifactId project.file('.').name
                     version '0'
                 }
+                whenConfigured {
+                    dependencies.removeAll { it.artifactId == 'mixin-asm-debug-all' }
+                }
             }.writeTo("pom.xml")
         }
     }

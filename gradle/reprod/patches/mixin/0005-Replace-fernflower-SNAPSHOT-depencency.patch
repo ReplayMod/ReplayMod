@@ -11,17 +11,15 @@ diff --git a/build.gradle b/build.gradle
 index f8598a3..e9a965b 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -143,8 +143,8 @@ dependencies {
-     fernflowerCompile 'commons-io:commons-io:2.4'
-     fernflowerCompile 'org.apache.logging.log4j:log4j-core:2.0-beta9'
-     fernflowerCompile 'com.google.guava:guava:17.0'
--    fernflowerCompile 'org.jetbrains.java.decompiler:fernflower:sponge-SNAPSHOT'
--    compile 'org.jetbrains.java.decompiler:fernflower:sponge-SNAPSHOT'
-+    fernflowerCompile 'reprod:fernflower:0'
-+    compile 'reprod:fernflower:0'
+@@ -143,7 +143,7 @@ dependencies {
  
-     compile('net.minecraft:launchwrapper:1.11') {
-         exclude module: 'lwjgl'
+     // Fernflower decompiler
+     fernflowerCompile configurations.compile
+-    fernflowerCompile 'org.jetbrains.java.decompiler:fernflower:sponge-SNAPSHOT'
++    fernflowerCompile 'reprod:fernflower:0'
+ 
+     // LegacyLauncher service
+     launchwrapperCompile configurations.compile
 -- 
 2.5.5
 

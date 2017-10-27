@@ -15,11 +15,11 @@ index 165dbe4..0f189ec 100644
  
  // Task to read ASM library and rename packages
  task renamedASM {
--    outputs.file files(configurations.asm.files.findAll{!it.name.contains("sources")}.collect { file ->
-+    outputs.files files(configurations.asm.files.findAll{!it.name.contains("sources")}.collect { file ->
-         new File(project.repositories['renamed-packages'].dirs[0], "mixin-" + file.name).path
+-    outputs.file files(configurations.asm.files.withIndex().collect { file, i -> def dep = configurations.asm.dependencies[i]
++    outputs.files files(configurations.asm.files.withIndex().collect { file, i -> def dep = configurations.asm.dependencies[i]
+         new File(new File(renamedPackageRoot, "org/spongepowered/mixin-" + dep.name + "/" + dep.version), "mixin-" + file.name).path
      })
-     doLast {
+     ant {
 -- 
 2.5.5
 

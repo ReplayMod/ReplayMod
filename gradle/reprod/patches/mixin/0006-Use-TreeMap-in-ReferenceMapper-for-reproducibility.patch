@@ -18,7 +18,7 @@ index 2a368e7..082b5dd 100644
 -import java.util.HashMap;
  import java.util.Map;
  
- import org.apache.logging.log4j.LogManager;
+ import org.apache.commons.io.IOUtils;
 @@ -71,13 +70,13 @@ public final class ReferenceMapper implements Serializable {
       * by the AP. Each entry is keyed by the owning mixin, with the value map
       * containing the actual remappings for each owner

@@ -103,7 +103,7 @@ proxy_pid=$!
 trap "kill $proxy_pid" EXIT
 
 # Required for mixin
-setup_dep "fernflower" "https://github.com/fesh0r/fernflower.git" "85f61bee8194ab69afa746b965973a18eda67608" "build/libs/fernflower.jar" "b69597c93e248073330da4532a857aad73b767d46f87a0aa66446fbea289ff93" "901b8a76ceb15db97d4dd19c5e8fcb0fc226ae602ef38ea906eb5258be9b929a"
+setup_dep "fernflower" "https://github.com/fesh0r/fernflower.git" "adbf29f8ce902cd164fc0c41491030268ecc8265" "build/libs/fernflower.jar" "d2042d3121118a7175fc902d0e49f4ad37d00467e7ea535574974142eff64184" "901b8a76ceb15db97d4dd19c5e8fcb0fc226ae602ef38ea906eb5258be9b929a"
 
 # Required for forgegradle
 setup_dep "forgeflower" "https://github.com/MinecraftForge/FernFlowerLegacy.git" "114aebe82cf40075c5c4f916c409b8aebf8096d5" "build/libs/fernflower-2.0-SNAPSHOT.jar" "c8b4a4a13a1158008aed46da2c805184078324718697f14a67f1778168579956" "fbda3f30d54624fe4c59a69e145b644d8642afc0dd4eb0d732ccdaa0ebd5d8a3"
@@ -113,7 +113,7 @@ setup_dep "srg2source" "https://github.com/MinecraftForge/Srg2Source.git" "5f11e
 # Required for RM
 setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "52217aa8ca221dcd0b9fb657b037e663db808f38" "build/libs/mixingradle-0.4-SNAPSHOT.jar" "8b3508867128a5d564631635dff898a36f9aca8db54b7bb3af6f4924e3f4bead" "42cbf81136d4e26c06d3234427665b50d18768cc1f210512204ca1d5e3a42b5c"
 setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "17806f45d20d0b55bff70a616eaeb939bd6a543c" "build/libs/ForgeGradle-2.1-SNAPSHOT.jar" "dc3da35074bbb1c55e68f7863a8fc8660803da3192aa8d0a7e33280424d3c8d0" "4c670a05fbd9aeaa581ae8ba7597df1d1def7b04160e1c6b076ed6778dd45e58"
-setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "b558323da3bd6ce94aeb442bfd7357f6c40d2fd4" "build/libs/mixin-0.6.11-SNAPSHOT.jar" "cb446b614ce34372fc2084de9bb16adc3182a6e96120fdb4bcae561e41303694" "a2f59b03529fed676b64ed4f57fff16bfe27f7131c216f69308ca4d2b6e8e754"
+setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "404f5da0b6b18980b4e44c7f1cfeddcd47fe4aa6" "build/libs/mixin-0.7.5-SNAPSHOT.jar" "7d181a5e7c317c00c07da14e7770e4356b0f201414cd2a836e987be9fa133d43" "11000383a5051f25a70c2bff3a3167b6859ae4f9838a0ab45560e9f9c9d9def7"
 
 rm -rf tmp
 mkdir tmp

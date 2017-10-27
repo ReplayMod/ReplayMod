@@ -15,7 +15,7 @@ index 42d0607..bfa3914 100755
  dependencies {
      compile 'org.projectlombok:lombok:1.16.4'
  
--    compile 'org.spongepowered:mixin:0.6.8-SNAPSHOT'
+-    compile 'org.spongepowered:mixin:0.7.5-SNAPSHOT'
 +    compile 'reprod:mixin:0'
      shade 'com.googlecode.mp4parser:isoparser:1.1.7'
      shade 'org.apache.commons:commons-exec:1.3'
