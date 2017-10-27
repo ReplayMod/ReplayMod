@@ -49,7 +49,9 @@ allprojects {
             }.writeTo("pom.xml")
         }
     }
-    build.dependsOn createPom
+    if (!project.file('gradle/reprod').exists()) {
+        build.dependsOn createPom
+    }
 
     reproducibleBuilds {
         if (project.file('.').name == 'forgegradle') {
