@@ -50,4 +50,15 @@ allprojects {
         }
     }
     build.dependsOn createPom
+
+    reproducibleBuilds {
+        if (project.file('.').name == 'forgegradle') {
+            project.tasks.all {
+                if (it.name == 'jar') {
+                    println 'Manually repacking archive after jar task'
+                    repackAfter it
+                }
+            }
+        }
+    }
 }

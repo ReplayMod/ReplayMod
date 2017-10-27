@@ -112,7 +112,7 @@ setup_dep "srg2source" "https://github.com/MinecraftForge/Srg2Source.git" "5f11e
 
 # Required for RM
 setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "52217aa8ca221dcd0b9fb657b037e663db808f38" "build/libs/mixingradle-0.4-SNAPSHOT.jar" "8b3508867128a5d564631635dff898a36f9aca8db54b7bb3af6f4924e3f4bead" "42cbf81136d4e26c06d3234427665b50d18768cc1f210512204ca1d5e3a42b5c"
-setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "17806f45d20d0b55bff70a616eaeb939bd6a543c" "build/libs/ForgeGradle-2.1-SNAPSHOT.jar" "8e60c5da202cdc7843cff956a23093fbd3f9e6061d925daefcf9cdaa6116ebd4" "4c670a05fbd9aeaa581ae8ba7597df1d1def7b04160e1c6b076ed6778dd45e58"
+setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "17806f45d20d0b55bff70a616eaeb939bd6a543c" "build/libs/ForgeGradle-2.1-SNAPSHOT.jar" "dc3da35074bbb1c55e68f7863a8fc8660803da3192aa8d0a7e33280424d3c8d0" "4c670a05fbd9aeaa581ae8ba7597df1d1def7b04160e1c6b076ed6778dd45e58"
 setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "b558323da3bd6ce94aeb442bfd7357f6c40d2fd4" "build/libs/mixin-0.6.11-SNAPSHOT.jar" "cb446b614ce34372fc2084de9bb16adc3182a6e96120fdb4bcae561e41303694" "a2f59b03529fed676b64ed4f57fff16bfe27f7131c216f69308ca4d2b6e8e754"
 
 rm -rf tmp
