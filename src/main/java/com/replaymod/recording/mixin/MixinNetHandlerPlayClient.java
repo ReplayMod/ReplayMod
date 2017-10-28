@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,14 +40,12 @@ public abstract class MixinNetHandlerPlayClient {
         if (gameController.thePlayer == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();
-        if (handler != null && packet.func_179768_b() == S38PacketPlayerListItem.Action.ADD_PLAYER) {
-            @SuppressWarnings("unchecked")
-            List<S38PacketPlayerListItem.AddPlayerData> dataList = packet.func_179767_a();
-            for (S38PacketPlayerListItem.AddPlayerData data : dataList) {
-                if (data.func_179962_a() == null || data.func_179962_a().getId() == null) continue;
+        if (handler != null && packet.getAction() == S38PacketPlayerListItem.Action.ADD_PLAYER) {
+            for (S38PacketPlayerListItem.AddPlayerData data : packet.getEntries()) {
+                if (data.getProfile() == null || data.getProfile().getId() == null) continue;
                 // Only add spawn packet for our own player and only if he isn't known yet
-                if (data.func_179962_a().getId().equals(Minecraft.getMinecraft().thePlayer.getGameProfile().getId())
-                        && !playerInfoMap.containsKey(data.func_179962_a().getId())) {
+                if (data.getProfile().getId().equals(Minecraft.getMinecraft().thePlayer.getGameProfile().getId())
+                        && !playerInfoMap.containsKey(data.getProfile().getId())) {
                     handler.onPlayerJoin();
                 }
             }

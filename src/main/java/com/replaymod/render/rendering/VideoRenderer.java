@@ -225,7 +225,7 @@ public class VideoRenderer implements RenderInfo {
 
         updateDisplaySize();
 
-        ScaledResolution scaled = new ScaledResolution(mc, displayWidth, displayHeight);
+        ScaledResolution scaled = new ScaledResolution(mc);
         gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
         chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.renderGlobal);
@@ -298,7 +298,7 @@ public class VideoRenderer implements RenderInfo {
 
             mc.entityRenderer.setupOverlayRendering();
 
-            ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+            ScaledResolution scaled = new ScaledResolution(mc);
             gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
             try {

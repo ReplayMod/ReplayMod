@@ -316,7 +316,7 @@ public class ReplayHandler {
                 mc.getFramebuffer().bindFramebuffer(true);
                 mc.entityRenderer.setupOverlayRendering();
 
-                ScaledResolution resolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+                ScaledResolution resolution = new ScaledResolution(mc);
                 guiScreen.setWorldAndResolution(mc, resolution.getScaledWidth(), resolution.getScaledHeight());
                 guiScreen.drawScreen(0, 0, 0);
 
@@ -334,9 +334,7 @@ public class ReplayHandler {
                 replaySender.setReplaySpeed(0);
 
                 mc.getNetHandler().getNetworkManager().processReceivedPackets();
-                @SuppressWarnings("unchecked")
-                List<Entity> entities = (List<Entity>) mc.theWorld.loadedEntityList;
-                for (Entity entity : entities) {
+                for (Entity entity : mc.theWorld.loadedEntityList) {
                     if (entity instanceof EntityOtherPlayerMP) {
                         EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
                         e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);

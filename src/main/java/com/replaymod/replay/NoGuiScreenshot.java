@@ -16,8 +16,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Queue;
-import java.util.concurrent.FutureTask;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -45,7 +43,7 @@ public class NoGuiScreenshot {
                     mc.getFramebuffer().bindFramebuffer(true);
                     GlStateManager.enableTexture2D();
 
-                    mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks);
+                    mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks, System.nanoTime());
 
                     mc.getFramebuffer().unbindFramebuffer();
                     GlStateManager.popMatrix();
@@ -101,9 +99,7 @@ public class NoGuiScreenshot {
         // of the game loop. We cannot use the addScheduledTask method as it'll run the task if called
         // from the minecraft thread which is exactly what we want to avoid.
         synchronized (mc.scheduledTasks) {
-            @SuppressWarnings("unchecked")
-            Queue<FutureTask> queue = mc.scheduledTasks;
-            queue.add(ListenableFutureTask.create(runnable, null));
+            mc.scheduledTasks.add(ListenableFutureTask.create(runnable, null));
         }
         return future;
     }

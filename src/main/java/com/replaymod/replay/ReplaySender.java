@@ -34,7 +34,6 @@ import org.apache.commons.io.IOUtils;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -361,7 +360,7 @@ public class ReplaySender extends ChannelDuplexHandler {
             }
         }
         if (p instanceof S40PacketDisconnect) {
-            IChatComponent reason = ((S40PacketDisconnect) p).func_149165_c();
+            IChatComponent reason = ((S40PacketDisconnect) p).getReason();
             if ("Please update to view this replay.".equals(reason.getUnformattedText())) {
                 // This version of the mod supports replay restrictions so we are allowed
                 // to remove this packet.
@@ -382,7 +381,7 @@ public class ReplaySender extends ChannelDuplexHandler {
 
         if(p instanceof S48PacketResourcePackSend) {
             S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
-            String url = packet.func_179783_a();
+            String url = packet.getURL();
             if (url.startsWith("replay://")) {
                 int id = Integer.parseInt(url.substring("replay://".length()));
                 Map<Integer, String> index = replayFile.getResourcePackIndex();
@@ -393,7 +392,7 @@ public class ReplaySender extends ChannelDuplexHandler {
                         if (!file.exists()) {
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
-                        mc.getResourcePackRepository().func_177319_a(file);
+                        mc.getResourcePackRepository().setResourcePackInstance(file);
                     }
                 }
                 return null;
@@ -417,8 +416,8 @@ public class ReplaySender extends ChannelDuplexHandler {
 
         if(p instanceof S07PacketRespawn) {
             S07PacketRespawn respawn = (S07PacketRespawn) p;
-            p = new S07PacketRespawn(respawn.func_149082_c(),
-                    respawn.func_149081_d(), respawn.func_149080_f(), GameType.SPECTATOR);
+            p = new S07PacketRespawn(respawn.getDimensionID(),
+                    respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
 
             allowMovement = true;
         }
@@ -445,8 +444,8 @@ public class ReplaySender extends ChannelDuplexHandler {
             }
 
             if(cent != null) {
-                if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > TP_DISTANCE_LIMIT) ||
-                        (Math.abs(cent.posZ - ppl.func_148933_e()) > TP_DISTANCE_LIMIT))) {
+                if(!allowMovement && !((Math.abs(cent.posX - ppl.getX()) > TP_DISTANCE_LIMIT) ||
+                        (Math.abs(cent.posZ - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
                     return null;
                 } else {
                     allowMovement = false;
@@ -463,14 +462,14 @@ public class ReplaySender extends ChannelDuplexHandler {
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
-                    cent.setCameraPosition(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
+                    cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
                 }
             }.run();
         }
 
         if(p instanceof S2BPacketChangeGameState) {
             S2BPacketChangeGameState pg = (S2BPacketChangeGameState)p;
-            int reason = pg.func_149138_c();
+            int reason = pg.getGameState();
 
             // only allow the following packets:
             // 1 - End raining
@@ -719,7 +718,7 @@ public class ReplaySender extends ChannelDuplexHandler {
 
             if(p instanceof S0EPacketSpawnObject) {
                 S0EPacketSpawnObject pso = (S0EPacketSpawnObject)p;
-                int type = pso.func_148993_l();
+                int type = pso.getType();
                 if(type == 76) { // Firework rocket
                     return null;
                 }
@@ -807,7 +806,7 @@ public class ReplaySender extends ChannelDuplexHandler {
     protected Packet processPacketSync(Packet p) {
         if (p instanceof S21PacketChunkData) {
             S21PacketChunkData packet = (S21PacketChunkData) p;
-            if (packet.func_149276_g() == 0) {
+            if (packet.getExtractedSize() == 0) {
                 // If the chunk is getting unloaded, we will have to forcefully update the position of all entities
                 // within. Otherwise, if there wasn't a game tick recently, there may be entities that have moved
                 // out of the chunk by now but are still registered in it. If we do not update those, they will get
@@ -817,14 +816,12 @@ public class ReplaySender extends ChannelDuplexHandler {
                 World world = mc.theWorld;
                 IChunkProvider chunkProvider = world.getChunkProvider();
                 // Get the chunk that will be unloaded
-                Chunk chunk = chunkProvider.provideChunk(packet.func_149273_e(), packet.func_149271_f());
+                Chunk chunk = chunkProvider.provideChunk(packet.getChunkX(), packet.getChunkZ());
                 if (!chunk.isEmpty()) {
                     List<Entity> entitiesInChunk = new ArrayList<>();
                     // Gather all entities in that chunk
-                    for (ClassInheritanceMultiMap entityList : chunk.getEntityLists()) {
-                        @SuppressWarnings("unchecked")
-                        Collection<Entity> typedEntityList = entityList;
-                        entitiesInChunk.addAll(typedEntityList);
+                    for (ClassInheritanceMultiMap<Entity> entityList : chunk.getEntityLists()) {
+                        entitiesInChunk.addAll(entityList);
                     }
                     for (Entity entity : entitiesInChunk) {
                         // Skip interpolation of position updates coming from server
@@ -863,28 +860,28 @@ public class ReplaySender extends ChannelDuplexHandler {
     private void convertLegacyEntityIds(Packet packet) {
         if (packet instanceof S0CPacketSpawnPlayer) {
             S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
-            if (p.field_148957_a == LEGACY_ENTITY_ID) {
-                p.field_148957_a = actualID;
+            if (p.entityId == LEGACY_ENTITY_ID) {
+                p.entityId = actualID;
             }
         } else if (packet instanceof S18PacketEntityTeleport) {
             S18PacketEntityTeleport p = (S18PacketEntityTeleport) packet;
-            if (p.field_149458_a == LEGACY_ENTITY_ID) {
-                p.field_149458_a = actualID;
+            if (p.entityId == LEGACY_ENTITY_ID) {
+                p.entityId = actualID;
             }
         } else if (packet instanceof S14PacketEntity.S17PacketEntityLookMove) {
             S14PacketEntity.S17PacketEntityLookMove p = (S14PacketEntity.S17PacketEntityLookMove) packet;
-            if (p.field_149074_a == LEGACY_ENTITY_ID) {
-                p.field_149074_a = actualID;
+            if (p.entityId == LEGACY_ENTITY_ID) {
+                p.entityId = actualID;
             }
         } else if (packet instanceof S19PacketEntityHeadLook) {
             S19PacketEntityHeadLook p = (S19PacketEntityHeadLook) packet;
-            if (p.field_149384_a == LEGACY_ENTITY_ID) {
-                p.field_149384_a = actualID;
+            if (p.entityId == LEGACY_ENTITY_ID) {
+                p.entityId = actualID;
             }
         } else if (packet instanceof S12PacketEntityVelocity) {
             S12PacketEntityVelocity p = (S12PacketEntityVelocity) packet;
-            if (p.field_149417_a == LEGACY_ENTITY_ID) {
-                p.field_149417_a = actualID;
+            if (p.entityID == LEGACY_ENTITY_ID) {
+                p.entityID = actualID;
             }
         } else if (packet instanceof S0BPacketAnimation) {
             S0BPacketAnimation p = (S0BPacketAnimation) packet;
@@ -893,26 +890,26 @@ public class ReplaySender extends ChannelDuplexHandler {
             }
         } else if (packet instanceof S04PacketEntityEquipment) {
             S04PacketEntityEquipment p = (S04PacketEntityEquipment) packet;
-            if (p.field_149394_a == LEGACY_ENTITY_ID) {
-                p.field_149394_a = actualID;
+            if (p.entityID == LEGACY_ENTITY_ID) {
+                p.entityID = actualID;
             }
         } else if (packet instanceof S1BPacketEntityAttach) {
             S1BPacketEntityAttach p = (S1BPacketEntityAttach) packet;
-            if (p.field_149408_a == LEGACY_ENTITY_ID) {
-                p.field_149408_a = actualID;
+            if (p.entityId == LEGACY_ENTITY_ID) {
+                p.entityId = actualID;
             }
-            if (p.field_149406_b == LEGACY_ENTITY_ID) {
-                p.field_149406_b = actualID;
+            if (p.vehicleEntityId == LEGACY_ENTITY_ID) {
+                p.vehicleEntityId = actualID;
             }
         } else if (packet instanceof S0DPacketCollectItem) {
             S0DPacketCollectItem p = (S0DPacketCollectItem) packet;
-            if (p.field_149356_b == LEGACY_ENTITY_ID) {
-                p.field_149356_b = actualID;
+            if (p.entityId == LEGACY_ENTITY_ID) {
+                p.entityId = actualID;
             }
         } else if (packet instanceof S13PacketDestroyEntities) {
             S13PacketDestroyEntities p = (S13PacketDestroyEntities) packet;
-            if (p.field_149100_a.length == 1 && p.field_149100_a[0] == LEGACY_ENTITY_ID) {
-                p.field_149100_a[0] = actualID;
+            if (p.entityIDs.length == 1 && p.entityIDs[0] == LEGACY_ENTITY_ID) {
+                p.entityIDs[0] = actualID;
             }
         }
     }

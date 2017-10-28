@@ -96,7 +96,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
                             renderer.bindTexture(texture);
                             renderer.drawTexturedRect(0, 0, 8, 8, 16, 16, 8, 8, 64, 64);
-                            if (p.func_175148_a(EnumPlayerModelParts.HAT)) {
+                            if (p.isWearing(EnumPlayerModelParts.HAT)) {
                                 renderer.drawTexturedRect(0, 0, 40, 8, size.getWidth(), size.getHeight(), 8, 8, 64, 64);
                             }
                         }
