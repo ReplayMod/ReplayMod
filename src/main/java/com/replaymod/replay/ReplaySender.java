@@ -21,11 +21,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.*;
 import net.minecraft.network.play.server.*;
+import net.minecraft.util.ClassInheritanceMultiMap;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -33,6 +37,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -816,6 +821,50 @@ public class ReplaySender extends ChannelDuplexHandler {
     }
 
     protected Packet processPacketSync(Packet p) {
+        if (p instanceof SPacketUnloadChunk) {
+            SPacketUnloadChunk packet = (SPacketUnloadChunk) p;
+            // If the chunk is getting unloaded, we will have to forcefully update the position of all entities
+            // within. Otherwise, if there wasn't a game tick recently, there may be entities that have moved
+            // out of the chunk by now but are still registered in it. If we do not update those, they will get
+            // unloaded even though they shouldn't.
+            // To make things worse, it seems like players were never supposed to be unloaded this way because
+            // they will remain glitched in the World#playerEntities list.
+            World world = mc.theWorld;
+            IChunkProvider chunkProvider = world.getChunkProvider();
+            // Get the chunk that will be unloaded
+            Chunk chunk = chunkProvider.provideChunk(packet.getX(), packet.getZ());
+            if (!chunk.isEmpty()) {
+                List<Entity> entitiesInChunk = new ArrayList<>();
+                // Gather all entities in that chunk
+                for (ClassInheritanceMultiMap<Entity> entityList : chunk.getEntityLists()) {
+                    entitiesInChunk.addAll(entityList);
+                }
+                for (Entity entity : entitiesInChunk) {
+                    // Skip interpolation of position updates coming from server
+                    // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
+                    // Needs to be called at least 4 times thanks to
+                    // EntityOtherPlayerMP#otherPlayerMPPosRotationIncrements (max vanilla value is 3)
+                    for (int i = 0; i < 4; i++) {
+                        entity.onUpdate();
+                    }
+
+                    // Check whether the entity has left the chunk
+                    int chunkX = MathHelper.floor_double(entity.posX / 16);
+                    int chunkZ = MathHelper.floor_double(entity.posZ / 16);
+                    if (entity.chunkCoordX != chunkX || entity.chunkCoordZ != chunkZ) {
+                        // Entity has left the chunk
+                        chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
+                        Chunk newChunk = chunkProvider.getLoadedChunk(chunkX, chunkZ);
+                        if (newChunk != null) {
+                            newChunk.addEntity(entity);
+                        } else {
+                            // Entity has left all loaded chunks
+                            entity.addedToChunk = false;
+                        }
+                    }
+                }
+            }
+        }
         return p; // During synchronous playback everything is sent normally
     }
 
