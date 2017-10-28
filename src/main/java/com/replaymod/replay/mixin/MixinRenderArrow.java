@@ -14,6 +14,7 @@ public abstract class MixinRenderArrow extends Render {
         super(renderManager);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean shouldRender(Entity entity, ICamera camera, double camX, double camY, double camZ) {
         // Force arrows to always render, otherwise they stop rendering when you get close to them

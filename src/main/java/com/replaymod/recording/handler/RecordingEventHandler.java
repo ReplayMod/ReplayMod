@@ -1,24 +1,22 @@
 package com.replaymod.recording.handler;
 
 import com.replaymod.recording.packet.PacketListener;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.network.play.server.*;
-import net.minecraft.network.play.server.S14PacketEntity.S17PacketEntityLookMove;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -32,24 +30,24 @@ public class RecordingEventHandler {
     private final PacketListener packetListener;
 
     private Double lastX, lastY, lastZ;
-    private ItemStack[] playerItems = new ItemStack[5];
+    private ItemStack[] playerItems = new ItemStack[6];
     private int ticksSinceLastCorrection;
     private boolean wasSleeping;
     private int lastRiding = -1;
     private Integer rotationYawHeadBefore;
+    private boolean wasHandActive;
+    private EnumHand lastActiveHand;
 
     public RecordingEventHandler(PacketListener packetListener) {
         this.packetListener = packetListener;
     }
 
     public void register() {
-        FMLCommonHandler.instance().bus().register(this);
         MinecraftForge.EVENT_BUS.register(this);
         ((RecordingEventSender) mc.renderGlobal).setRecordingEventHandler(this);
     }
 
     public void unregister() {
-        FMLCommonHandler.instance().bus().unregister(this);
         MinecraftForge.EVENT_BUS.unregister(this);
         RecordingEventSender recordingEventSender = ((RecordingEventSender) mc.renderGlobal);
         if (recordingEventSender.getRecordingEventHandler() == this) {
@@ -59,7 +57,7 @@ public class RecordingEventHandler {
 
     public void onPlayerJoin() {
         try {
-            packetListener.save(spawnPlayer(mc.thePlayer));
+            packetListener.save(new SPacketSpawnPlayer(mc.thePlayer));
         } catch(Exception e1) {
             e1.printStackTrace();
         }
@@ -67,39 +65,28 @@ public class RecordingEventHandler {
 
     public void onPlayerRespawn() {
         try {
-            packetListener.save(spawnPlayer(mc.thePlayer));
+            packetListener.save(new SPacketSpawnPlayer(mc.thePlayer));
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
 
-    private S0CPacketSpawnPlayer spawnPlayer(EntityPlayer player) {
+    public void onClientSound(SoundEvent sound, SoundCategory category,
+                              double x, double y, double z, float volume, float pitch) {
         try {
-            S0CPacketSpawnPlayer packet = new S0CPacketSpawnPlayer();
-
-            ByteBuf bb = Unpooled.buffer();
-            PacketBuffer pb = new PacketBuffer(bb);
-
-            pb.writeVarIntToBuffer(player.getEntityId());
-            pb.writeUuid(EntityPlayer.getUUID(player.getGameProfile()));
-
-            pb.writeInt(MathHelper.floor_double(player.posX * 32.0D));
-            pb.writeInt(MathHelper.floor_double(player.posY * 32.0D));
-            pb.writeInt(MathHelper.floor_double(player.posZ * 32.0D));
-            pb.writeByte((byte) ((int) (player.rotationYaw * 256.0F / 360.0F)));
-            pb.writeByte((byte) ((int) (player.rotationPitch * 256.0F / 360.0F)));
-
-            ItemStack itemstack = player.inventory.getCurrentItem();
-            pb.writeShort(itemstack == null ? 0 : Item.getIdFromItem(itemstack.getItem()));
-
-            player.getDataWatcher().writeTo(pb);
-
-            packet.readPacketData(pb);
-
-            return packet;
+            // Send to all other players in ServerWorldEventHandler#playSoundToAllNearExcept
+            packetListener.save(new SPacketSoundEffect(sound, category, x, y, z, volume, pitch));
         } catch(Exception e) {
             e.printStackTrace();
-            return null;
+        }
+    }
+
+    public void onClientEffect(int type, BlockPos pos, int data) {
+        try {
+            // Send to all other players in ServerWorldEventHandler#playEvent
+            packetListener.save(new SPacketEffect(type, pos, data, false));
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -131,19 +118,14 @@ public class RecordingEventHandler {
             lastZ = e.player.posZ;
 
             Packet packet;
-            if(force || Math.abs(dx) > 4.0 || Math.abs(dy) > 4.0 || Math.abs(dz) > 4.0) {
-                int x = MathHelper.floor_double(e.player.posX * 32.0D);
-                int y = MathHelper.floor_double(e.player.posY * 32.0D);
-                int z = MathHelper.floor_double(e.player.posZ * 32.0D);
-                byte yaw = (byte) ((int) (e.player.rotationYaw * 256.0F / 360.0F));
-                byte pitch = (byte) ((int) (e.player.rotationPitch * 256.0F / 360.0F));
-                packet = new S18PacketEntityTeleport(e.player.getEntityId(), x, y, z, yaw, pitch, e.player.onGround);
+            if (force || Math.abs(dx) > 8.0 || Math.abs(dy) > 8.0 || Math.abs(dz) > 8.0) {
+                packet = new SPacketEntityTeleport(e.player);
             } else {
                 byte newYaw = (byte) ((int) (e.player.rotationYaw * 256.0F / 360.0F));
                 byte newPitch = (byte) ((int) (e.player.rotationPitch * 256.0F / 360.0F));
 
-                packet = new S17PacketEntityLookMove(e.player.getEntityId(),
-                        (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
+                packet = new SPacketEntity.S17PacketEntityLookMove(e.player.getEntityId(),
+                        (short) Math.round(dx * 4096), (short) Math.round(dy * 4096), (short) Math.round(dz * 4096),
                         newYaw, newPitch, e.player.onGround);
             }
 
@@ -153,37 +135,16 @@ public class RecordingEventHandler {
             int rotationYawHead = ((int)(e.player.rotationYawHead * 256.0F / 360.0F));
 
             if(!Objects.equals(rotationYawHead, rotationYawHeadBefore)) {
-                S19PacketEntityHeadLook head = new S19PacketEntityHeadLook();
-                ByteBuf bb1 = Unpooled.buffer();
-                PacketBuffer pb1 = new PacketBuffer(bb1);
-
-                pb1.writeVarIntToBuffer(e.player.getEntityId());
-                pb1.writeByte(rotationYawHead);
-
-                head.readPacketData(pb1);
-
-                packetListener.save(head);
-
+                packetListener.save(new SPacketEntityHeadLook(e.player, (byte) rotationYawHead));
                 rotationYawHeadBefore = rotationYawHead;
             }
 
-            S12PacketEntityVelocity vel = new S12PacketEntityVelocity(e.player.getEntityId(), e.player.motionX, e.player.motionY, e.player.motionZ);
-            packetListener.save(vel);
+            packetListener.save(new SPacketEntityVelocity(e.player.getEntityId(), e.player.motionX, e.player.motionY, e.player.motionZ));
 
             //Animation Packets
             //Swing Animation
-            if(e.player.swingProgressInt == 1) {
-                S0BPacketAnimation pac = new S0BPacketAnimation();
-
-                ByteBuf bb = Unpooled.buffer();
-                PacketBuffer pb = new PacketBuffer(bb);
-
-                pb.writeVarIntToBuffer(e.player.getEntityId());
-                pb.writeByte(0);
-
-                pac.readPacketData(pb);
-
-                packetListener.save(pac);
+            if (e.player.isSwingInProgress && e.player.swingProgressInt == -1) {
+                packetListener.save(new SPacketAnimation(e.player, e.player.swingingHand == EnumHand.MAIN_HAND ? 0 : 3));
             }
 
 			/*
@@ -207,75 +168,62 @@ public class RecordingEventHandler {
 			 */
 
             //Inventory Handling
-            if(playerItems[0] != mc.thePlayer.getHeldItem()) {
-                playerItems[0] = mc.thePlayer.getHeldItem();
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 0, playerItems[0]);
-                packetListener.save(pee);
+            if (playerItems[0] != mc.thePlayer.getHeldItem(EnumHand.MAIN_HAND)) {
+                playerItems[0] = mc.thePlayer.getHeldItem(EnumHand.MAIN_HAND);
+                packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.MAINHAND, playerItems[0]));
             }
 
-            if(playerItems[1] != mc.thePlayer.inventory.armorInventory[0]) {
-                playerItems[1] = mc.thePlayer.inventory.armorInventory[0];
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 1, playerItems[1]);
-                packetListener.save(pee);
+            if (playerItems[1] != mc.thePlayer.getHeldItem(EnumHand.OFF_HAND)) {
+                playerItems[1] = mc.thePlayer.getHeldItem(EnumHand.OFF_HAND);
+                packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.OFFHAND, playerItems[1]));
             }
 
-            if(playerItems[2] != mc.thePlayer.inventory.armorInventory[1]) {
-                playerItems[2] = mc.thePlayer.inventory.armorInventory[1];
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 2, playerItems[2]);
-                packetListener.save(pee);
+            if (playerItems[2] != mc.thePlayer.inventory.armorInventory[0]) {
+                playerItems[2] = mc.thePlayer.inventory.armorInventory[0];
+                packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.FEET, playerItems[2]));
             }
 
-            if(playerItems[3] != mc.thePlayer.inventory.armorInventory[2]) {
-                playerItems[3] = mc.thePlayer.inventory.armorInventory[2];
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 3, playerItems[3]);
-                packetListener.save(pee);
+            if (playerItems[3] != mc.thePlayer.inventory.armorInventory[1]) {
+                playerItems[3] = mc.thePlayer.inventory.armorInventory[1];
+                packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.LEGS, playerItems[3]));
             }
 
-            if(playerItems[4] != mc.thePlayer.inventory.armorInventory[3]) {
-                playerItems[4] = mc.thePlayer.inventory.armorInventory[3];
-                S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 4, playerItems[4]);
-                packetListener.save(pee);
+            if (playerItems[4] != mc.thePlayer.inventory.armorInventory[2]) {
+                playerItems[4] = mc.thePlayer.inventory.armorInventory[2];
+                packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.CHEST, playerItems[4]));
+            }
+
+            if (playerItems[5] != mc.thePlayer.inventory.armorInventory[3]) {
+                playerItems[5] = mc.thePlayer.inventory.armorInventory[3];
+                packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.HEAD, playerItems[5]));
             }
 
             //Leaving Ride
 
             if((!mc.thePlayer.isRiding() && lastRiding != -1) ||
-                    (mc.thePlayer.isRiding() && lastRiding != mc.thePlayer.ridingEntity.getEntityId())) {
+                    (mc.thePlayer.isRiding() && lastRiding != mc.thePlayer.getRidingEntity().getEntityId())) {
                 if(!mc.thePlayer.isRiding()) {
                     lastRiding = -1;
                 } else {
-                    lastRiding = mc.thePlayer.ridingEntity.getEntityId();
+                    lastRiding = mc.thePlayer.getRidingEntity().getEntityId();
                 }
-
-                S1BPacketEntityAttach pea = new S1BPacketEntityAttach();
-
-                ByteBuf buf = Unpooled.buffer();
-                PacketBuffer pbuf = new PacketBuffer(buf);
-
-                pbuf.writeInt(e.player.getEntityId());
-                pbuf.writeInt(lastRiding);
-                pbuf.writeBoolean(false);
-
-                pea.readPacketData(pbuf);
-
-                packetListener.save(pea);
+                packetListener.save(new SPacketEntityAttach(e.player, e.player.getRidingEntity()));
             }
 
             //Sleeping
             if(!mc.thePlayer.isPlayerSleeping() && wasSleeping) {
-                S0BPacketAnimation pac = new S0BPacketAnimation();
-
-                ByteBuf bb = Unpooled.buffer();
-                PacketBuffer pb = new PacketBuffer(bb);
-
-                pb.writeVarIntToBuffer(e.player.getEntityId());
-                pb.writeByte(2);
-
-                pac.readPacketData(pb);
-
-                packetListener.save(pac);
-
+                packetListener.save(new SPacketAnimation(e.player, 2));
                 wasSleeping = false;
+            }
+
+            // Active hand (e.g. eating, drinking, blocking)
+            if (mc.thePlayer.isHandActive() ^ wasHandActive || mc.thePlayer.getActiveHand() != lastActiveHand) {
+                wasHandActive = mc.thePlayer.isHandActive();
+                lastActiveHand = mc.thePlayer.getActiveHand();
+                EntityDataManager dataManager = new EntityDataManager(null);
+                int state = (wasHandActive ? 1 : 0) | (lastActiveHand == EnumHand.OFF_HAND ? 2 : 0);
+                dataManager.register(EntityLiving.HAND_STATES, (byte) state);
+                packetListener.save(new SPacketEntityMetadata(mc.thePlayer.getEntityId(), dataManager, true));
             }
 
         } catch(Exception e1) {
@@ -286,27 +234,7 @@ public class RecordingEventHandler {
     @SubscribeEvent
     public void onPickupItem(ItemPickupEvent event) {
         try {
-            packetListener.save(new S0DPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId()));
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SubscribeEvent
-    public void onStartEating(PlayerUseItemEvent.Start event) {
-        try {
-            if(!event.entityPlayer.isEating()) return;
-            S0BPacketAnimation packet = new S0BPacketAnimation();
-
-            ByteBuf bb = Unpooled.buffer();
-            PacketBuffer pb = new PacketBuffer(bb);
-
-            pb.writeVarIntToBuffer(event.entityPlayer.getEntityId());
-            pb.writeByte(3);
-
-            packet.readPacketData(pb);
-
-            packetListener.save(packet);
+            packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId()));
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -315,21 +243,11 @@ public class RecordingEventHandler {
     @SubscribeEvent
     public void onSleep(PlayerSleepInBedEvent event) {
         try {
-            if(event.entityPlayer != mc.thePlayer) {
+            if (event.getEntityPlayer() != mc.thePlayer) {
                 return;
             }
 
-            S0APacketUseBed pub = new S0APacketUseBed();
-
-            ByteBuf buf = Unpooled.buffer();
-            PacketBuffer pbuf = new PacketBuffer(buf);
-
-            pbuf.writeVarIntToBuffer(event.entityPlayer.getEntityId());
-            pbuf.writeBlockPos(event.pos);
-
-            pub.readPacketData(pbuf);
-
-            packetListener.save(pub);
+            packetListener.save(new SPacketUseBed(event.getEntityPlayer(), event.getPos()));
 
             wasSleeping = true;
 
@@ -341,24 +259,13 @@ public class RecordingEventHandler {
     @SubscribeEvent
     public void enterMinecart(MinecartInteractEvent event) {
         try {
-            if(event.player != mc.thePlayer) {
+            if(event.getEntity() != mc.thePlayer) {
                 return;
             }
 
-            S1BPacketEntityAttach pea = new S1BPacketEntityAttach();
+            packetListener.save(new SPacketEntityAttach(event.getPlayer(), event.getMinecart()));
 
-            ByteBuf buf = Unpooled.buffer();
-            PacketBuffer pbuf = new PacketBuffer(buf);
-
-            pbuf.writeInt(event.player.getEntityId());
-            pbuf.writeInt(event.minecart.getEntityId());
-            pbuf.writeBoolean(false);
-
-            pea.readPacketData(pbuf);
-
-            packetListener.save(pea);
-
-            lastRiding = event.minecart.getEntityId();
+            lastRiding = event.getMinecart().getEntityId();
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -367,7 +274,7 @@ public class RecordingEventHandler {
     public void onBlockBreakAnim(int breakerId, BlockPos pos, int progress) {
         EntityPlayer thePlayer = mc.thePlayer;
         if (thePlayer != null && breakerId == thePlayer.getEntityId()) {
-            packetListener.save(new S25PacketBlockBreakAnim(breakerId, pos, progress));
+            packetListener.save(new SPacketBlockBreakAnim(breakerId, pos, progress));
         }
     }
 

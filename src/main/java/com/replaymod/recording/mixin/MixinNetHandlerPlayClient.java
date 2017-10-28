@@ -4,8 +4,8 @@ import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
-import net.minecraft.network.play.server.S07PacketRespawn;
-import net.minecraft.network.play.server.S38PacketPlayerListItem;
+import net.minecraft.network.play.server.SPacketPlayerListItem;
+import net.minecraft.network.play.server.SPacketRespawn;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,12 +36,12 @@ public abstract class MixinNetHandlerPlayClient {
      * @param ci Callback info
      */
     @Inject(method = "handlePlayerListItem", at=@At("HEAD"))
-    public void recordOwnJoin(S38PacketPlayerListItem packet, CallbackInfo ci) {
+    public void recordOwnJoin(SPacketPlayerListItem packet, CallbackInfo ci) {
         if (gameController.thePlayer == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();
-        if (handler != null && packet.getAction() == S38PacketPlayerListItem.Action.ADD_PLAYER) {
-            for (S38PacketPlayerListItem.AddPlayerData data : packet.getEntries()) {
+        if (handler != null && packet.getAction() == SPacketPlayerListItem.Action.ADD_PLAYER) {
+            for (SPacketPlayerListItem.AddPlayerData data : packet.getEntries()) {
                 if (data.getProfile() == null || data.getProfile().getId() == null) continue;
                 // Only add spawn packet for our own player and only if he isn't known yet
                 if (data.getProfile().getId().equals(Minecraft.getMinecraft().thePlayer.getGameProfile().getId())
@@ -55,12 +55,12 @@ public abstract class MixinNetHandlerPlayClient {
     /**
      * Record the own player entity respawning.
      * We cannot use the {@link net.minecraftforge.event.entity.EntityJoinWorldEvent} because that would also include
-     * the first spawn which is already handled by {@link #recordOwnJoin(S38PacketPlayerListItem, CallbackInfo)}.
+     * the first spawn which is already handled by {@link #recordOwnJoin(SPacketPlayerListItem, CallbackInfo)}.
      * @param packet The packet
      * @param ci Callback info
      */
     @Inject(method = "handleRespawn", at=@At("RETURN"))
-    public void recordOwnRespawn(S07PacketRespawn packet, CallbackInfo ci) {
+    public void recordOwnRespawn(SPacketRespawn packet, CallbackInfo ci) {
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null) {
             handler.onPlayerRespawn();

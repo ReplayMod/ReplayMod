@@ -9,7 +9,6 @@ import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.io.IOException;
@@ -34,13 +33,12 @@ public class GuiHandler {
     }
 
     public void register() {
-        FMLCommonHandler.instance().bus().register(this);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent
     public void injectIntoIngameMenu(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (!(event.gui instanceof GuiIngameMenu)) {
+        if (!(event.getGui() instanceof GuiIngameMenu)) {
             return;
         }
 
@@ -49,8 +47,7 @@ public class GuiHandler {
             mod.getReplayHandler().getReplaySender().setReplaySpeed(0);
 
             GuiButton achievements = null, stats = null, openToLan = null;
-            @SuppressWarnings("unchecked")
-            List<GuiButton> buttonList = event.buttonList;
+            List<GuiButton> buttonList = event.getButtonList();
             for(GuiButton b : new ArrayList<>(buttonList)) {
                 switch (b.id) {
                     // Replace "Exit Server" button with "Exit Replay" button
@@ -98,31 +95,29 @@ public class GuiHandler {
 
     @SubscribeEvent
     public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
-        if (!(event.gui instanceof GuiMainMenu)) {
+        if (!(event.getGui() instanceof GuiMainMenu)) {
             return;
         }
 
-        @SuppressWarnings("unchecked")
-        List<GuiButton> buttonList = event.buttonList;
-        GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, event.gui.width / 2 - 100,
-                event.gui.height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer"));
+        GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, event.getGui().width / 2 - 100,
+                event.getGui().height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer"));
         button.width = button.width / 2 - 2;
-        buttonList.add(button);
+        event.getButtonList().add(button);
     }
 
     @SubscribeEvent
     public void onButton(GuiScreenEvent.ActionPerformedEvent.Pre event) {
-        if(!event.button.enabled) return;
+        if(!event.getButton().enabled) return;
 
-        if (event.gui instanceof GuiMainMenu) {
-            if (event.button.id == BUTTON_REPLAY_VIEWER) {
+        if (event.getGui() instanceof GuiMainMenu) {
+            if (event.getButton().id == BUTTON_REPLAY_VIEWER) {
                 new GuiReplayViewer(mod).display();
             }
         }
 
-        if (event.gui instanceof GuiIngameMenu && mod.getReplayHandler() != null) {
-            if (event.button.id == BUTTON_EXIT_REPLAY) {
-                event.button.enabled = false;
+        if (event.getGui() instanceof GuiIngameMenu && mod.getReplayHandler() != null) {
+            if (event.getButton().id == BUTTON_EXIT_REPLAY) {
+                event.getButton().enabled = false;
                 mc.displayGuiScreen(new GuiMainMenu());
                 try {
                     mod.getReplayHandler().endReplay();

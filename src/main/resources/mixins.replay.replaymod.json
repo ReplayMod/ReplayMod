@@ -3,10 +3,11 @@
   "package": "com.replaymod.replay.mixin",
   "mixins": [
     "MixinGuiSpectator",
+    "MixinParticleManager",
     "MixinPlayerControllerMP",
     "MixinRenderArrow",
-    "MixinRendererLivingEntity",
     "MixinRenderItem",
+    "MixinRenderLivingBase",
     "MixinRenderManager",
     "MixinTileEntityEndPortalRenderer",
     "MixinViewFrustum",

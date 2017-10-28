@@ -2,7 +2,7 @@ package com.replaymod.recording.mixin;
 
 import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

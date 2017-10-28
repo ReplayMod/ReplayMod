@@ -50,10 +50,8 @@ public abstract class AbstractTask implements Task {
     public ListenableFuture<Void> execute() {
         future = SettableFuture.create();
 
-        FMLCommonHandler.instance().bus().register(this);
         MinecraftForge.EVENT_BUS.register(this);
         addCallback(future, success -> {
-            FMLCommonHandler.instance().bus().unregister(this);
             MinecraftForge.EVENT_BUS.unregister(this);
         }, error -> {});
 
@@ -92,7 +90,7 @@ public abstract class AbstractTask implements Task {
             public void onGuiOpen(TickEvent.RenderTickEvent event) {
                 if (event.phase != TickEvent.Phase.START) return;
                 if (currentScreen != mc.currentScreen) {
-                    FMLCommonHandler.instance().bus().unregister(this);
+                    MinecraftForge.EVENT_BUS.unregister(this);
                     onClosed.run();
                 } else {
                     if (framesPassed < timeout) {
@@ -106,7 +104,7 @@ public abstract class AbstractTask implements Task {
                 }
             }
         }
-        FMLCommonHandler.instance().bus().register(new EventHandler());
+        MinecraftForge.EVENT_BUS.register(new EventHandler());
     }
 
     public void expectPopupClosed(Runnable onClosed) {
@@ -130,7 +128,7 @@ public abstract class AbstractTask implements Task {
             public void onGuiOpen(TickEvent.RenderTickEvent event) {
                 if (event.phase != TickEvent.Phase.START) return;
                 if (getPopup(mc.currentScreen) != popup) {
-                    FMLCommonHandler.instance().bus().unregister(this);
+                    MinecraftForge.EVENT_BUS.unregister(this);
                     onClosed.run();
                 } else {
                     if (framesPassed < timeout) {
@@ -143,7 +141,7 @@ public abstract class AbstractTask implements Task {
                 }
             }
         }
-        FMLCommonHandler.instance().bus().register(new EventHandler());
+        MinecraftForge.EVENT_BUS.register(new EventHandler());
     }
 
     private AbstractGuiPopup getPopup(net.minecraft.client.gui.GuiScreen minecraft) {
@@ -181,7 +179,7 @@ public abstract class AbstractTask implements Task {
                     return;
                 }
 
-                FMLCommonHandler.instance().bus().unregister(this);
+                MinecraftForge.EVENT_BUS.unregister(this);
 
                 Object foundGui = null;
                 if (AbstractGuiScreen.class.isAssignableFrom(guiClass)) {
@@ -219,7 +217,7 @@ public abstract class AbstractTask implements Task {
                 future.setException(new UnexpectedGuiException(foundGui == null ? currentScreen : foundGui));
             }
         }
-        FMLCommonHandler.instance().bus().register(new EventHandler());
+        MinecraftForge.EVENT_BUS.register(new EventHandler());
     }
 
     private void clickNow(int x, int y) {

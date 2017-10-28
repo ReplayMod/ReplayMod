@@ -2,8 +2,8 @@ package com.replaymod.replay.camera;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.Sys;
 
 // TODO: Marius is responsible for this. Please, someone clean it up.
@@ -18,8 +18,8 @@ public class ClassicCameraController implements CameraController {
     private double THRESHOLD = MAX_SPEED / 20;
     private double DECAY = MAX_SPEED/3;
 
-    private Vec3 direction;
-    private Vec3 dirBefore;
+    private Vec3d direction;
+    private Vec3d dirBefore;
     private double motion;
     private long lastCall = Sys.getTime();
 
@@ -129,7 +129,7 @@ public class ClassicCameraController implements CameraController {
             return;
         }
 
-        Vec3 movement = direction.normalize();
+        Vec3d movement = direction.normalize();
         double factor = motion * (frac / 1000D);
 
         camera.moveCamera(movement.xCoord * factor, movement.yCoord * factor, movement.zCoord * factor);
@@ -158,7 +158,7 @@ public class ClassicCameraController implements CameraController {
                 break;
         }
 
-        Vec3 dbf = direction;
+        Vec3d dbf = direction;
 
         if(dirBefore != null) {
             direction = dirBefore.normalize().add(direction);
@@ -169,12 +169,12 @@ public class ClassicCameraController implements CameraController {
         updateMovement();
     }
 
-    private Vec3 getVectorForRotation(float pitch, float yaw) {
+    private Vec3d getVectorForRotation(float pitch, float yaw) {
         float f2 = MathHelper.cos(-yaw * 0.017453292F - (float) Math.PI);
         float f3 = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
         float f4 = -MathHelper.cos(-pitch * 0.017453292F);
         float f5 = MathHelper.sin(-pitch * 0.017453292F);
-        return new Vec3((double)(f3 * f4), (double)f5, (double)(f2 * f4));
+        return new Vec3d((double)(f3 * f4), (double)f5, (double)(f2 * f4));
     }
 
     public enum MoveDirection {

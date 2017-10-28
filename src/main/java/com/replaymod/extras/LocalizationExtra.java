@@ -5,7 +5,7 @@ import com.replaymod.core.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
-import net.minecraft.client.resources.data.IMetadataSerializer;
+import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
 
@@ -99,12 +99,12 @@ public class LocalizationExtra implements Extra {
         }
 
         @Override
-        public Set getResourceDomains() {
+        public Set<String> getResourceDomains() {
             return ImmutableSet.of("replaymod");
         }
 
         @Override
-        public IMetadataSection getPackMetadata(IMetadataSerializer p_135058_1_, String p_135058_2_) throws IOException {
+        public <T extends IMetadataSection> T getPackMetadata(MetadataSerializer metadataSerializer, String metadataSectionName) throws IOException {
             return null;
         }
 

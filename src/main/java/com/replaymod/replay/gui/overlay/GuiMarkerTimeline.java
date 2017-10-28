@@ -2,14 +2,14 @@ package com.replaymod.replay.gui.overlay;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.util.Location;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
 import de.johni0702.minecraft.gui.function.Draggable;
-import com.replaymod.replaystudio.data.Marker;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.util.Point;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;

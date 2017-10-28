@@ -658,7 +658,7 @@ public class SPTimeline implements PathingRegistry {
         } catch (IOException e) {
             CrashReport crash = CrashReport.makeCrashReport(e, "Serializing interpolator");
             CrashReportCategory category = crash.makeCategory("Serializing interpolator");
-            category.addCrashSectionCallable("Interpolator", interpolator::toString);
+            category.setDetail("Interpolator", interpolator::toString);
             throw new ReportedException(crash);
         }
 

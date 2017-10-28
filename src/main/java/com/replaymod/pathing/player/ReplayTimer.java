@@ -2,7 +2,7 @@ package com.replaymod.pathing.player;
 
 import com.replaymod.core.utils.WrappedTimer;
 import net.minecraft.util.Timer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
 /**
@@ -20,7 +20,7 @@ public class ReplayTimer extends WrappedTimer {
         copy(this, state); // Save our current state
         super.updateTimer(); // Update current state
         copy(state, this); // Restore our old state
-        FMLCommonHandler.instance().bus().post(new UpdatedEvent());
+        MinecraftForge.EVENT_BUS.post(new UpdatedEvent());
     }
 
     public Timer getWrapped() {

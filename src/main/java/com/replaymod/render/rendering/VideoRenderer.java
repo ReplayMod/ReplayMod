@@ -1,6 +1,5 @@
 package com.replaymod.render.rendering;
 
-import com.replaymod.core.ReplayMod;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
@@ -14,17 +13,18 @@ import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.metadata.MetadataInjector;
+import com.replaymod.render.utils.SoundHandler;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Timer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Dimension;
@@ -55,7 +55,7 @@ public class VideoRenderer implements RenderInfo {
     private int fps;
     private boolean mouseWasGrabbed;
     private boolean debugInfoWasShown;
-    private Map originalSoundLevels;
+    private Map<SoundCategory, Float> originalSoundLevels;
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
@@ -92,7 +92,7 @@ public class VideoRenderer implements RenderInfo {
      * @return {@code true} if rendering was successful, {@code false} if the user aborted rendering (or the window was closed)
      */
     public boolean renderVideo() throws Throwable {
-        FMLCommonHandler.instance().bus().post(new ReplayRenderEvent.Pre(this));
+        MinecraftForge.EVENT_BUS.post(new ReplayRenderEvent.Pre(this));
 
         setup();
 
@@ -138,7 +138,7 @@ public class VideoRenderer implements RenderInfo {
 
         finish();
 
-        FMLCommonHandler.instance().bus().post(new ReplayRenderEvent.Post(this));
+        MinecraftForge.EVENT_BUS.post(new ReplayRenderEvent.Post(this));
 
         if (failureCause != null) {
             throw failureCause;
@@ -202,9 +202,9 @@ public class VideoRenderer implements RenderInfo {
         for (SoundCategory category : SoundCategory.values()) {
             mutedSounds.put(category, 0f);
         }
-        originalSoundLevels = mc.gameSettings.mapSoundLevels;
-        mutedSounds.put(SoundCategory.MASTER, (Float) originalSoundLevels.get(SoundCategory.MASTER));
-        mc.gameSettings.mapSoundLevels = mutedSounds;
+        originalSoundLevels = mc.gameSettings.soundLevels;
+        mutedSounds.put(SoundCategory.MASTER, originalSoundLevels.get(SoundCategory.MASTER));
+        mc.gameSettings.soundLevels = mutedSounds;
 
         fps = settings.getFramesPerSecond();
 
@@ -224,9 +224,6 @@ public class VideoRenderer implements RenderInfo {
         totalFrames = (int) (duration*fps/1000);
 
         updateDisplaySize();
-
-        ScaledResolution scaled = new ScaledResolution(mc);
-        gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
         chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.renderGlobal);
 
@@ -248,13 +245,13 @@ public class VideoRenderer implements RenderInfo {
         if (mouseWasGrabbed) {
             mc.mouseHelper.grabMouseCursor();
         }
-        mc.gameSettings.mapSoundLevels = originalSoundLevels;
+        mc.gameSettings.soundLevels = originalSoundLevels;
         mc.displayGuiScreen(null);
         if (chunkLoadingRenderGlobal != null) {
             chunkLoadingRenderGlobal.uninstall();
         }
 
-        ReplayMod.soundHandler.playRenderSuccessSound();
+        new SoundHandler().playRenderSuccessSound();
 
         try {
             if (!hasFailed()) {

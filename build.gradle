@@ -17,8 +17,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.3-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
     }
 }
 
@@ -34,9 +34,9 @@ archivesBaseName = "replaymod"
 
 minecraft {
     coreMod = 'com.replaymod.core.LoadingPlugin'
-    version = '1.8.9-11.15.1.1722'
+    version = '1.9.4-12.17.0.1976'
     runDir = "eclipse"
-    mappings = "stable_22"
+    mappings = "snapshot_20160518"
     replace '@MOD_VERSION@', project.version
     // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
     // a newer srg-compatible MC version (that may be using a different protocol version)
@@ -69,7 +69,7 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    shade 'com.github.replaymod:ReplayStudio:2df8d8b'
+    shade 'com.github.replaymod:ReplayStudio:c7ed696'
 
     testCompile 'junit:junit:4.11'
 }
@@ -111,6 +111,7 @@ jar {
     manifest {
          attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
                  'TweakOrder': '0',
+                 'FMLCorePluginContainsFMLMod': 'true',
                  'FMLAT': 'replaymod_at.cfg'
 	}
 }
@@ -178,6 +179,57 @@ task copySrg(type: Copy, dependsOn: 'genSrgs') {
 setupDecompWorkspace.dependsOn copySrg
 setupDevWorkspace.dependsOn copySrg
 project.tasks.idea.dependsOn copySrg
+
+
+import org.objectweb.asm.*
+
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
+
+import static org.objectweb.asm.Opcodes.ASM5
+
+// MC binaries were complied with a java version that produces invalid class files under certain circumstances
+// This causes setupCIWorkspace to be insufficient for compiling.
+// Related JDK bug: https://bugs.openjdk.java.net/browse/JDK-8066725
+// As a workaround, to use setupCIWorkspace on Drone, we modify the bin jar in-place and remove all parameter annotations.
+// WARNING: This piece of code ignores any and all gradle conventions and will probably fail horribly when run outside
+// of a single-use environment (e.g. Drone). Use setupDecompWorkspace for normal use.
+tasks.deobfMcMCP.doLast {
+    println "Applying RuntimeInvisibleParameterAnnotations workaround..."
+    File jar = getOutJar()
+    File tmp = new File((File) getTemporaryDir(), "workaround.jar")
+    tmp.withOutputStream {
+        new ZipOutputStream(it).withStream { dst ->
+            new ZipFile(jar).withCloseable { src ->
+                src.entries().each {
+                    if (it.name.startsWith("net/minecraft/") && it.name.endsWith(".class")) {
+                        def cw = new ClassWriter(0)
+                        def cv = new ClassVisitor(ASM5, cw) {
+                            @Override
+                            MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                                return new MethodVisitor(ASM5, cv.visitMethod(access, name, desc, signature, exceptions)) {
+                                    @Override
+                                    AnnotationVisitor visitParameterAnnotation(int parameter, String pdesc, boolean visible) {
+                                        return null // Strip all parameter annotations
+                                    }
+                                }
+                            }
+                        }
+                        new ClassReader(src.getInputStream(it)).accept(cv, 0)
+                        dst.putNextEntry(new ZipEntry(it.name))
+                        dst.write(cw.toByteArray())
+                    } else {
+                        dst.putNextEntry(it)
+                        dst.write(src.getInputStream(it).bytes)
+                    }
+                }
+            }
+        }
+    }
+    jar.delete()
+    tmp.renameTo(jar)
+}
 
 task runIntegrationTest(type: JavaExec, dependsOn: ["makeStart", "jar"]) {
     main = 'GradleStart'

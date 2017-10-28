@@ -9,21 +9,29 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.*;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.network.play.server.SPacketCollectItem;
+import net.minecraft.network.play.server.SPacketCustomPayload;
+import net.minecraft.network.play.server.SPacketDisconnect;
+import net.minecraft.network.play.server.SPacketResourcePackSend;
+import net.minecraft.network.play.server.SPacketSpawnMob;
+import net.minecraft.network.play.server.SPacketSpawnPlayer;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -84,15 +92,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void save(Packet packet) {
         try {
-            if(packet instanceof S0CPacketSpawnPlayer) {
-                UUID uuid = ((S0CPacketSpawnPlayer) packet).getPlayer();
+            if(packet instanceof SPacketSpawnPlayer) {
+                UUID uuid = ((SPacketSpawnPlayer) packet).getUniqueId();
                 Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
                 uuids.add(uuid.toString());
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
                 saveMetaData();
-            }
-            if (packet instanceof S46PacketSetCompressionLevel) {
-                return; // Replay data is never compressed on the packet level
             }
 
             byte[] bytes = getPacketData(packet);
@@ -154,16 +159,16 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             try {
                 Packet packet = (Packet) msg;
 
-                if(packet instanceof S0DPacketCollectItem) {
+                if(packet instanceof SPacketCollectItem) {
                     if(mc.thePlayer != null ||
-                            ((S0DPacketCollectItem) packet).getEntityID() == mc.thePlayer.getEntityId()) {
+                            ((SPacketCollectItem) packet).getEntityID() == mc.thePlayer.getEntityId()) {
                         super.channelRead(ctx, msg);
                         return;
                     }
                 }
 
-                if (packet instanceof S48PacketResourcePackSend) {
-                    save(resourcePackRecorder.handleResourcePack((S48PacketResourcePackSend) packet));
+                if (packet instanceof SPacketResourcePackSend) {
+                    save(resourcePackRecorder.handleResourcePack((SPacketResourcePackSend) packet));
                     return;
                 }
 
@@ -176,10 +181,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 save(packet);
 
-                if (packet instanceof S3FPacketCustomPayload) {
-                    S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
+                if (packet instanceof SPacketCustomPayload) {
+                    SPacketCustomPayload p = (SPacketCustomPayload) packet;
                     if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
-                        packet = new S40PacketDisconnect(new ChatComponentText("Please update to view this replay."));
+                        packet = new SPacketDisconnect(new TextComponentString("Please update to view this replay."));
                         save(packet);
                     }
                 }
@@ -192,27 +197,31 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         super.channelRead(ctx, msg);
     }
 
+    private <T> void DataManager_set(EntityDataManager dataManager, EntityDataManager.DataEntry<T> entry) {
+        dataManager.register(entry.getKey(), entry.getValue());
+    }
+
     @SuppressWarnings("unchecked")
     private byte[] getPacketData(Packet packet) throws IOException {
-        if(packet instanceof S0FPacketSpawnMob) {
-            S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
-            if (p.field_149043_l == null) {
-                p.field_149043_l = new DataWatcher(null);
-                if(p.func_149027_c() != null) {
-                    for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_149027_c()) {
-                        p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
+        if (packet instanceof SPacketSpawnMob) {
+            SPacketSpawnMob p = (SPacketSpawnMob) packet;
+            if (p.dataManager == null) {
+                p.dataManager = new EntityDataManager(null);
+                if (p.getDataManagerEntries() != null) {
+                    for (EntityDataManager.DataEntry<?> entry : p.getDataManagerEntries()) {
+                        DataManager_set(p.dataManager, entry);
                     }
                 }
             }
         }
 
-        if(packet instanceof S0CPacketSpawnPlayer) {
-            S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
+        if (packet instanceof SPacketSpawnPlayer) {
+            SPacketSpawnPlayer p = (SPacketSpawnPlayer) packet;
             if (p.watcher == null) {
-                p.watcher = new DataWatcher(null);
-                if(p.func_148944_c() != null) {
-                    for(DataWatcher.WatchableObject wo : p.func_148944_c()) {
-                        p.watcher.addObject(wo.getDataValueId(), wo.getObject());
+                p.watcher = new EntityDataManager(null);
+                if (p.getDataManagerEntries() != null) {
+                    for (EntityDataManager.DataEntry<?> entry : p.getDataManagerEntries()) {
+                        DataManager_set(p.watcher, entry);
                     }
                 }
             }

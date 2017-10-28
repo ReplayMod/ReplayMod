@@ -8,7 +8,7 @@ import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.Setting;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 
@@ -23,7 +23,7 @@ public class PathPreview {
     }
 
     public void register() {
-        FMLCommonHandler.instance().bus().register(this);
+        MinecraftForge.EVENT_BUS.register(this);
 
         ReplayMod core = mod.getCore();
         mod.getCore().getKeyBindingRegistry().registerKeyBinding("replaymod.input.pathpreview", Keyboard.KEY_H, () -> {

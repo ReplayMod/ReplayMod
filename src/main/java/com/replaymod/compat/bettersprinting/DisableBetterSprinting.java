@@ -2,12 +2,16 @@ package com.replaymod.compat.bettersprinting;
 
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayChatMessageEvent;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.world.IWorldAccess;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IWorldEventListener;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -18,6 +22,7 @@ import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
 import net.minecraftforge.fml.common.versioning.Restriction;
 import net.minecraftforge.fml.common.versioning.VersionRange;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 
 /**
@@ -50,14 +55,14 @@ public class DisableBetterSprinting {
         if (ReplayModReplay.instance.getReplayHandler() != null && mc.theWorld != null) {
             // During replay, get ready to revert BetterSprinting's overwritten playerController
             originalController = mc.playerController;
-            mc.theWorld.addWorldAccess(worldAccessHook);
+            mc.theWorld.addEventListener(worldAccessHook);
         }
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void afterGuiOpenEvent(GuiOpenEvent event) {
         if (ReplayModReplay.instance.getReplayHandler() != null && mc.theWorld != null) {
-            mc.theWorld.removeWorldAccess(worldAccessHook);
+            mc.theWorld.addEventListener(worldAccessHook);
         }
     }
 
@@ -72,7 +77,7 @@ public class DisableBetterSprinting {
         }
     }
 
-    private class BetterSprintingWorldAccess implements IWorldAccess {
+    private class BetterSprintingWorldAccess implements IWorldEventListener {
         @Override
         public void onEntityRemoved(Entity entityIn) {
             if (mc.playerController != null && mc.playerController.getClass().getName().equals(CONTROLLER_OVERRIDE_CLASS_NAME)) {
@@ -82,16 +87,15 @@ public class DisableBetterSprinting {
             }
         }
 
-        @Override public void markBlockForUpdate(BlockPos pos) {}
+        @Override public void notifyBlockUpdate(World worldIn, BlockPos pos, IBlockState oldState, IBlockState newState, int flags) {}
         @Override public void notifyLightSet(BlockPos pos) {}
         @Override public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {}
-        @Override public void playSound(String soundName, double x, double y, double z, float volume, float pitch) {}
-        @Override public void playSoundToNearExcept(EntityPlayer except, String soundName, double x, double y, double z, float volume, float pitch) {}
+        @Override public void playSoundToAllNearExcept(@Nullable EntityPlayer player, SoundEvent soundIn, SoundCategory category, double x, double y, double z, float volume, float pitch) {}
+        @Override public void playRecord(SoundEvent soundIn, BlockPos pos) {}
         @Override public void spawnParticle(int p_180442_1_, boolean p_180442_2_, double p_180442_3_, double p_180442_5_, double p_180442_7_, double p_180442_9_, double p_180442_11_, double p_180442_13_, int... p_180442_15_) {}
         @Override public void onEntityAdded(Entity entityIn) {}
-        @Override public void playRecord(String recordName, BlockPos blockPosIn) {}
         @Override public void broadcastSound(int p_180440_1_, BlockPos p_180440_2_, int p_180440_3_) {}
-        @Override public void playAuxSFX(EntityPlayer p_180439_1_, int p_180439_2_, BlockPos blockPosIn, int p_180439_4_) {}
+        @Override public void playEvent(EntityPlayer player, int type, BlockPos blockPosIn, int data) {}
         @Override public void sendBlockBreakProgress(int breakerId, BlockPos pos, int progress) {}
     }
 }

@@ -6,8 +6,8 @@ import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.packet.PacketListener;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraft.network.NetworkManager;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -54,7 +54,7 @@ public class ReplayModRecording {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        EventBus bus = FMLCommonHandler.instance().bus();
+        EventBus bus = MinecraftForge.EVENT_BUS;
         bus.register(connectionEventHandler = new ConnectionEventHandler(logger, core));
 
         NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());

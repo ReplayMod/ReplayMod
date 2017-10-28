@@ -16,7 +16,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
@@ -138,9 +138,9 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     public void setVisible(boolean visible) {
         if (isVisible() != visible) {
             if (visible) {
-                FMLCommonHandler.instance().bus().register(this);
+                MinecraftForge.EVENT_BUS.register(this);
             } else {
-                FMLCommonHandler.instance().bus().unregister(this);
+                MinecraftForge.EVENT_BUS.unregister(this);
             }
         }
         super.setVisible(visible);

@@ -4,7 +4,7 @@ import com.replaymod.compat.bettersprinting.DisableBetterSprinting;
 import com.replaymod.compat.optifine.DisableFastRender;
 import com.replaymod.compat.oranges17animations.HideInvisibleEntities;
 import com.replaymod.compat.shaders.ShaderBeginRender;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
@@ -19,7 +19,7 @@ public class ReplayModCompat {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        EventBus bus = FMLCommonHandler.instance().bus();
+        EventBus bus = MinecraftForge.EVENT_BUS;
         bus.register(new ShaderBeginRender());
         bus.register(new DisableFastRender());
         bus.register(new HideInvisibleEntities());

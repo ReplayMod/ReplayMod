@@ -160,7 +160,7 @@ public class Utils {
     }
 
     public static ResourceLocation getResourceLocationForPlayerUUID(UUID uuid) {
-        NetworkPlayerInfo info = getMinecraft().getNetHandler().getPlayerInfo(uuid);
+        NetworkPlayerInfo info = getMinecraft().getConnection().getPlayerInfo(uuid);
         ResourceLocation skinLocation;
         if (info != null && info.hasLocationSkin()) {
             skinLocation = info.getLocationSkin();

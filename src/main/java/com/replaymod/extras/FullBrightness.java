@@ -9,7 +9,7 @@ import de.johni0702.minecraft.gui.element.GuiImage;
 import de.johni0702.minecraft.gui.element.IGuiImage;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
@@ -40,7 +40,7 @@ public class FullBrightness implements Extra {
             }
         });
 
-        FMLCommonHandler.instance().bus().register(this);
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent

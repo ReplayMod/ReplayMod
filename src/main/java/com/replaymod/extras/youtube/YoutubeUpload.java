@@ -17,8 +17,8 @@ public class YoutubeUpload implements Extra {
 
     @SubscribeEvent
     public void onGuiOpen(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (GuiScreen.from(event.gui) instanceof GuiRenderingDone) {
-            GuiRenderingDone gui = (GuiRenderingDone) GuiScreen.from(event.gui);
+        if (GuiScreen.from(event.getGui()) instanceof GuiRenderingDone) {
+            GuiRenderingDone gui = (GuiRenderingDone) GuiScreen.from(event.getGui());
             // Check if there already is a youtube button
             if (gui.actionsPanel.getChildren().stream().anyMatch(it -> it instanceof YoutubeButton)) {
                 return; // Button already added

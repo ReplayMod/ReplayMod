@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 public class KeyBindingRegistry {
     private Map<String, KeyBinding> keyBindings = new HashMap<String, KeyBinding>();
@@ -86,7 +85,7 @@ public class KeyBindingRegistry {
                 CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Key Binding");
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
                 category.addCrashSection("Key Binding", keyBinding);
-                category.addCrashSectionCallable("Handler", runnable::toString);
+                category.setDetail("Handler", runnable::toString);
                 throw new ReportedException(crashReport);
             }
         }
@@ -101,12 +100,7 @@ public class KeyBindingRegistry {
                 CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Raw Key Binding");
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
                 category.addCrashSection("Key Code", keyCode);
-                category.addCrashSectionCallable("Handler", new Callable() {
-                    @Override
-                    public Object call() throws Exception {
-                        return runnable;
-                    }
-                });
+                category.setDetail("Handler", runnable::toString);
                 throw new ReportedException(crashReport);
             }
         }

@@ -6,7 +6,6 @@ import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.core.utils.OpenGLUtils;
-import com.replaymod.render.utils.SoundHandler;
 import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
@@ -14,15 +13,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.*;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -76,8 +71,6 @@ public class ReplayMod {
 
     @Deprecated
     public static Configuration config;
-    @Deprecated
-    public static SoundHandler soundHandler = new SoundHandler();
 
     private final KeyBindingRegistry keyBindingRegistry = new KeyBindingRegistry();
     private final SettingsRegistry settingsRegistry = new SettingsRegistry();
@@ -120,7 +113,7 @@ public class ReplayMod {
 
         new MainMenuHandler().register();
 
-        FMLCommonHandler.instance().bus().register(keyBindingRegistry);
+        MinecraftForge.EVENT_BUS.register(keyBindingRegistry);
 
         getKeyBindingRegistry().registerKeyBinding("replaymod.input.settings", 0, () -> {
             new GuiReplaySettings(null, settingsRegistry).display();
@@ -179,7 +172,7 @@ public class ReplayMod {
 
     public void runLater(Runnable runnable) {
         if (mc.isCallingFromMinecraftThread() && inRunLater) {
-            EventBus bus = FMLCommonHandler.instance().bus();
+            EventBus bus = MinecraftForge.EVENT_BUS;
             bus.register(new Object() {
                 @SubscribeEvent
                 public void onRenderTick(TickEvent.RenderTickEvent event) {
@@ -228,13 +221,13 @@ public class ReplayMod {
     private void printToChat(boolean warning, String message, Object... args) {
         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
-            ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
-            ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);
-            IChatComponent text = new ChatComponentText("[").setChatStyle(coloredDarkGray)
-                    .appendSibling(new ChatComponentTranslation("replaymod.title").setChatStyle(coloredGold))
-                    .appendSibling(new ChatComponentText("] "))
-                    .appendSibling(new ChatComponentTranslation(message, args).setChatStyle(new ChatStyle()
-                            .setColor(warning ? EnumChatFormatting.RED : EnumChatFormatting.DARK_GREEN)));
+            Style coloredDarkGray = new Style().setColor(TextFormatting.DARK_GRAY);
+            Style coloredGold = new Style().setColor(TextFormatting.GOLD);
+            ITextComponent text = new TextComponentString("[").setStyle(coloredDarkGray)
+                    .appendSibling(new TextComponentTranslation("replaymod.title").setStyle(coloredGold))
+                    .appendSibling(new TextComponentString("] "))
+                    .appendSibling(new TextComponentTranslation(message, args).setStyle(new Style()
+                            .setColor(warning ? TextFormatting.RED : TextFormatting.DARK_GREEN)));
             // Send message to chat GUI
             // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
             mc.ingameGUI.getChatGUI().printChatMessage(text);

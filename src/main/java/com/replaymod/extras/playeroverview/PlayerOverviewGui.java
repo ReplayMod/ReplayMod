@@ -21,7 +21,8 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
-import net.minecraft.potion.Potion;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
@@ -46,14 +47,14 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
     public final GuiCheckbox checkAll = new GuiCheckbox(contentPanel){
         @Override
         public void onClick() {
-            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
+            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(true);
         }
     }.setLabel("").setChecked(true).setTooltip(new GuiTooltip().setI18nText("replaymod.gui.playeroverview.showall"));
     public final GuiCheckbox uncheckAll = new GuiCheckbox(contentPanel){
         @Override
         public void onClick() {
-            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
+            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(false);
         }
     }.setLabel("").setChecked(false).setTooltip(new GuiTooltip().setI18nText("replaymod.gui.playeroverview.hideall"));
@@ -145,7 +146,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
     }
 
     private static boolean isSpectator(EntityPlayer e) {
-        return e.isInvisible() && e.getActivePotionEffect(Potion.invisibility) == null;
+        return e.isInvisible() && e.getActivePotionEffect(MobEffects.INVISIBILITY) == null;
     }
 
     private static final class PlayerComparator implements Comparator<EntityPlayer> {
