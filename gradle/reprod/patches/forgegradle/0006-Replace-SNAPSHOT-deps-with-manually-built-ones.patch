@@ -25,7 +25,7 @@ index bfadecd..774a015 100644
      // mcp stuff
      shade 'de.oceanlabs.mcp:RetroGuard:3.6.6'
 -    shade 'de.oceanlabs.mcp:mcinjector:3.4-SNAPSHOT'
--    shade 'net.minecraftforge.srg2source:Srg2Source:3.3-SNAPSHOT'
+-    shade 'net.minecraftforge.srg2source:Srg2Source:4.0-SNAPSHOT'
 +    shade 'reprod:mcinjector:0'
 +    shade 'reprod:srg2source:0'
  

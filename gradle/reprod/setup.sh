@@ -108,11 +108,11 @@ setup_dep "fernflower" "https://github.com/fesh0r/fernflower.git" "adbf29f8ce902
 # Required for forgegradle
 setup_dep "forgeflower" "https://github.com/MinecraftForge/FernFlowerLegacy.git" "114aebe82cf40075c5c4f916c409b8aebf8096d5" "build/libs/fernflower-2.0-SNAPSHOT.jar" "c8b4a4a13a1158008aed46da2c805184078324718697f14a67f1778168579956" "fbda3f30d54624fe4c59a69e145b644d8642afc0dd4eb0d732ccdaa0ebd5d8a3"
 setup_dep "mcinjector" "https://github.com/ModCoderPack/MCInjector.git" "7258466461baf7dc4f313b06b0d589407e4e1fba" "build/libs/mcinjector-3.4-SNAPSHOT.jar" "98b685ea0d3ae9fad8b8a7e7b885512f7fe0b61becf27d9c74b91a626d107efc" "3c08655c11e6509bfc62ff87d0770cefa0ecbd8dccece9e083c9b7b89779a8c5"
-setup_dep "srg2source" "https://github.com/MinecraftForge/Srg2Source.git" "5f11e2933f722000dbf742ffdd0d9c5ee8044bbb" "build/libs/Srg2Source-3.3-SNAPSHOT.jar" "9aa601ade2c33ce52fe09894efd4c1bb69c68a238c2dd260605881863083362e" "cbfdd113cd054b80ce3a1e5636d254fea4f59a82af9874ae9f3786cb1901920d"
+setup_dep "srg2source" "https://github.com/MinecraftForge/Srg2Source.git" "ea4ea624672e8b75fb2a78f0fb9105db13d5a4a6" "build/libs/Srg2Source-4.0-SNAPSHOT.jar" "727445a7b946535217be658726c537acf1921f0a9e2ac0ea717dff9b36dc529f" "4ebd7b738f368ee5c25a1028a167257e7012cef7c72c8b5b06149286992c631e"
 
 # Required for RM
 setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "52217aa8ca221dcd0b9fb657b037e663db808f38" "build/libs/mixingradle-0.4-SNAPSHOT.jar" "8b3508867128a5d564631635dff898a36f9aca8db54b7bb3af6f4924e3f4bead" "42cbf81136d4e26c06d3234427665b50d18768cc1f210512204ca1d5e3a42b5c"
-setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "17806f45d20d0b55bff70a616eaeb939bd6a543c" "build/libs/ForgeGradle-2.1-SNAPSHOT.jar" "dc3da35074bbb1c55e68f7863a8fc8660803da3192aa8d0a7e33280424d3c8d0" "4c670a05fbd9aeaa581ae8ba7597df1d1def7b04160e1c6b076ed6778dd45e58"
+setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "d13a6c892f51937567b3d01d85bea4f3d128e71d" "build/libs/ForgeGradle-2.2-SNAPSHOT.jar" "355a8bd6f49f3d11c40d58da9bb388e05b634ddfac43ab222bf2326aa40f0be4" "45966ee785c42e34c36be3e73046aca1a581a919fb02a9028970d19d35488b18"
 setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "404f5da0b6b18980b4e44c7f1cfeddcd47fe4aa6" "build/libs/mixin-0.7.5-SNAPSHOT.jar" "7d181a5e7c317c00c07da14e7770e4356b0f201414cd2a836e987be9fa133d43" "11000383a5051f25a70c2bff3a3167b6859ae4f9838a0ab45560e9f9c9d9def7"
 
 rm -rf tmp
