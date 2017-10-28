@@ -178,23 +178,23 @@ public class RecordingEventHandler {
                 packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.OFFHAND, playerItems[1]));
             }
 
-            if (playerItems[2] != mc.thePlayer.inventory.armorInventory[0]) {
-                playerItems[2] = mc.thePlayer.inventory.armorInventory[0];
+            if (playerItems[2] != mc.thePlayer.getItemStackFromSlot(EntityEquipmentSlot.FEET)) {
+                playerItems[2] = mc.thePlayer.getItemStackFromSlot(EntityEquipmentSlot.FEET);
                 packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.FEET, playerItems[2]));
             }
 
-            if (playerItems[3] != mc.thePlayer.inventory.armorInventory[1]) {
-                playerItems[3] = mc.thePlayer.inventory.armorInventory[1];
+            if (playerItems[3] != mc.thePlayer.getItemStackFromSlot(EntityEquipmentSlot.LEGS)) {
+                playerItems[3] = mc.thePlayer.getItemStackFromSlot(EntityEquipmentSlot.LEGS);
                 packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.LEGS, playerItems[3]));
             }
 
-            if (playerItems[4] != mc.thePlayer.inventory.armorInventory[2]) {
-                playerItems[4] = mc.thePlayer.inventory.armorInventory[2];
+            if (playerItems[4] != mc.thePlayer.getItemStackFromSlot(EntityEquipmentSlot.CHEST)) {
+                playerItems[4] = mc.thePlayer.getItemStackFromSlot(EntityEquipmentSlot.CHEST);
                 packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.CHEST, playerItems[4]));
             }
 
-            if (playerItems[5] != mc.thePlayer.inventory.armorInventory[3]) {
-                playerItems[5] = mc.thePlayer.inventory.armorInventory[3];
+            if (playerItems[5] != mc.thePlayer.getItemStackFromSlot(EntityEquipmentSlot.HEAD)) {
+                playerItems[5] = mc.thePlayer.getItemStackFromSlot(EntityEquipmentSlot.HEAD);
                 packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.HEAD, playerItems[5]));
             }
 
@@ -234,7 +234,8 @@ public class RecordingEventHandler {
     @SubscribeEvent
     public void onPickupItem(ItemPickupEvent event) {
         try {
-            packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId()));
+            packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId(),
+                    event.pickedUp.getEntityItem().getMaxStackSize()));
         } catch(Exception e) {
             e.printStackTrace();
         }

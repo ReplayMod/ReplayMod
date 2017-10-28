@@ -147,7 +147,7 @@ public class InputReplayTimer extends WrappedTimer {
                 // TODO: Translate magic values to Keyboard.KEY_ constants
 
                 if (key == 32 && Keyboard.isKeyDown(61) && mc.ingameGUI != null) {
-                    mc.ingameGUI.getChatGUI().clearChatMessages();
+                    mc.ingameGUI.getChatGUI().clearChatMessages(false);
                 }
 
                 if (key == 31 && Keyboard.isKeyDown(61)) {

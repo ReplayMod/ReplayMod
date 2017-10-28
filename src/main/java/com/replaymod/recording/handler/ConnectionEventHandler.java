@@ -67,6 +67,9 @@ public class ConnectionEventHandler {
                 worldName = mc.getIntegratedServer().getWorldName();
             } else if (Minecraft.getMinecraft().getCurrentServerData() != null) {
                 worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+            } else if (Minecraft.getMinecraft().isConnectedToRealms()) {
+                // we can't access the server name without tapping too deep in the Realms Library
+                worldName = "A Realms Server";
             } else {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
                 return;

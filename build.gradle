@@ -34,9 +34,9 @@ archivesBaseName = "replaymod"
 
 minecraft {
     coreMod = 'com.replaymod.core.LoadingPlugin'
-    version = '1.10.2-12.18.2.2099'
+    version = '1.11-13.19.1.2188'
     runDir = "eclipse"
-    mappings = "snapshot_20160518"
+    mappings = "snapshot_20161111"
     replace '@MOD_VERSION@', project.version
     // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
     // a newer srg-compatible MC version (that may be using a different protocol version)
@@ -69,7 +69,7 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    shade 'com.github.replaymod:ReplayStudio:cc35b80'
+    shade 'com.github.replaymod:ReplayStudio:a5618f7'
 
     testCompile 'junit:junit:4.11'
 }
