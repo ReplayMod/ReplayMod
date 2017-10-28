@@ -55,7 +55,7 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                 pos(cancelButton, width / 2 + 2, 170);
                 pos(statusLabel, width / 2 - statusLabel.getMinSize().getWidth() / 2, 152);
 
-                FontRenderer font = getMinecraft().fontRendererObj;
+                FontRenderer font = getMinecraft().fontRenderer;
                 int lineCount = font.listFormattedStringToWidth(disclaimerLabel.getText(), width - 10).size();
                 Dimension dim = new Dimension(width - 10, font.FONT_HEIGHT * lineCount);
                 disclaimerLabel.setSize(dim);

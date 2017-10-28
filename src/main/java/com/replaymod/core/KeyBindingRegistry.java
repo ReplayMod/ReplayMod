@@ -85,7 +85,7 @@ public class KeyBindingRegistry {
                 CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Key Binding");
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
                 category.addCrashSection("Key Binding", keyBinding);
-                category.setDetail("Handler", runnable::toString);
+                category.addDetail("Handler", runnable::toString);
                 throw new ReportedException(crashReport);
             }
         }
@@ -100,7 +100,7 @@ public class KeyBindingRegistry {
                 CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Raw Key Binding");
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
                 category.addCrashSection("Key Code", keyCode);
-                category.setDetail("Handler", runnable::toString);
+                category.addDetail("Handler", runnable::toString);
                 throw new ReportedException(crashReport);
             }
         }

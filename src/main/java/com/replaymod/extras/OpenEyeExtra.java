@@ -26,6 +26,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
 import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
+import static com.replaymod.extras.ReplayModExtras.LOGGER;
 
 public class OpenEyeExtra implements Extra {
     private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + Loader.MC_VERSION;
@@ -39,7 +40,25 @@ public class OpenEyeExtra implements Extra {
         mod.getSettingsRegistry().register(ASK_FOR_OPEN_EYE);
 
         if (!Loader.isModLoaded("OpenEye") && mod.getSettingsRegistry().get(ASK_FOR_OPEN_EYE)) {
-            mod.runLater(() -> new OfferGui(GuiScreen.wrap(mod.getMinecraft().currentScreen)).display());
+            new Thread(() -> {
+                try {
+                    LOGGER.trace("Checking for OpenEye availability");
+                    HttpsURLConnection connection = (HttpsURLConnection) new URL(DOWNLOAD_URL).openConnection();
+                    connection.setSSLSocketFactory(SSL_SOCKET_FACTORY);
+                    connection.setRequestMethod("HEAD");
+                    connection.connect();
+                    LOGGER.trace("Got response code: {}", connection.getResponseCode());
+                    if (connection.getResponseCode() == 200) {
+                        mod.runLater(() -> new OfferGui(GuiScreen.wrap(mod.getMinecraft().currentScreen)).display());
+                    } else {
+                        LOGGER.info("Cannot offer OpenEye, server returned: {} {}",
+                                connection.getResponseCode(), connection.getResponseMessage());
+                    }
+                    connection.disconnect();
+                } catch (Throwable e) {
+                    LOGGER.error("Failed to check for OpenEye availability:", e);
+                }
+            }).start();
         }
     }
 

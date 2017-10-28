@@ -19,12 +19,12 @@ public class MainMenuHandler {
         if (event.getGui() instanceof GuiMainMenu) {
             for (GuiButton button : event.getButtonList()) {
                 // Buttons that aren't in a rectangle directly above our space don't need moving
-                if (button.xPosition + button.width < event.getGui().width / 2 - 100
-                        || button.xPosition > event.getGui().width / 2 + 100
-                        || button.yPosition > event.getGui().height / 4 + 10 + 4 * 24) continue;
+                if (button.x + button.width < event.getGui().width / 2 - 100
+                        || button.x > event.getGui().width / 2 + 100
+                        || button.y > event.getGui().height / 4 + 10 + 4 * 24) continue;
                 // Move button up to make space for two rows of buttons
                 // and then move back down by 10 to compensate for the space to the exit button that was already there
-                button.yPosition -= 2 * 24 - 10;
+                button.y -= 2 * 24 - 10;
             }
         }
     }

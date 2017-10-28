@@ -88,7 +88,7 @@ public class ResourcePackRecorder {
 
             if (levelDir.isFile()) {
                 netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.ACCEPTED));
-                Futures.addCallback(mc.getResourcePackRepository().setResourcePackInstance(levelDir), new FutureCallback<Object>() {
+                Futures.addCallback(mc.getResourcePackRepository().setServerResourcePack(levelDir), new FutureCallback<Object>() {
                     @Override
                     public void onSuccess(Object result) {
                         recordResourcePack(levelDir, requestId);
@@ -174,7 +174,7 @@ public class ResourcePackRecorder {
                     String fileHash = Hashing.sha1().hashBytes(Files.toByteArray(file)).toString();
                     if (fileHash.equals(hash)) {
                         recordResourcePack(file, requestId);
-                        return repo.setResourcePackInstance(file);
+                        return repo.setServerResourcePack(file);
                     }
 
                     logger.warn("File " + file + " had wrong hash (expected " + hash + ", found " + fileHash + "). Deleting it.");
@@ -196,7 +196,7 @@ public class ResourcePackRecorder {
                 @Override
                 public void onSuccess(Object value) {
                     recordResourcePack(file, requestId);
-                    repo.setResourcePackInstance(file);
+                    repo.setServerResourcePack(file);
                 }
 
                 @Override

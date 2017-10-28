@@ -3,6 +3,8 @@ package com.replaymod.core.utils;
 import net.minecraft.util.Timer;
 
 public class WrappedTimer extends Timer {
+    public static final float DEFAULT_MS_PER_TICK = 1000 / 20;
+
     protected final Timer wrapped;
 
     public WrappedTimer(Timer wrapped) {
@@ -19,15 +21,10 @@ public class WrappedTimer extends Timer {
     }
 
     protected void copy(Timer from, Timer to) {
-        to.ticksPerSecond = from.ticksPerSecond;
-        to.lastHRTime = from.lastHRTime;
         to.elapsedTicks = from.elapsedTicks;
         to.renderPartialTicks = from.renderPartialTicks;
-        to.timerSpeed = from.timerSpeed;
-        to.elapsedPartialTicks = from.elapsedPartialTicks;
         to.lastSyncSysClock = from.lastSyncSysClock;
-        to.lastSyncHRClock = from.lastSyncHRClock;
-        to.counter = from.counter;
-        to.timeSyncAdjustment = from.timeSyncAdjustment;
+        to.elapsedPartialTicks = from.elapsedPartialTicks;
+        to.tickLength = from.tickLength;
     }
 }

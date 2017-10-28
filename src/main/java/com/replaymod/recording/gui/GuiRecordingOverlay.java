@@ -42,7 +42,7 @@ public class GuiRecordingOverlay {
     public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {
-            FontRenderer fontRenderer = mc.fontRendererObj;
+            FontRenderer fontRenderer = mc.fontRenderer;
             fontRenderer.drawString(I18n.format("replaymod.gui.recording").toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
             mc.renderEngine.bindTexture(TEXTURE);
             GlStateManager.resetColor();

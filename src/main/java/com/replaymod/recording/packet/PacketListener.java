@@ -202,7 +202,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     @SuppressWarnings("unchecked")
-    private byte[] getPacketData(Packet packet) throws IOException {
+    private byte[] getPacketData(Packet packet) throws Exception {
         if (packet instanceof SPacketSpawnMob) {
             SPacketSpawnMob p = (SPacketSpawnMob) packet;
             if (p.dataManager == null) {

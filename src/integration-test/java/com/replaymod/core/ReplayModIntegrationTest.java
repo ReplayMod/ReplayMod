@@ -36,6 +36,11 @@ public class ReplayModIntegrationTest {
         // Make sure the game window doesn't have to remain in focus during the test
         mc.gameSettings.pauseOnLostFocus = false;
 
+        // Vanilla uses our keys
+        mc.gameSettings.keyBindAdvancements.setKeyCode(0);
+        mc.gameSettings.keyBindLoadToolbar.setKeyCode(0);
+        mc.gameSettings.keyBindSaveToolbar.setKeyCode(0);
+
         runTasks(
                 new SkipLogin(),
                 new DownloadOpenEye(),

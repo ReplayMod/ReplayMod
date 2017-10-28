@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.stats.RecipeBook;
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,10 +24,10 @@ public abstract class MixinPlayerControllerMP {
     @Shadow
     private NetHandlerPlayClient connection;
 
-    @Inject(method = "createClientPlayer", at=@At("HEAD"), cancellable = true)
-    private void replayModReplay_createReplayCamera(World worldIn, StatisticsManager statisticsManager, CallbackInfoReturnable<EntityPlayerSP> ci) {
+    @Inject(method = "func_192830_a", at=@At("HEAD"), cancellable = true)
+    private void replayModReplay_createReplayCamera(World worldIn, StatisticsManager statisticsManager, RecipeBook recipeBook, CallbackInfoReturnable<EntityPlayerSP> ci) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {
-            ci.setReturnValue(new CameraEntity(mc, worldIn, connection, statisticsManager));
+            ci.setReturnValue(new CameraEntity(mc, worldIn, connection, statisticsManager, recipeBook));
             ci.cancel();
         }
     }

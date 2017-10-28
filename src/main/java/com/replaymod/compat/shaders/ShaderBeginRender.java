@@ -30,7 +30,7 @@ public class ShaderBeginRender {
             // check if Shaders are enabled
             if (!(boolean) (ShaderReflection.config_isShaders.invoke(null))) return;
 
-            ShaderReflection.shaders_beginRender.invoke(null, mc, mc.timer.elapsedPartialTicks, 0);
+            ShaderReflection.shaders_beginRender.invoke(null, mc, mc.timer.renderPartialTicks, 0);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }

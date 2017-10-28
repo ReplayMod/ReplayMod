@@ -132,7 +132,7 @@ public class ClassicCameraController implements CameraController {
         Vec3d movement = direction.normalize();
         double factor = motion * (frac / 1000D);
 
-        camera.moveCamera(movement.xCoord * factor, movement.yCoord * factor, movement.zCoord * factor);
+        camera.moveCamera(movement.x * factor, movement.y * factor, movement.z * factor);
     }
 
     private void setMovement(MoveDirection dir) {

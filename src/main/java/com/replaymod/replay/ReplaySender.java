@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import io.netty.buffer.ByteBuf;
@@ -54,6 +55,9 @@ public class ReplaySender extends ChannelDuplexHandler {
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
             // TODO Update possibly more?
+            SPacketRecipeBook.class,
+            SPacketAdvancementInfo.class,
+            SPacketSelectAdvancementsTab.class,
             SPacketUpdateHealth.class,
             SPacketOpenWindow.class,
             SPacketCloseWindow.class,
@@ -409,7 +413,7 @@ public class ReplaySender extends ChannelDuplexHandler {
                         if (!file.exists()) {
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
-                        mc.getResourcePackRepository().setResourcePackInstance(file);
+                        mc.getResourcePackRepository().setServerResourcePack(file);
                     }
                 }
                 return null;
@@ -513,7 +517,7 @@ public class ReplaySender extends ChannelDuplexHandler {
     @SuppressWarnings("unchecked")
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
-        ctx.attr(NetworkManager.PROTOCOL_ATTRIBUTE_KEY).set(EnumConnectionState.PLAY);
+        ctx.channel().attr(NetworkManager.PROTOCOL_ATTRIBUTE_KEY).set(EnumConnectionState.PLAY);
         super.channelActive(ctx);
     }
 
@@ -541,7 +545,7 @@ public class ReplaySender extends ChannelDuplexHandler {
      * @return {@code true} if it is paused, {@code false} otherwise
      */
     public boolean paused() {
-        return mc.timer.timerSpeed == 0;
+        return mc.timer.tickLength == Float.POSITIVE_INFINITY;
     }
 
     /**
@@ -561,7 +565,7 @@ public class ReplaySender extends ChannelDuplexHandler {
      */
     public void setReplaySpeed(final double d) {
         if(d != 0) this.replaySpeed = d;
-        mc.timer.timerSpeed = (float) d;
+        mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK / (float) d;
     }
 
     /////////////////////////////////////////////////////////
