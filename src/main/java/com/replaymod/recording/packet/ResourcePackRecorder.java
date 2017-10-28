@@ -87,39 +87,39 @@ public class ResourcePackRecorder {
             final File levelDir = new File(savesDir, levelName);
 
             if (levelDir.isFile()) {
-                netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.ACCEPTED));
+                netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.ACCEPTED));
                 Futures.addCallback(mc.getResourcePackRepository().setResourcePackInstance(levelDir), new FutureCallback<Object>() {
                     @Override
                     public void onSuccess(Object result) {
                         recordResourcePack(levelDir, requestId);
-                        netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
+                        netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
                     }
 
                     @Override
                     public void onFailure(@Nonnull Throwable throwable) {
-                        netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
+                        netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
                     }
                 });
             } else {
-                netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
+                netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
             }
         } else {
             final ServerData serverData = mc.getCurrentServerData();
             if (serverData != null && serverData.getResourceMode() == ServerData.ServerResourceMode.ENABLED) {
-                netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.ACCEPTED));
+                netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.ACCEPTED));
                 downloadResourcePackFuture(requestId, url, hash);
             } else if (serverData != null && serverData.getResourceMode() != ServerData.ServerResourceMode.PROMPT) {
-                netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.DECLINED));
+                netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.DECLINED));
             } else {
                 mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo((result, id) -> {
                     if (serverData != null) {
                         serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
                     }
                     if (result) {
-                        netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.ACCEPTED));
+                        netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.ACCEPTED));
                         downloadResourcePackFuture(requestId, url, hash);
                     } else {
-                        netManager.sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.DECLINED));
+                        netManager.sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.DECLINED));
                     }
 
                     ServerList.saveSingleServer(serverData);
@@ -135,12 +135,12 @@ public class ResourcePackRecorder {
         Futures.addCallback(downloadResourcePack(requestId, url, hash), new FutureCallback() {
             @Override
             public void onSuccess(Object result) {
-                mc.getConnection().sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
+                mc.getConnection().sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.SUCCESSFULLY_LOADED));
             }
 
             @Override
             public void onFailure(@Nonnull Throwable throwable) {
-                mc.getConnection().sendPacket(new CPacketResourcePackStatus(hash, CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
+                mc.getConnection().sendPacket(new CPacketResourcePackStatus(CPacketResourcePackStatus.Action.FAILED_DOWNLOAD));
             }
         });
     }
@@ -190,7 +190,7 @@ public class ResourcePackRecorder {
 
             Futures.getUnchecked(mc.addScheduledTask(() -> mc.displayGuiScreen(guiScreen)));
 
-            Map<String, String> sessionInfo = Minecraft.getSessionInfo();
+            Map<String, String> sessionInfo = ResourcePackRepository.func_190115_a();
             repo.downloadingPacks = HttpUtil.downloadResourcePack(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
             Futures.addCallback(repo.downloadingPacks, new FutureCallback<Object>() {
                 @Override
