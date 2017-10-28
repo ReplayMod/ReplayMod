@@ -34,7 +34,7 @@ archivesBaseName = "replaymod"
 
 minecraft {
     coreMod = 'com.replaymod.core.LoadingPlugin'
-    version = '1.12.1-14.22.0.2444'
+    version = '1.12.2-14.23.0.2486'
     runDir = "eclipse"
     mappings = "snapshot_20170615"
     replace '@MOD_VERSION@', project.version
@@ -69,7 +69,7 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    shade 'com.github.replaymod:ReplayStudio:77dc1d7'
+    shade 'com.github.ReplayMod:ReplayStudio:ecb6992'
 
     testCompile 'junit:junit:4.11'
 }
