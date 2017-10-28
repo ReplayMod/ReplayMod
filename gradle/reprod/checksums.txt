@@ -16,8 +16,8 @@ f98b3e07c6b6a32dd6f9f70f5cef4ac9be42a9a6c850ceb8f33767da94706635 /com/github/joh
 03e3dff7f9b3ac6cd3b87684fd36a2f6996a4b164a2f8fab9c22c01cb7bfb84b /com/github/johni0702/gradle-reproducible-builds-plugin/a524ada/gradle-reproducible-builds-plugin-a524ada.pom
 75ccc0e24d37ed5b8916e1bcffad1e067c2b1cfa21b635287f968db5c3c1963a /com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar
 fbcba81b21a8bc3c0761e4798fa05285444b43d681c03c9af49f9b2e1ecb0184 /com/github/jponge/lzma-java/1.3/lzma-java-1.3.pom
-8b81939c797646572f726cb810d219d6e6d30ffa1d352cdfb17e67f819afcac8 /com/github/replaymod/ReplayStudio/77dc1d7/ReplayStudio-77dc1d7.jar
-277b1b1dc9e04fd9c28c224a43821ba9aa83f0dd866fefd47ee2354f3f15d9a8 /com/github/replaymod/ReplayStudio/77dc1d7/ReplayStudio-77dc1d7.pom
+0b1234168966e77e8576552b5125664e46d09bd0fb8c3f29ec8eb2e5c5b09d05 /com/github/ReplayMod/ReplayStudio/ecb6992/ReplayStudio-ecb6992.jar
+a0d708e7e6023d21537ca62909d857ce01452d2afedb7ca2867b499ea94ee601 /com/github/ReplayMod/ReplayStudio/ecb6992/ReplayStudio-ecb6992.pom
 c6ebd74cd6108b8c372c95b842725ee5bd6d3303ba26cb00f18bc92f80b47956 /com/github/tony19/named-regexp/0.2.3/named-regexp-0.2.3.jar
 7cdd89a892927998beab59398ef073232588f6e83e411cf4f0905833bf300487 /com/github/tony19/named-regexp/0.2.3/named-regexp-0.2.3.pom
 47c625c83a8cf97b8bbdff2acde923ff8fd3174e62aabcfc5d1b86692594ffba /com/google/api-client/google-api-client/1.22.0/google-api-client-1.22.0.jar
@@ -139,7 +139,7 @@ c1a2438a4d35f8586c71d96c44a7e2f133ec924597147a246f8c501acca6acb5 /com/paulscode/
 9f9920b48ae5f1045fe966f08164d6b4e0a727cf17f8e4813ae5c0f2daecffbc /com/typesafe/akka/akka-actor_2.11/2.3.3/akka-actor_2.11-2.3.3.pom
 c160fbd78f51a0c2375a794e435ce2112524a6871f64d0331895e9e26ee8b9ee /com/typesafe/config/1.2.1/config-1.2.1.jar
 62361ef10448869fff8c05150bd0449b423e3ff4498f2a4bab825b3c7685aa3c /com/typesafe/config/1.2.1/config-1.2.1.pom
-a95c958f0c052e0a94d20de1d30a9151f68e66b19bdbea60a58cd41539558874 /de/oceanlabs/mcp/mcp/1.12.1/mcp-1.12.1-srg.zip
+bea27218818448851594889bf7d984df614ffc698bbe41599dd6237d627e3782 /de/oceanlabs/mcp/mcp/1.12.2/mcp-1.12.2-srg.zip
 5bbf57acadec0f5ea930b793772bbbf2885098aed8d2ecf6290c170a7cd9f33e /de/oceanlabs/mcp/mcp_snapshot/20170615-1.12/mcp_snapshot-20170615-1.12.zip
 22c45060f350fcaa94e503f4a420cf8237c26c0fcdb4ada4aa98389b75c7b231 /de/oceanlabs/mcp/RetroGuard/3.6.6/RetroGuard-3.6.6.jar
 d6f165bb39aaa20ee14fdcbbdb0b8fffae38067087f333ec6e0acd3f6666b2ad /de/oceanlabs/mcp/RetroGuard/3.6.6/RetroGuard-3.6.6.pom
@@ -162,9 +162,9 @@ cb54dedc5d8c4510148dfa792701cbac1a84c383a84f48f5a32e6d7e460bbb72 /log4j/log4j/1.
 0c3085cb93c3ef95d731c274b6f2dd195aa0405fe9328d69cab7f5e899d5e124 /lzma/lzma/0.0.1/lzma-0.0.1.jar
 a096bc9f7579cec07483874151578720eeb3189c546c19cff56a6203df17b50e /lzma/lzma/0.0.1/lzma-0.0.1.pom
 * /mc/game/version_manifest.json
-19331fb29bf8b8d5ed764677c94cca9d66481e10104f660eb555894a4300cf22 /mc/game/1.12.1/client/83385d346cf7f97d1e447b888750fb88e9928b93/client.jar
-848912640bccfa7ea34a2cc1c76cb2b35f8467c4216d9603917c991660f91a8b /mc/game/1.12.1/server/561c7b2d54bae80cc06b05d950633a9ac95da816/server.jar
-5dcff0a65ed3b43d82328340505118e53dab5273c352e2d56733a0e498ed5655 /mc/game/2ce9731e5bafdf69014e4e6db1cc56149958c5a8/1.12.1.json
+8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f /mc/game/1.12.2/client/0f275bc1547d01fa5f56ba34bdc87d981ee12daf/client.jar
+fe1f9274e6dad9191bf6e6e8e36ee6ebc737f373603df0946aafcded0d53167e /mc/game/1.12.2/server/886945bfb2b978778c3a0288fd7fab09d315b25f/server.jar
+e3a8e5e772c051bccc4760ce4fe4a811e2c1395e02824a1bdadbd60fcfd0ed19 /mc/game/cf72a57ff499d6d9ade870b2143ee54958bd33ef/1.12.2.json
 c4dadeeecaa90c8847902082aee5eb107fcf59c5d0e63a17fcaf273c0e2d2bd1 /net/java/dev/jna/jna/4.4.0/jna-4.4.0.jar
 800bb2831dda341336ea69b7beb675f159973f64dad6aaa1ad8c4fa78e5cb19b /net/java/dev/jna/jna/4.4.0/jna-4.4.0.pom
 ea89d5090c8303ba4e9a0056e6d8a20429f3e021411e950bfd9eba3b6e6cf15c /net/java/dev/jna/platform/3.4.0/platform-3.4.0.jar
@@ -180,8 +180,8 @@ af09ead4eb241473e7ec4d152a91a722ea09a717a202e20e4b385eac3217b7d6 /net/java/jutil
 * /net/minecraftforge/forge/json
 e6305077f41e2bfe957b486bed110e8af9ce54a651d36722d8d23e8e260d5b83 /net/md-5/SpecialSource/1.8.1/SpecialSource-1.8.1.jar
 dc5a991a91d6abc0059a7d0842a9e9899cf5e80354a727a22ffe35f508692d76 /net/md-5/SpecialSource/1.8.1/SpecialSource-1.8.1.pom
-606b825e3920a1b7e8e2652a37e432f2b3066539e803a46212c5505a709cbff2 /net/minecraftforge/forge/1.12.1-14.22.0.2444/forge-1.12.1-14.22.0.2444.pom
-c8396b067c800425d4f4e97ec6879262f2133b5c53575c6b82c4eb6feb22f2a1 /net/minecraftforge/forge/1.12.1-14.22.0.2444/forge-1.12.1-14.22.0.2444-userdev.jar
+0be3944587adda74c34735dc66757afed3223d8599ac6ad1b402d36d452a09f9 /net/minecraftforge/forge/1.12.2-14.23.0.2486/forge-1.12.2-14.23.0.2486.pom
+7fdc682b7ae27f08d50873ae68ded2bc3e14756559fae5b9717efcf6814952c8 /net/minecraftforge/forge/1.12.2-14.23.0.2486/forge-1.12.2-14.23.0.2486-userdev.jar
 e74b65b8948446982a506a96176dd8baf4688237ba4903f56ca6f667b6c7ee42 /net/minecraft/launchwrapper/1.11/launchwrapper-1.11.jar
 616c4971035d1e6ab4809e16daabb02aa308c1dc001c06dd547c7d3b2e916999 /net/minecraft/launchwrapper/1.11/launchwrapper-1.11.pom
 57f402b626d16cc2705bf2a37add7adbb074f0ca3b3102fa6e23aa303dae682f /net/minecraft/launchwrapper/1.12/launchwrapper-1.12.jar
