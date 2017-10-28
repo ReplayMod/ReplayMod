@@ -20,7 +20,7 @@ public class HideInvisibleEntities {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void preRenderLiving(RenderLivingEvent.Pre event) {
         if (modLoaded) {
-            if (mc.thePlayer instanceof CameraEntity && event.getEntity().isInvisible()) {
+            if (mc.player instanceof CameraEntity && event.getEntity().isInvisible()) {
                 event.setCanceled(true);
             }
         }

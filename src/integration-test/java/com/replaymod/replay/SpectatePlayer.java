@@ -34,7 +34,7 @@ public class SpectatePlayer extends AbstractTask {
                 future.setException(new TimeoutException("Camera hasn't stopped spectating."));
                 return;
             }
-            if (mc.getRenderViewEntity() == mc.thePlayer) {
+            if (mc.getRenderViewEntity() == mc.player) {
                 future.set(null);
             }
         }

@@ -34,7 +34,7 @@ public class PlayerOverview implements Extra {
             public void run() {
                 if (module.getReplayHandler() != null) {
                     @SuppressWarnings("unchecked")
-                    List<EntityPlayer> players = mod.getMinecraft().theWorld.getPlayers(EntityPlayer.class, new Predicate() {
+                    List<EntityPlayer> players = mod.getMinecraft().world.getPlayers(EntityPlayer.class, new Predicate() {
                         @Override
                         public boolean apply(Object input) {
                             return !(input instanceof CameraEntity); // Exclude the camera entity

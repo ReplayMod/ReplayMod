@@ -38,7 +38,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     @Inject(method = "playSound", at = @At("HEAD"))
     public void replayModRecording_recordClientSound(EntityPlayer player, double x, double y, double z, SoundEvent sound, SoundCategory category,
                           float volume, float pitch, CallbackInfo ci) {
-        if (player == mc.thePlayer) {
+        if (player == mc.player) {
             RecordingEventHandler handler = replayModRecording_getRecordingEventHandler();
             if (handler != null) {
                 handler.onClientSound(sound, category, x, y, z, volume, pitch);
@@ -50,7 +50,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     // These are handled in the World class, so we override the method in WorldClient and add our special handling.
     @Override
     public void playEvent(EntityPlayer player, int type, BlockPos pos, int data) {
-        if (player == mc.thePlayer) {
+        if (player == mc.player) {
             // We caused this event, the server won't send it to us
             RecordingEventHandler handler = replayModRecording_getRecordingEventHandler();
             if (handler != null) {

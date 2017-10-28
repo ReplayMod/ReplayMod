@@ -41,7 +41,7 @@ import java.util.function.Function;
 
 /**
  * The camera entity used as the main player entity during replay viewing.
- * During a replay {@link Minecraft#thePlayer} should be an instance of this class.
+ * During a replay {@link Minecraft#player} should be an instance of this class.
  * Camera movement is controlled by a separate {@link CameraController}.
  */
 public class CameraEntity extends EntityPlayerSP {
@@ -158,14 +158,14 @@ public class CameraEntity extends EntityPlayerSP {
             // entity is recreated and we have to spectate a new entity
             UUID spectating = ReplayModReplay.instance.getReplayHandler().getSpectatedUUID();
             if (spectating != null && (view.getUniqueID() != spectating
-                    || view.worldObj != worldObj)
-                    || worldObj.getEntityByID(view.getEntityId()) != view) {
+                    || view.world != world)
+                    || world.getEntityByID(view.getEntityId()) != view) {
                 if (spectating == null) {
                     // Entity (non-player) died, stop spectating
                     ReplayModReplay.instance.getReplayHandler().spectateEntity(this);
                     return;
                 }
-                view = worldObj.getPlayerEntityByUUID(spectating);
+                view = world.getPlayerEntityByUUID(spectating);
                 if (view != null) {
                     mc.setRenderViewEntity(view);
                 } else {
@@ -184,17 +184,17 @@ public class CameraEntity extends EntityPlayerSP {
     @Override
     public void preparePlayerToSpawn() {
         // Make sure our world is up-to-date in case of world changes
-        if (mc.theWorld != null) {
-            worldObj = mc.theWorld;
+        if (mc.world != null) {
+            world = mc.world;
         }
         super.preparePlayerToSpawn();
     }
 
     @Override
-    public void setAngles(float yaw, float pitch) {
+    public void setRotation(float yaw, float pitch) {
         if (mc.getRenderViewEntity() == this) {
             // Only update camera rotation when the camera is the view
-            super.setAngles(yaw, pitch);
+            super.setRotation(yaw, pitch);
         }
     }
 
@@ -392,9 +392,9 @@ public class CameraEntity extends EntityPlayerSP {
     }
 
     @Override
-    public void addChatMessage(ITextComponent message) {
+    public void sendMessage(ITextComponent message) {
         if (MinecraftForge.EVENT_BUS.post(new ReplayChatMessageEvent(this))) return;
-        super.addChatMessage(message);
+        super.sendMessage(message);
     }
 
     private class EventHandler {
@@ -461,8 +461,8 @@ public class CameraEntity extends EntityPlayerSP {
                     mc.entityRenderer.itemRenderer.itemStackOffHand = player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND);
 
 
-                    mc.thePlayer.renderArmYaw = mc.thePlayer.prevRenderArmYaw = player.rotationYaw;
-                    mc.thePlayer.renderArmPitch = mc.thePlayer.prevRenderArmPitch = player.rotationPitch;
+                    mc.player.renderArmYaw = mc.player.prevRenderArmYaw = player.rotationYaw;
+                    mc.player.renderArmPitch = mc.player.prevRenderArmPitch = player.rotationPitch;
                 }
             }
         }

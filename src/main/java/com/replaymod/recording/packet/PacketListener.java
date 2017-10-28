@@ -160,8 +160,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 Packet packet = (Packet) msg;
 
                 if(packet instanceof SPacketCollectItem) {
-                    if(mc.thePlayer != null ||
-                            ((SPacketCollectItem) packet).getEntityID() == mc.thePlayer.getEntityId()) {
+                    if(mc.player != null ||
+                            ((SPacketCollectItem) packet).getEntityID() == mc.player.getEntityId()) {
                         super.channelRead(ctx, msg);
                         return;
                     }
@@ -233,7 +233,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         }
         ByteBuf byteBuf = Unpooled.buffer();
         PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-        packetBuffer.writeVarIntToBuffer(packetId);
+        packetBuffer.writeVarInt(packetId);
         packet.writePacketData(packetBuffer);
 
         byteBuf.readerIndex(0);

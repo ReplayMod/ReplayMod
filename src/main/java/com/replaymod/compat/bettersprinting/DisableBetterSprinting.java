@@ -52,17 +52,17 @@ public class DisableBetterSprinting {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void beforeGuiOpenEvent(GuiOpenEvent event) {
-        if (ReplayModReplay.instance.getReplayHandler() != null && mc.theWorld != null) {
+        if (ReplayModReplay.instance.getReplayHandler() != null && mc.world != null) {
             // During replay, get ready to revert BetterSprinting's overwritten playerController
             originalController = mc.playerController;
-            mc.theWorld.addEventListener(worldAccessHook);
+            mc.world.addEventListener(worldAccessHook);
         }
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void afterGuiOpenEvent(GuiOpenEvent event) {
-        if (ReplayModReplay.instance.getReplayHandler() != null && mc.theWorld != null) {
-            mc.theWorld.addEventListener(worldAccessHook);
+        if (ReplayModReplay.instance.getReplayHandler() != null && mc.world != null) {
+            mc.world.addEventListener(worldAccessHook);
         }
     }
 
@@ -93,7 +93,7 @@ public class DisableBetterSprinting {
         @Override public void playSoundToAllNearExcept(@Nullable EntityPlayer player, SoundEvent soundIn, SoundCategory category, double x, double y, double z, float volume, float pitch) {}
         @Override public void playRecord(SoundEvent soundIn, BlockPos pos) {}
         @Override public void spawnParticle(int p_180442_1_, boolean p_180442_2_, double p_180442_3_, double p_180442_5_, double p_180442_7_, double p_180442_9_, double p_180442_11_, double p_180442_13_, int... p_180442_15_) {}
-        @Override public void func_190570_a(int p_190570_1_, boolean p_190570_2_, boolean p_190570_3_, double p_190570_4_, double p_190570_6_, double p_190570_8_, double p_190570_10_, double p_190570_12_, double p_190570_14_, int... p_190570_16_) {}
+        @Override public void spawnParticle(int p_190570_1_, boolean p_190570_2_, boolean p_190570_3_, double p_190570_4_, double p_190570_6_, double p_190570_8_, double p_190570_10_, double p_190570_12_, double p_190570_14_, int... p_190570_16_) {}
         @Override public void onEntityAdded(Entity entityIn) {}
         @Override public void broadcastSound(int p_180440_1_, BlockPos p_180440_2_, int p_180440_3_) {}
         @Override public void playEvent(EntityPlayer player, int type, BlockPos blockPosIn, int data) {}

@@ -17,7 +17,7 @@ public abstract class MixinGuiSpectator {
     @Inject(method = "onHotbarSelected", at = @At("HEAD"), cancellable = true)
     public void isInReplay(int i, CallbackInfo ci) {
         // Prevent spectator gui from opening while in a replay
-        if (mc.thePlayer instanceof CameraEntity) {
+        if (mc.player instanceof CameraEntity) {
             ci.cancel();
         }
     }
