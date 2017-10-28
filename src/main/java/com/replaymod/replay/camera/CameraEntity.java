@@ -161,6 +161,11 @@ public class CameraEntity extends EntityPlayerSP {
             if (spectating != null && (view.getUniqueID() != spectating
                     || view.world != world)
                     || world.getEntityByID(view.getEntityId()) != view) {
+                if (spectating == null) {
+                    // Entity (non-player) died, stop spectating
+                    ReplayModReplay.instance.getReplayHandler().spectateEntity(this);
+                    return;
+                }
                 view = world.getPlayerEntityByUUID(spectating);
                 if (view != null) {
                     mc.setRenderViewEntity(view);
