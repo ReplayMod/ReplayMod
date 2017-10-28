@@ -106,13 +106,13 @@ trap "kill $proxy_pid" EXIT
 setup_dep "fernflower" "https://github.com/fesh0r/fernflower.git" "adbf29f8ce902cd164fc0c41491030268ecc8265" "build/libs/fernflower.jar" "d2042d3121118a7175fc902d0e49f4ad37d00467e7ea535574974142eff64184" "901b8a76ceb15db97d4dd19c5e8fcb0fc226ae602ef38ea906eb5258be9b929a"
 
 # Required for forgegradle
-setup_dep "forgeflower" "https://github.com/MinecraftForge/FernFlowerLegacy.git" "114aebe82cf40075c5c4f916c409b8aebf8096d5" "build/libs/fernflower-2.0-SNAPSHOT.jar" "c8b4a4a13a1158008aed46da2c805184078324718697f14a67f1778168579956" "fbda3f30d54624fe4c59a69e145b644d8642afc0dd4eb0d732ccdaa0ebd5d8a3"
+setup_dep "forgeflower" "https://github.com/MinecraftForge/ForgeFlower.git" "41d2b9e00556bc735a2ee4181db7f30db0805816" "ForgeFlower/build/libs/forgeflower-1.0.342-SNAPSHOT.jar" "652d00f6c890c45b56dace444c3e9a7f81b56f510633f183a1fcc50681ba85b9" "79bca0778c764371c62aa9a9496c9fb04b3d8a0ff18047b8e6ef178d3d1ac600"
 setup_dep "mcinjector" "https://github.com/ModCoderPack/MCInjector.git" "7258466461baf7dc4f313b06b0d589407e4e1fba" "build/libs/mcinjector-3.4-SNAPSHOT.jar" "98b685ea0d3ae9fad8b8a7e7b885512f7fe0b61becf27d9c74b91a626d107efc" "3c08655c11e6509bfc62ff87d0770cefa0ecbd8dccece9e083c9b7b89779a8c5"
 setup_dep "srg2source" "https://github.com/MinecraftForge/Srg2Source.git" "ea4ea624672e8b75fb2a78f0fb9105db13d5a4a6" "build/libs/Srg2Source-4.0-SNAPSHOT.jar" "727445a7b946535217be658726c537acf1921f0a9e2ac0ea717dff9b36dc529f" "4ebd7b738f368ee5c25a1028a167257e7012cef7c72c8b5b06149286992c631e"
 
 # Required for RM
 setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "52217aa8ca221dcd0b9fb657b037e663db808f38" "build/libs/mixingradle-0.4-SNAPSHOT.jar" "8b3508867128a5d564631635dff898a36f9aca8db54b7bb3af6f4924e3f4bead" "42cbf81136d4e26c06d3234427665b50d18768cc1f210512204ca1d5e3a42b5c"
-setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "d13a6c892f51937567b3d01d85bea4f3d128e71d" "build/libs/ForgeGradle-2.2-SNAPSHOT.jar" "355a8bd6f49f3d11c40d58da9bb388e05b634ddfac43ab222bf2326aa40f0be4" "45966ee785c42e34c36be3e73046aca1a581a919fb02a9028970d19d35488b18"
+setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "f49079dd11c037f74cc740285b2c5504fbf8a7f6" "build/libs/ForgeGradle-2.3-SNAPSHOT.jar" "8272cf68ae269c315969e3e94a41bdffe1cf96cfbc6d701cafda90ab19ef5f94" "9261c0855a19d86434c6f9e784265d91e3e3c9f12b29dd90f41efacd15add41e"
 setup_dep "mixin" "https://github.com/SpongePowered/Mixin.git" "404f5da0b6b18980b4e44c7f1cfeddcd47fe4aa6" "build/libs/mixin-0.7.5-SNAPSHOT.jar" "7d181a5e7c317c00c07da14e7770e4356b0f201414cd2a836e987be9fa133d43" "11000383a5051f25a70c2bff3a3167b6859ae4f9838a0ab45560e9f9c9d9def7"
 
 rm -rf tmp

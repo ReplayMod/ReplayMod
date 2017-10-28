@@ -32,7 +32,7 @@ index ee24828..42d0607 100755
 +        maven { url 'gradle/reprod/deps/repo' }
      }
      dependencies {
--        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
 -        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
 +        classpath 'reprod:forgegradle:0'
 +        classpath 'reprod:mixingradle:0'

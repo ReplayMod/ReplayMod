@@ -11,15 +11,20 @@ diff --git a/build.gradle b/build.gradle
 index bfadecd..774a015 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -67,7 +67,7 @@ dependencies {
+@@ -67,10 +67,10 @@ dependencies {
      compile 'com.nothome:javaxdelta:2.0.1' // GDIFF implementation for BinPatches
      compile 'com.google.code.gson:gson:2.2.4' // Used instead of Argo for buuilding changelog.
      compile 'com.github.tony19:named-regexp:0.2.3' // 1.7 Named regexp features
--    compile 'net.minecraftforge:fernflower:2.0-SNAPSHOT' // Fernflower Forge edition
+-    compile 'net.minecraftforge:forgeflower:1.0.342-SNAPSHOT' // Fernflower Forge edition
 +    compile 'reprod:forgeflower:0' // Fernflower Forge edition
  
-     shade 'net.md-5:SpecialSource:1.7.4' // deobf and reobs
-     // compile 'net.md-5:SpecialSource:1.7.4' // when md5 publishes
+-    shade 'net.md-5:SpecialSource:1.8.1-SNAPSHOT' // deobf and reobs
+-    // shade 'net.md-5:SpecialSource:1.8.1' // when md5 publishes
++    // shade 'net.md-5:SpecialSource:1.8.1-SNAPSHOT' // deobf and reobs
++    shade 'net.md-5:SpecialSource:1.8.1' // when md5 publishes
+ 
+     // because curse
+     compile 'org.apache.httpcomponents:httpclient:4.3.3'
 @@ -78,8 +78,8 @@ dependencies {
  
      // mcp stuff
