@@ -31,7 +31,7 @@ public class DisableBetterSprinting {
     private static final VersionRange OLD_VERSION = VersionRange.newRange(null,
             Collections.singletonList(new Restriction(null, false, new DefaultArtifactVersion("2.0.0"), false)));
     private static final String LOGIC_CLASS_NAME = "chylex.bettersprinting.client.player.impl.LogicImplOverride";
-    private static final String CONTROLLER_OVERRIDE_CLASS_NAME = LOGIC_CLASS_NAME + ".PlayerControllerMPOverride";
+    private static final String CONTROLLER_OVERRIDE_CLASS_NAME = LOGIC_CLASS_NAME + "$PlayerControllerMPOverride";
 
     public static void register() {
         Loader.instance().getModList().stream()
