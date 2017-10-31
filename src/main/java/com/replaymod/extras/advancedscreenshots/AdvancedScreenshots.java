@@ -11,6 +11,7 @@ import com.replaymod.replay.events.ReplayDispatchKeypressesEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiControls;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ScreenShotHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -51,51 +52,57 @@ public class AdvancedScreenshots implements Extra {
     }
 
     private void createEquirectangularScreenshot() {
-        // take 360° screenshot
-        File screenshotFolder = new File(mc.mcDataDir, "screenshots");
-        screenshotFolder.mkdir();
-        File screenshotFile = ScreenShotHelper.getTimestampedPNGFileForDirectory(screenshotFolder);
+        try {
+            // take 360° screenshot
+            File screenshotFolder = new File(mc.mcDataDir, "screenshots");
+            screenshotFolder.mkdir();
+            File screenshotFile = ScreenShotHelper.getTimestampedPNGFileForDirectory(screenshotFolder);
 
-        int width = 8640;
-        int height = 4320;
+            int height = 4 * 4320;
+            int width = 2 * height;
 
-        int displayWidthBefore = mc.displayWidth;
-        int displayHeightBefore = mc.displayHeight;
+            int displayWidthBefore = mc.displayWidth;
+            int displayHeightBefore = mc.displayHeight;
 
-        ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.renderGlobal);
+            ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.renderGlobal);
 
-        Pipelines.newEquirectangularPipeline(new RenderInfo() {
-            @Override
-            public ReadableDimension getFrameSize() {
-                return new Dimension(width, height);
-            }
+            Pipelines.newEquirectangularPipeline(new RenderInfo() {
+                @Override
+                public ReadableDimension getFrameSize() {
+                    return new Dimension(width, height);
+                }
 
-            @Override
-            public int getTotalFrames() {
-                return 1;
-            }
+                @Override
+                public int getTotalFrames() {
+                    return 1;
+                }
 
-            @Override
-            public float updateForNextFrame() {
-                return mc.timer.renderPartialTicks;
-            }
+                @Override
+                public float updateForNextFrame() {
+                    return mc.timer.renderPartialTicks;
+                }
 
-            @Override
-            public RenderSettings getRenderSettings() {
-                return new RenderSettings(
-                        null, null, width, height, 0, 0, null,
-                        true, true, true, true, null,
-                        false, RenderSettings.AntiAliasing.NONE, null, null, false
-                );
-            }
-        }, new ScreenshotWriter(screenshotFile)).run();
+                @Override
+                public RenderSettings getRenderSettings() {
+                    return new RenderSettings(
+                            null, null, width, height, 0, 0, null,
+                            true, true, true, true, null,
+                            false, RenderSettings.AntiAliasing.NONE, null, null, false
+                    );
+                }
+            }, new ScreenshotWriter(screenshotFile)).run();
 
-        clrg.uninstall();
+            clrg.uninstall();
 
-        // the Equirectangular rendering changes mc.displayWidth and mc.displayHeight,
-        // so we have to reset it to the previous value
-        mc.resize(displayWidthBefore, displayHeightBefore);
+            // the Equirectangular rendering changes mc.displayWidth and mc.displayHeight,
+            // so we have to reset it to the previous value
+            mc.resize(displayWidthBefore, displayHeightBefore);
 
-        new GuiUploadScreenshot(ReplayModReplay.instance.getReplayHandler().getOverlay(), mod, screenshotFile).open();
+            new GuiUploadScreenshot(ReplayModReplay.instance.getReplayHandler().getOverlay(), mod, screenshotFile).open();
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            CrashReport report = CrashReport.makeCrashReport(e, "Creating Equirectangular Screenshot");
+            Minecraft.getMinecraft().crashed(report);
+        }
     }
 }
