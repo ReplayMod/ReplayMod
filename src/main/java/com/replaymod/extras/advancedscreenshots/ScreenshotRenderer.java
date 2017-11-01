@@ -22,6 +22,8 @@ public class ScreenshotRenderer implements RenderInfo {
             int displayWidthBefore = mc.displayWidth;
             int displayHeightBefore = mc.displayHeight;
 
+            boolean hideGUIBefore = mc.gameSettings.hideGUI;
+
             ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.renderGlobal);
 
             Pipelines.newPipeline(settings.getRenderMethod(),this,
@@ -29,6 +31,7 @@ public class ScreenshotRenderer implements RenderInfo {
 
             clrg.uninstall();
 
+            mc.gameSettings.hideGUI = hideGUIBefore;
             mc.resize(displayWidthBefore, displayHeightBefore);
             return true;
         } catch (OutOfMemoryError e) {
@@ -46,7 +49,8 @@ public class ScreenshotRenderer implements RenderInfo {
 
     @Override
     public int getTotalFrames() {
-        return 1;
+        // render 2 frames, because only the second contains all frames fully loaded
+        return 2;
     }
 
     @Override
@@ -56,10 +60,6 @@ public class ScreenshotRenderer implements RenderInfo {
 
     @Override
     public RenderSettings getRenderSettings() {
-        return new RenderSettings(
-                null, null, settings.getVideoWidth(), settings.getVideoHeight(), 0, 0, null,
-                true, true, true, true, null,
-                false, RenderSettings.AntiAliasing.NONE, null, null, false
-        );
+        return settings;
     }
 }

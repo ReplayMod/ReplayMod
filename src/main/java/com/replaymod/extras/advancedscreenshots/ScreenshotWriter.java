@@ -25,6 +25,9 @@ public class ScreenshotWriter implements FrameConsumer<RGBFrame> {
 
     @Override
     public void consume(RGBFrame frame) {
+        // skip the first frame, in which not all chunks are properly loaded
+        if (frame.getFrameId() == 0) return;
+
         try {
             final ReadableDimension frameSize = frame.getSize();
 

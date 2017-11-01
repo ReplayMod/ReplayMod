@@ -7,6 +7,7 @@ import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.function.Loadable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import net.minecraft.crash.CrashReport;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import static com.replaymod.core.utils.Utils.error;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
-public class GuiCreateScreenshot extends GuiRenderSettings {
+public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
 
     private final ReplayMod mod;
 
@@ -71,6 +72,12 @@ public class GuiCreateScreenshot extends GuiRenderSettings {
     private <T extends GuiContainer<?>> T resetChildren(T container) {
         new ArrayList<>(container.getChildren()).forEach(container::removeElement);
         return container;
+    }
+
+    @Override
+    public void load() {
+        // pause replay when opening this gui
+        ReplayModReplay.instance.getReplayHandler().getReplaySender().setReplaySpeed(0);
     }
 
     @Override
