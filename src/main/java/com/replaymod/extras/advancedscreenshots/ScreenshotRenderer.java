@@ -23,6 +23,7 @@ public class ScreenshotRenderer implements RenderInfo {
             int displayHeightBefore = mc.displayHeight;
 
             boolean hideGUIBefore = mc.gameSettings.hideGUI;
+            mc.gameSettings.hideGUI = true;
 
             ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.renderGlobal);
 
