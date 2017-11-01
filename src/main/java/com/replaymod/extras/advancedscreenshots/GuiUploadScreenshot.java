@@ -3,6 +3,7 @@ package com.replaymod.extras.advancedscreenshots;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.extras.Setting;
+import com.replaymod.render.RenderSettings;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
@@ -14,7 +15,6 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import org.lwjgl.util.ReadableColor;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -22,10 +22,10 @@ public class GuiUploadScreenshot extends AbstractGuiPopup<GuiUploadScreenshot> {
 
     public final ReplayMod mod;
 
-    public final File screenshotFile;
+    public final RenderSettings renderSettings;
 
     public final GuiLabel successLabel = new GuiLabel()
-            .setI18nText("replaymod.gui.advancedscreenshots.finished.description.360")
+            .setI18nText("replaymod.gui.advancedscreenshots.finished.description")
             .setColor(ReadableColor.BLACK);
 
     public final GuiLabel veerLabel = new GuiLabel()
@@ -56,22 +56,30 @@ public class GuiUploadScreenshot extends AbstractGuiPopup<GuiUploadScreenshot> {
             .with(neverOpenLabel, new HorizontalLayout.Data(0.5))
             .build();
 
-    public GuiUploadScreenshot(GuiContainer container, ReplayMod mod, File screenshotFile) {
+    public GuiUploadScreenshot(GuiContainer container, ReplayMod mod, RenderSettings renderSettings) {
         super(container);
         this.mod = mod;
-        this.screenshotFile = screenshotFile;
+        this.renderSettings = renderSettings;
 
-        veerUploadButton.onClick(() -> {
-            try {
-                Desktop.getDesktop().browse(URI.create("https://veer.tv/upload"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        boolean veer = renderSettings.getRenderMethod() == RenderSettings.RenderMethod.EQUIRECTANGULAR;
+
+        if (renderSettings.getRenderMethod() == RenderSettings.RenderMethod.EQUIRECTANGULAR) {
+            successLabel.setI18nText("replaymod.gui.advancedscreenshots.finished.description.360");
+        }
+
+        if (veer) {
+            veerUploadButton.onClick(() -> {
+                try {
+                    Desktop.getDesktop().browse(URI.create("https://veer.tv/upload"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
 
         showOnDiskButton.onClick(() -> {
             try {
-                Desktop.getDesktop().browse(URI.create("file://" + screenshotFile.getAbsolutePath()));
+                Desktop.getDesktop().browse(URI.create("file://" + renderSettings.getOutputFile().getAbsolutePath()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -86,10 +94,16 @@ public class GuiUploadScreenshot extends AbstractGuiPopup<GuiUploadScreenshot> {
             close();
         });
 
+        popup.addElements(new VerticalLayout.Data(0.5), successLabel);
+
+        if (veer) {
+            popup.addElements(new VerticalLayout.Data(0.5),
+                    veerLabel,
+                    veerUploadButton);
+        }
+
         popup.addElements(new VerticalLayout.Data(0.5),
                 successLabel,
-                veerLabel,
-                veerUploadButton,
                 showOnDiskButton,
                 closeButton);
 
