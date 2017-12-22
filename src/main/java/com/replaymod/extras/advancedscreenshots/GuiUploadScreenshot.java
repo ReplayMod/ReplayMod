@@ -79,7 +79,7 @@ public class GuiUploadScreenshot extends AbstractGuiPopup<GuiUploadScreenshot> {
 
         showOnDiskButton.onClick(() -> {
             try {
-                Desktop.getDesktop().browse(URI.create("file://" + renderSettings.getOutputFile().getAbsolutePath()));
+                Desktop.getDesktop().browse(renderSettings.getOutputFile().toURI());
             } catch (IOException e) {
                 e.printStackTrace();
             }
