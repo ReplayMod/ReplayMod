@@ -25,6 +25,8 @@ import net.minecraftforge.fml.common.versioning.VersionRange;
 import javax.annotation.Nullable;
 import java.util.Collections;
 
+import static com.replaymod.compat.ReplayModCompat.LOGGER;
+
 /**
  * Old Better Sprinting versions replace the vanilla player with their own, overridden instance (replacing the camera entity).
  *
@@ -34,7 +36,7 @@ public class DisableBetterSprinting {
     private static final VersionRange OLD_VERSION = VersionRange.newRange(null,
             Collections.singletonList(new Restriction(null, false, new DefaultArtifactVersion("2.0.0"), false)));
     private static final String LOGIC_CLASS_NAME = "chylex.bettersprinting.client.player.impl.LogicImplOverride";
-    private static final String CONTROLLER_OVERRIDE_CLASS_NAME = LOGIC_CLASS_NAME + ".PlayerControllerMPOverride";
+    private static final String CONTROLLER_OVERRIDE_CLASS_NAME = LOGIC_CLASS_NAME + "$PlayerControllerMPOverride";
 
     public static void register() {
         Loader.instance().getModList().stream()
@@ -44,7 +46,9 @@ public class DisableBetterSprinting {
                 .ifPresent($_ -> MinecraftForge.EVENT_BUS.register(new DisableBetterSprinting()));
     }
 
-    private DisableBetterSprinting() {}
+    private DisableBetterSprinting() {
+        LOGGER.info("BetterSprinting workaround enabled");
+    }
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private PlayerControllerMP originalController;
@@ -71,6 +75,7 @@ public class DisableBetterSprinting {
         // Suppress this message if it's the Better Sprinting warning message
         for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
             if (LOGIC_CLASS_NAME.equals(elem.getClassName())) {
+                LOGGER.info("BetterSprinting warning message suppressed.");
                 event.setCanceled(true);
                 return;
             }
@@ -83,6 +88,7 @@ public class DisableBetterSprinting {
             if (mc.playerController != null && mc.playerController.getClass().getName().equals(CONTROLLER_OVERRIDE_CLASS_NAME)) {
                 // Someone has secretly swapped out the player controller and is about to substitute their own player entity.
                 // This is the right time to destroy their plan.
+                LOGGER.info("Preventing player controller {} from being replaced by BetterSprinting with {}.", originalController, mc.playerController);
                 mc.playerController = originalController;
             }
         }
