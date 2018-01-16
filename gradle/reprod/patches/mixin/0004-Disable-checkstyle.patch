@@ -1,0 +1,42 @@
+From eb4fa04cf82067b20caa7222c154f8b6f7ab95ac Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Tue, 8 Aug 2017 19:13:45 +0200
+Subject: [PATCH 4/7] Disable checkstyle
+
+---
+ build.gradle | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index 0f189ec..f8598a3 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -7,7 +7,6 @@ buildscript {
+ 
+ // Apply plugin
+ apply plugin: 'java'
+-apply plugin: 'checkstyle'
+ apply plugin: 'maven'
+ apply plugin: 'eclipse'
+ apply plugin: 'idea'
+@@ -165,17 +164,6 @@ tasks.withType(AbstractArchiveTask) {
+    from 'LICENSE.txt'
+ }
+ 
+-checkstyle {
+-    configProperties = [
+-        "name"        : project.name,
+-        "organization": project.organization,
+-        "url"         : project.url,
+-        "year"        : project.inceptionYear
+-    ]
+-    configFile = file("checkstyle.xml")
+-    toolVersion = '6.19'
+-}
+-
+ // Source compiler configuration
+ tasks.withType(JavaCompile) {
+     options.compilerArgs += ['-Xlint:all', '-Xlint:-path']
+-- 
+2.5.5
+
