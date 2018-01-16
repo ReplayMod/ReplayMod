@@ -30,6 +30,7 @@ import static net.minecraft.client.Minecraft.getMinecraft;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        clientSideOnly = true,
         useMetadata = true)
 public class ReplayModOnline {
     public static final String MOD_ID = "replaymod-online";

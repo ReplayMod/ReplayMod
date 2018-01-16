@@ -22,6 +22,7 @@ import org.lwjgl.input.Keyboard;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        clientSideOnly = true,
         useMetadata = true)
 public class ReplayModSimplePathing {
     public static final String MOD_ID = "replaymod-simplepathing";

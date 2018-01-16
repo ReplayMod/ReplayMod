@@ -22,6 +22,7 @@ import java.util.List;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        clientSideOnly = true,
         useMetadata = true)
 public class ReplayModRender {
     public static final String MOD_ID = "replaymod-render";

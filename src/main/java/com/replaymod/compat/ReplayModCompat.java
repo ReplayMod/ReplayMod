@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        clientSideOnly = true,
         useMetadata = true)
 public class ReplayModCompat {
     public static final String MOD_ID = "replaymod-compat";

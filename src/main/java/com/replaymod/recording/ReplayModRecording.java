@@ -21,6 +21,7 @@ import org.lwjgl.input.Keyboard;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        clientSideOnly = true,
         useMetadata = true)
 public class ReplayModRecording {
     public static final String MOD_ID = "replaymod-recording";

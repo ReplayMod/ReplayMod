@@ -1,7 +1,9 @@
 {
   "required": true,
   "package": "com.replaymod.render.mixin",
-  "mixins": [
+  "mixins": [],
+  "server": [],
+  "client": [
     "MixinEffectRenderer",
     "MixinEntityRenderer",
     "MixinFrustum",
@@ -10,8 +12,6 @@
     "MixinRenderGlobal",
     "MixinRenderManager"
   ],
-  "server": [],
-  "client": [],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11",
   "refmap": "mixins.replaymod.refmap.json"
