@@ -1,7 +1,9 @@
 {
   "required": true,
   "package": "com.replaymod.replay.mixin",
-  "mixins": [
+  "mixins": [],
+  "server": [],
+  "client": [
     "MixinGuiSpectator",
     "MixinPlayerControllerMP",
     "MixinRenderArrow",
@@ -12,8 +14,6 @@
     "MixinViewFrustum",
     "MixinWorldClient"
   ],
-  "server": [],
-  "client": [],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11",
   "refmap": "mixins.replaymod.refmap.json"

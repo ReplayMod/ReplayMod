@@ -5,8 +5,12 @@ import com.google.common.io.Files;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
+import com.replaymod.replaystudio.io.ReplayInputStream;
+import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.studio.ReplayStudio;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -108,10 +112,10 @@ public class ReplaySender extends ChannelDuplexHandler {
     protected ChannelHandlerContext ctx;
 
     /**
-     * The data input stream from which new packets are read.
+     * The replay input stream from which new packets are read.
      * When accessing this stream make sure to synchronize on {@code this} as it's used from multiple threads.
      */
-    protected DataInputStream dis;
+    protected ReplayInputStream replayIn;
 
     /**
      * The next packet that should be sent.
@@ -574,8 +578,8 @@ public class ReplaySender extends ChannelDuplexHandler {
                 REPLAY_LOOP:
                 while (!terminate) {
                     synchronized (ReplaySender.this) {
-                        if (dis == null) {
-                            dis = new DataInputStream(replayFile.getPacketData());
+                        if (replayIn == null) {
+                            replayIn = replayFile.getPacketData();
                         }
                         // Packet loop
                         while (true) {
@@ -602,7 +606,7 @@ public class ReplaySender extends ChannelDuplexHandler {
 
                                 // Read the next packet if we don't already have one
                                 if (nextPacket == null) {
-                                    nextPacket = new PacketData(dis);
+                                    nextPacket = new PacketData(replayIn);
                                 }
 
                                 int nextTimeStamp = nextPacket.timestamp;
@@ -659,9 +663,9 @@ public class ReplaySender extends ChannelDuplexHandler {
                         nextPacket = null;
                         lastPacketSent = System.currentTimeMillis();
                         replayHandler.restartedReplay();
-                        if (dis != null) {
-                            dis.close();
-                            dis = null;
+                        if (replayIn != null) {
+                            replayIn.close();
+                            replayIn = null;
                         }
                     }
                 }
@@ -750,17 +754,17 @@ public class ReplaySender extends ChannelDuplexHandler {
                 if (timestamp < lastTimeStamp) { // Restart the replay if we need to go backwards in time
                     hasWorldLoaded = false;
                     lastTimeStamp = 0;
-                    if (dis != null) {
-                        dis.close();
-                        dis = null;
+                    if (replayIn != null) {
+                        replayIn.close();
+                        replayIn = null;
                     }
                     startFromBeginning = false;
                     nextPacket = null;
                     replayHandler.restartedReplay();
                 }
 
-                if (dis == null) {
-                    dis = new DataInputStream(replayFile.getPacketData());
+                if (replayIn == null) {
+                    replayIn = replayFile.getPacketData();
                 }
 
                 while (true) { // Send packets
@@ -772,7 +776,7 @@ public class ReplaySender extends ChannelDuplexHandler {
                             nextPacket = null;
                         } else {
                             // Otherwise read one from the input stream
-                            pd = new PacketData(dis);
+                            pd = new PacketData(replayIn);
                         }
 
                         int nextTimeStamp = pd.timestamp;
@@ -787,7 +791,7 @@ public class ReplaySender extends ChannelDuplexHandler {
                     } catch (EOFException eof) {
                         // Shit! We hit the end before finishing our job! What shall we do now?
                         // well, let's just pretend we're done...
-                        dis = null;
+                        replayIn = null;
                         break;
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -915,13 +919,32 @@ public class ReplaySender extends ChannelDuplexHandler {
     }
 
     private static final class PacketData {
+        private static final ByteBuf byteBuf = Unpooled.buffer();
+        private static final ByteBufOutputStream byteBufOut = new ByteBufOutputStream(byteBuf);
+        private static final ReplayOutputStream encoder = new ReplayOutputStream(new ReplayStudio(), byteBufOut);
         private final int timestamp;
         private final byte[] bytes;
 
-        public PacketData(DataInputStream in) throws IOException {
-            timestamp = in.readInt();
-            bytes = new byte[in.readInt()];
-            in.readFully(bytes);
+        public PacketData(ReplayInputStream in) throws IOException {
+            com.replaymod.replaystudio.PacketData data = in.readPacket();
+            timestamp = (int) data.getTime();
+            // We need to re-encode MCProtocolLib packets, so we can later decode them as NMS packets
+            // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
+            // to apply ViaVersion (and potentially other magic) to it.
+            synchronized (encoder) {
+                byteBuf.markReaderIndex(); // Mark the current reader and writer index (should be at start)
+                byteBuf.markWriterIndex();
+
+                encoder.write(data); // Re-encode packet, data will end up in byteBuf
+                encoder.flush();
+
+                byteBuf.skipBytes(8); // Skip packet length & timestamp
+                bytes = new byte[byteBuf.readableBytes()]; // Create bytes array of sufficient size
+                byteBuf.readBytes(bytes); // Read all data into bytes
+
+                byteBuf.resetReaderIndex(); // Reset reader & writer index for next use
+                byteBuf.resetWriterIndex();
+            }
         }
     }
 }

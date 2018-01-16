@@ -2,8 +2,10 @@ package com.replaymod.simplepathing;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.SettingsChangedEvent;
+import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
+import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
@@ -20,6 +22,7 @@ import org.lwjgl.input.Keyboard;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        clientSideOnly = true,
         useMetadata = true)
 public class ReplayModSimplePathing {
     public static final String MOD_ID = "replaymod-simplepathing";
@@ -81,20 +84,34 @@ public class ReplayModSimplePathing {
         }
     }
 
+    private GuiReplayOverlay getReplayOverlay() {
+        return ReplayModReplay.instance.getReplayHandler().getOverlay();
+    }
+
     private SPTimeline currentTimeline;
 
-    @Getter
     private SPPath selectedPath;
     @Getter
     private long selectedTime;
 
+    public SPPath getSelectedPath() {
+        if (getReplayOverlay().timeline.getSelectedMarker() != null) {
+            selectedPath = null;
+            selectedTime = 0;
+        }
+        return selectedPath;
+    }
+
     public boolean isSelected(Keyframe keyframe) {
-        return selectedPath != null && currentTimeline.getKeyframe(selectedPath, selectedTime) == keyframe;
+        return getSelectedPath() != null && currentTimeline.getKeyframe(selectedPath, selectedTime) == keyframe;
     }
 
     public void setSelected(SPPath path, long time) {
         selectedPath = path;
         selectedTime = time;
+        if (selectedPath != null) {
+            getReplayOverlay().timeline.setSelectedMarker(null);
+        }
     }
 
     public void setCurrentTimeline(SPTimeline newTimeline) {

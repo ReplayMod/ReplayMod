@@ -3,6 +3,7 @@ package com.replaymod.recording;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.recording.handler.ConnectionEventHandler;
+import com.replaymod.recording.handler.GuiHandler;
 import com.replaymod.recording.packet.PacketListener;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
@@ -20,6 +21,7 @@ import org.lwjgl.input.Keyboard;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        clientSideOnly = true,
         useMetadata = true)
 public class ReplayModRecording {
     public static final String MOD_ID = "replaymod-recording";
@@ -56,6 +58,8 @@ public class ReplayModRecording {
     public void init(FMLInitializationEvent event) {
         EventBus bus = FMLCommonHandler.instance().bus();
         bus.register(connectionEventHandler = new ConnectionEventHandler(logger, core));
+
+        new GuiHandler(core).register();
 
         NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
     }
