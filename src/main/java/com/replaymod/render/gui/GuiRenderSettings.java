@@ -427,7 +427,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         );
     }
 
-    private File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
+    protected File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
         String fileName = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
         File folder = ReplayModRender.instance.getVideoFolder();
         return new File(folder, fileName + "." + encodingPreset.getFileExtension());
@@ -447,7 +447,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         config.save();
     }
 
-    private Property getConfigProperty(Configuration configuration) {
+    protected Property getConfigProperty(Configuration configuration) {
         return configuration.get("rendersettings", "settings", "{}",
                 "Last state of the render settings GUI. Internal use only.");
     }

@@ -1,6 +1,7 @@
 package com.replaymod.extras;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.extras.advancedscreenshots.AdvancedScreenshots;
 import com.replaymod.extras.playeroverview.PlayerOverview;
 import com.replaymod.extras.urischeme.UriSchemeExtra;
 import com.replaymod.extras.youtube.YoutubeUpload;
@@ -27,6 +28,7 @@ public class ReplayModExtras {
     public static ReplayModExtras instance;
 
     private static final List<Class<? extends Extra>> builtin = Arrays.asList(
+            AdvancedScreenshots.class,
             PlayerOverview.class,
             UriSchemeExtra.class,
             YoutubeUpload.class,
@@ -43,6 +45,7 @@ public class ReplayModExtras {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER = event.getModLog();
+        ReplayMod.instance.getSettingsRegistry().register(Setting.class);
     }
 
     @Mod.EventHandler
