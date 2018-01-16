@@ -3,6 +3,7 @@ package com.replaymod.replay;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraEntity;
+import com.replaymod.replay.events.ReplayDispatchKeypressesEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
@@ -11,6 +12,7 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.Timer;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -122,7 +124,9 @@ public class InputReplayTimer extends WrappedTimer {
         }
 
         // Twitch, screenshot, fullscreen, etc. (stuff that works everywhere)
-        mc.dispatchKeypresses();
+        if (!MinecraftForge.EVENT_BUS.post(new ReplayDispatchKeypressesEvent.Pre())) {
+            mc.dispatchKeypresses();
+        }
 
         if (pressed) {
             // This might be subject to change as vanilla shaders are still kinda unused in 1.8

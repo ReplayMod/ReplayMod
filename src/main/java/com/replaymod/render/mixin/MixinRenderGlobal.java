@@ -34,7 +34,6 @@ public abstract class MixinRenderGlobal {
 
             do {
                 setupTerrain(viewEntity, partialTicks, camera, replayModRender_hook.nextFrameId(), playerSpectator);
-
                 replayModRender_hook.updateChunks();
             } while (displayListEntitiesDirty);
 

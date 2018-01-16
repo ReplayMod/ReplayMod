@@ -12,7 +12,7 @@ to access private fields is a good indication that this has happened).
 You can build the mod by running `./gradlew :build`. You can then find the final jar files in `build/libs/`.
 
 ### IntelliJ
-For the initial setup run `./gradlew preshadowJar idea genIntellijRuns`.
+For the initial setup run `./gradlew idea genIntellijRuns`.
 You also need to enable the Mixin annotation processor:
 1. Go to File -> Settings -> Build, Execution, Deployment -> Compiler -> Annotation Processors
 2. Tick "Enable annotation processing"
@@ -20,8 +20,8 @@ You also need to enable the Mixin annotation processor:
 4. Set the name to "reobfSrgFile" and the value to "$path/build/mcp-srg.srg" where you replace $path with the full 
 path to the folder containing the gradlew file
 
-Whenever you switch to another branch, you can either just run `./gradlew preshadowJar idea` or instead run 
-`./gradlew preshadowJar copySrg` and then refresh the gradle project from within IntelliJ.
+Whenever you switch to another branch, you can either just run `./gradlew idea` or instead run
+`./gradlew copySrg` and then refresh the gradle project from within IntelliJ.
 
 ### Eclipse
 
