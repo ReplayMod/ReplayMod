@@ -5,9 +5,12 @@ import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.replaymod.core.ReplayMod;
+import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replay.Setting;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
@@ -18,6 +21,7 @@ import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.element.advanced.GuiResourceLoadingList;
+import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -34,8 +38,10 @@ import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.helpers.Strings;
 import org.lwjgl.Sys;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
+import org.lwjgl.util.ReadablePoint;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -47,7 +53,7 @@ import java.util.Date;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
-public class GuiReplayViewer extends GuiScreen {
+public class GuiReplayViewer extends GuiScreen implements Typeable {
     private final ReplayModReplay mod;
 
     public final GuiResourceLoadingList<GuiReplayEntry> list = new GuiResourceLoadingList<GuiReplayEntry>(this).onSelectionChanged(new Runnable() {
@@ -272,6 +278,18 @@ public class GuiReplayViewer extends GuiScreen {
     }
 
     private final GuiImage defaultThumbnail = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL);
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (keyCode == Keyboard.KEY_F1) {
+            SettingsRegistry reg = ReplayMod.instance.getSettingsRegistry();
+            reg.set(Setting.SHOW_SERVER_IPS, !reg.get(Setting.SHOW_SERVER_IPS));
+            reg.save();
+            list.load();
+        }
+        return false;
+    }
+
     public class GuiReplayEntry extends AbstractGuiContainer<GuiReplayEntry> implements Comparable<GuiReplayEntry> {
         public final File file;
         public final GuiLabel name = new GuiLabel();
@@ -303,7 +321,8 @@ public class GuiReplayViewer extends GuiScreen {
             this.file = file;
 
             name.setText(ChatFormatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
-            if (Strings.isEmpty(metaData.getServerName())) {
+            if (Strings.isEmpty(metaData.getServerName())
+                    || !ReplayMod.instance.getSettingsRegistry().get(Setting.SHOW_SERVER_IPS)) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {
                 server.setText(metaData.getServerName());

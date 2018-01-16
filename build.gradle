@@ -69,7 +69,7 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    shade 'com.github.replaymod:ReplayStudio:a4a75b3'
+    shade 'com.github.replaymod:ReplayStudio:9605121'
 
     testCompile 'junit:junit:4.11'
 }
