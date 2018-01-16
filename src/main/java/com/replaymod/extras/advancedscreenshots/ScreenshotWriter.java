@@ -43,6 +43,7 @@ public class ScreenshotWriter implements FrameConsumer<RGBFrame> {
                 }
             }
 
+            outputFile.getParentFile().mkdirs();
             ImageIO.write(img, "PNG", outputFile);
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
