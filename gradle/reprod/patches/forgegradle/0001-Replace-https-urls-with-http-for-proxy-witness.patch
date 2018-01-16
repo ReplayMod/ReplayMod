@@ -1,0 +1,75 @@
+From 7127699cb761a518cce8872b0b78694e357f21fe Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Mon, 28 Aug 2017 17:50:38 +0200
+Subject: [PATCH] Replace https urls with http for proxy-witness
+
+---
+ .../java/net/minecraftforge/gradle/common/BasePlugin.java   | 13 ++++++++++---
+ .../java/net/minecraftforge/gradle/common/Constants.java    |  4 ++--
+ 2 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/src/main/java/net/minecraftforge/gradle/common/BasePlugin.java b/src/main/java/net/minecraftforge/gradle/common/BasePlugin.java
+index df369f1..e3e50c0 100644
+--- a/src/main/java/net/minecraftforge/gradle/common/BasePlugin.java
++++ b/src/main/java/net/minecraftforge/gradle/common/BasePlugin.java
+@@ -350,6 +350,13 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
+         // not required.. but you probably wanan implement this
+     }
+ 
++    private static String http(String url) {
++        if (url.startsWith("https://")) {
++            url = "http" + url.substring("https".length());
++        }
++        return url;
++    }
++
+     @SuppressWarnings("serial")
+     private void makeCommonTasks()
+     {
+@@ -358,7 +365,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
+                 @Override
+                 public String call()
+                 {
+-                    return mcManifest.get(getExtension().getVersion()).url;
++                    return http(mcManifest.get(getExtension().getVersion()).url);
+                 }
+             });
+             getVersionJson.setFile(delayedFile(JSON_VERSION));
+@@ -435,7 +442,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
+                 @Override
+                 public String call()
+                 {
+-                    return mcVersionJson.getClientUrl();
++                    return http(mcVersionJson.getClientUrl());
+                 }
+             });
+ 
+@@ -449,7 +456,7 @@ public abstract class BasePlugin<K extends BaseExtension> implements Plugin<Proj
+                 @Override
+                 public String call()
+                 {
+-                    return mcVersionJson.getServerUrl();
++                    return http(mcVersionJson.getServerUrl());
+                 }
+             });
+ 
+diff --git a/src/main/java/net/minecraftforge/gradle/common/Constants.java b/src/main/java/net/minecraftforge/gradle/common/Constants.java
+index b42b1c2..a0753e0 100644
+--- a/src/main/java/net/minecraftforge/gradle/common/Constants.java
++++ b/src/main/java/net/minecraftforge/gradle/common/Constants.java
+@@ -115,10 +115,10 @@ public class Constants
+ 
+ 
+     // urls
+-    public static final String URL_MC_MANIFEST  = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
++    public static final String URL_MC_MANIFEST  = "http://launchermeta.mojang.com/mc/game/version_manifest.json";
+     public static final String URL_FF           = "http://files.minecraftforge.net/fernflower-fix-1.0.zip";
+     public static final String URL_ASSETS       = "http://resources.download.minecraft.net";
+-    public static final String URL_LIBRARY      = "https://libraries.minecraft.net/";
++    public static final String URL_LIBRARY      = "http://libraries.minecraft.net/";
+     public static final String URL_FORGE_MAVEN  = "http://files.minecraftforge.net/maven";
+     public static final String URL_MCP_JSON     = "http://export.mcpbot.bspk.rs/versions.json";
+ 
+-- 
+2.5.5
+
