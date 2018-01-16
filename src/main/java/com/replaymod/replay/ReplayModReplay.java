@@ -195,6 +195,10 @@ public class ReplayModReplay {
         replayHandler = new ReplayHandler(replayFile, true);
     }
 
+    public void forcefullyStopReplay() {
+        replayHandler = null;
+    }
+
     public ReplayMod getCore() {
         return core;
     }
