@@ -2,10 +2,6 @@
 	path = jGui
 	url = https://github.com/ReplayMod/jGui
 
-[submodule "ReplayStudio"]
-	path = ReplayStudio
-	url = https://github.com/ReplayMod/ReplayStudio
-
 [submodule "src/main/resources/assets/replaymod/lang"]
 	path = src/main/resources/assets/replaymod/lang
 	url = https://github.com/ReplayMod/Translations
