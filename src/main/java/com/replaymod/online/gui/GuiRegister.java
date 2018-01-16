@@ -110,7 +110,7 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
             @Override
             public void run() {
                 String status = null;
-                if (usernameInput.getText().length() < 5) {
+                if (usernameInput.getText().length() < 1) {
                     status = "replaymod.gui.register.error.shortusername";
                 } else if(!Patterns.ALPHANUMERIC_UNDERSCORE.matcher(usernameInput.getText().trim()).matches()) {
                     status = "replaymod.gui.register.error.invalidname";
