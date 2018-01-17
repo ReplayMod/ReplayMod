@@ -1,0 +1,69 @@
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
+
+initscript {
+   repositories {
+        maven { url 'http://jitpack.io' }
+   }
+   dependencies {
+        classpath 'com.github.johni0702:gradle-reproducible-builds-plugin:a524ada'
+        classpath 'com.github.johni0702:gradle-ecj-plugin:795736c'
+   }
+}
+
+def convertRepoToHttp = { repo ->
+    if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
+        URL url = repo.url.toURL()
+        repo.url = new URL("http", url.getHost(), url.getPort(), url.getFile()).toURI()
+    }
+}
+
+allprojects {
+    buildscript {
+       repositories.all convertRepoToHttp
+    }
+    repositories { mavenCentral() } // for ecj
+    repositories.all convertRepoToHttp
+    apply plugin: de.johni0702.gradle.ReproducibleBuildsPlugin, to: project
+    apply plugin: xink.gradle.ecj.EcjPlugin, to: project
+    apply plugin: 'maven', to: project
+
+    ecj {
+        warn = ['none']
+    }
+
+    repositories {
+        maven {
+            url(project.file('gradle/reprod').exists() ? 'gradle/reprod/deps/repo' : '../repo')
+        }
+    }
+    task createPom {
+        doLast {
+            pom {
+                project {
+                    groupId 'reprod'
+                    artifactId project.file('.').name
+                    version '0'
+                }
+                whenConfigured {
+                    dependencies.removeAll { it.artifactId == 'mixin-asm-debug-all' }
+                }
+            }.writeTo("pom.xml")
+        }
+    }
+    if (!project.file('gradle/reprod').exists()) {
+        build.dependsOn createPom
+    }
+
+    reproducibleBuilds {
+        if (project.file('.').name == 'forgegradle') {
+            project.tasks.all {
+                if (it.name == 'jar') {
+                    println 'Manually repacking archive after jar task'
+                    repackAfter it
+                }
+            }
+        }
+    }
+}

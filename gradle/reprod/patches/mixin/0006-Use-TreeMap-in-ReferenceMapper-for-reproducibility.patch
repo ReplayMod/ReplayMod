@@ -1,0 +1,56 @@
+From 6422d5985faeff394237a499e5529b765dd46b7e Mon Sep 17 00:00:00 2001
+From: Jonas Herzig <me@johni0702.de>
+Date: Tue, 8 Aug 2017 21:40:59 +0200
+Subject: [PATCH 6/7] Use TreeMap in ReferenceMapper for reproducibility
+
+---
+ .../java/org/spongepowered/asm/mixin/refmap/ReferenceMapper.java | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/src/main/java/org/spongepowered/asm/mixin/refmap/ReferenceMapper.java b/src/main/java/org/spongepowered/asm/mixin/refmap/ReferenceMapper.java
+index 2a368e7..082b5dd 100644
+--- a/src/main/java/org/spongepowered/asm/mixin/refmap/ReferenceMapper.java
++++ b/src/main/java/org/spongepowered/asm/mixin/refmap/ReferenceMapper.java
+@@ -29,7 +29,6 @@ import java.io.InputStream;
+ import java.io.InputStreamReader;
+ import java.io.Reader;
+ import java.io.Serializable;
+-import java.util.HashMap;
+ import java.util.Map;
+ 
+ import org.apache.commons.io.IOUtils;
+@@ -71,13 +70,13 @@ public final class ReferenceMapper implements Serializable {
+      * by the AP. Each entry is keyed by the owning mixin, with the value map
+      * containing the actual remappings for each owner
+      */
+-    private final Map<String, Map<String, String>> mappings = Maps.newHashMap();
++    private final Map<String, Map<String, String>> mappings = Maps.newTreeMap();
+     
+     /**
+      * All mapping sets, keyed by environment type, eg. "notch", "searge". The
+      * format of each map within this map is the same as for {@link #mappings}
+      */
+-    private final Map<String, Map<String, Map<String, String>>> data = Maps.newHashMap();
++    private final Map<String, Map<String, Map<String, String>>> data = Maps.newTreeMap();
+     
+     /**
+      * True if this refmap cannot be written. Only true for the
+@@ -191,13 +190,13 @@ public final class ReferenceMapper implements Serializable {
+         if (context != null) {
+             mappings = this.data.get(context);
+             if (mappings == null) {
+-                mappings = Maps.newHashMap();
++                mappings = Maps.newTreeMap();
+                 this.data.put(context, mappings);
+             }
+         }
+         Map<String, String> classMappings = mappings.get(className);
+         if (classMappings == null) {
+-            classMappings = new HashMap<String, String>();
++            classMappings = Maps.newTreeMap();
+             mappings.put(className, classMappings);
+         }
+         return classMappings.put(reference, newReference);
+-- 
+2.5.5
+
