@@ -16,8 +16,8 @@ f98b3e07c6b6a32dd6f9f70f5cef4ac9be42a9a6c850ceb8f33767da94706635 /com/github/joh
 03e3dff7f9b3ac6cd3b87684fd36a2f6996a4b164a2f8fab9c22c01cb7bfb84b /com/github/johni0702/gradle-reproducible-builds-plugin/a524ada/gradle-reproducible-builds-plugin-a524ada.pom
 75ccc0e24d37ed5b8916e1bcffad1e067c2b1cfa21b635287f968db5c3c1963a /com/github/jponge/lzma-java/1.3/lzma-java-1.3.jar
 fbcba81b21a8bc3c0761e4798fa05285444b43d681c03c9af49f9b2e1ecb0184 /com/github/jponge/lzma-java/1.3/lzma-java-1.3.pom
-8b81939c797646572f726cb810d219d6e6d30ffa1d352cdfb17e67f819afcac8 /com/github/replaymod/ReplayStudio/77dc1d7/ReplayStudio-77dc1d7.jar
-277b1b1dc9e04fd9c28c224a43821ba9aa83f0dd866fefd47ee2354f3f15d9a8 /com/github/replaymod/ReplayStudio/77dc1d7/ReplayStudio-77dc1d7.pom
+be650f4c822de0128866975e6af3ef7b4574328ecf99afd92ef92af30dddea34 /com/github/replaymod/ReplayStudio/d4b2037/ReplayStudio-d4b2037.jar
+b2a36467f1d2ea19d340912ddad589d306baa06b10411458a26bbb3886902400 /com/github/replaymod/ReplayStudio/d4b2037/ReplayStudio-d4b2037.pom
 c6ebd74cd6108b8c372c95b842725ee5bd6d3303ba26cb00f18bc92f80b47956 /com/github/tony19/named-regexp/0.2.3/named-regexp-0.2.3.jar
 7cdd89a892927998beab59398ef073232588f6e83e411cf4f0905833bf300487 /com/github/tony19/named-regexp/0.2.3/named-regexp-0.2.3.pom
 47c625c83a8cf97b8bbdff2acde923ff8fd3174e62aabcfc5d1b86692594ffba /com/google/api-client/google-api-client/1.22.0/google-api-client-1.22.0.jar
@@ -164,7 +164,7 @@ a096bc9f7579cec07483874151578720eeb3189c546c19cff56a6203df17b50e /lzma/lzma/0.0.
 * /mc/game/version_manifest.json
 19331fb29bf8b8d5ed764677c94cca9d66481e10104f660eb555894a4300cf22 /mc/game/1.12.1/client/83385d346cf7f97d1e447b888750fb88e9928b93/client.jar
 848912640bccfa7ea34a2cc1c76cb2b35f8467c4216d9603917c991660f91a8b /mc/game/1.12.1/server/561c7b2d54bae80cc06b05d950633a9ac95da816/server.jar
-5dcff0a65ed3b43d82328340505118e53dab5273c352e2d56733a0e498ed5655 /mc/game/2ce9731e5bafdf69014e4e6db1cc56149958c5a8/1.12.1.json
+* /mc/game/2ce9731e5bafdf69014e4e6db1cc56149958c5a8/1.12.1.json
 c4dadeeecaa90c8847902082aee5eb107fcf59c5d0e63a17fcaf273c0e2d2bd1 /net/java/dev/jna/jna/4.4.0/jna-4.4.0.jar
 800bb2831dda341336ea69b7beb675f159973f64dad6aaa1ad8c4fa78e5cb19b /net/java/dev/jna/jna/4.4.0/jna-4.4.0.pom
 ea89d5090c8303ba4e9a0056e6d8a20429f3e021411e950bfd9eba3b6e6cf15c /net/java/dev/jna/platform/3.4.0/platform-3.4.0.jar
@@ -461,6 +461,7 @@ cbfacd5dd812db16dc910994007fe58d9402a25507f81a1c2218e15c2c1bedfa /org/ow2/asm/as
 347a7a9400f9964e87c91d3980e48eebdc8d024bc3b36f7f22189c662853a51c /org/ow2/asm/asm-tree/5.0.3/asm-tree-5.0.3.jar
 65819ca7c5a218ff49f8ebe72f3b39219c81f137d017acc1aec15b1054cf5236 /org/ow2/asm/asm-tree/5.0.3/asm-tree-5.0.3.pom
 51215c67d2c068d8b7d2f6f80f51372a098075deccc448d4bdd7b987ba8328fb /org/ow2/ow2/1.3/ow2-1.3.pom
+3ca225ce3917eac8bf4b7d2186845df4e70dcdede356dca8537b6d78a535c91e /org/projectlombok/lombok/1.16.4/lombok-1.16.4.jar
 fcb8d5745f776567f1cce332282750b1653568324621ecef03288c8a25919d0e /org/projectlombok/lombok/1.16.4/lombok-1.16.4.pom
 e0a471be03e1e6b02bf019480cec7a3ac9801702bf7bf62f15d077ad4df8dd5d /org/projectlombok/lombok/1.16.6/lombok-1.16.6.jar
 32ac0a2363ccc0c5086b62cfc05e28a355b74e155efef6b426f5498a0dfc9e4c /org/projectlombok/lombok/1.16.6/lombok-1.16.6.pom

@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.replaymod.replay.ReplayModReplay.LOGGER;
+
 public class GuiHandler {
     private static final int BUTTON_EXIT_SERVER = 1;
     private static final int BUTTON_ADVANCEMENTS = 5;
@@ -97,6 +99,20 @@ public class GuiHandler {
     public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
         if (!(event.getGui() instanceof GuiMainMenu)) {
             return;
+        }
+
+        if (mod.getReplayHandler() != null) {
+            // Something went terribly wrong and we ended up in the main menu with the replay still active.
+            // To prevent players from joining live servers and using the CameraEntity, try to stop the replay now.
+            try {
+                mod.getReplayHandler().endReplay();
+            } catch (IOException e) {
+                LOGGER.error("Trying to stop broken replay: ", e);
+            } finally {
+                if (mod.getReplayHandler() != null) {
+                    mod.forcefullyStopReplay();
+                }
+            }
         }
 
         GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, event.getGui().width / 2 - 100,

@@ -36,6 +36,7 @@ import java.util.Optional;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        clientSideOnly = true,
         useMetadata = true)
 public class ReplayModReplay {
     public static final String MOD_ID = "replaymod-replay";
@@ -192,6 +193,10 @@ public class ReplayModReplay {
             }
         }
         replayHandler = new ReplayHandler(replayFile, true);
+    }
+
+    public void forcefullyStopReplay() {
+        replayHandler = null;
     }
 
     public ReplayMod getCore() {
