@@ -66,4 +66,12 @@ allprojects {
             }
         }
     }
+    project.tasks.all { task ->
+        if (task.name == 'reobfJar') {
+            task.doLast {
+                println 'Manually repacking archive after reobfJar task'
+                project.plugins.findPlugin(de.johni0702.gradle.ReproducibleBuildsPlugin.class).stripJar(task.getJar())
+            }
+        }
+    }
 }
