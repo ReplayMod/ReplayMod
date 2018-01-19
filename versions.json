@@ -1,26 +1,31 @@
 {
     "homepage": "https://www.replaymod.com/download/",
     "promos": {
-        "1.8-latest": "1.8-2.0.1",
-        "1.8-recommended": "1.8-2.0.1",
-        "1.8.9-latest": "1.8.9-2.0.1",
-        "1.8.9-recommended": "1.8.9-2.0.1",
-        "1.9.4-latest": "1.9.4-2.0.1",
-        "1.9.4-recommended": "1.9.4-2.0.1",
-        "1.10.2-latest": "1.10.2-2.0.1",
-        "1.10.2-recommended": "1.10.2-2.0.1",
-        "1.11-latest": "1.11-2.0.1",
-        "1.11-recommended": "1.11-2.0.1",
-        "1.11.2-latest": "1.11.2-2.0.1",
-        "1.11.2-recommended": "1.11.2-2.0.1",
-        "1.12-latest": "1.12-2.0.1",
-        "1.12-recommended": "1.12-2.0.1",
-        "1.12.1-latest": "1.12.1-2.0.1",
-        "1.12.1-recommended": "1.12.1-2.0.1",
         "1.7.10-latest": "1.7.10-2.0.1-b1",
-        "1.12.2-latest": "1.12.2-2.0.1-b1"
+        "1.8-latest": "1.8-2.1.0",
+        "1.8-recommended": "1.8-2.1.0",
+        "1.8.9-latest": "1.8.9-2.1.0",
+        "1.8.9-recommended": "1.8.9-2.1.0",
+        "1.9.4-latest": "1.9.4-2.1.0",
+        "1.9.4-recommended": "1.9.4-2.1.0",
+        "1.10.2-latest": "1.10.2-2.1.0",
+        "1.10.2-recommended": "1.10.2-2.1.0",
+        "1.11-latest": "1.11-2.1.0",
+        "1.11-recommended": "1.11-2.1.0",
+        "1.11.2-latest": "1.11.2-2.1.0",
+        "1.11.2-recommended": "1.11.2-2.1.0",
+        "1.12-latest": "1.12-2.1.0",
+        "1.12-recommended": "1.12-2.1.0",
+        "1.12.1-latest": "1.12.1-2.1.0",
+        "1.12.1-recommended": "1.12.1-2.1.0",
+        "1.12.2-latest": "1.12.2-2.1.0",
+        "1.12.2-recommended": "1.12.2-2.1.0"
+    },
+    "1.7.10": {
+        "1.7.10-2.0.1-b1": "See https://github.com/ReplayMod/ReplayMod/releases/1.7.10-2.0.1-b1"
     },
     "1.8": {
+        "1.8-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.8-2.1.0",
         "1.8-2.0.1": "See https://github.com/ReplayMod/ReplayMod/releases/1.8-2.0.1",
         "1.8-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.8-2.0.0",
         "1.8-2.0.0-b6": "See https://github.com/ReplayMod/ReplayMod/releases/1.8-2.0.0-b6",
@@ -31,12 +36,14 @@
         "1.8-2.0.0-b1": "See https://github.com/ReplayMod/ReplayMod/releases/1.8-2.0.0-b1"
     },
     "1.8.9": {
+        "1.8.9-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.8.9-2.1.0",
         "1.8.9-2.0.1": "See https://github.com/ReplayMod/ReplayMod/releases/1.8.9-2.0.1",
         "1.8.9-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.8.9-2.0.0",
         "1.8.9-2.0.0-b6": "See https://github.com/ReplayMod/ReplayMod/releases/1.8.9-2.0.0-b6",
         "1.8.9-2.0.0-b5": "See https://github.com/ReplayMod/ReplayMod/releases/1.8.9-2.0.0-b5"
     },
     "1.9.4": {
+        "1.9.4-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.9.4-2.1.0",
         "1.9.4-2.0.1": "See https://github.com/ReplayMod/ReplayMod/releases/1.9.4-2.0.1",
         "1.9.4-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.9.4-2.0.0",
         "1.9.4-2.0.0-b6": "See https://github.com/ReplayMod/ReplayMod/releases/1.9.4-2.0.0-b6",
@@ -47,6 +54,7 @@
         "1.9.4-2.0.0-b1": "See https://github.com/ReplayMod/ReplayMod/releases/1.9.4-2.0.0-b1"
     },
     "1.10.2": {
+        "1.10.2-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.10.2-2.1.0",
         "1.10.2-2.0.1": "See https://github.com/ReplayMod/ReplayMod/releases/1.10.2-2.0.1",
         "1.10.2-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.10.2-2.0.0",
         "1.10.2-2.0.0-b6": "See https://github.com/ReplayMod/ReplayMod/releases/1.10.2-2.0.0-b6",
@@ -55,6 +63,7 @@
         "1.10.2-2.0.0-b3": "See https://github.com/ReplayMod/ReplayMod/releases/1.10.2-2.0.0-b3"
     },
     "1.11": {
+        "1.11-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.11-2.1.0",
         "1.11-2.0.1": "See https://github.com/ReplayMod/ReplayMod/releases/1.11-2.0.1",
         "1.11-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.11-2.0.0",
         "1.11-2.0.0-b6": "See https://github.com/ReplayMod/ReplayMod/releases/1.11-2.0.0-b6",
@@ -62,24 +71,25 @@
         "1.11-2.0.0-b4": "See https://github.com/ReplayMod/ReplayMod/releases/1.11-2.0.0-b4"
     },
     "1.11.2": {
+        "1.11.2-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.11.2-2.1.0",
         "1.11.2-2.0.1": "See https://github.com/ReplayMod/ReplayMod/releases/1.11.2-2.0.1",
         "1.11.2-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.11.2-2.0.0",
         "1.11.2-2.0.0-b6": "See https://github.com/ReplayMod/ReplayMod/releases/1.11.2-2.0.0-b6",
         "1.11.2-2.0.0-b5": "See https://github.com/ReplayMod/ReplayMod/releases/1.11.2-2.0.0-b5"
     },
     "1.12": {
+        "1.12-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.12-2.1.0",
         "1.12-2.0.1": "See https://github.com/ReplayMod/ReplayMod/releases/1.12-2.0.1",
         "1.12-2.0.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.12-2.0.0",
         "1.12-2.0.0-b7": "See https://github.com/ReplayMod/ReplayMod/releases/1.12-2.0.0-b7"
     },
     "1.12.1": {
+        "1.12.1-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.12.1-2.1.0",
         "1.12.1-2.0.1": "See https://github.com/ReplayMod/ReplayMod/releases/1.12.1-2.0.1",
         "1.12.1-2.0.0-b8": "See https://github.com/ReplayMod/ReplayMod/releases/1.12.1-2.0.0-b8"
     },
-    "1.7.10": {
-        "1.7.10-2.0.1-b1": "See https://github.com/ReplayMod/ReplayMod/releases/1.7.10-2.0.1-b1"
-    },
     "1.12.2": {
+        "1.12.2-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.12.2-2.1.0",
         "1.12.2-2.0.1-b1": "See https://github.com/ReplayMod/ReplayMod/releases/1.12.2-2.0.1-b1"
     }
 }
