@@ -35,7 +35,8 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     // but are instead played directly by the client. The server only sends these sounds to
     // other clients so we have to record them manually.
     // E.g. Block place sounds
-    @Inject(method = "playSound", at = @At("HEAD"))
+    @Inject(method = "playSound(Lnet/minecraft/entity/player/EntityPlayer;DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FF)V",
+            at = @At("HEAD"))
     public void replayModRecording_recordClientSound(EntityPlayer player, double x, double y, double z, SoundEvent sound, SoundCategory category,
                           float volume, float pitch, CallbackInfo ci) {
         if (player == mc.thePlayer) {
