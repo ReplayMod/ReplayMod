@@ -1,5 +1,6 @@
 package com.replaymod.recording.mixin;
 
+//#if MC>=10904
 import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
@@ -9,6 +10,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 @Mixin(PlayerControllerMP.class)
 public abstract class MixinPlayerControllerMP implements RecordingEventHandler.RecordingEventSender {
@@ -23,6 +26,7 @@ public abstract class MixinPlayerControllerMP implements RecordingEventHandler.R
     @Redirect(method = "onPlayerDestroyBlock", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/World;playEvent(ILnet/minecraft/util/math/BlockPos;I)V"))
     public void replayModRecording_playEvent_fixed(World world, int type, BlockPos pos, int data) {
-        world.playEvent(mc.player, type, pos, data);
+        world.playEvent(player(mc), type, pos, data);
     }
 }
+//#endif

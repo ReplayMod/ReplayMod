@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
 public class GuiHandler {
@@ -35,12 +36,13 @@ public class GuiHandler {
     }
 
     public void register() {
-        MinecraftForge.EVENT_BUS.register(this);
+        FML_BUS.register(this);
+        FORGE_BUS.register(this);
     }
 
     @SubscribeEvent
     public void injectIntoIngameMenu(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (!(event.getGui() instanceof GuiIngameMenu)) {
+        if (!(getGui(event) instanceof GuiIngameMenu)) {
             return;
         }
 
@@ -49,7 +51,7 @@ public class GuiHandler {
             mod.getReplayHandler().getReplaySender().setReplaySpeed(0);
 
             GuiButton achievements = null, stats = null, openToLan = null;
-            List<GuiButton> buttonList = event.getButtonList();
+            List<GuiButton> buttonList = getButtonList(event);
             for(GuiButton b : new ArrayList<>(buttonList)) {
                 switch (b.id) {
                     // Replace "Exit Server" button with "Exit Replay" button
@@ -70,12 +72,12 @@ public class GuiHandler {
                 }
             }
             if (achievements != null && stats != null) {
-                moveAllButtonsDirectlyBelowUpwards(buttonList, achievements.y,
-                        achievements.x, stats.x + stats.width);
+                moveAllButtonsDirectlyBelowUpwards(buttonList, y(achievements),
+                        x(achievements), x(stats) + stats.width);
             }
             if (openToLan != null) {
-                moveAllButtonsDirectlyBelowUpwards(buttonList, openToLan.y,
-                        openToLan.x, openToLan.x + openToLan.width);
+                moveAllButtonsDirectlyBelowUpwards(buttonList, y(openToLan),
+                        x(openToLan), x(openToLan) + openToLan.width);
             }
         }
     }
@@ -89,15 +91,15 @@ public class GuiHandler {
      */
     private void moveAllButtonsDirectlyBelowUpwards(List<GuiButton> buttons, int belowY, int xStart, int xEnd) {
         for (GuiButton button : buttons) {
-            if (button.y >= belowY && button.x <= xEnd && button.x + button.width >= xStart) {
-                button.y -= 24;
+            if (y(button) >= belowY && x(button) <= xEnd && x(button) + button.width >= xStart) {
+                y(button, y(button) - 24);
             }
         }
     }
 
     @SubscribeEvent
     public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
-        if (!(event.getGui() instanceof GuiMainMenu)) {
+        if (!(getGui(event) instanceof GuiMainMenu)) {
             return;
         }
 
@@ -115,25 +117,25 @@ public class GuiHandler {
             }
         }
 
-        GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, event.getGui().width / 2 - 100,
-                event.getGui().height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer"));
+        GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, getGui(event).width / 2 - 100,
+                getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer"));
         button.width = button.width / 2 - 2;
-        event.getButtonList().add(button);
+        getButtonList(event).add(button);
     }
 
     @SubscribeEvent
     public void onButton(GuiScreenEvent.ActionPerformedEvent.Pre event) {
-        if(!event.getButton().enabled) return;
+        if(!getButton(event).enabled) return;
 
-        if (event.getGui() instanceof GuiMainMenu) {
-            if (event.getButton().id == BUTTON_REPLAY_VIEWER) {
+        if (getGui(event) instanceof GuiMainMenu) {
+            if (getButton(event).id == BUTTON_REPLAY_VIEWER) {
                 new GuiReplayViewer(mod).display();
             }
         }
 
-        if (event.getGui() instanceof GuiIngameMenu && mod.getReplayHandler() != null) {
-            if (event.getButton().id == BUTTON_EXIT_REPLAY) {
-                event.getButton().enabled = false;
+        if (getGui(event) instanceof GuiIngameMenu && mod.getReplayHandler() != null) {
+            if (getButton(event).id == BUTTON_EXIT_REPLAY) {
+                getButton(event).enabled = false;
                 mc.displayGuiScreen(new GuiMainMenu());
                 try {
                     mod.getReplayHandler().endReplay();

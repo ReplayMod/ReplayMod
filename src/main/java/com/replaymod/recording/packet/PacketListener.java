@@ -14,17 +14,20 @@ import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.network.play.server.SPacketCollectItem;
-import net.minecraft.network.play.server.SPacketCustomPayload;
-import net.minecraft.network.play.server.SPacketDisconnect;
-import net.minecraft.network.play.server.SPacketResourcePackSend;
-import net.minecraft.network.play.server.SPacketSpawnMob;
-import net.minecraft.network.play.server.SPacketSpawnPlayer;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.network.play.server.*;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC>=10904
+import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.text.TextComponentString;
+//#else
+//$$ import net.minecraft.entity.DataWatcher;
+//$$ import net.minecraft.util.ChatComponentText;
+//$$
+//$$ import java.util.List;
+//#endif
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -36,6 +39,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 public class PacketListener extends ChannelInboundHandlerAdapter {
 
@@ -92,13 +97,27 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void save(Packet packet) {
         try {
+            //#if MC>=10904
             if(packet instanceof SPacketSpawnPlayer) {
                 UUID uuid = ((SPacketSpawnPlayer) packet).getUniqueId();
+            //#else
+            //$$ if(packet instanceof S0CPacketSpawnPlayer) {
+                //#if MC>=10809
+                //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).getPlayer();
+                //#else
+                //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).func_179819_c();
+                //#endif
+            //#endif
                 Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
                 uuids.add(uuid.toString());
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
                 saveMetaData();
             }
+            //#if MC<10904
+            //$$ if (packet instanceof S46PacketSetCompressionLevel) {
+            //$$     return; // Replay data is never compressed on the packet level
+            //$$ }
+            //#endif
 
             byte[] bytes = getPacketData(packet);
             long now = System.currentTimeMillis();
@@ -159,16 +178,31 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             try {
                 Packet packet = (Packet) msg;
 
+                //#if MC>=10904
                 if(packet instanceof SPacketCollectItem) {
-                    if(mc.player != null ||
-                            ((SPacketCollectItem) packet).getEntityID() == mc.player.getEntityId()) {
+                    if(player(mc) != null ||
+                            ((SPacketCollectItem) packet).getEntityID() == player(mc).getEntityId()) {
+                //#else
+                //$$ if(packet instanceof S0DPacketCollectItem) {
+                //$$     if(player(mc) != null ||
+                            //#if MC>=10809
+                            //$$ ((S0DPacketCollectItem) packet).getEntityID() == player(mc).getEntityId()) {
+                            //#else
+                            //$$ ((S0DPacketCollectItem) packet).func_149353_d() == player(mc).getEntityId()) {
+                            //#endif
+                //#endif
                         super.channelRead(ctx, msg);
                         return;
                     }
                 }
 
+                //#if MC>=10904
                 if (packet instanceof SPacketResourcePackSend) {
                     save(resourcePackRecorder.handleResourcePack((SPacketResourcePackSend) packet));
+                //#else
+                //$$ if (packet instanceof S48PacketResourcePackSend) {
+                //$$     save(resourcePackRecorder.handleResourcePack((S48PacketResourcePackSend) packet));
+                //#endif
                     return;
                 }
 
@@ -181,10 +215,17 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 save(packet);
 
+                //#if MC>=10904
                 if (packet instanceof SPacketCustomPayload) {
                     SPacketCustomPayload p = (SPacketCustomPayload) packet;
                     if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
                         packet = new SPacketDisconnect(new TextComponentString("Please update to view this replay."));
+                //#else
+                //$$ if (packet instanceof S3FPacketCustomPayload) {
+                //$$     S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
+                //$$     if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
+                //$$         packet = new S40PacketDisconnect(new ChatComponentText("Please update to view this replay."));
+                //#endif
                         save(packet);
                     }
                 }
@@ -197,12 +238,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         super.channelRead(ctx, msg);
     }
 
+    //#if MC>=10904
     private <T> void DataManager_set(EntityDataManager dataManager, EntityDataManager.DataEntry<T> entry) {
         dataManager.register(entry.getKey(), entry.getValue());
     }
+    //#endif
 
     @SuppressWarnings("unchecked")
     private byte[] getPacketData(Packet packet) throws Exception {
+        //#if MC>=10904
         if (packet instanceof SPacketSpawnMob) {
             SPacketSpawnMob p = (SPacketSpawnMob) packet;
             if (p.dataManager == null) {
@@ -226,6 +270,39 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 }
             }
         }
+        //#else
+        //$$ if(packet instanceof S0FPacketSpawnMob) {
+        //$$     S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
+        //$$     if (p.field_149043_l == null) {
+        //$$         p.field_149043_l = new DataWatcher(null);
+        //$$         if(p.func_149027_c() != null) {
+        //$$             for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_149027_c()) {
+        //$$                 p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
+        //$$             }
+        //$$         }
+        //$$     }
+        //$$ }
+        //$$
+        //$$ if(packet instanceof S0CPacketSpawnPlayer) {
+        //$$     S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
+            //#if MC>=10809
+            //$$ if (p.watcher == null) {
+            //$$     p.watcher = new DataWatcher(null);
+            //$$     if(p.func_148944_c() != null) {
+            //$$         for(DataWatcher.WatchableObject wo : p.func_148944_c()) {
+            //$$             p.watcher.addObject(wo.getDataValueId(), wo.getObject());
+            //#else
+            //$$ if (p.field_148960_i == null) {
+            //$$     p.field_148960_i = new DataWatcher(null);
+            //$$     if(p.func_148944_c() != null) {
+            //$$         for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_148944_c()) {
+            //$$             p.field_148960_i.addObject(wo.getDataValueId(), wo.getObject());
+            //#endif
+        //$$             }
+        //$$         }
+        //$$     }
+        //$$ }
+        //#endif
 
         Integer packetId = EnumConnectionState.PLAY.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
         if (packetId == null) {
@@ -233,7 +310,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         }
         ByteBuf byteBuf = Unpooled.buffer();
         PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-        packetBuffer.writeVarInt(packetId);
+        writeVarInt(packetBuffer, packetId);
         packet.writePacketData(packetBuffer);
 
         byteBuf.readerIndex(0);

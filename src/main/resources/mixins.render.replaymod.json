@@ -4,9 +4,14 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=10904
+    "MixinParticleManager",
+    //#else
+    //$$ "MixinEffectRenderer",
+    //$$ "MixinRendererLivingEntity",
+    //#endif
     "MixinEntityRenderer",
     "MixinFrustum",
-    "MixinParticleManager",
     "MixinRender",
     "MixinRenderGlobal",
     "MixinRenderManager"

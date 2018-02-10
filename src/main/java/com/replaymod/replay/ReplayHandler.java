@@ -32,6 +32,7 @@ import org.lwjgl.opengl.Display;
 import java.io.IOException;
 import java.util.*;
 
+import static com.replaymod.core.versions.MCVer.*;
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -77,7 +78,7 @@ public class ReplayHandler {
         Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
         this.replayFile = replayFile;
 
-        MinecraftForge.EVENT_BUS.post(new ReplayOpenEvent.Pre(this));
+        FML_BUS.post(new ReplayOpenEvent.Pre(this));
 
         markers = new ArrayList<>(replayFile.getMarkers().or(Collections.emptySet()));
 
@@ -88,7 +89,7 @@ public class ReplayHandler {
         overlay = new GuiReplayOverlay(this);
         overlay.setVisible(true);
 
-        MinecraftForge.EVENT_BUS.post(new ReplayOpenEvent.Post(this));
+        FML_BUS.post(new ReplayOpenEvent.Post(this));
     }
 
     void restartedReplay() {
@@ -102,7 +103,7 @@ public class ReplayHandler {
     public void endReplay() throws IOException {
         Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
 
-        MinecraftForge.EVENT_BUS.post(new ReplayCloseEvent.Pre(this));
+        FML_BUS.post(new ReplayCloseEvent.Pre(this));
 
         replaySender.terminateReplay();
 
@@ -111,27 +112,35 @@ public class ReplayHandler {
 
         channel.close().awaitUninterruptibly();
 
-        if (mc.player instanceof CameraEntity) {
-            mc.player.setDead();
+        if (player(mc) instanceof CameraEntity) {
+            player(mc).setDead();
         }
 
-        if (mc.world != null) {
-            mc.world.sendQuittingDisconnectingPacket();
+        if (world(mc) != null) {
+            world(mc).sendQuittingDisconnectingPacket();
             mc.loadWorld(null);
         }
 
+        //#if MC>=11200
         mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
+        //#else
+        //$$ mc.timer.timerSpeed = 1;
+        //#endif
         overlay.setVisible(false);
 
         ReplayModReplay.instance.replayHandler = null;
 
         mc.displayGuiScreen(null);
 
-        MinecraftForge.EVENT_BUS.post(new ReplayCloseEvent.Post(this));
+        FML_BUS.post(new ReplayCloseEvent.Post(this));
     }
 
     private void setup() {
-        mc.ingameGUI.getChatGUI().clearChatMessages(true);
+        //#if MC>=11100
+        mc.ingameGUI.getChatGUI().clearChatMessages(false);
+        //#else
+        //$$ mc.ingameGUI.getChatGUI().clearChatMessages();
+        //#endif
 
         NetworkManager networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND) {
             @Override
@@ -144,6 +153,7 @@ public class ReplayHandler {
         networkManager.setNetHandler(netHandlerPlayClient);
         FMLClientHandler.instance().setPlayClient(netHandlerPlayClient);
 
+        //#if MC>=11200
         channel = new EmbeddedChannel();
         NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
         channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
@@ -152,6 +162,15 @@ public class ReplayHandler {
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
         networkDispatcher.clientToServerHandshake();
+        //#else
+        //$$ channel = new EmbeddedChannel(networkManager);
+        //$$ NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
+        //$$ channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
+        //$$
+        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
+        //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "fml:packet_handler", networkDispatcher);
+        //$$ channel.pipeline().fireChannelActive();
+        //#endif
     }
 
     public ReplayFile getReplayFile() {
@@ -248,7 +267,7 @@ public class ReplayHandler {
      * @return {@code true} if the camera is the view entity, {@code false} otherwise
      */
     public boolean isCameraView() {
-        return mc.player instanceof CameraEntity && mc.player == mc.getRenderViewEntity();
+        return player(mc) instanceof CameraEntity && player(mc) == mc.getRenderViewEntity();
     }
 
     /**
@@ -256,7 +275,7 @@ public class ReplayHandler {
      * @return The camera entity or {@code null} if it does not yet exist
      */
     public CameraEntity getCameraEntity() {
-        return mc.player instanceof CameraEntity ? (CameraEntity) mc.player : null;
+        return player(mc) instanceof CameraEntity ? (CameraEntity) player(mc) : null;
     }
 
     public UUID getSpectatedUUID() {
@@ -303,7 +322,7 @@ public class ReplayHandler {
                     @Override
                     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
                         drawBackground(0);
-                        drawCenteredString(fontRenderer, I18n.format("replaymod.gui.pleasewait"),
+                        drawCenteredString(getFontRenderer(mc), I18n.format("replaymod.gui.pleasewait"),
                                 width / 2, height / 2, 0xffffffff);
                     }
                 };
@@ -318,7 +337,7 @@ public class ReplayHandler {
                 mc.getFramebuffer().bindFramebuffer(true);
                 mc.entityRenderer.setupOverlayRendering();
 
-                ScaledResolution resolution = new ScaledResolution(mc);
+                ScaledResolution resolution = newScaledResolution(mc);
                 guiScreen.setWorldAndResolution(mc, resolution.getScaledWidth(), resolution.getScaledHeight());
                 guiScreen.drawScreen(0, 0, 0);
 
@@ -335,8 +354,8 @@ public class ReplayHandler {
                 replaySender.setAsyncMode(true);
                 replaySender.setReplaySpeed(0);
 
-                mc.getConnection().getNetworkManager().processReceivedPackets();
-                for (Entity entity : mc.world.loadedEntityList) {
+                getConnection(mc).getNetworkManager().processReceivedPackets();
+                for (Entity entity : loadedEntityList(world(mc))) {
                     if (entity instanceof EntityOtherPlayerMP) {
                         EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
                         e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);

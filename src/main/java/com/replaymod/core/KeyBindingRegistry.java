@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.replaymod.core.versions.MCVer;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -85,7 +86,7 @@ public class KeyBindingRegistry {
                 CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Key Binding");
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
                 category.addCrashSection("Key Binding", keyBinding);
-                category.addDetail("Handler", runnable::toString);
+                MCVer.addDetail(category, "Handler", runnable::toString);
                 throw new ReportedException(crashReport);
             }
         }
@@ -100,7 +101,7 @@ public class KeyBindingRegistry {
                 CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Raw Key Binding");
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
                 category.addCrashSection("Key Code", keyCode);
-                category.addDetail("Handler", runnable::toString);
+                MCVer.addDetail(category, "Handler", runnable::toString);
                 throw new ReportedException(crashReport);
             }
         }

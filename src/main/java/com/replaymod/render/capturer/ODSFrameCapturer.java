@@ -15,6 +15,7 @@ import org.lwjgl.util.ReadableDimension;
 
 import java.io.IOException;
 
+import static com.replaymod.core.versions.MCVer.fog;
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -75,15 +76,15 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             linkState(1, "lightMapEnabled");
             linkState(2, "hurtTextureEnabled");
             final Program.Uniform uniform = shaderProgram.getUniformVariable("fogEnabled");
-            previousFogState = GlStateManager.fogState.fog;
+            previousFogState = fog(GlStateManager.fogState);
             uniform.set(previousFogState.currentState);
-            GlStateManager.fogState.fog = new BooleanState(previousFogState.capability) {
+            fog(GlStateManager.fogState, new BooleanState(previousFogState.capability) {
                 @Override
                 public void setState(boolean state) {
                     super.setState(state);
                     uniform.set(state);
                 }
-            };
+            });
             shaderProgram.stopUsing();
         } catch (Exception e) {
             throw new ReportedException(CrashReport.makeCrashReport(e, "Creating ODS shaders"));
@@ -135,7 +136,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         for (int i = 0; i < 3; i++) {
             GlStateManager.textureState[i].texture2DState = previousStates[i];
         }
-        GlStateManager.fogState.fog = previousFogState;
+        fog(GlStateManager.fogState, previousFogState);
     }
 
     private class CubicStereoFrameCapturer extends CubicPboOpenGlFrameCapturer {

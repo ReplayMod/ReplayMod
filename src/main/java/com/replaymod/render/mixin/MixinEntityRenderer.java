@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.RayTraceResult;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.ReadableColor;
 import org.lwjgl.util.glu.Project;
@@ -22,6 +21,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=10904
+import net.minecraft.util.math.RayTraceResult;
+//#else
+//$$ import net.minecraft.util.MovingObjectPosition;
+//#endif
 
 @Mixin(value = EntityRenderer.class)
 public abstract class MixinEntityRenderer implements EntityRendererHandler.IEntityRenderer, EntityRendererHandler.GluPerspective {
@@ -118,8 +123,13 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     @Shadow
     public abstract void renderHand(float partialTicks, int renderPass);
 
+    //#if MC>=10904
     @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/RayTraceResult;IF)V"))
     private void replayModRender_drawSelectionBox(RenderGlobal instance, EntityPlayer player, RayTraceResult rtr, int alwaysZero, float partialTicks) {
+    //#else
+    //$$ @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;IF)V"))
+    //$$ private void replayModRender_drawSelectionBox(RenderGlobal instance, EntityPlayer player, MovingObjectPosition rtr, int alwaysZero, float partialTicks) {
+    //#endif
         if (replayModRender_handler == null) {
             instance.drawSelectionBox(player, rtr, alwaysZero, partialTicks);
         }

@@ -16,7 +16,6 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
@@ -25,6 +24,7 @@ import org.lwjgl.util.ReadablePoint;
 import org.lwjgl.util.WritablePoint;
 
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
+import static com.replaymod.core.versions.MCVer.*;
 
 public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
@@ -138,9 +138,9 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     public void setVisible(boolean visible) {
         if (isVisible() != visible) {
             if (visible) {
-                MinecraftForge.EVENT_BUS.register(this);
+                FML_BUS.register(this);
             } else {
-                MinecraftForge.EVENT_BUS.unregister(this);
+                FML_BUS.unregister(this);
             }
         }
         super.setVisible(visible);

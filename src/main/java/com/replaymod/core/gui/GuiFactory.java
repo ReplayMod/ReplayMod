@@ -14,6 +14,7 @@ public class GuiFactory implements IModGuiFactory {
 
     }
 
+    //#if MC>=11200
     @Override
     public boolean hasConfigGui() {
         return true;
@@ -23,6 +24,30 @@ public class GuiFactory implements IModGuiFactory {
     public GuiScreen createConfigGui(GuiScreen parentScreen) {
         return new GuiReplaySettings(parentScreen, ReplayMod.instance.getSettingsRegistry()).toMinecraft();
     }
+    //#else
+    //$$ @Override
+    //$$ public Class<? extends GuiScreen> mainConfigGuiClass() {
+    //$$     return ConfigGuiWrapper.class;
+    //$$ }
+    //$$
+    //$$ @Override
+    //$$ public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
+    //$$     return null;
+    //$$ }
+    //$$
+    //$$ public static class ConfigGuiWrapper extends GuiScreen {
+    //$$     private final GuiScreen parent;
+    //$$
+    //$$     public ConfigGuiWrapper(GuiScreen parent) {
+    //$$         this.parent = parent;
+    //$$     }
+    //$$
+    //$$     @Override
+    //$$     public void initGui() {
+    //$$         new GuiReplaySettings(parent, ReplayMod.instance.getSettingsRegistry()).display();
+    //$$     }
+    //$$ }
+    //#endif
 
     @Override
     public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {

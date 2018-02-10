@@ -15,10 +15,8 @@ import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -32,6 +30,7 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
+import static com.replaymod.core.versions.MCVer.*;
 
 public class PathPreviewRenderer {
     private static final ResourceLocation CAMERA_HEAD = new ResourceLocation("replaymod", "camera_head.png");
@@ -203,36 +202,32 @@ public class PathPreviewRenderer {
         if (distanceSquared(view, pos1) > renderDistanceSquared) return;
         if (distanceSquared(view, pos2) > renderDistanceSquared) return;
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.getBuffer();
-        vertexBuffer.setTranslation(-view.getLeft(), -view.getMiddle(), -view.getRight());
+        BufferBuilder_setTranslation(-view.getLeft(), -view.getMiddle(), -view.getRight());
 
-        vertexBuffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+        BufferBuilder_beginPosCol(GL11.GL_LINES);
 
-        vertexBuffer.pos(pos1.getLeft(), pos1.getMiddle(), pos1.getRight()).color(
+        BufferBuilder_addPosCol(pos1.getLeft(), pos1.getMiddle(), pos1.getRight(),
                 color >> 16 & 0xff,
                 color >> 8 & 0xff,
                 color & 0xff,
                 255
-        ).endVertex();
-        vertexBuffer.pos(pos2.getLeft(), pos2.getMiddle(), pos2.getRight()).color(
+        );
+        BufferBuilder_addPosCol(pos2.getLeft(), pos2.getMiddle(), pos2.getRight(),
                 color >> 16 & 0xff,
                 color >> 8 & 0xff,
                 color & 0xff,
                 255
-        ).endVertex();
+        );
 
         GL11.glLineWidth(3);
-        tessellator.draw();
-        vertexBuffer.setTranslation(0, 0, 0);
+        Tessellator.getInstance().draw();
+        BufferBuilder_setTranslation(0, 0, 0);
     }
 
     private void drawPoint(Triple<Double, Double, Double> view,
                            Triple<Double, Double, Double> pos,
                            Keyframe keyframe) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.getBuffer();
-        vertexBuffer.setTranslation(0, 0, 0);
+        BufferBuilder_setTranslation(0, 0, 0);
 
         mc.renderEngine.bindTexture(TEXTURE);
 
@@ -253,12 +248,12 @@ public class PathPreviewRenderer {
         float maxX = 0.5f;
         float maxY = 0.5f;
 
-        vertexBuffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        BufferBuilder_beginPosTex(GL11.GL_QUADS);
 
-        vertexBuffer.pos(minX, minY, 0).tex(posX + size, posY + size).endVertex();
-        vertexBuffer.pos(minX, maxY, 0).tex(posX + size, posY).endVertex();
-        vertexBuffer.pos(maxX, maxY, 0).tex(posX, posY).endVertex();
-        vertexBuffer.pos(maxX, minY, 0).tex(posX, posY + size).endVertex();
+        BufferBuilder_addPosTex(minX, minY, 0, posX + size, posY + size);
+        BufferBuilder_addPosTex(minX, maxY, 0, posX + size, posY);
+        BufferBuilder_addPosTex(maxX, maxY, 0, posX, posY);
+        BufferBuilder_addPosTex(maxX, minY, 0, posX, posY + size);
 
         GL11.glPushMatrix();
 
@@ -271,7 +266,7 @@ public class PathPreviewRenderer {
         GL11.glRotatef(-mc.getRenderManager().playerViewY, 0, 1, 0);
         GL11.glRotatef(mc.getRenderManager().playerViewX, 1, 0, 0);
 
-        tessellator.draw();
+        Tessellator.getInstance().draw();
 
         GL11.glPopMatrix();
     }
@@ -280,8 +275,7 @@ public class PathPreviewRenderer {
                             Triple<Double, Double, Double> pos,
                             Triple<Float, Float, Float> rot) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.getBuffer();
-        vertexBuffer.setTranslation(0, 0, 0);
+        BufferBuilder_setTranslation(0, 0, 0);
 
         mc.renderEngine.bindTexture(CAMERA_HEAD);
 
@@ -299,10 +293,10 @@ public class PathPreviewRenderer {
 
         //draw the position line
         GL11.glDisable(GL11.GL_TEXTURE_2D);
-        vertexBuffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+        BufferBuilder_beginPosCol(GL11.GL_LINES);
 
-        vertexBuffer.pos(0, 0, 0).color(0, 255, 0, 170).endVertex();
-        vertexBuffer.pos(0, 0, 2).color(0, 255, 0, 170).endVertex();
+        BufferBuilder_addPosCol(0, 0, 0, 0, 255, 0, 170);
+        BufferBuilder_addPosCol(0, 0, 2, 0, 255, 0, 170);
 
         tessellator.draw();
 
@@ -313,43 +307,43 @@ public class PathPreviewRenderer {
 
         double r = -cubeSize/2;
 
-        vertexBuffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        BufferBuilder_beginPosTexCol(GL11.GL_QUADS);
 
         //back
-        vertexBuffer.pos(r, r + cubeSize, r).tex(3 * 8 / 64f, 8 / 64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r + cubeSize, r + cubeSize, r).tex(4*8/64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r + cubeSize, r, r).tex(4*8/64f, 2*8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r, r).tex(3*8/64f, 2*8/64f).color(255, 255, 255, 200).endVertex();
+        BufferBuilder_addPosTexCol(r, r + cubeSize, r, 3 * 8 / 64f, 8 / 64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r, 4*8/64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r + cubeSize, r, r, 4*8/64f, 2*8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r, r, 3*8/64f, 2*8/64f, 255, 255, 255, 200);
 
         //front
-        vertexBuffer.pos(r + cubeSize, r, r + cubeSize).tex(2 * 8 / 64f, 2*8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r + cubeSize, r + cubeSize, r + cubeSize).tex(2 * 8 / 64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r + cubeSize, r + cubeSize).tex(8 / 64f, 8 / 64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r, r + cubeSize).tex(8 / 64f, 2*8/64f).color(255, 255, 255, 200).endVertex();
+        BufferBuilder_addPosTexCol(r + cubeSize, r, r + cubeSize, 2 * 8 / 64f, 2*8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r + cubeSize, 2 * 8 / 64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r + cubeSize, r + cubeSize, 8 / 64f, 8 / 64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r, r + cubeSize, 8 / 64f, 2*8/64f, 255, 255, 255, 200);
 
         //left
-        vertexBuffer.pos(r + cubeSize, r + cubeSize, r).tex(0, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r + cubeSize, r + cubeSize, r + cubeSize).tex(8/64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r + cubeSize, r, r + cubeSize).tex(8/64f, 2*8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r+cubeSize, r, r).tex(0, 2*8/64f).color(255, 255, 255, 200).endVertex();
+        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r, 0, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r + cubeSize, r, r + cubeSize, 8/64f, 2*8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r+cubeSize, r, r, 0, 2*8/64f, 255, 255, 255, 200);
 
         //right
-        vertexBuffer.pos(r, r + cubeSize, r + cubeSize).tex(2*8/64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r + cubeSize, r).tex(3*8/64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r, r).tex(3*8/64f, 2*8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r, r + cubeSize).tex(2 * 8 / 64f, 2 * 8 / 64f).color(255, 255, 255, 200).endVertex();
+        BufferBuilder_addPosTexCol(r, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r + cubeSize, r, 3*8/64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r, r, 3*8/64f, 2*8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r, r + cubeSize, 2 * 8 / 64f, 2 * 8 / 64f, 255, 255, 255, 200);
 
         //bottom
-        vertexBuffer.pos(r + cubeSize, r, r).tex(3*8/64f, 0).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r + cubeSize, r, r + cubeSize).tex(3*8/64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r, r + cubeSize).tex(2*8/64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r, r).tex(2 * 8 / 64f, 0).color(255, 255, 255, 200).endVertex();
+        BufferBuilder_addPosTexCol(r + cubeSize, r, r, 3*8/64f, 0, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r + cubeSize, r, r + cubeSize, 3*8/64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r, r + cubeSize, 2*8/64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r, r, 2 * 8 / 64f, 0, 255, 255, 255, 200);
 
         //top
-        vertexBuffer.pos(r, r + cubeSize, r).tex(8/64f, 0).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r, r + cubeSize, r + cubeSize).tex(8/64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r + cubeSize, r + cubeSize, r + cubeSize).tex(2*8/64f, 8/64f).color(255, 255, 255, 200).endVertex();
-        vertexBuffer.pos(r + cubeSize, r + cubeSize, r).tex(2 * 8 / 64f, 0).color(255, 255, 255, 200).endVertex();
+        BufferBuilder_addPosTexCol(r, r + cubeSize, r, 8/64f, 0, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 255, 255, 255, 200);
+        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r, 2 * 8 / 64f, 0, 255, 255, 255, 200);
 
         tessellator.draw();
 

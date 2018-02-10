@@ -11,6 +11,8 @@ import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 /**
  * Moves certain buttons on the main menu upwards so we can inject our own.
  */
@@ -21,25 +23,30 @@ public class MainMenuHandler {
 
     @SubscribeEvent
     public void onInit(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (event.getGui() instanceof GuiMainMenu) {
-            GuiMainMenu gui = (GuiMainMenu) event.getGui();
+        GuiScreen guiScreen = getGui(event);
+        if (guiScreen instanceof GuiMainMenu) {
+            GuiMainMenu gui = (GuiMainMenu) guiScreen;
             int realmsOffset = 0;
-            for (GuiButton button : event.getButtonList()) {
+            for (GuiButton button : getButtonList(event)) {
                 // Buttons that aren't in a rectangle directly above our space don't need moving
-                if (button.x + button.width < event.getGui().width / 2 - 100
-                        || button.x > event.getGui().width / 2 + 100
-                        || button.y > event.getGui().height / 4 + 10 + 4 * 24) continue;
+                if (x(button) + button.width < gui.width / 2 - 100
+                        || x(button) > gui.width / 2 + 100
+                        || y(button) > gui.height / 4 + 10 + 4 * 24) continue;
                 // Move button up to make space for two rows of buttons
                 // and then move back down by 10 to compensate for the space to the exit button that was already there
                 int offset = -2 * 24 + 10;
-                button.y += offset;
+                y(button, y(button) + offset);
+                //#if MC>=11202
                 if (button == gui.realmsButton) {
                     realmsOffset = offset;
                 }
+                //#endif
             }
+            //#if MC>=11202
             if (realmsOffset != 0 && gui.realmsNotification instanceof GuiScreenRealmsProxy) {
                 gui.realmsNotification = new RealmsNotificationProxy((GuiScreenRealmsProxy) gui.realmsNotification, realmsOffset);
             }
+            //#endif
         }
     }
 
@@ -52,10 +59,12 @@ public class MainMenuHandler {
             this.offset = offset;
         }
 
+        //#if MC>=11202
         @Override
         public void setGuiSize(int w, int h) {
             proxy.setGuiSize(w, h);
         }
+        //#endif
 
         @Override
         public void initGui() {

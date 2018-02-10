@@ -1,7 +1,13 @@
 package com.replaymod.core.utils;
 
 import net.minecraft.network.PacketBuffer;
+//#if MC>=10904
 import net.minecraft.network.play.server.SPacketCustomPayload;
+//#else
+//$$ import net.minecraft.network.play.server.S3FPacketCustomPayload;
+//#endif
+
+import static com.replaymod.core.versions.MCVer.readString;
 
 /**
  * Restrictions set by the server,
@@ -14,10 +20,14 @@ public class Restrictions {
     private boolean onlyFirstPerson;
     private boolean onlyRecordingPlayer;
 
+    //#if MC>=10904
     public String handle(SPacketCustomPayload packet) {
+    //#else
+    //$$ public String handle(S3FPacketCustomPayload packet) {
+    //#endif
         PacketBuffer buffer = packet.getBufferData();
         while (buffer.isReadable()) {
-            String name = buffer.readString(64);
+            String name = readString(buffer, 64);
             boolean active = buffer.readBoolean();
 //            if ("no_xray".equals(name)) {
 //                noXray = active;

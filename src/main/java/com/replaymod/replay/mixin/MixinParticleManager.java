@@ -1,5 +1,6 @@
 package com.replaymod.replay.mixin;
 
+//#if MC>=10904
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.world.World;
@@ -29,3 +30,4 @@ public abstract class MixinParticleManager {
         queueEntityFX.clear();
     }
 }
+//#endif

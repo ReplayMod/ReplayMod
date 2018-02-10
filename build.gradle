@@ -1,119 +1,39 @@
 import groovy.json.JsonOutput
 
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "sponge"
-            url = "https://repo.spongepowered.org/maven"
-        }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
-    }
-}
-
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'org.spongepowered.mixin'
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 version = gitDescribe()
 group= "com.replaymod"
-archivesBaseName = "replaymod"
 
-minecraft {
-    coreMod = 'com.replaymod.core.LoadingPlugin'
-    version = '1.12.2-14.23.0.2486'
-    runDir = "eclipse"
-    mappings = "snapshot_20170615"
-    replace '@MOD_VERSION@', project.version
-    // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
-    // a newer srg-compatible MC version (that may be using a different protocol version)
-    replace '@MC_VERSION@', "[ ${project.minecraft.version} ]"
-}
-
-repositories {
-    maven {
-        name = "SpongePowered Repo"
-        url = "http://repo.spongepowered.org/maven/"
-    }
-    maven { url 'https://jitpack.io' }
-}
-
-configurations {
-    shade
-    compile.extendsFrom shade
-}
-
-dependencies {
-    compile 'org.projectlombok:lombok:1.16.4'
-
-    compile 'org.spongepowered:mixin:0.7.5-SNAPSHOT'
-    shade 'com.googlecode.mp4parser:isoparser:1.1.7'
-    shade 'org.apache.commons:commons-exec:1.3'
-    shade 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0'
-    shade 'com.google.api-client:google-api-client-gson:1.20.0'
-    shade 'com.google.api-client:google-api-client-java6:1.20.0'
-    shade 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
-
-    shade 'org.aspectj:aspectjrt:1.8.2'
-
-    shade 'com.github.replaymod:ReplayStudio:b040763'
-
-    testCompile 'junit:junit:4.11'
-}
-
-jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    dependsOn configurations.compile
-    dependsOn configurations.shade
-
-    def shade = {files(
-            configurations.compile.findAll {it.name.startsWith 'mixin-'}
-                    + configurations.shade
-    )}
-
-    def noticeDir = file("$buildDir/NOTICE")
-    doFirst {
-        noticeDir.deleteDir()
-        noticeDir.mkdirs()
-        shade().collect { it.isDirectory() ? fileTree(it) : zipTree(it) }.each {
-            it.matching { include '**/NOTICE*' }.each {
-                new File(noticeDir, 'NOTICE.txt') << it.getText('UTF-8') + '\n'
+subprojects {
+    buildscript {
+        repositories {
+            mavenLocal()
+            mavenCentral()
+            maven {
+                name = "forge"
+                url = "http://files.minecraftforge.net/maven"
+            }
+            maven {
+                name = "sponge"
+                url = "https://repo.spongepowered.org/maven"
+            }
+            maven {
+                name = "sonatype"
+                url = "https://oss.sonatype.org/content/repositories/snapshots/"
             }
         }
-    }
-    from noticeDir
-
-    from ({shade().collect { it.isDirectory() ? it : zipTree(it) }}) {
-        exclude '**/NOTICE*'
-        // exclude everything taken in from jGui for running the mod in a dev environment
-        exclude { new File(file('jGui/src/main/resources'), it.relativePath.pathString).exists() }
-        eachFile {
-            if (getName() == 'LICENSE.txt') {
-                setName(getFile().getParentFile().getName().split('.jar_')[0] + '-LICENSE.txt')
+        dependencies {
+            classpath('org.spongepowered:mixingradle:0.6-SNAPSHOT'){
+                // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
+                // and putting mixin right here will place it before forge in the class loader
+                exclude group: 'org.ow2.asm', module: 'asm-debug-all'
             }
         }
     }
 
-    manifest {
-         attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-                 'TweakOrder': '0',
-                 'FMLCorePluginContainsFMLMod': 'true',
-                 'FMLAT': 'replaymod_at.cfg'
-	}
+    // Thanks for wasting my time gradle...
+    // Workaround for https://discuss.gradle.org/t/idea-plugin-bug/21525
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
 }
 
 def gitDescribe() {
@@ -129,129 +49,14 @@ def gitDescribe() {
     }
 }
 
-processResources
-{
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+apply from: 'versions/preprocessor.gradle'
 
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-
-        // replace version and mcversion
-        expand 'version': project.version, 'mcversion': project.minecraft.version
-    }
-
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
-}
-
-sourceSets {
-    main {
-        // Directly include jGui into main build
-        // This could also be done by including it as a gradle subproject, however
-        // doing so caused classpath issues on some IntelliJ versions.
-        java {
-            srcDir 'jGui/src/main/java'
-        }
-        resources {
-            srcDir 'jGui/src/main/resources'
-        }
-        ext.refMap = "mixins.replaymod.refmap.json"
-    }
-    integrationTest {
-        compileClasspath += main.runtimeClasspath + main.output
-        java {
-            srcDir file('src/integration-test/java')
-        }
-        resources.srcDir file('src/integration-test/resources')
-    }
-}
-
-task copySrg(type: Copy, dependsOn: 'genSrgs') {
-    from {project.tasks.genSrgs.mcpToSrg}
-    into 'build'
-}
-
-setupDecompWorkspace.dependsOn copySrg
-setupDevWorkspace.dependsOn copySrg
-project.tasks.idea.dependsOn copySrg
-
-
-import org.objectweb.asm.*
-
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
-import java.util.zip.ZipOutputStream
-
-import static org.objectweb.asm.Opcodes.ASM5
-
-// MC binaries were complied with a java version that produces invalid class files under certain circumstances
-// This causes setupCIWorkspace to be insufficient for compiling.
-// Related JDK bug: https://bugs.openjdk.java.net/browse/JDK-8066725
-// As a workaround, to use setupCIWorkspace on Drone, we modify the bin jar in-place and remove all parameter annotations.
-// WARNING: This piece of code ignores any and all gradle conventions and will probably fail horribly when run outside
-// of a single-use environment (e.g. Drone). Use setupDecompWorkspace for normal use.
-tasks.deobfMcMCP.doLast {
-    println "Applying RuntimeInvisibleParameterAnnotations workaround..."
-    File jar = getOutJar()
-    File tmp = new File((File) getTemporaryDir(), "workaround.jar")
-    tmp.withOutputStream {
-        new ZipOutputStream(it).withStream { dst ->
-            new ZipFile(jar).withCloseable { src ->
-                src.entries().each {
-                    if (it.name.startsWith("net/minecraft/") && it.name.endsWith(".class")) {
-                        def cw = new ClassWriter(0)
-                        def cv = new ClassVisitor(ASM5, cw) {
-                            @Override
-                            MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-                                return new MethodVisitor(ASM5, cv.visitMethod(access, name, desc, signature, exceptions)) {
-                                    @Override
-                                    AnnotationVisitor visitParameterAnnotation(int parameter, String pdesc, boolean visible) {
-                                        return null // Strip all parameter annotations
-                                    }
-                                }
-                            }
-                        }
-                        new ClassReader(src.getInputStream(it)).accept(cv, 0)
-                        dst.putNextEntry(new ZipEntry(it.name))
-                        dst.write(cw.toByteArray())
-                    } else {
-                        dst.putNextEntry(it)
-                        dst.write(src.getInputStream(it).bytes)
-                    }
-                }
-            }
-        }
-    }
-    jar.delete()
-    tmp.renameTo(jar)
-}
-
-task runIntegrationTest(type: JavaExec, dependsOn: ["makeStart", "jar"]) {
-    main = 'GradleStart'
-    standardOutput = System.out
-    errorOutput = System.err
-    workingDir file(minecraft.runDir)
-
-    def testDir = new File(minecraft.runDir, "integration-test")
-    doFirst {
-        testDir.deleteDir()
-        testDir.mkdirs()
-    }
-
+task setCoreVersion() {
     doLast {
-        testDir.deleteDir()
-    }
-
-    afterEvaluate {
-        def runClient = tasks.getByName("runClient")
-        runIntegrationTest.jvmArgs = runClient.jvmArgs + "-Dfml.noGrab=true"
-        runIntegrationTest.args = runClient.args + "--gameDir" + testDir.canonicalPath
-        runIntegrationTest.classpath runClient.classpath + sourceSets.integrationTest.output
+        def vars = [MC: project.mcVersion as int, DEV_ENV: 1]
+        project.convertTree(vars, 'src/main/java')
+        project.convertTree(vars, 'src/main/resources')
+        project.convertTree(vars, 'versions/core/build.gradle')
     }
 }
 

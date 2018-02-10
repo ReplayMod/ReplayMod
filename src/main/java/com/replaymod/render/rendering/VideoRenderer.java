@@ -23,13 +23,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Timer;
-import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
+
+//#if MC>=10904
+import net.minecraft.util.SoundCategory;
+//#else
+//$$ import net.minecraft.client.audio.SoundCategory;
+//#endif
 
 import java.io.IOException;
 import java.util.Collection;
@@ -40,6 +44,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import static com.google.common.collect.Iterables.getLast;
+import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -56,7 +61,11 @@ public class VideoRenderer implements RenderInfo {
     private int fps;
     private boolean mouseWasGrabbed;
     private boolean debugInfoWasShown;
+    //#if MC>=10904
     private Map<SoundCategory, Float> originalSoundLevels;
+    //#else
+    //$$ private Map originalSoundLevels;
+    //#endif
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
@@ -93,7 +102,7 @@ public class VideoRenderer implements RenderInfo {
      * @return {@code true} if rendering was successful, {@code false} if the user aborted rendering (or the window was closed)
      */
     public boolean renderVideo() throws Throwable {
-        MinecraftForge.EVENT_BUS.post(new ReplayRenderEvent.Pre(this));
+        FML_BUS.post(new ReplayRenderEvent.Pre(this));
 
         setup();
 
@@ -114,8 +123,13 @@ public class VideoRenderer implements RenderInfo {
 
             if (videoStart > 1000) {
                 int replayTime = videoStart - 1000;
+                //#if MC>=11200
                 timer.renderPartialTicks = 0;
                 timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
+                //#else
+                //$$ timer.elapsedPartialTicks = timer.renderPartialTicks = 0;
+                //$$ timer.timerSpeed = 1;
+                //#endif
                 while (replayTime < videoStart) {
                     timer.elapsedTicks = 1;
                     replayTime += 50;
@@ -139,7 +153,7 @@ public class VideoRenderer implements RenderInfo {
 
         finish();
 
-        MinecraftForge.EVENT_BUS.post(new ReplayRenderEvent.Post(this));
+        FML_BUS.post(new ReplayRenderEvent.Post(this));
 
         if (failureCause != null) {
             throw failureCause;
@@ -203,9 +217,15 @@ public class VideoRenderer implements RenderInfo {
         for (SoundCategory category : SoundCategory.values()) {
             mutedSounds.put(category, 0f);
         }
+        //#if MC>=10904
         originalSoundLevels = mc.gameSettings.soundLevels;
         mutedSounds.put(SoundCategory.MASTER, originalSoundLevels.get(SoundCategory.MASTER));
         mc.gameSettings.soundLevels = mutedSounds;
+        //#else
+        //$$ originalSoundLevels = mc.gameSettings.mapSoundLevels;
+        //$$ mutedSounds.put(SoundCategory.MASTER, (Float) originalSoundLevels.get(SoundCategory.MASTER));
+        //$$ mc.gameSettings.mapSoundLevels = mutedSounds;
+        //#endif
 
         fps = settings.getFramesPerSecond();
 
@@ -225,6 +245,11 @@ public class VideoRenderer implements RenderInfo {
         totalFrames = (int) (duration*fps/1000);
 
         updateDisplaySize();
+
+        //#if MC<=10809
+        //$$ ScaledResolution scaled = newScaledResolution(mc);
+        //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
+        //#endif
 
         chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.renderGlobal);
 
@@ -246,7 +271,11 @@ public class VideoRenderer implements RenderInfo {
         if (mouseWasGrabbed) {
             mc.mouseHelper.grabMouseCursor();
         }
+        //#if MC>=10904
         mc.gameSettings.soundLevels = originalSoundLevels;
+        //#else
+        //$$ mc.gameSettings.mapSoundLevels = originalSoundLevels;
+        //#endif
         mc.displayGuiScreen(null);
         if (chunkLoadingRenderGlobal != null) {
             chunkLoadingRenderGlobal.uninstall();
@@ -296,7 +325,7 @@ public class VideoRenderer implements RenderInfo {
 
             mc.entityRenderer.setupOverlayRendering();
 
-            ScaledResolution scaled = new ScaledResolution(mc);
+            ScaledResolution scaled = newScaledResolution(mc);
             gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
             try {

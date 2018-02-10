@@ -19,14 +19,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.stats.RecipeBook;
-import net.minecraft.stats.StatisticsManager;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -36,13 +29,32 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+//#if MC>=10904
+import net.minecraft.inventory.EntityEquipmentSlot;
+//#if MC>=11200
+import net.minecraft.stats.RecipeBook;
+//#endif
+import net.minecraft.stats.StatisticsManager;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.ITextComponent;
+//#else
+//$$ import net.minecraft.stats.StatFileWriter;
+//$$ import net.minecraft.util.AxisAlignedBB;
+//$$ import net.minecraft.util.IChatComponent;
+//$$ import net.minecraft.util.MovingObjectPosition;
+//#endif
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 /**
  * The camera entity used as the main player entity during replay viewing.
- * During a replay {@link Minecraft#player} should be an instance of this class.
+ * During a replay the player should be an instance of this class.
  * Camera movement is controlled by a separate {@link CameraController}.
  */
 public class CameraEntity extends EntityPlayerSP {
@@ -69,9 +81,20 @@ public class CameraEntity extends EntityPlayerSP {
      */
     private final EventHandler eventHandler = new EventHandler();
 
+    //#if MC>=11200
     public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
         super(mcIn, worldIn, netHandlerPlayClient, statisticsManager, recipeBook);
-        MinecraftForge.EVENT_BUS.register(eventHandler);
+    //#else
+    //#if MC>=10904
+    //$$ public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager) {
+    //$$     super(mcIn, worldIn, netHandlerPlayClient, statisticsManager);
+    //#else
+    //$$ public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
+    //$$     super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
+    //#endif
+    //#endif
+        FORGE_BUS.register(eventHandler);
+        FML_BUS.register(eventHandler);
         if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
             cameraController = ReplayModReplay.instance.createCameraController(this);
         } else {
@@ -159,14 +182,14 @@ public class CameraEntity extends EntityPlayerSP {
             // entity is recreated and we have to spectate a new entity
             UUID spectating = ReplayModReplay.instance.getReplayHandler().getSpectatedUUID();
             if (spectating != null && (view.getUniqueID() != spectating
-                    || view.world != world)
-                    || world.getEntityByID(view.getEntityId()) != view) {
+                    || world(view) != world(this))
+                    || world(this).getEntityByID(view.getEntityId()) != view) {
                 if (spectating == null) {
                     // Entity (non-player) died, stop spectating
                     ReplayModReplay.instance.getReplayHandler().spectateEntity(this);
                     return;
                 }
-                view = world.getPlayerEntityByUUID(spectating);
+                view = world(this).getPlayerEntityByUUID(spectating);
                 if (view != null) {
                     mc.setRenderViewEntity(view);
                 } else {
@@ -185,8 +208,8 @@ public class CameraEntity extends EntityPlayerSP {
     @Override
     public void preparePlayerToSpawn() {
         // Make sure our world is up-to-date in case of world changes
-        if (mc.world != null) {
-            world = mc.world;
+        if (world(mc) != null) {
+            world(this, world(mc));
         }
         super.preparePlayerToSpawn();
     }
@@ -296,6 +319,7 @@ public class CameraEntity extends EntityPlayerSP {
         return 0;
     }
 
+    //#if MC>=10904
     @Override
     public float getCooldownPeriod() {
         Entity view = mc.getRenderViewEntity();
@@ -344,6 +368,19 @@ public class CameraEntity extends EntityPlayerSP {
 
         return pos;
     }
+    //#else
+    //$$ @Override
+    //$$ public MovingObjectPosition rayTrace(double p_174822_1_, float p_174822_3_) {
+    //$$     MovingObjectPosition pos = super.rayTrace(p_174822_1_, 1f);
+    //$$
+    //$$     // Make sure we can never look at blocks (-> no outline)
+    //$$     if(pos != null && pos.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+    //$$         pos.typeOfHit = MovingObjectPosition.MovingObjectType.MISS;
+    //$$     }
+    //$$
+    //$$     return pos;
+    //$$ }
+    //#endif
 
     @Override
     public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
@@ -354,7 +391,8 @@ public class CameraEntity extends EntityPlayerSP {
     @Override
     public void setDead() {
         super.setDead();
-        MinecraftForge.EVENT_BUS.unregister(eventHandler);
+        FORGE_BUS.unregister(eventHandler);
+        FML_BUS.unregister(eventHandler);
     }
 
     private void update() {
@@ -392,11 +430,23 @@ public class CameraEntity extends EntityPlayerSP {
                 && (e instanceof EntityPlayer || e instanceof EntityLiving || e instanceof EntityItemFrame);
     }
 
+    //#if MC>=11102
     @Override
     public void sendMessage(ITextComponent message) {
         if (MinecraftForge.EVENT_BUS.post(new ReplayChatMessageEvent(this))) return;
         super.sendMessage(message);
     }
+    //#else
+    //$$ @Override
+    //#if MC>=10904
+    //$$ public void addChatMessage(ITextComponent message) {
+    //#else
+    //$$ public void addChatMessage(IChatComponent message) {
+    //#endif
+    //$$     if (MinecraftForge.EVENT_BUS.post(new ReplayChatMessageEvent(this))) return;
+    //$$     super.addChatMessage(message);
+    //$$ }
+    //#endif
 
     private class EventHandler {
         @SubscribeEvent
@@ -417,11 +467,11 @@ public class CameraEntity extends EntityPlayerSP {
         @SubscribeEvent
         public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
             // The crosshair should only render if targeted entity can actually be spectated
-            if (event.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+            if (getType(event) == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
                 event.setCanceled(!canSpectate(mc.pointedEntity));
             }
             // Hotbar should never be rendered
-            if (event.getType() == RenderGameOverlayEvent.ElementType.HOTBAR) {
+            if (getType(event) == RenderGameOverlayEvent.ElementType.HOTBAR) {
                 event.setCanceled(true);
             }
         }
@@ -454,16 +504,23 @@ public class CameraEntity extends EntityPlayerSP {
                 if (lastHandRendered != player) {
                     lastHandRendered = player;
 
+                    //#if MC>=10904
                     mc.entityRenderer.itemRenderer.prevEquippedProgressMainHand = 1;
                     mc.entityRenderer.itemRenderer.prevEquippedProgressOffHand = 1;
                     mc.entityRenderer.itemRenderer.equippedProgressMainHand = 1;
                     mc.entityRenderer.itemRenderer.equippedProgressOffHand = 1;
                     mc.entityRenderer.itemRenderer.itemStackMainHand = player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND);
                     mc.entityRenderer.itemRenderer.itemStackOffHand = player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND);
+                    //#else
+                    //$$ mc.entityRenderer.itemRenderer.prevEquippedProgress = 1;
+                    //$$ mc.entityRenderer.itemRenderer.equippedProgress = 1;
+                    //$$ mc.entityRenderer.itemRenderer.itemToRender = player.inventory.getCurrentItem();
+                    //$$ mc.entityRenderer.itemRenderer.equippedItemSlot = player.inventory.currentItem;
+                    //#endif
 
 
-                    mc.player.renderArmYaw = mc.player.prevRenderArmYaw = player.rotationYaw;
-                    mc.player.renderArmPitch = mc.player.prevRenderArmPitch = player.rotationPitch;
+                    player(mc).renderArmYaw = player(mc).prevRenderArmYaw = player.rotationYaw;
+                    player(mc).renderArmPitch = player(mc).prevRenderArmPitch = player.rotationPitch;
                 }
             }
         }
@@ -471,7 +528,11 @@ public class CameraEntity extends EntityPlayerSP {
         @SubscribeEvent
         public void onEntityViewRenderEvent(EntityViewRenderEvent.CameraSetup event) {
             if (mc.getRenderViewEntity() == CameraEntity.this) {
+                //#if MC>=10904
                 event.setRoll(roll);
+                //#else
+                //$$ event.roll = roll;
+                //#endif
             }
         }
 
@@ -479,7 +540,7 @@ public class CameraEntity extends EntityPlayerSP {
 
         @SubscribeEvent
         public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
-            switch (event.getType()) {
+            switch (getType(event)) {
                 case ALL:
                     heldItemTooltipsWasTrue = mc.gameSettings.heldItemTooltips;
                     mc.gameSettings.heldItemTooltips = false;
@@ -492,15 +553,19 @@ public class CameraEntity extends EntityPlayerSP {
                 case EXPERIENCE:
                 case HEALTHMOUNT:
                 case JUMPBAR:
+                //#if MC>=10904
                 case POTION_ICONS:
+                //#endif
                     event.setCanceled(true);
                     break;
                 case HELMET:
                 case PORTAL:
                 case CROSSHAIRS:
                 case BOSSHEALTH:
+                //#if MC>=10904
                 case BOSSINFO:
                 case SUBTITLES:
+                //#endif
                 case TEXT:
                 case CHAT:
                 case PLAYER_LIST:
@@ -511,7 +576,7 @@ public class CameraEntity extends EntityPlayerSP {
 
         @SubscribeEvent
         public void postRenderGameOverlay(RenderGameOverlayEvent.Post event) {
-            if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
+            if (getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
             mc.gameSettings.heldItemTooltips = heldItemTooltipsWasTrue;
         }
     }

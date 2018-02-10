@@ -13,6 +13,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
+import static com.replaymod.core.versions.MCVer.getFontRenderer;
+import static com.replaymod.core.versions.MCVer.getType;
 
 /**
  * Renders overlay during recording.
@@ -40,9 +42,9 @@ public class GuiRecordingOverlay {
      */
     @SubscribeEvent
     public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
-        if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
+        if (getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {
-            FontRenderer fontRenderer = mc.fontRenderer;
+            FontRenderer fontRenderer = getFontRenderer(mc);
             fontRenderer.drawString(I18n.format("replaymod.gui.recording").toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
             mc.renderEngine.bindTexture(TEXTURE);
             GlStateManager.resetColor();

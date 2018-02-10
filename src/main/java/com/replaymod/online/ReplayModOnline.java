@@ -12,7 +12,6 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -24,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
+import static com.replaymod.core.versions.MCVer.*;
 import static net.minecraft.client.Minecraft.getMinecraft;
 
 @Mod(modid = ReplayModOnline.MOD_ID,
@@ -76,7 +76,7 @@ public class ReplayModOnline {
         }
 
         new GuiHandler(this).register();
-        MinecraftForge.EVENT_BUS.register(this);
+        FML_BUS.register(this);
     }
 
     @Mod.EventHandler

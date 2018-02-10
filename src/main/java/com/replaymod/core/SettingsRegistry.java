@@ -2,13 +2,14 @@ package com.replaymod.core;
 
 import com.replaymod.core.events.SettingsChangedEvent;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 public class SettingsRegistry {
     private static final Object NULL_OBJECT = new Object();
@@ -83,7 +84,7 @@ public class SettingsRegistry {
             throw new IllegalArgumentException("Default type " + key.getDefault().getClass() + " not supported.");
         }
         settings.put(key, value);
-        MinecraftForge.EVENT_BUS.post(new SettingsChangedEvent(this, key));
+        FML_BUS.post(new SettingsChangedEvent(this, key));
     }
 
     public void save() {

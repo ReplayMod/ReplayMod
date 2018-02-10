@@ -9,6 +9,8 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 public class YoutubeUpload implements Extra {
     @Override
     public void register(ReplayMod mod) throws Exception {
@@ -17,8 +19,8 @@ public class YoutubeUpload implements Extra {
 
     @SubscribeEvent
     public void onGuiOpen(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (GuiScreen.from(event.getGui()) instanceof GuiRenderingDone) {
-            GuiRenderingDone gui = (GuiRenderingDone) GuiScreen.from(event.getGui());
+        if (GuiScreen.from(getGui(event)) instanceof GuiRenderingDone) {
+            GuiRenderingDone gui = (GuiRenderingDone) GuiScreen.from(getGui(event));
             // Check if there already is a youtube button
             if (gui.actionsPanel.getChildren().stream().anyMatch(it -> it instanceof YoutubeButton)) {
                 return; // Button already added

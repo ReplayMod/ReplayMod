@@ -26,7 +26,11 @@ public abstract class MixinMinecraft {
                 && ReplayModReplay.instance.getReplayHandler() != null) {
             for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
                 if ("mapwriter.util.Utils".equals(elem.getClassName()) && "getWorldName".equals(elem.getMethodName())) {
+                    //#if MC>=10809
                     ci.setReturnValue(new ServerData(null, "replay", false));
+                    //#else
+                    //$$ ci.setReturnValue(new ServerData(null, "replay"));
+                    //#endif
                     return;
                 }
             }

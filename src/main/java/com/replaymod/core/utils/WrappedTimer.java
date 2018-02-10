@@ -25,6 +25,19 @@ public class WrappedTimer extends Timer {
         to.renderPartialTicks = from.renderPartialTicks;
         to.lastSyncSysClock = from.lastSyncSysClock;
         to.elapsedPartialTicks = from.elapsedPartialTicks;
+        //#if MC>=11200
         to.tickLength = from.tickLength;
+        //#else
+        //$$ to.ticksPerSecond = from.ticksPerSecond;
+        //$$ to.lastHRTime = from.lastHRTime;
+        //$$ to.timerSpeed = from.timerSpeed;
+        //$$ to.lastSyncHRClock = from.lastSyncHRClock;
+        //#if MC>=10809
+        //$$ to.counter = from.counter;
+        //#else
+        //$$ to.field_74285_i = from.field_74285_i;
+        //#endif
+        //$$ to.timeSyncAdjustment = from.timeSyncAdjustment;
+        //#endif
     }
 }

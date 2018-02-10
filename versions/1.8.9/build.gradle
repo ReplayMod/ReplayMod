@@ -1,0 +1,17 @@
+buildscript {
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+    }
+}
+
+apply from: '../common.gradle'
+
+minecraft {
+    version = '1.8.9-11.15.1.1722'
+    mappings = "stable_22"
+}
+
+dependencies {
+    shade 'com.github.replaymod:ReplayStudio:a2168ca'
+    shade project(':jGui:versions:1.8.9')
+}

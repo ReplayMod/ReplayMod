@@ -11,6 +11,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC<10904
+//$$ import net.minecraft.client.renderer.chunk.RenderChunk;
+//$$ import net.minecraft.util.BlockPos;
+//$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+//#endif
+
 @Mixin(RenderGlobal.class)
 public abstract class MixinRenderGlobal {
     public ChunkLoadingRenderGlobal replayModRender_hook;
@@ -43,6 +49,15 @@ public abstract class MixinRenderGlobal {
             ci.cancel();
         }
     }
+
+    //#if MC<10904
+    //$$ @Inject(method = "isPositionInRenderChunk", at = @At("HEAD"), cancellable = true)
+    //$$ public void replayModRender_isPositionInRenderChunk(BlockPos pos, RenderChunk chunk, CallbackInfoReturnable<Boolean> ci) {
+    //$$     if (replayModRender_hook != null) {
+    //$$         ci.setReturnValue(true);
+    //$$     }
+    //$$ }
+    //#endif
 
     @Inject(method = "updateChunks", at = @At("HEAD"), cancellable = true)
     public void replayModRender_updateChunks(long finishTimeNano, CallbackInfo ci) {

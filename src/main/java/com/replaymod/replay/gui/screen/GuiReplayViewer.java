@@ -35,8 +35,8 @@ import net.minecraft.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.util.Strings;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
@@ -321,7 +321,7 @@ public class GuiReplayViewer extends GuiScreen implements Typeable {
             this.file = file;
 
             name.setText(ChatFormatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
-            if (Strings.isEmpty(metaData.getServerName())
+            if (StringUtils.isEmpty(metaData.getServerName())
                     || !ReplayMod.instance.getSettingsRegistry().get(Setting.SHOW_SERVER_IPS)) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {

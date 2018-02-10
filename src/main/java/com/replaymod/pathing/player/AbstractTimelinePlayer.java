@@ -18,6 +18,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 /**
  * Plays a timeline.
  */
@@ -66,11 +68,16 @@ public abstract class AbstractTimelinePlayer {
         }
 
         replayHandler.getReplaySender().setSyncModeAndWait();
-        MinecraftForge.EVENT_BUS.register(this);
+        FML_BUS.register(this);
         lastTime = 0;
         mc.timer = new ReplayTimer(mc.timer);
+        //#if MC>=11200
         mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
         mc.timer.renderPartialTicks = mc.timer.elapsedTicks = 0;
+        //#else
+        //$$ mc.timer.timerSpeed = 1;
+        //$$ mc.timer.elapsedPartialTicks = mc.timer.elapsedTicks = 0;
+        //#endif
         return future = settableFuture = SettableFuture.create();
     }
 
@@ -88,7 +95,7 @@ public abstract class AbstractTimelinePlayer {
             mc.timer = ((ReplayTimer) mc.timer).getWrapped();
             replayHandler.getReplaySender().setReplaySpeed(0);
             replayHandler.getReplaySender().setAsyncMode(true);
-            MinecraftForge.EVENT_BUS.unregister(this);
+            FML_BUS.unregister(this);
             return;
         }
         long time = getTimePassed();

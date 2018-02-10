@@ -10,7 +10,14 @@ import net.minecraft.client.renderer.chunk.RenderChunk;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
+
+//#if MC>=10904
 import java.util.concurrent.PriorityBlockingQueue;
+//#else
+//$$ import java.util.concurrent.BlockingQueue;
+//#endif
+
+import static com.replaymod.core.versions.MCVer.*;
 
 public class ChunkLoadingRenderGlobal {
 
@@ -27,10 +34,18 @@ public class ChunkLoadingRenderGlobal {
         this.renderWorker = new CustomChunkRenderWorker(renderDispatcher, new RegionRenderCacheBuilder());
 
         int workerThreads = renderDispatcher.listThreadedWorkers.size();
+        //#if MC>=10904
         PriorityBlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
+        //#else
+        //$$ BlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
+        //#endif
         workerJailingQueue = new JailingQueue<>(queueChunkUpdates);
         renderDispatcher.queueChunkUpdates = workerJailingQueue;
+        //#if MC>=10904
         ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null, 0);
+        //#else
+        //$$ ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null);
+        //#endif
         element.finish();
         for (int i = 0; i < workerThreads; i++) {
             queueChunkUpdates.add(element);
@@ -58,17 +73,28 @@ public class ChunkLoadingRenderGlobal {
 
         while (!renderDispatcher.queueChunkUpdates.isEmpty()) {
             try {
-                renderWorker.processTask(renderDispatcher.queueChunkUpdates.poll());
+                renderWorker.processTask(
+                        //#if MC<10904
+                        //$$ (ChunkCompileTaskGenerator)
+                        //#endif
+                                renderDispatcher.queueChunkUpdates.poll());
             } catch (InterruptedException ignored) { }
         }
 
+        //#if MC<10904
+        //$$ @SuppressWarnings("unchecked")
+        //#endif
         Iterator<RenderChunk> iterator = hooked.chunksToUpdate.iterator();
         while (iterator.hasNext()) {
             RenderChunk renderchunk = iterator.next();
 
             renderDispatcher.updateChunkNow(renderchunk);
 
+            //#if MC>=10904
             renderchunk.clearNeedsUpdate();
+            //#else
+            //$$ renderchunk.setNeedsUpdate(false);
+            //#endif
             iterator.remove();
         }
     }

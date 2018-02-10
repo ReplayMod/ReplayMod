@@ -9,10 +9,11 @@ import de.johni0702.minecraft.gui.element.GuiImage;
 import de.johni0702.minecraft.gui.element.IGuiImage;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 public class FullBrightness implements Extra {
     private ReplayModReplay module;
@@ -40,7 +41,7 @@ public class FullBrightness implements Extra {
             }
         });
 
-        MinecraftForge.EVENT_BUS.register(this);
+        FML_BUS.register(this);
     }
 
     @SubscribeEvent

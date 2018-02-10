@@ -1,0 +1,151 @@
+static def evalVar(vars, String var) {
+    if (var.number) {
+        return var as int
+    } else {
+        return vars[var]
+    }
+}
+
+import java.util.regex.Pattern
+
+static def evalExpr(vars, String expr) {
+    def matcher = Pattern.compile(/(.+)(<=|>=|<|>)(.+)/).matcher(expr)
+    if (matcher.matches()) {
+        def lhs = evalVar(vars, matcher.group(1))
+        def rhs = evalVar(vars, matcher.group(3))
+        switch (matcher.group(2)) {
+            case '>=': return lhs >= rhs
+            case '<=': return lhs <= rhs
+            case '>': return lhs > rhs
+            case '<': return lhs < rhs
+        }
+    }
+}
+
+static def getIndent(String str) {
+    return str.takeWhile {it == ' '}.length()
+}
+
+class ParserException extends RuntimeException {
+    ParserException(String str) {
+        super(str)
+    }
+}
+
+static def convertSource(Map<String, String> kws, Map<String, Integer> vars, List<String> lines, String fileName) {
+    def ifStack = []
+    List<Integer> indentStack = []
+    def active = true
+    def n = 0
+    lines = lines.collect { line ->
+        n++
+        def trimmed = line.trim()
+        if (trimmed.startsWith(kws.if)) {
+            def result = evalExpr(vars, trimmed.substring(kws.if.length()))
+            ifStack.push(result)
+            if (result != null) {
+                indentStack.push(getIndent(line))
+                active &= result
+            }
+        } else if (trimmed.startsWith(kws.else)) {
+            if (ifStack.isEmpty()) {
+                throw new ParserException("Unexpected else in line $n of $fileName")
+            }
+            def head = ifStack.pop()
+            if (head != null) {
+                head = !head
+                indentStack.pop()
+                indentStack.push(getIndent(line))
+            }
+            ifStack.push(head)
+            active = true;
+            ifStack.each {
+                if (it != null) {
+                    active &= it
+                }
+            }
+        } else if (trimmed.startsWith(kws.ifdef)) {
+            ifStack.push(null)
+        } else if (trimmed.startsWith(kws.endif)) {
+            if (ifStack.isEmpty()) {
+                throw new ParserException("Unexpected endif in line $n of $fileName")
+            }
+            def head = ifStack.pop()
+            if (head != null) {
+                indentStack.pop()
+                active = true;
+                ifStack.each {
+                    if (it != null) {
+                        active &= it
+                    }
+                }
+            }
+        } else {
+            if (active) {
+                if (trimmed.startsWith(kws.eval)) {
+                    line = line.replaceFirst(Pattern.quote(kws.eval) + ' ?', '')
+                    if (line.trim().isEmpty()) {
+                        line = ''
+                    }
+                }
+            } else {
+                def currIndent = indentStack.last()
+                if (trimmed.isEmpty()) {
+                    line = ' ' * currIndent + kws.eval
+                } else if (!trimmed.startsWith(kws.eval)) {
+                    def actualIndent = getIndent(line)
+                    if (currIndent <= actualIndent) {
+                        line = ' ' * currIndent + kws.eval + ' ' + line.substring(currIndent)
+                    }
+                }
+            }
+        }
+        line
+    }
+    if (!ifStack.isEmpty()) {
+        throw new ParserException("Missing endif in $fileName")
+    }
+    return lines
+}
+
+import java.nio.charset.StandardCharsets
+
+static def convertFile(Map<String, String> kws, Map<String, Integer> vars, File inFile, File outFile) {
+    def string = new String(inFile.readBytes(), StandardCharsets.UTF_8)
+    def lines = string.readLines()
+    try {
+        lines = convertSource(kws, vars, lines, inFile.path)
+    } catch (e) {
+        if (e instanceof ParserException) {
+            throw e
+        }
+        throw new RuntimeException("Failed to convert file " + inFile, e)
+    }
+    outFile.parentFile.mkdirs()
+    if (string.endsWith('\n')) {
+        outFile.write(lines.collect { it + '\n' }.join(''))
+    } else {
+        outFile.write(lines.join('\n'))
+    }
+}
+
+project.ext.convertTree = { Map<String, Integer> vars, String inName, String outName=inName ->
+    def defaultKws = [if: '//#if ', ifdef: '//#ifdef ', else: '//#else', endif: '//#endif', eval: '//$$']
+    def cfgKws = [if: '##if ', ifdef: '##ifdef ', else: '##else', endif: '##endif', eval: '#$$']
+    def extensions = ['.java': defaultKws, '.gradle': defaultKws, '.json': defaultKws, '.cfg': cfgKws]
+    def inPath = project.file(inName).toPath()
+    def outPath = project.file(outName).toPath()
+    def inPlace = inPath.toAbsolutePath().equals(outPath.toAbsolutePath())
+    project.fileTree(inName).forEach { file ->
+        def outFile = outPath.resolve(inPath.relativize(file.toPath())).toFile()
+        def kws = extensions.find { ext, _ -> file.name.endsWith(ext) }
+        if (kws) {
+            convertFile(kws.value, vars, file, outFile)
+        } else if (!inPlace) {
+            copy {
+                from file
+                into outFile.parentFile
+            }
+        }
+    }
+}

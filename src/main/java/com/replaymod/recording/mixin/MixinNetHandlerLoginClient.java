@@ -25,8 +25,10 @@ public abstract class MixinNetHandlerLoginClient {
         ReplayModRecording.instance.initiateRecording(networkManager);
     }
 
+    //#if MC>=11200
     @Inject(method = "handleLoginSuccess", at=@At("RETURN"))
     public void replayModRecording_raceConditionWorkAround(CallbackInfo cb) {
         networkManager.channel().config().setAutoRead(true);
     }
+    //#endif
 }

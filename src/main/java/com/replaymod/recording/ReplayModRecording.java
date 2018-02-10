@@ -7,7 +7,6 @@ import com.replaymod.recording.handler.GuiHandler;
 import com.replaymod.recording.packet.PacketListener;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraft.network.NetworkManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -16,6 +15,8 @@ import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 @Mod(modid = ReplayModRecording.MOD_ID,
         version = "@MOD_VERSION@",
@@ -56,7 +57,7 @@ public class ReplayModRecording {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        EventBus bus = MinecraftForge.EVENT_BUS;
+        EventBus bus = FML_BUS;
         bus.register(connectionEventHandler = new ConnectionEventHandler(logger, core));
 
         new GuiHandler(core).register();

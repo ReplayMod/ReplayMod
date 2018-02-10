@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replaystudio.pathing.change.RemoveKeyframe.create;
 import static com.replaymod.simplepathing.ReplayModSimplePathing.LOGGER;
 
@@ -658,7 +659,7 @@ public class SPTimeline implements PathingRegistry {
         } catch (IOException e) {
             CrashReport crash = CrashReport.makeCrashReport(e, "Serializing interpolator");
             CrashReportCategory category = crash.makeCategory("Serializing interpolator");
-            category.addDetail("Interpolator", interpolator::toString);
+            addDetail(category, "Interpolator", interpolator::toString);
             throw new ReportedException(crash);
         }
 

@@ -31,7 +31,11 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
                 if (file.isFile()) {
                     // This forces forge to reexamine the jar file for FML mods
                     // Should eventually be handled by Mixin itself, maybe?
+                    //#if MC>=10809
                     CoreModManager.getIgnoredMods().remove(file.getName());
+                    //#else
+                    //$$ CoreModManager.getLoadedCoremods().remove(file.getName());
+                    //#endif
                 }
             } catch (URISyntaxException e) {
                 e.printStackTrace();

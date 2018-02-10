@@ -8,7 +8,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -26,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 @Mod(modid = ReplayModRestrictions.MOD_ID,
         version = "@MOD_VERSION@",
@@ -54,7 +55,7 @@ public class ReplayModRestrictions {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        EventBus bus = FMLCommonHandler.instance().bus();
+        EventBus bus = FML_BUS;
         bus.register(this);
 
         channel = NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler()).get(Side.SERVER);

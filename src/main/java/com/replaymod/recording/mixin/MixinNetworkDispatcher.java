@@ -1,11 +1,8 @@
 package com.replaymod.recording.mixin;
 
 import com.replaymod.recording.handler.FMLHandshakeFilter;
-import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
-import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.NetworkManager;
 import net.minecraftforge.fml.common.network.handshake.FMLHandshakeCodec;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import net.minecraftforge.fml.relauncher.Side;
@@ -13,8 +10,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=11200
+import io.netty.channel.ChannelConfig;
+import net.minecraft.network.EnumConnectionState;
+import net.minecraft.network.NetworkManager;
+import org.spongepowered.asm.mixin.injection.Redirect;
+//#endif
 
 @Mixin(value = NetworkDispatcher.class, remap = false)
 public abstract class MixinNetworkDispatcher {
@@ -48,6 +51,7 @@ public abstract class MixinNetworkDispatcher {
         }
     }
 
+    //#if MC>=11200
     @Redirect(method = "clientListenForServerHandshake", at = @At(value = "INVOKE", remap = true, target =
             "Lnet/minecraft/network/NetworkManager;setConnectionState(Lnet/minecraft/network/EnumConnectionState;)V"))
     public void replayModRecording_raceConditionWorkAround1(NetworkManager self, EnumConnectionState ignored) { }
@@ -60,4 +64,5 @@ public abstract class MixinNetworkDispatcher {
         }
         return self.setAutoRead(autoRead);
     }
+    //#endif
 }

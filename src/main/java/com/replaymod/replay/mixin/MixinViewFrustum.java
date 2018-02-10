@@ -5,14 +5,20 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.ViewFrustum;
 import net.minecraft.client.renderer.chunk.IRenderChunkFactory;
 import net.minecraft.client.renderer.chunk.RenderChunk;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=10904
+import net.minecraft.util.math.BlockPos;
+//#else
+//$$ import net.minecraft.util.BlockPos;
+//#endif
+
+import static com.replaymod.core.versions.MCVer.*;
 
 @Mixin(ViewFrustum.class)
 public abstract class MixinViewFrustum {
@@ -31,7 +37,7 @@ public abstract class MixinViewFrustum {
     }
 
     /**
-     * Instead of calling {@link RenderChunk#setPosition(int, int, int)} we recreate the render chunk
+     * Instead of updating its position, we recreate the render chunk
      * which seems to solve the problem that chunks are invisible when you leave an area and return
      * to it.
      * Any better fixes are welcome.
@@ -43,8 +49,8 @@ public abstract class MixinViewFrustum {
             return;
         }
 
-        int i = MathHelper.floor(viewEntityX) - 8;
-        int j = MathHelper.floor(viewEntityZ) - 8;
+        int i = floor(viewEntityX) - 8;
+        int j = floor(viewEntityZ) - 8;
         int k = this.countChunksX * 16;
 
         for (int l = 0; l < this.countChunksX; ++l) {
@@ -57,9 +63,18 @@ public abstract class MixinViewFrustum {
                     BlockPos blockpos = new BlockPos(i1, i2, k1);
                     if (!blockpos.equals(renderchunk.getPosition())) {
                         // Recreate render chunk instead of setting its position
+                        //#if MC>=10904
                         (renderChunks[(j1 * this.countChunksY + l1) * this.countChunksX + l] =
                                 renderChunkFactory.create(world, renderGlobal, 0)
+                        //#if MC>= 11100
                         ).setPosition(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+                        //#else
+                        //$$ ).setOrigin(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+                        //#endif
+                        //#else
+                        //$$ renderChunks[(j1 * this.countChunksY + l1) * this.countChunksX + l] =
+                        //$$         renderChunkFactory.makeRenderChunk(world, renderGlobal, blockpos, 0);
+                        //#endif
                     }
                 }
             }
@@ -67,5 +82,12 @@ public abstract class MixinViewFrustum {
         ci.cancel();
     }
 
+    //#if MC>=10904
     @Shadow abstract int getBaseCoordinate(int p_178157_1_, int p_178157_2_, int p_178157_3_);
+    //#else
+    //$$ private int getBaseCoordinate(int p_178157_1_, int p_178157_2_, int p_178157_3_) {
+    //$$     return func_178157_a(p_178157_1_, p_178157_2_, p_178157_3_);
+    //$$ }
+    //$$ @Shadow abstract int func_178157_a(int p_178157_1_, int p_178157_2_, int p_178157_3_);
+    //#endif
 }

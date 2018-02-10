@@ -19,6 +19,8 @@ import org.lwjgl.input.Keyboard;
 import java.io.IOException;
 import java.util.*;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 public class PlayerOverview implements Extra {
     private ReplayModReplay module;
 
@@ -34,7 +36,7 @@ public class PlayerOverview implements Extra {
             public void run() {
                 if (module.getReplayHandler() != null) {
                     @SuppressWarnings("unchecked")
-                    List<EntityPlayer> players = mod.getMinecraft().world.getPlayers(EntityPlayer.class, new Predicate() {
+                    List<EntityPlayer> players = world(mod.getMinecraft()).getPlayers(EntityPlayer.class, new Predicate() {
                         @Override
                         public boolean apply(Object input) {
                             return !(input instanceof CameraEntity); // Exclude the camera entity
@@ -55,7 +57,8 @@ public class PlayerOverview implements Extra {
             }
         });
 
-        MinecraftForge.EVENT_BUS.register(this);
+        FML_BUS.register(this);
+        FORGE_BUS.register(this);
     }
 
     public boolean isHidden(UUID uuid) {

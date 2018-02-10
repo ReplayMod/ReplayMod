@@ -11,12 +11,13 @@ import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
 import lombok.Getter;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 @Mod(modid = ReplayModSimplePathing.MOD_ID,
         version = "@MOD_VERSION@",
@@ -43,7 +44,7 @@ public class ReplayModSimplePathing {
 
         core.getSettingsRegistry().register(Setting.class);
 
-        MinecraftForge.EVENT_BUS.register(this);
+        FML_BUS.register(this);
 
         PathPreview pathPreview = new PathPreview(this);
         pathPreview.register();

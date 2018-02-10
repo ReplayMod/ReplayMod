@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
-import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
@@ -26,11 +25,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.*;
 import net.minecraft.network.play.server.*;
-import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
@@ -41,11 +36,28 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+//#if MC>=11200
+import com.replaymod.core.utils.WrappedTimer;
+//#endif
+//#if MC>=11002
+import net.minecraft.world.GameType;
+//#else
+//$$ import net.minecraft.world.WorldSettings.GameType;
+//#endif
+//#if MC>=10904
+import net.minecraft.util.text.ITextComponent;
+//#else
+//$$ import net.minecraft.util.IChatComponent;
+//#endif
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 /**
  * Sends replay packets to netty channels.
@@ -58,10 +70,13 @@ public class ReplaySender extends ChannelDuplexHandler {
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
-            // TODO Update possibly more?
+            //#if MC>=11200
             SPacketRecipeBook.class,
             SPacketAdvancementInfo.class,
             SPacketSelectAdvancementsTab.class,
+            //#endif
+            //#if MC>=10904
+            // TODO Update possibly more?
             SPacketUpdateHealth.class,
             SPacketOpenWindow.class,
             SPacketCloseWindow.class,
@@ -72,7 +87,21 @@ public class ReplaySender extends ChannelDuplexHandler {
             SPacketSetExperience.class,
             SPacketCamera.class,
             SPacketPlayerAbilities.class,
-            SPacketTitle.class);
+            SPacketTitle.class
+            //#else
+            //$$ S06PacketUpdateHealth.class,
+            //$$ S2DPacketOpenWindow.class,
+            //$$ S2EPacketCloseWindow.class,
+            //$$ S2FPacketSetSlot.class,
+            //$$ S30PacketWindowItems.class,
+            //$$ S36PacketSignEditorOpen.class,
+            //$$ S37PacketStatistics.class,
+            //$$ S1FPacketSetExperience.class,
+            //$$ S43PacketCamera.class,
+            //$$ S39PacketPlayerAbilities.class,
+            //$$ S45PacketTitle.class
+            //#endif
+    );
 
     private static int TP_DISTANCE_LIMIT = 128;
 
@@ -271,8 +300,8 @@ public class ReplaySender extends ChannelDuplexHandler {
         // Entity#addedToChunk is not set and it is therefore not updated every tick.
         // To counteract this, we need to manually update it's position if it hasn't been added
         // to any chunk yet.
-        if (mc.world != null) {
-            for (EntityPlayer playerEntity : mc.world.playerEntities) {
+        if (world(mc) != null) {
+            for (EntityPlayer playerEntity : playerEntities(world(mc))) {
                 if (!playerEntity.addedToChunk && playerEntity instanceof EntityOtherPlayerMP) {
                     playerEntity.onLivingUpdate();
                 }
@@ -306,7 +335,8 @@ public class ReplaySender extends ChannelDuplexHandler {
                     // If we do not give minecraft time to tick, there will be dead entity artifacts left in the world
                     // Therefore we have to remove all loaded, dead entities manually if we are in sync mode.
                     // We do this after every SpawnX packet and after the destroy entities packet.
-                    if (!asyncMode && mc.world != null) {
+                    if (!asyncMode && world(mc) != null) {
+                        //#if MC>=10904
                         if (p instanceof SPacketSpawnPlayer
                                 || p instanceof SPacketSpawnObject
                                 || p instanceof SPacketSpawnMob
@@ -314,14 +344,27 @@ public class ReplaySender extends ChannelDuplexHandler {
                                 || p instanceof SPacketSpawnPainting
                                 || p instanceof SPacketSpawnExperienceOrb
                                 || p instanceof SPacketDestroyEntities) {
-                            World world = mc.world;
+                        //#else
+                        //$$ if (p instanceof S0CPacketSpawnPlayer
+                        //$$         || p instanceof S0EPacketSpawnObject
+                        //$$         || p instanceof S0FPacketSpawnMob
+                        //$$         || p instanceof S2CPacketSpawnGlobalEntity
+                        //$$         || p instanceof S10PacketSpawnPainting
+                        //$$         || p instanceof S11PacketSpawnExperienceOrb
+                        //$$         || p instanceof S13PacketDestroyEntities) {
+                        //#endif
+                            World world = world(mc);
                             for (int i = 0; i < world.loadedEntityList.size(); ++i) {
-                                Entity entity = world.loadedEntityList.get(i);
+                                Entity entity = loadedEntityList(world).get(i);
                                 if (entity.isDead) {
                                     int chunkX = entity.chunkCoordX;
                                     int chunkY = entity.chunkCoordZ;
 
+                                    //#if MC>=10904
                                     if (entity.addedToChunk && world.getChunkProvider().getLoadedChunk(chunkX, chunkY) != null) {
+                                    //#else
+                                    //$$ if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
+                                    //#endif
                                         world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);
                                     }
 
@@ -345,7 +388,7 @@ public class ReplaySender extends ChannelDuplexHandler {
         ByteBuf bb = Unpooled.wrappedBuffer(bytes);
         PacketBuffer pb = new PacketBuffer(bb);
 
-        int i = pb.readVarInt();
+        int i = readVarInt(pb);
 
         Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
         p.readPacketData(pb);
@@ -359,8 +402,13 @@ public class ReplaySender extends ChannelDuplexHandler {
      * @return The processed packet or {@code null} if no packet shall be sent
      */
     protected Packet processPacket(Packet p) throws Exception {
+        //#if MC>=10904
         if (p instanceof SPacketCustomPayload) {
             SPacketCustomPayload packet = (SPacketCustomPayload) p;
+        //#else
+        //$$ if (p instanceof S3FPacketCustomPayload) {
+        //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
+        //#endif
             if (Restrictions.PLUGIN_CHANNEL.equals(packet.getChannelName())) {
                 final String unknown = replayHandler.getRestrictions().handle(packet);
                 if (unknown == null) {
@@ -386,8 +434,17 @@ public class ReplaySender extends ChannelDuplexHandler {
                 }
             }
         }
+        //#if MC>=10904
         if (p instanceof SPacketDisconnect) {
             ITextComponent reason = ((SPacketDisconnect) p).getReason();
+        //#else
+        //$$ if (p instanceof S40PacketDisconnect) {
+            //#if MC>=10809
+            //$$ IChatComponent reason = ((S40PacketDisconnect) p).getReason();
+            //#else
+            //$$ IChatComponent reason = ((S40PacketDisconnect) p).func_149165_c();
+            //#endif
+        //#endif
             if ("Please update to view this replay.".equals(reason.getUnformattedText())) {
                 // This version of the mod supports replay restrictions so we are allowed
                 // to remove this packet.
@@ -397,16 +454,31 @@ public class ReplaySender extends ChannelDuplexHandler {
 
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
+        //#if MC>=10904
         if (p instanceof SPacketCustomPayload) {
             SPacketCustomPayload packet = (SPacketCustomPayload) p;
+        //#else
+        //$$ if (p instanceof S3FPacketCustomPayload) {
+        //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
+        //#endif
             if ("MC|BOpen".equals(packet.getChannelName())) {
                 return null;
             }
         }
 
+        //#if MC>=10904
         if(p instanceof SPacketResourcePackSend) {
             SPacketResourcePackSend packet = (SPacketResourcePackSend) p;
             String url = packet.getURL();
+        //#else
+        //$$ if(p instanceof S48PacketResourcePackSend) {
+        //$$     S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
+            //#if MC>=10809
+            //$$ String url = packet.getURL();
+            //#else
+            //$$ String url = packet.func_179783_a();
+            //#endif
+        //#endif
             if (url.startsWith("replay://")) {
                 int id = Integer.parseInt(url.substring("replay://".length()));
                 Map<Integer, String> index = replayFile.getResourcePackIndex();
@@ -417,17 +489,23 @@ public class ReplaySender extends ChannelDuplexHandler {
                         if (!file.exists()) {
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
-                        mc.getResourcePackRepository().setServerResourcePack(file);
+                        setServerResourcePack(mc.getResourcePackRepository(), file);
                     }
                 }
                 return null;
             }
         }
 
+        //#if MC>=10904
         if(p instanceof SPacketJoinGame) {
             SPacketJoinGame packet = (SPacketJoinGame) p;
-            allowMovement = true;
             int entId = packet.getPlayerId();
+        //#else
+        //$$ if(p instanceof S01PacketJoinGame) {
+        //$$     S01PacketJoinGame packet = (S01PacketJoinGame) p;
+        //$$     int entId = packet.getEntityId();
+        //#endif
+            allowMovement = true;
             actualID = entId;
             entId = -1789435; // Camera entity id should be negative which is an invalid id and can't be used by servers
             int dimension = packet.getDimension();
@@ -435,21 +513,43 @@ public class ReplaySender extends ChannelDuplexHandler {
             int maxPlayers = packet.getMaxPlayers();
             WorldType worldType = packet.getWorldType();
 
+            //#if MC>=10904
             p = new SPacketJoinGame(entId, GameType.SPECTATOR, false, dimension,
                     difficulty, maxPlayers, worldType, false);
+            //#else
+            //$$ p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension,
+            //$$         difficulty, maxPlayers, worldType, false);
+            //#endif
         }
 
+        //#if MC>=10904
         if(p instanceof SPacketRespawn) {
             SPacketRespawn respawn = (SPacketRespawn) p;
             p = new SPacketRespawn(respawn.getDimensionID(),
                     respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
+        //#else
+        //$$ if(p instanceof S07PacketRespawn) {
+        //$$     S07PacketRespawn respawn = (S07PacketRespawn) p;
+            //#if MC>=10809
+            //$$ p = new S07PacketRespawn(respawn.getDimensionID(),
+            //$$         respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
+            //#else
+            //$$ p = new S07PacketRespawn(respawn.func_149082_c(),
+            //$$         respawn.func_149081_d(), respawn.func_149080_f(), GameType.SPECTATOR);
+            //#endif
+        //#endif
 
             allowMovement = true;
         }
 
+        //#if MC>=10904
         if(p instanceof SPacketPlayerPosLook) {
-            if(!hasWorldLoaded) hasWorldLoaded = true;
             final SPacketPlayerPosLook ppl = (SPacketPlayerPosLook) p;
+        //#else
+        //$$ if(p instanceof S08PacketPlayerPosLook) {
+        //$$     final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook) p;
+        //#endif
+            if(!hasWorldLoaded) hasWorldLoaded = true;
 
             if (mc.currentScreen instanceof GuiDownloadTerrain) {
                 // Close the world loading screen manually in case we swallow the packet
@@ -460,17 +560,29 @@ public class ReplaySender extends ChannelDuplexHandler {
 
             CameraEntity cent = replayHandler.getCameraEntity();
 
+            //#if MC>=10904
             for (SPacketPlayerPosLook.EnumFlags relative : ppl.getFlags()) {
                 if (relative == SPacketPlayerPosLook.EnumFlags.X
                         || relative == SPacketPlayerPosLook.EnumFlags.Y
                         || relative == SPacketPlayerPosLook.EnumFlags.Z) {
+            //#else
+            //$$ for (Object relative : ppl.func_179834_f()) {
+            //$$     if (relative == S08PacketPlayerPosLook.EnumFlags.X
+            //$$             || relative == S08PacketPlayerPosLook.EnumFlags.Y
+            //$$             || relative == S08PacketPlayerPosLook.EnumFlags.Z) {
+            //#endif
                     return null; // At least one of the coordinates is relative, so we don't care
                 }
             }
 
             if(cent != null) {
+                //#if MC>=10809
                 if(!allowMovement && !((Math.abs(cent.posX - ppl.getX()) > TP_DISTANCE_LIMIT) ||
                         (Math.abs(cent.posZ - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                //#else
+                //$$ if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > TP_DISTANCE_LIMIT) ||
+                //$$         (Math.abs(cent.posZ - ppl.func_148933_e()) > TP_DISTANCE_LIMIT))) {
+                //#endif
                     return null;
                 } else {
                     allowMovement = false;
@@ -481,20 +593,34 @@ public class ReplaySender extends ChannelDuplexHandler {
                 @Override
                 @SuppressWarnings("unchecked")
                 public void run() {
-                    if (mc.world == null || !mc.isCallingFromMinecraftThread()) {
+                    if (world(mc) == null || !mc.isCallingFromMinecraftThread()) {
                         ReplayMod.instance.runLater(this);
                         return;
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
+                    //#if MC>=10809
                     cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
+                    //#else
+                    //$$ cent.setCameraPosition(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
+                    //#endif
                 }
             }.run();
         }
 
+        //#if MC>=10904
         if(p instanceof SPacketChangeGameState) {
             SPacketChangeGameState pg = (SPacketChangeGameState)p;
             int reason = pg.getGameState();
+        //#else
+        //$$ if(p instanceof S2BPacketChangeGameState) {
+        //$$     S2BPacketChangeGameState pg = (S2BPacketChangeGameState)p;
+            //#if MC>=10809
+            //$$ int reason = pg.getGameState();
+            //#else
+            //$$ int reason = pg.func_149138_c();
+            //#endif
+        //#endif
 
             // only allow the following packets:
             // 1 - End raining
@@ -508,7 +634,11 @@ public class ReplaySender extends ChannelDuplexHandler {
             }
         }
 
+        //#if MC>=10904
         if (p instanceof SPacketChat) {
+        //#else
+        //$$ if (p instanceof S02PacketChat) {
+        //#endif
             if (!ReplayModReplay.instance.getCore().getSettingsRegistry().get(Setting.SHOW_CHAT)) {
                 return null;
             }
@@ -521,7 +651,11 @@ public class ReplaySender extends ChannelDuplexHandler {
     @SuppressWarnings("unchecked")
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
+        //#if MC>=10904
         ctx.channel().attr(NetworkManager.PROTOCOL_ATTRIBUTE_KEY).set(EnumConnectionState.PLAY);
+        //#else
+        //$$ ctx.attr(NetworkManager.attrKeyConnectionState).set(EnumConnectionState.PLAY);
+        //#endif
         super.channelActive(ctx);
     }
 
@@ -549,7 +683,11 @@ public class ReplaySender extends ChannelDuplexHandler {
      * @return {@code true} if it is paused, {@code false} otherwise
      */
     public boolean paused() {
+        //#if MC>=11200
         return mc.timer.tickLength == Float.POSITIVE_INFINITY;
+        //#else
+        //$$ return mc.timer.timerSpeed == 0;
+        //#endif
     }
 
     /**
@@ -569,7 +707,11 @@ public class ReplaySender extends ChannelDuplexHandler {
      */
     public void setReplaySpeed(final double d) {
         if(d != 0) this.replaySpeed = d;
+        //#if MC>=11200
         mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK / (float) d;
+        //#else
+        //$$ mc.timer.timerSpeed = (float) d;
+        //#endif
     }
 
     /////////////////////////////////////////////////////////
@@ -739,11 +881,23 @@ public class ReplaySender extends ChannelDuplexHandler {
     protected Packet processPacketAsync(Packet p) {
         //If hurrying, ignore some packets, except for short durations
         if(desiredTimeStamp - lastTimeStamp > 1000) {
+            //#if MC>=10904
             if(p instanceof SPacketParticles) return null;
 
             if(p instanceof SPacketSpawnObject) {
                 SPacketSpawnObject pso = (SPacketSpawnObject)p;
                 int type = pso.getType();
+            //#else
+            //$$ if(p instanceof S2APacketParticles) return null;
+            //$$
+            //$$ if(p instanceof S0EPacketSpawnObject) {
+            //$$     S0EPacketSpawnObject pso = (S0EPacketSpawnObject)p;
+                //#if MC>=10809
+                //$$ int type = pso.getType();
+                //#else
+                //$$ int type = pso.func_148993_l();
+                //#endif
+            //#endif
                 if(type == 76) { // Firework rocket
                     return null;
                 }
@@ -829,22 +983,38 @@ public class ReplaySender extends ChannelDuplexHandler {
     }
 
     protected Packet processPacketSync(Packet p) {
+        //#if MC>=10904
         if (p instanceof SPacketUnloadChunk) {
             SPacketUnloadChunk packet = (SPacketUnloadChunk) p;
+            int x = packet.getX();
+            int z = packet.getZ();
+        //#else
+        //#if MC>=10809
+        //$$ if (p instanceof S21PacketChunkData && ((S21PacketChunkData) p).getExtractedSize() == 0) {
+        //$$     S21PacketChunkData packet = (S21PacketChunkData) p;
+        //$$     int x = packet.getChunkX();
+        //$$     int z = packet.getChunkZ();
+        //#else
+        //$$ if (p instanceof S21PacketChunkData && ((S21PacketChunkData) p).func_149276_g() == 0) {
+        //$$     S21PacketChunkData packet = (S21PacketChunkData) p;
+        //$$     int x = packet.func_149273_e();
+        //$$     int z = packet.func_149271_f();
+        //#endif
+        //#endif
             // If the chunk is getting unloaded, we will have to forcefully update the position of all entities
             // within. Otherwise, if there wasn't a game tick recently, there may be entities that have moved
             // out of the chunk by now but are still registered in it. If we do not update those, they will get
             // unloaded even though they shouldn't.
             // To make things worse, it seems like players were never supposed to be unloaded this way because
             // they will remain glitched in the World#playerEntities list.
-            World world = mc.world;
+            World world = world(mc);
             IChunkProvider chunkProvider = world.getChunkProvider();
             // Get the chunk that will be unloaded
-            Chunk chunk = chunkProvider.provideChunk(packet.getX(), packet.getZ());
+            Chunk chunk = chunkProvider.provideChunk(x, z);
             if (!chunk.isEmpty()) {
                 List<Entity> entitiesInChunk = new ArrayList<>();
                 // Gather all entities in that chunk
-                for (ClassInheritanceMultiMap<Entity> entityList : chunk.getEntityLists()) {
+                for (Collection<Entity> entityList : getEntityLists(chunk)) {
                     entitiesInChunk.addAll(entityList);
                 }
                 for (Entity entity : entitiesInChunk) {
@@ -857,12 +1027,17 @@ public class ReplaySender extends ChannelDuplexHandler {
                     }
 
                     // Check whether the entity has left the chunk
-                    int chunkX = MathHelper.floor(entity.posX / 16);
-                    int chunkZ = MathHelper.floor(entity.posZ / 16);
+                    int chunkX = floor(entity.posX / 16);
+                    int chunkZ = floor(entity.posZ / 16);
                     if (entity.chunkCoordX != chunkX || entity.chunkCoordZ != chunkZ) {
                         // Entity has left the chunk
                         chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
+                        //#if MC>=10904
                         Chunk newChunk = chunkProvider.getLoadedChunk(chunkX, chunkZ);
+                        //#else
+                        //$$ Chunk newChunk = chunkProvider.chunkExists(chunkX, chunkZ)
+                        //$$         ? chunkProvider.provideChunk(chunkX, chunkZ) : null;
+                        //#endif
                         if (newChunk != null) {
                             newChunk.addEntity(entity);
                         } else {

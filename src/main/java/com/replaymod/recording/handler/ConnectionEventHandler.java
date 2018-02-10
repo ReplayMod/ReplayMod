@@ -12,7 +12,6 @@ import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.world.WorldType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +19,8 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import static com.replaymod.core.versions.MCVer.WorldType_DEBUG_ALL_BLOCK_STATES;
 
 /**
  * Handles connection events and initiates recording if enabled.
@@ -47,7 +48,7 @@ public class ConnectionEventHandler {
         try {
             boolean local = networkManager.isLocalChannel();
             if (local) {
-                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
+                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
                     logger.info("Debug World recording is not supported.");
                     return;
                 }
@@ -67,9 +68,11 @@ public class ConnectionEventHandler {
                 worldName = mc.getIntegratedServer().getWorldName();
             } else if (Minecraft.getMinecraft().getCurrentServerData() != null) {
                 worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+            //#if MC>=11100
             } else if (Minecraft.getMinecraft().isConnectedToRealms()) {
                 // we can't access the server name without tapping too deep in the Realms Library
                 worldName = "A Realms Server";
+            //#endif
             } else {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
                 return;

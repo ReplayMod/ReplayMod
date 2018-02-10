@@ -7,6 +7,8 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 /**
  * Orange seems to have copied vast parts of the RendererLivingEntity into their ArmorAnimation class which cancels the RenderLivingEvent.Pre and calls its own code instead.
  * This breaks our mixin which assures that, even though the camera is in spectator mode, it cannot see invisible entities.
@@ -20,7 +22,7 @@ public class HideInvisibleEntities {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void preRenderLiving(RenderLivingEvent.Pre event) {
         if (modLoaded) {
-            if (mc.player instanceof CameraEntity && event.getEntity().isInvisible()) {
+            if (player(mc) instanceof CameraEntity && getEntity(event).isInvisible()) {
                 event.setCanceled(true);
             }
         }

@@ -4,8 +4,10 @@
   "mixins": [],
   "server": [],
   "client": [
-    "MixinGuiSpectator",
+    //#if MC>=10904
     "MixinParticleManager",
+    //#endif
+    "MixinGuiSpectator",
     "MixinPlayerControllerMP",
     "MixinRenderArrow",
     "MixinRenderItem",

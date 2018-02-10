@@ -5,7 +5,6 @@ import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -17,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 @Mod(modid = ReplayModRender.MOD_ID,
         version = "@MOD_VERSION@",
@@ -47,7 +48,7 @@ public class ReplayModRender {
         core = ReplayMod.instance;
         configuration = new Configuration(event.getSuggestedConfigurationFile());
 
-        MinecraftForge.EVENT_BUS.register(this);
+        FML_BUS.register(this);
 
         core.getSettingsRegistry().register(Setting.class);
     }

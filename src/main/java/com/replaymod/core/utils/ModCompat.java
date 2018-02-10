@@ -4,18 +4,24 @@ import com.replaymod.replaystudio.data.ModInfo;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
+//#if MC>=11200
 import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.RegistryManager;
+//#else
+//$$ import net.minecraftforge.fml.common.registry.GameData;
+//#endif
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ModCompat {
     @SuppressWarnings("unchecked")
     public static Collection<ModInfo> getInstalledNetworkMods() {
         Map<String, ModContainer> ignoreCaseMap = Loader.instance().getModList().stream()
                 .collect(Collectors.toMap(m -> m.getModId().toLowerCase(), Function.identity()));
+        //#if MC>=11200
         return RegistryManager.ACTIVE.takeSnapshot(false).keySet().stream()
                 .map(RegistryManager.ACTIVE::getRegistry)
                 .map(ForgeRegistry::getKeys).flatMap(Set::stream)
@@ -23,6 +29,15 @@ public class ModCompat {
                 .map(String::toLowerCase).map(ignoreCaseMap::get).filter(mod -> mod != null)
                 .map(mod -> new ModInfo(mod.getModId(), mod.getName(), mod.getVersion()))
                 .collect(Collectors.toList());
+        //#else
+        //$$ return Stream.concat(
+        //$$         ((Set<ResourceLocation>) GameData.getBlockRegistry().getKeys()).stream(),
+        //$$         ((Set<ResourceLocation>) GameData.getItemRegistry().getKeys()).stream()
+        //$$ ).map(ResourceLocation::getResourceDomain).filter(s -> !s.equals("minecraft")).distinct()
+        //$$         .map(String::toLowerCase).map(ignoreCaseMap::get).filter(mod -> mod != null)
+        //$$         .map(mod -> new ModInfo(mod.getModId(), mod.getName(), mod.getVersion()))
+        //$$         .collect(Collectors.toList());
+        //#endif
     }
 
     public static final class ModInfoDifference {

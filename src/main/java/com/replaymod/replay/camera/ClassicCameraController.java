@@ -2,9 +2,10 @@ package com.replaymod.replay.camera;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import org.lwjgl.Sys;
+import org.lwjgl.util.vector.Vector3f;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 // TODO: Marius is responsible for this. Please, someone clean it up.
 public class ClassicCameraController implements CameraController {
@@ -18,8 +19,8 @@ public class ClassicCameraController implements CameraController {
     private double THRESHOLD = MAX_SPEED / 20;
     private double DECAY = MAX_SPEED/3;
 
-    private Vec3d direction;
-    private Vec3d dirBefore;
+    private Vector3f direction;
+    private Vector3f dirBefore;
     private double motion;
     private long lastCall = Sys.getTime();
 
@@ -129,7 +130,7 @@ public class ClassicCameraController implements CameraController {
             return;
         }
 
-        Vec3d movement = direction.normalize();
+        Vector3f movement = direction.normalise(null);
         double factor = motion * (frac / 1000D);
 
         camera.moveCamera(movement.x * factor, movement.y * factor, movement.z * factor);
@@ -158,10 +159,10 @@ public class ClassicCameraController implements CameraController {
                 break;
         }
 
-        Vec3d dbf = direction;
+        Vector3f dbf = direction;
 
         if(dirBefore != null) {
-            direction = dirBefore.normalize().add(direction);
+            direction = Vector3f.add(direction, dirBefore.normalise(null), null);
         }
 
         dirBefore = dbf;
@@ -169,12 +170,12 @@ public class ClassicCameraController implements CameraController {
         updateMovement();
     }
 
-    private Vec3d getVectorForRotation(float pitch, float yaw) {
-        float f2 = MathHelper.cos(-yaw * 0.017453292F - (float) Math.PI);
-        float f3 = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
-        float f4 = -MathHelper.cos(-pitch * 0.017453292F);
-        float f5 = MathHelper.sin(-pitch * 0.017453292F);
-        return new Vec3d((double)(f3 * f4), (double)f5, (double)(f2 * f4));
+    private Vector3f getVectorForRotation(float pitch, float yaw) {
+        float f2 = cos(-yaw * 0.017453292F - (float) Math.PI);
+        float f3 = sin(-yaw * 0.017453292F - (float)Math.PI);
+        float f4 = -cos(-pitch * 0.017453292F);
+        float f5 = sin(-pitch * 0.017453292F);
+        return new Vector3f(f3 * f4, f5, f2 * f4);
     }
 
     public enum MoveDirection {

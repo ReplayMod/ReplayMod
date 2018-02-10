@@ -4,12 +4,14 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=10904
+    "MixinPlayerControllerMP",
+    "MixinWorldClient",
+    //#endif
     "MixinNetHandlerLoginClient",
     "MixinNetHandlerPlayClient",
     "MixinNetworkDispatcher",
-    "MixinPlayerControllerMP",
-    "MixinRenderGlobal",
-    "MixinWorldClient"
+    "MixinRenderGlobal"
   ],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11",

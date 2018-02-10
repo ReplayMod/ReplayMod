@@ -5,9 +5,14 @@ import com.replaymod.core.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
-import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
+
+//#if MC>=10904
+import net.minecraft.client.resources.data.MetadataSerializer;
+//#else
+//$$ import net.minecraft.client.resources.data.IMetadataSerializer;
+//#endif
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -103,8 +108,13 @@ public class LocalizationExtra implements Extra {
             return ImmutableSet.of("replaymod");
         }
 
+        //#if MC>=10904
         @Override
         public <T extends IMetadataSection> T getPackMetadata(MetadataSerializer metadataSerializer, String metadataSectionName) throws IOException {
+        //#else
+        //$$ @Override
+        //$$ public IMetadataSection getPackMetadata(IMetadataSerializer metadataSerializer, String metadataSectionName) throws IOException {
+        //#endif
             return null;
         }
 

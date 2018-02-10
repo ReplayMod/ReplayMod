@@ -1,5 +1,30 @@
 if (System.getenv('REPRODUCIBLE_BUILD') == '1') {
     rootProject.buildFileName = 'gradle/reprod/tmp/build.gradle'
-} else {
-    include 'ReplayStudio'
+}
+
+include ':jGui'
+([
+        'core',
+        '1.8',
+        '1.8.9',
+        '1.9.4',
+        '1.12'
+].collect {":jGui:versions:$it"} as String[]).each {
+    include it
+}
+
+def versions = [
+        'core',
+        '1.8',
+        '1.8.9',
+        '1.9.4',
+        '1.10.2',
+        '1.11',
+        '1.11.2',
+        '1.12',
+        '1.12.1',
+        '1.12.2'
+]
+versions.collect {":versions:$it"}.each {
+    include it
 }

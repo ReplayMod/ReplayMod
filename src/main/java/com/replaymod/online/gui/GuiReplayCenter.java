@@ -37,7 +37,7 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
@@ -420,7 +420,7 @@ public class GuiReplayCenter extends GuiScreen {
             name.setText(ChatFormatting.UNDERLINE + Utils.fileNameToReplayName(fileInfo.getName()));
             author.setI18nText("replaymod.gui.center.author",
                     "" + ChatFormatting.GRAY + ChatFormatting.ITALIC, fileInfo.getOwner());
-            if (Strings.isEmpty(metaData.getServerName())) {
+            if (StringUtils.isEmpty(metaData.getServerName())) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {
                 server.setText(metaData.getServerName());

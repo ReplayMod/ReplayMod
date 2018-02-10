@@ -1,6 +1,7 @@
 package com.replaymod.online.gui;
 
 import com.mojang.authlib.exceptions.AuthenticationException;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.online.api.ApiClient;
 import com.replaymod.online.api.ApiException;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
@@ -15,6 +16,8 @@ import com.replaymod.core.utils.Patterns;
 import net.minecraft.client.gui.FontRenderer;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableColor;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
     public static final int MIN_PW_LENGTH = 5;
@@ -55,7 +58,7 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                 pos(cancelButton, width / 2 + 2, 170);
                 pos(statusLabel, width / 2 - statusLabel.getMinSize().getWidth() / 2, 152);
 
-                FontRenderer font = getMinecraft().fontRenderer;
+                FontRenderer font = getFontRenderer(getMinecraft());
                 int lineCount = font.listFormattedStringToWidth(disclaimerLabel.getText(), width - 10).size();
                 Dimension dim = new Dimension(width - 10, font.FONT_HEIGHT * lineCount);
                 disclaimerLabel.setSize(dim);

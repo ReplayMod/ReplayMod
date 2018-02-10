@@ -10,12 +10,12 @@ import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.FolderResourcePack;
+import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.*;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.Loader;
@@ -29,11 +29,28 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 
+//#if MC>=10904
+import net.minecraft.util.text.*;
+//#else
+//$$ import net.minecraft.util.ChatComponentText;
+//$$ import net.minecraft.util.ChatComponentTranslation;
+//$$ import net.minecraft.util.ChatStyle;
+//$$ import net.minecraft.util.EnumChatFormatting;
+//$$ import net.minecraft.util.IChatComponent;
+//#endif
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.FutureTask;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 @Mod(modid = ReplayMod.MOD_ID,
         useMetadata = true,
@@ -108,13 +125,34 @@ public class ReplayMod {
         settingsRegistry.setConfiguration(config);
     }
 
+    //#ifdef DEV_ENV
+    static { // Note: even preInit is too late and we'd have to issue another resource reload
+        FolderResourcePack jGuiResourcePack = new FolderResourcePack(new File("../jGui/src/main/resources")) {
+            @Override
+            protected InputStream getInputStreamByName(String resourceName) throws IOException {
+                try {
+                    return super.getInputStreamByName(resourceName);
+                } catch (IOException e) {
+                    if ("pack.mcmeta".equals(resourceName)) {
+                        return new ByteArrayInputStream(("{\"pack\": {\"description\": \"dummy pack for jGui resources in dev-env\", \"pack_format\": 1}}").getBytes(Charsets.UTF_8));
+                    }
+                    throw e;
+                }
+            }
+        };
+        @SuppressWarnings("unchecked")
+        List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
+        defaultResourcePacks.add(jGuiResourcePack);
+    }
+    //#endif
+
     @EventHandler
     public void init(FMLInitializationEvent event) {
         getSettingsRegistry().register(Setting.class);
 
         new MainMenuHandler().register();
 
-        MinecraftForge.EVENT_BUS.register(keyBindingRegistry);
+        FML_BUS.register(keyBindingRegistry);
 
         getKeyBindingRegistry().registerKeyBinding("replaymod.input.settings", 0, () -> {
             new GuiReplaySettings(null, settingsRegistry).display();
@@ -173,7 +211,7 @@ public class ReplayMod {
 
     public void runLater(Runnable runnable) {
         if (mc.isCallingFromMinecraftThread() && inRunLater) {
-            EventBus bus = MinecraftForge.EVENT_BUS;
+            EventBus bus = FORGE_BUS;
             bus.register(new Object() {
                 @SubscribeEvent
                 public void onRenderTick(TickEvent.RenderTickEvent event) {
@@ -185,8 +223,12 @@ public class ReplayMod {
             });
             return;
         }
+        //#if MC<10904
+        //$$ @SuppressWarnings("unchecked")
+        //#endif
+        Queue<FutureTask<?>> tasks = mc.scheduledTasks;
         synchronized (mc.scheduledTasks) {
-            mc.scheduledTasks.add(ListenableFutureTask.create(() -> {
+            tasks.add(ListenableFutureTask.create(() -> {
                 inRunLater = true;
                 try {
                     runnable.run();
@@ -222,6 +264,7 @@ public class ReplayMod {
     private void printToChat(boolean warning, String message, Object... args) {
         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
+            //#if MC>=10904
             Style coloredDarkGray = new Style().setColor(TextFormatting.DARK_GRAY);
             Style coloredGold = new Style().setColor(TextFormatting.GOLD);
             ITextComponent text = new TextComponentString("[").setStyle(coloredDarkGray)
@@ -229,6 +272,15 @@ public class ReplayMod {
                     .appendSibling(new TextComponentString("] "))
                     .appendSibling(new TextComponentTranslation(message, args).setStyle(new Style()
                             .setColor(warning ? TextFormatting.RED : TextFormatting.DARK_GREEN)));
+            //#else
+            //$$ ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
+            //$$ ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);
+            //$$ IChatComponent text = new ChatComponentText("[").setChatStyle(coloredDarkGray)
+            //$$         .appendSibling(new ChatComponentTranslation("replaymod.title").setChatStyle(coloredGold))
+            //$$         .appendSibling(new ChatComponentText("] "))
+            //$$         .appendSibling(new ChatComponentTranslation(message, args).setChatStyle(new ChatStyle()
+            //$$                 .setColor(warning ? EnumChatFormatting.RED : EnumChatFormatting.DARK_GREEN)));
+            //#endif
             // Send message to chat GUI
             // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
             mc.ingameGUI.getChatGUI().printChatMessage(text);

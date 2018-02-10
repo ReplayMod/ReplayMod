@@ -17,7 +17,6 @@ import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
@@ -28,6 +27,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 public class HotkeyButtons implements Extra {
     private ReplayMod mod;
 
@@ -35,7 +36,7 @@ public class HotkeyButtons implements Extra {
     public void register(ReplayMod mod) throws Exception {
         this.mod = mod;
 
-        MinecraftForge.EVENT_BUS.register(this);
+        FML_BUS.register(this);
     }
 
     @SubscribeEvent

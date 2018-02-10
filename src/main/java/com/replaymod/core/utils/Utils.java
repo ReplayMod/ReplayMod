@@ -55,6 +55,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static com.replaymod.core.versions.MCVer.getConnection;
 import static net.minecraft.client.Minecraft.getMinecraft;
 
 public class Utils {
@@ -160,7 +161,7 @@ public class Utils {
     }
 
     public static ResourceLocation getResourceLocationForPlayerUUID(UUID uuid) {
-        NetworkPlayerInfo info = getMinecraft().getConnection().getPlayerInfo(uuid);
+        NetworkPlayerInfo info = getConnection(getMinecraft()).getPlayerInfo(uuid);
         ResourceLocation skinLocation;
         if (info != null && info.hasLocationSkin()) {
             skinLocation = info.getLocationSkin();
