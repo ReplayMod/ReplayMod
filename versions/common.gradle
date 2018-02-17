@@ -97,16 +97,39 @@ if (project.name != 'core') {
     minecraft.accessTransformer preprocessedRes + '/META-INF/replaymod_at.cfg'
 }
 
+
+def shade = {files(
+        configurations.compile.findAll {it.name.startsWith 'mixin-'}
+                + configurations.shade
+)}
+task configureRelocation() {
+    dependsOn tasks.jar
+    doLast {
+        def extraSrg = tasks.reobfJar.extraSrgLines
+        shade().filter { it.exists() }.collect {
+            def tree = it.isDirectory() ? fileTree(it) : zipTree(it)
+            def pkgs = [].toSet()
+            tree.visit { file ->
+                if (!file.directory && file.name.endsWith('.class')) {
+                    def pkg = file.path.substring(0, file.path.lastIndexOf('/'))
+                    if (!pkg.startsWith('com/replaymod')) {
+                        pkgs << pkg
+                    }
+                }
+            }
+            pkgs
+        }.flatten().unique().each { pkg ->
+            extraSrg << "PK: $pkg com/replaymod/lib/$pkg".toString()
+        }
+    }
+}
+tasks.reobfJar.dependsOn configureRelocation
+
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     dependsOn configurations.compile
     dependsOn configurations.shade
-
-    def shade = {files(
-            configurations.compile.findAll {it.name.startsWith 'mixin-'}
-                    + configurations.shade
-    )}
 
     def noticeDir = file("$buildDir/NOTICE")
     doFirst {
