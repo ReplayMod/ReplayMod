@@ -42,6 +42,8 @@ configurations {
 }
 
 dependencies {
+    // Note: All but the latest version of mixin SNAPSHOTs are practically release versions, so we use them as such
+    // Do NOT update to the latest version (always only one before that one; should be the one listed in their README)
     compile 'org.spongepowered:mixin:0.7.5-SNAPSHOT'
     shade 'com.googlecode.mp4parser:isoparser:1.1.7'
     shade 'org.apache.commons:commons-exec:1.3'
@@ -215,7 +217,30 @@ setupDecompWorkspace.dependsOn copySrg
 setupDevWorkspace.dependsOn copySrg
 project.tasks.idea.dependsOn copySrg
 
-
+// Mixin uses multiple HashMaps to generate the refmap.
+// HashMaps are unordered collections and as such do not produce deterministic output.
+// To fix that, we simply sort the refmap json file.
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+compileJava.doLast {
+    File refmapFile = compileJava.ext.refMapFile
+    if (refmapFile.exists()) {
+        def ordered
+        ordered = {
+            if (it instanceof Map) {
+                def sorted = new TreeMap(it)
+                sorted.replaceAll { k, v -> ordered(v) }
+                sorted
+            } else if (it instanceof List) {
+                it.replaceAll { v -> ordered(v) }
+            } else {
+                it
+            }
+        }
+        def json = JsonOutput.toJson(ordered(new JsonSlurper().parse(refmapFile)))
+        refmapFile.withWriter { it.write json }
+    }
+}
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
