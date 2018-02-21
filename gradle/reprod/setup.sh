@@ -108,7 +108,6 @@ setup_dep "mcinjector" "https://github.com/ModCoderPack/MCInjector.git" "7258466
 setup_dep "srg2source" "https://github.com/MinecraftForge/Srg2Source.git" "ea4ea624672e8b75fb2a78f0fb9105db13d5a4a6" "build/libs/Srg2Source-4.0-SNAPSHOT.jar" "727445a7b946535217be658726c537acf1921f0a9e2ac0ea717dff9b36dc529f" "4ebd7b738f368ee5c25a1028a167257e7012cef7c72c8b5b06149286992c631e"
 
 # Required for RM
-setup_dep "mixingradle" "https://github.com/SpongePowered/MixinGradle.git" "52217aa8ca221dcd0b9fb657b037e663db808f38" "build/libs/mixingradle-0.4-SNAPSHOT.jar" "8b3508867128a5d564631635dff898a36f9aca8db54b7bb3af6f4924e3f4bead" "42cbf81136d4e26c06d3234427665b50d18768cc1f210512204ca1d5e3a42b5c"
 setup_dep "forgegradle" "https://github.com/MinecraftForge/ForgeGradle.git" "f49079dd11c037f74cc740285b2c5504fbf8a7f6" "build/libs/ForgeGradle-2.3-SNAPSHOT.jar" "8272cf68ae269c315969e3e94a41bdffe1cf96cfbc6d701cafda90ab19ef5f94" "9261c0855a19d86434c6f9e784265d91e3e3c9f12b29dd90f41efacd15add41e"
 
 rm -rf tmp

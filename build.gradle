@@ -13,16 +13,13 @@ subprojects {
                 url = "http://files.minecraftforge.net/maven"
             }
             maven {
-                name = "sponge"
-                url = "https://repo.spongepowered.org/maven"
-            }
-            maven {
                 name = "sonatype"
                 url = "https://oss.sonatype.org/content/repositories/snapshots/"
             }
+            maven { url 'https://jitpack.io' }
         }
         dependencies {
-            classpath('org.spongepowered:mixingradle:0.6-SNAPSHOT'){
+            classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
                 // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
                 // and putting mixin right here will place it before forge in the class loader
                 exclude group: 'org.ow2.asm', module: 'asm-debug-all'
