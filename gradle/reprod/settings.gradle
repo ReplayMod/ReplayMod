@@ -1,0 +1,7 @@
+include 'mixin'
+include 'forgeflower'
+include 'forgegradle-2.1'
+include 'forgegradle-2.2'
+include 'forgegradle-2.3'
+
+rootProject.children.each { it.projectDir = file("deps/gradle/$it.name") }

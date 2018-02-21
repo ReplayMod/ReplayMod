@@ -5,6 +5,16 @@ buildscript {
     dependencies {
         classpath 'org.ow2.asm:asm:6.0'
     }
+
+    // This and calls to it should really also be handled by the gradle/reprod/init.gradle script
+    // but apparently there's no sane way to do that for external scripts in gradle :(
+    def convertRepoToHttp = { repo ->
+        if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
+            URL url = repo.url.toURL()
+            repo.url = new URL("http", url.getHost(), url.getPort(), url.getFile()).toURI()
+        }
+    }
+    if (System.getenv('REPRODUCIBLE_BUILD') == '1') repositories.all convertRepoToHttp
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -36,14 +46,23 @@ repositories {
     maven { url 'https://jitpack.io' }
 }
 
+// And because gradle does *something*, this definition even needs to be duplicated instead of shared
+def convertRepoToHttp = { repo ->
+    if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
+        URL url = repo.url.toURL()
+        repo.url = new URL("http", url.getHost(), url.getPort(), url.getFile()).toURI()
+    }
+}
+if (System.getenv('REPRODUCIBLE_BUILD') == '1') repositories.all convertRepoToHttp
+
 configurations {
     shade
     compile.extendsFrom shade
 }
 
 dependencies {
-    // Note: All but the latest version of mixin SNAPSHOTs are practically release versions, so we use them as such
-    // Do NOT update to the latest version (always only one before that one; should be the one listed in their README)
+    // compile 'com.github.SpongePowered:Mixin:404f5da' // 0.7.5-SNAPSHOT
+    // ^ mixin doesn't compile on jitpack, so we'll have to depend on the SNAPSHOT and build it manually for reprod
     compile 'org.spongepowered:mixin:0.7.5-SNAPSHOT'
     shade 'com.googlecode.mp4parser:isoparser:1.1.7'
     shade 'org.apache.commons:commons-exec:1.3'
@@ -149,7 +168,7 @@ jar {
         exclude '**/NOTICE*'
         eachFile {
             if (getName() == 'LICENSE.txt') {
-                setName(getFile().getParentFile().getName().split('.jar_')[0] + '-LICENSE.txt')
+                setName(getFile().getParentFile().getName().split('.jar_')[0].tokenize('-')[0] + '-LICENSE.txt')
             }
         }
     }
