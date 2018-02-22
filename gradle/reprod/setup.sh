@@ -15,7 +15,7 @@ sha256val () {
 
 # Setup http(s) proxy
 url="https://github.com/johni0702/proxy-witness"
-commit="17ebb2e22f812faed9a28bae6bf1d8b28f798d56"
+commit="01f5aa9eb6fa14a0adfa832ba33b6f7c68138c26"
 if [ ! -d "deps/proxy-witness" ] || [ "$(git -C "deps/proxy-witness" rev-parse $commit^{commit})" != "$commit" ]; then
     rm -rf "deps/proxy-witness"
     mkdir -p "deps/proxy-witness"
@@ -31,7 +31,10 @@ pushd "deps/proxy-witness"
     ./gradlew $PROXY_SETTINGS build -x test -x javadoc
 popd
 
-java -Dproxywitness.httpUris=http://export.mcpbot.bspk.rs/versions.json -jar deps/proxy-witness/build/libs/proxy-witness.jar "$PROXY_PORT" checksums.txt > proxy.log 2>&1 &
+java -Dproxywitness.httpUris=http://export.mcpbot.bspk.rs/versions.json \
+     -Dproxywitness.useCache=false \
+     -jar deps/proxy-witness/build/libs/proxy-witness.jar \
+     "$PROXY_PORT" checksums.txt > proxy.log 2>&1 &
 proxy_pid=$!
 trap "kill $proxy_pid" EXIT
 
