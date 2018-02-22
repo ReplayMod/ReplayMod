@@ -23,16 +23,20 @@ apply plugin: 'org.spongepowered.mixin'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = gitDescribe()
+afterEvaluate {
+    def gitVer = gitDescribe()
+    if (gitVer.startsWith('1.12.2-')) gitVer = gitVer.substring('1.12.2-'.length()) // until the first proper version
+    version = project.minecraft.version + '-' + gitVer
+}
 group= "com.replaymod"
 archivesBaseName = "replaymod"
 
 minecraft {
     coreMod = 'com.replaymod.core.LoadingPlugin'
     runDir = "../../eclipse"
-    replace '@MOD_VERSION@', project.version
 }
 afterEvaluate {
+    minecraft.replace '@MOD_VERSION@', project.version
     // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
     // a newer srg-compatible MC version (that may be using a different protocol version)
     minecraft.replace '@MC_VERSION@', "[ ${project.minecraft.version} ]"
@@ -197,8 +201,8 @@ def gitDescribe() {
 processResources
         {
             // this will ensure that this task is redone when the versions change.
-            inputs.property "version", project.version
-            inputs.property "mcversion", project.minecraft.version
+            inputs.property 'version', { project.version }
+            inputs.property 'mcversion', { project.minecraft.version }
 
             // replace stuff in mcmod.info, nothing else
             from(sourceSets.main.resources.srcDirs) {
