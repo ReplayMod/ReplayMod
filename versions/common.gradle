@@ -36,10 +36,11 @@ minecraft {
     runDir = "../../eclipse"
 }
 afterEvaluate {
-    minecraft.replace '@MOD_VERSION@', project.version
+    // Note cannot use minecraft.replace because that has already been forwarded to the task by FG by now
+    tasks.sourceMainJava.replace '@MOD_VERSION@', project.version
     // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
     // a newer srg-compatible MC version (that may be using a different protocol version)
-    minecraft.replace '@MC_VERSION@', "[ ${project.minecraft.version} ]"
+    tasks.sourceMainJava.replace '@MC_VERSION@', "[ ${project.minecraft.version} ]"
 }
 
 repositories {
@@ -207,11 +208,13 @@ processResources
             inputs.property 'mcversion', { project.minecraft.version }
 
             // replace stuff in mcmod.info, nothing else
-            from(sourceSets.main.resources.srcDirs) {
+            from(sourceSets.main.resources.srcDirs) { spec ->
                 include 'mcmod.info'
 
                 // replace version and mcversion
-                expand 'version': project.version, 'mcversion': project.minecraft.version
+                afterEvaluate {
+                    spec.expand 'version': project.version, 'mcversion': project.minecraft.version
+                }
             }
 
             // copy everything else, thats not the mcmod.info
