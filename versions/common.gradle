@@ -123,15 +123,12 @@ if (project.name != 'core') {
 }
 
 
-def shade = {files(
-        configurations.compile.findAll {it.name.startsWith 'mixin-'}
-                + configurations.shade
-)}
 task configureRelocation() {
     dependsOn tasks.jar
+    dependsOn configurations.shade
     doLast {
         def extraSrg = tasks.reobfJar.extraSrgLines
-        shade().filter { it.exists() }.collect {
+        files(configurations.shade).filter { it.exists() }.collect {
             def tree = it.isDirectory() ? fileTree(it) : zipTree(it)
             def pkgs = [].toSet()
             tree.visit { file ->
@@ -155,6 +152,11 @@ jar {
 
     dependsOn configurations.compile
     dependsOn configurations.shade
+
+    def shade = {files(
+            configurations.compile.findAll {it.name.startsWith 'mixin-'}
+                    + configurations.shade
+    )}
 
     def noticeDir = file("$buildDir/NOTICE")
     doFirst {
