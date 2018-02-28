@@ -26,6 +26,7 @@ subprojects {
             }
         }
         configurations.classpath.resolutionStrategy.eachDependency { dep ->
+            if (System.getenv('REPRODUCIBLE_BUILD') == '1') return
             def req = dep.target
             // Substitute FG 2.0 with custom fork that works with Gradle 3
             if (req.group == 'net.minecraftforge.gradle' && req.name == 'ForgeGradle' && req.version == '2.0-SNAPSHOT') {
