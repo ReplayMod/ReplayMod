@@ -9,7 +9,7 @@ This will also be necessary if the `replaymod_at.cfg` file has been changed (get
 to access private fields is a good indication that this has happened).
 
 ### No IDE
-You can build the mod by running `./gradlew :build`. You can then find the final jar files in `versions/$MCVERSION/build/libs/`.
+You can build the mod by running `./gradlew build`. You can then find the final jar files in `versions/$MCVERSION/build/libs/`.
 You can also build single versions by running `./gradlew :versions:1.8:build` (builds the MC 1.8 version).
 
 ### IntelliJ
@@ -21,7 +21,7 @@ You also need to enable the Mixin annotation processor:
 4. Set the name to "reobfSrgFile" and the value to "$path/build/mcp-srg.srg" where you replace $path with the full 
 path to the folder containing the gradlew file
 
-Whenever you switch to a different core version (see `setCoreVersion below), you can either just run `./gradlew idea` or instead run
+Whenever you switch to a different core version (see `:setCoreVersion` below), you can either just run `./gradlew idea` or instead run
 `./gradlew copySrg` and then refresh the gradle project from within IntelliJ.
 
 ### Eclipse
@@ -82,7 +82,7 @@ You can pass the original source code through the preprocessor if you wish to de
 ```bash
 ./gradle -PmcVersion=10904 :setCoreVersion # switches all sources in src/main to 1.9.4
 ```
-If you do so, you'll also have to run `./gradlew versions:core:copySrg :versions:core:setupDecompWorkspace :jGui:versions:core:setupDecompWorkspace`,
+If you do so, you'll also have to run `./gradlew :versions:core:copySrg :versions:core:setupDecompWorkspace :jGui:versions:core:setupDecompWorkspace`,
 followed by a refresh of the project in your IDE.
 
 Make sure to switch back to the most recent branch before committing!
