@@ -135,7 +135,7 @@ task configureRelocation() {
             tree.visit { file ->
                 if (!file.directory && file.name.endsWith('.class')) {
                     def pkg = file.path.substring(0, file.path.lastIndexOf('/'))
-                    if (!pkg.startsWith('com/replaymod')) {
+                    if (!pkg.startsWith('com/replaymod') && !pkg.startsWith('javax/')) {
                         pkgs << pkg
                     }
                 }
