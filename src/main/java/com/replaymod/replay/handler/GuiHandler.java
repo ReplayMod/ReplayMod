@@ -136,7 +136,6 @@ public class GuiHandler {
         if (getGui(event) instanceof GuiIngameMenu && mod.getReplayHandler() != null) {
             if (getButton(event).id == BUTTON_EXIT_REPLAY) {
                 getButton(event).enabled = false;
-                mc.displayGuiScreen(new GuiMainMenu());
                 try {
                     mod.getReplayHandler().endReplay();
                 } catch (IOException e) {
