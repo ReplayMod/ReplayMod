@@ -12,6 +12,5 @@ minecraft {
 }
 
 dependencies {
-    shade 'com.github.replaymod:ReplayStudio:14daa88'
     shade project(':jGui:versions:1.9.4')
 }

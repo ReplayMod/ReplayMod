@@ -79,6 +79,12 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
+    def studioVersion = project.name
+    if (studioVersion == '1.8.9') studioVersion = '1.8'
+    shade("com.github.ReplayMod.ReplayStudio:$studioVersion:9fd96a7"){
+        exclude group: 'com.google.guava', module: 'guava' // provided by MC
+    }
+
     testCompile 'junit:junit:4.11'
 }
 

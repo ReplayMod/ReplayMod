@@ -70,39 +70,16 @@ minecraft {
 
 dependencies {
     //#if MC>=11200
-    //#if MC>=11202
-    shade 'com.github.replaymod:ReplayStudio:b040763'
-    //#else
-    //#if MC>=11201
-    //$$ shade 'com.github.replaymod:ReplayStudio:d4b2037'
-    //#else
-    //$$ shade 'com.github.replaymod:ReplayStudio:9ee698e'
-    //#endif
-    //#endif
     shade project(':jGui:versions:1.12')
     //#else
     //#if MC>=10904
     //$$ shade project(':jGui:versions:1.9.4')
-    //#if MC>=11002
-    //#if MC>=11100
-    //#if MC>=11102
-    //$$ shade 'com.github.replaymod:ReplayStudio:9605121'
-    //#else
-    //$$ shade 'com.github.ReplayMod:ReplayStudio:2b063ec'
-    //#endif
-    //#else
-    //$$ shade 'com.github.replaymod:ReplayStudio:7d8c2f7'
-    //#endif
-    //#else
-    //$$ shade 'com.github.replaymod:ReplayStudio:14daa88'
-    //#endif
     //#else
     //#if MC>=10809
     //$$ shade project(':jGui:versions:1.8.9')
     //#else
     //$$ shade project(':jGui:versions:1.8')
     //#endif
-    //$$ shade 'com.github.replaymod:ReplayStudio:a2168ca'
     //#endif
     //#endif
 }
