@@ -10,7 +10,3 @@ minecraft {
     version = '1.12-14.21.1.2387'
     mappings = "snapshot_20170615"
 }
-
-dependencies {
-    shade project(':jGui:versions:1.12')
-}

@@ -1,5 +1,6 @@
 package com.replaymod.core.utils;
 
+import com.google.common.base.Throwables;
 import com.google.common.net.PercentEscaper;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -17,7 +18,6 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
-import lombok.SneakyThrows;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
@@ -150,13 +150,14 @@ public class Utils {
         return REPLAY_NAME_ENCODER.escape(replayName) + ".mcpr";
     }
 
-    @SneakyThrows(UnsupportedEncodingException.class)
     public static String fileNameToReplayName(String fileName) {
         String baseName = FilenameUtils.getBaseName(fileName);
         try {
             return URLDecoder.decode(baseName, Charsets.UTF_8.name());
         } catch (IllegalArgumentException e) {
             return baseName;
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
         }
     }
 

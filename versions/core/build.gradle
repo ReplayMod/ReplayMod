@@ -67,19 +67,3 @@ minecraft {
     //#endif
     //#endif
 }
-
-dependencies {
-    //#if MC>=11200
-    shade project(':jGui:versions:1.12')
-    //#else
-    //#if MC>=10904
-    //$$ shade project(':jGui:versions:1.9.4')
-    //#else
-    //#if MC>=10809
-    //$$ shade project(':jGui:versions:1.8.9')
-    //#else
-    //$$ shade project(':jGui:versions:1.8')
-    //#endif
-    //#endif
-    //#endif
-}

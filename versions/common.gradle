@@ -83,7 +83,17 @@ dependencies {
     if (studioVersion == '1.8.9') studioVersion = '1.8'
     shade("com.github.ReplayMod.ReplayStudio:$studioVersion:9fd96a7"){
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
+        exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
+
+    def jGuiVersion = project.name
+    if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
+    if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
+    shade(project(":jGui:versions:$jGuiVersion")){
+        exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
+    }
+
+    compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
 
     testCompile 'junit:junit:4.11'
 }

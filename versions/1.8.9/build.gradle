@@ -10,7 +10,3 @@ minecraft {
     version = '1.8.9-11.15.1.1722'
     mappings = "stable_22"
 }
-
-dependencies {
-    shade project(':jGui:versions:1.8.9')
-}
