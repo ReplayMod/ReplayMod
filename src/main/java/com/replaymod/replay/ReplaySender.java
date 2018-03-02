@@ -1044,6 +1044,16 @@ public class ReplaySender extends ChannelDuplexHandler {
                             // Entity has left all loaded chunks
                             entity.addedToChunk = false;
                         }
+                    } else if (entity instanceof EntityPlayer) {
+                        // Minecraft occasionally unloads player entities with the UnloadChunk packet which
+                        // leaves them in a bugged state:
+                        // Right after the unload they will be in the unloadedEntityList and after the next entity tick
+                        // they will be removed from the loadedEntityList but still be part of the playerEntities list.
+                        //
+                        // We can't have that, so we'll pretend the player left the chunk before it's unloaded without
+                        // actually moving them outside of it.
+                        chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
+                        entity.addedToChunk = false;
                     }
                 }
             }
