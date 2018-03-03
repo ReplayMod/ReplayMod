@@ -1,6 +1,21 @@
 import groovy.json.JsonOutput
 
-version = gitDescribe()
+def latestVersion = file('version.txt').readLines().first()
+def releaseCommit = command('git', 'blame', '-p', '-l', 'version.txt').first().tokenize(' ').first()
+if (latestVersion == '2.1.0') { // First version since change from tag-based
+    releaseCommit = '35ac26e91689ac9bdf12dbb9902c452464a75108' // git rev-parse 1.12.2-2.1.0
+}
+def currentCommit = command('git', 'rev-parse', 'HEAD').first()
+if (releaseCommit == currentCommit) {
+    version = latestVersion
+} else {
+    def diff = command('git', 'log', '--format=oneline', "$releaseCommit..$currentCommit").size()
+    version = "$latestVersion-$diff-g${currentCommit.substring(0, 7)}"
+}
+if (gitDescribe().endsWith('*')) {
+    version = "$version*"
+}
+
 group= "com.replaymod"
 
 subprojects {
@@ -69,15 +84,36 @@ task setCoreVersion() {
     }
 }
 
-def generateVersionsJson() {
-    // List all tags
+def command(Object...cmd) {
     def stdout = new ByteArrayOutputStream()
-    project.exec {
-        commandLine 'git', 'for-each-ref', '--sort=taggerdate', '--format=%(refname:short)', 'refs/tags'
+    exec {
+        commandLine cmd
         standardOutput = stdout
     }
-    def versions = stdout.toString().tokenize('\n').reverse()
-    def mcVersions = versions.collect {it.substring(0, it.indexOf('-'))}.unique().reverse()
+    return stdout.toString().tokenize('\n')
+}
+
+def generateVersionsJson() {
+    // Find all tag-style releases by listing all tags
+    def tagVersions = command 'git', 'for-each-ref', '--sort=taggerdate', '--format=%(refname:short)', 'refs/tags'
+
+    // Find all commit-style releases
+    // List all commits
+    def releaseCommits =
+            command 'git', 'log', '--format=%H', '--date-order', '-E',
+                    '--grep', /Pre-release [0-9]+ of [0-9]+\.[0-9]+\.[0-9]+/,
+                    '--grep', /Release [0-9]+\.[0-9]+\.[0-9]+/
+    // Find version string and MC versions for each commit hash
+    def commitVersions = releaseCommits.collect { commit ->
+        def version = command('git', 'show', "$commit:version.txt").first()
+        def mcVersions = command 'git', 'ls-tree', '-d', '--name-only', "$commit:versions"
+        mcVersions.remove('core')
+        return mcVersions.collect { "$it-$version" }
+    }.flatten()
+
+    def versions = commitVersions + tagVersions.reverse()
+    def mcVersions = versions.collect {it.substring(0, it.indexOf('-'))}.unique()
+    mcVersions.sort(new OrderBy([0, 1, 2].collect { i -> { it -> (it.tokenize('.')[i] ?: '0') as int } }))
 
     def root = [
             homepage: 'https://www.replaymod.com/download/',
@@ -90,7 +126,9 @@ def generateVersionsJson() {
         versions.forEach {
             def (thisMcVersion, modVersion, preVersion) = it.tokenize('-')
             if (thisMcVersion == mcVersion) {
-                mcVersionRoot[it] = "See https://github.com/ReplayMod/ReplayMod/releases/$it"
+                mcVersionRoot[it] = tagVersions.contains(it) ?
+                        "See https://github.com/ReplayMod/ReplayMod/releases/$it" :
+                        'See https://www.replaymod.com/forum/thread/100'
                 if (latest == null) latest = it
                 if (preVersion == null) {
                     if (recommended == null) recommended = it
@@ -110,33 +148,26 @@ task doRelease() {
     doLast {
         // Parse version
         def version = project.releaseVersion as String
-        if (project.version.endsWith('*')) {
+        if (gitDescribe().endsWith('*')) {
             throw new InvalidUserDataException('Git working tree is dirty. Make sure to commit all changes.')
         }
-        def (mcVersion, modVersion, preVersion) = version.tokenize('-')
+        def (modVersion, preVersion) = version.tokenize('-')
         preVersion = preVersion != null && preVersion.startsWith('b') ? preVersion.substring(1) : null
 
-        // Create new tag
-        if (preVersion != null) {
-            project.exec {
-                commandLine 'git', 'tag',
-                        '-m', "Pre-release $preVersion of $modVersion for Minecraft $mcVersion",
-                        "$mcVersion-$modVersion-b$preVersion"
-            }
-        } else {
-            project.exec {
-                commandLine 'git', 'tag',
-                        '-m', "Release $modVersion for Minecraft $mcVersion",
-                        "$mcVersion-$modVersion"
-            }
-        }
-
-        // Switch to master branch to update versions.json
-        project.exec { commandLine 'git', 'checkout', 'master' }
+        // Create new commit
+        def commitMessage = preVersion != null ?
+                "Pre-release $preVersion of $modVersion" :
+                "Release $modVersion"
+        file('version.txt').write("$version\n")
+        command 'git', 'add', 'version.txt'
+        command 'git', 'commit', '-m', commitMessage
 
         // Generate versions.json content
         def versionsRoot = generateVersionsJson()
         def versionsJson = JsonOutput.prettyPrint(JsonOutput.toJson(versionsRoot))
+
+        // Switch to master branch to update versions.json
+        command 'git', 'checkout', 'master'
 
         // Write versions.json
         new File('versions.json').write(versionsJson)

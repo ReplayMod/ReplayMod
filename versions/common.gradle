@@ -24,9 +24,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 afterEvaluate {
-    def gitVer = gitDescribe()
-    if (gitVer.startsWith('1.12.2-')) gitVer = gitVer.substring('1.12.2-'.length()) // until the first proper version
-    version = project.minecraft.version + '-' + gitVer
+    version = project.minecraft.version + '-' + rootProject.version
 }
 group= "com.replaymod"
 archivesBaseName = "replaymod"
@@ -201,19 +199,6 @@ jar {
                 'TweakOrder': '0',
                 'FMLCorePluginContainsFMLMod': 'true',
                 'FMLAT': 'replaymod_at.cfg'
-    }
-}
-
-def gitDescribe() {
-    try {
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'describe', '--always', '--dirty=*'
-            standardOutput = stdout
-        }
-        return stdout.toString().trim()
-    } catch (e) {
-        return "unknown"
     }
 }
 
