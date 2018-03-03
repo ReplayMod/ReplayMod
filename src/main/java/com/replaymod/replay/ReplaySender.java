@@ -1005,6 +1005,7 @@ public class ReplaySender extends ChannelDuplexHandler {
             // within. Otherwise, if there wasn't a game tick recently, there may be entities that have moved
             // out of the chunk by now but are still registered in it. If we do not update those, they will get
             // unloaded even though they shouldn't.
+            // Note: This is only half of the truth. Entities may be removed by chunk-unloading, see else-case below.
             // To make things worse, it seems like players were never supposed to be unloaded this way because
             // they will remain glitched in the World#playerEntities list.
             World world = world(mc);
@@ -1044,14 +1045,23 @@ public class ReplaySender extends ChannelDuplexHandler {
                             // Entity has left all loaded chunks
                             entity.addedToChunk = false;
                         }
-                    } else if (entity instanceof EntityPlayer) {
-                        // Minecraft occasionally unloads player entities with the UnloadChunk packet which
-                        // leaves them in a bugged state:
-                        // Right after the unload they will be in the unloadedEntityList and after the next entity tick
-                        // they will be removed from the loadedEntityList but still be part of the playerEntities list.
+                    } else {
+                        // When entities remain in a chunk that's to be unloaded, they'll only be added to a unload
+                        // queue and remain loaded as before until the next tick (which during jumping is way off).
+                        // So, if they are re-spawned with the same entity id, MC actually cleans up the old entity and
+                        // then adds the new one but leaves the unload queue as is.
+                        // Finally, on the next tick the legitimate entity will be unloaded because it's part of the
+                        // unload queue (entities .equals based purely on their id). However, the old entity object
+                        // is used to determine the chunk the entity is removed from and in this case that'll allow the
+                        // legitimate entity to remain registered in a loaded chunk, causing them to still be rendered.
                         //
-                        // We can't have that, so we'll pretend the player left the chunk before it's unloaded without
-                        // actually moving them outside of it.
+                        // The usual removal-due-to-chunk-unload process will, without touching the entityList, call
+                        // onEntityRemoved. In that method WorldClient checks to see whether the entity is still in the
+                        // entityList (which it is) and then adds it to the entitySpawnQueue.
+                        // As the final result the entity will remain loaded.
+                        // To get the same result without ticking, we just remove the entity from the to-be-unloaded
+                        // chunk but keep it loaded otherwise. They won't be rendered because they're not part of any
+                        // chunk and will be removed properly if the server decides to re-spawn the entity.
                         chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
                         entity.addedToChunk = false;
                     }
