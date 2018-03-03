@@ -3,12 +3,17 @@ package com.replaymod.render.blend;
 import com.replaymod.render.blend.data.DMaterial;
 import com.replaymod.render.blend.data.DMesh;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+
+//#if MC>=11200
+import net.minecraft.client.renderer.BufferBuilder;
+//#else
+//$$ import net.minecraft.client.renderer.WorldRenderer;
+//#endif
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,7 +21,15 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlendMeshBuilder extends WorldRenderer {
+import static com.replaymod.core.versions.MCVer.*;
+
+public class BlendMeshBuilder
+        //#if MC>=11200
+        extends BufferBuilder
+        //#else
+        //$$ extends WorldRenderer
+        //#endif
+{
     private final DMesh mesh;
     private final List<DMesh.Vertex> vertices = new ArrayList<>();
     private final List<Vector2f> uvs = new ArrayList<>();
@@ -25,6 +38,9 @@ public class BlendMeshBuilder extends WorldRenderer {
     private boolean isDrawing;
     private boolean wellBehaved;
     private int mode;
+    //#if MC>=11200
+    private double x, y, z;
+    //#endif
     private float u, v;
     private int color = 0xffffffff; // Default not in parent class but probably set implicitly somewhere due to re-use
 
@@ -42,7 +58,11 @@ public class BlendMeshBuilder extends WorldRenderer {
     }
 
     @Override
-    public void startDrawing(int mode) {
+    //#if MC>=11200
+    public void begin(int mode, VertexFormat vertexFormat) {
+    //#else
+    //$$ public void startDrawing(int mode) {
+    //#endif
         if (isDrawing) {
             if (!wellBehaved) {
                 // Someone probably finished drawing with the global instance instead of this one,
@@ -58,7 +78,7 @@ public class BlendMeshBuilder extends WorldRenderer {
 
         if (!wellBehaved) {
             // In case the calling code finishes with Tessellator.getInstance().draw()
-            Tessellator.getInstance().getWorldRenderer().startDrawingQuads();
+            BufferBuilder_beginPosTexCol(mode);
         }
     }
 
@@ -69,16 +89,22 @@ public class BlendMeshBuilder extends WorldRenderer {
     }
 
     @Override
-    public int finishDrawing() {
+    //#if MC>=11200
+    public void finishDrawing() {
+    //#else
+    //$$ public int finishDrawing() {
+    //#endif
         if (!isDrawing) {
             throw new IllegalStateException("Not building!");
         } else {
             if (!wellBehaved) {
-                Tessellator.getInstance().getWorldRenderer().finishDrawing();
+                getBuffer(Tessellator.getInstance()).finishDrawing();
             }
 
             doFinish();
-            return -1;
+            //#if MC<11200
+            //$$ return -1;
+            //#endif
         }
     }
 
@@ -133,26 +159,70 @@ public class BlendMeshBuilder extends WorldRenderer {
         }
     }
 
+    //#if MC>=11200
+    // TODO these should all behave differently depending on the order in which they're called
+    // e.g. tex may be called multiple times, if there are multiple active texture units
     @Override
-    public void setTextureUV(double u, double v) {
+    public BlendMeshBuilder tex(double u, double v) {
         this.u = (float) u;
         this.v = (float) (1 - v);
+        return this;
     }
 
     @Override
-    public void setColorRGBA(int r, int g, int b, int a) {
+    public BufferBuilder lightmap(int p_187314_1_, int p_187314_2_) {
+        // TODO we probably do care about this
+        return this;
+    }
+
+    @Override
+    public BlendMeshBuilder color(int r, int g, int b, int a) {
         this.color = r | (g << 8) | (b << 16) | (a << 24);
+        return this;
     }
 
     @Override
-    public void addVertex(double x, double y, double z) {
-        x -= offset.x;
-        y -= offset.y;
-        z -= offset.z;
+    public BufferBuilder normal(float x, float y, float z) {
+        // TODO do we care about normals?
+        return this;
+    }
+
+    @Override
+    public BlendMeshBuilder pos(double x, double y, double z) {
+        this.x = x - offset.x;
+        this.y = y - offset.y;
+        this.z = z - offset.z;
+        return this;
+    }
+
+    @Override
+    public void endVertex() {
         vertices.add(new DMesh.Vertex((float) x, (float) -z, (float) y));
         uvs.add(new Vector2f(u, v));
         colors.add(color);
     }
+    //#else
+    //$$ @Override
+    //$$ public void setTextureUV(double u, double v) {
+    //$$     this.u = (float) u;
+    //$$     this.v = (float) (1 - v);
+    //$$ }
+    //$$
+    //$$ @Override
+    //$$ public void setColorRGBA(int r, int g, int b, int a) {
+    //$$     this.color = r | (g << 8) | (b << 16) | (a << 24);
+    //$$ }
+    //$$
+    //$$ @Override
+    //$$ public void addVertex(double x, double y, double z) {
+    //$$     x -= offset.x;
+    //$$     y -= offset.y;
+    //$$     z -= offset.z;
+    //$$     vertices.add(new DMesh.Vertex((float) x, (float) -z, (float) y));
+    //$$     uvs.add(new Vector2f(u, v));
+    //$$     colors.add(color);
+    //$$ }
+    //#endif
 
     @Override
     @SuppressWarnings("unchecked")
@@ -164,12 +234,19 @@ public class BlendMeshBuilder extends WorldRenderer {
         VertexFormat vertexFormat = getVertexFormat();
         int posOffset = -1, colorOffset = -1, uvOffset = -1;
         List<VertexFormatElement> elements = vertexFormat.getElements();
+        int index = 0;
         for (VertexFormatElement element : elements) {
+            //#if MC>11200
+            int offset = vertexFormat.getOffset(index);
+            //#else
+            //$$ int offset = element.getOffset();
+            //#endif
             switch (element.getUsage()) {
-                case POSITION: posOffset = element.getOffset(); break;
-                case COLOR: colorOffset = element.getOffset(); break;
-                case UV: if (element.getIndex() == 0) uvOffset = element.getOffset(); break;
+                case POSITION: posOffset = offset; break;
+                case COLOR: colorOffset = offset; break;
+                case UV: if (element.getIndex() == 0) uvOffset = offset; break;
             }
+            index++;
         }
         if (posOffset == -1) throw new IllegalStateException("No position element in " + vertexFormat);
         if (uvOffset == -1) throw new IllegalStateException("No uv element in " + vertexFormat);
@@ -179,15 +256,27 @@ public class BlendMeshBuilder extends WorldRenderer {
             if (colorOffset != -1) {
                 color = buffer.getInt(offset + colorOffset);
             }
-            setTextureUV(
+            //#if MC>11200
+            tex(
+            //#else
+            //$$ setTextureUV(
+            //#endif
                     buffer.getFloat(offset + uvOffset),
                     buffer.getFloat(offset + uvOffset + 4)
             );
-            addVertex(
+            //#if MC>11200
+            pos(
+            //#else
+            //$$ addVertex(
+            //#endif
                     buffer.getFloat(offset + posOffset    ),
                     buffer.getFloat(offset + posOffset + 4),
                     buffer.getFloat(offset + posOffset + 8)
             );
+
+            //#if MC>11200
+            endVertex();
+            //#endif
         }
     }
 

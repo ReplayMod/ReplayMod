@@ -1,6 +1,5 @@
 package com.replaymod.render.blend.data;
 
-import net.minecraft.util.Vec3i;
 import org.blender.dna.CustomData;
 import org.blender.dna.CustomDataLayer;
 import org.blender.dna.Image;
@@ -19,6 +18,12 @@ import org.cakelab.blender.nio.CArrayFacade;
 import org.cakelab.blender.nio.CPointer;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+
+//#if MC>=10904
+import net.minecraft.util.math.Vec3i;
+//#else
+//$$ import net.minecraft.util.Vec3i;
+//#endif
 
 import java.io.IOException;
 import java.util.ArrayList;

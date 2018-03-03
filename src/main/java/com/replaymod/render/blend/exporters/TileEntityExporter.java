@@ -6,9 +6,14 @@ import com.replaymod.render.blend.data.DObject;
 import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+
+//#if MC>=10904
+import net.minecraft.util.math.BlockPos;
+//#else
+//$$ import net.minecraft.util.BlockPos;
+//#endif
 
 import java.io.IOException;
 import java.util.IdentityHashMap;
@@ -57,7 +62,8 @@ public class TileEntityExporter implements Exporter {
         renderState.pop();
     }
 
-    public void preRender(TileEntity tileEntity, double dx, double dy, double dz, float renderPartialTicks, int destroyStage) {
+    public void preRender(TileEntity tileEntity, double dx, double dy, double dz, float renderPartialTicks, int destroyStage, float alpha) {
+        // FIXME: handle alpha
         DObject tileEntityObject = tileEntityObjects.get(tileEntity);
         if (tileEntityObject == null) {
             tileEntityObject = new DObject(DObject.Type.OB_EMPTY);

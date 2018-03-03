@@ -2,14 +2,23 @@ package com.replaymod.render.blend.mixin;
 
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.exporters.ParticlesExporter;
-import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(EffectRenderer.class)
+//#if MC>=10904
+import net.minecraft.client.particle.ParticleManager;
+//#else
+//$$ import net.minecraft.client.particle.EffectRenderer;
+//#endif
+
+//#if MC>=10904
+@Mixin(ParticleManager.class)
+//#else
+//$$ @Mixin(EffectRenderer.class)
+//#endif
 public abstract class MixinEffectRenderer {
 
     @Inject(method = "renderParticles", at = @At("HEAD"))

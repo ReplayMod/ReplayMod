@@ -6,15 +6,25 @@ import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.EntityFX;
 import net.minecraft.entity.Entity;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+
+//#if MC>=10904
+import net.minecraft.client.particle.Particle;
+//#else
+//$$ import net.minecraft.client.particle.EntityFX;
+//#endif
+
+//#if MC>=10809
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+//#endif
 
 import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.blend.Util.getGlModelViewMatrix;
 
 public class ParticlesExporter implements Exporter {
@@ -23,8 +33,13 @@ public class ParticlesExporter implements Exporter {
     private DObject pointAtObject;
     private DObject particlesObject;
     private DObject litParticlesObject;
-    private Map<Entity, DObject> particleObjects;
-    private Map<Entity, DObject> particleObjectsSeen;
+    //#if MC>=10904
+    private Map<Particle, DObject> particleObjects;
+    private Map<Particle, DObject> particleObjectsSeen;
+    //#else
+    //$$ private Map<Entity, DObject> particleObjects;
+    //$$ private Map<Entity, DObject> particleObjectsSeen;
+    //#endif
 
     public ParticlesExporter(RenderState renderState) {
         this.renderState = renderState;
@@ -32,7 +47,7 @@ public class ParticlesExporter implements Exporter {
 
     @Override
     public void setup() throws IOException {
-        if (true) return; // FIXME make configurable (also other methods below)
+        if (false) return; // FIXME make configurable (also other methods below)
         // FIXME replace with camera
         pointAtObject = new DObject(DObject.Type.OB_EMPTY);
         pointAtObject.id.name = "Particles Target";
@@ -54,7 +69,7 @@ public class ParticlesExporter implements Exporter {
     }
 
     public void preParticlesRender(boolean lit) {
-        if (true) return;
+        if (false) return;
         Matrix4f modelView = getGlModelViewMatrix();
         // Particles are rendered relative to the viewer location.
         // We however want our Particles object to not move when the viewer does,
@@ -68,12 +83,16 @@ public class ParticlesExporter implements Exporter {
     }
 
     public void postParticlesRender() {
-        if (true) return;
+        if (false) return;
         renderState.pop();
     }
 
-    public void onRender(EntityFX particle, float renderPartialTicks) {
-        if (true) return;
+    //#if MC>=10904
+    public void onRender(Particle particle, float renderPartialTicks) {
+    //#else
+    //$$ public void onRender(EntityFX particle, float renderPartialTicks) {
+    //#endif
+        if (false) return;
         DObject particleObject = particleObjects.get(particle);
         if (particleObject == null) {
             particleObject = new DObject(DObject.Type.OB_EMPTY);
@@ -94,9 +113,9 @@ public class ParticlesExporter implements Exporter {
         // renderer translate there again.
         // Instead of actually translating, we just add the translation on the current model-view-matrix.
         Matrix4f modelView = getGlModelViewMatrix();
-        double dx = particle.prevPosX + (particle.posX - particle.prevPosX) * renderPartialTicks - EntityFX.interpPosX;
-        double dy = particle.prevPosY + (particle.posY - particle.prevPosY) * renderPartialTicks - EntityFX.interpPosY;
-        double dz = particle.prevPosZ + (particle.posZ - particle.prevPosZ) * renderPartialTicks - EntityFX.interpPosZ;
+        double dx = particle.prevPosX + (particle.posX - particle.prevPosX) * renderPartialTicks - interpPosX();
+        double dy = particle.prevPosY + (particle.posY - particle.prevPosY) * renderPartialTicks - interpPosY();
+        double dz = particle.prevPosZ + (particle.posZ - particle.prevPosZ) * renderPartialTicks - interpPosZ();
         Vector3f offset = new Vector3f((float) dx, (float) dy, (float) dz);
         Matrix4f.translate(offset, modelView, modelView);
         renderState.pushModelView(modelView);
@@ -116,26 +135,35 @@ public class ParticlesExporter implements Exporter {
         renderState.pop();
     }
 
-    private DMesh generateMeshForParticle(EntityFX particle, Vector3f offset) {
+    //#if MC>=10904
+    private DMesh generateMeshForParticle(Particle particle, Vector3f offset) {
+    //#else
+    //$$ private DMesh generateMeshForParticle(EntityFX particle, Vector3f offset) {
+    //#endif
         DMesh mesh = new DMesh();
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
         builder.setOffset(offset);
         builder.setWellBehaved(true);
-        builder.startDrawingQuads();
-        particle.func_180434_a(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
+        //#if MC>=10809
+        builder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+        //#else
+        //$$ builder.startDrawingQuads();
+        //#endif
+        //#if MC>=10904
+        particle.renderParticle(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
+        //#else
+        //$$ particle.func_180434_a(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
+        //#endif
         builder.finishDrawing();
         return mesh;
     }
 
     @Override
     public void postFrame(int frame) throws IOException {
-        if (true) return;
-        for (Map.Entry<Entity, DObject> entry : particleObjects.entrySet()) {
-            if (!particleObjectsSeen.containsKey(entry.getKey())) {
-                DObject object = entry.getValue();
-                object.keyframe("hide", 0, renderState.getFrame(), 1f);
-            }
-        }
+        if (false) return;
+        particleObjects.entrySet().stream()
+                .filter(entry -> !particleObjectsSeen.containsKey(entry.getKey()))
+                .forEach(entry -> entry.getValue().keyframe("hide", 0, renderState.getFrame(), 1f));
         particleObjects = particleObjectsSeen;
         particleObjectsSeen = new IdentityHashMap<>();
     }

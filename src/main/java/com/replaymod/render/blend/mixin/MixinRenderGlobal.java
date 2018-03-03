@@ -18,7 +18,11 @@ public abstract class MixinRenderGlobal {
 
     @Inject(method = "renderEntities",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)V"))
+                    //#if MC>=10904
+                    target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntityStatic(Lnet/minecraft/entity/Entity;FZ)V"))
+                    //#else
+                    //$$ target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)V"))
+                    //#endif
     public void preEntityRender(Entity view, ICamera camera, float renderPartialTicks, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
@@ -28,7 +32,11 @@ public abstract class MixinRenderGlobal {
 
     @Inject(method = "renderEntities",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)V",
+                    //#if MC>=10904
+                    target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntityStatic(Lnet/minecraft/entity/Entity;FZ)V",
+                    //#else
+                    //$$ target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)V",
+                    //#endif
                     shift = At.Shift.AFTER))
     public void postEntityRender(Entity view, ICamera camera, float renderPartialTicks, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();

@@ -13,14 +13,19 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.chunk.CompiledChunk;
 import net.minecraft.client.renderer.chunk.RenderChunk;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumWorldBlockLayer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+
+//#if MC>=10904
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.math.BlockPos;
+//#else
+//$$ import net.minecraft.util.BlockPos;
+//$$ import net.minecraft.util.EnumWorldBlockLayer;
+//#endif
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,16 +35,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 public class ChunkExporter implements Exporter {
     private final Map<BlockPos, DObject> chunkObjects = new HashMap<>();
-    private final Map<BlockPos, Map<EnumWorldBlockLayer, DObject>> chunkLayerObjects = new HashMap<>();
-    private final List<Pair<RenderChunk, EnumWorldBlockLayer>> chunks = new ArrayList<>();
+    //#if MC>=10904
+    private final Map<BlockPos, Map<BlockRenderLayer, DObject>> chunkLayerObjects = new HashMap<>();
+    private final List<Pair<RenderChunk, BlockRenderLayer>> chunks = new ArrayList<>();
+    //#else
+    //$$ private final Map<BlockPos, Map<EnumWorldBlockLayer, DObject>> chunkLayerObjects = new HashMap<>();
+    //$$ private final List<Pair<RenderChunk, EnumWorldBlockLayer>> chunks = new ArrayList<>();
+    //#endif
     private DObject chunksObject;
     private DMaterial material;
     private int frame;
 
-    public void addChunkUpdate(RenderChunk chunk, EnumWorldBlockLayer layer) {
-        chunks.add(Pair.of(chunk, layer));
+    public void addChunkUpdate(RenderChunk chunk, CompiledChunk compiledChunk) {
+        //#if MC>=10904
+        for (BlockRenderLayer layer : BlockRenderLayer.values()) {
+        //#else
+        //$$ for (EnumWorldBlockLayer layer : EnumWorldBlockLayer.values()) {
+        //#endif
+            if (compiledChunk == null || compiledChunk.isLayerStarted(layer)) {
+                chunks.add(Pair.of(chunk, layer));
+            }
+        }
     }
 
     @Override
@@ -53,9 +73,7 @@ public class ChunkExporter implements Exporter {
             RenderChunk renderChunk = ReflectionUtil.get(renderInfo, "renderChunk", RenderChunk.class); // SneakyThrows
             CompiledChunk compiledChunk = renderChunk.getCompiledChunk();
             if (!compiledChunk.isEmpty()) {
-                for (EnumWorldBlockLayer layer : EnumWorldBlockLayer.values()) {
-                    addChunkUpdate(renderChunk, layer);
-                }
+                addChunkUpdate(renderChunk, null);
             }
         }
 
@@ -79,21 +97,31 @@ public class ChunkExporter implements Exporter {
 
     @Override
     public void postFrame(int frame) throws IOException {
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(LOCATION_BLOCKS_TEXTURE);
         material = BlendState.getState().getMaterials().getActiveMaterial();
 
-        for (Pair<RenderChunk, EnumWorldBlockLayer> pair : chunks) {
+        //#if MC>=10904
+        for (Pair<RenderChunk, BlockRenderLayer> pair : chunks) {
+            BlockRenderLayer layer = pair.getRight();
+        //#else
+        //$$ for (Pair<RenderChunk, EnumWorldBlockLayer> pair : chunks) {
+        //$$     EnumWorldBlockLayer layer = pair.getRight();
+        //#endif
             RenderChunk chunk = pair.getLeft();
-            EnumWorldBlockLayer layer = pair.getRight();
             DObject chunkObject = chunkObjects.get(chunk.getPosition());
             if (chunkObject == null) {
                 chunkObject = buildChunkObject(chunk);
                 chunkObjects.put(chunk.getPosition(), chunkObject);
-                chunkLayerObjects.put(chunk.getPosition(), new EnumMap<>(EnumWorldBlockLayer.class));
+                chunkLayerObjects.put(chunk.getPosition(), new EnumMap<>(layer.getDeclaringClass()));
             }
             DObject layerObject = buildChunkLayerObject(chunkObject, chunk, layer);
             if (layerObject == null) continue;
-            Map<EnumWorldBlockLayer, DObject> layerObjects = chunkLayerObjects.get(chunk.getPosition());
+            //#if MC>=10904
+            Map<BlockRenderLayer, DObject> layerObjects
+            //#else
+            //$$ Map<EnumWorldBlockLayer, DObject> layerObjects
+            //#endif
+                    = chunkLayerObjects.get(chunk.getPosition());
             DObject oldLayerObject = layerObjects.get(layer);
             if (oldLayerObject != null) {
                 oldLayerObject.keyframe("hide", 0, frame, 1f);
@@ -118,7 +146,12 @@ public class ChunkExporter implements Exporter {
         return chunkObject;
     }
 
-    private DObject buildChunkLayerObject(DObject chunkObject, RenderChunk renderChunk, EnumWorldBlockLayer layer) {
+    private DObject buildChunkLayerObject(DObject chunkObject, RenderChunk renderChunk,
+                                          //#if MC>=10904
+                                          BlockRenderLayer layer) {
+                                          //#else
+                                          //$$ EnumWorldBlockLayer layer) {
+                                          //#endif
         VertexBuffer vertexBuffer = renderChunk.getVertexBufferByLayer(layer.ordinal());
         if (vertexBuffer == null) return null;
 

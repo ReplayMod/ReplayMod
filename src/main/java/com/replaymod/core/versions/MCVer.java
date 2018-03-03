@@ -15,6 +15,7 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
@@ -22,6 +23,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
@@ -37,8 +39,10 @@ import net.minecraft.client.renderer.BufferBuilder;
 //#else
 //$$ import net.minecraft.client.renderer.VertexBuffer;
 //#endif
+import net.minecraft.client.particle.Particle;
 import net.minecraft.util.math.MathHelper;
 //#else
+//$$ import net.minecraft.client.particle.EntityFX;
 //$$ import net.minecraft.client.renderer.WorldRenderer;
 //$$ import net.minecraft.util.MathHelper;
 //#endif
@@ -186,6 +190,13 @@ public class MCVer {
             = WorldType.DEBUG_ALL_BLOCK_STATES;
             //#else
             //$$ = WorldType.DEBUG_WORLD;
+            //#endif
+
+    public static ResourceLocation LOCATION_BLOCKS_TEXTURE
+            //#if MC>=10904
+            = TextureMap.LOCATION_BLOCKS_TEXTURE;
+            //#else
+            //$$ = TextureMap.locationBlocksTexture;
             //#endif
 
     public static EntityPlayerSP player(Minecraft mc) {
@@ -396,6 +407,23 @@ public class MCVer {
         //$$ worldRenderer.addVertexWithUV(x, y, z, u, v);
         //#endif
     }
+
+    //#if MC>=11200
+    public static BufferBuilder getBuffer(Tessellator tessellator) {
+    //#else
+    //$$ public static WorldRenderer getBuffer(Tessellator tessellator) {
+    //#endif
+        //#if MC>=10904
+        //#if MC>=11200
+        return Tessellator.getInstance().getBuffer();
+        //#else
+        //$$ return Tessellator.getInstance().getBuffer();
+        //#endif
+        //#else
+        //$$ return Tessellator.getInstance().getWorldRenderer();
+        //#endif
+    }
+
     public static int floor(double val) {
         //#if MC>=11102
         return MathHelper.floor(val);
@@ -410,5 +438,29 @@ public class MCVer {
 
     public static float sin(float val) {
         return MathHelper.sin(val);
+    }
+
+    public static double interpPosX() {
+        //#if MC>=10904
+        return Particle.interpPosX;
+        //#else
+        //$$ return EntityFX.interpPosX;
+        //#endif
+    }
+
+    public static double interpPosY() {
+        //#if MC>=10904
+        return Particle.interpPosY;
+        //#else
+        //$$ return EntityFX.interpPosY;
+        //#endif
+    }
+
+    public static double interpPosZ() {
+        //#if MC>=10904
+        return Particle.interpPosZ;
+        //#else
+        //$$ return EntityFX.interpPosZ;
+        //#endif
     }
 }

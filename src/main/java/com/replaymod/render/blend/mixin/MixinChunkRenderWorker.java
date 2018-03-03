@@ -4,11 +4,16 @@ import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.exporters.ChunkExporter;
 import net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator;
 import net.minecraft.client.renderer.chunk.ChunkRenderWorker;
-import net.minecraft.util.EnumWorldBlockLayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=10904
+import net.minecraft.util.BlockRenderLayer;
+//#else
+//$$ import net.minecraft.util.EnumWorldBlockLayer;
+//#endif
 
 @Mixin(ChunkRenderWorker.class)
 public abstract class MixinChunkRenderWorker {
@@ -19,11 +24,7 @@ public abstract class MixinChunkRenderWorker {
         if (blendState != null) {
             if (task.getStatus() == ChunkCompileTaskGenerator.Status.DONE
                     && task.getType() == ChunkCompileTaskGenerator.Type.REBUILD_CHUNK) {
-                for (EnumWorldBlockLayer layer : EnumWorldBlockLayer.values()) {
-                    if (task.getCompiledChunk().isLayerStarted(layer)) {
-                        blendState.get(ChunkExporter.class).addChunkUpdate(task.getRenderChunk(), layer);
-                    }
-                }
+                blendState.get(ChunkExporter.class).addChunkUpdate(task.getRenderChunk(), task.getCompiledChunk());
             }
         }
     }
