@@ -95,6 +95,12 @@ public class ReplayHandler {
     void restartedReplay() {
         channel.close();
 
+        // Force re-creation of camera entity by unloading the previous world
+        mc.addScheduledTask(() -> {
+            mc.setIngameNotInFocus();
+            mc.loadWorld(null);
+        });
+
         restrictions = new Restrictions();
 
         setup();
