@@ -7,6 +7,8 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.model.ModelBox;
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -234,6 +236,11 @@ public class MCVer {
     @SuppressWarnings("unchecked")
     public static Collection<Entity>[] getEntityLists(Chunk chunk) {
         return chunk.getEntityLists();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<ModelBox> cubeList(ModelRenderer modelRenderer) {
+        return modelRenderer.cubeList;
     }
 
     @SuppressWarnings("unchecked")

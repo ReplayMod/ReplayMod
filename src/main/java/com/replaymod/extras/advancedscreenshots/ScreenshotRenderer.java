@@ -1,6 +1,7 @@
 package com.replaymod.extras.advancedscreenshots;
 
 import com.replaymod.render.RenderSettings;
+import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.rendering.Pipelines;
@@ -27,8 +28,13 @@ public class ScreenshotRenderer implements RenderInfo {
 
             ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.renderGlobal);
 
-            Pipelines.newPipeline(settings.getRenderMethod(),this,
-                    new ScreenshotWriter(settings.getOutputFile())).run();
+            if (settings.getRenderMethod() == RenderSettings.RenderMethod.BLEND) {
+                BlendState.setState(new BlendState(settings.getOutputFile()));
+                Pipelines.newBlendPipeline(this).run();
+            } else {
+                Pipelines.newPipeline(settings.getRenderMethod(), this,
+                        new ScreenshotWriter(settings.getOutputFile())).run();
+            }
 
             clrg.uninstall();
 

@@ -7,6 +7,7 @@ import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
+import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.events.ReplayRenderEvent;
 import com.replaymod.render.frame.RGBFrame;
@@ -46,7 +47,10 @@ import java.util.concurrent.FutureTask;
 import static com.google.common.collect.Iterables.getLast;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
-import static net.minecraft.client.renderer.GlStateManager.*;
+import static net.minecraft.client.renderer.GlStateManager.clear;
+import static net.minecraft.client.renderer.GlStateManager.enableTexture2D;
+import static net.minecraft.client.renderer.GlStateManager.popMatrix;
+import static net.minecraft.client.renderer.GlStateManager.pushMatrix;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -87,14 +91,21 @@ public class VideoRenderer implements RenderInfo {
         this.replayHandler = replayHandler;
         this.timeline = timeline;
         this.gui = new GuiVideoRenderer(this);
-        this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this,
-                videoWriter = new VideoWriter(this) {
-            @Override
-            public void consume(RGBFrame frame) {
-                gui.updatePreview(frame);
-                super.consume(frame);
-            }
-        });
+        if (settings.getRenderMethod() == RenderSettings.RenderMethod.BLEND) {
+            BlendState.setState(new BlendState(settings.getOutputFile()));
+
+            this.renderingPipeline = Pipelines.newBlendPipeline(this);
+            this.videoWriter = null;
+        } else {
+            this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this,
+                    videoWriter = new VideoWriter(this) {
+                        @Override
+                        public void consume(RGBFrame frame) {
+                            gui.updatePreview(frame);
+                            super.consume(frame);
+                        }
+                    });
+        }
     }
 
     /**
@@ -284,7 +295,7 @@ public class VideoRenderer implements RenderInfo {
         new SoundHandler().playRenderSuccessSound();
 
         try {
-            if (!hasFailed()) {
+            if (!hasFailed() && videoWriter != null) {
                 new GuiRenderingDone(ReplayModRender.instance, videoWriter.getVideoFile(), totalFrames, settings).display();
             }
         } catch (VideoWriter.FFmpegStartupException e) {
@@ -401,7 +412,9 @@ public class VideoRenderer implements RenderInfo {
     }
 
     public void cancel() {
-        videoWriter.abort();
+        if (videoWriter != null) {
+            videoWriter.abort();
+        }
         this.cancelled = true;
         renderingPipeline.cancel();
     }

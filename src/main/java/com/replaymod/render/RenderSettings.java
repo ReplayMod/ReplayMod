@@ -11,7 +11,7 @@ import java.io.File;
 @Data
 public class RenderSettings {
     public enum RenderMethod {
-        DEFAULT, STEREOSCOPIC, CUBIC, EQUIRECTANGULAR, ODS;
+        DEFAULT, STEREOSCOPIC, CUBIC, EQUIRECTANGULAR, ODS, BLEND;
 
         @Override
         public String toString() {
@@ -35,6 +35,8 @@ public class RenderSettings {
         WEBM_CUSTOM("-an -c:v libvpx -b:v %BITRATE% \"%FILENAME%\"", "webm"),
 
         MKV_LOSSLESS("-an -c:v libx264 -preset ultrafast -qp 0 \"%FILENAME%\"", "mkv"),
+
+        BLEND(null, "blend"),
 
         PNG("\"%FILENAME%-%06d.png\"", "png");
 
