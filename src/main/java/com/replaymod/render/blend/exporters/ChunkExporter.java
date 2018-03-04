@@ -1,5 +1,6 @@
 package com.replaymod.render.blend.exporters;
 
+import com.replaymod.render.blend.BlendMeshBuilder;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DMaterial;
@@ -13,10 +14,11 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.chunk.CompiledChunk;
 import net.minecraft.client.renderer.chunk.RenderChunk;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import org.apache.commons.lang3.tuple.Pair;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 //#if MC>=10904
@@ -47,7 +49,6 @@ public class ChunkExporter implements Exporter {
     //$$ private final List<Pair<RenderChunk, EnumWorldBlockLayer>> chunks = new ArrayList<>();
     //#endif
     private DObject chunksObject;
-    private DMaterial material;
     private int frame;
 
     public void addChunkUpdate(RenderChunk chunk, CompiledChunk compiledChunk) {
@@ -97,9 +98,6 @@ public class ChunkExporter implements Exporter {
 
     @Override
     public void postFrame(int frame) throws IOException {
-        Minecraft.getMinecraft().getTextureManager().bindTexture(LOCATION_BLOCKS_TEXTURE);
-        material = BlendState.getState().getMaterials().getActiveMaterial();
-
         //#if MC>=10904
         for (Pair<RenderChunk, BlockRenderLayer> pair : chunks) {
             BlockRenderLayer layer = pair.getRight();
@@ -168,50 +166,9 @@ public class ChunkExporter implements Exporter {
         GL15.glGetBufferSubData(OpenGlHelper.GL_ARRAY_BUFFER, 0, byteBuffer);
         vertexBuffer.unbindBuffer();
 
-        DMesh mesh = new DMesh();
-        mesh.materials.add(material);
-        DMesh.Vertex v1 = null, v2 = null, v3 = null;
-        Vector2f uv1 = new Vector2f(),
-                 uv2 = new Vector2f(),
-                 uv3 = new Vector2f(),
-                 uv4 = new Vector2f();
-        int c1 = 0, c2 = 0, c3 = 0;
-        for (int i = 0; i < size / STRIDE; i++) {
-            // See VboRenderList.setupArrayPointers for offsets
-            DMesh.Vertex vert = new DMesh.Vertex(
-                    byteBuffer.getFloat(STRIDE * i),
-                    -byteBuffer.getFloat(STRIDE * i + 8),
-                    byteBuffer.getFloat(STRIDE * i + 4)
-            );
-            float u = byteBuffer.getFloat(STRIDE * i + 16);
-            float v = 1 - byteBuffer.getFloat(STRIDE * i + 20);
-            int c = byteBuffer.getInt(STRIDE * i + 12);
-            // TODO tex, norm, etc.
-            if (v1 == null) {
-                v1 = vert;
-                uv1.set(u, v);
-                c1 = c;
-            } else if (v2 == null) {
-                v2 = vert;
-                uv2.set(u, v);
-                c2 = c;
-            } else if (v3 == null) {
-                v3 = vert;
-                uv3.set(u, v);
-                c3 = c;
-            } else {
-                uv4.set(u, v);
-                mesh.addQuad(
-                        v1, v2, v3, vert,
-                        uv1, uv2, uv3, uv4,
-                        c1, c2, c3, c,
-                        0
-                );
-                v1 = v2 = v3 = null;
-            }
-        }
+        Minecraft.getMinecraft().getTextureManager().bindTexture(LOCATION_BLOCKS_TEXTURE);
 
-        return mesh;
+        return BlendMeshBuilder.addBufferToMesh(byteBuffer, GL11.GL_QUADS, DefaultVertexFormats.BLOCK, null, null);
     }
 
     private static final int STRIDE = 28;
