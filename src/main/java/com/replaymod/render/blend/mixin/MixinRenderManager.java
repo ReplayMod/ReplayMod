@@ -19,7 +19,7 @@ public abstract class MixinRenderManager {
 
     @Inject(method = "doRenderEntity",
             at = @At(value = "INVOKE",
-                     target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFFZ)V"))
+                     target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFF)V"))
     public void preRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks, boolean box,
                           //#if MC>=10904
                           CallbackInfo ci) {
@@ -34,7 +34,7 @@ public abstract class MixinRenderManager {
 
     @Inject(method = "doRenderEntity",
             at = @At(value = "INVOKE",
-                     target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFFZ)V",
+                     target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFF)V",
                      shift = At.Shift.AFTER))
     public void postRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks, boolean box,
                            //#if MC>=10904

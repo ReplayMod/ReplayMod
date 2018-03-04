@@ -16,6 +16,8 @@ import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
@@ -408,20 +410,25 @@ public class MCVer {
         //#endif
     }
 
+    //#if MC>=10904
     //#if MC>=11200
     public static BufferBuilder getBuffer(Tessellator tessellator) {
+    //#else
+    //$$ public static VertexBuffer getBuffer(Tessellator tessellator) {
+    //#endif
     //#else
     //$$ public static WorldRenderer getBuffer(Tessellator tessellator) {
     //#endif
         //#if MC>=10904
-        //#if MC>=11200
         return Tessellator.getInstance().getBuffer();
-        //#else
-        //$$ return Tessellator.getInstance().getBuffer();
-        //#endif
         //#else
         //$$ return Tessellator.getInstance().getWorldRenderer();
         //#endif
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<VertexFormatElement> getElements(VertexFormat vertexFormat) {
+        return vertexFormat.getElements();
     }
 
     public static int floor(double val) {

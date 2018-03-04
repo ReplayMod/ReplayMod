@@ -149,7 +149,7 @@ public class ParticlesExporter implements Exporter {
         //#else
         //$$ builder.startDrawingQuads();
         //#endif
-        //#if MC>=10904
+        //#if MC>=10809
         particle.renderParticle(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
         //#else
         //$$ particle.func_180434_a(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);

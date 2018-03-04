@@ -10,8 +10,12 @@ import org.lwjgl.util.vector.ReadableVector3f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+//#if MC>=10904
 //#if MC>=11200
 import net.minecraft.client.renderer.BufferBuilder;
+//#else
+//$$ import net.minecraft.client.renderer.VertexBuffer;
+//#endif
 //#else
 //$$ import net.minecraft.client.renderer.WorldRenderer;
 //#endif
@@ -23,8 +27,12 @@ import java.util.List;
 import static com.replaymod.core.versions.MCVer.*;
 
 public class BlendMeshBuilder
+        //#if MC>=10904
         //#if MC>=11200
         extends BufferBuilder
+        //#else
+        //$$ extends VertexBuffer
+        //#endif
         //#else
         //$$ extends WorldRenderer
         //#endif
@@ -49,7 +57,7 @@ public class BlendMeshBuilder
     }
 
     @Override
-    //#if MC>=11200
+    //#if MC>=10809
     public void begin(int mode, VertexFormat vertexFormat) {
     //#else
     //$$ public void startDrawing(int mode) {
@@ -72,7 +80,7 @@ public class BlendMeshBuilder
             BufferBuilder_beginPosTexCol(mode);
         }
 
-        //#if MC>=11200
+        //#if MC>=10809
         super.begin(mode, vertexFormat);
         //#else
         //$$ super.startDrawing(mode);
@@ -88,7 +96,7 @@ public class BlendMeshBuilder
     }
 
     @Override
-    //#if MC>=11200
+    //#if MC>=10809
     public void finishDrawing() {
     //#else
     //$$ public int finishDrawing() {
@@ -100,14 +108,14 @@ public class BlendMeshBuilder
                 getBuffer(Tessellator.getInstance()).finishDrawing();
             }
 
-            //#if MC<11200
+            //#if MC<10809
             //$$ int ret =
             //#endif
             super.finishDrawing();
 
             addBufferToMesh();
 
-            //#if MC<11200
+            //#if MC<10809
             //$$ return ret;
             //#endif
         }
@@ -117,8 +125,12 @@ public class BlendMeshBuilder
         addBufferToMesh(this, mesh, offset);
     }
 
+    //#if MC>=10904
     //#if MC>=11200
     public static DMesh addBufferToMesh(BufferBuilder bufferBuilder, DMesh mesh, ReadableVector3f vertOffset) {
+    //#else
+    //$$ public static DMesh addBufferToMesh(VertexBuffer bufferBuilder, DMesh mesh, Vector3f vertOffset) {
+    //#endif
     //#else
     //$$ public static DMesh addBufferToMesh(WorldRenderer bufferBuilder, DMesh mesh, Vector3f vertOffset) {
     //#endif
@@ -140,8 +152,8 @@ public class BlendMeshBuilder
         // Determine offset of vertex components
         int posOffset = -1, colorOffset = -1, uvOffset = -1;
         int index = 0;
-        for (VertexFormatElement element : vertexFormat.getElements()) {
-            //#if MC>11200
+        for (VertexFormatElement element : getElements(vertexFormat)) {
+            //#if MC>=10809
             int offset = vertexFormat.getOffset(index);
             //#else
             //$$ int offset = element.getOffset();
