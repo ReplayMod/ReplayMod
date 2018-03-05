@@ -10,7 +10,7 @@ to access private fields is a good indication that this has happened).
 
 ### No IDE
 You can build the mod by running `./gradlew build`. You can then find the final jar files in `versions/$MCVERSION/build/libs/`.
-You can also build single versions by running `./gradlew :versions:1.8:build` (builds the MC 1.8 version).
+You can also build single versions by running `./gradlew :1.8:build` (builds the MC 1.8 version).
 
 ### IntelliJ
 For the initial setup run `./gradlew idea genIntellijRuns`.
@@ -74,15 +74,15 @@ Code for the more recent MC version shall be placed in the first branch of the i
 Version-dependent import statements shall be placed separately from and after all other imports but before the `static` and `java.*` imports.
 Common version dependent code (including the fml and forge event bus) are available as static methods/fields in the `MCVer` class.
 
-The source code resides in `src/main` (gradle project `:versions:core`) and is automatically passed through the
-preprocessor when any of the concrete versions are built (gradle projects `:versions:1.8`, `:versions:1.8.9`, etc.).
+The source code resides in `src/main` (gradle project `:core`) and is automatically passed through the
+preprocessor when any of the concrete versions are built (gradle projects `:1.8`, `:1.8.9`, etc.).
 Do **NOT** edit any of the code in `versions/$MCVERSION/build/` as it is automatically generated and will be overwritten without warning.
 
 You can pass the original source code through the preprocessor if you wish to develop/debug with another version of Minecraft:
 ```bash
 ./gradle -PmcVersion=10904 :setCoreVersion # switches all sources in src/main to 1.9.4
 ```
-If you do so, you'll also have to run `./gradlew :versions:core:copySrg :versions:core:setupDecompWorkspace :jGui:versions:core:setupDecompWorkspace`,
+If you do so, you'll also have to run `./gradlew :core:copySrg :core:setupDecompWorkspace :jGui:core:setupDecompWorkspace`,
 followed by a refresh of the project in your IDE.
 
 Make sure to switch back to the most recent branch before committing!

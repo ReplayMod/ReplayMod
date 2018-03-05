@@ -21,24 +21,7 @@ group= "com.replaymod"
 subprojects {
     buildscript {
         repositories {
-            mavenLocal()
-            mavenCentral()
-            maven {
-                name = "forge"
-                url = "http://files.minecraftforge.net/maven"
-            }
-            maven {
-                name = "sonatype"
-                url = "https://oss.sonatype.org/content/repositories/snapshots/"
-            }
             maven { url 'https://jitpack.io' }
-        }
-        dependencies {
-            classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
-                // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
-                // and putting mixin right here will place it before forge in the class loader
-                exclude group: 'org.ow2.asm', module: 'asm-debug-all'
-            }
         }
         configurations.classpath.resolutionStrategy.eachDependency { dep ->
             if (System.getenv('REPRODUCIBLE_BUILD') == '1') return
@@ -80,7 +63,7 @@ task setCoreVersion() {
         def vars = [MC: project.mcVersion as int, DEV_ENV: 1]
         project.convertTree(vars, 'src/main/java')
         project.convertTree(vars, 'src/main/resources')
-        project.convertTree(vars, 'versions/core/build.gradle')
+        project.file('versions/core/mcVersion').write(vars.MC.toString())
     }
 }
 

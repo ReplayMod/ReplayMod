@@ -1,20 +1,42 @@
 buildscript {
-    repositories {
-        mavenCentral()
+    def mcVersion
+    if (project.name != 'core') {
+        def (major, minor, patch) = project.name.tokenize('.')
+        mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}" as int
+    } else {
+        def f = file('mcVersion')
+        mcVersion = f.exists() ? f.readLines().first() as int : 11202
     }
-    dependencies {
-        classpath 'org.ow2.asm:asm:6.0'
-    }
+    project.ext.mcVersion = mcVersion
 
-    // This and calls to it should really also be handled by the gradle/reprod/init.gradle script
-    // but apparently there's no sane way to do that for external scripts in gradle :(
-    def convertRepoToHttp = { repo ->
-        if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
-            URL url = repo.url.toURL()
-            repo.url = new URL("http", url.getHost(), url.getPort(), url.getFile()).toURI()
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "https://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
-    if (System.getenv('REPRODUCIBLE_BUILD') == '1') repositories.all convertRepoToHttp
+
+    dependencies {
+        classpath 'org.ow2.asm:asm:6.0'
+        classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
+            // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
+            // and putting mixin right here will place it before forge in the class loader
+            exclude group: 'org.ow2.asm', module: 'asm-debug-all'
+        }
+        classpath 'net.minecraftforge.gradle:ForgeGradle:' + (
+                mcVersion >= 11200 ? '2.3-SNAPSHOT' :
+                mcVersion >= 10904 ? '2.2-SNAPSHOT' :
+                mcVersion >= 10809 ? '2.1-SNAPSHOT' :
+                mcVersion >= 10800 ? '2.0-SNAPSHOT' :
+                                     'invalid'
+        )
+    }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -32,6 +54,29 @@ archivesBaseName = "replaymod"
 minecraft {
     coreMod = 'com.replaymod.core.LoadingPlugin'
     runDir = "../../eclipse"
+
+    version = [
+            11202: '1.12.2-14.23.0.2486',
+            11201: '1.12.1-14.22.0.2444',
+            11200: '1.12-14.21.1.2387',
+            11102: '1.11.2-13.20.0.2216',
+            11100: '1.11-13.19.1.2188',
+            11002: '1.10.2-12.18.2.2099',
+            10904: '1.9.4-12.17.0.1976',
+            10809: '1.8.9-11.15.1.1722',
+            10800: '1.8-11.14.4.1563',
+    ][mcVersion]
+    mappings = [
+            11202: "snapshot_20170615",
+            11201: "snapshot_20170615",
+            11200: "snapshot_20170615",
+            11102: "snapshot_20161220",
+            11100: "snapshot_20161111",
+            11002: "snapshot_20160518",
+            10904: "snapshot_20160518",
+            10809: "stable_22",
+            10800: "snapshot_nodoc_20141130",
+    ][mcVersion]
 }
 afterEvaluate {
     // Note cannot use minecraft.replace because that has already been forwarded to the task by FG by now
@@ -48,15 +93,6 @@ repositories {
     }
     maven { url 'https://jitpack.io' }
 }
-
-// And because gradle does *something*, this definition even needs to be duplicated instead of shared
-def convertRepoToHttp = { repo ->
-    if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
-        URL url = repo.url.toURL()
-        repo.url = new URL("http", url.getHost(), url.getPort(), url.getFile()).toURI()
-    }
-}
-if (System.getenv('REPRODUCIBLE_BUILD') == '1') repositories.all convertRepoToHttp
 
 configurations {
     shade
@@ -87,7 +123,7 @@ dependencies {
     def jGuiVersion = project.name
     if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
     if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
-    shade(project(":jGui:versions:$jGuiVersion")){
+    shade(project(":jGui:$jGuiVersion")){
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
 
@@ -103,8 +139,6 @@ if (project.name != 'core') {
     def preprocessedRes = 'build/preprocessed/res'
     def originalSrc = '../../src/main/java'
     def originalRes = '../../src/main/resources'
-    def (major, minor, patch) = project.name.tokenize('.')
-    def mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}"
     def vars = [MC: mcVersion as int]
 
     sourceSets {
@@ -135,6 +169,11 @@ if (project.name != 'core') {
     }
 
     minecraft.accessTransformer preprocessedRes + '/META-INF/replaymod_at.cfg'
+} else {
+    sourceSets {
+        main.java.srcDirs = ['../../src/main/java']
+        main.resources.srcDirs = ['../../src/main/resources']
+    }
 }
 
 
