@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayModReplay;
@@ -91,3 +92,4 @@ public abstract class MixinViewFrustum {
     //$$ @Shadow abstract int func_178157_a(int p_178157_1_, int p_178157_2_, int p_178157_3_);
     //#endif
 }
+//#endif

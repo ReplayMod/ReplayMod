@@ -8,6 +8,9 @@
     "MixinPlayerControllerMP",
     "MixinWorldClient",
     //#endif
+    //#if MC<=10710
+    //$$ "MixinGuiScreen",
+    //#endif
     "MixinNetHandlerLoginClient",
     "MixinNetHandlerPlayClient",
     "MixinNetworkDispatcher",

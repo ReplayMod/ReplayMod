@@ -12,8 +12,12 @@ import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.common.MinecraftForge;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import javax.annotation.Nullable;
 import java.util.Iterator;

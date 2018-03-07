@@ -37,8 +37,6 @@ The `stable` branch contains the most recent release.
 The `master` branch is solely to be used for the `version.json` file that contains a list of all versions
 used by the clients to check for updates of this mod.
 
-The MC 1.7.10 version is currently completely separate on `1.7.10` and `1.7.10-dev` due to its huge differences with any current versions.
-
 ### The Preprocessor
 To support multiple Minecraft versions with the ReplayMod, a [JCP](https://github.com/raydac/java-comment-preprocessor)-inspired preprocessor is used:
 ```java

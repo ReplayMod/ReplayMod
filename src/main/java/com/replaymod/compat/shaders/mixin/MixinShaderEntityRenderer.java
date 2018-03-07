@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.compat.shaders.mixin;
 
 import com.replaymod.compat.shaders.ShaderReflection;
@@ -26,3 +27,4 @@ public abstract class MixinShaderEntityRenderer {
         }
     }
 }
+//#endif

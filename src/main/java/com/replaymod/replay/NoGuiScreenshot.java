@@ -8,9 +8,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ScreenShotHelper;
 import org.apache.commons.io.FileUtils;
+
+//#if MC>=10800
+import net.minecraft.client.renderer.GlStateManager;
+//#else
+//$$ import com.replaymod.core.versions.MCVer.GlStateManager;
+//#endif
 
 import javax.imageio.ImageIO;
 import java.awt.*;

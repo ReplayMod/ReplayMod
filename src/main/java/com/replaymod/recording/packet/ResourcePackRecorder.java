@@ -2,21 +2,15 @@ package com.replaymod.recording.packet;
 
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreenWorking;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.ResourcePackRepository;
-import net.minecraft.network.NetworkManager;
 import net.minecraft.util.HttpUtil;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,19 +19,38 @@ import net.minecraft.network.play.client.CPacketResourcePackStatus;
 import net.minecraft.network.play.client.CPacketResourcePackStatus.Action;
 import net.minecraft.network.play.server.SPacketResourcePackSend;
 //#else
+//#if MC>=10800
 //$$ import net.minecraft.network.play.client.C19PacketResourcePackStatus;
 //$$ import net.minecraft.network.play.client.C19PacketResourcePackStatus.Action;
 //$$ import net.minecraft.network.play.server.S48PacketResourcePackSend;
+//#else
+//#endif
 //#endif
 
+//#if MC>=10800
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.NetworkManager;
+import org.apache.commons.io.FileUtils;
+
 import javax.annotation.Nonnull;
+
+import static com.replaymod.core.versions.MCVer.*;
+//#else
+//$$ import net.minecraft.client.multiplayer.ServerData.ServerResourceMode;
+//$$ import net.minecraft.client.multiplayer.ServerList;
+//$$ import net.minecraft.client.resources.FileResourcePack;
+//$$ import net.minecraft.network.play.server.S3FPacketCustomPayload;
+//$$ import org.apache.commons.io.Charsets;
+//#endif
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.replaymod.core.versions.MCVer.*;
 
 /**
  * Records resource packs and handles incoming resource pack packets during recording.
@@ -84,6 +97,7 @@ public class ResourcePackRecorder {
         }
     }
 
+    //#if MC>=10800
     //#if MC>=10904
     public CPacketResourcePackStatus makeStatusPacket(String hash, Action action) {
         //#if MC>=11002
@@ -282,5 +296,78 @@ public class ResourcePackRecorder {
             //#endif
         }
     }
+    //#else
+    //$$ public synchronized S3FPacketCustomPayload handleResourcePack(S3FPacketCustomPayload packet) {
+    //$$     final int requestId = nextRequestId++;
+    //$$     final String url = new String(packet.func_149168_d(), Charsets.UTF_8);
+    //$$
+    //$$     ServerData serverData = mc.getCurrentServerData();
+    //$$     ServerResourceMode resourceMode = serverData == null ? ServerResourceMode.PROMPT : serverData.getResourceMode();
+    //$$     if (resourceMode == ServerResourceMode.ENABLED) {
+    //$$         downloadResourcePack(requestId, url);
+    //$$         mc.getResourcePackRepository().obtainResourcePack(url);
+    //$$     } else if (resourceMode == ServerResourceMode.PROMPT) {
+    //$$         // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
+    //$$         //noinspection Convert2Lambda
+    //$$         mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
+    //$$             @Override
+    //$$             public void confirmClicked(boolean result, int id) {
+    //$$                 if (serverData != null) {
+    //$$                     serverData.setResourceMode(ServerResourceMode.ENABLED);
+    //$$                     ServerList.func_147414_b(serverData);
+    //$$                 }
+    //$$
+    //$$                 mc.displayGuiScreen(null);
+    //$$
+    //$$                 if (result) {
+    //$$                     downloadResourcePack(requestId, url);
+    //$$                 }
+    //$$             }
+    //$$         }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0));
+    //$$     }
+    //$$
+    //$$     return new S3FPacketCustomPayload(packet.func_149169_c(), ("replay://" + requestId).getBytes(Charsets.UTF_8));
+    //$$ }
+    //$$
+    //$$ private void downloadResourcePack(final int requestId, String url) {
+    //$$     final ResourcePackRepository repo = mc.mcResourcePackRepository;
+    //$$
+    //$$     String fileName = url.substring(url.lastIndexOf("/") + 1);
+    //$$
+    //$$     if (fileName.contains("?")) {
+    //$$         fileName = fileName.substring(0, fileName.indexOf("?"));
+    //$$     }
+    //$$
+    //$$     if (!fileName.endsWith(".zip")) {
+    //$$         return;
+    //$$     }
+    //$$
+    //$$     fileName = fileName.replaceAll("\\W", "");
+    //$$
+    //$$     File file = new File(repo.field_148534_e, fileName);
+    //$$
+    //$$     HashMap<String, String> hashmap = new HashMap<>();
+    //$$     hashmap.put("X-Minecraft-Username", mc.getSession().getUsername());
+    //$$     hashmap.put("X-Minecraft-UUID", mc.getSession().getPlayerID());
+    //$$     hashmap.put("X-Minecraft-Version", "1.7.10");
+    //$$
+    //$$     GuiScreenWorking guiScreen = new GuiScreenWorking();
+    //$$     Minecraft.getMinecraft().displayGuiScreen(guiScreen);
+    //$$     repo.func_148529_f();
+    //$$     repo.field_148533_g = true;
+    //$$     // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
+    //$$     //noinspection Convert2Lambda
+    //$$     HttpUtil.downloadResourcePack(file, url, new HttpUtil.DownloadListener() {
+    //$$         public void onDownloadComplete(File file) {
+    //$$             if (repo.field_148533_g) {
+    //$$                 repo.field_148533_g = false;
+    //$$                 repo.field_148532_f = new FileResourcePack(file);
+    //$$                 Minecraft.getMinecraft().scheduleResourcesRefresh();
+    //$$                 recordResourcePack(file, requestId);
+    //$$             }
+    //$$         }
+    //$$     }, hashmap, 50*1024*1024, guiScreen, Minecraft.getMinecraft().getProxy());
+    //$$ }
+    //#endif
 
 }

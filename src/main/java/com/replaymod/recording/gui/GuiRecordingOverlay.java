@@ -5,16 +5,20 @@ import com.replaymod.recording.Setting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
+
+//#if MC>=10800
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
-import static com.replaymod.core.versions.MCVer.getFontRenderer;
-import static com.replaymod.core.versions.MCVer.getType;
+import static com.replaymod.core.versions.MCVer.*;
 
 /**
  * Renders overlay during recording.

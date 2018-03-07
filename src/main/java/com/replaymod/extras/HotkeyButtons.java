@@ -17,10 +17,15 @@ import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import java.util.Collection;
 import java.util.Collections;

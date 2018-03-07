@@ -7,13 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.*;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 //#if MC>=10904
 import net.minecraft.entity.EntityLiving;
@@ -24,7 +19,21 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 //#else
+//#if MC>=10800
 //$$ import net.minecraft.util.BlockPos;
+//#endif
+//#endif
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
+//$$ import cpw.mods.fml.common.gameevent.TickEvent;
+//$$ import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 //#endif
 
 import java.util.Objects;
@@ -115,12 +124,17 @@ public class RecordingEventHandler {
     public void onPlayerTick(PlayerTickEvent e) {
         try {
             if(e.player != player(mc)) return;
+            //#if MC>=10800
+            double playerY = e.player.posY;
+            //#else
+            //$$ double playerY = e.player.boundingBox.minY; // TODO do we need this? if so, also in teleport below?
+            //#endif
 
             boolean force = false;
             if(lastX == null || lastY == null || lastZ == null) {
                 force = true;
                 lastX = e.player.posX;
-                lastY = e.player.posY;
+                lastY = playerY;
                 lastZ = e.player.posZ;
             }
 
@@ -131,11 +145,11 @@ public class RecordingEventHandler {
             }
 
             double dx = e.player.posX - lastX;
-            double dy = e.player.posY - lastY;
+            double dy = playerY - lastY;
             double dz = e.player.posZ - lastZ;
 
             lastX = e.player.posX;
-            lastY = e.player.posY;
+            lastY = playerY;
             lastZ = e.player.posZ;
 
             Packet packet;
@@ -156,7 +170,11 @@ public class RecordingEventHandler {
                 //#else
                 //$$ packet = new S14PacketEntity.S17PacketEntityLookMove(e.player.getEntityId(),
                 //$$         (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
-                //$$         newYaw, newPitch, e.player.onGround);
+                //$$         newYaw, newPitch
+                        //#if MC>=10800
+                        //$$ , e.player.onGround
+                        //#endif
+                //$$ );
                 //#endif
             }
 
@@ -353,7 +371,13 @@ public class RecordingEventHandler {
             //$$     return;
             //$$ }
             //$$
-            //$$ packetListener.save(new S0APacketUseBed(event.entityPlayer, event.pos));
+            //$$ packetListener.save(new S0APacketUseBed(event.entityPlayer,
+                    //#if MC>=10800
+                    //$$ event.pos
+                    //#else
+                    //$$ event.x, event.y, event.z
+                    //#endif
+            //$$ ));
             //#endif
 
             wasSleeping = true;
@@ -388,13 +412,23 @@ public class RecordingEventHandler {
         }
     }
 
+    //#if MC>=10800
     public void onBlockBreakAnim(int breakerId, BlockPos pos, int progress) {
+    //#else
+    //$$ public void onBlockBreakAnim(int breakerId, int x, int y, int z, int progress) {
+    //#endif
         EntityPlayer thePlayer = player(mc);
         if (thePlayer != null && breakerId == thePlayer.getEntityId()) {
             //#if MC>=10904
             packetListener.save(new SPacketBlockBreakAnim(breakerId, pos, progress));
             //#else
-            //$$ packetListener.save(new S25PacketBlockBreakAnim(breakerId, pos, progress));
+            //$$ packetListener.save(new S25PacketBlockBreakAnim(breakerId,
+                    //#if MC>=10800
+                    //$$ pos,
+                    //#else
+                    //$$ x, y, z,
+                    //#endif
+            //$$         progress));
             //#endif
         }
     }

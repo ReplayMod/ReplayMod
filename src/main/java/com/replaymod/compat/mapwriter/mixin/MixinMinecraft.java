@@ -3,12 +3,17 @@ package com.replaymod.compat.mapwriter.mixin;
 import com.replaymod.replay.ReplayModReplay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraftforge.fml.common.Loader;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.Loader;
+//#else
+//$$ import cpw.mods.fml.common.Loader;
+//#endif
 
 /**
  * Approximately this for <1.12: https://github.com/Vectron/mapwriter/commit/68234520c7a3a0ae8201a085d7e66369900586ac

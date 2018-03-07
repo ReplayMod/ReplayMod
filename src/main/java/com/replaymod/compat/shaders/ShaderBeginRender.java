@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.compat.shaders;
 
 import com.replaymod.render.hooks.EntityRendererHandler;
@@ -37,3 +38,4 @@ public class ShaderBeginRender {
     }
 
 }
+//#endif

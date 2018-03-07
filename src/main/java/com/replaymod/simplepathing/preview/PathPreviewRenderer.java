@@ -15,16 +15,22 @@ import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
+
+//#if MC>=10800
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
+//$$ import com.replaymod.core.versions.MCVer.GlStateManager;
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -60,7 +66,7 @@ public class PathPreviewRenderer {
     public void renderCameraPath(RenderWorldLastEvent event) {
         if (!replayHandler.getReplaySender().isAsyncMode() || mc.gameSettings.hideGUI) return;
 
-        Entity view = mc.getRenderViewEntity();
+        Entity view = getRenderViewEntity(mc);
         if (view == null) return;
 
         GuiPathing guiPathing = mod.getGuiPathing();
@@ -78,8 +84,12 @@ public class PathPreviewRenderer {
         int renderDistance = mc.gameSettings.renderDistanceChunks * 16;
         int renderDistanceSquared = renderDistance * renderDistance;
 
+        //#if MC>=10800
         // Eye height is subtracted to make path appear higher (at eye height) than it actually is (at foot height)
         Triple<Double, Double, Double> viewPos = Triple.of(view.posX, view.posY - view.getEyeHeight(), view.posZ);
+        //#else
+        //$$ Triple<Double, Double, Double> viewPos = Triple.of(view.posX, view.posY, view.posZ);
+        //#endif
 
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
         try {
@@ -220,7 +230,7 @@ public class PathPreviewRenderer {
         );
 
         GL11.glLineWidth(3);
-        Tessellator.getInstance().draw();
+        Tessellator_getInstance().draw();
         BufferBuilder_setTranslation(0, 0, 0);
     }
 
@@ -263,10 +273,10 @@ public class PathPreviewRenderer {
                 pos.getRight() - view.getRight()
         );
         GL11.glNormal3f(0, 1, 0);
-        GL11.glRotatef(-mc.getRenderManager().playerViewY, 0, 1, 0);
-        GL11.glRotatef(mc.getRenderManager().playerViewX, 1, 0, 0);
+        GL11.glRotatef(-getRenderManager().playerViewY, 0, 1, 0);
+        GL11.glRotatef(getRenderManager().playerViewX, 1, 0, 0);
 
-        Tessellator.getInstance().draw();
+        Tessellator_getInstance().draw();
 
         GL11.glPopMatrix();
     }
@@ -274,7 +284,6 @@ public class PathPreviewRenderer {
     private void drawCamera(Triple<Double, Double, Double> view,
                             Triple<Double, Double, Double> pos,
                             Triple<Float, Float, Float> rot) {
-        Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder_setTranslation(0, 0, 0);
 
         mc.renderEngine.bindTexture(CAMERA_HEAD);
@@ -298,7 +307,7 @@ public class PathPreviewRenderer {
         BufferBuilder_addPosCol(0, 0, 0, 0, 255, 0, 170);
         BufferBuilder_addPosCol(0, 0, 2, 0, 255, 0, 170);
 
-        tessellator.draw();
+        Tessellator_getInstance().draw();
 
         // draw camera cube
         GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -345,7 +354,7 @@ public class PathPreviewRenderer {
         BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 255, 255, 255, 200);
         BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r, 2 * 8 / 64f, 0, 255, 255, 255, 200);
 
-        tessellator.draw();
+        Tessellator_getInstance().draw();
 
         GL11.glPopMatrix();
     }

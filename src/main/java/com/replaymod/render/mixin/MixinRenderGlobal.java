@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.mixin;
 
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
@@ -67,3 +68,4 @@ public abstract class MixinRenderGlobal {
         }
     }
 }
+//#endif

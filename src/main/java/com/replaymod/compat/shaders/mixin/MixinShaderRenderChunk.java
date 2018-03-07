@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.compat.shaders.mixin;
 
 import com.replaymod.render.hooks.EntityRendererHandler;
@@ -27,3 +28,4 @@ public abstract class MixinShaderRenderChunk {
 
 
 }
+//#endif

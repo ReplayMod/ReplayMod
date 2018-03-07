@@ -1,10 +1,19 @@
 package com.replaymod.core;
 
-import net.minecraftforge.fml.relauncher.CoreModManager;
-import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.Mixins;
+
+//#if MC>=10800
+import net.minecraftforge.fml.relauncher.CoreModManager;
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
+//#else
+//$$ import cpw.mods.fml.relauncher.CoreModManager;
+//$$ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
+//$$
+//$$ import java.util.ArrayList;
+//$$ import java.util.List;
+//#endif
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -35,6 +44,9 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
                     CoreModManager.getIgnoredMods().remove(file.getName());
                     //#else
                     //$$ CoreModManager.getLoadedCoremods().remove(file.getName());
+                    //#if MC<=10710
+                    //$$ CoreModManager.getReparseableCoremods().add(file.getName());
+                    //#endif
                     //#endif
                 }
             } catch (URISyntaxException e) {
@@ -48,8 +60,17 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
 
     @Override
     public String[] getASMTransformerClass() {
+        //#if MC>=10800
         return new String[]{
         };
+        //#else
+        //$$ List<String> transformers = new ArrayList<>();
+        //$$ if ("true".equals(System.getProperty("replaymod.glerrors", "false"))) {
+        //$$     transformers.add(GLErrorTransformer.class.getName());
+        //$$ }
+        //$$ transformers.add(GLStateTrackerTransformer.class.getName());
+        //$$ return transformers.stream().toArray(String[]::new);
+        //#endif
     }
 
     @Override

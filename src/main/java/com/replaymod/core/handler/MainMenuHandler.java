@@ -6,8 +6,13 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiScreenRealmsProxy;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import java.io.IOException;
 
@@ -50,6 +55,7 @@ public class MainMenuHandler {
         }
     }
 
+    //#if MC>=11202
     private static class RealmsNotificationProxy extends GuiScreen {
         private final GuiScreenRealmsProxy proxy;
         private final int offset;
@@ -59,12 +65,10 @@ public class MainMenuHandler {
             this.offset = offset;
         }
 
-        //#if MC>=11202
         @Override
         public void setGuiSize(int w, int h) {
             proxy.setGuiSize(w, h);
         }
-        //#endif
 
         @Override
         public void initGui() {
@@ -93,4 +97,5 @@ public class MainMenuHandler {
             proxy.onGuiClosed();
         }
     }
+    //#endif
 }

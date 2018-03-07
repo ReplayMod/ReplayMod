@@ -14,8 +14,13 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
-import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.io.FileUtils;
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.Loader;
+//#else
+//$$ import cpw.mods.fml.common.Loader;
+//#endif
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.File;

@@ -16,12 +16,18 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 import org.lwjgl.util.WritablePoint;
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.gameevent.InputEvent;
+//#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 import static com.replaymod.core.versions.MCVer.*;

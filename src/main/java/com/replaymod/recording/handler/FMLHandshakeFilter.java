@@ -2,7 +2,12 @@ package com.replaymod.recording.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage;
+//#else
+//$$ import cpw.mods.fml.common.network.handshake.FMLHandshakeMessage;
+//#endif
 
 /**
  * Filters out all handshake packets that were sent for recording but must
@@ -17,7 +22,11 @@ import net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage;
 public class FMLHandshakeFilter extends SimpleChannelInboundHandler<FMLHandshakeMessage> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FMLHandshakeMessage msg) throws Exception {
+        //#if MC>=10800
         if (!(msg instanceof FMLHandshakeMessage.RegistryData)) {
+        //#else
+        //$$ if (!(msg instanceof FMLHandshakeMessage.ModIdData)) {
+        //#endif
             // Pass on everything but RegistryData messages
             ctx.fireChannelRead(msg);
         }

@@ -4,6 +4,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 
+//#if MC<=10710
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
+
 /**
  * Timeline player using the system time.
  */
@@ -32,6 +36,9 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
     }
 
     @Override
+    //#if MC<=10710
+    //$$ @SubscribeEvent
+    //#endif
     public void onTick(ReplayTimer.UpdatedEvent event) {
         if (secondFrame) {
             secondFrame = false;

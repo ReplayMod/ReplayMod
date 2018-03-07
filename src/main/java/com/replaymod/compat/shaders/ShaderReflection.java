@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.compat.shaders;
 
 import net.minecraft.client.Minecraft;
@@ -51,3 +52,4 @@ public class ShaderReflection {
         }
     }
 }
+//#endif

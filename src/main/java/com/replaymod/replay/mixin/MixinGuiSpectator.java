@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.camera.CameraEntity;
@@ -24,3 +25,4 @@ public abstract class MixinGuiSpectator {
         }
     }
 }
+//#endif

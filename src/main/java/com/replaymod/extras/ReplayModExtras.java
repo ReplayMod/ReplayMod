@@ -5,10 +5,17 @@ import com.replaymod.extras.advancedscreenshots.AdvancedScreenshots;
 import com.replaymod.extras.playeroverview.PlayerOverview;
 import com.replaymod.extras.urischeme.UriSchemeExtra;
 import com.replaymod.extras.youtube.YoutubeUpload;
+import org.apache.logging.log4j.Logger;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import org.apache.logging.log4j.Logger;
+//#else
+//$$ import cpw.mods.fml.common.Mod;
+//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
+//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//#endif
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,7 +27,9 @@ import java.util.Optional;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        //#if MC>=10800
         clientSideOnly = true,
+        //#endif
         useMetadata = true)
 public class ReplayModExtras {
     public static final String MOD_ID = "replaymod-extras";

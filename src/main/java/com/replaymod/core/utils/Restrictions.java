@@ -7,6 +7,10 @@ import net.minecraft.network.play.server.SPacketCustomPayload;
 //$$ import net.minecraft.network.play.server.S3FPacketCustomPayload;
 //#endif
 
+//#if MC<=10710
+//$$ import io.netty.buffer.Unpooled;
+//#endif
+
 import static com.replaymod.core.versions.MCVer.readString;
 
 /**
@@ -25,7 +29,11 @@ public class Restrictions {
     //#else
     //$$ public String handle(S3FPacketCustomPayload packet) {
     //#endif
+        //#if MC>=10800
         PacketBuffer buffer = packet.getBufferData();
+        //#else
+        //$$ PacketBuffer buffer = new PacketBuffer(Unpooled.wrappedBuffer(packet.func_149168_d()));
+        //#endif
         while (buffer.isReadable()) {
             String name = readString(buffer, 64);
             boolean active = buffer.readBoolean();

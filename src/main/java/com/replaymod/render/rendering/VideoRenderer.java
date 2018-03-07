@@ -12,7 +12,6 @@ import com.replaymod.render.events.ReplayRenderEvent;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.render.utils.SoundHandler;
 import com.replaymod.replay.ReplayHandler;
@@ -35,6 +34,13 @@ import net.minecraft.util.SoundCategory;
 //$$ import net.minecraft.client.audio.SoundCategory;
 //#endif
 
+//#if MC>=10800
+import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+import static net.minecraft.client.renderer.GlStateManager.*;
+//#else
+//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
+//#endif
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -46,7 +52,6 @@ import java.util.concurrent.FutureTask;
 import static com.google.common.collect.Iterables.getLast;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
-import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -69,7 +74,9 @@ public class VideoRenderer implements RenderInfo {
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
+    //#if MC>=10800
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
+    //#endif
 
     private int framesDone;
     private int totalFrames;
@@ -251,7 +258,9 @@ public class VideoRenderer implements RenderInfo {
         //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
         //#endif
 
+        //#if MC>=10800
         chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.renderGlobal);
+        //#endif
 
         // Set up our own framebuffer to render the GUI to
         guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true);
@@ -277,9 +286,11 @@ public class VideoRenderer implements RenderInfo {
         //$$ mc.gameSettings.mapSoundLevels = originalSoundLevels;
         //#endif
         mc.displayGuiScreen(null);
+        //#if MC>=10800
         if (chunkLoadingRenderGlobal != null) {
             chunkLoadingRenderGlobal.uninstall();
         }
+        //#endif
 
         new SoundHandler().playRenderSuccessSound();
 
@@ -303,11 +314,15 @@ public class VideoRenderer implements RenderInfo {
         }
 
         mc.currentScreen = gui.toMinecraft();
+        //#if MC>=10800
         try {
             mc.runTick();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        //#else
+        //$$ mc.runTick();
+        //#endif
     }
 
     public void drawGui() {
@@ -328,6 +343,7 @@ public class VideoRenderer implements RenderInfo {
             ScaledResolution scaled = newScaledResolution(mc);
             gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
 
+            //#if MC>=10800
             try {
                 gui.toMinecraft().handleInput();
             } catch (IOException e) {
@@ -335,6 +351,9 @@ public class VideoRenderer implements RenderInfo {
                 // It isn't actually thrown here, so we'll deal with it the easy way
                 throw new RuntimeException(e);
             }
+            //#else
+            //$$ gui.toMinecraft().handleInput();
+            //#endif
 
             int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
             int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
@@ -352,7 +371,11 @@ public class VideoRenderer implements RenderInfo {
             if (settings.isHighPerformance()) {
                 Display.update();
             } else {
+                //#if MC>=10800
                 mc.updateDisplay();
+                //#else
+                //$$ mc.resetSize();
+                //#endif
             }
             if (Mouse.isGrabbed()) {
                 Mouse.setGrabbed(false);
