@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC<10904
@@ -64,6 +65,20 @@ public abstract class MixinRenderGlobal {
         if (replayModRender_hook != null) {
             replayModRender_hook.updateChunks();
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "setWorldAndLoadRenderers", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher;stopWorkerThreads()V"))
+    private void stopWorkerThreadsAndChunkLoadingRenderGlobal(CallbackInfo ci) {
+        if (replayModRender_hook != null) {
+            replayModRender_hook.updateRenderDispatcher(null);
+        }
+    }
+
+    @Inject(method = "loadRenderers", at = @At(value = "RETURN"))
+    private void setupChunkLoadingRenderGlobal(CallbackInfo ci) {
+        if (replayModRender_hook != null) {
+            replayModRender_hook.updateRenderDispatcher(renderDispatcher);
         }
     }
 }
