@@ -36,6 +36,7 @@ import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.crash.CrashReport;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
@@ -123,7 +124,8 @@ public class GuiReplayEditor extends GuiScreen {
         return button;
     }
 
-    public void save(File inputFile, PacketStream.FilterInfo...filters) {
+    @SafeVarargs
+    public final void save(File inputFile, Pair<PacketStream.FilterInfo, JsonObject>... filters) {
         save(Utils.fileNameToReplayName(inputFile.getName()), (outputFile) -> {
             Studio studio = new ReplayStudio();
             File tmpDir = null;
@@ -146,7 +148,10 @@ public class GuiReplayEditor extends GuiScreen {
                     PacketStream stream = studio.createReplayStream(in, true);
 
                     stream.addFilter(new ProgressFilter(metaData.getDuration()));
-                    for (PacketStream.FilterInfo info : filters) {
+                    for (Pair<PacketStream.FilterInfo, JsonObject> pair : filters) {
+                        PacketStream.FilterInfo info = pair.getLeft();
+                        JsonObject config = pair.getRight();
+                        info.getFilter().init(studio, config);
                         stream.addFilter(info.getFilter(), info.getFrom(), info.getTo());
                         LOGGER.debug("Added filter {}", info);
                     }

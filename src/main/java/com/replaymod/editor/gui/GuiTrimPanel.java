@@ -22,6 +22,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.util.Dimension;
 
 import java.io.File;
@@ -133,12 +134,11 @@ public class GuiTrimPanel extends GuiPanel {
             ChangeTimestampFilter ctf = new ChangeTimestampFilter();
             JsonObject config = new JsonObject();
             config.addProperty("offset", -start);
-            ctf.init(null, config);
             // Pass filters to save dialog
             gui.save(inputReplays.getSelectedValue(),
-                    new PacketStream.FilterInfo(new SquashFilter(), -1, start),
-                    new PacketStream.FilterInfo(ctf, start, end),
-                    new PacketStream.FilterInfo(new RemoveFilter(), end, -1)
+                    Pair.of(new PacketStream.FilterInfo(new SquashFilter(), -1, start), new JsonObject()),
+                    Pair.of(new PacketStream.FilterInfo(ctf, start, end), config),
+                    Pair.of(new PacketStream.FilterInfo(new RemoveFilter(), end, -1), new JsonObject())
             );
         });
     }
