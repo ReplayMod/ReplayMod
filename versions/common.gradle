@@ -61,6 +61,8 @@ if (System.getenv('REPRODUCIBLE_BUILD') == '1') repositories.all convertRepoToHt
 configurations {
     shade
     compile.extendsFrom shade
+
+    shade.exclude group: 'com.google.code.gson', module: 'gson' // provided by MC
 }
 
 dependencies {
@@ -79,7 +81,7 @@ dependencies {
 
     def studioVersion = project.name
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shade("com.github.ReplayMod.ReplayStudio:$studioVersion:e6f898d"){
+    shade("com.github.ReplayMod.ReplayStudio:$studioVersion:6cfc69b"){
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
