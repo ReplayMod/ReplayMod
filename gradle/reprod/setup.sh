@@ -44,7 +44,7 @@ popd # Back to root
 
 ./gradlew -Preprod $PROXY_SETTINGS -I gradle/reprod/init.gradle "$@"
 
-if [ "$SIGNED_JAR" == "1" ]; then
+if [ "$(git blame -p version.txt | head -n1 | cut -d' ' -f1)" == "$(git rev-parse HEAD)" ]; then
     echo "Trying to fetch signature for resulting jar files.."
     pushd versions
         for ver in */; do
