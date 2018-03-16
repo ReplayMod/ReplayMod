@@ -94,6 +94,7 @@ public class RecordingEventHandler {
             //#else
             //$$ packetListener.save(new S0CPacketSpawnPlayer(player(mc)));
             //#endif
+            lastX = lastY = lastZ = null;
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -124,17 +125,12 @@ public class RecordingEventHandler {
     public void onPlayerTick(PlayerTickEvent e) {
         try {
             if(e.player != player(mc)) return;
-            //#if MC>=10800
-            double playerY = e.player.posY;
-            //#else
-            //$$ double playerY = e.player.boundingBox.minY; // TODO do we need this? if so, also in teleport below?
-            //#endif
 
             boolean force = false;
             if(lastX == null || lastY == null || lastZ == null) {
                 force = true;
                 lastX = e.player.posX;
-                lastY = playerY;
+                lastY = e.player.posY;
                 lastZ = e.player.posZ;
             }
 
@@ -145,11 +141,11 @@ public class RecordingEventHandler {
             }
 
             double dx = e.player.posX - lastX;
-            double dy = playerY - lastY;
+            double dy = e.player.posY - lastY;
             double dz = e.player.posZ - lastZ;
 
             lastX = e.player.posX;
-            lastY = playerY;
+            lastY = e.player.posY;
             lastZ = e.player.posZ;
 
             Packet packet;
@@ -157,7 +153,18 @@ public class RecordingEventHandler {
                 //#if MC>=10904
                 packet = new SPacketEntityTeleport(e.player);
                 //#else
+                //#if MC>=10800
                 //$$ packet = new S18PacketEntityTeleport(e.player);
+                //#else
+                //$$ // In 1.7.10 the client player entity has its posY at eye height
+                //$$ // but for all other entities it's at their feet (as it should be).
+                //$$ // So, to correctly position the player, we teleport them to their feet (i.a. directly after spawn).
+                //$$ // Note: this leaves the lastY value offset by the eye height but because it's only used for relative
+                //$$ //       movement, that doesn't matter.
+                //$$ S18PacketEntityTeleport teleportPacket = new S18PacketEntityTeleport(e.player);
+                //$$ teleportPacket.field_149457_c = floor(e.player.boundingBox.minY * 32);
+                //$$ packet = teleportPacket;
+                //#endif
                 //#endif
             } else {
                 byte newYaw = (byte) ((int) (e.player.rotationYaw * 256.0F / 360.0F));
