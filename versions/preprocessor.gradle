@@ -65,7 +65,10 @@ static def convertSource(Map<String, String> kws, Map<String, Integer> vars, Lis
                 }
             }
         } else if (trimmed.startsWith(kws.ifdef)) {
-            ifStack.push(null)
+            def result = vars.containsKey(trimmed.substring(kws.ifdef.length()))
+            ifStack.push(result)
+            indentStack.push(getIndent(line))
+            active &= result
         } else if (trimmed.startsWith(kws.endif)) {
             if (ifStack.isEmpty()) {
                 throw new ParserException("Unexpected endif in line $n of $fileName")

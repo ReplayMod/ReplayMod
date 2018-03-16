@@ -95,7 +95,7 @@ public class ReplayHandler {
 
         markers = new ArrayList<>(replayFile.getMarkers().or(Collections.emptySet()));
 
-        replaySender = new ReplaySender(this, replayFile, asyncMode);
+        replaySender = new ReplaySender(this, replayFile, false);
 
         setup();
 
@@ -103,6 +103,8 @@ public class ReplayHandler {
         overlay.setVisible(true);
 
         FML_BUS.post(new ReplayOpenEvent.Post(this));
+
+        replaySender.setAsyncMode(asyncMode);
     }
 
     void restartedReplay() {
