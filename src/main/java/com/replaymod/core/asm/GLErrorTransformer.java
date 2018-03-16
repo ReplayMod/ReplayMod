@@ -1,5 +1,5 @@
 //#if MC<=10710
-//$$ package com.replaymod.core;
+//$$ package com.replaymod.core.asm;
 //$$
 //$$ import net.minecraft.launchwrapper.IClassTransformer;
 //$$ import org.lwjgl.opengl.GL11;
@@ -25,8 +25,7 @@
 //$$
 //$$     @Override
 //$$     public byte[] transform(String name, String transformedName, byte[] basicClass) {
-//$$         // Ignore (anonymous) inner classes of this transformer
-//$$         if (name.startsWith(GLErrorTransformer_CLASS)) return basicClass;
+//$$         if (basicClass == null) return null;
 //$$
 //$$         ClassReader reader = new ClassReader(basicClass);
 //$$         ClassWriter writer = new ClassWriter(reader, 0);

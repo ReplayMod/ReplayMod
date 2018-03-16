@@ -8,6 +8,8 @@ import org.spongepowered.asm.mixin.Mixins;
 import net.minecraftforge.fml.relauncher.CoreModManager;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 //#else
+//$$ import com.replaymod.core.asm.GLErrorTransformer;
+//$$ import com.replaymod.core.asm.GLStateTrackerTransformer;
 //$$ import cpw.mods.fml.relauncher.CoreModManager;
 //$$ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 //$$
@@ -21,6 +23,7 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.util.Map;
 
+@IFMLLoadingPlugin.TransformerExclusions("com.replaymod.core.asm.")
 public class LoadingPlugin implements IFMLLoadingPlugin {
 
     public LoadingPlugin() {

@@ -1,5 +1,5 @@
 //#if MC<=10710
-//$$ package com.replaymod.core;
+//$$ package com.replaymod.core.asm;
 //$$
 //$$ import net.minecraft.launchwrapper.IClassTransformer;
 //$$ import org.objectweb.asm.ClassReader;
@@ -26,8 +26,7 @@
 //$$
 //$$     @Override
 //$$     public byte[] transform(String name, String transformedName, byte[] basicClass) {
-//$$         // Ignore (anonymous) inner classes of this transformer
-//$$         if (name.startsWith(GLStateTrackerTransformer.class.getName())) return basicClass;
+//$$         if (basicClass == null) return null;
 //$$         // Ignore the state tracker itself
 //$$         if (name.equals(GLStateTracker_CLASS)) return basicClass;
 //$$
