@@ -47,10 +47,6 @@ if (mcVersion >= 10800) {
     apply plugin: 'forge'
 
     ext {
-        // FIXME needed?
-        mixinConfigs = [
-                'compat.shaders', 'extras.playeroverview', 'recording', 'render', 'replay'
-        ].collect {"mixins.${it}.replaymod.json"}
         mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
         mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
     }
@@ -289,7 +285,6 @@ jar {
         attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
                 'TweakOrder': '0',
                 'FMLCorePluginContainsFMLMod': 'true',
-                // FIXME is this needed? 'MixinConfigs': project.mixinConfigs.join(','),
                 'FMLCorePlugin': 'com.replaymod.core.LoadingPlugin',
                 'FMLAT': 'replaymod_at.cfg'
     }
