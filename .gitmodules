@@ -22,8 +22,8 @@
 	url = https://github.com/SpongePowered/Mixin.git
 [submodule "gradle/reprod/upstream/forgegradle-1.2"]
 	path = gradle/reprod/upstream/forgegradle-1.2
-	url = git@github.com:MinecraftForge/ForgeGradle.git
+	url = https://github.com/MinecraftForge/ForgeGradle.git
 	branch = FG_1.2
 [submodule "gradle/reprod/upstream/srg2source-3.2"]
 	path = gradle/reprod/upstream/srg2source-3.2
-	url = git@github.com:MinecraftForge/Srg2Source.git
+	url = https://github.com/MinecraftForge/Srg2Source.git
