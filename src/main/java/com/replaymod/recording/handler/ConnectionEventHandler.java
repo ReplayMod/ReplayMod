@@ -110,7 +110,7 @@ public class ConnectionEventHandler {
             guiOverlay.register();
 
             core.printInfoToChat("replaymod.chat.recordingstarted");
-        } catch(Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             core.printWarningToChat("replaymod.chat.recordingfailed");
         }
