@@ -164,6 +164,11 @@ if (mcVersion <= 10710) {
             compileClasspath += configurations.minecraft + configurations.minecraftDeps
             runtimeClasspath += configurations.minecraft + configurations.minecraftDeps + configurations.forgeGradleStartClass
         }
+        // Also need to reconfigure the reobf task, so it can properly re-obfuscates inherited members
+        tasks.reobf.obfOutput.all { artifact ->
+            artifact.getFile() // force resolve
+            artifact.classpath += configurations.minecraft + configurations.minecraftDeps
+        }
     }
 }
 
