@@ -36,6 +36,7 @@ import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 //#else
+//$$ import cpw.mods.fml.common.Loader;
 //$$ import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
 //$$ import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -43,7 +44,11 @@ import static net.minecraft.client.renderer.GlStateManager.*;
 //$$ import net.minecraft.entity.EntityLivingBase;
 //$$ import net.minecraft.network.EnumConnectionState;
 //$$
+//$$ import java.net.InetSocketAddress;
+//$$ import java.net.SocketAddress;
+//$$
 //$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
+//$$ import static com.replaymod.replay.ReplayModReplay.LOGGER;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.*;
@@ -195,6 +200,19 @@ public class ReplayHandler {
         //#endif
         //#else
         //$$ NetworkManager networkManager = new NetworkManager(true) {
+        //$$     @Override
+        //$$     public SocketAddress getRemoteAddress() {
+        //$$         // See https://github.com/Dyonovan/TCNodeTracker/issues/37
+        //$$         if (Loader.isModLoaded("tcnodetracker")) {
+        //$$             StackTraceElement elem = Thread.currentThread().getStackTrace()[2];
+        //$$             if ("com.dyonovan.tcnodetracker.events.ClientConnectionEvent".equals(elem.getClassName())) {
+        //$$                 LOGGER.debug("TCNodeTracker crash workaround applied");
+        //$$                 return new InetSocketAddress("replaymod.dummy", 0);
+        //$$             }
+        //$$         }
+        //$$         return super.getRemoteAddress();
+        //$$     }
+        //$$
         //$$     @Override
         //$$     public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
         //$$         t.printStackTrace();
