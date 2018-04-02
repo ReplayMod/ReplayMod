@@ -15,7 +15,7 @@ sha256val () {
 
 # Setup http(s) proxy
 url="https://github.com/johni0702/proxy-witness"
-commit="01f5aa9eb6fa14a0adfa832ba33b6f7c68138c26"
+commit="07e79a999991473489d443b8934ccca547ac7985"
 if [ ! -d "deps/proxy-witness" ] || [ "$(git -C "deps/proxy-witness" rev-parse $commit^{commit})" != "$commit" ]; then
     rm -rf "deps/proxy-witness"
     mkdir -p "deps/proxy-witness"
