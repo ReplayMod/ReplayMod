@@ -8,8 +8,12 @@ import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import java.io.IOException;
 import java.util.ArrayList;

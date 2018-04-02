@@ -3,7 +3,12 @@ package com.replaymod.render.events;
 import com.replaymod.render.rendering.VideoRenderer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.Event;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.Event;
+//#endif
 
 @RequiredArgsConstructor
 public abstract class ReplayRenderEvent extends Event {

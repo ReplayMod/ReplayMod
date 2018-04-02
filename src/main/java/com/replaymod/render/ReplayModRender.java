@@ -6,11 +6,18 @@ import com.replaymod.replay.events.ReplayCloseEvent;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.Logger;
+//#else
+//$$ import cpw.mods.fml.common.Mod;
+//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +30,9 @@ import static com.replaymod.core.versions.MCVer.*;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        //#if MC>=10800
         clientSideOnly = true,
+        //#endif
         useMetadata = true)
 public class ReplayModRender {
     public static final String MOD_ID = "replaymod-render";

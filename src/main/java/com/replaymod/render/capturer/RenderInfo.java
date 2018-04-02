@@ -6,6 +6,8 @@ import org.lwjgl.util.ReadableDimension;
 public interface RenderInfo {
     ReadableDimension getFrameSize();
 
+    int getFramesDone();
+
     int getTotalFrames();
 
     float updateForNextFrame();

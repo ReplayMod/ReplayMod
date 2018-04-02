@@ -4,9 +4,13 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=10800
     "MixinShaderEntityRenderer",
     "MixinShaderRenderChunk",
     "MixinShaderRenderGlobal",
+    //#else
+    //$$ "MixinShaders",
+    //#endif
     "MixinShadersRender"
   ],
   "compatibilityLevel": "JAVA_8",

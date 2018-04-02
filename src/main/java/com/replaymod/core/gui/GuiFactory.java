@@ -3,7 +3,12 @@ package com.replaymod.core.gui;
 import com.replaymod.core.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+
+//#if MC>=10800
 import net.minecraftforge.fml.client.IModGuiFactory;
+//#else
+//$$ import cpw.mods.fml.client.IModGuiFactory;
+//#endif
 
 import java.util.Set;
 

@@ -1,24 +1,56 @@
 buildscript {
-    repositories {
-        mavenCentral()
+    def mcVersion
+    if (project.name != 'core') {
+        def (major, minor, patch) = project.name.tokenize('.')
+        mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}" as int
+    } else {
+        def f = file('mcVersion')
+        mcVersion = f.exists() ? f.readLines().first() as int : 11202
     }
-    dependencies {
-        classpath 'org.ow2.asm:asm:6.0'
-    }
+    project.ext.mcVersion = mcVersion
 
-    // This and calls to it should really also be handled by the gradle/reprod/init.gradle script
-    // but apparently there's no sane way to do that for external scripts in gradle :(
-    def convertRepoToHttp = { repo ->
-        if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
-            URL url = repo.url.toURL()
-            repo.url = new URL("http", url.getHost(), url.getPort(), url.getFile()).toURI()
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "https://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
-    if (System.getenv('REPRODUCIBLE_BUILD') == '1') repositories.all convertRepoToHttp
+
+    dependencies {
+        classpath 'org.ow2.asm:asm:6.0'
+        classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
+            // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
+            // and putting mixin right here will place it before forge in the class loader
+            exclude group: 'org.ow2.asm', module: 'asm-debug-all'
+        }
+        classpath 'net.minecraftforge.gradle:ForgeGradle:' + (
+                mcVersion >= 11200 ? '2.3-SNAPSHOT' :
+                mcVersion >= 10904 ? '2.2-SNAPSHOT' :
+                mcVersion >= 10809 ? '2.1-SNAPSHOT' :
+                mcVersion >= 10800 ? '2.0-SNAPSHOT' :
+                mcVersion >= 10710 ? '1.2-SNAPSHOT' :
+                                     'invalid'
+        )
+    }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'org.spongepowered.mixin'
+if (mcVersion >= 10800) {
+    apply plugin: 'net.minecraftforge.gradle.forge'
+    apply plugin: 'org.spongepowered.mixin'
+} else {
+    apply plugin: 'forge'
+
+    ext {
+        mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
+        mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
+    }
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -30,8 +62,35 @@ group= "com.replaymod"
 archivesBaseName = "replaymod"
 
 minecraft {
-    coreMod = 'com.replaymod.core.LoadingPlugin'
+    if (mcVersion >= 10800) {
+        coreMod = 'com.replaymod.core.LoadingPlugin'
+    }
     runDir = "../../eclipse"
+
+    version = [
+            11202: '1.12.2-14.23.0.2486',
+            11201: '1.12.1-14.22.0.2444',
+            11200: '1.12-14.21.1.2387',
+            11102: '1.11.2-13.20.0.2216',
+            11100: '1.11-13.19.1.2188',
+            11002: '1.10.2-12.18.2.2099',
+            10904: '1.9.4-12.17.0.1976',
+            10809: '1.8.9-11.15.1.1722',
+            10800: '1.8-11.14.4.1563',
+            10710: '1.7.10-10.13.4.1558-1.7.10',
+    ][mcVersion]
+    mappings = [
+            11202: "snapshot_20170615",
+            11201: "snapshot_20170615",
+            11200: "snapshot_20170615",
+            11102: "snapshot_20161220",
+            11100: "snapshot_20161111",
+            11002: "snapshot_20160518",
+            10904: "snapshot_20160518",
+            10809: "stable_22",
+            10800: "snapshot_nodoc_20141130",
+            10710: "stable_12",
+    ][mcVersion]
 }
 afterEvaluate {
     // Note cannot use minecraft.replace because that has already been forwarded to the task by FG by now
@@ -48,15 +107,6 @@ repositories {
     }
     maven { url 'https://jitpack.io' }
 }
-
-// And because gradle does *something*, this definition even needs to be duplicated instead of shared
-def convertRepoToHttp = { repo ->
-    if (repo instanceof MavenArtifactRepository && repo.url.toString().startsWith('https://')) {
-        URL url = repo.url.toURL()
-        repo.url = new URL("http", url.getHost(), url.getPort(), url.getFile()).toURI()
-    }
-}
-if (System.getenv('REPRODUCIBLE_BUILD') == '1') repositories.all convertRepoToHttp
 
 configurations {
     shade
@@ -79,9 +129,9 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    def studioVersion = project.name
+    def studioVersion = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shade("com.github.ReplayMod.ReplayStudio:$studioVersion:6cfc69b"){
+    shade("com.github.ReplayMod.ReplayStudio:$studioVersion:3328446"){
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
@@ -89,13 +139,33 @@ dependencies {
     def jGuiVersion = project.name
     if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
     if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
-    shade(project(":jGui:versions:$jGuiVersion")){
+    shade(project(":jGui:$jGuiVersion")){
+        transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
 
     compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
 
     testCompile 'junit:junit:4.11'
+}
+
+if (mcVersion <= 10710) {
+    // FG 1.2 adds all MC deps to the compile configuration which we don't want
+    afterEvaluate {
+        // Remove them from the compile and runtime configurations
+        configurations.compile.extendsFrom -= [configurations.minecraft, configurations.minecraftDeps]
+        configurations.runtime.extendsFrom -= [configurations.forgeGradleStartClass]
+        // And add them to the source sets instead
+        sourceSets.main.with {
+            compileClasspath += configurations.minecraft + configurations.minecraftDeps
+            runtimeClasspath += configurations.minecraft + configurations.minecraftDeps + configurations.forgeGradleStartClass
+        }
+        // Also need to reconfigure the reobf task, so it can properly re-obfuscates inherited members
+        tasks.reobf.obfOutput.all { artifact ->
+            artifact.getFile() // force resolve
+            artifact.classpath += configurations.minecraft + configurations.minecraftDeps
+        }
+    }
 }
 
 if (project.name != 'core') {
@@ -105,8 +175,6 @@ if (project.name != 'core') {
     def preprocessedRes = 'build/preprocessed/res'
     def originalSrc = '../../src/main/java'
     def originalRes = '../../src/main/resources'
-    def (major, minor, patch) = project.name.tokenize('.')
-    def mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}"
     def vars = [MC: mcVersion as int]
 
     sourceSets {
@@ -132,24 +200,30 @@ if (project.name != 'core') {
 
     compileJava.dependsOn preprocessJava
     processResources.dependsOn preprocessResources
-    [deobfMcMCP, deobfMcSRG].each { task ->
+    (mcVersion >= 10800 ? [deobfMcMCP, deobfMcSRG] : [deobfuscateJar, deobfBinJar]).each { task ->
         task.dependsOn preprocessResources
     }
 
     minecraft.accessTransformer preprocessedRes + '/META-INF/replaymod_at.cfg'
+} else {
+    sourceSets {
+        main.java.srcDirs = ['../../src/main/java']
+        main.resources.srcDirs = ['../../src/main/resources']
+    }
 }
 
 
+def reobfTask = mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf
 task configureRelocation() {
     dependsOn tasks.jar
     dependsOn configurations.shade
     doLast {
-        def extraSrg = tasks.reobfJar.extraSrgLines
+        def extraSrg = mcVersion >= 10800 ? reobfTask.extraSrgLines : reobfTask.extraSrg
         files(configurations.shade).filter { it.exists() }.collect {
             def tree = it.isDirectory() ? fileTree(it) : zipTree(it)
             def pkgs = [].toSet()
             tree.visit { file ->
-                if (!file.directory && file.name.endsWith('.class')) {
+                if (!file.directory && file.name.endsWith('.class') && file.path.contains('/')) {
                     def pkg = file.path.substring(0, file.path.lastIndexOf('/'))
                     if (!pkg.startsWith('com/replaymod') && !pkg.startsWith('javax/')) {
                         pkgs << pkg
@@ -162,13 +236,24 @@ task configureRelocation() {
         }
     }
 }
-tasks.reobfJar.dependsOn configureRelocation
+reobfTask.dependsOn configureRelocation
+
+if (mcVersion <= 10710) {
+    // Dummy task so "./gradlew reobfJar" also builds 1.7.10
+    task reobfJar() {
+        dependsOn reobf
+    }
+}
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     dependsOn configurations.compile
     dependsOn configurations.shade
+
+    if (mcVersion <= 10710) {
+        from project.mixinRefMap
+    }
 
     def shade = {files(
             configurations.compile.findAll {it.name.startsWith 'mixin-'}
@@ -200,6 +285,7 @@ jar {
         attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
                 'TweakOrder': '0',
                 'FMLCorePluginContainsFMLMod': 'true',
+                'FMLCorePlugin': 'com.replaymod.core.LoadingPlugin',
                 'FMLAT': 'replaymod_at.cfg'
     }
 }
@@ -248,13 +334,30 @@ setupDecompWorkspace.dependsOn copySrg
 setupDevWorkspace.dependsOn copySrg
 project.tasks.idea.dependsOn copySrg
 
+if (mcVersion <= 10710) {
+    reobf.doFirst {
+        if (project.mixinSrg.exists()) {
+            addExtraSrgFile project.mixinSrg
+        }
+    }
+
+    compileJava.dependsOn copySrg
+    compileJava {
+        options.compilerArgs += [
+                "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
+                "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}",
+                "-AreobfSrgFile=${project.file('build/mcp-srg.srg').canonicalPath}"
+        ]
+    }
+}
+
 // Mixin uses multiple HashMaps to generate the refmap.
 // HashMaps are unordered collections and as such do not produce deterministic output.
 // To fix that, we simply sort the refmap json file.
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 compileJava.doLast {
-    File refmapFile = compileJava.ext.refMapFile
+    File refmapFile = mcVersion >= 10800 ? compileJava.ext.refMapFile : project.mixinRefMap
     if (refmapFile.exists()) {
         def ordered
         ordered = {
@@ -287,7 +390,7 @@ import static org.objectweb.asm.Opcodes.ASM5
 // As a workaround, to use setupCIWorkspace on Drone, we modify the bin jar in-place and remove all parameter annotations.
 // WARNING: This piece of code ignores any and all gradle conventions and will probably fail horribly when run outside
 // of a single-use environment (e.g. Drone). Use setupDecompWorkspace for normal use.
-tasks.deobfMcMCP.doLast {
+def annotationWorkaround = {
     println "Applying RuntimeInvisibleParameterAnnotations workaround..."
     File jar = getOutJar()
     File tmp = new File((File) getTemporaryDir(), "workaround.jar")
@@ -321,6 +424,9 @@ tasks.deobfMcMCP.doLast {
     }
     jar.delete()
     tmp.renameTo(jar)
+}
+if (mcVersion >= 10809) {
+    tasks.deobfMcMCP.doLast annotationWorkaround
 }
 
 task runIntegrationTest(type: JavaExec, dependsOn: ["makeStart", "jar"]) {

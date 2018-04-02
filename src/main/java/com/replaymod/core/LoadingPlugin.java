@@ -1,10 +1,21 @@
 package com.replaymod.core;
 
-import net.minecraftforge.fml.relauncher.CoreModManager;
-import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.Mixins;
+
+//#if MC>=10800
+import net.minecraftforge.fml.relauncher.CoreModManager;
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
+//#else
+//$$ import com.replaymod.core.asm.GLErrorTransformer;
+//$$ import com.replaymod.core.asm.GLStateTrackerTransformer;
+//$$ import cpw.mods.fml.relauncher.CoreModManager;
+//$$ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
+//$$
+//$$ import java.util.ArrayList;
+//$$ import java.util.List;
+//#endif
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -12,6 +23,7 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.util.Map;
 
+@IFMLLoadingPlugin.TransformerExclusions("com.replaymod.core.asm.")
 public class LoadingPlugin implements IFMLLoadingPlugin {
 
     public LoadingPlugin() {
@@ -35,6 +47,9 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
                     CoreModManager.getIgnoredMods().remove(file.getName());
                     //#else
                     //$$ CoreModManager.getLoadedCoremods().remove(file.getName());
+                    //#if MC<=10710
+                    //$$ CoreModManager.getReparseableCoremods().add(file.getName());
+                    //#endif
                     //#endif
                 }
             } catch (URISyntaxException e) {
@@ -48,8 +63,17 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
 
     @Override
     public String[] getASMTransformerClass() {
+        //#if MC>=10800
         return new String[]{
         };
+        //#else
+        //$$ List<String> transformers = new ArrayList<>();
+        //$$ if ("true".equals(System.getProperty("replaymod.glerrors", "false"))) {
+        //$$     transformers.add(GLErrorTransformer.class.getName());
+        //$$ }
+        //$$ transformers.add(GLStateTrackerTransformer.class.getName());
+        //$$ return transformers.stream().toArray(String[]::new);
+        //#endif
     }
 
     @Override

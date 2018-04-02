@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayModReplay;
@@ -21,3 +22,4 @@ public abstract class MixinRenderArrow extends Render {
         return ReplayModReplay.instance.getReplayHandler() != null || super.shouldRender(entity, camera, camX, camY, camZ);
     }
 }
+//#endif

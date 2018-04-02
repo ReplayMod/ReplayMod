@@ -7,14 +7,16 @@
     //#if MC>=10904
     "MixinParticleManager",
     //#endif
+    //#if MC>=10800
     "MixinGuiSpectator",
-    "MixinPlayerControllerMP",
     "MixinRenderArrow",
+    "MixinRenderManager",
+    "MixinViewFrustum",
+    //#endif
+    "MixinPlayerControllerMP",
     "MixinRenderItem",
     "MixinRenderLivingBase",
-    "MixinRenderManager",
     "MixinTileEntityEndPortalRenderer",
-    "MixinViewFrustum",
     "MixinWorldClient"
   ],
   "compatibilityLevel": "JAVA_8",

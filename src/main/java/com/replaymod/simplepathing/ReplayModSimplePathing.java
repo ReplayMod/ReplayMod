@@ -11,11 +11,18 @@ import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
 import lombok.Getter;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.input.Keyboard;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
+//#else
+//$$ import cpw.mods.fml.common.Mod;
+//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -23,7 +30,9 @@ import static com.replaymod.core.versions.MCVer.*;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        //#if MC>=10800
         clientSideOnly = true,
+        //#endif
         useMetadata = true)
 public class ReplayModSimplePathing {
     public static final String MOD_ID = "replaymod-simplepathing";

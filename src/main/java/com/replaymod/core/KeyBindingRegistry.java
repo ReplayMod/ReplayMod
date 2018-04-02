@@ -7,16 +7,26 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ReportedException;
+import org.lwjgl.input.Keyboard;
+
+//#if MC>=10800
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.lwjgl.input.Keyboard;
+//#else
+//$$ import cpw.mods.fml.client.registry.ClientRegistry;
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.gameevent.InputEvent;
+//$$ import cpw.mods.fml.common.gameevent.TickEvent;
+//#endif
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.replaymod.core.versions.MCVer.*;
 
 public class KeyBindingRegistry {
     private Map<String, KeyBinding> keyBindings = new HashMap<String, KeyBinding>();
@@ -64,7 +74,7 @@ public class KeyBindingRegistry {
 
     public void handleRepeatedKeyBindings() {
         for (Map.Entry<KeyBinding, Collection<Runnable>> entry : repeatedKeyBindingHandlers.asMap().entrySet()) {
-            if (entry.getKey().isKeyDown()) {
+            if (isKeyDown(entry.getKey())) {
                 invokeKeyBindingHandlers(entry.getKey(), entry.getValue());
             }
         }

@@ -19,12 +19,20 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.Minecraft;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.input.Keyboard;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
+//#else
+//$$ import cpw.mods.fml.common.Mod;
+//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
+//$$ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//#endif
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -36,7 +44,9 @@ import java.util.Optional;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        //#if MC>=10800
         clientSideOnly = true,
+        //#endif
         useMetadata = true)
 public class ReplayModReplay {
     public static final String MOD_ID = "replaymod-replay";

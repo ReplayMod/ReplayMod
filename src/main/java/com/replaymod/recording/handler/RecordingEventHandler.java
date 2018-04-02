@@ -7,13 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.*;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 //#if MC>=10904
 import net.minecraft.entity.EntityLiving;
@@ -24,7 +19,21 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 //#else
+//#if MC>=10800
 //$$ import net.minecraft.util.BlockPos;
+//#endif
+//#endif
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
+//$$ import cpw.mods.fml.common.gameevent.TickEvent;
+//$$ import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 //#endif
 
 import java.util.Objects;
@@ -85,6 +94,7 @@ public class RecordingEventHandler {
             //#else
             //$$ packetListener.save(new S0CPacketSpawnPlayer(player(mc)));
             //#endif
+            lastX = lastY = lastZ = null;
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -143,7 +153,18 @@ public class RecordingEventHandler {
                 //#if MC>=10904
                 packet = new SPacketEntityTeleport(e.player);
                 //#else
+                //#if MC>=10800
                 //$$ packet = new S18PacketEntityTeleport(e.player);
+                //#else
+                //$$ // In 1.7.10 the client player entity has its posY at eye height
+                //$$ // but for all other entities it's at their feet (as it should be).
+                //$$ // So, to correctly position the player, we teleport them to their feet (i.a. directly after spawn).
+                //$$ // Note: this leaves the lastY value offset by the eye height but because it's only used for relative
+                //$$ //       movement, that doesn't matter.
+                //$$ S18PacketEntityTeleport teleportPacket = new S18PacketEntityTeleport(e.player);
+                //$$ teleportPacket.field_149457_c = floor(e.player.boundingBox.minY * 32);
+                //$$ packet = teleportPacket;
+                //#endif
                 //#endif
             } else {
                 byte newYaw = (byte) ((int) (e.player.rotationYaw * 256.0F / 360.0F));
@@ -156,7 +177,11 @@ public class RecordingEventHandler {
                 //#else
                 //$$ packet = new S14PacketEntity.S17PacketEntityLookMove(e.player.getEntityId(),
                 //$$         (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
-                //$$         newYaw, newPitch, e.player.onGround);
+                //$$         newYaw, newPitch
+                        //#if MC>=10800
+                        //$$ , e.player.onGround
+                        //#endif
+                //$$ );
                 //#endif
             }
 
@@ -353,7 +378,13 @@ public class RecordingEventHandler {
             //$$     return;
             //$$ }
             //$$
-            //$$ packetListener.save(new S0APacketUseBed(event.entityPlayer, event.pos));
+            //$$ packetListener.save(new S0APacketUseBed(event.entityPlayer,
+                    //#if MC>=10800
+                    //$$ event.pos
+                    //#else
+                    //$$ event.x, event.y, event.z
+                    //#endif
+            //$$ ));
             //#endif
 
             wasSleeping = true;
@@ -388,13 +419,23 @@ public class RecordingEventHandler {
         }
     }
 
+    //#if MC>=10800
     public void onBlockBreakAnim(int breakerId, BlockPos pos, int progress) {
+    //#else
+    //$$ public void onBlockBreakAnim(int breakerId, int x, int y, int z, int progress) {
+    //#endif
         EntityPlayer thePlayer = player(mc);
         if (thePlayer != null && breakerId == thePlayer.getEntityId()) {
             //#if MC>=10904
             packetListener.save(new SPacketBlockBreakAnim(breakerId, pos, progress));
             //#else
-            //$$ packetListener.save(new S25PacketBlockBreakAnim(breakerId, pos, progress));
+            //$$ packetListener.save(new S25PacketBlockBreakAnim(breakerId,
+                    //#if MC>=10800
+                    //$$ pos,
+                    //#else
+                    //$$ x, y, z,
+                    //#endif
+            //$$         progress));
             //#endif
         }
     }

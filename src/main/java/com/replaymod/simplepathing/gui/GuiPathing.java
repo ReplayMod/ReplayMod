@@ -46,7 +46,6 @@ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.crash.CrashReport;
-import net.minecraftforge.fml.common.Loader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
@@ -55,6 +54,12 @@ import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 import org.lwjgl.util.WritablePoint;
 
+//#if MC>=10800
+import net.minecraftforge.fml.common.Loader;
+//#else
+//$$ import cpw.mods.fml.common.Loader;
+//#endif
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -62,6 +67,7 @@ import java.util.Collections;
 import java.util.function.Consumer;
 
 import static com.replaymod.core.utils.Utils.error;
+import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.simplepathing.ReplayModSimplePathing.LOGGER;
 
 
@@ -618,7 +624,7 @@ public class GuiPathing {
                     CameraEntity camera = replayHandler.getCameraEntity();
                     int spectatedId = -1;
                     if (!replayHandler.isCameraView()) {
-                        spectatedId = replayHandler.getOverlay().getMinecraft().getRenderViewEntity().getEntityId();
+                        spectatedId = getRenderViewEntity(replayHandler.getOverlay().getMinecraft()).getEntityId();
                     }
                     timeline.addPositionKeyframe(time, camera.posX, camera.posY, camera.posZ,
                             camera.rotationYaw, camera.rotationPitch, camera.roll, spectatedId);

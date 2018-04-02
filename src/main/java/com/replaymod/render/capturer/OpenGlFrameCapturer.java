@@ -15,7 +15,12 @@ import org.lwjgl.util.WritableDimension;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+//#if MC>=10800
 import static net.minecraft.client.renderer.GlStateManager.*;
+//#else
+//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
+//#endif
+
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 

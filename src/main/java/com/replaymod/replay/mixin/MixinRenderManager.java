@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.replay.mixin;
 
 import net.minecraft.client.gui.FontRenderer;
@@ -25,3 +26,4 @@ public class MixinRenderManager {
         }
     }
 }
+//#endif

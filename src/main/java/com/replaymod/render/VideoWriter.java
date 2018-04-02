@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.Util;
-import net.minecraftforge.fml.common.versioning.ComparableVersion;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -27,6 +26,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.versioning.ComparableVersion;
+//#else
+//$$ import cpw.mods.fml.common.versioning.ComparableVersion;
+//#endif
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.apache.commons.lang3.Validate.isTrue;

@@ -1,7 +1,6 @@
 package com.replaymod.replay;
 
 import com.google.common.base.Preconditions;
-import com.mojang.authlib.GameProfile;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
@@ -18,22 +17,41 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.NetworkManager;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import org.lwjgl.opengl.Display;
 
 import java.io.IOException;
 import java.util.*;
 
-import static com.replaymod.core.versions.MCVer.*;
+//#if MC>=10800
+import com.mojang.authlib.GameProfile;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.EnumPacketDirection;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
+
 import static net.minecraft.client.renderer.GlStateManager.*;
+//#else
+//$$ import cpw.mods.fml.common.Loader;
+//$$ import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
+//$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
+//$$ import io.netty.channel.ChannelOutboundHandlerAdapter;
+//$$ import net.minecraft.client.network.NetHandlerLoginClient;
+//$$ import net.minecraft.entity.EntityLivingBase;
+//$$ import net.minecraft.network.EnumConnectionState;
+//$$
+//$$ import java.net.InetSocketAddress;
+//$$ import java.net.SocketAddress;
+//$$
+//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
+//$$ import static com.replaymod.replay.ReplayModReplay.LOGGER;
+//#endif
+
+import static com.replaymod.core.versions.MCVer.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -150,6 +168,7 @@ public class ReplayHandler {
         //$$ mc.ingameGUI.getChatGUI().clearChatMessages();
         //#endif
 
+        //#if MC>=10800
         NetworkManager networkManager = new NetworkManager(EnumPacketDirection.CLIENTBOUND) {
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
@@ -178,6 +197,44 @@ public class ReplayHandler {
         //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
         //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "fml:packet_handler", networkDispatcher);
         //$$ channel.pipeline().fireChannelActive();
+        //#endif
+        //#else
+        //$$ NetworkManager networkManager = new NetworkManager(true) {
+        //$$     @Override
+        //$$     public SocketAddress getRemoteAddress() {
+        //$$         // See https://github.com/Dyonovan/TCNodeTracker/issues/37
+        //$$         if (Loader.isModLoaded("tcnodetracker")) {
+        //$$             StackTraceElement elem = Thread.currentThread().getStackTrace()[2];
+        //$$             if ("com.dyonovan.tcnodetracker.events.ClientConnectionEvent".equals(elem.getClassName())) {
+        //$$                 LOGGER.debug("TCNodeTracker crash workaround applied");
+        //$$                 return new InetSocketAddress("replaymod.dummy", 0);
+        //$$             }
+        //$$         }
+        //$$         return super.getRemoteAddress();
+        //$$     }
+        //$$
+        //$$     @Override
+        //$$     public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
+        //$$         t.printStackTrace();
+        //$$     }
+        //$$ };
+        //$$ networkManager.setNetHandler(new NetHandlerLoginClient(networkManager, mc, null));
+        //$$
+        //$$ mc.displayGuiScreen(new GuiOpeningReplay(networkManager));
+        //$$
+        //$$ ChannelOutboundHandlerAdapter dummyHandler = new ChannelOutboundHandlerAdapter();
+        //$$ channel = new EmbeddedChannel(dummyHandler);
+        //$$ channel.pipeline().remove(dummyHandler);
+        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
+        //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "packet_handler", networkManager);
+        //$$ channel.pipeline().fireChannelActive();
+        //$$
+        //$$ // Call twice to force-overwrite the NetworkManager's internal state
+        //$$ networkManager.setConnectionState(EnumConnectionState.PLAY);
+        //$$ networkManager.getNetHandler().onConnectionStateTransition(EnumConnectionState.LOGIN, EnumConnectionState.PLAY);
+        //$$ networkManager.setConnectionState(EnumConnectionState.PLAY);
+        //$$
+        //$$ FMLNetworkHandler.fmlClientHandshake(networkManager);
         //#endif
     }
 
@@ -238,7 +295,11 @@ public class ReplayHandler {
      * When the entity is {@code null} or the camera entity, the camera becomes the view entity.
      * @param e The entity to spectate
      */
+    //#if MC>=10800
     public void spectateEntity(Entity e) {
+    //#else
+    //$$ public void spectateEntity(EntityLivingBase e) {
+    //#endif
         CameraEntity cameraEntity = getCameraEntity();
         if (cameraEntity == null) {
             return; // Cannot spectate if we have no camera
@@ -256,15 +317,15 @@ public class ReplayHandler {
             cameraEntity.setCameraController(new SpectatorCameraController(cameraEntity));
         }
 
-        if (mc.getRenderViewEntity() != e) {
-            mc.setRenderViewEntity(e);
+        if (getRenderViewEntity(mc) != e) {
+            setRenderViewEntity(mc, e);
             cameraEntity.setCameraPosRot(e);
         }
     }
 
     /**
      * Set the camera as the view entity.
-     * This is equivalent to {@link #spectateEntity(Entity) spectateEntity(null)}.
+     * This is equivalent to {@code spectateEntity(null)}.
      */
     public void spectateCamera() {
         spectateEntity(null);
@@ -275,7 +336,7 @@ public class ReplayHandler {
      * @return {@code true} if the camera is the view entity, {@code false} otherwise
      */
     public boolean isCameraView() {
-        return player(mc) instanceof CameraEntity && player(mc) == mc.getRenderViewEntity();
+        return player(mc) instanceof CameraEntity && player(mc) == getRenderViewEntity(mc);
     }
 
     /**
@@ -376,11 +437,15 @@ public class ReplayHandler {
                     entity.prevRotationYaw = entity.rotationYaw;
                     entity.prevRotationPitch = entity.rotationPitch;
                 }
+                //#if MC>=10800
                 try {
                     mc.runTick();
                 } catch (IOException e) {
                     e.printStackTrace(); // This should never be thrown but whatever
                 }
+                //#else
+                //$$ mc.runTick();
+                //#endif
 
                 //finally, updating the camera's position (which is not done by the sync jumping)
                 moveCameraToTargetPosition();

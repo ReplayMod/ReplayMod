@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.hooks;
 
 import com.replaymod.render.utils.JailingQueue;
@@ -143,3 +144,4 @@ public class ChunkLoadingRenderGlobal {
         }
     }
 }
+//#endif
