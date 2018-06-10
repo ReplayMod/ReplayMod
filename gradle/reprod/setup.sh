@@ -49,6 +49,7 @@ if [ "$(git blame -p version.txt | head -n1 | cut -d' ' -f1)" == "$(git rev-pars
     pushd versions
         for ver in */; do
             [ "$ver" == "core/" ] && continue
+            [ -d "$ver/build/libs" ] || continue
             pushd "$ver"
                 # Note: This requires there to be one and only one jar file (ignoring source artifacts)
                 jar="build/libs/$(ls build/libs | grep -v sources)"
