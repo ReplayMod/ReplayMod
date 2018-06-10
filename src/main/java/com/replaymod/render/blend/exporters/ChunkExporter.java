@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.blend.exporters;
 
 import com.replaymod.render.blend.BlendMeshBuilder;
@@ -173,3 +174,4 @@ public class ChunkExporter implements Exporter {
 
     private static final int STRIDE = 28;
 }
+//#endif

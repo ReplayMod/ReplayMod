@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.blend.exporters;
 
 import com.replaymod.render.blend.BlendMeshBuilder;
@@ -168,3 +169,4 @@ public class ParticlesExporter implements Exporter {
         particleObjectsSeen = new IdentityHashMap<>();
     }
 }
+//#endif

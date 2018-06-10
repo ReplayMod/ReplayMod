@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.blend.exporters;
 
 import com.replaymod.render.blend.BlendState;
@@ -141,3 +142,4 @@ public class RenderState implements Exporter {
 
     }
 }
+//#endif

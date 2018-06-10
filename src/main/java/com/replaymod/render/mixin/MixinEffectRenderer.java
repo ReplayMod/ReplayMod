@@ -2,7 +2,6 @@ package com.replaymod.render.mixin;
 
 //#if MC<10904
 //$$ import com.replaymod.render.blend.BlendState;
-//$$ import com.replaymod.render.blend.exporters.ParticlesExporter;
 //$$ import com.replaymod.render.hooks.EntityRendererHandler;
 //$$ import net.minecraft.client.Minecraft;
 //$$ import net.minecraft.client.particle.EffectRenderer;
@@ -13,6 +12,7 @@ package com.replaymod.render.mixin;
 //$$ import org.spongepowered.asm.mixin.injection.Redirect;
 //$$
 //#if MC>=10800
+//$$ import com.replaymod.render.blend.exporters.ParticlesExporter;
 //$$ import net.minecraft.client.renderer.WorldRenderer;
 //#else
 //$$ import net.minecraft.client.renderer.Tessellator;
@@ -83,10 +83,12 @@ package com.replaymod.render.mixin;
 //$$             rotYZ = (float) (-rotZ * Math.sin(pitch));
 //$$             rotXY = (float) (rotX * Math.sin(pitch));
 //$$         }
-//$$         BlendState blendState = BlendState.getState();
-//$$                 if (blendState != null) {
-//$$                 blendState.get(ParticlesExporter.class).onRender(fx, partialTicks);
-//$$         }
+        //#if MC>=10800
+        //$$ BlendState blendState = BlendState.getState();
+        //$$         if (blendState != null) {
+        //$$         blendState.get(ParticlesExporter.class).onRender(fx, partialTicks);
+        //$$ }
+        //#endif
         //#if MC>=10809
         //$$ fx.renderParticle(worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
         //#else

@@ -16,8 +16,6 @@ import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReportCategory;
@@ -62,6 +60,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 //#if MC>=10800
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.BooleanState;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.world.WorldType;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 //#else
@@ -533,6 +533,7 @@ public class MCVer {
         //#endif
     }
 
+    //#if MC>=10800
     //#if MC>=10904
     //#if MC>=11200
     public static BufferBuilder getBuffer(Tessellator tessellator) {
@@ -553,6 +554,7 @@ public class MCVer {
     public static List<VertexFormatElement> getElements(VertexFormat vertexFormat) {
         return vertexFormat.getElements();
     }
+    //#endif
 
     public static Tessellator Tessellator_getInstance() {
         //#if MC>=10800

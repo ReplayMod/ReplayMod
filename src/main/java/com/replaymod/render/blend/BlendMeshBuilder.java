@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.blend;
 
 import com.replaymod.render.blend.data.DMaterial;
@@ -263,3 +264,4 @@ public class BlendMeshBuilder
         return mesh;
     }
 }
+//#endif

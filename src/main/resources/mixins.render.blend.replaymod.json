@@ -4,6 +4,7 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=10800
     "MixinChunkRenderWorker",
     "MixinEffectRenderer",
     "MixinModelRenderer",
@@ -11,6 +12,7 @@
     "MixinRenderItem",
     "MixinRenderManager",
     "MixinTileEntityRendererDispatcher"
+    //#endif
   ],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11",

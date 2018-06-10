@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.blend.mixin;
 
 import com.replaymod.render.blend.BlendState;
@@ -29,3 +30,4 @@ public abstract class MixinChunkRenderWorker {
         }
     }
 }
+//#endif

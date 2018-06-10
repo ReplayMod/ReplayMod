@@ -19,12 +19,6 @@ import org.cakelab.blender.nio.CPointer;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
-//#if MC>=10904
-import net.minecraft.util.math.Vec3i;
-//#else
-//$$ import net.minecraft.util.Vec3i;
-//#endif
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -197,7 +191,7 @@ public class DMesh {
 
     public static class Vertex {
         public Vector3f pos;
-        public Vec3i norm = Vec3i.NULL_VECTOR;
+        public short normX, normY, normZ;
 
         public Vertex(float x, float y, float z) {
             this.pos = new Vector3f(x, y, z);
@@ -209,9 +203,9 @@ public class DMesh {
             pos.set(1, this.pos.y);
             pos.set(2, this.pos.z);
             CArrayFacade<Short> norm = mVert.getNo();
-            norm.set(0, (short) this.norm.getX());
-            norm.set(1, (short) this.norm.getY());
-            norm.set(2, (short) this.norm.getZ());
+            norm.set(0, this.normX);
+            norm.set(1, this.normY);
+            norm.set(2, this.normZ);
         }
     }
 

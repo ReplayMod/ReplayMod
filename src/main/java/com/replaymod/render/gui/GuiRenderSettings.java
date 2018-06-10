@@ -359,6 +359,11 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 && videoWidth != videoHeight) {
             return "replaymod.gui.rendersettings.customresolution.warning.ods";
         }
+        //#if MC<10800
+        //$$ if (method == RenderSettings.RenderMethod.BLEND) {
+        //$$     return "replaymod.gui.rendersettings.no_blend_on_1_7_10";
+        //$$ }
+        //#endif
         return null;
     }
 

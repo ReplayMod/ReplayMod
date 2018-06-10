@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.blend.exporters;
 
 import com.replaymod.render.blend.BlendMeshBuilder;
@@ -133,3 +134,4 @@ public class ItemExporter implements Exporter {
         }
     }
 }
+//#endif
