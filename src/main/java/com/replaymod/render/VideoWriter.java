@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.Util;
-import net.minecraftforge.fml.common.versioning.ComparableVersion;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -27,6 +26,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.versioning.ComparableVersion;
+//#else
+//$$ import cpw.mods.fml.common.versioning.ComparableVersion;
+//#endif
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.apache.commons.lang3.Validate.isTrue;
@@ -61,7 +66,13 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
 
         String executable = settings.getExportCommand().isEmpty() ? findFFmpeg() : settings.getExportCommand();
         LOGGER.info("Starting {} with args: {}", executable, commandArgs);
-        String[] cmdline = new CommandLine(executable).addArguments(commandArgs).toStrings();
+        String[] cmdline;
+        try {
+            cmdline = new CommandLine(executable).addArguments(commandArgs).toStrings();
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Failed to parse ffmpeg command line:", e);
+            throw new FFmpegStartupException(settings, e.getLocalizedMessage());
+        }
         try {
             process = new ProcessBuilder(cmdline).directory(outputFolder).start();
         } catch (IOException e) {

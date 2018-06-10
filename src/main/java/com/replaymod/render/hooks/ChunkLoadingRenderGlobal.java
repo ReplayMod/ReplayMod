@@ -1,3 +1,4 @@
+//#if MC>=10800
 package com.replaymod.render.hooks;
 
 import com.replaymod.render.utils.JailingQueue;
@@ -22,15 +23,30 @@ import static com.replaymod.core.versions.MCVer.*;
 public class ChunkLoadingRenderGlobal {
 
     private final RenderGlobal hooked;
-    private final ChunkRenderDispatcher renderDispatcher;
-    private final JailingQueue<ChunkCompileTaskGenerator> workerJailingQueue;
-    private final CustomChunkRenderWorker renderWorker;
+    private ChunkRenderDispatcher renderDispatcher;
+    private JailingQueue<ChunkCompileTaskGenerator> workerJailingQueue;
+    private CustomChunkRenderWorker renderWorker;
     private int frame;
 
     @SuppressWarnings("unchecked")
     public ChunkLoadingRenderGlobal(RenderGlobal renderGlobal) {
         this.hooked = renderGlobal;
-        this.renderDispatcher = renderGlobal.renderDispatcher;
+
+        setup(renderGlobal.renderDispatcher);
+    }
+
+    public void updateRenderDispatcher(ChunkRenderDispatcher renderDispatcher) {
+        if (this.renderDispatcher != null) {
+            workerJailingQueue.freeAll();
+            this.renderDispatcher = null;
+        }
+        if (renderDispatcher != null) {
+            setup(renderDispatcher);
+        }
+    }
+
+    private void setup(ChunkRenderDispatcher renderDispatcher) {
+        this.renderDispatcher = renderDispatcher;
         this.renderWorker = new CustomChunkRenderWorker(renderDispatcher, new RegionRenderCacheBuilder());
 
         int workerThreads = renderDispatcher.listThreadedWorkers.size();
@@ -128,3 +144,4 @@ public class ChunkLoadingRenderGlobal {
         }
     }
 }
+//#endif

@@ -8,6 +8,9 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.config.Configuration;
+import org.apache.logging.log4j.Logger;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -20,7 +23,21 @@ import net.minecraftforge.fml.common.network.FMLOutboundHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import net.minecraftforge.fml.relauncher.Side;
-import org.apache.logging.log4j.Logger;
+//#else
+//$$ import cpw.mods.fml.common.FMLCommonHandler;
+//$$ import cpw.mods.fml.common.Mod;
+//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
+//$$ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//$$ import cpw.mods.fml.common.eventhandler.EventBus;
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.gameevent.PlayerEvent;
+//$$ import cpw.mods.fml.common.network.FMLEmbeddedChannel;
+//$$ import cpw.mods.fml.common.network.FMLOutboundHandler;
+//$$ import cpw.mods.fml.common.network.NetworkRegistry;
+//$$ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+//$$ import cpw.mods.fml.relauncher.Side;
+//#endif
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,7 +49,9 @@ import static com.replaymod.core.versions.MCVer.*;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        //#if MC>=10800
         serverSideOnly = true,
+        //#endif
         useMetadata = true)
 public class ReplayModRestrictions {
     public static final String MOD_ID = "replaymod-restrictions";
@@ -55,6 +74,9 @@ public class ReplayModRestrictions {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
+        //#if MC<=10710
+        //$$ if (FMLCommonHandler.instance().getSide() == Side.CLIENT) return;
+        //#endif
         EventBus bus = FML_BUS;
         bus.register(this);
 

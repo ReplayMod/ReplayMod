@@ -8,13 +8,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
-import net.minecraftforge.fml.common.versioning.Restriction;
-import net.minecraftforge.fml.common.versioning.VersionRange;
 
 //#if MC>=10904
 import net.minecraft.block.state.IBlockState;
@@ -26,8 +19,28 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 //#else
+//#if MC>= 10800
 //$$ import net.minecraft.util.BlockPos;
+//#endif
 //$$ import net.minecraft.world.IWorldAccess;
+//#endif
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
+import net.minecraftforge.fml.common.versioning.Restriction;
+import net.minecraftforge.fml.common.versioning.VersionRange;
+//#else
+//$$ import cpw.mods.fml.common.Loader;
+//$$ import cpw.mods.fml.common.ModContainer;
+//$$ import cpw.mods.fml.common.eventhandler.EventPriority;
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
+//$$ import cpw.mods.fml.common.versioning.Restriction;
+//$$ import cpw.mods.fml.common.versioning.VersionRange;
 //#endif
 
 import java.util.Collections;
@@ -106,7 +119,11 @@ public class DisableBetterSprinting {
             //#endif
     {
         @Override
+        //#if MC>=10800
         public void onEntityRemoved(Entity entityIn) {
+        //#else
+        //$$ public void onEntityDestroy(Entity entityIn) {
+        //#endif
             if (mc.playerController != null && mc.playerController.getClass().getName().equals(CONTROLLER_OVERRIDE_CLASS_NAME)) {
                 // Someone has secretly swapped out the player controller and is about to substitute their own player entity.
                 // This is the right time to destroy their plan.
@@ -115,12 +132,21 @@ public class DisableBetterSprinting {
             }
         }
 
-        @Override public void notifyLightSet(BlockPos pos) {}
         @Override public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {}
+        //#if MC>=10800
+        @Override public void notifyLightSet(BlockPos pos) {}
         @Override public void spawnParticle(int p_180442_1_, boolean p_180442_2_, double p_180442_3_, double p_180442_5_, double p_180442_7_, double p_180442_9_, double p_180442_11_, double p_180442_13_, int... p_180442_15_) {}
         @Override public void onEntityAdded(Entity entityIn) {}
         @Override public void broadcastSound(int p_180440_1_, BlockPos p_180440_2_, int p_180440_3_) {}
         @Override public void sendBlockBreakProgress(int breakerId, BlockPos pos, int progress) {}
+        //#else
+        //$$ @Override public void markBlockForRenderUpdate(int x, int y, int z) {}
+        //$$ @Override public void spawnParticle(String p_72708_1_, double p_72708_2_, double p_72708_4_, double p_72708_6_, double p_72708_8_, double p_72708_10_, double p_72708_12_) {}
+        //$$ @Override public void onEntityCreate(Entity entityIn) {}
+        //$$ @Override public void broadcastSound(int p_180440_1_, int x, int y, int z, int p_180440_3_) {}
+        //$$ @Override public void destroyBlockPartially(int breakerId, int x, int y, int z, int progress) {}
+        //$$ @Override public void onStaticEntitiesChanged() {}
+        //#endif
         //#if MC>=10904
         @Override public void notifyBlockUpdate(World worldIn, BlockPos pos, IBlockState oldState, IBlockState newState, int flags) {}
         @Override public void playSoundToAllNearExcept(@Nullable EntityPlayer player, SoundEvent soundIn, SoundCategory category, double x, double y, double z, float volume, float pitch) {}
@@ -134,14 +160,23 @@ public class DisableBetterSprinting {
         //#endif
         //#endif
         //#else
+        //#if MC>=10800
         //$$ @Override public void markBlockForUpdate(BlockPos pos) {}
+        //$$ @Override public void playRecord(String recordName, BlockPos blockPosIn) {}
+        //#else
+        //$$ @Override public void markBlockForUpdate(int x, int y, int z) {}
+        //$$ @Override public void playRecord(String recordName, int x, int y, int z) {}
+        //#endif
         //$$ @Override public void playSound(String soundName, double x, double y, double z, float volume, float pitch) {}
         //$$ @Override public void playSoundToNearExcept(EntityPlayer except, String soundName, double x, double y, double z, float volume, float pitch) {}
-        //$$ @Override public void playRecord(String recordName, BlockPos blockPosIn) {}
         //#if MC>=10809
         //$$ @Override public void playAuxSFX(EntityPlayer p_180439_1_, int p_180439_2_, BlockPos blockPosIn, int p_180439_4_) {}
         //#else
+        //#if MC>=10800
         //$$ @Override public void playAusSFX(EntityPlayer p_180439_1_, int p_180439_2_, BlockPos blockPosIn, int p_180439_4_) {}
+        //#else
+        //$$ @Override public void playAuxSFX(EntityPlayer p_72706_1_, int p_72706_2_, int p_72706_3_, int p_72706_4_, int p_72706_5_, int p_72706_6_) {}
+        //#endif
         //#endif
         //#endif
     }

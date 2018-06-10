@@ -15,7 +15,12 @@ import net.minecraft.client.gui.GuiWorldSelection;
 //#endif
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import static com.replaymod.core.versions.MCVer.getGui;
 

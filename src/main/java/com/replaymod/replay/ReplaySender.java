@@ -31,8 +31,6 @@ import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -48,6 +46,15 @@ import net.minecraft.world.GameType;
 import net.minecraft.util.text.ITextComponent;
 //#else
 //$$ import net.minecraft.util.IChatComponent;
+//#endif
+
+//#if MC>=10800
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.gameevent.TickEvent;
+//$$ import org.apache.commons.io.Charsets;
 //#endif
 
 import java.io.*;
@@ -89,6 +96,10 @@ public class ReplaySender extends ChannelDuplexHandler {
             SPacketPlayerAbilities.class,
             SPacketTitle.class
             //#else
+            //#if MC>=10800
+            //$$ S43PacketCamera.class,
+            //$$ S45PacketTitle.class,
+            //#endif
             //$$ S06PacketUpdateHealth.class,
             //$$ S2DPacketOpenWindow.class,
             //$$ S2EPacketCloseWindow.class,
@@ -97,9 +108,7 @@ public class ReplaySender extends ChannelDuplexHandler {
             //$$ S36PacketSignEditorOpen.class,
             //$$ S37PacketStatistics.class,
             //$$ S1FPacketSetExperience.class,
-            //$$ S43PacketCamera.class,
-            //$$ S39PacketPlayerAbilities.class,
-            //$$ S45PacketTitle.class
+            //$$ S39PacketPlayerAbilities.class
             //#endif
     );
 
@@ -390,7 +399,11 @@ public class ReplaySender extends ChannelDuplexHandler {
 
         int i = readVarInt(pb);
 
+        //#if MC>=10800
         Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
+        //#else
+        //$$ Packet p = Packet.generatePacket(EnumConnectionState.PLAY.func_150755_b(), i);
+        //#endif
         p.readPacketData(pb);
 
         return p;
@@ -409,7 +422,12 @@ public class ReplaySender extends ChannelDuplexHandler {
         //$$ if (p instanceof S3FPacketCustomPayload) {
         //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
         //#endif
-            if (Restrictions.PLUGIN_CHANNEL.equals(packet.getChannelName())) {
+            //#if MC>=10800
+            String channelName = packet.getChannelName();
+            //#else
+            //$$ String channelName = packet.func_149169_c();
+            //#endif
+            if (Restrictions.PLUGIN_CHANNEL.equals(channelName)) {
                 final String unknown = replayHandler.getRestrictions().handle(packet);
                 if (unknown == null) {
                     return null;
@@ -461,9 +479,15 @@ public class ReplaySender extends ChannelDuplexHandler {
         //$$ if (p instanceof S3FPacketCustomPayload) {
         //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
         //#endif
-            if ("MC|BOpen".equals(packet.getChannelName())) {
+            //#if MC>=10800
+            String channelName = packet.getChannelName();
+            //#else
+            //$$ String channelName = packet.func_149169_c();
+            //#endif
+            if ("MC|BOpen".equals(channelName)) {
                 return null;
             }
+        //#if MC>=10800
         }
 
         //#if MC>=10904
@@ -476,10 +500,15 @@ public class ReplaySender extends ChannelDuplexHandler {
             //#if MC>=10809
             //$$ String url = packet.getURL();
             //#else
-            //$$ String url = packet.func_179783_a();
+        //$$     String url = packet.func_179783_a();
             //#endif
         //#endif
             if (url.startsWith("replay://")) {
+        //#else
+        //$$     String url;
+        //$$     if ("MC|RPack".equals(channelName) &&
+        //$$             (url = new String(packet.func_149168_d(), Charsets.UTF_8)).startsWith("replay://")) {
+        //#endif
                 int id = Integer.parseInt(url.substring("replay://".length()));
                 Map<Integer, String> index = replayFile.getResourcePackIndex();
                 if (index != null) {
@@ -503,11 +532,16 @@ public class ReplaySender extends ChannelDuplexHandler {
         //#else
         //$$ if(p instanceof S01PacketJoinGame) {
         //$$     S01PacketJoinGame packet = (S01PacketJoinGame) p;
-        //$$     int entId = packet.getEntityId();
+            //#if MC>=10800
+            //$$ int entId = packet.getEntityId();
+            //#else
+            //$$ int entId = packet.func_149197_c();
+            //#endif
         //#endif
             allowMovement = true;
             actualID = entId;
             entId = -1789435; // Camera entity id should be negative which is an invalid id and can't be used by servers
+            //#if MC>=10800
             int dimension = packet.getDimension();
             EnumDifficulty difficulty = packet.getDifficulty();
             int maxPlayers = packet.getMaxPlayers();
@@ -519,6 +553,15 @@ public class ReplaySender extends ChannelDuplexHandler {
             //#else
             //$$ p = new S01PacketJoinGame(entId, GameType.SPECTATOR, false, dimension,
             //$$         difficulty, maxPlayers, worldType, false);
+            //#endif
+            //#else
+            //$$ int dimension = packet.func_149194_f();
+            //$$ EnumDifficulty difficulty = packet.func_149192_g();
+            //$$ int maxPlayers = packet.func_149193_h();
+            //$$ WorldType worldType = packet.func_149196_i();
+            //$$
+            //$$ p = new S01PacketJoinGame(entId, GameType.ADVENTURE, false, dimension,
+            //$$         difficulty, maxPlayers, worldType);
             //#endif
         }
 
@@ -535,7 +578,12 @@ public class ReplaySender extends ChannelDuplexHandler {
             //$$         respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
             //#else
             //$$ p = new S07PacketRespawn(respawn.func_149082_c(),
-            //$$         respawn.func_149081_d(), respawn.func_149080_f(), GameType.SPECTATOR);
+            //$$         respawn.func_149081_d(), respawn.func_149080_f(),
+                    //#if MC>=10800
+                    //$$ GameType.SPECTATOR);
+                    //#else
+                    //$$ GameType.ADVENTURE);
+                    //#endif
             //#endif
         //#endif
 
@@ -560,6 +608,7 @@ public class ReplaySender extends ChannelDuplexHandler {
 
             CameraEntity cent = replayHandler.getCameraEntity();
 
+            //#if MC>=10800
             //#if MC>=10904
             for (SPacketPlayerPosLook.EnumFlags relative : ppl.getFlags()) {
                 if (relative == SPacketPlayerPosLook.EnumFlags.X
@@ -574,6 +623,7 @@ public class ReplaySender extends ChannelDuplexHandler {
                     return null; // At least one of the coordinates is relative, so we don't care
                 }
             }
+            //#endif
 
             if(cent != null) {
                 //#if MC>=10809
@@ -654,7 +704,9 @@ public class ReplaySender extends ChannelDuplexHandler {
         //#if MC>=10904
         ctx.channel().attr(NetworkManager.PROTOCOL_ATTRIBUTE_KEY).set(EnumConnectionState.PLAY);
         //#else
+        //#if MC>=10800
         //$$ ctx.attr(NetworkManager.attrKeyConnectionState).set(EnumConnectionState.PLAY);
+        //#endif
         //#endif
         super.channelActive(ctx);
     }

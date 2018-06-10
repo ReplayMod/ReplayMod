@@ -13,7 +13,11 @@
     "MixinEntityRenderer",
     "MixinFrustum",
     "MixinRender",
+    //#if MC>=10800
     "MixinRenderGlobal",
+    //#else
+    //$$ "MixinOpenGlHelper",
+    //#endif
     "MixinRenderManager"
   ],
   "compatibilityLevel": "JAVA_8",

@@ -1,6 +1,7 @@
 package com.replaymod.extras;
 
 import com.google.common.collect.ImmutableSet;
+import com.replaymod.compat.optifine.OptifineReflection;
 import com.replaymod.core.ReplayMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
@@ -66,6 +67,8 @@ public class LocalizationExtra implements Extra {
                     List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
                     defaultResourcePacks.add(new LocalizedResourcePack(languages));
                     mc.getLanguageManager().onResourceManagerReload(mc.getResourceManager());
+                    // Optifine does its own, additional language data loading
+                    OptifineReflection.reloadLang();
                     LOGGER.debug("Added language files to resource packs and reloaded LanguageManager");
                 });
             } catch (Throwable t) {

@@ -8,13 +8,22 @@ import com.replaymod.recording.packet.PacketListener;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import net.minecraft.network.NetworkManager;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.input.Keyboard;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
+//#else
+//$$ import cpw.mods.fml.common.Mod;
+//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
+//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//$$ import cpw.mods.fml.common.eventhandler.EventBus;
+//$$ import cpw.mods.fml.common.network.NetworkRegistry;
+//#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -22,7 +31,9 @@ import static com.replaymod.core.versions.MCVer.*;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        //#if MC>=10800
         clientSideOnly = true,
+        //#endif
         useMetadata = true)
 public class ReplayModRecording {
     public static final String MOD_ID = "replaymod-recording";

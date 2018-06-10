@@ -26,11 +26,23 @@ def setupDependencySubstitution = { Configuration configuration ->
             // FG 2.1 works for MC 1.8 as well, as long as only CI builds are performed (fails when applying source patches)
             dep.useTarget 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
         }
-        if (req.group == 'de.oceanlabs.mcp' && req.name == 'mcinjector' && req.version == '3.4-SNAPSHOT') {
-            dep.useTarget 'com.github.ModCoderPack:MCInjector:7258466'
+        if (req.group == 'de.oceanlabs.mcp' && req.name == 'mcinjector') {
+            switch (req.version) {
+                case '3.2-SNAPSHOT':
+                    dep.useTarget 'com.github.ModCoderPack:MCInjector:05aa80e'
+                    break
+                case '3.4-SNAPSHOT':
+                    dep.useTarget 'com.github.ModCoderPack:MCInjector:7258466'
+                    break
+            }
         }
         if (req.group == 'net.minecraftforge.srg2source' && req.name == 'Srg2Source') {
             switch (req.version) {
+                case '3.2-SNAPSHOT':
+                    /* Fails to build on jitpack because of broken javadocs
+                    dep.useTarget 'com.github.MinecraftForge:Srg2Source:95b5927'
+                    */
+                    break
                 case '3.3-SNAPSHOT':
                     // Note: 3.3-SNAPSHOT is actually 5f11e29 but that doesn't build due to broken javadoc
                     dep.useTarget 'com.github.MinecraftForge:Srg2Source:dcad1a6'
@@ -95,10 +107,18 @@ allprojects {
     configurations.all setupDependencySubstitution
 
     project.tasks.all { task ->
-        if (task.name == 'reobfJar') {
+        if (task.name == 'reobfJar' && task.metaClass.respondsTo(task, 'getJar')) {
             task.doLast {
                 println 'Manually repacking archive after reobfJar task'
                 project.plugins.findPlugin(de.johni0702.gradle.ReproducibleBuildsPlugin.class).stripJar(task.getJar())
+            }
+        }
+        if (task.name == 'reobf') {
+            task.doLast {
+                println 'Manually repacking archive(s) after reobf task'
+                task.outputs.files.each { file ->
+                    project.plugins.findPlugin(de.johni0702.gradle.ReproducibleBuildsPlugin.class).stripJar(file)
+                }
             }
         }
     }

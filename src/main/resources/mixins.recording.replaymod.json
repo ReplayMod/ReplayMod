@@ -8,6 +8,10 @@
     "MixinPlayerControllerMP",
     "MixinWorldClient",
     //#endif
+    //#if MC<=10710
+    //$$ "MixinGuiScreen",
+    //$$ "MixinS26PacketMapChunkBulk",
+    //#endif
     "MixinNetHandlerLoginClient",
     "MixinNetHandlerPlayClient",
     "MixinNetworkDispatcher",

@@ -12,15 +12,21 @@ import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
+import org.apache.logging.log4j.Logger;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
-import org.apache.logging.log4j.Logger;
+
+import static com.replaymod.core.versions.MCVer.WorldType_DEBUG_ALL_BLOCK_STATES;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
+//#endif
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import static com.replaymod.core.versions.MCVer.WorldType_DEBUG_ALL_BLOCK_STATES;
 
 /**
  * Handles connection events and initiates recording if enabled.
@@ -48,10 +54,12 @@ public class ConnectionEventHandler {
         try {
             boolean local = networkManager.isLocalChannel();
             if (local) {
+                //#if MC>=10800
                 if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
                     logger.info("Debug World recording is not supported.");
                     return;
                 }
+                //#endif
                 if(!core.getSettingsRegistry().get(Setting.RECORD_SINGLEPLAYER)) {
                     logger.info("Singleplayer Recording is disabled");
                     return;
@@ -102,7 +110,7 @@ public class ConnectionEventHandler {
             guiOverlay.register();
 
             core.printInfoToChat("replaymod.chat.recordingstarted");
-        } catch(Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             core.printWarningToChat("replaymod.chat.recordingfailed");
         }

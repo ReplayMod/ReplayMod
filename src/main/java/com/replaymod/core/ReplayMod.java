@@ -12,11 +12,23 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.FolderResourcePack;
 import net.minecraft.client.resources.IResourcePack;
-import net.minecraft.client.settings.GameSettings;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
+
+//#if MC>=10904
+import net.minecraft.util.text.*;
+//#else
+//$$ import net.minecraft.util.ChatComponentText;
+//$$ import net.minecraft.util.ChatComponentTranslation;
+//$$ import net.minecraft.util.ChatStyle;
+//$$ import net.minecraft.util.EnumChatFormatting;
+//$$ import net.minecraft.util.IChatComponent;
+//#endif
+
+//#if MC>=10800
+import net.minecraft.client.settings.GameSettings;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -29,17 +41,21 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.io.FileUtils;
-
-//#if MC>=10904
-import net.minecraft.util.text.*;
 //#else
-//$$ import net.minecraft.util.ChatComponentText;
-//$$ import net.minecraft.util.ChatComponentTranslation;
-//$$ import net.minecraft.util.ChatStyle;
-//$$ import net.minecraft.util.EnumChatFormatting;
-//$$ import net.minecraft.util.IChatComponent;
+//$$ import cpw.mods.fml.common.Loader;
+//$$ import cpw.mods.fml.common.Mod;
+//$$ import cpw.mods.fml.common.Mod.EventHandler;
+//$$ import cpw.mods.fml.common.Mod.Instance;
+//$$ import cpw.mods.fml.common.ModContainer;
+//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
+//$$ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//$$ import cpw.mods.fml.common.eventhandler.EventBus;
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.gameevent.TickEvent;
+//$$ import com.replaymod.replay.InputReplayTimer;
+//$$
+//$$ import java.util.ArrayDeque;
 //#endif
 
 import java.io.ByteArrayInputStream;
@@ -57,8 +73,10 @@ import static com.replaymod.core.versions.MCVer.*;
         version = "@MOD_VERSION@",
         acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
+        //#if MC>=10800
         clientSideOnly = true,
         updateJSON = "https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json",
+        //#endif
         guiFactory = "com.replaymod.core.gui.GuiFactory")
 public class ReplayMod {
 
@@ -67,18 +85,7 @@ public class ReplayMod {
     }
 
     @Getter(lazy = true)
-    private static final String minecraftVersion = parseMinecraftVersion();
-    private static String parseMinecraftVersion() {
-        CrashReport crashReport = new CrashReport("", new Throwable());
-        @SuppressWarnings("unchecked")
-        List<CrashReportCategory.Entry> list = crashReport.getCategory().children;
-        for (CrashReportCategory.Entry entry : list) {
-            if ("Minecraft Version".equals(entry.getKey())) {
-                return entry.getValue();
-            }
-        }
-        return "Unknown";
-    }
+    private static final String minecraftVersion = Loader.MC_VERSION;
 
     public static final String MOD_ID = "replaymod";
 
@@ -127,6 +134,8 @@ public class ReplayMod {
 
     //#ifdef DEV_ENV
     static { // Note: even preInit is too late and we'd have to issue another resource reload
+        @SuppressWarnings("unchecked")
+        List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
         FolderResourcePack jGuiResourcePack = new FolderResourcePack(new File("../jGui/src/main/resources")) {
             @Override
             protected InputStream getInputStreamByName(String resourceName) throws IOException {
@@ -140,9 +149,23 @@ public class ReplayMod {
                 }
             }
         };
-        @SuppressWarnings("unchecked")
-        List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
         defaultResourcePacks.add(jGuiResourcePack);
+        //#if MC<=10710
+        //$$ FolderResourcePack mainResourcePack = new FolderResourcePack(new File("../src/main/resources")) {
+        //$$     @Override
+        //$$     protected InputStream getInputStreamByName(String resourceName) throws IOException {
+        //$$         try {
+        //$$             return super.getInputStreamByName(resourceName);
+        //$$         } catch (IOException e) {
+        //$$             if ("pack.mcmeta".equals(resourceName)) {
+        //$$                 return new ByteArrayInputStream(("{\"pack\": {\"description\": \"dummy pack for mod resources in dev-env\", \"pack_format\": 1}}").getBytes(Charsets.UTF_8));
+        //$$             }
+        //$$             throw e;
+        //$$         }
+        //$$     }
+        //$$ };
+        //$$ defaultResourcePacks.add(mainResourcePack);
+        //#endif
     }
     //#endif
 
@@ -152,6 +175,9 @@ public class ReplayMod {
 
         new MainMenuHandler().register();
 
+        //#if MC<=10710
+        //$$ FML_BUS.register(this); // For runLater(Runnable)
+        //#endif
         FML_BUS.register(keyBindingRegistry);
 
         getKeyBindingRegistry().registerKeyBinding("replaymod.input.settings", 0, () -> {
@@ -163,8 +189,11 @@ public class ReplayMod {
     public void postInit(FMLPostInitializationEvent event) throws IOException {
         settingsRegistry.save(); // Save default values to disk
 
+        // 1.7.10 crashes when render distance > 16
+        //#if MC>=10800
         if(!FMLClientHandler.instance().hasOptifine())
             GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
+        //#endif
 
         testIfMoeshAndExitMinecraft();
 
@@ -212,6 +241,7 @@ public class ReplayMod {
     public void runLater(Runnable runnable) {
         if (mc.isCallingFromMinecraftThread() && inRunLater) {
             EventBus bus = FORGE_BUS;
+            //#if MC>=10800
             bus.register(new Object() {
                 @SubscribeEvent
                 public void onRenderTick(TickEvent.RenderTickEvent event) {
@@ -221,13 +251,21 @@ public class ReplayMod {
                     }
                 }
             });
+            //#else
+            //$$ bus.register(new RunLaterHelper(runnable));
+            //#endif
             return;
         }
+        //#if MC>=10800
         //#if MC<10904
         //$$ @SuppressWarnings("unchecked")
         //#endif
         Queue<FutureTask<?>> tasks = mc.scheduledTasks;
         synchronized (mc.scheduledTasks) {
+        //#else
+        //$$ Queue<ListenableFutureTask<?>> tasks = scheduledTasks;
+        //$$ synchronized (scheduledTasks) {
+        //#endif
             tasks.add(ListenableFutureTask.create(() -> {
                 inRunLater = true;
                 try {
@@ -238,6 +276,37 @@ public class ReplayMod {
             }, null));
         }
     }
+
+    //#if MC<=10710
+    //$$ // 1.7.10: Cannot use MC's because it is processed only during ticks (so not at all when replay is paused)
+    //$$ private final Queue<ListenableFutureTask<?>> scheduledTasks = new ArrayDeque<>();
+    //$$
+    //$$ // in 1.7.10 apparently events can't be delivered to anonymous classes
+    //$$ public class RunLaterHelper {
+    //$$     private final Runnable runnable;
+    //$$
+    //$$     private RunLaterHelper(Runnable runnable) {
+    //$$         this.runnable = runnable;
+    //$$     }
+    //$$
+    //$$     @SubscribeEvent
+    //$$     public void onRenderTick(TickEvent.RenderTickEvent event) {
+    //$$         if (event.phase == TickEvent.Phase.START) {
+    //$$             runLater(runnable);
+    //$$             FML_BUS.unregister(this);
+    //$$         }
+    //$$     }
+    //$$ }
+    //$$
+    //$$ @SubscribeEvent
+    //$$ public void runScheduledTasks(InputReplayTimer.RunScheduledTasks event) {
+    //$$     synchronized (scheduledTasks) {
+    //$$         while (!scheduledTasks.isEmpty()) {
+    //$$             scheduledTasks.poll().run();
+    //$$         }
+    //$$     }
+    //$$ }
+    //#endif
 
     public String getVersion() {
         return getContainer().getVersion();

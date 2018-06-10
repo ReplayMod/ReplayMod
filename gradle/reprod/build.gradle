@@ -21,6 +21,9 @@ subprojects {
 
     task build(type: Exec) {
         dependsOn applyPatches
+        if (project.name == 'forgegradle-1.2') {
+            dependsOn ':srg2source-3.2:build'
+        }
         if (project.name == 'forgegradle-2.3') {
             dependsOn ':forgeflower:build'
         }
@@ -28,6 +31,8 @@ subprojects {
             !rootProject.file('deps/repo/' + [
                     'mixin': 'org/spongepowered/mixin/0.7.5-SNAPSHOT',
                     'forgeflower': 'net/minecraftforge/forgeflower/1.0.342-SNAPSHOT',
+                    'srg2source-3.2': 'net/minecraftforge/srg2source/Srg2Source/3.2-SNAPSHOT',
+                    'forgegradle-1.2': 'net/minecraftforge/gradle/ForgeGradle/1.2-SNAPSHOT',
                     'forgegradle-2.1': 'net/minecraftforge/gradle/ForgeGradle/2.1-SNAPSHOT',
                     'forgegradle-2.2': 'net/minecraftforge/gradle/ForgeGradle/2.2-SNAPSHOT',
                     'forgegradle-2.3': 'net/minecraftforge/gradle/ForgeGradle/2.3-SNAPSHOT',

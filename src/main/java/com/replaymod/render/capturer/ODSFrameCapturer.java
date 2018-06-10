@@ -7,16 +7,22 @@ import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.shader.Program;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.ReadableDimension;
 
+//#if MC>=10800
+import net.minecraft.client.renderer.GlStateManager;
+import static net.minecraft.client.renderer.GlStateManager.*;
+//#else
+//$$ import com.replaymod.render.hooks.GLStateTracker.BooleanState;
+//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
+//#endif
+
 import java.io.IOException;
 
-import static com.replaymod.core.versions.MCVer.fog;
-import static net.minecraft.client.renderer.GlStateManager.*;
+import static com.replaymod.core.versions.MCVer.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -41,6 +47,11 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             @Override
             public ReadableDimension getFrameSize() {
                 return renderInfo.getFrameSize();
+            }
+
+            @Override
+            public int getFramesDone() {
+                return renderInfo.getFramesDone();
             }
 
             @Override
@@ -76,9 +87,9 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             linkState(1, "lightMapEnabled");
             linkState(2, "hurtTextureEnabled");
             final Program.Uniform uniform = shaderProgram.getUniformVariable("fogEnabled");
-            previousFogState = fog(GlStateManager.fogState);
+            previousFogState = fog();
             uniform.set(previousFogState.currentState);
-            fog(GlStateManager.fogState, new BooleanState(previousFogState.capability) {
+            fog(new BooleanState(previousFogState.capability) {
                 @Override
                 public void setState(boolean state) {
                     super.setState(state);
@@ -97,15 +108,15 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
     private void linkState(int id, String var) {
         final Program.Uniform uniform = shaderProgram.getUniformVariable(var);
-        previousStates[id] = GlStateManager.textureState[id].texture2DState;
+        previousStates[id] = texture2DState(id);
         uniform.set(previousStates[id].currentState);
-        GlStateManager.textureState[id].texture2DState = new BooleanState(previousStates[id].capability) {
+        texture2DState(id, new BooleanState(previousStates[id].capability) {
             @Override
             public void setState(boolean state) {
                 super.setState(state);
                 uniform.set(state);
             }
-        };
+        });
     }
 
     @Override
@@ -133,10 +144,10 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         left.close();
         right.close();
         shaderProgram.delete();
-        for (int i = 0; i < 3; i++) {
-            GlStateManager.textureState[i].texture2DState = previousStates[i];
+        for (int i = 0; i < previousStates.length; i++) {
+            texture2DState(i, previousStates[i]);
         }
-        fog(GlStateManager.fogState, previousFogState);
+        fog(previousFogState);
     }
 
     private class CubicStereoFrameCapturer extends CubicPboOpenGlFrameCapturer {

@@ -19,8 +19,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.network.NetworkPlayerInfo;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.Charsets;
@@ -29,6 +27,17 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
+
+//#if MC>=10800
+import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.client.resources.DefaultPlayerSkin;
+
+import static com.replaymod.core.versions.MCVer.getConnection;
+//#else
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.entity.AbstractClientPlayer;
+//$$ import net.minecraft.entity.player.EntityPlayer;
+//#endif
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,7 +64,6 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static com.replaymod.core.versions.MCVer.getConnection;
 import static net.minecraft.client.Minecraft.getMinecraft;
 
 public class Utils {
@@ -162,6 +170,7 @@ public class Utils {
     }
 
     public static ResourceLocation getResourceLocationForPlayerUUID(UUID uuid) {
+        //#if MC>=10800
         NetworkPlayerInfo info = getConnection(getMinecraft()).getPlayerInfo(uuid);
         ResourceLocation skinLocation;
         if (info != null && info.hasLocationSkin()) {
@@ -170,6 +179,13 @@ public class Utils {
             skinLocation = DefaultPlayerSkin.getDefaultSkin(uuid);
         }
         return skinLocation;
+        //#else
+        //$$ EntityPlayer player = Minecraft.getMinecraft().theWorld.getPlayerEntityByUUID(uuid);
+        //$$ if (player != null || !(player instanceof AbstractClientPlayer)) {
+        //$$     return AbstractClientPlayer.locationStevePng;
+        //$$ }
+        //$$ return ((AbstractClientPlayer) player).getLocationSkin();
+        //#endif
     }
 
     public static boolean isCtrlDown() {

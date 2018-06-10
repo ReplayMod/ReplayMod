@@ -3,7 +3,6 @@ package com.replaymod.extras.advancedscreenshots;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.rendering.Pipelines;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
@@ -11,12 +10,18 @@ import net.minecraft.crash.CrashReport;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
 
+//#if MC>=10800
+import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+//#endif
+
 @RequiredArgsConstructor
 public class ScreenshotRenderer implements RenderInfo {
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
     private final RenderSettings settings;
+
+    private int framesDone;
 
     public boolean renderScreenshot() throws Throwable {
         try {
@@ -26,7 +31,9 @@ public class ScreenshotRenderer implements RenderInfo {
             boolean hideGUIBefore = mc.gameSettings.hideGUI;
             mc.gameSettings.hideGUI = true;
 
+            //#if MC>=10800
             ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.renderGlobal);
+            //#endif
 
             if (settings.getRenderMethod() == RenderSettings.RenderMethod.BLEND) {
                 BlendState.setState(new BlendState(settings.getOutputFile()));
@@ -36,7 +43,9 @@ public class ScreenshotRenderer implements RenderInfo {
                         new ScreenshotWriter(settings.getOutputFile())).run();
             }
 
+            //#if MC>=10800
             clrg.uninstall();
+            //#endif
 
             mc.gameSettings.hideGUI = hideGUIBefore;
             mc.resize(displayWidthBefore, displayHeightBefore);
@@ -55,6 +64,11 @@ public class ScreenshotRenderer implements RenderInfo {
     }
 
     @Override
+    public int getFramesDone() {
+        return framesDone;
+    }
+
+    @Override
     public int getTotalFrames() {
         // render 2 frames, because only the second contains all frames fully loaded
         return 2;
@@ -62,6 +76,7 @@ public class ScreenshotRenderer implements RenderInfo {
 
     @Override
     public float updateForNextFrame() {
+        framesDone++;
         return mc.timer.renderPartialTicks;
     }
 

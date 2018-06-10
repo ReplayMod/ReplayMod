@@ -15,7 +15,7 @@ sha256val () {
 
 # Setup http(s) proxy
 url="https://github.com/johni0702/proxy-witness"
-commit="01f5aa9eb6fa14a0adfa832ba33b6f7c68138c26"
+commit="07e79a999991473489d443b8934ccca547ac7985"
 if [ ! -d "deps/proxy-witness" ] || [ "$(git -C "deps/proxy-witness" rev-parse $commit^{commit})" != "$commit" ]; then
     rm -rf "deps/proxy-witness"
     mkdir -p "deps/proxy-witness"
@@ -44,11 +44,12 @@ popd # Back to root
 
 ./gradlew -Preprod $PROXY_SETTINGS -I gradle/reprod/init.gradle "$@"
 
-if [ "$SIGNED_JAR" == "1" ]; then
+if [ "$(git blame -p version.txt | head -n1 | cut -d' ' -f1)" == "$(git rev-parse HEAD)" ]; then
     echo "Trying to fetch signature for resulting jar files.."
     pushd versions
         for ver in */; do
             [ "$ver" == "core/" ] && continue
+            [ -d "$ver/build/libs" ] || continue
             pushd "$ver"
                 # Note: This requires there to be one and only one jar file (ignoring source artifacts)
                 jar="build/libs/$(ls build/libs | grep -v sources)"

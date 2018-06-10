@@ -20,7 +20,6 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Dimension;
 import org.lwjgl.util.ReadableDimension;
@@ -30,6 +29,10 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 //#else
 //$$ import net.minecraft.potion.Potion;
+//#endif
+
+//#if MC>=10800
+import net.minecraft.entity.player.EnumPlayerModelParts;
 //#endif
 
 import java.util.Collections;
@@ -55,7 +58,11 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
             //#if MC>=10904
             getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             //#else
+            //#if MC>=10800
             //$$ getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
+            //#else
+            //$$ getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(BUTTON_SOUND, 1.0F));
+            //#endif
             //#endif
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(true);
         }
@@ -66,7 +73,11 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
             //#if MC>=10904
             getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             //#else
+            //#if MC>=10800
             //$$ getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
+            //#else
+            //$$ getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(BUTTON_SOUND, 1.0F));
+            //#endif
             //#endif
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(false);
         }
@@ -113,13 +124,23 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                             //#if MC>=10809
                             if (p.isWearing(EnumPlayerModelParts.HAT)) {
                             //#else
+                            //#if MC>=10800
                             //$$ if (p.func_175148_a(EnumPlayerModelParts.HAT)) {
+                            //#else
+                            //$$ {
+                            //#endif
                             //#endif
                                 renderer.drawTexturedRect(0, 0, 40, 8, size.getWidth(), size.getHeight(), 8, 8, 64, 64);
                             }
                         }
                     }.setSize(16, 16),
-                    new GuiLabel().setText(p.getName()).setColor(isSpectator(p) ? Colors.DKGREY : Colors.WHITE)
+                    new GuiLabel().setText(
+                            //#if MC>=10800
+                            p.getName()
+                            //#else
+                            //$$ p.getDisplayName()
+                            //#endif
+                    ).setColor(isSpectator(p) ? Colors.DKGREY : Colors.WHITE)
             ).onClick(new Runnable() {
                 @Override
                 public void run() {
@@ -175,7 +196,11 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
         public int compare(EntityPlayer o1, EntityPlayer o2) {
             if (isSpectator(o1) && !isSpectator(o2)) return 1;
             if (isSpectator(o2) && !isSpectator(o1)) return -1;
+            //#if MC>=10800
             return o1.getName().compareToIgnoreCase(o2.getName());
+            //#else
+            //$$ return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+            //#endif
         }
     }
 }

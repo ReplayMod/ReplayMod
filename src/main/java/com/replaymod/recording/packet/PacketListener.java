@@ -11,11 +11,9 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.*;
-import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +25,13 @@ import net.minecraft.util.text.TextComponentString;
 //$$ import net.minecraft.util.ChatComponentText;
 //$$
 //$$ import java.util.List;
+//#endif
+
+//#if MC>=10800
+import net.minecraft.network.EnumPacketDirection;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+//#else
+//$$ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 //#endif
 
 import java.io.DataOutputStream;
@@ -105,7 +110,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //#if MC>=10809
                 //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).getPlayer();
                 //#else
+                //#if MC>=10800
                 //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).func_179819_c();
+                //#else
+                //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).field_148955_b.getId();
+                //#endif
                 //#endif
             //#endif
                 Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
@@ -114,9 +123,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 saveMetaData();
             }
             //#if MC<10904
+            //#if MC>=10800
             //$$ if (packet instanceof S46PacketSetCompressionLevel) {
             //$$     return; // Replay data is never compressed on the packet level
             //$$ }
+            //#endif
             //#endif
 
             byte[] bytes = getPacketData(packet);
@@ -199,16 +210,32 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //#if MC>=10904
                 if (packet instanceof SPacketResourcePackSend) {
                     save(resourcePackRecorder.handleResourcePack((SPacketResourcePackSend) packet));
-                //#else
-                //$$ if (packet instanceof S48PacketResourcePackSend) {
-                //$$     save(resourcePackRecorder.handleResourcePack((S48PacketResourcePackSend) packet));
-                //#endif
                     return;
                 }
+                //#else
+                //#if MC>=10800
+                //$$ if (packet instanceof S48PacketResourcePackSend) {
+                //$$     save(resourcePackRecorder.handleResourcePack((S48PacketResourcePackSend) packet));
+                //$$     return;
+                //$$ }
+                //#else
+                //$$ if (packet instanceof S3FPacketCustomPayload) {
+                //$$     S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
+                //$$     if ("MC|RPack".equals(p.func_149169_c())) {
+                //$$         save(resourcePackRecorder.handleResourcePack(p));
+                //$$         return;
+                //$$     }
+                //$$ }
+                //#endif
+                //#endif
 
                 if (packet instanceof FMLProxyPacket) {
                     // This packet requires special handling
+                    //#if MC>=10800
                     ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
+                    //#else
+                    //$$ save(((FMLProxyPacket) packet).toS3FPacket());
+                    //#endif
                     super.channelRead(ctx, msg);
                     return;
                 }
@@ -223,7 +250,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //#else
                 //$$ if (packet instanceof S3FPacketCustomPayload) {
                 //$$     S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
-                //$$     if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
+                    //#if MC>=10800
+                    //$$ String channelName = p.getChannelName();
+                    //#else
+                    //$$ String channelName = p.func_149169_c();
+                    //#endif
+                //$$     if (Restrictions.PLUGIN_CHANNEL.equals(channelName)) {
                 //$$         packet = new S40PacketDisconnect(new ChatComponentText("Please update to view this replay."));
                 //#endif
                         save(packet);
@@ -304,7 +336,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         //$$ }
         //#endif
 
+        //#if MC>=10800
         Integer packetId = EnumConnectionState.PLAY.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
+        //#else
+        //$$ Integer packetId = (Integer) EnumConnectionState.PLAY.func_150755_b().inverse().get(packet.getClass());
+        //#endif
         if (packetId == null) {
             throw new IOException("Unknown packet type:" + packet.getClass());
         }
@@ -322,7 +358,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void addMarker() {
-        Entity view = Minecraft.getMinecraft().getRenderViewEntity();
+        Entity view = getRenderViewEntity(Minecraft.getMinecraft());
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
         Marker marker = new Marker();

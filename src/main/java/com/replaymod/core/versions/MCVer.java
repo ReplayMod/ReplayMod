@@ -13,12 +13,13 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.client.resources.ResourcePackRepository;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -27,13 +28,11 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.EventBus;
 
 //#if MC>=10904
 //#if MC>=11200
@@ -45,16 +44,39 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.util.math.MathHelper;
 //#else
 //$$ import net.minecraft.client.particle.EntityFX;
+//#if MC>=10800
 //$$ import net.minecraft.client.renderer.WorldRenderer;
+//#endif
 //$$ import net.minecraft.util.MathHelper;
 //#endif
 //#if MC>=10809
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 //#else
+//#if MC>=10800
 //$$ import net.minecraftforge.fml.common.FMLCommonHandler;
+//#else
+//$$ import cpw.mods.fml.common.FMLCommonHandler;
+//#endif
+//#endif
+
+//#if MC>=10800
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.BooleanState;
+import net.minecraft.world.WorldType;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
+//#else
+//$$ import com.google.common.util.concurrent.Futures;
+//$$ import com.replaymod.render.hooks.GLStateTracker;
+//$$ import com.replaymod.render.hooks.GLStateTracker.BooleanState;
+//$$ import cpw.mods.fml.common.eventhandler.EventBus;
+//$$ import io.netty.handler.codec.DecoderException;
+//$$ import net.minecraft.client.resources.FileResourcePack;
+//$$
+//$$ import static org.lwjgl.opengl.GL11.*;
 //#endif
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -151,7 +173,15 @@ public class MCVer {
         //#if MC>=11102
         return buffer.readString(max);
         //#else
+        //#if MC>=10800
         //$$ return buffer.readStringFromBuffer(max);
+        //#else
+        //$$ try {
+        //$$     return buffer.readStringFromBuffer(max);
+        //$$ } catch (IOException e) {
+        //$$     throw new DecoderException(e);
+        //$$ }
+        //#endif
         //#endif
     }
 
@@ -187,12 +217,34 @@ public class MCVer {
         //#endif
     }
 
+    //#if MC>=10800
     public static WorldType WorldType_DEBUG_ALL_BLOCK_STATES
             //#if MC>=11200
             = WorldType.DEBUG_ALL_BLOCK_STATES;
             //#else
             //$$ = WorldType.DEBUG_WORLD;
             //#endif
+    //#endif
+
+    //#if MC>=10800
+    public static Entity getRenderViewEntity(Minecraft mc) {
+        return mc.getRenderViewEntity();
+    }
+    //#else
+    //$$ public static EntityLivingBase getRenderViewEntity(Minecraft mc) {
+    //$$     return mc.renderViewEntity;
+    //$$ }
+    //#endif
+
+    //#if MC>=10800
+    public static void setRenderViewEntity(Minecraft mc, Entity entity) {
+        mc.setRenderViewEntity(entity);
+    }
+    //#else
+    //$$ public static void setRenderViewEntity(Minecraft mc, EntityLivingBase entity) {
+    //$$     mc.renderViewEntity = entity;
+    //$$ }
+    //#endif
 
     public static ResourceLocation LOCATION_BLOCKS_TEXTURE
             //#if MC>=10904
@@ -248,7 +300,11 @@ public class MCVer {
 
     @SuppressWarnings("unchecked")
     public static Collection<Entity>[] getEntityLists(Chunk chunk) {
+        //#if MC>=10800
         return chunk.getEntityLists();
+        //#else
+        //$$ return chunk.entityLists;
+        //#endif
     }
 
     @SuppressWarnings("unchecked")
@@ -261,19 +317,43 @@ public class MCVer {
         return world.playerEntities;
     }
 
-    public static GlStateManager.BooleanState fog(GlStateManager.FogState fogState) {
+    public static BooleanState fog() {
         //#if MC>=10809
-        return fogState.fog;
+        return GlStateManager.fogState.fog;
         //#else
-        //$$ return fogState.field_179049_a;
+        //#if MC>=10800
+        //$$ return GlStateManager.fogState.field_179049_a;
+        //#else
+        //$$ return GLStateTracker.getInstance().fog;
+        //#endif
         //#endif
     }
 
-    public static void fog(GlStateManager.FogState fogState, GlStateManager.BooleanState fog) {
+    public static void fog(BooleanState fog) {
         //#if MC>=10809
-        fogState.fog = fog;
+        GlStateManager.fogState.fog = fog;
         //#else
-        //$$ fogState.field_179049_a = fog;
+        //#if MC>=10800
+        //$$ GlStateManager.fogState.field_179049_a = fog;
+        //#else
+        //$$ GLStateTracker.getInstance().fog = fog;
+        //#endif
+        //#endif
+    }
+
+    public static BooleanState texture2DState(int index) {
+        //#if MC>=10800
+        return GlStateManager.textureState[index].texture2DState;
+        //#else
+        //$$ return GLStateTracker.getInstance().texture[index];
+        //#endif
+    }
+
+    public static void texture2DState(int index, BooleanState texture2DState) {
+        //#if MC>=10800
+        GlStateManager.textureState[index].texture2DState = texture2DState;
+        //#else
+        //$$ GLStateTracker.getInstance().texture[index] = texture2DState;
         //#endif
     }
 
@@ -309,7 +389,22 @@ public class MCVer {
         //$$ return repo.setResourcePackInstance(file);
         //#endif
         //#else
+        //#if MC>=10800
         //$$ return repo.func_177319_a(file);
+        //#else
+        //$$ repo.field_148533_g = false;
+        //$$ repo.field_148532_f = new FileResourcePack(file);
+        //$$ Minecraft.getMinecraft().scheduleResourcesRefresh();
+        //$$ return Futures.immediateFuture(null);
+        //#endif
+        //#endif
+    }
+
+    public static boolean isKeyDown(KeyBinding keyBinding) {
+        //#if MC>=10800
+        return keyBinding.isKeyDown();
+        //#else
+        //$$ return keyBinding.getIsKeyPressed();
         //#endif
     }
 
@@ -317,7 +412,11 @@ public class MCVer {
         //#if MC>=10904
         Tessellator.getInstance().getBuffer().setTranslation(x, y, z);
         //#else
+        //#if MC>=10800
         //$$ Tessellator.getInstance().getWorldRenderer().setTranslation(x, y, z);
+        //#else
+        //$$ Tessellator.instance.setTranslation(x, y, z);
+        //#endif
         //#endif
     }
 
@@ -328,7 +427,11 @@ public class MCVer {
         //#if MC>=10809
         //$$ Tessellator.getInstance().getWorldRenderer().begin(mode, DefaultVertexFormats.POSITION_COLOR);
         //#else
+        //#if MC>=10800
         //$$ Tessellator.getInstance().getWorldRenderer().startDrawing(mode);
+        //#else
+        //$$ Tessellator.instance.startDrawing(mode);
+        //#endif
         //#endif
         //#endif
     }
@@ -341,7 +444,11 @@ public class MCVer {
         //$$ VertexBuffer worldRenderer = Tessellator.getInstance().getBuffer();
         //#endif
         //#else
+        //#if MC>=10800
         //$$ WorldRenderer worldRenderer = Tessellator.getInstance().getWorldRenderer();
+        //#else
+        //$$ Tessellator worldRenderer = Tessellator.instance;
+        //#endif
         //#endif
         //#if MC>=10809
         worldRenderer.pos(x, y, z).color(r, g, b, a).endVertex();
@@ -358,7 +465,11 @@ public class MCVer {
         //#if MC>=10809
         //$$ Tessellator.getInstance().getWorldRenderer().begin(mode, DefaultVertexFormats.POSITION_TEX);
         //#else
+        //#if MC>=10800
         //$$ Tessellator.getInstance().getWorldRenderer().startDrawing(mode);
+        //#else
+        //$$ Tessellator.instance.startDrawing(mode);
+        //#endif
         //#endif
         //#endif
     }
@@ -371,7 +482,11 @@ public class MCVer {
         //$$ VertexBuffer worldRenderer = Tessellator.getInstance().getBuffer();
         //#endif
         //#else
+        //#if MC>=10800
         //$$ WorldRenderer worldRenderer = Tessellator.getInstance().getWorldRenderer();
+        //#else
+        //$$ Tessellator worldRenderer = Tessellator.instance;
+        //#endif
         //#endif
         //#if MC>=10809
         worldRenderer.pos(x, y, z).tex(u, v).endVertex();
@@ -387,7 +502,11 @@ public class MCVer {
         //#if MC>=10809
         //$$ Tessellator.getInstance().getWorldRenderer().begin(mode, DefaultVertexFormats.POSITION_TEX_COLOR);
         //#else
+        //#if MC>=10800
         //$$ Tessellator.getInstance().getWorldRenderer().startDrawing(mode);
+        //#else
+        //$$ Tessellator.instance.startDrawing(mode);
+        //#endif
         //#endif
         //#endif
     }
@@ -400,7 +519,11 @@ public class MCVer {
         //$$ VertexBuffer worldRenderer = Tessellator.getInstance().getBuffer();
         //#endif
         //#else
+        //#if MC>=10800
         //$$ WorldRenderer worldRenderer = Tessellator.getInstance().getWorldRenderer();
+        //#else
+        //$$ Tessellator worldRenderer = Tessellator.instance;
+        //#endif
         //#endif
         //#if MC>=10809
         worldRenderer.pos(x, y, z).tex(u, v).color(r, g, b, a).endVertex();
@@ -429,6 +552,22 @@ public class MCVer {
     @SuppressWarnings("unchecked")
     public static List<VertexFormatElement> getElements(VertexFormat vertexFormat) {
         return vertexFormat.getElements();
+    }
+
+    public static Tessellator Tessellator_getInstance() {
+        //#if MC>=10800
+        return Tessellator.getInstance();
+        //#else
+        //$$ return Tessellator.instance;
+        //#endif
+    }
+
+    public static RenderManager getRenderManager() {
+        //#if MC>=10800
+        return Minecraft.getMinecraft().getRenderManager();
+        //#else
+        //$$ return RenderManager.instance;
+        //#endif
     }
 
     public static int floor(double val) {
@@ -470,4 +609,21 @@ public class MCVer {
         //$$ return EntityFX.interpPosZ;
         //#endif
     }
+
+    //#if MC<=10710
+    //$$ public static class GlStateManager {
+    //$$     public static void resetColor() { /* nop */ }
+    //$$     public static void clearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
+    //$$     public static void enableTexture2D() { glEnable(GL_TEXTURE_2D); }
+    //$$     public static void enableAlpha() { glEnable(GL_ALPHA_TEST); }
+    //$$     public static void alphaFunc(int func, float ref) { glAlphaFunc(func, ref); }
+    //$$     public static void enableDepth() { glEnable(GL_DEPTH_TEST); }
+    //$$     public static void pushMatrix() { glPushMatrix(); }
+    //$$     public static void popAttrib() { glPopAttrib(); }
+    //$$     public static void popMatrix() { glPopMatrix(); }
+    //$$     public static void clear(int mask) { glClear(mask); }
+    //$$     public static void translate(double x, double y, double z) { glTranslated(x, y, z); }
+    //$$     public static void rotate(float angle, float x, float y, float z) { glRotatef(angle, x, y, z); }
+    //$$ }
+    //#endif
 }

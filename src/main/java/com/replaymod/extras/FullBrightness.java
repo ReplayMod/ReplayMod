@@ -9,9 +9,15 @@ import de.johni0702.minecraft.gui.element.GuiImage;
 import de.johni0702.minecraft.gui.element.IGuiImage;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.settings.GameSettings;
+import org.lwjgl.input.Keyboard;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.lwjgl.input.Keyboard;
+//#else
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import cpw.mods.fml.common.gameevent.TickEvent;
+//#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 

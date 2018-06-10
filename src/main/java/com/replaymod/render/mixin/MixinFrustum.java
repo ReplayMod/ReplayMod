@@ -2,13 +2,22 @@ package com.replaymod.render.mixin;
 
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.culling.Frustum;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+//#if MC>=10800
+import net.minecraft.client.renderer.culling.Frustum;
+//#else
+//$$ import net.minecraft.client.renderer.culling.Frustrum;
+//#endif
+
+//#if MC>=10800
 @Mixin(Frustum.class)
+//#else
+//$$ @Mixin(Frustrum.class)
+//#endif
 public abstract class MixinFrustum {
     @Inject(method = "isBoxInFrustum", at = @At("HEAD"), cancellable = true)
     public void isBoxInFrustum(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, CallbackInfoReturnable<Boolean> ci) {

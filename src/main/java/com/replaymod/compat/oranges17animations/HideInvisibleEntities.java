@@ -3,9 +3,16 @@ package com.replaymod.compat.oranges17animations;
 import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderLivingEvent;
+
+//#if MC>=10800
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
+//$$ import cpw.mods.fml.common.Loader;
+//$$ import cpw.mods.fml.common.eventhandler.EventPriority;
+//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 
