@@ -1,10 +1,6 @@
 include ':jGui'
 [
         'core',
-        '1.7.10',
-        '1.8',
-        '1.8.9',
-        '1.9.4',
         '1.12'
 ].each { version ->
     include ":jGui:$version"
@@ -16,15 +12,6 @@ include ':jGui'
 
 def versions = [
         'core',
-        '1.7.10',
-        '1.8',
-        '1.8.9',
-        '1.9.4',
-        '1.10.2',
-        '1.11',
-        '1.11.2',
-        '1.12',
-        '1.12.1',
         '1.12.2'
 ]
 versions.each { version ->
