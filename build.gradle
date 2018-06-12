@@ -13,7 +13,7 @@ if (releaseCommit == currentCommit) {
     version = "$latestVersion-$diff-g${currentCommit.substring(0, 7)}"
 }
 if (gitDescribe().endsWith('*')) {
-    version = "$version*"
+    version = "$version-dirty"
 }
 
 group= "com.replaymod"
