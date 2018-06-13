@@ -1,5 +1,7 @@
 package com.replaymod.recording.handler;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.utils.Utils;
@@ -27,6 +29,13 @@ import static com.replaymod.core.versions.MCVer.WorldType_DEBUG_ALL_BLOCK_STATES
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.SocketException;
 
 /**
  * Handles connection events and initiates recording if enabled.
@@ -68,6 +77,137 @@ public class ConnectionEventHandler {
                 if(!core.getSettingsRegistry().get(Setting.RECORD_SERVER)) {
                     logger.info("Multiplayer Recording is disabled");
                     return;
+                } else {
+                    // Get Minecraft Server IP
+                    //INetHandler handler = netowrkManager.getNetHandler();
+
+                    // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
+                    DatagramSocket userServerSocket, mcServerSocket;
+                    InetAddress userServerAddress, mcServerAddress;
+                    try {
+                        //Connect to UserServer
+                        userServerSocket = new DatagramSocket();
+                        userServerAddress = InetAddress.getByName("18.206.147.166"); // TODO use configured IP
+                        userServerSocket.connect(userServerAddress, 9999);
+                        userServerSocket.setSoTimeout(1000);
+                        
+                        //Connect to MinecraftServer
+                        mcServerSocket = new DatagramSocket();
+                        mcServerAddress = InetAddress.getByName("18.188.31.64"); // TODO use configured IP
+                        mcServerSocket.connect(mcServerAddress, 8888);
+                        mcServerSocket.setSoTimeout(1000);
+                        
+                    } catch (SocketException | UnknownHostException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        return;
+                    }
+                    
+                    ////////////////////////////////////////////
+                    //       MC Server Auth Exchange          //
+                    ////////////////////////////////////////////
+                    
+                    // Send Minecraft key request
+                    JsonObject mcKeyJson = new JsonObject();
+                    mcKeyJson.addProperty("cmd", "get_minecraft_key");
+                    mcKeyJson.addProperty("uid", "NotARealUID");
+                    String mcKeyStr = mcKeyJson.toString();
+                    DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
+                    try {
+                        userServerSocket.send(mcKeyRequest);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        userServerSocket.close();
+                        mcServerSocket.close();
+                        return;
+                    }
+                
+                    // Get response
+                    byte[] buff = new byte[65535];
+                    String minecraftKey;
+                    DatagramPacket minecraftKeyData = new DatagramPacket(buff, buff.length, userServerAddress, userServerSocket.getLocalPort());
+                    try {
+                        userServerSocket.receive(minecraftKeyData);
+                        JsonObject minecraftKeyJson = new JsonParser().parse(new String(buff, 0, minecraftKeyData.getLength())).getAsJsonObject();
+                        minecraftKey = minecraftKeyJson.get("minecraft_key").getAsString();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        userServerSocket.close();
+                        mcServerSocket.close();
+                        return;
+                    }
+                    
+                    logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
+                    
+                    // Send key to Minecraft Server
+                    JsonObject authJson = new JsonObject();
+                    authJson.addProperty("cmd", "authorize_user");
+                    authJson.addProperty("uid", "NotARealUID");
+                    authJson.addProperty("key", minecraftKey);
+                    String authStr = authJson.toString();
+                    DatagramPacket auth = new DatagramPacket(authStr.getBytes(), authStr.getBytes().length);
+                    try {
+                        mcServerSocket.send(auth);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        userServerSocket.close();
+                        mcServerSocket.close();
+                        return;
+                    }
+                    
+                    ////////////////////////////////////////////
+                    //       FireHose Key Retrieval           //
+                    ////////////////////////////////////////////
+                    // Send Firehose key request
+                    JsonObject firehoseJson  = new JsonObject();
+                    firehoseJson.addProperty("cmd", "get_firehose_key");
+                    firehoseJson.addProperty("uid", "NotARealUID");
+                    String firehoseStr = firehoseJson.toString();
+                    DatagramPacket firehoseKeyRequest = new DatagramPacket(firehoseStr.getBytes(), firehoseStr.getBytes().length);
+                    try {
+                        userServerSocket.send(firehoseKeyRequest);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        userServerSocket.close();
+                        mcServerSocket.close();
+                        return;
+                    }
+                
+                    // Get response
+                    byte[] buff1 = new byte[65535];
+                    String streamName;
+                    String accessKey;
+                    String secretKey;
+                    String sessionToken;
+                    DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length, userServerAddress, userServerSocket.getLocalPort());
+                    try {
+                        userServerSocket.receive(firehoseKeyData);
+                        JsonObject awsKeys = new JsonParser().parse(new String(buff1, 0, firehoseKeyData.getLength())).getAsJsonObject();
+                        streamName   = awsKeys.get("stream_name").getAsString();
+                        accessKey    = awsKeys.get("access_key").getAsString();
+                        secretKey    = awsKeys.get("secret_key").getAsString();
+                        sessionToken = awsKeys.get("session_token").getAsString();
+                        
+                    
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        userServerSocket.close();
+                        mcServerSocket.close();
+                        return;
+                    }
+                    
+                    logger.info(String.format("StreamName:    %s%n", streamName));
+                    logger.info(String.format("Access Key:    %s%n", accessKey));
+                    logger.info(String.format("Secret Key:    %s%n", secretKey));
+                    logger.info(String.format("Session Token: %s%n", sessionToken));
+                
+                    userServerSocket.close();
+                    mcServerSocket.close();                    
                 }
             }
 
