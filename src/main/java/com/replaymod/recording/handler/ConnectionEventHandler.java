@@ -1,5 +1,6 @@
 package com.replaymod.recording.handler;
 
+import java.nio.ByteBuffer;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.replaymod.core.ReplayMod;
@@ -15,6 +16,22 @@ import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.commons.codec.binary.Hex;
+
+import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.kinesisfirehose.model.DeliveryStreamDescription;
+import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamRequest;
+import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamResult;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
+import com.amazonaws.services.kinesisfirehose.model.PutRecordRequest;
+import com.amazonaws.services.kinesisfirehose.model.Record;
+
+
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClient;
+
+
 
 //#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -36,6 +53,10 @@ import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.security.MessageDigest;
+
+//TODO remove
+import java.util.concurrent.TimeUnit;
 
 /**
  * Handles connection events and initiates recording if enabled.
@@ -78,8 +99,16 @@ public class ConnectionEventHandler {
                     logger.info("Multiplayer Recording is disabled");
                     return;
                 } else {
-                    // Get Minecraft Server IP
+                    // Get Minecraft Server IP 
+                    // TODO Fix this
                     //INetHandler handler = netowrkManager.getNetHandler();
+
+                    // Get Minecraft Username
+                    String mcUsername = mc.getSession().getUsername();
+                    MessageDigest hashFn = MessageDigest.getInstance("MD5");
+                    byte[] uid_raw = hashFn.digest(mcUsername.getBytes("UTF-8"));
+                    String uid = Hex.encodeHexString(uid_raw);
+                    logger.info(String.format("UID: %s%n", uid));
 
                     // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
                     DatagramSocket userServerSocket, mcServerSocket;
@@ -110,7 +139,7 @@ public class ConnectionEventHandler {
                     // Send Minecraft key request
                     JsonObject mcKeyJson = new JsonObject();
                     mcKeyJson.addProperty("cmd", "get_minecraft_key");
-                    mcKeyJson.addProperty("uid", "NotARealUID");
+                    mcKeyJson.addProperty("uid", uid);
                     String mcKeyStr = mcKeyJson.toString();
                     DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
                     try {
@@ -144,7 +173,7 @@ public class ConnectionEventHandler {
                     // Send key to Minecraft Server
                     JsonObject authJson = new JsonObject();
                     authJson.addProperty("cmd", "authorize_user");
-                    authJson.addProperty("uid", "NotARealUID");
+                    authJson.addProperty("uid", uid);
                     authJson.addProperty("key", minecraftKey);
                     String authStr = authJson.toString();
                     DatagramPacket auth = new DatagramPacket(authStr.getBytes(), authStr.getBytes().length);
@@ -164,7 +193,7 @@ public class ConnectionEventHandler {
                     // Send Firehose key request
                     JsonObject firehoseJson  = new JsonObject();
                     firehoseJson.addProperty("cmd", "get_firehose_key");
-                    firehoseJson.addProperty("uid", "NotARealUID");
+                    firehoseJson.addProperty("uid", uid);
                     String firehoseStr = firehoseJson.toString();
                     DatagramPacket firehoseKeyRequest = new DatagramPacket(firehoseStr.getBytes(), firehoseStr.getBytes().length);
                     try {
@@ -205,6 +234,44 @@ public class ConnectionEventHandler {
                     logger.info(String.format("Access Key:    %s%n", accessKey));
                     logger.info(String.format("Secret Key:    %s%n", secretKey));
                     logger.info(String.format("Session Token: %s%n", sessionToken));
+
+                    //Create test client
+                    BasicSessionCredentials session_credentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken);
+                    AmazonKinesisFirehoseClient firehoseClient = new AmazonKinesisFirehoseClient(session_credentials);
+
+                    //Check if the given stream is open
+                    long startTime = System.currentTimeMillis();
+                    long endTime = startTime + (10 * 60 * 1000);
+                    while (System.currentTimeMillis() < endTime) {
+                        try {
+                            Thread.sleep(1000 * 20);
+                        } catch (InterruptedException e) {
+                            // Ignore interruption (doesn't impact deliveryStream creation)
+                        }
+
+                        DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
+                        describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
+                        DescribeDeliveryStreamResult describeDeliveryStreamResponse =
+                        firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
+                        DeliveryStreamDescription  deliveryStreamDescription = describeDeliveryStreamResponse.getDeliveryStreamDescription();
+                        String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
+                        if (deliveryStreamStatus.equals("ACTIVE")) {
+                            break;
+                        }
+                    }
+
+
+                    // Put records on stream
+                    PutRecordRequest putRecordRequest = new PutRecordRequest();
+                    putRecordRequest.setDeliveryStreamName(streamName);
+
+                    String data = "This is a test" + "\n";
+                    Record record = new Record().withData(ByteBuffer.wrap(data.getBytes()));
+                    putRecordRequest.setRecord(record);
+
+                    // Put record into the DeliveryStream
+                    firehoseClient.putRecord(putRecordRequest);
+
                 
                     userServerSocket.close();
                     mcServerSocket.close();                    
