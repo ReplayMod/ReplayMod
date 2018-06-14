@@ -102,7 +102,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void save(Packet packet) {
         try {
-            logger.info("Saving");
             //#if MC>=10904
             if(packet instanceof SPacketSpawnPlayer) {
                 UUID uuid = ((SPacketSpawnPlayer) packet).getUniqueId();
