@@ -68,13 +68,32 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
 
+    // AWS firehose session token infromation
+    private final String streamName;
+    // TODO change this to AWS credentials object
+    private final String accessKey;
+    private final String secretKey;
+    private final String sessionToken;
+
     /**
      * Used to keep track of the last metadata save job submitted to the save service and
      * as such prevents unnecessary writes.
      */
     private final AtomicInteger lastSaveMetaDataId = new AtomicInteger();
 
-    public PacketListener(ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
+    public PacketListener(
+            ReplayFile replayFile, 
+            ReplayMetaData metaData, 
+            String streamName,
+            String accessKey,
+            String secretKey,
+            String sessionToken) throws IOException {
+       
+        this.streamName = streamName;
+        this.accessKey = accessKey;
+        this.secretKey = secretKey;
+        this.sessionToken = sessionToken;
+
         this.replayFile = replayFile;
         this.metaData = metaData;
         this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
