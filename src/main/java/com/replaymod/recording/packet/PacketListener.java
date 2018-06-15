@@ -17,6 +17,18 @@ import net.minecraft.network.play.server.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.ByteBuffer;
+
+import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.kinesisfirehose.model.DeliveryStreamDescription;
+import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamRequest;
+import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamResult;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
+import com.amazonaws.services.kinesisfirehose.model.PutRecordRequest;
+import com.amazonaws.services.kinesisfirehose.model.Record;
+
 //#if MC>=10904
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.text.TextComponentString;
@@ -70,10 +82,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     // AWS firehose session token infromation
     private final String streamName;
-    // TODO change this to AWS credentials object
-    private final String accessKey;
-    private final String secretKey;
-    private final String sessionToken;
+    private final BasicSessionCredentials credentials;
 
     /**
      * Used to keep track of the last metadata save job submitted to the save service and
@@ -85,14 +94,13 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             ReplayFile replayFile, 
             ReplayMetaData metaData, 
             String streamName,
-            String accessKey,
-            String secretKey,
-            String sessionToken) throws IOException {
+            BasicSessionCredentials credentials) throws IOException {
+
+        //TODO measure performace of put_record 
+        //TODO pause for stream activation
        
         this.streamName = streamName;
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
-        this.sessionToken = sessionToken;
+        this.credentials = credentials;
 
         this.replayFile = replayFile;
         this.metaData = metaData;
@@ -121,6 +129,59 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void save(Packet packet) {
         try {
+
+            // BAH testing
+
+
+            //Pass info to Firehose as a test
+
+            //Create test client
+            BasicSessionCredentials session_credentials = new BasicSessionCredentials(this.accessKey, this.secretKey, this.sessionToken);
+
+            logger.info(String.format("Session Token: %s%n",  session_credentials.getSessionToken()));
+            logger.info(String.format("Session Token: %s%n",  session_credentials.getAWSSecretKey()));
+            logger.info(String.format("Session Token: %s%n",  session_credentials.getAWSAccessKeyId()));
+         
+            
+            // AmazonKinesisFirehoseClient firehoseClient = new AmazonKinesisFirehoseClient(session_credentials);
+
+            // //Check if the given stream is open
+            // long startTime = System.currentTimeMillis();
+            // long endTime = startTime + (10 * 60 * 1000);
+            // while (System.currentTimeMillis() < endTime) {
+            //     try {
+            //         Thread.sleep(1000 * 20);
+            //     } catch (InterruptedException e) {
+            //         // Ignore interruption (doesn't impact deliveryStream creation)
+            //     }
+
+            //     DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
+            //     describeDeliveryStreamRequest.withDeliveryStreamName(this.streamName);
+            //     DescribeDeliveryStreamResult describeDeliveryStreamResponse =
+            //     firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
+            //     DeliveryStreamDescription  deliveryStreamDescription = describeDeliveryStreamResponse.getDeliveryStreamDescription();
+            //     String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
+            //     if (deliveryStreamStatus.equals("ACTIVE")) {
+            //         break;
+            //     }
+            // }
+
+
+            // // Put records on stream
+            // PutRecordRequest putRecordRequest = new PutRecordRequest();
+            // putRecordRequest.setDeliveryStreamName(streamName);
+
+            // String data = "This is a test" + "\n";
+            // Record record = new Record().withData(ByteBuffer.wrap(data.getBytes()));
+            // putRecordRequest.setRecord(record);
+
+            // // Put record into the DeliveryStream
+            // firehoseClient.putRecord(putRecordRequest);
+
+
+
+
+
             //#if MC>=10904
             if(packet instanceof SPacketSpawnPlayer) {
                 UUID uuid = ((SPacketSpawnPlayer) packet).getUniqueId();
