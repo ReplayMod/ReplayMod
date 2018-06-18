@@ -227,9 +227,9 @@ public class ConnectionEventHandler {
                     }
                     
                     logger.info(String.format("StreamName:    %s%n", streamName));
-                    logger.info(String.format("Access Key:    %s%n", accessKey));
-                    logger.info(String.format("Secret Key:    %s%n", secretKey));
-                    logger.info(String.format("Session Token: %s%n", sessionToken));
+                    //logger.info(String.format("Access Key:    %s%n", accessKey));
+                    //logger.info(String.format("Secret Key:    %s%n", secretKey));
+                    //logger.info(String.format("Session Token: %s%n", sessionToken));
                 
                     userServerSocket.close();
                     mcServerSocket.close();                    

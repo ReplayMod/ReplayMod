@@ -154,31 +154,31 @@ dependencies {
     testCompile 'junit:junit:4.11'
 }
 
-repositories {
-  mavenCentral()
-}
+// repositories {
+//   mavenCentral()
+// }
 
-buildscript {
-  repositories {
-      mavenCentral()
-  }
-  dependencies {
-      classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
-  }
-}
+// buildscript {
+//   repositories {
+//       mavenCentral()
+//   }
+//   dependencies {
+//       classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+//   }
+// }
 
-apply plugin: "io.spring.dependency-management"
+// apply plugin: "io.spring.dependency-management"
 
-dependencyManagement {
-  imports {
-      mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
-  }
-}
+// dependencyManagement {
+//   imports {
+//       mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
+//   }
+// }
 
-dependencies {
-    shade 'com.amazonaws:aws-java-sdk-kinesis'
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-}
+// dependencies {
+//     shade 'com.amazonaws:aws-java-sdk-kinesis'
+//     //testCompile group: 'junit', name: 'junit', version: '4.11'
+// }
 
 if (mcVersion <= 10710) {
     // FG 1.2 adds all MC deps to the compile configuration which we don't want

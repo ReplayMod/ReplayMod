@@ -20,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 import java.nio.ByteBuffer;
 
 import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kinesisfirehose.model.DeliveryStreamDescription;
@@ -135,15 +137,23 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
             //Pass info to Firehose as a test
 
-            //Create test client
-            BasicSessionCredentials session_credentials = new BasicSessionCredentials(this.accessKey, this.secretKey, this.sessionToken);
+            //BAHt System.setProperty("org.apache.commons.logging.diagnostics.dest","STDERR");
+            //BAHt System.setProperty("org.apache.commons.logging.LogFactory","org.apache.commons.logging.impl.Log4JLogger");
 
-            logger.info(String.format("Session Token: %s%n",  session_credentials.getSessionToken()));
-            logger.info(String.format("Session Token: %s%n",  session_credentials.getAWSSecretKey()));
-            logger.info(String.format("Session Token: %s%n",  session_credentials.getAWSAccessKeyId()));
+            //Create test client
+            //BasicSessionCredentials session_credentials = new BasicSessionCredentials(this.accessKey, this.secretKey, this.sessionToken);
+
+            logger.info(String.format("Session Token: %s%n", this.credentials.getSessionToken()));
+            logger.info(String.format("Session Token: %s%n", this.credentials.getAWSSecretKey()));
+            logger.info(String.format("Session Token: %s%n", this.credentials.getAWSAccessKeyId()));
          
+            // Firehose client
+            AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(this.credentials))
+                .withRegion("us-east-1")
+                .build();
             
-            // AmazonKinesisFirehoseClient firehoseClient = new AmazonKinesisFirehoseClient(session_credentials);
+            //AmazonKinesisFirehoseClient firehoseClient = new AmazonKinesisFirehoseClient(session_credentials);
 
             // //Check if the given stream is open
             // long startTime = System.currentTimeMillis();
