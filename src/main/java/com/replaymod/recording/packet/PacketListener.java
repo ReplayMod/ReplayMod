@@ -82,9 +82,14 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
 
-    // AWS firehose session token infromation
-    private final String streamName;
-    private final BasicSessionCredentials credentials;
+    // AWS Firehose Client Handle
+    private final AmazonKinesisFirehose firehoseClient;
+    private final String firehoseStreamName;
+    private final ByteBuffer firehoseDataBuffer;
+    private static int FIREHOSE_MAX_BUFFER_SIZE = 1000;
+    private static int FIREHOSE_MAX_CLIENT_CREATION_DELAY = (10 * 60 * 1000);
+    private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 1000;
+
 
     /**
      * Used to keep track of the last metadata save job submitted to the save service and
@@ -98,11 +103,49 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             String streamName,
             BasicSessionCredentials credentials) throws IOException {
 
-        //TODO measure performace of put_record 
-        //TODO pause for stream activation
-       
-        this.streamName = streamName;
-        this.credentials = credentials;
+        // Firehose client
+        AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
+            .withCredentials(new AWSStaticCredentialsProvider(credentials))
+            .withRegion("us-east-1")
+            .build();
+    
+        //Check if the given stream is open
+        boolean timeout = false;
+        long startTime = System.currentTimeMillis();
+        long endTime = startTime + FIREHOSE_MAX_CLIENT_CREATION_DELAY; //TODO reduce maximum delay
+        while (System.currentTimeMillis() < endTime) {
+            try {
+                Thread.sleep(FIREHOSE_CLIENT_STATE_REFRESH_DELAY);
+            } catch (InterruptedException e) {
+                // Ignore interruption (doesn't impact deliveryStream creation)
+            }
+
+            DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
+            describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
+
+            DescribeDeliveryStreamResult describeDeliveryStreamResponse =
+                firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
+
+            DeliveryStreamDescription  deliveryStreamDescription = 
+                describeDeliveryStreamResponse.getDeliveryStreamDescription();
+
+            String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
+            if (deliveryStreamStatus.equals("ACTIVE")) {
+                timeout = true;
+                break;
+            }
+        }
+
+        if (timeout) {
+            logger.error("Waited too long for stream activation! Stream may be mis-configured!");
+            // TODO handle this cleanly
+        } else {
+            logger.info("Active Firehose Stream Established!");
+        }
+
+        this.firehoseClient     = firehoseClient;
+        this.firehoseDataBuffer = ByteBuffer.allocate(FIREHOSE_MAX_BUFFER_SIZE);
+        this.firehoseStreamName = streamName;
 
         this.replayFile = replayFile;
         this.metaData = metaData;
@@ -131,57 +174,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void save(Packet packet) {
         try {
-
-            // BAH testing latency of using AWS Firehose to record client-side replays
-
-            // Enable more verbose logging for commons.logger
-            // System.setProperty("org.apache.commons.logging.diagnostics.dest","STDERR");
-
-            // Force AWS to load log4j - not found by class-loader for some reason
-            //System.setProperty("org.apache.commons.logging.LogFactory","org.apache.commons.logging.impl.Log4JLogger");
-         
-            // Firehose client
-            AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(this.credentials))
-                .withRegion("us-east-1")
-                .build();
-            
-            // //Check if the given stream is open
-            // long startTime = System.currentTimeMillis();
-            // long endTime = startTime + (10 * 60 * 1000);
-            // while (System.currentTimeMillis() < endTime) {
-            //     try {
-            //         Thread.sleep(1000 * 20);
-            //     } catch (InterruptedException e) {
-            //         // Ignore interruption (doesn't impact deliveryStream creation)
-            //     }
-
-            //     DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
-            //     describeDeliveryStreamRequest.withDeliveryStreamName(this.streamName);
-            //     DescribeDeliveryStreamResult describeDeliveryStreamResponse =
-            //     firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
-            //     DeliveryStreamDescription  deliveryStreamDescription = describeDeliveryStreamResponse.getDeliveryStreamDescription();
-            //     String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
-            //     if (deliveryStreamStatus.equals("ACTIVE")) {
-            //         break;
-            //     }
-            // }
-
-
-            // // Put records on stream
-            // PutRecordRequest putRecordRequest = new PutRecordRequest();
-            // putRecordRequest.setDeliveryStreamName(streamName);
-
-            // String data = "This is a test" + "\n";
-            // Record record = new Record().withData(ByteBuffer.wrap(data.getBytes()));
-            // putRecordRequest.setRecord(record);
-
-            // // Put record into the DeliveryStream
-            // firehoseClient.putRecord(putRecordRequest);
-
-
-
-
 
             //#if MC>=10904
             if(packet instanceof SPacketSpawnPlayer) {
@@ -228,6 +220,26 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     throw new RuntimeException(e);
                 }
             });
+
+            // Record packet in the buffer and flush if near capacity
+            if (bytes.length + firehoseDataBuffer.position() < firehoseDataBuffer.capacity())
+            {
+                firehoseDataBuffer.put(bytes);
+            } else {
+                // Put records on stream
+                PutRecordRequest putRecordRequest = new PutRecordRequest();
+                putRecordRequest.setDeliveryStreamName(this.firehoseStreamName);
+
+                Record record = new Record().withData(firehoseDataBuffer);
+                putRecordRequest.setRecord(record);
+
+                // Put record into the DeliveryStream
+                // TODO measure performace of put_record 
+                firehoseClient.putRecord(putRecordRequest);
+                firehoseDataBuffer.clear();
+            }
+            
+
         } catch(Exception e) {
             logger.error("Writing packet:", e);
         }
