@@ -23,6 +23,7 @@ buildscript {
     }
 
     dependencies {
+        classpath 'io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE'
         classpath 'org.ow2.asm:asm:6.0'
         classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
             // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
@@ -37,7 +38,7 @@ buildscript {
                 mcVersion >= 10710 ? '1.2-SNAPSHOT' :
                                      'invalid'
         )
-        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+        //classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
     }
 }
 
@@ -51,6 +52,14 @@ if (mcVersion >= 10800) {
         mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
         mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
     }
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+dependencyManagement {
+  imports {
+      mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
+  }
 }
 
 sourceCompatibility = 1.8
@@ -122,7 +131,7 @@ configurations {
 dependencies {
     // compile 'com.github.SpongePowered:Mixin:404f5da' // 0.7.5-SNAPSHOT
     // ^ mixin doesn't compile on jitpack, so we'll have to depend on the SNAPSHOT and build it manually for reprod
-    shade group: 'org.apache.commons', name: 'com.springsource.org.apache.commons.codec', version: '1.6.0'
+    //shade group: 'org.apache.commons', name: 'com.springsource.org.apache.commons.codec', version: '1.6.0'
     compile 'org.spongepowered:mixin:0.7.5-SNAPSHOT'
     shade 'com.googlecode.mp4parser:isoparser:1.1.7'
     shade 'org.apache.commons:commons-exec:1.3'
@@ -150,6 +159,8 @@ dependencies {
     }
 
     compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
+
+    compile 'com.amazonaws:aws-java-sdk-kinesis'
 
     testCompile 'junit:junit:4.11'
 }
