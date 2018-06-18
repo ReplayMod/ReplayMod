@@ -132,20 +132,13 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     public void save(Packet packet) {
         try {
 
-            // BAH testing
+            // BAH testing latency of using AWS Firehose to record client-side replays
 
-
-            //Pass info to Firehose as a test
-
+            // Enable more verbose logging for commons.logger
             //BAHt System.setProperty("org.apache.commons.logging.diagnostics.dest","STDERR");
+
+            // Force AWS to load log4j - not found by class-loader for some reason
             //BAHt System.setProperty("org.apache.commons.logging.LogFactory","org.apache.commons.logging.impl.Log4JLogger");
-
-            //Create test client
-            //BasicSessionCredentials session_credentials = new BasicSessionCredentials(this.accessKey, this.secretKey, this.sessionToken);
-
-            logger.info(String.format("Session Token: %s%n", this.credentials.getSessionToken()));
-            logger.info(String.format("Session Token: %s%n", this.credentials.getAWSSecretKey()));
-            logger.info(String.format("Session Token: %s%n", this.credentials.getAWSAccessKeyId()));
          
             // Firehose client
             AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
@@ -153,8 +146,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 .withRegion("us-east-1")
                 .build();
             
-            //AmazonKinesisFirehoseClient firehoseClient = new AmazonKinesisFirehoseClient(session_credentials);
-
             // //Check if the given stream is open
             // long startTime = System.currentTimeMillis();
             // long endTime = startTime + (10 * 60 * 1000);
