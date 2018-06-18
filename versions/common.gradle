@@ -23,7 +23,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE'
+        // Testing adding dependencies by hand
+        //classpath 'io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE'
         classpath 'org.ow2.asm:asm:6.0'
         classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
             // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
@@ -38,7 +39,6 @@ buildscript {
                 mcVersion >= 10710 ? '1.2-SNAPSHOT' :
                                      'invalid'
         )
-        //classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
     }
 }
 
@@ -54,13 +54,15 @@ if (mcVersion >= 10800) {
     }
 }
 
-apply plugin: 'io.spring.dependency-management'
 
-dependencyManagement {
-  imports {
-      mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
-  }
-}
+// Testing adding dependencies by hand 
+// apply plugin: 'io.spring.dependency-management'
+
+// dependencyManagement {
+//   imports {
+//       mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
+//   }
+// }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -160,36 +162,13 @@ dependencies {
 
     compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
 
-    compile 'com.amazonaws:aws-java-sdk-kinesis'
+    // Removing dependency on dependency managment plugin
+    shade 'com.amazonaws:aws-java-sdk-core:1.11.228'
+    shade 'com.amazonaws:aws-java-sdk-sts:1.11.228'
+    shade 'com.amazonaws:aws-java-sdk-kinesis:1.11.228'
 
     testCompile 'junit:junit:4.11'
 }
-
-// repositories {
-//   mavenCentral()
-// }
-
-// buildscript {
-//   repositories {
-//       mavenCentral()
-//   }
-//   dependencies {
-//       classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
-//   }
-// }
-
-// apply plugin: "io.spring.dependency-management"
-
-// dependencyManagement {
-//   imports {
-//       mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
-//   }
-// }
-
-// dependencies {
-//     shade 'com.amazonaws:aws-java-sdk-kinesis'
-//     //testCompile group: 'junit', name: 'junit', version: '4.11'
-// }
 
 if (mcVersion <= 10710) {
     // FG 1.2 adds all MC deps to the compile configuration which we don't want
