@@ -19,8 +19,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.commons.codec.binary.Hex;
 
 import com.amazonaws.auth.BasicSessionCredentials;
-// import com.amazonaws.AmazonClientException;
-// import com.amazonaws.AmazonServiceException;
 
 
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClient;
