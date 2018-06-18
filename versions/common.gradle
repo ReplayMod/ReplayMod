@@ -128,6 +128,7 @@ configurations {
     shade
     compile.extendsFrom shade
 
+    shade.exclude group: 'commons-logging', module: 'commons-logging' 
     shade.exclude group: 'com.google.code.gson', module: 'gson' // provided by MC
 }
 
