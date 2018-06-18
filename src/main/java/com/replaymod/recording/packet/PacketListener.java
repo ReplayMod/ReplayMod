@@ -135,10 +135,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             // BAH testing latency of using AWS Firehose to record client-side replays
 
             // Enable more verbose logging for commons.logger
-            //BAHt System.setProperty("org.apache.commons.logging.diagnostics.dest","STDERR");
+            // System.setProperty("org.apache.commons.logging.diagnostics.dest","STDERR");
 
             // Force AWS to load log4j - not found by class-loader for some reason
-            //BAHt System.setProperty("org.apache.commons.logging.LogFactory","org.apache.commons.logging.impl.Log4JLogger");
+            //System.setProperty("org.apache.commons.logging.LogFactory","org.apache.commons.logging.impl.Log4JLogger");
          
             // Firehose client
             AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()

@@ -24,7 +24,7 @@ buildscript {
 
     dependencies {
         // Testing adding dependencies by hand
-        //classpath 'io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE'
+        classpath 'io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE'
         classpath 'org.ow2.asm:asm:6.0'
         classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
             // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
@@ -56,13 +56,14 @@ if (mcVersion >= 10800) {
 
 
 // Testing adding dependencies by hand 
-// apply plugin: 'io.spring.dependency-management'
+apply plugin: 'io.spring.dependency-management'
 
-// dependencyManagement {
-//   imports {
-//       mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
-//   }
-// }
+dependencyManagement {
+  imports {
+        mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
+        mavenBom 'org.apache.logging.log4j:log4j-bom:2.8.1'    
+  }
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -162,10 +163,17 @@ dependencies {
 
     compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
 
-    // Removing dependency on dependency managment plugin
-    shade 'com.amazonaws:aws-java-sdk-core:1.11.228'
-    shade 'com.amazonaws:aws-java-sdk-sts:1.11.228'
+    // Testing removing dependency on dependency managment plugin
+    //shade 'com.amazonaws:aws-java-sdk-core:1.11.228'
+    //shade 'com.amazonaws:aws-java-sdk-sts:1.11.228'
     shade 'com.amazonaws:aws-java-sdk-kinesis:1.11.228'
+
+    //Test forcing log4j2
+    //shade 'org.apache.logging.log4j:log4j-api'
+    //shade 'org.apache.logging.log4j:log4j-core'
+
+    //Test using logging bridge
+    //shade group: 'org.apache.logging.log4j', name: 'log4j-jcl', version: '2.11.0'
 
     testCompile 'junit:junit:4.11'
 }
