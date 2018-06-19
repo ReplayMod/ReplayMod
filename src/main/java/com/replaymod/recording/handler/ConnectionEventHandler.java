@@ -41,7 +41,9 @@ import java.util.Calendar;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.net.Socket;
 import java.net.DatagramSocket;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -106,7 +108,9 @@ public class ConnectionEventHandler {
                     logger.info(String.format("UID: %s%n", uid));
 
                     // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
-                    DatagramSocket userServerSocket, mcServerSocket;
+                    DatagramSocket userServerSocket;
+                    Socket mcServerSocket;
+                    PrintWriter mcServerOut;
                     InetAddress userServerAddress, mcServerAddress;
                     try {
                         //Connect to UserServer
@@ -116,13 +120,14 @@ public class ConnectionEventHandler {
                         userServerSocket.setSoTimeout(1000);
                         
                         //Connect to MinecraftServer
-                        mcServerSocket = new DatagramSocket();
                         mcServerAddress = InetAddress.getByName(minecraft_ip); 
-                        mcServerSocket.connect(mcServerAddress, 8888);
+                        mcServerSocket = new Socket(mcServerAddress, 8888);
                         mcServerSocket.setSoTimeout(1000);
+                        mcServerOut = new PrintWriter(mcServerSocket.getOutputStream(), true);
                         
                     } catch (SocketException | UnknownHostException e) {
                         // TODO Auto-generated catch block
+                        logger.info("Error establishing connection to servers");
                         e.printStackTrace();
                         logger.error("Error establishing connection to servers");
                         return;
@@ -172,16 +177,17 @@ public class ConnectionEventHandler {
                     authJson.addProperty("uid", uid);
                     authJson.addProperty("key", minecraftKey);
                     String authStr = authJson.toString();
-                    DatagramPacket auth = new DatagramPacket(authStr.getBytes(), authStr.getBytes().length);
-                    try {
-                        mcServerSocket.send(auth);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        userServerSocket.close();
-                        mcServerSocket.close();
-                        return;
-                    }
+                    //Packet auth = new DatagramPacket(authStr.getBytes(), authStr.getBytes().length);
+                    // try {
+                    mcServerOut.write(authStr);
+                        //mcServerSocket.send(auth);
+                    // } catch (IOException e) {
+                    //     // TODO Auto-generated catch block
+                    //     e.printStackTrace();
+                    //     userServerSocket.close();
+                    //     mcServerSocket.close();
+                    //     return;
+                    // }
                     
                     ////////////////////////////////////////////
                     //       FireHose Key Retrieval           //

@@ -236,7 +236,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 // Put record into the DeliveryStream
                 // TODO measure performace of put_record 
                 firehoseClient.putRecord(putRecordRequest);
+
+                // Clear the dependent data buffer
                 firehoseDataBuffer.clear();
+
+                logger.info("Wrote record to firehose stream");
             }
             
 
