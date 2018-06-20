@@ -59,6 +59,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import java.net.Socket;
+
 import static com.replaymod.core.versions.MCVer.*;
 
 public class PacketListener extends ChannelInboundHandlerAdapter {
@@ -71,6 +73,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private final ResourcePackRecorder resourcePackRecorder;
 
     private final ExecutorService saveService = Executors.newSingleThreadExecutor();
+    private final ExecutorService streamService = Executors.newSingleThreadExecutor();
     private final DataOutputStream packetOutputStream;
 
     private ReplayMetaData metaData;
@@ -86,6 +89,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private final AmazonKinesisFirehose firehoseClient;
     private final String firehoseStreamName;
     private final ByteBuffer firehoseDataBuffer;
+    private final Socket mcServerSocket;
     private static int FIREHOSE_MAX_BUFFER_SIZE = 1000;
     private static int FIREHOSE_MAX_CLIENT_CREATION_DELAY = (10 * 60 * 1000);
     private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 1000;
@@ -101,13 +105,16 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             ReplayFile replayFile, 
             ReplayMetaData metaData, 
             String streamName,
-            BasicSessionCredentials credentials) throws IOException {
+            BasicSessionCredentials credentials,
+            Socket mcServerSocket) throws IOException {
 
         // Firehose client
         AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
             .withCredentials(new AWSStaticCredentialsProvider(credentials))
             .withRegion("us-east-1")
             .build();
+        
+        this.mcServerSocket = mcServerSocket;
     
         //Check if the given stream is open
         boolean timeout = false;
@@ -253,6 +260,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) {
         metaData.setDuration((int) lastSentPacket);
         saveMetaData();
+
+        try {
+            this.mcServerSocket.close();
+        } catch (IOException e){
+            logger.error("Error closing minecraft server socket", e);
+        }
 
         saveService.shutdown();
         try {

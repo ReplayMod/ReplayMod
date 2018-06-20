@@ -13,6 +13,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +45,7 @@ import java.net.UnknownHostException;
 import java.net.Socket;
 import java.net.DatagramSocket;
 import java.io.PrintWriter;
+import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -77,6 +79,7 @@ public class ConnectionEventHandler {
     public void onConnectedToServerEvent(NetworkManager networkManager) {
         try {
             String streamName = "";
+            Socket mcServerSocket = new Socket();
             BasicSessionCredentials awsCredentials = new BasicSessionCredentials("","","");
 
             boolean local = networkManager.isLocalChannel();
@@ -109,7 +112,6 @@ public class ConnectionEventHandler {
 
                     // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
                     DatagramSocket userServerSocket;
-                    Socket mcServerSocket;
                     PrintWriter mcServerOut;
                     InetAddress userServerAddress, mcServerAddress;
                     try {
@@ -123,7 +125,7 @@ public class ConnectionEventHandler {
                         mcServerAddress = InetAddress.getByName(minecraft_ip); 
                         mcServerSocket = new Socket(mcServerAddress, 8888);
                         mcServerSocket.setSoTimeout(1000);
-                        mcServerOut = new PrintWriter(mcServerSocket.getOutputStream(), true);
+                        mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
                         
                     } catch (SocketException | UnknownHostException e) {
                         // TODO Auto-generated catch block
@@ -175,19 +177,10 @@ public class ConnectionEventHandler {
                     JsonObject authJson = new JsonObject();
                     authJson.addProperty("cmd", "authorize_user");
                     authJson.addProperty("uid", uid);
-                    authJson.addProperty("key", minecraftKey);
-                    String authStr = authJson.toString();
-                    //Packet auth = new DatagramPacket(authStr.getBytes(), authStr.getBytes().length);
-                    // try {
+                    authJson.addProperty("minecraft_key", minecraftKey);
+                    String authStr = authJson.toString();            
                     mcServerOut.write(authStr);
-                        //mcServerSocket.send(auth);
-                    // } catch (IOException e) {
-                    //     // TODO Auto-generated catch block
-                    //     e.printStackTrace();
-                    //     userServerSocket.close();
-                    //     mcServerSocket.close();
-                    //     return;
-                    // }
+
                     
                     ////////////////////////////////////////////
                     //       FireHose Key Retrieval           //
@@ -236,7 +229,6 @@ public class ConnectionEventHandler {
                     //logger.info(String.format("Session Token: %s%n", sessionToken));
                 
                     userServerSocket.close();
-                    mcServerSocket.close();                    
                 }
             }
 
@@ -269,7 +261,7 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
-            packetListener = new PacketListener(replayFile, metaData, streamName, awsCredentials);
+            packetListener = new PacketListener(replayFile, metaData, streamName, awsCredentials, mcServerSocket);
             networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
             recordingEventHandler = new RecordingEventHandler(packetListener);
