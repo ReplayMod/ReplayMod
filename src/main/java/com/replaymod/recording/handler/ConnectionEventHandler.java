@@ -45,6 +45,7 @@ import java.net.UnknownHostException;
 import java.net.Socket;
 import java.net.DatagramSocket;
 import java.io.PrintWriter;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -124,7 +125,7 @@ public class ConnectionEventHandler {
                         //Connect to MinecraftServer
                         mcServerAddress = InetAddress.getByName(minecraft_ip); 
                         mcServerSocket = new Socket(mcServerAddress, 8888);
-                        mcServerSocket.setSoTimeout(1000);
+                        //smcServerSocket.setSoTimeout(1000);
                         mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
                         
                     } catch (SocketException | UnknownHostException e) {
@@ -173,6 +174,11 @@ public class ConnectionEventHandler {
                     
                     logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
                     
+
+                    // Wait for ping
+                    // DataInputStream dIn = new DataInputStream(mcServerSocket.getInputStream());
+                    // dIn.readLine();
+
                     // Send key to Minecraft Server
                     JsonObject authJson = new JsonObject();
                     authJson.addProperty("cmd", "authorize_user");
@@ -180,6 +186,7 @@ public class ConnectionEventHandler {
                     authJson.addProperty("minecraft_key", minecraftKey);
                     String authStr = authJson.toString();            
                     mcServerOut.write(authStr);
+                    mcServerOut.flush();
 
                     
                     ////////////////////////////////////////////

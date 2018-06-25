@@ -92,7 +92,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private final Socket mcServerSocket;
     private static int FIREHOSE_MAX_BUFFER_SIZE = 1000;
     private static int FIREHOSE_MAX_CLIENT_CREATION_DELAY = (10 * 60 * 1000);
-    private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 1000;
+    private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 100;
 
 
     /**
