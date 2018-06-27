@@ -14,20 +14,13 @@ import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.replay.StreamReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.codec.binary.Hex;
 
 import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.kinesisfirehose.model.DeliveryStreamDescription;
-import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamRequest;
-import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamResult;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
-import com.amazonaws.services.kinesisfirehose.model.PutRecordRequest;
-import com.amazonaws.services.kinesisfirehose.model.Record;
 
 
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClient;
@@ -50,7 +43,11 @@ import java.util.Calendar;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.net.Socket;
 import java.net.DatagramSocket;
+import java.io.PrintWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -83,6 +80,10 @@ public class ConnectionEventHandler {
 
     public void onConnectedToServerEvent(NetworkManager networkManager) {
         try {
+            String streamName = "";
+            Socket mcServerSocket = new Socket();
+            BasicSessionCredentials awsCredentials = new BasicSessionCredentials("","","");
+
             boolean local = networkManager.isLocalChannel();
             if (local) {
                 //#if MC>=10800
@@ -101,7 +102,7 @@ public class ConnectionEventHandler {
                     return;
                 } else {
                     // Get Minecraft Server IP 
-                    // TODO Fix this
+                    String minecraft_ip = Minecraft.getMinecraft().getCurrentServerData().serverIP;
                     //INetHandler handler = netowrkManager.getNetHandler();
 
                     // Get Minecraft Username
@@ -112,7 +113,8 @@ public class ConnectionEventHandler {
                     logger.info(String.format("UID: %s%n", uid));
 
                     // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
-                    DatagramSocket userServerSocket, mcServerSocket;
+                    DatagramSocket userServerSocket;
+                    PrintWriter mcServerOut;
                     InetAddress userServerAddress, mcServerAddress;
                     try {
                         //Connect to UserServer
@@ -122,14 +124,16 @@ public class ConnectionEventHandler {
                         userServerSocket.setSoTimeout(1000);
                         
                         //Connect to MinecraftServer
-                        mcServerSocket = new DatagramSocket();
-                        mcServerAddress = InetAddress.getByName("18.188.31.64"); // TODO use configured IP
-                        mcServerSocket.connect(mcServerAddress, 8888);
-                        mcServerSocket.setSoTimeout(1000);
+                        mcServerAddress = InetAddress.getByName(minecraft_ip); 
+                        mcServerSocket = new Socket(mcServerAddress, 8888);
+                        //smcServerSocket.setSoTimeout(1000);
+                        mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
                         
                     } catch (SocketException | UnknownHostException e) {
                         // TODO Auto-generated catch block
+                        logger.info("Error establishing connection to servers");
                         e.printStackTrace();
+                        logger.error("Error establishing connection to servers");
                         return;
                     }
                     
@@ -171,22 +175,20 @@ public class ConnectionEventHandler {
                     
                     logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
                     
+
+                    // Wait for ping
+                    // DataInputStream dIn = new DataInputStream(mcServerSocket.getInputStream());
+                    // dIn.readLine();
+
                     // Send key to Minecraft Server
                     JsonObject authJson = new JsonObject();
                     authJson.addProperty("cmd", "authorize_user");
                     authJson.addProperty("uid", uid);
-                    authJson.addProperty("key", minecraftKey);
-                    String authStr = authJson.toString();
-                    DatagramPacket auth = new DatagramPacket(authStr.getBytes(), authStr.getBytes().length);
-                    try {
-                        mcServerSocket.send(auth);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        userServerSocket.close();
-                        mcServerSocket.close();
-                        return;
-                    }
+                    authJson.addProperty("minecraft_key", minecraftKey);
+                    String authStr = authJson.toString();            
+                    mcServerOut.write(authStr);
+                    mcServerOut.flush();
+
                     
                     ////////////////////////////////////////////
                     //       FireHose Key Retrieval           //
@@ -209,18 +211,16 @@ public class ConnectionEventHandler {
                 
                     // Get response
                     byte[] buff1 = new byte[65535];
-                    String streamName;
-                    String accessKey;
-                    String secretKey;
-                    String sessionToken;
+                   
                     DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length, userServerAddress, userServerSocket.getLocalPort());
                     try {
                         userServerSocket.receive(firehoseKeyData);
                         JsonObject awsKeys = new JsonParser().parse(new String(buff1, 0, firehoseKeyData.getLength())).getAsJsonObject();
                         streamName   = awsKeys.get("stream_name").getAsString();
-                        accessKey    = awsKeys.get("access_key").getAsString();
-                        secretKey    = awsKeys.get("secret_key").getAsString();
-                        sessionToken = awsKeys.get("session_token").getAsString();
+                        awsCredentials = new BasicSessionCredentials(
+                            awsKeys.get("access_key").getAsString(),
+                            awsKeys.get("secret_key").getAsString(),
+                            awsKeys.get("session_token").getAsString());
                         
                     
                     } catch (IOException e) {
@@ -232,50 +232,11 @@ public class ConnectionEventHandler {
                     }
                     
                     logger.info(String.format("StreamName:    %s%n", streamName));
-                    logger.info(String.format("Access Key:    %s%n", accessKey));
-                    logger.info(String.format("Secret Key:    %s%n", secretKey));
-                    logger.info(String.format("Session Token: %s%n", sessionToken));
-
-                    //Create test client
-                    BasicSessionCredentials session_credentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken);
-                    AmazonKinesisFirehoseClient firehoseClient = new AmazonKinesisFirehoseClient(session_credentials);
-
-                    //Check if the given stream is open
-                    long startTime = System.currentTimeMillis();
-                    long endTime = startTime + (10 * 60 * 1000);
-                    while (System.currentTimeMillis() < endTime) {
-                        try {
-                            Thread.sleep(1000 * 20);
-                        } catch (InterruptedException e) {
-                            // Ignore interruption (doesn't impact deliveryStream creation)
-                        }
-
-                        DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
-                        describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
-                        DescribeDeliveryStreamResult describeDeliveryStreamResponse =
-                        firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
-                        DeliveryStreamDescription  deliveryStreamDescription = describeDeliveryStreamResponse.getDeliveryStreamDescription();
-                        String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
-                        if (deliveryStreamStatus.equals("ACTIVE")) {
-                            break;
-                        }
-                    }
-
-
-                    // Put records on stream
-                    PutRecordRequest putRecordRequest = new PutRecordRequest();
-                    putRecordRequest.setDeliveryStreamName(streamName);
-
-                    String data = "This is a test" + "\n";
-                    Record record = new Record().withData(ByteBuffer.wrap(data.getBytes()));
-                    putRecordRequest.setRecord(record);
-
-                    // Put record into the DeliveryStream
-                    firehoseClient.putRecord(putRecordRequest);
-
+                    //logger.info(String.format("Access Key:    %s%n", accessKey));
+                    //logger.info(String.format("Secret Key:    %s%n", secretKey));
+                    //logger.info(String.format("Session Token: %s%n", sessionToken));
                 
                     userServerSocket.close();
-                    mcServerSocket.close();                    
                 }
             }
 
@@ -308,7 +269,7 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
-            packetListener = new PacketListener(replayFile, metaData);
+            packetListener = new PacketListener(replayFile, metaData, streamName, awsCredentials, mcServerSocket);
             networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
             recordingEventHandler = new RecordingEventHandler(packetListener);
