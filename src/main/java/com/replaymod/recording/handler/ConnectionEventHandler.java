@@ -15,6 +15,17 @@ import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.replay.StreamReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 
+import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.kinesisfirehose.model.DeliveryStreamDescription;
+import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamRequest;
+import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamResult;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
+
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
 import org.apache.logging.log4j.Logger;
@@ -56,10 +67,17 @@ import java.security.MessageDigest;
 //TODO remove
 import java.util.concurrent.TimeUnit;
 
+
+
+
 /**
  * Handles connection events and initiates recording if enabled.
  */
 public class ConnectionEventHandler {
+
+    private static int FIREHOSE_MAX_BUFFER_SIZE = 1000;
+    private static int FIREHOSE_MAX_CLIENT_CREATION_DELAY = (10 * 60 * 1000);
+    private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 100;
 
     private static final String packetHandlerKey = "packet_handler";
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
@@ -82,7 +100,7 @@ public class ConnectionEventHandler {
         try {
             String streamName = "";
             Socket mcServerSocket = new Socket();
-            BasicSessionCredentials awsCredentials = new BasicSessionCredentials("","","");
+            AmazonKinesisFirehose firehoseClient = null;
 
             boolean local = networkManager.isLocalChannel();
             if (local) {
@@ -105,8 +123,12 @@ public class ConnectionEventHandler {
                     String minecraft_ip = Minecraft.getMinecraft().getCurrentServerData().serverIP;
                     //INetHandler handler = netowrkManager.getNetHandler();
 
-                    // Get Minecraft Username
+                    // TODO ask the user_Server if this is a DeepMine server
+                    // else exit the mod
+
+                    // Get Minecraft Username //TODO change to UUID
                     String mcUsername = mc.getSession().getUsername();
+                    String mcUUID = mc.getSession().getPlayerID();
                     MessageDigest hashFn = MessageDigest.getInstance("MD5");
                     byte[] uid_raw = hashFn.digest(mcUsername.getBytes("UTF-8"));
                     String uid = Hex.encodeHexString(uid_raw);
@@ -174,11 +196,6 @@ public class ConnectionEventHandler {
                     }
                     
                     logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
-                    
-
-                    // Wait for ping
-                    // DataInputStream dIn = new DataInputStream(mcServerSocket.getInputStream());
-                    // dIn.readLine();
 
                     // Send key to Minecraft Server
                     JsonObject authJson = new JsonObject();
@@ -189,6 +206,7 @@ public class ConnectionEventHandler {
                     mcServerOut.write(authStr);
                     mcServerOut.flush();
 
+                    // TODO Ask the server if we should start recording
                     
                     ////////////////////////////////////////////
                     //       FireHose Key Retrieval           //
@@ -211,7 +229,7 @@ public class ConnectionEventHandler {
                 
                     // Get response
                     byte[] buff1 = new byte[65535];
-                   
+                    BasicSessionCredentials awsCredentials;
                     DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length, userServerAddress, userServerSocket.getLocalPort());
                     try {
                         userServerSocket.receive(firehoseKeyData);
@@ -235,6 +253,46 @@ public class ConnectionEventHandler {
                     //logger.info(String.format("Access Key:    %s%n", accessKey));
                     //logger.info(String.format("Secret Key:    %s%n", secretKey));
                     //logger.info(String.format("Session Token: %s%n", sessionToken));
+
+                    // Firehose client
+                    firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
+                        .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+                        .withRegion("us-east-1")
+                        .build();
+
+                    //Check if the given stream is open
+                    boolean timeout = false;
+                    long startTime = System.currentTimeMillis();
+                    long endTime = startTime + FIREHOSE_MAX_CLIENT_CREATION_DELAY; //TODO reduce maximum delay
+                    while (System.currentTimeMillis() < endTime) {
+                        try {
+                            Thread.sleep(FIREHOSE_CLIENT_STATE_REFRESH_DELAY);
+                        } catch (InterruptedException e) {
+                            // Ignore interruption (doesn't impact deliveryStream creation)
+                        }
+
+                        DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
+                        describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
+
+                        DescribeDeliveryStreamResult describeDeliveryStreamResponse =
+                            firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
+
+                        DeliveryStreamDescription  deliveryStreamDescription = 
+                            describeDeliveryStreamResponse.getDeliveryStreamDescription();
+
+                        String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
+                        if (deliveryStreamStatus.equals("ACTIVE")) {
+                            timeout = true;
+                            break;
+                        }
+                    }
+
+                    if (timeout) {
+                        logger.error("Waited too long for stream activation! Stream may be mis-configured!");
+                        // TODO handle this cleanly
+                    } else {
+                        logger.info("Active Firehose Stream Established!");
+                    }
                 
                     userServerSocket.close();
                 }
@@ -257,9 +315,11 @@ public class ConnectionEventHandler {
 
             File folder = core.getReplayFolder();
 
-            String name = sdf.format(Calendar.getInstance().getTime());
-            File currentFile = new File(folder, Utils.replayNameToFileName(name));
-            ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
+            //String name = sdf.format(Calendar.getInstance().getTime());
+            //File currentFile = new File(folder, Utils.replayNameToFileName(name));
+            //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
+            
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
@@ -269,7 +329,7 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
-            packetListener = new PacketListener(replayFile, metaData, streamName, awsCredentials, mcServerSocket);
+            packetListener = new PacketListener(replayFile, metaData);//, streamName, awsCredentials, mcServerSocket);
             networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
             recordingEventHandler = new RecordingEventHandler(packetListener);

@@ -17,20 +17,6 @@ import net.minecraft.network.play.server.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.ByteBuffer;
-
-import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.kinesisfirehose.model.DeliveryStreamDescription;
-import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamRequest;
-import com.amazonaws.services.kinesisfirehose.model.DescribeDeliveryStreamResult;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
-import com.amazonaws.services.kinesisfirehose.model.PutRecordRequest;
-import com.amazonaws.services.kinesisfirehose.model.Record;
-
 //#if MC>=10904
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.text.TextComponentString;
@@ -85,15 +71,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
 
-    // AWS Firehose Client Handle
-    private final AmazonKinesisFirehose firehoseClient;
-    private final String firehoseStreamName;
-    private final ByteBuffer firehoseDataBuffer;
-    private final Socket mcServerSocket;
-    private static int FIREHOSE_MAX_BUFFER_SIZE = 1000;
-    private static int FIREHOSE_MAX_CLIENT_CREATION_DELAY = (10 * 60 * 1000);
-    private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 100;
-
 
     /**
      * Used to keep track of the last metadata save job submitted to the save service and
@@ -101,58 +78,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
      */
     private final AtomicInteger lastSaveMetaDataId = new AtomicInteger();
 
-    public PacketListener(
-            ReplayFile replayFile, 
-            ReplayMetaData metaData, 
-            String streamName,
-            BasicSessionCredentials credentials,
-            Socket mcServerSocket) throws IOException {
-
-        // Firehose client
-        AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
-            .withCredentials(new AWSStaticCredentialsProvider(credentials))
-            .withRegion("us-east-1")
-            .build();
-        
-        this.mcServerSocket = mcServerSocket;
-    
-        //Check if the given stream is open
-        boolean timeout = false;
-        long startTime = System.currentTimeMillis();
-        long endTime = startTime + FIREHOSE_MAX_CLIENT_CREATION_DELAY; //TODO reduce maximum delay
-        while (System.currentTimeMillis() < endTime) {
-            try {
-                Thread.sleep(FIREHOSE_CLIENT_STATE_REFRESH_DELAY);
-            } catch (InterruptedException e) {
-                // Ignore interruption (doesn't impact deliveryStream creation)
-            }
-
-            DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
-            describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
-
-            DescribeDeliveryStreamResult describeDeliveryStreamResponse =
-                firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
-
-            DeliveryStreamDescription  deliveryStreamDescription = 
-                describeDeliveryStreamResponse.getDeliveryStreamDescription();
-
-            String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
-            if (deliveryStreamStatus.equals("ACTIVE")) {
-                timeout = true;
-                break;
-            }
-        }
-
-        if (timeout) {
-            logger.error("Waited too long for stream activation! Stream may be mis-configured!");
-            // TODO handle this cleanly
-        } else {
-            logger.info("Active Firehose Stream Established!");
-        }
-
-        this.firehoseClient     = firehoseClient;
-        this.firehoseDataBuffer = ByteBuffer.allocate(FIREHOSE_MAX_BUFFER_SIZE);
-        this.firehoseStreamName = streamName;
+    public PacketListener(ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
 
         this.replayFile = replayFile;
         this.metaData = metaData;
@@ -227,28 +153,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     throw new RuntimeException(e);
                 }
             });
-
-            // Record packet in the buffer and flush if near capacity
-            if (bytes.length + firehoseDataBuffer.position() < firehoseDataBuffer.capacity())
-            {
-                firehoseDataBuffer.put(bytes);
-            } else {
-                // Put records on stream
-                PutRecordRequest putRecordRequest = new PutRecordRequest();
-                putRecordRequest.setDeliveryStreamName(this.firehoseStreamName);
-
-                Record record = new Record().withData(firehoseDataBuffer);
-                putRecordRequest.setRecord(record);
-
-                // Put record into the DeliveryStream
-                // TODO measure performace of put_record 
-                firehoseClient.putRecord(putRecordRequest);
-
-                // Clear the dependent data buffer
-                firehoseDataBuffer.clear();
-
-                logger.info("Wrote record to firehose stream");
-            }
             
 
         } catch(Exception e) {
@@ -260,12 +164,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) {
         metaData.setDuration((int) lastSentPacket);
         saveMetaData();
-
-        try {
-            this.mcServerSocket.close();
-        } catch (IOException e){
-            logger.error("Error closing minecraft server socket", e);
-        }
 
         saveService.shutdown();
         try {
