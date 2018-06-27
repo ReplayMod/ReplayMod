@@ -12,6 +12,7 @@ import com.replaymod.recording.packet.PacketListener;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
+import com.replaymod.replaystudio.replay.StreamReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 
 import net.minecraft.client.Minecraft;

@@ -147,8 +147,7 @@ dependencies {
     def studioVersion = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
     if (studioVersion == '1.8.9') studioVersion = '1.8'
 
-    // TODO change this to point to custom ReplayStudio implementation
-    shade("com.github.ReplayMod.ReplayStudio:$studioVersion:3328446"){
+    shade("com.github.cmu-rl.replay_studio:$studioVersion:0f1ef46c09757559edeb80883c79f7933dbfcad9"){
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
