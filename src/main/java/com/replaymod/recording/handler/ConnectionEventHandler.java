@@ -146,7 +146,7 @@ public class ConnectionEventHandler {
                         userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
                         userServerSocket.connect(userServerAddress, 9999);
                         userServerSocket.setSoTimeout(1000);                        
-                    } catch (SocketException | UnknownHostException | SocketTimeoutException e) {
+                    } catch (SocketException | UnknownHostException e) {
                         // TODO Auto-generated catch block
                         logger.info("Error establishing connection to user server");
                         e.printStackTrace();
