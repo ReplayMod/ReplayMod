@@ -146,9 +146,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 int timestamp = (int) (now - startTime - timePassedWhilePaused);
                 lastSentPacket = timestamp;
                 try {
-                    packetOutputStream.writeInt(timestamp);
-                    packetOutputStream.writeInt(bytes.length);
-                    packetOutputStream.write(bytes);
+                    synchronized (replayFile) {
+                        replayFile.writePackets(timestamp, bytes.length, bytes);
+                    }
+                    // packetOutputStream.writeInt(timestamp);
+                    // packetOutputStream.writeInt(bytes.length);
+                    // packetOutputStream.write(bytes);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
