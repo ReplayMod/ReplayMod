@@ -63,6 +63,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.security.MessageDigest;
 
 //TODO remove
@@ -131,7 +132,7 @@ public class ConnectionEventHandler {
                     String mcUsername = mc.getSession().getUsername();
                     String mcUUID = mc.getSession().getPlayerID();
                     MessageDigest hashFn = MessageDigest.getInstance("MD5");
-                    byte[] uid_raw = hashFn.digest(mcUsername.getBytes("UTF-8"));
+                    byte[] uid_raw = hashFn.digest(mcUUID.getBytes("UTF-8"));
                     String uid = Hex.encodeHexString(uid_raw);
                     logger.info(String.format("UID: %s%n", uid));
 
@@ -145,7 +146,7 @@ public class ConnectionEventHandler {
                         userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
                         userServerSocket.connect(userServerAddress, 9999);
                         userServerSocket.setSoTimeout(1000);                        
-                    } catch (SocketException | UnknownHostException e) {
+                    } catch (SocketException | UnknownHostException | SocketTimeoutException e) {
                         // TODO Auto-generated catch block
                         logger.info("Error establishing connection to user server");
                         e.printStackTrace();
@@ -160,8 +161,7 @@ public class ConnectionEventHandler {
                         mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
                         //smcServerSocket.setSoTimeout(1000);
                         mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
-                        
-                    } catch (SocketException | UnknownHostException e) {
+                    } catch (SocketException | UnknownHostException | SocketTimeoutException e) {
                         // TODO Auto-generated catch block
                         logger.info("Error establishing connection to minecraft server");
                         e.printStackTrace();
