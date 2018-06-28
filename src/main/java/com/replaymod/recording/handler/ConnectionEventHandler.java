@@ -61,6 +61,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.security.MessageDigest;
 
@@ -143,20 +144,30 @@ public class ConnectionEventHandler {
                         userServerSocket = new DatagramSocket();
                         userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
                         userServerSocket.connect(userServerAddress, 9999);
-                        userServerSocket.setSoTimeout(1000);
-                        
+                        userServerSocket.setSoTimeout(1000);                        
+                    } catch (SocketException | UnknownHostException e) {
+                        // TODO Auto-generated catch block
+                        logger.info("Error establishing connection to user server");
+                        e.printStackTrace();
+                        logger.error("Error establishing connection to user server");
+                        return;
+                    }
+
+                    try {                      
                         //Connect to MinecraftServer
                         mcServerAddress = InetAddress.getByName(minecraft_ip); 
-                        mcServerSocket = new Socket(mcServerAddress, 8888);
+                        mcServerSocket = new Socket();
+                        mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
                         //smcServerSocket.setSoTimeout(1000);
                         mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
                         
                     } catch (SocketException | UnknownHostException e) {
                         // TODO Auto-generated catch block
-                        logger.info("Error establishing connection to servers");
+                        logger.info("Error establishing connection to minecraft server");
                         e.printStackTrace();
-                        logger.error("Error establishing connection to servers");
-                        return;
+                        logger.error("Error establishing connection to minecraft server");
+                        mcServerOut = null;
+                        mcServerSocket.close();
                     }
                     
                     ////////////////////////////////////////////
@@ -202,9 +213,12 @@ public class ConnectionEventHandler {
                     authJson.addProperty("cmd", "authorize_user");
                     authJson.addProperty("uid", uid);
                     authJson.addProperty("minecraft_key", minecraftKey);
-                    String authStr = authJson.toString();            
-                    mcServerOut.write(authStr);
-                    mcServerOut.flush();
+                    String authStr = authJson.toString();      
+                    if (mcServerOut != null){
+                        mcServerOut.write(authStr);
+                        mcServerOut.flush();
+                    }      
+                   
 
                     // TODO Ask the server if we should start recording
                     
