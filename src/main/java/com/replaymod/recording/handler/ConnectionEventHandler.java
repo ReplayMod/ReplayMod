@@ -281,7 +281,7 @@ public class ConnectionEventHandler {
                         .build();
 
                     //Check if the given stream is open
-                    boolean timeout = false;
+                    boolean timeout = true;
                     long startTime = System.currentTimeMillis();
                     long endTime = startTime + FIREHOSE_MAX_CLIENT_CREATION_DELAY; //TODO reduce maximum delay
                     while (System.currentTimeMillis() < endTime) {
@@ -302,7 +302,7 @@ public class ConnectionEventHandler {
 
                         String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
                         if (deliveryStreamStatus.equals("ACTIVE")) {
-                            timeout = true;
+                            timeout = false;
                             break;
                         }
                     }
