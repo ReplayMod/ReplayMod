@@ -220,6 +220,7 @@ public class ConnectionEventHandler {
                     String authStr = authJson.toString();      
                     if (mcServerOut != null){
                         mcServerOut.write(authStr);
+                        mcServerOut.append('\n');
                         mcServerOut.flush();
                     }      
                    
