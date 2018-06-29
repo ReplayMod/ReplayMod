@@ -98,6 +98,10 @@ public class ConnectionEventHandler {
         this.core = core;
     }
 
+    private void returnFirehoseStream(String streamName){
+        //TODO return stream when connection fails
+    }
+
     public void onConnectedToServerEvent(NetworkManager networkManager) {
         try {
             String streamName = "";
@@ -260,6 +264,7 @@ public class ConnectionEventHandler {
                         e.printStackTrace();
                         userServerSocket.close();
                         mcServerSocket.close();
+                        returnFirehoseStream(streamName);
                         return;
                     }
                     
@@ -324,10 +329,11 @@ public class ConnectionEventHandler {
             //#endif
             } else {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
+                returnFirehoseStream(streamName);
                 return;
             }
 
-            File folder = core.getReplayFolder();
+            //File folder = core.getReplayFolder();
 
             //String name = sdf.format(Calendar.getInstance().getTime());
             //File currentFile = new File(folder, Utils.replayNameToFileName(name));
