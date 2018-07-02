@@ -11,7 +11,7 @@ import com.replaymod.recording.gui.GuiRecordingOverlay;
 import com.replaymod.recording.packet.PacketListener;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
+//import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.replay.StreamReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 
@@ -340,7 +340,7 @@ public class ConnectionEventHandler {
             //File currentFile = new File(folder, Utils.replayNameToFileName(name));
             //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
             
-            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName);
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, logger);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
