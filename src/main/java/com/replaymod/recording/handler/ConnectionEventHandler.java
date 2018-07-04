@@ -361,7 +361,7 @@ public class ConnectionEventHandler {
             //#endif
             } else {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
-                returnFirehoseStream(streamName);
+                returnFirehoseStream();
                 return;
             }
 
