@@ -77,7 +77,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class ConnectionEventHandler {
 
-    private static int FIREHOSE_MAX_BUFFER_SIZE = 1000;
     private static int FIREHOSE_MAX_CLIENT_CREATION_DELAY = (10 * 60 * 1000);
     private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 100;
 
@@ -93,13 +92,45 @@ public class ConnectionEventHandler {
     private PacketListener packetListener;
     private GuiRecordingOverlay guiOverlay;
 
+    private String uid;
+    private String streamName;
+
     public ConnectionEventHandler(Logger logger, ReplayMod core) {
         this.logger = logger;
         this.core = core;
     }
 
-    private void returnFirehoseStream(String streamName){
-        //TODO return stream when connection fails
+    private void returnFirehoseStream(){
+        DatagramSocket userServerSocket;
+        InetAddress userServerAddress, mcServerAddress;
+        try {
+            //Connect to UserServer
+            userServerSocket = new DatagramSocket();
+            userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
+            userServerSocket.connect(userServerAddress, 9999);
+            userServerSocket.setSoTimeout(1000);                        
+        } catch (SocketException | UnknownHostException e) {
+            // TODO Auto-generated catch block
+            logger.info("Error establishing connection to user server");
+            e.printStackTrace();
+            logger.error("Error establishing connection to user server");
+            return;
+        }
+        // Send Minecraft dissconnect notification
+        JsonObject mcKeyJson = new JsonObject();
+        mcKeyJson.addProperty("cmd", "return_firehose_key");
+        mcKeyJson.addProperty("uid", uid);
+        mcKeyJson.addProperty("stream_name", streamName);
+        String mcKeyStr = mcKeyJson.toString();
+        DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
+        try {
+            userServerSocket.send(mcKeyRequest);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            userServerSocket.close();
+            return;
+        }
     }
 
     public void onConnectedToServerEvent(NetworkManager networkManager) {
@@ -265,7 +296,7 @@ public class ConnectionEventHandler {
                         e.printStackTrace();
                         userServerSocket.close();
                         mcServerSocket.close();
-                        returnFirehoseStream(streamName);
+                        returnFirehoseStream();
                         return;
                     }
                     
@@ -369,6 +400,7 @@ public class ConnectionEventHandler {
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
         if (packetListener != null) {
+            returnFirehoseStream();
             guiOverlay.unregister();
             guiOverlay = null;
             recordingEventHandler.unregister();
