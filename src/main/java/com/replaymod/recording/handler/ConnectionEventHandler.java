@@ -174,7 +174,7 @@ public class ConnectionEventHandler {
                     // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
                     DatagramSocket userServerSocket;
                     PrintWriter mcServerOut;
-                    InetAddress userServerAddress, mcServerAddress;
+                    Inet4Address userServerAddress, mcServerAddress;
                     try {
                         //Connect to UserServer
                         userServerSocket = new DatagramSocket();
