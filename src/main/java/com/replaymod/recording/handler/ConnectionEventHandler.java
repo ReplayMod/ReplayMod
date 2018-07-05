@@ -60,7 +60,7 @@ import java.io.PrintWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -191,7 +191,7 @@ public class ConnectionEventHandler {
 
                     try {                      
                         //Connect to MinecraftServer
-                        mcServerAddress = InetAddress.getByName(minecraft_ip); 
+                        mcServerAddress = Inet4Address.getByName(minecraft_ip); 
                         mcServerSocket = new Socket();
                         mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
                         //smcServerSocket.setSoTimeout(1000);
