@@ -62,6 +62,7 @@ import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.PortUnreachableException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.security.MessageDigest;
@@ -160,6 +161,12 @@ public class ConnectionEventHandler {
                 } else {
                     // Get Minecraft Server IP 
                     String minecraft_ip = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+
+                    // If port is part of the Minecraft server IP remove it
+                    int portIdx = minecraft_ip.indexOf(':');
+                    if (portIdx != -1){
+                        minecraft_ip = minecraft_ip.substring(0, portIdx);
+                    }
                     //INetHandler handler = netowrkManager.getNetHandler();
 
                     // TODO ask the user_Server if this is a DeepMine server
@@ -180,7 +187,7 @@ public class ConnectionEventHandler {
                     try {
                         //Connect to UserServer
                         userServerSocket = new DatagramSocket();
-                        userServerAddress = InetAddress.getAllByName("184.73.82.23"); // TODO use configured IP
+                        userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
                         userServerSocket.connect(userServerAddress, 9999);
                         userServerSocket.setSoTimeout(1000);                        
                     } catch (SocketException | UnknownHostException e) {
@@ -193,8 +200,8 @@ public class ConnectionEventHandler {
 
                     try {                      
                         //Connect to MinecraftServer
+                        logger.info("Establishing connection to minecraft server: " + minecraft_ip);
                         mcServerAddress = InetAddress.getByName(minecraft_ip); 
-                        logger.info("Establishing connection to minecraft server");
                         mcServerSocket = new Socket();
                         mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
                         //smcServerSocket.setSoTimeout(1000);
