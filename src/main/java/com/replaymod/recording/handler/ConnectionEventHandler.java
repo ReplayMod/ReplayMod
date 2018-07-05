@@ -60,6 +60,7 @@ import java.io.PrintWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
@@ -102,7 +103,7 @@ public class ConnectionEventHandler {
 
     private void returnFirehoseStream(){
         DatagramSocket userServerSocket;
-        Inet4Address userServerAddress, mcServerAddress;
+        InetAddress userServerAddress, mcServerAddress;
         try {
             //Connect to UserServer
             userServerSocket = new DatagramSocket();
@@ -174,7 +175,7 @@ public class ConnectionEventHandler {
                     // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
                     DatagramSocket userServerSocket;
                     PrintWriter mcServerOut;
-                    Inet4Address userServerAddress, mcServerAddress;
+                    InetAddress userServerAddress, mcServerAddress;
                     try {
                         //Connect to UserServer
                         userServerSocket = new DatagramSocket();
