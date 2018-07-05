@@ -102,11 +102,11 @@ public class ConnectionEventHandler {
 
     private void returnFirehoseStream(){
         DatagramSocket userServerSocket;
-        InetAddress userServerAddress, mcServerAddress;
+        Inet4Address userServerAddress, mcServerAddress;
         try {
             //Connect to UserServer
             userServerSocket = new DatagramSocket();
-            userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
+            userServerAddress = Inet4Address.getByName("184.73.82.23"); // TODO use configured IP
             userServerSocket.connect(userServerAddress, 9999);
             userServerSocket.setSoTimeout(1000);                        
         } catch (SocketException | UnknownHostException e) {
