@@ -178,7 +178,7 @@ public class ConnectionEventHandler {
                     try {
                         //Connect to UserServer
                         userServerSocket = new DatagramSocket();
-                        userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
+                        userServerAddress = Inet4Address.getByName("184.73.82.23"); // TODO use configured IP
                         userServerSocket.connect(userServerAddress, 9999);
                         userServerSocket.setSoTimeout(1000);                        
                     } catch (SocketException | UnknownHostException e) {
