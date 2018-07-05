@@ -98,6 +98,9 @@ public class ConnectionEventHandler {
     public ConnectionEventHandler(Logger logger, ReplayMod core) {
         this.logger = logger;
         this.core = core;
+
+        //Set prefered network stack to ipv4
+        System.setProperty("java.net.preferIPv4Stack" , "true");
     }
 
     private void returnFirehoseStream(){
@@ -138,8 +141,6 @@ public class ConnectionEventHandler {
             String streamName = "";
             Socket mcServerSocket = new Socket();
             AmazonKinesisFirehose firehoseClient = null;
-            //Set prefered network stack to ipv4
-            System.setProperty("java.net.preferIPv4Stack" , "true");
             boolean local = networkManager.isLocalChannel();
             if (local) {
                 //#if MC>=10800
@@ -179,7 +180,7 @@ public class ConnectionEventHandler {
                     try {
                         //Connect to UserServer
                         userServerSocket = new DatagramSocket();
-                        userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
+                        userServerAddress = InetAddress.getAllByName("184.73.82.23"); // TODO use configured IP
                         userServerSocket.connect(userServerAddress, 9999);
                         userServerSocket.setSoTimeout(1000);                        
                     } catch (SocketException | UnknownHostException e) {
