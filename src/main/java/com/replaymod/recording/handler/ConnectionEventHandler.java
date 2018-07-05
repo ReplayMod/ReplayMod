@@ -61,7 +61,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -107,7 +106,7 @@ public class ConnectionEventHandler {
         try {
             //Connect to UserServer
             userServerSocket = new DatagramSocket();
-            userServerAddress = Inet4Address.getByName("184.73.82.23"); // TODO use configured IP
+            userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
             userServerSocket.connect(userServerAddress, 9999);
             userServerSocket.setSoTimeout(1000);                        
         } catch (SocketException | UnknownHostException e) {
@@ -139,7 +138,8 @@ public class ConnectionEventHandler {
             String streamName = "";
             Socket mcServerSocket = new Socket();
             AmazonKinesisFirehose firehoseClient = null;
-
+            //Set prefered network stack to ipv4
+            System.setProperty("java.net.preferIPv4Stack" , "true");
             boolean local = networkManager.isLocalChannel();
             if (local) {
                 //#if MC>=10800
@@ -179,7 +179,7 @@ public class ConnectionEventHandler {
                     try {
                         //Connect to UserServer
                         userServerSocket = new DatagramSocket();
-                        userServerAddress = Inet4Address.getByName("184.73.82.23"); // TODO use configured IP
+                        userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
                         userServerSocket.connect(userServerAddress, 9999);
                         userServerSocket.setSoTimeout(1000);                        
                     } catch (SocketException | UnknownHostException e) {
@@ -192,7 +192,8 @@ public class ConnectionEventHandler {
 
                     try {                      
                         //Connect to MinecraftServer
-                        mcServerAddress = Inet4Address.getByName(minecraft_ip); 
+                        mcServerAddress = InetAddress.getByName(minecraft_ip); 
+                        logger.info("Establishing connection to minecraft server");
                         mcServerSocket = new Socket();
                         mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
                         //smcServerSocket.setSoTimeout(1000);
