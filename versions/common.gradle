@@ -57,7 +57,7 @@ apply plugin: 'io.spring.dependency-management'
 
 dependencyManagement {
   imports {
-        mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.228'
+        mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.360'
         mavenBom 'org.apache.logging.log4j:log4j-bom:2.8.1'    
   }
 }
@@ -150,7 +150,7 @@ dependencies {
     def studioVersion = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
     if (studioVersion == '1.8.9') studioVersion = '1.8'
 
-    shade("com.github.cmu-rl.replay_studio:$studioVersion:ef6ebad8e4087ab962707d868d9712c94e971ac9"){
+    shade("com.github.cmu-rl.replay_studio:$studioVersion:9ae5278f54f9fe4e9d381f595aa3e6113ae12362"){
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }

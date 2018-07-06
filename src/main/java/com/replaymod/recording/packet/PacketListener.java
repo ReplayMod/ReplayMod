@@ -60,7 +60,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     private final ExecutorService saveService = Executors.newSingleThreadExecutor();
     private final ExecutorService streamService = Executors.newSingleThreadExecutor();
-    //private final DataOutputStream packetOutputStream;
+    private final DataOutputStream packetOutputStream;
 
     private ReplayMetaData metaData;
 
@@ -83,7 +83,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         this.replayFile = replayFile;
         this.metaData = metaData;
         this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
-        //this.packetOutputStream = new DataOutputStream(replayFile.writePacketData());
+        this.packetOutputStream = new DataOutputStream(replayFile.writePacketData());
         this.startTime = metaData.getDate();
 
         saveMetaData();
@@ -146,12 +146,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 int timestamp = (int) (now - startTime - timePassedWhilePaused);
                 lastSentPacket = timestamp;
                 try {
-                    synchronized (replayFile) {
-                        replayFile.writePackets(timestamp, bytes.length, bytes);
-                    }
-                    // packetOutputStream.writeInt(timestamp);
-                    // packetOutputStream.writeInt(bytes.length);
-                    // packetOutputStream.write(bytes);
+                    packetOutputStream.writeInt(timestamp);
+                    packetOutputStream.writeInt(bytes.length);
+                    packetOutputStream.write(bytes);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
