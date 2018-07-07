@@ -60,7 +60,6 @@ import java.util.Calendar;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.net.Socket;
 import java.net.DatagramSocket;
@@ -75,6 +74,7 @@ import java.net.PortUnreachableException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.security.MessageDigest;
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 //TODO remove
 import java.util.concurrent.TimeUnit;
@@ -105,13 +105,11 @@ public class ConnectionEventHandler {
     private NetworkManager networkManager;
     private DatagramSocket userServerSocket;
     private Socket         mcServerSocket;
-    private PrintWriter mcServerOut;
 
     private Thread recordingManager;
 
     private String uid;
     private String streamName;
-    private AmazonKinesisFirehose firehoseClient;
 
     public ConnectionEventHandler(Logger logger, ReplayMod core) {
         this.logger = logger;
@@ -123,24 +121,29 @@ public class ConnectionEventHandler {
 
     private void manageRecording(){
         try{
+            logger.error("I'm looking for the thing");
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
             String jsonStr;
             while (true){
                 try{
                     jsonStr = in.readLine();
-                    JsonObject recordObject = new JsonParser().parse(jsonStr).getAsJsonObject();
-                    if (recordObject.has("record")){
-                        boolean recordFlag = recordObject.get("record").getAsBoolean();
+                    Thread.sleep(100);
+                    if( jsonStr != null){
+                        JsonObject recordObject = new JsonParser().parse(jsonStr).getAsJsonObject();
+                        if (recordObject.has("record")){
+                            boolean recordFlag = recordObject.get("record").getAsBoolean();
 
-                        if (recordFlag && recordObject.has("experement")) {
-                            JsonObject experementMetaData = recordObject.get("experement").getAsJsonObject();
-                            startRecording(experementMetaData.toString());
-                        }
-                        else if (!recordFlag){
-                            stopRecording();
-                        }
-                        else {
-                            logger.error("Experement field not present! Not recording!");
+                            if (recordFlag && recordObject.has("experiment")) {
+                                JsonObject experimentMetaData = recordObject.get("experiment").getAsJsonObject();
+                                logger.error("I parsed metadata :" +  experimentMetaData.toString());
+                                startRecording(experimentMetaData.toString());
+                            }
+                            else if (!recordFlag){
+                                stopRecording();
+                            }
+                            else {
+                                logger.error("Experiment field not present! Not recording!");
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -152,12 +155,16 @@ public class ConnectionEventHandler {
             logger.error("Could not create reader! Exiting recording manager");
             return;
         }
+        catch (InterruptedException e) {
+            logger.error("Thread is interupted");
+            return;
+        }
     }
 
 
-    private void startRecording(String experementMetadata){
+    private void startRecording(String experimentMetaData){
         try {
-            AmazonKinesisFirehose firehoseClient = null;
+            AmazonKinesisFirehose firehoseClient;
             boolean local = networkManager.isLocalChannel();
             if (local) {
                 //#if MC>=10800
@@ -170,13 +177,20 @@ public class ConnectionEventHandler {
                     logger.info("Singleplayer Recording is disabled");
                     return;
                 }
+
+                logger.info("Recording Disabled for single player");
+                return;
             } else {
                 if(!core.getSettingsRegistry().get(Setting.RECORD_SERVER)) {
                     logger.info("Multiplayer Recording is disabled");
                     return;
                 } else {
-                    getFirehoseStream();
+                    firehoseClient = getFirehoseStream();
                 }
+            }
+
+            if (firehoseClient == null){
+                return;
             }
 
             String worldName;
@@ -200,7 +214,7 @@ public class ConnectionEventHandler {
             //File currentFile = new File(folder, Utils.replayNameToFileName(name));
             //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
             
-            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, experementMetadata, logger);
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, experimentMetaData, logger);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
@@ -230,16 +244,19 @@ public class ConnectionEventHandler {
         core.printInfoToChat("replaymod.chat.recordingstoped");
         // Unregister existing handlers
         if (packetListener != null) {
+            logger.info("Trying to return stream");
             returnFirehoseStream();
+            logger.info("Trying to unregister guiOverlay");
             guiOverlay.unregister();
             guiOverlay = null;
+            logger.info("Trying to unregister the event handler");
             recordingEventHandler.unregister();
             recordingEventHandler = null;
             packetListener = null;
         }
     }
 
-    private void getFirehoseStream(){
+    private AmazonKinesisFirehose getFirehoseStream(){
         ////////////////////////////////////////////
         //       FireHose Key Retrieval           //
         ////////////////////////////////////////////
@@ -256,7 +273,7 @@ public class ConnectionEventHandler {
             e.printStackTrace();
             userServerSocket.close();
             //mcServerSocket.close();
-            return;
+            return null;
         }
     
         // Get response
@@ -279,7 +296,7 @@ public class ConnectionEventHandler {
             userServerSocket.close();
             //mcServerSocket.close();
             returnFirehoseStream();
-            return;
+            return null;
         }
         
         logger.info(String.format("StreamName:    %s%n", streamName));
@@ -288,7 +305,7 @@ public class ConnectionEventHandler {
         //logger.info(String.format("Session Token: %s%n", sessionToken));
 
         // Firehose client
-        firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
+        AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
             .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .withRegion("us-east-1")
             .build();
@@ -326,6 +343,7 @@ public class ConnectionEventHandler {
         } else {
             logger.info("Active Firehose Stream Established!");
         }
+        return firehoseClient;
     }
     private void returnFirehoseStream(){
         DatagramSocket userServerSocket;
@@ -397,6 +415,7 @@ public class ConnectionEventHandler {
             return;
         }
         InetAddress mcServerAddress;
+        PrintWriter mcServerOut = null;
         try {       
             //Connect to MinecraftServer
             String minecraft_ip = Minecraft.getMinecraft().getCurrentServerData().serverIP;
@@ -407,6 +426,7 @@ public class ConnectionEventHandler {
             logger.info("Establishing connection to minecraft server: " + minecraft_ip);
             mcServerAddress = InetAddress.getByName(minecraft_ip); 
             mcServerSocket = new Socket();
+            mcServerSocket.setKeepAlive(true);
             mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
             //smcServerSocket.setSoTimeout(1000);
             mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
@@ -414,7 +434,6 @@ public class ConnectionEventHandler {
             logger.info("Error establishing connection to minecraft server");
             e.printStackTrace();
             logger.error("Error establishing connection to minecraft server");
-            mcServerOut.close();
         }
 
         ////////////////////////////////////////////
@@ -433,7 +452,6 @@ public class ConnectionEventHandler {
             // TODO Auto-generated catch block
             e.printStackTrace();
             userServerSocket.close();
-            mcServerOut.close();
             return;
         }
     
@@ -449,7 +467,6 @@ public class ConnectionEventHandler {
             // TODO Auto-generated catch block
             e.printStackTrace();
             userServerSocket.close();
-            mcServerOut.close();
             return;
         }
         
@@ -478,16 +495,7 @@ public class ConnectionEventHandler {
         };
 
         recordingManager = new Thread(recordingService);
-    }
-
-    @SubscribeEvent
-    public void onClientCustomPacketEvent(ClientCustomPacketEvent event){
-
-
-        if (event.hasResult()){
-            getFirehoseStream();
-            onConnectedToServerEvent(this.networkManager);
-        }
+        recordingManager.start();
     }
 
     @SubscribeEvent
@@ -500,6 +508,7 @@ public class ConnectionEventHandler {
             recordingEventHandler = null;
             packetListener = null;
         }
+        recordingManager.interrupt();
     }
 
     public PacketListener getPacketListener() {
