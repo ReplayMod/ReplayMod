@@ -13,6 +13,7 @@ import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 //#if MC>=10904
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
@@ -46,7 +47,8 @@ public class RecordingEventHandler {
     private final PacketListener packetListener;
 
     private Double lastX, lastY, lastZ;
-    private ItemStack[] playerItems = new ItemStack[6];
+    private ItemStack[] playerItems     = new ItemStack[6];
+    private ItemStack[] playerInventory = new ItemStack[36];
     private int ticksSinceLastCorrection;
     private boolean wasSleeping;
     private int lastRiding = -1;
@@ -265,6 +267,14 @@ public class RecordingEventHandler {
             if (playerItems[5] != player(mc).getItemStackFromSlot(EntityEquipmentSlot.HEAD)) {
                 playerItems[5] = player(mc).getItemStackFromSlot(EntityEquipmentSlot.HEAD);
                 packetListener.save(new SPacketEntityEquipment(e.player.getEntityId(), EntityEquipmentSlot.HEAD, playerItems[5]));
+            }
+
+            for (int i = 0; i < playerInventory.length; i++){
+                ItemStack itemStack = player(mc).inventory.mainInventory.get(i);
+                if (playerInventory[i] != itemStack) {
+                    playerInventory[i] = itemStack;
+                    packetListener.save(new SPacketSetSlot(0, i, itemStack)); //TODO decide if gui window 0 is appropriate
+                }
             }
             //#else
             //$$ if(playerItems[0] != mc.thePlayer.getHeldItem()) {

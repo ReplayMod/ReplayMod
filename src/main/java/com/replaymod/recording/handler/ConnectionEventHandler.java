@@ -1,6 +1,10 @@
 package com.replaymod.recording.handler;
 
 import java.nio.ByteBuffer;
+
+import com.google.api.client.json.Json;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.replaymod.core.ReplayMod;
@@ -40,7 +44,9 @@ import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClient;
 
 //#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientCustomPacketEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
+import scala.xml.dtd.PublicID;
 
 import static com.replaymod.core.versions.MCVer.WorldType_DEBUG_ALL_BLOCK_STATES;
 //#else
@@ -53,10 +59,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.UnknownHostException;
 import java.net.Socket;
 import java.net.DatagramSocket;
 import java.io.PrintWriter;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.DatagramPacket;
@@ -93,8 +101,16 @@ public class ConnectionEventHandler {
     private PacketListener packetListener;
     private GuiRecordingOverlay guiOverlay;
 
+    private NetworkManager networkManager;
+    private DatagramSocket userServerSocket;
+    private Socket         mcServerSocket;
+    private PrintWriter mcServerOut;
+
+    private Thread recordingManager;
+
     private String uid;
     private String streamName;
+    private AmazonKinesisFirehose firehoseClient;
 
     public ConnectionEventHandler(Logger logger, ReplayMod core) {
         this.logger = logger;
@@ -104,9 +120,223 @@ public class ConnectionEventHandler {
         System.setProperty("java.net.preferIPv4Stack" , "true");
     }
 
+    private void manageRecording(){
+        try{
+            BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
+            String jsonStr;
+            while (true){
+                try{
+                    jsonStr = in.readLine();
+                    JsonObject recordObject = new JsonParser().parse(jsonStr).getAsJsonObject();
+                    if (recordObject.has("record")){
+                        boolean recordFlag = recordObject.get("record").getAsBoolean();
+
+                        if (recordFlag && recordObject.has("experement")) {
+                            JsonObject experementMetaData = recordObject.get("experement").getAsJsonObject();
+                            startRecording(experementMetaData.toString());
+                        }
+                        else if (!recordFlag){
+                            stopRecording();
+                        }
+                        else {
+                            logger.error("Experement field not present! Not recording!");
+                        }
+                    }
+                } catch (IOException e) {
+                    logger.error("IO Exception encounterd when trying to manage recording state!");
+                }    
+            }
+        }
+        catch (IOException e) {
+            logger.error("Could not create reader! Exiting recording manager");
+            return;
+        }
+    }
+
+
+    private void startRecording(String experementMetadata){
+        try {
+            AmazonKinesisFirehose firehoseClient = null;
+            boolean local = networkManager.isLocalChannel();
+            if (local) {
+                //#if MC>=10800
+                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
+                    logger.info("Debug World recording is not supported.");
+                    return;
+                }
+                //#endif
+                if(!core.getSettingsRegistry().get(Setting.RECORD_SINGLEPLAYER)) {
+                    logger.info("Singleplayer Recording is disabled");
+                    return;
+                }
+            } else {
+                if(!core.getSettingsRegistry().get(Setting.RECORD_SERVER)) {
+                    logger.info("Multiplayer Recording is disabled");
+                    return;
+                } else {
+                    // Get Minecraft Username and UUID
+                    String mcUsername = mc.getSession().getUsername();
+                    String mcUUID = mc.getSession().getPlayerID();
+                    MessageDigest hashFn = MessageDigest.getInstance("MD5");
+                    byte[] uid_raw = hashFn.digest(mcUUID.getBytes("UTF-8"));
+                    String uid = Hex.encodeHexString(uid_raw);
+                    logger.info(String.format("UID: %s%n", uid));
+
+                    getFirehoseStream();
+                }
+            }
+
+            String worldName;
+            if (local) {
+                worldName = mc.getIntegratedServer().getWorldName();
+            } else if (Minecraft.getMinecraft().getCurrentServerData() != null) {
+                worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+            //#if MC>=11100
+            } else if (Minecraft.getMinecraft().isConnectedToRealms()) {
+                // we can't access the server name without tapping too deep in the Realms Library
+                worldName = "A Realms Server";
+            //#endif
+            } else {
+                logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
+                returnFirehoseStream();
+                return;
+            }
+
+            //File folder = core.getReplayFolder();
+            //String name = sdf.format(Calendar.getInstance().getTime());
+            //File currentFile = new File(folder, Utils.replayNameToFileName(name));
+            //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
+            
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, experementMetadata, logger);
+
+            replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
+
+            ReplayMetaData metaData = new ReplayMetaData();
+            metaData.setSingleplayer(local);
+            metaData.setServerName(worldName);
+            metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
+            metaData.setDate(System.currentTimeMillis());
+            metaData.setMcVersion(ReplayMod.getMinecraftVersion());
+            packetListener = new PacketListener(replayFile, metaData);//, streamName, awsCredentials, mcServerSocket);
+            networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
+
+            recordingEventHandler = new RecordingEventHandler(packetListener);
+            recordingEventHandler.register();
+
+            guiOverlay = new GuiRecordingOverlay(mc, core.getSettingsRegistry());
+            guiOverlay.register();
+
+            core.printInfoToChat("replaymod.chat.recordingstarted");
+        } catch (Throwable e) {
+            e.printStackTrace();
+            core.printWarningToChat("replaymod.chat.recordingfailed");
+        }
+    }
+
+    private void stopRecording(){
+        core.printInfoToChat("replaymod.chat.recordingstoped");
+        // Unregister existing handlers
+        if (packetListener != null) {
+            returnFirehoseStream();
+            guiOverlay.unregister();
+            guiOverlay = null;
+            recordingEventHandler.unregister();
+            recordingEventHandler = null;
+            packetListener = null;
+        }
+    }
+
+    private void getFirehoseStream(){
+        ////////////////////////////////////////////
+        //       FireHose Key Retrieval           //
+        ////////////////////////////////////////////
+        // Send Firehose key request
+        JsonObject firehoseJson  = new JsonObject();
+        firehoseJson.addProperty("cmd", "get_firehose_key");
+        firehoseJson.addProperty("uid", uid);
+        String firehoseStr = firehoseJson.toString();
+        DatagramPacket firehoseKeyRequest = new DatagramPacket(firehoseStr.getBytes(), firehoseStr.getBytes().length);
+        try {
+            userServerSocket.send(firehoseKeyRequest);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            userServerSocket.close();
+            //mcServerSocket.close();
+            return;
+        }
+    
+        // Get response
+        byte[] buff1 = new byte[65535];
+        BasicSessionCredentials awsCredentials;
+        DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length);
+        try {
+            userServerSocket.receive(firehoseKeyData);
+            JsonObject awsKeys = new JsonParser().parse(new String(buff1, 0, firehoseKeyData.getLength())).getAsJsonObject();
+            streamName   = awsKeys.get("stream_name").getAsString();
+            awsCredentials = new BasicSessionCredentials(
+                awsKeys.get("access_key").getAsString(),
+                awsKeys.get("secret_key").getAsString(),
+                awsKeys.get("session_token").getAsString());
+            
+        
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            userServerSocket.close();
+            //mcServerSocket.close();
+            returnFirehoseStream();
+            return;
+        }
+        
+        logger.info(String.format("StreamName:    %s%n", streamName));
+        //logger.info(String.format("Access Key:    %s%n", accessKey));
+        //logger.info(String.format("Secret Key:    %s%n", secretKey));
+        //logger.info(String.format("Session Token: %s%n", sessionToken));
+
+        // Firehose client
+        firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
+            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+            .withRegion("us-east-1")
+            .build();
+
+        //Check if the given stream is open
+        boolean timeout = true;
+        long startTime = System.currentTimeMillis();
+        long endTime = startTime + FIREHOSE_MAX_CLIENT_CREATION_DELAY; //TODO reduce maximum delay
+        while (System.currentTimeMillis() < endTime) {
+            try {
+                Thread.sleep(FIREHOSE_CLIENT_STATE_REFRESH_DELAY);
+            } catch (InterruptedException e) {
+                // Ignore interruption (doesn't impact deliveryStream creation)
+            }
+
+            DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
+            describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
+
+            DescribeDeliveryStreamResult describeDeliveryStreamResponse =
+                firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
+
+            DeliveryStreamDescription  deliveryStreamDescription = 
+                describeDeliveryStreamResponse.getDeliveryStreamDescription();
+
+            String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
+            if (deliveryStreamStatus.equals("ACTIVE")) {
+                timeout = false;
+                break;
+            }
+        }
+
+        if (timeout) {
+            logger.error("Waited too long for stream activation! Stream may be mis-configured!");
+            // TODO handle this cleanly
+        } else {
+            logger.info("Active Firehose Stream Established!");
+        }
+    }
     private void returnFirehoseStream(){
         DatagramSocket userServerSocket;
-        InetAddress userServerAddress, mcServerAddress;
+        InetAddress userServerAddress;
         try {
             //Connect to UserServer
             userServerSocket = new DatagramSocket();
@@ -137,273 +367,123 @@ public class ConnectionEventHandler {
         }
     }
 
+    /* Event Handler
+    * 
+    * configures userServerSocket -> userServer
+    * configures mcServerSocket -> current MinecraftServer
+    * gets a Minecraft play key
+    * sends authorization to minecraft server
+    * establishes thread to listen for recording start/stop events
+    */
     public void onConnectedToServerEvent(NetworkManager networkManager) {
+        this.networkManager = networkManager;
+
+        // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
+        InetAddress userServerAddress;
         try {
-            String streamName = "";
-            Socket mcServerSocket = new Socket();
-            AmazonKinesisFirehose firehoseClient = null;
-            boolean local = networkManager.isLocalChannel();
-            if (local) {
-                //#if MC>=10800
-                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
-                    logger.info("Debug World recording is not supported.");
-                    return;
-                }
-                //#endif
-                if(!core.getSettingsRegistry().get(Setting.RECORD_SINGLEPLAYER)) {
-                    logger.info("Singleplayer Recording is disabled");
-                    return;
-                }
-            } else {
-                if(!core.getSettingsRegistry().get(Setting.RECORD_SERVER)) {
-                    logger.info("Multiplayer Recording is disabled");
-                    return;
-                } else {
-                    // Get Minecraft Server IP 
-                    String minecraft_ip = Minecraft.getMinecraft().getCurrentServerData().serverIP;
-
-                    // If port is part of the Minecraft server IP remove it
-                    int portIdx = minecraft_ip.indexOf(':');
-                    if (portIdx != -1){
-                        minecraft_ip = minecraft_ip.substring(0, portIdx);
-                    }
-                    //INetHandler handler = netowrkManager.getNetHandler();
-
-                    // TODO ask the user_Server if this is a DeepMine server
-                    // else exit the mod
-
-                    // Get Minecraft Username //TODO change to UUID
-                    String mcUsername = mc.getSession().getUsername();
-                    String mcUUID = mc.getSession().getPlayerID();
-                    MessageDigest hashFn = MessageDigest.getInstance("MD5");
-                    byte[] uid_raw = hashFn.digest(mcUUID.getBytes("UTF-8"));
-                    String uid = Hex.encodeHexString(uid_raw);
-                    logger.info(String.format("UID: %s%n", uid));
-
-                    // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
-                    DatagramSocket userServerSocket;
-                    PrintWriter mcServerOut;
-                    InetAddress userServerAddress, mcServerAddress;
-                    try {
-                        //Connect to UserServer
-                        userServerSocket = new DatagramSocket();
-                        userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
-                        userServerSocket.connect(userServerAddress, 9999);
-                        userServerSocket.setSoTimeout(1000);                        
-                    } catch (SocketException | UnknownHostException e) {
-                        // TODO Auto-generated catch block
-                        logger.info("Error establishing connection to user server");
-                        e.printStackTrace();
-                        logger.error("Error establishing connection to user server");
-                        return;
-                    }
-
-                    try {                      
-                        //Connect to MinecraftServer
-                        logger.info("Establishing connection to minecraft server: " + minecraft_ip);
-                        mcServerAddress = InetAddress.getByName(minecraft_ip); 
-                        mcServerSocket = new Socket();
-                        mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
-                        //smcServerSocket.setSoTimeout(1000);
-                        mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
-                    } catch (SocketException | UnknownHostException | SocketTimeoutException e) {
-                        // TODO Auto-generated catch block
-                        logger.info("Error establishing connection to minecraft server");
-                        e.printStackTrace();
-                        logger.error("Error establishing connection to minecraft server");
-                        mcServerOut = null;
-                        mcServerSocket.close();
-                    }
-                    
-                    ////////////////////////////////////////////
-                    //       MC Server Auth Exchange          //
-                    ////////////////////////////////////////////
-                    
-                    // Send Minecraft key request
-                    JsonObject mcKeyJson = new JsonObject();
-                    mcKeyJson.addProperty("cmd", "get_minecraft_key");
-                    mcKeyJson.addProperty("uid", uid);
-                    String mcKeyStr = mcKeyJson.toString();
-                    DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
-                    try {
-                        userServerSocket.send(mcKeyRequest);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        userServerSocket.close();
-                        mcServerSocket.close();
-                        return;
-                    }
-                
-                    // Get response
-                    byte[] buff = new byte[65535];
-                    String minecraftKey;
-                    DatagramPacket minecraftKeyData = new DatagramPacket(buff, buff.length, userServerAddress, userServerSocket.getLocalPort());
-                    try {
-                        userServerSocket.receive(minecraftKeyData);
-                        JsonObject minecraftKeyJson = new JsonParser().parse(new String(buff, 0, minecraftKeyData.getLength())).getAsJsonObject();
-                        minecraftKey = minecraftKeyJson.get("minecraft_key").getAsString();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        userServerSocket.close();
-                        mcServerSocket.close();
-                        return;
-                    }
-                    
-                    logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
-
-                    // Send key to Minecraft Server
-                    JsonObject authJson = new JsonObject();
-                    authJson.addProperty("cmd", "authorize_user");
-                    authJson.addProperty("uid", uid);
-                    authJson.addProperty("minecraft_key", minecraftKey);
-                    String authStr = authJson.toString();      
-                    if (mcServerOut != null){
-                        mcServerOut.write(authStr);
-                        mcServerOut.append('\n');
-                        mcServerOut.flush();
-                    }      
-                   
-
-                    // TODO Ask the server if we should start recording
-                    
-                    ////////////////////////////////////////////
-                    //       FireHose Key Retrieval           //
-                    ////////////////////////////////////////////
-                    // Send Firehose key request
-                    JsonObject firehoseJson  = new JsonObject();
-                    firehoseJson.addProperty("cmd", "get_firehose_key");
-                    firehoseJson.addProperty("uid", uid);
-                    String firehoseStr = firehoseJson.toString();
-                    DatagramPacket firehoseKeyRequest = new DatagramPacket(firehoseStr.getBytes(), firehoseStr.getBytes().length);
-                    try {
-                        userServerSocket.send(firehoseKeyRequest);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        userServerSocket.close();
-                        mcServerSocket.close();
-                        return;
-                    }
-                
-                    // Get response
-                    byte[] buff1 = new byte[65535];
-                    BasicSessionCredentials awsCredentials;
-                    DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length, userServerAddress, userServerSocket.getLocalPort());
-                    try {
-                        userServerSocket.receive(firehoseKeyData);
-                        JsonObject awsKeys = new JsonParser().parse(new String(buff1, 0, firehoseKeyData.getLength())).getAsJsonObject();
-                        streamName   = awsKeys.get("stream_name").getAsString();
-                        awsCredentials = new BasicSessionCredentials(
-                            awsKeys.get("access_key").getAsString(),
-                            awsKeys.get("secret_key").getAsString(),
-                            awsKeys.get("session_token").getAsString());
-                        
-                    
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        userServerSocket.close();
-                        mcServerSocket.close();
-                        returnFirehoseStream();
-                        return;
-                    }
-                    
-                    logger.info(String.format("StreamName:    %s%n", streamName));
-                    //logger.info(String.format("Access Key:    %s%n", accessKey));
-                    //logger.info(String.format("Secret Key:    %s%n", secretKey));
-                    //logger.info(String.format("Session Token: %s%n", sessionToken));
-
-                    // Firehose client
-                    firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
-                        .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-                        .withRegion("us-east-1")
-                        .build();
-
-                    //Check if the given stream is open
-                    boolean timeout = true;
-                    long startTime = System.currentTimeMillis();
-                    long endTime = startTime + FIREHOSE_MAX_CLIENT_CREATION_DELAY; //TODO reduce maximum delay
-                    while (System.currentTimeMillis() < endTime) {
-                        try {
-                            Thread.sleep(FIREHOSE_CLIENT_STATE_REFRESH_DELAY);
-                        } catch (InterruptedException e) {
-                            // Ignore interruption (doesn't impact deliveryStream creation)
-                        }
-
-                        DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
-                        describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
-
-                        DescribeDeliveryStreamResult describeDeliveryStreamResponse =
-                            firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
-
-                        DeliveryStreamDescription  deliveryStreamDescription = 
-                            describeDeliveryStreamResponse.getDeliveryStreamDescription();
-
-                        String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
-                        if (deliveryStreamStatus.equals("ACTIVE")) {
-                            timeout = false;
-                            break;
-                        }
-                    }
-
-                    if (timeout) {
-                        logger.error("Waited too long for stream activation! Stream may be mis-configured!");
-                        // TODO handle this cleanly
-                    } else {
-                        logger.info("Active Firehose Stream Established!");
-                    }
-                
-                    userServerSocket.close();
-                }
-            }
-
-            String worldName;
-            if (local) {
-                worldName = mc.getIntegratedServer().getWorldName();
-            } else if (Minecraft.getMinecraft().getCurrentServerData() != null) {
-                worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
-            //#if MC>=11100
-            } else if (Minecraft.getMinecraft().isConnectedToRealms()) {
-                // we can't access the server name without tapping too deep in the Realms Library
-                worldName = "A Realms Server";
-            //#endif
-            } else {
-                logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
-                returnFirehoseStream();
-                return;
-            }
-
-            //File folder = core.getReplayFolder();
-
-            //String name = sdf.format(Calendar.getInstance().getTime());
-            //File currentFile = new File(folder, Utils.replayNameToFileName(name));
-            //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
-            
-            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, logger);
-
-            replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
-
-            ReplayMetaData metaData = new ReplayMetaData();
-            metaData.setSingleplayer(local);
-            metaData.setServerName(worldName);
-            metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
-            metaData.setDate(System.currentTimeMillis());
-            metaData.setMcVersion(ReplayMod.getMinecraftVersion());
-            packetListener = new PacketListener(replayFile, metaData);//, streamName, awsCredentials, mcServerSocket);
-            networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
-
-            recordingEventHandler = new RecordingEventHandler(packetListener);
-            recordingEventHandler.register();
-
-            guiOverlay = new GuiRecordingOverlay(mc, core.getSettingsRegistry());
-            guiOverlay.register();
-
-            core.printInfoToChat("replaymod.chat.recordingstarted");
-        } catch (Throwable e) {
+            //Connect to UserServer
+            userServerSocket = new DatagramSocket();
+            userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
+            userServerSocket.connect(userServerAddress, 9999);
+            userServerSocket.setSoTimeout(1000);                        
+        } catch (SocketException | UnknownHostException e) {
+            // TODO Auto-generated catch block
+            logger.info("Error establishing connection to user server");
             e.printStackTrace();
-            core.printWarningToChat("replaymod.chat.recordingfailed");
+            logger.error("Error establishing connection to user server");
+            return;
+        }
+        InetAddress mcServerAddress;
+        try {       
+            //Connect to MinecraftServer
+            String minecraft_ip = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+            
+            int portIdx = minecraft_ip.indexOf(':'); // If port is part of the Minecraft server IP remove it
+            if (portIdx != -1){ minecraft_ip = minecraft_ip.substring(0, portIdx); }
+
+            logger.info("Establishing connection to minecraft server: " + minecraft_ip);
+            mcServerAddress = InetAddress.getByName(minecraft_ip); 
+            mcServerSocket = new Socket();
+            mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
+            //smcServerSocket.setSoTimeout(1000);
+            mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
+        } catch (IOException e) {
+            logger.info("Error establishing connection to minecraft server");
+            e.printStackTrace();
+            logger.error("Error establishing connection to minecraft server");
+            mcServerOut.close();
+        }
+
+        ////////////////////////////////////////////
+        //       MC Server Auth Exchange          //
+        ////////////////////////////////////////////
+        
+        // Send Minecraft key request
+        JsonObject mcKeyJson = new JsonObject();
+        mcKeyJson.addProperty("cmd", "get_minecraft_key");
+        mcKeyJson.addProperty("uid", uid);
+        String mcKeyStr = mcKeyJson.toString();
+        DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
+        try {
+            userServerSocket.send(mcKeyRequest);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            userServerSocket.close();
+            mcServerOut.close();
+            return;
+        }
+    
+        // Get response
+        byte[] buff = new byte[65535];
+        String minecraftKey;
+        DatagramPacket minecraftKeyData = new DatagramPacket(buff, buff.length, userServerAddress, userServerSocket.getLocalPort());
+        try {
+            userServerSocket.receive(minecraftKeyData);
+            JsonObject minecraftKeyJson = new JsonParser().parse(new String(buff, 0, minecraftKeyData.getLength())).getAsJsonObject();
+            minecraftKey = minecraftKeyJson.get("minecraft_key").getAsString();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            userServerSocket.close();
+            mcServerOut.close();
+            return;
+        }
+        
+        logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
+
+        // Send key to Minecraft Server
+        JsonObject authJson = new JsonObject();
+        authJson.addProperty("cmd", "authorize_user");
+        authJson.addProperty("uid", uid);
+        authJson.addProperty("minecraft_key", minecraftKey);
+        String authStr = authJson.toString();      
+        if (mcServerOut != null){
+            mcServerOut.write(authStr);
+            mcServerOut.append('\n');
+            mcServerOut.flush();
+        }      
+
+        ////////////////////////////////////////////
+        //        Recording Manager Thread        //
+        ////////////////////////////////////////////
+
+        Runnable recordingService = new Runnable(){
+            public void run(){
+                manageRecording();
+            }
+        };
+
+        recordingManager = new Thread(recordingService);
+    }
+
+    @SubscribeEvent
+    public void onClientCustomPacketEvent(ClientCustomPacketEvent event){
+
+
+        if (event.hasResult()){
+            getFirehoseStream();
+            onConnectedToServerEvent(this.networkManager);
         }
     }
 
