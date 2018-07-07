@@ -60,6 +60,7 @@ import java.util.Calendar;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.net.Socket;
 import java.net.DatagramSocket;
@@ -74,7 +75,7 @@ import java.net.PortUnreachableException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.security.MessageDigest;
-
+import java.security.NoSuchAlgorithmException;
 //TODO remove
 import java.util.concurrent.TimeUnit;
 
@@ -369,13 +370,16 @@ public class ConnectionEventHandler {
     */
     public void onConnectedToServerEvent(NetworkManager networkManager) {
         this.networkManager = networkManager;
-
-        String mcUsername = mc.getSession().getUsername();
-        String mcUUID = mc.getSession().getPlayerID();
-        MessageDigest hashFn = MessageDigest.getInstance("MD5");
-        byte[] uid_raw = hashFn.digest(mcUUID.getBytes("UTF-8"));
-        this.uid = Hex.encodeHexString(uid_raw);
-        logger.info(String.format("UID: %s%n", uid));
+        try{
+            String mcUsername = mc.getSession().getUsername();
+            String mcUUID = mc.getSession().getPlayerID();
+            MessageDigest hashFn = MessageDigest.getInstance("MD5");
+            byte[] uid_raw = hashFn.digest(mcUUID.getBytes("UTF-8"));
+            this.uid = Hex.encodeHexString(uid_raw);
+            logger.info(String.format("UID: %s%n", uid));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e){
+            e.printStackTrace();
+        }
 
         // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
         InetAddress userServerAddress;
