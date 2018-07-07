@@ -174,14 +174,6 @@ public class ConnectionEventHandler {
                     logger.info("Multiplayer Recording is disabled");
                     return;
                 } else {
-                    // Get Minecraft Username and UUID
-                    String mcUsername = mc.getSession().getUsername();
-                    String mcUUID = mc.getSession().getPlayerID();
-                    MessageDigest hashFn = MessageDigest.getInstance("MD5");
-                    byte[] uid_raw = hashFn.digest(mcUUID.getBytes("UTF-8"));
-                    String uid = Hex.encodeHexString(uid_raw);
-                    logger.info(String.format("UID: %s%n", uid));
-
                     getFirehoseStream();
                 }
             }
@@ -377,6 +369,13 @@ public class ConnectionEventHandler {
     */
     public void onConnectedToServerEvent(NetworkManager networkManager) {
         this.networkManager = networkManager;
+
+        String mcUsername = mc.getSession().getUsername();
+        String mcUUID = mc.getSession().getPlayerID();
+        MessageDigest hashFn = MessageDigest.getInstance("MD5");
+        byte[] uid_raw = hashFn.digest(mcUUID.getBytes("UTF-8"));
+        this.uid = Hex.encodeHexString(uid_raw);
+        logger.info(String.format("UID: %s%n", uid));
 
         // Create a UDP sockets and connect them to the UserServer and to MinecraftServer
         InetAddress userServerAddress;
