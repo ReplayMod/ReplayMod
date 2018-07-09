@@ -148,12 +148,12 @@ public class RecordingEventHandler {
             boolean setHotbar = false;
             for (KeyBinding binding : mc.gameSettings.keyBindings){
                 if(binding.isKeyDown()){
-                    //Record that key was down
-                    logger.info(binding.getKeyModifier() +
-                        " - " + binding.getDisplayName() + 
-                        " - " + binding.getKeyCode() +  
-                        " - " + binding.isPressed() + 
-                        " - " + binding.getKeyDescription());
+                    // //Record that key was down
+                    // logger.info(binding.getKeyModifier() +
+                    //     " - " + binding.getDisplayName() + 
+                    //     " - " + binding.getKeyCode() +  
+                    //     " - " + binding.isPressed() + 
+                    //     " - " + binding.getKeyDescription());
                     
                     // Hotbar bindings are 2-10
                     if (1 < binding.getKeyCode() && binding.getKeyCode() <= 10){
