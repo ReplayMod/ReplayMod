@@ -2,6 +2,7 @@ package com.replaymod.recording.handler;
 
 import com.replaymod.recording.packet.PacketListener;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
@@ -29,6 +30,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -37,7 +39,9 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 //$$ import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 //#endif
 
+import java.util.Map;
 import java.util.Objects;
+import java.lang.reflect.Field;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -46,6 +50,7 @@ public class RecordingEventHandler {
     private final Minecraft mc = Minecraft.getMinecraft();
     private final PacketListener packetListener;
 
+    private static Field KEYBIND_ARRAY = initKeybindField();
     private Double lastX, lastY, lastZ;
     private ItemStack[] playerItems     = new ItemStack[6];
     private ItemStack[] playerInventory = new ItemStack[36];
@@ -57,6 +62,15 @@ public class RecordingEventHandler {
     private boolean wasHandActive;
     private EnumHand lastActiveHand;
     //#endif
+
+    private static Field initKeybindField() {
+        try {
+            return KeyBinding.class.getDeclaredField("KEYBIND_ARRAY");
+        } catch (NoSuchFieldException e){
+            return null;
+        }
+        
+    }
 
     public RecordingEventHandler(PacketListener packetListener) {
         this.packetListener = packetListener;
@@ -122,6 +136,22 @@ public class RecordingEventHandler {
         }
     }
     //#endif
+
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event) throws IllegalAccessException {
+        if(KEYBIND_ARRAY == null){
+			return;
+		}
+		if(event.phase.equals(Phase.END)){
+			Map<String, KeyBinding> binds = (Map<String, KeyBinding>) KEYBIND_ARRAY.get(null);
+	    	for (String bind : binds.keySet()) {
+				if(binds.get(bind).isKeyDown()){
+					System.out.println(bind + " - " + binds.get(bind).getDisplayName());
+					break;
+				}
+			}
+		}
+    }
 
     @SubscribeEvent
     public void onPlayerTick(PlayerTickEvent e) {
@@ -276,7 +306,7 @@ public class RecordingEventHandler {
                     packetListener.save(new SPacketSetSlot(0, i, itemStack)); //TODO decide if gui window 0 is appropriate
                 }
             }
-            //#else
+            //#else1
             //$$ if(playerItems[0] != mc.thePlayer.getHeldItem()) {
             //$$     playerItems[0] = mc.thePlayer.getHeldItem();
             //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(e.player.getEntityId(), 0, playerItems[0]);
