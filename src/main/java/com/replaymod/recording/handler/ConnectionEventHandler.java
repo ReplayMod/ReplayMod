@@ -495,11 +495,14 @@ public class ConnectionEventHandler {
         };
 
         recordingManager = new Thread(recordingService);
-        recordingManager.start();
+        //recordingManager.start();
+
+        startRecording("{}");
     }
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
+        recordingManager.interrupt();
         if (packetListener != null) {
             returnFirehoseStream();
             guiOverlay.unregister();
@@ -508,7 +511,7 @@ public class ConnectionEventHandler {
             recordingEventHandler = null;
             packetListener = null;
         }
-        recordingManager.interrupt();
+        
     }
 
     public PacketListener getPacketListener() {
