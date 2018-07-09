@@ -67,6 +67,7 @@ public class RecordingEventHandler {
     private int ticksSinceLastCorrection;
     private boolean wasSleeping;
     private int lastRiding = -1;
+    private int lastHotbar = 0;
     private Integer rotationYawHeadBefore;
     //#if MC>=10904
     private boolean wasHandActive;
@@ -142,6 +143,9 @@ public class RecordingEventHandler {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) throws IllegalAccessException {
         if( event.phase.equals(Phase.END)){
+            if (player(mc) == null) { return;}
+            int hotbarIdx = player(mc).inventory.currentItem;
+            boolean setHotbar = false;
             for (KeyBinding binding : mc.gameSettings.keyBindings){
                 if(binding.isKeyDown()){
                     //Record that key was down
@@ -150,6 +154,15 @@ public class RecordingEventHandler {
                         " - " + binding.getKeyCode() +  
                         " - " + binding.isPressed() + 
                         " - " + binding.getKeyDescription());
+                    
+                    // Hotbar bindings are 2-10
+                    if (1 < binding.getKeyCode() && binding.getKeyCode() <= 10){
+                        if (binding.getKeyCode() != hotbarIdx) {
+                            continue;
+                        } else {
+                            setHotbar = true;
+                        }
+                    }
 
                     ByteBuf byteBuf = Unpooled.buffer();
                     PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
@@ -163,7 +176,20 @@ public class RecordingEventHandler {
                     packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
                 }
             }
-            //TODO add virtual buttons for hot-bar changes via mouse scroll
+            if (!setHotbar && hotbarIdx != lastHotbar){
+                lastHotbar = hotbarIdx;
+                logger.info("Scroll-wheel used to set hot bar...");
+                logger.info("Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")");
+                ByteBuf byteBuf = Unpooled.buffer();
+                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+                packetBuffer.writeVarInt(hotbarIdx + 2);
+                packetListener.save(new SPacketCustomPayload("action_recorder", packetBuffer));
+
+                //TODO remove after validation of action space
+                String debugStr = "Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")";
+                ITextComponent debugMsg = new TextComponentString(debugStr);
+                packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.replaymod.recording.packet;
 
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replaystudio.data.Marker;
+import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import io.netty.buffer.ByteBuf;
@@ -61,6 +62,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private final ExecutorService saveService = Executors.newSingleThreadExecutor();
     private final ExecutorService streamService = Executors.newSingleThreadExecutor();
     private final DataOutputStream packetOutputStream;
+    private final DataOutputStream actionOutputStream;
 
     private ReplayMetaData metaData;
 
@@ -84,6 +86,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         this.metaData = metaData;
         this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
         this.packetOutputStream = new DataOutputStream(replayFile.writePacketData());
+        this.actionOutputStream = new DataOutputStream(replayFile.writeActionData());
         this.startTime = metaData.getDate();
 
         saveMetaData();
@@ -107,6 +110,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void save(Packet packet) {
         try {
+
+            
 
             //#if MC>=10904
             if(packet instanceof SPacketSpawnPlayer) {
@@ -138,21 +143,42 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
             byte[] bytes = getPacketData(packet);
             long now = System.currentTimeMillis();
-            saveService.submit(() -> {
-                if (serverWasPaused) {
-                    timePassedWhilePaused = now - startTime - lastSentPacket;
-                    serverWasPaused = false;
-                }
-                int timestamp = (int) (now - startTime - timePassedWhilePaused);
-                lastSentPacket = timestamp;
-                try {
-                    packetOutputStream.writeInt(timestamp);
-                    packetOutputStream.writeInt(bytes.length);
-                    packetOutputStream.write(bytes);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+
+            if(packet instanceof SPacketCustomPayload && ((SPacketCustomPayload)packet).getChannelName() == "record_actions")
+            {   // Send action recording packets to a new file for easier parsing
+                saveService.submit(() -> {
+                    if (serverWasPaused) {
+                        timePassedWhilePaused = now - startTime - lastSentPacket;
+                        serverWasPaused = false;
+                    }
+                    int timestamp = (int) (now - startTime - timePassedWhilePaused);
+                    lastSentPacket = timestamp;
+                    try {
+                        actionOutputStream.writeInt(timestamp);
+                        actionOutputStream.writeInt(bytes.length);
+                        actionOutputStream.write(bytes);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } else {
+                saveService.submit(() -> {
+                    if (serverWasPaused) {
+                        timePassedWhilePaused = now - startTime - lastSentPacket;
+                        serverWasPaused = false;
+                    }
+                    int timestamp = (int) (now - startTime - timePassedWhilePaused);
+                    lastSentPacket = timestamp;
+                    try {
+                        packetOutputStream.writeInt(timestamp);
+                        packetOutputStream.writeInt(bytes.length);
+                        packetOutputStream.write(bytes);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+            
             
 
         } catch(Exception e) {
