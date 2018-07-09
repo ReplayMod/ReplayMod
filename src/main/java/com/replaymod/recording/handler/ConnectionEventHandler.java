@@ -227,7 +227,7 @@ public class ConnectionEventHandler {
             packetListener = new PacketListener(replayFile, metaData);//, streamName, awsCredentials, mcServerSocket);
             networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
-            recordingEventHandler = new RecordingEventHandler(packetListener);
+            recordingEventHandler = new RecordingEventHandler(packetListener, logger);
             recordingEventHandler.register();
 
             guiOverlay = new GuiRecordingOverlay(mc, core.getSettingsRegistry());
@@ -431,8 +431,6 @@ public class ConnectionEventHandler {
             //smcServerSocket.setSoTimeout(1000);
             mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
         } catch (IOException e) {
-            logger.info("Error establishing connection to minecraft server");
-            e.printStackTrace();
             logger.error("Error establishing connection to minecraft server");
         }
 
@@ -482,7 +480,9 @@ public class ConnectionEventHandler {
             mcServerOut.write(authStr);
             mcServerOut.append('\n');
             mcServerOut.flush();
-        }      
+        } else {
+            logger.error("Minecraft server connection is not complete - not sending play key");
+        }     
 
         ////////////////////////////////////////////
         //        Recording Manager Thread        //
@@ -497,7 +497,7 @@ public class ConnectionEventHandler {
         recordingManager = new Thread(recordingService);
         //recordingManager.start();
 
-        startRecording("{}");
+        startRecording("{\"experement\": \"debug\"}");
     }
 
     @SubscribeEvent

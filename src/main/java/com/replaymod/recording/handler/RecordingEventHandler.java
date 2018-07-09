@@ -6,6 +6,7 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.*;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
@@ -20,12 +21,14 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ChatType;
 //#else
 //#if MC>=10800
 //$$ import net.minecraft.util.BlockPos;
 //#endif
 //#endif
-
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 //#if MC>=10800
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
@@ -43,14 +46,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.lang.reflect.Field;
 
+import org.apache.logging.log4j.Logger;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 import static com.replaymod.core.versions.MCVer.*;
 
 public class RecordingEventHandler {
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private final PacketListener packetListener;
+    // private final ActionListener actionListener;
+    //TODO remove
+    private final Logger logger;
 
-    private static Field KEYBIND_ARRAY = initKeybindField();
     private Double lastX, lastY, lastZ;
     private ItemStack[] playerItems     = new ItemStack[6];
     private ItemStack[] playerInventory = new ItemStack[36];
@@ -63,17 +73,9 @@ public class RecordingEventHandler {
     private EnumHand lastActiveHand;
     //#endif
 
-    private static Field initKeybindField() {
-        try {
-            return KeyBinding.class.getDeclaredField("KEYBIND_ARRAY");
-        } catch (NoSuchFieldException e){
-            return null;
-        }
-        
-    }
-
-    public RecordingEventHandler(PacketListener packetListener) {
+    public RecordingEventHandler(PacketListener packetListener, Logger logger) {
         this.packetListener = packetListener;
+        this.logger = logger;
     }
 
     public void register() {
@@ -139,18 +141,30 @@ public class RecordingEventHandler {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) throws IllegalAccessException {
-        if(KEYBIND_ARRAY == null){
-			return;
-		}
-		if(event.phase.equals(Phase.END)){
-			Map<String, KeyBinding> binds = (Map<String, KeyBinding>) KEYBIND_ARRAY.get(null);
-	    	for (String bind : binds.keySet()) {
-				if(binds.get(bind).isKeyDown()){
-					System.out.println(bind + " - " + binds.get(bind).getDisplayName());
-					break;
-				}
-			}
-		}
+        if( event.phase.equals(Phase.END)){
+            for (KeyBinding binding : mc.gameSettings.keyBindings){
+                if(binding.isKeyDown()){
+                    //Record that key was down
+                    logger.info(binding.getKeyModifier() +
+                        " - " + binding.getDisplayName() + 
+                        " - " + binding.getKeyCode() +  
+                        " - " + binding.isPressed() + 
+                        " - " + binding.getKeyDescription());
+
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+                    packetBuffer.writeVarInt(binding.getKeyCode());
+                    packetListener.save(new SPacketCustomPayload("action_recorder", packetBuffer));
+                    
+
+                    //TODO remove after validation of action space
+                    String debugStr = binding.getDisplayName() + ":" + binding.getKeyCode() + " > " + binding.getKeyDescription();
+                    ITextComponent debugMsg = new TextComponentString(debugStr);
+                    packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                }
+            }
+            //TODO add virtual buttons for hot-bar changes via mouse scroll
+        }
     }
 
     @SubscribeEvent
