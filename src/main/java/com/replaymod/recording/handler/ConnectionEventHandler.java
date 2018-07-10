@@ -121,7 +121,7 @@ public class ConnectionEventHandler {
 
     private void manageRecording(){
         try{
-            logger.error("I'm looking for the thing");
+            logger.error("Recording Service Started");
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
             String jsonStr;
             while (true){
@@ -156,7 +156,7 @@ public class ConnectionEventHandler {
             return;
         }
         catch (InterruptedException e) {
-            logger.error("Thread is interupted");
+            logger.error("Recording manager stopped");
             return;
         }
     }
@@ -248,9 +248,6 @@ public class ConnectionEventHandler {
             if (networkManager.channel().pipeline().get("replay_recorder") != null){
                 networkManager.channel().pipeline().remove(packetListener);
             }
-
-            logger.info("Trying to return stream");
-            returnFirehoseStream();
             logger.info("Trying to unregister guiOverlay");
             guiOverlay.unregister();
             guiOverlay = null;
@@ -259,6 +256,9 @@ public class ConnectionEventHandler {
 
             recordingEventHandler = null;
             packetListener = null;
+
+            logger.info("Trying to return stream");
+            returnFirehoseStream();
         }
     }
 
@@ -283,12 +283,13 @@ public class ConnectionEventHandler {
         }
     
         // Get response
+        JsonObject awsKeys = null;
         byte[] buff1 = new byte[65535];
         BasicSessionCredentials awsCredentials;
         DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length);
         try {
             userServerSocket.receive(firehoseKeyData);
-            JsonObject awsKeys = new JsonParser().parse(new String(buff1, 0, firehoseKeyData.getLength())).getAsJsonObject();
+            awsKeys = new JsonParser().parse(new String(buff1, 0, firehoseKeyData.getLength())).getAsJsonObject();
             streamName   = awsKeys.get("stream_name").getAsString();
             awsCredentials = new BasicSessionCredentials(
                 awsKeys.get("access_key").getAsString(),
@@ -298,6 +299,10 @@ public class ConnectionEventHandler {
         
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            logger.error("Could not parse returned firehose stream infromation");
+            if (awsKeys != null){
+                logger.error("Tried to parse " + awsKeys.toString());
+            }
             e.printStackTrace();
             userServerSocket.close();
             //mcServerSocket.close();
@@ -352,21 +357,7 @@ public class ConnectionEventHandler {
         return firehoseClient;
     }
     private void returnFirehoseStream(){
-        // DatagramSocket userServerSocket;
-        // InetAddress userServerAddress;
-        // try {
-        //     //Connect to UserServer
-        //     userServerSocket = new DatagramSocket();
-        //     userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
-        //     userServerSocket.connect(userServerAddress, 9999);
-        //     userServerSocket.setSoTimeout(1000);                        
-        // } catch (SocketException | UnknownHostException e) {
-        //     // TODO Auto-generated catch block
-        //     logger.info("Error establishing connection to user server");
-        //     e.printStackTrace();
-        //     logger.error("Error establishing connection to user server");
-        //     return;
-        // }
+        if (streamName == null){ return;}
         // Send Minecraft dissconnect notification
         JsonObject mcKeyJson = new JsonObject();
         mcKeyJson.addProperty("cmd", "return_firehose_key");
