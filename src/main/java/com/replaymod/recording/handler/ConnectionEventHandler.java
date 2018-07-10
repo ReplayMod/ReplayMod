@@ -244,6 +244,9 @@ public class ConnectionEventHandler {
         core.printInfoToChat("replaymod.chat.recordingstoped");
         // Unregister existing handlers
         if (packetListener != null) {
+            logger.info("Trying to do something to the networkManager");
+            networkManager.channel().pipeline().remove(packetListener);
+
             logger.info("Trying to return stream");
             returnFirehoseStream();
             logger.info("Trying to unregister guiOverlay");
@@ -251,6 +254,7 @@ public class ConnectionEventHandler {
             guiOverlay = null;
             logger.info("Trying to unregister the event handler");
             recordingEventHandler.unregister();
+
             recordingEventHandler = null;
             packetListener = null;
         }
@@ -346,21 +350,21 @@ public class ConnectionEventHandler {
         return firehoseClient;
     }
     private void returnFirehoseStream(){
-        DatagramSocket userServerSocket;
-        InetAddress userServerAddress;
-        try {
-            //Connect to UserServer
-            userServerSocket = new DatagramSocket();
-            userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
-            userServerSocket.connect(userServerAddress, 9999);
-            userServerSocket.setSoTimeout(1000);                        
-        } catch (SocketException | UnknownHostException e) {
-            // TODO Auto-generated catch block
-            logger.info("Error establishing connection to user server");
-            e.printStackTrace();
-            logger.error("Error establishing connection to user server");
-            return;
-        }
+        // DatagramSocket userServerSocket;
+        // InetAddress userServerAddress;
+        // try {
+        //     //Connect to UserServer
+        //     userServerSocket = new DatagramSocket();
+        //     userServerAddress = InetAddress.getByName("184.73.82.23"); // TODO use configured IP
+        //     userServerSocket.connect(userServerAddress, 9999);
+        //     userServerSocket.setSoTimeout(1000);                        
+        // } catch (SocketException | UnknownHostException e) {
+        //     // TODO Auto-generated catch block
+        //     logger.info("Error establishing connection to user server");
+        //     e.printStackTrace();
+        //     logger.error("Error establishing connection to user server");
+        //     return;
+        // }
         // Send Minecraft dissconnect notification
         JsonObject mcKeyJson = new JsonObject();
         mcKeyJson.addProperty("cmd", "return_firehose_key");
@@ -373,7 +377,7 @@ public class ConnectionEventHandler {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            userServerSocket.close();
+            // userServerSocket.close();
             return;
         }
     }
