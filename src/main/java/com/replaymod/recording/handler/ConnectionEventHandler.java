@@ -495,9 +495,9 @@ public class ConnectionEventHandler {
         };
 
         recordingManager = new Thread(recordingService);
-        //recordingManager.start();
+        recordingManager.start();
 
-        startRecording("{\"experement\": \"debug\"}");
+        //startRecording("{\"experement\": \"debug\"}");
     }
 
     @SubscribeEvent
