@@ -506,16 +506,8 @@ public class ConnectionEventHandler {
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-        recordingManager.interrupt();
-        if (packetListener != null) {
-            returnFirehoseStream();
-            guiOverlay.unregister();
-            guiOverlay = null;
-            recordingEventHandler.unregister();
-            recordingEventHandler = null;
-            packetListener = null;
-        }
-        
+        recordingManager.interrupt();   
+        stopRecording();     
     }
 
     public PacketListener getPacketListener() {
