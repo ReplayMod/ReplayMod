@@ -375,9 +375,7 @@ public class ConnectionEventHandler {
         try {
             userServerSocket.send(mcKeyRequest);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            // userServerSocket.close();
+            logger.error(e.getMessage());
             return;
         }
     }
@@ -412,7 +410,6 @@ public class ConnectionEventHandler {
             userServerSocket.connect(userServerAddress, 9999);
             userServerSocket.setSoTimeout(1000);                        
         } catch (SocketException | UnknownHostException e) {
-            // TODO Auto-generated catch block
             logger.info("Error establishing connection to user server");
             e.printStackTrace();
             logger.error("Error establishing connection to user server");
@@ -432,7 +429,6 @@ public class ConnectionEventHandler {
             mcServerSocket = new Socket();
             mcServerSocket.setKeepAlive(true);
             mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
-            //smcServerSocket.setSoTimeout(1000);
             mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
         } catch (IOException e) {
             logger.error("Error establishing connection to minecraft server");
@@ -466,7 +462,6 @@ public class ConnectionEventHandler {
             JsonObject minecraftKeyJson = new JsonParser().parse(new String(buff, 0, minecraftKeyData.getLength())).getAsJsonObject();
             minecraftKey = minecraftKeyJson.get("minecraft_key").getAsString();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             userServerSocket.close();
             return;
@@ -500,7 +495,7 @@ public class ConnectionEventHandler {
 
         recordingManager = new Thread(recordingService);
         recordingManager.start();
-
+        // DEBUG record on connection to server
         //startRecording("{\"experement\": \"debug\"}");
     }
 
