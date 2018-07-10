@@ -245,7 +245,9 @@ public class ConnectionEventHandler {
         // Unregister existing handlers
         if (packetListener != null) {
             logger.info("Trying to do something to the networkManager");
-            networkManager.channel().pipeline().remove(packetListener);
+            if (networkManager.channel().pipeline().get("replay_recorder") != null){
+                networkManager.channel().pipeline().remove(packetListener);
+            }
 
             logger.info("Trying to return stream");
             returnFirehoseStream();
