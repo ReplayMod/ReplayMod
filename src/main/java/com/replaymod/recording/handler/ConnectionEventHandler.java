@@ -289,7 +289,8 @@ public class ConnectionEventHandler {
         DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length);
         try {
             userServerSocket.receive(firehoseKeyData);
-            awsKeys = new JsonParser().parse(new String(buff1, 0, firehoseKeyData.getLength())).getAsJsonObject();
+            String dataStr = new String(firehoseKeyData.getData(), firehoseKeyData.getOffset(), firehoseKeyData.getLength());
+            awsKeys = new JsonParser().parse(dataStr).getAsJsonObject();
             streamName   = awsKeys.get("stream_name").getAsString();
             awsCredentials = new BasicSessionCredentials(
                 awsKeys.get("access_key").getAsString(),
@@ -297,8 +298,7 @@ public class ConnectionEventHandler {
                 awsKeys.get("session_token").getAsString());
             
         
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
+        } catch (NullPointerException | IOException e) {
             logger.error("Could not parse returned firehose stream infromation");
             if (awsKeys != null){
                 logger.error("Tried to parse " + awsKeys.toString());
