@@ -389,7 +389,7 @@ public class ConnectionEventHandler {
         } finally {
             String dataStr = new String(returnResponse.getData(), returnResponse.getOffset(), returnResponse.getLength());
             JsonElement json = new JsonParser().parse(dataStr).getAsJsonObject();
-            logger.info("Return result: " + json.toString());
+            logger.info("Return result: " + json.toString());   
         }
         
     }

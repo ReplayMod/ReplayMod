@@ -142,7 +142,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             byte[] bytes = getPacketData(packet);
             long now = System.currentTimeMillis();
 
-            if(packet instanceof SPacketCustomPayload && ((SPacketCustomPayload)packet).getChannelName() == "record_actions")
+            if(packet instanceof SPacketCustomPayload && ((SPacketCustomPayload)packet).getChannelName() == "recorded_actions")
             {   // Send action recording packets to a new file for easier parsing
                 saveService.submit(() -> {
                     if (serverWasPaused) {

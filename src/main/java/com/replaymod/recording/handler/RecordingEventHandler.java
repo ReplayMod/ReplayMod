@@ -34,6 +34,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -141,9 +142,11 @@ public class RecordingEventHandler {
     //#endif
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) throws IllegalAccessException {
+    public void onClientTick(ClientTickEvent event) throws IllegalAccessException {
         if( event.phase.equals(Phase.END)){
             if (player(mc) == null) { return;}
+            float foo = player(mc).cameraPitch;
+            float bar = player(mc).cameraYaw;
             int hotbarIdx = player(mc).inventory.currentItem;
             boolean setHotbar = false;
             for (KeyBinding binding : mc.gameSettings.keyBindings){
@@ -156,19 +159,14 @@ public class RecordingEventHandler {
                     //     " - " + binding.getKeyDescription());
                     
                     // Hotbar bindings are 2-10
-                    if (1 < binding.getKeyCode() && binding.getKeyCode() <= 10){
-                        if (binding.getKeyCode() != hotbarIdx) {
-                            continue;
-                        } else {
-                            setHotbar = true;
-                        }
+                    if (2 <= binding.getKeyCode() && binding.getKeyCode() <= 10){
+                        if (binding.getKeyCode() != hotbarIdx) {continue;} else {setHotbar = true;}
                     }
 
                     ByteBuf byteBuf = Unpooled.buffer();
                     PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
                     packetBuffer.writeVarInt(binding.getKeyCode());
-                    packetListener.save(new SPacketCustomPayload("action_recorder", packetBuffer));
-                    
+                    packetListener.save(new SPacketCustomPayload("recorded_actions", packetBuffer));
 
                     //TODO remove after validation of action space
                     String debugStr = binding.getDisplayName() + ":" + binding.getKeyCode() + " > " + binding.getKeyDescription();
@@ -183,7 +181,7 @@ public class RecordingEventHandler {
                 ByteBuf byteBuf = Unpooled.buffer();
                 PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
                 packetBuffer.writeVarInt(hotbarIdx + 2);
-                packetListener.save(new SPacketCustomPayload("action_recorder", packetBuffer));
+                packetListener.save(new SPacketCustomPayload("recorded_actions", packetBuffer));
 
                 //TODO remove after validation of action space
                 String debugStr = "Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")";
