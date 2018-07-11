@@ -283,15 +283,23 @@ public class ConnectionEventHandler {
         }
     
         // Get response
+        String tmp= null; 
         JsonObject awsKeys = null;
         byte[] buff1 = new byte[65535];
         BasicSessionCredentials awsCredentials;
         DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length);
         try {
-            userServerSocket.receive(firehoseKeyData);
-            String dataStr = new String(firehoseKeyData.getData(), firehoseKeyData.getOffset(), firehoseKeyData.getLength());
-            awsKeys = new JsonParser().parse(dataStr).getAsJsonObject();
-            streamName   = awsKeys.get("stream_name").getAsString();
+            
+            while (tmp == null){
+                userServerSocket.receive(firehoseKeyData);
+                String dataStr = new String(firehoseKeyData.getData(), firehoseKeyData.getOffset(), firehoseKeyData.getLength());
+                awsKeys = new JsonParser().parse(dataStr).getAsJsonObject();
+                if (awsKeys.get("stream_name") != null){
+                    tmp = awsKeys.get("stream_name").getAsString();
+                }
+            }
+            
+            this.streamName = tmp;
             awsCredentials = new BasicSessionCredentials(
                 awsKeys.get("access_key").getAsString(),
                 awsKeys.get("secret_key").getAsString(),
@@ -371,6 +379,19 @@ public class ConnectionEventHandler {
             logger.error(e.getMessage());
             return;
         }
+
+        byte[] buff1 = new byte[2400];
+        DatagramPacket returnResponse = new DatagramPacket(buff1, buff1.length);
+        try {
+            userServerSocket.receive(returnResponse);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        } finally {
+            String dataStr = new String(returnResponse.getData(), returnResponse.getOffset(), returnResponse.getLength());
+            JsonElement json = new JsonParser().parse(dataStr).getAsJsonObject();
+            logger.info("Return result: " + json.toString());
+        }
+        
     }
 
     /* Event Handler
