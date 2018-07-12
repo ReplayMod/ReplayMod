@@ -63,6 +63,7 @@ public class RecordingEventHandler {
     private final Logger logger;
 
     private Double lastX, lastY, lastZ;
+    private Float lastPitch, lastYaw;
     private ItemStack[] playerItems     = new ItemStack[6];
     private ItemStack[] playerInventory = new ItemStack[36];
     private int ticksSinceLastCorrection;
@@ -141,13 +142,33 @@ public class RecordingEventHandler {
     }
     //#endif
 
-    @SubscribeEvent
-    public void onClientTick(ClientTickEvent event) throws IllegalAccessException {
-        if( event.phase.equals(Phase.END)){
-            if (player(mc) == null) { return;}
-            float foo = player(mc).cameraPitch;
-            float bar = player(mc).cameraYaw;
-            int hotbarIdx = player(mc).inventory.currentItem;
+    private void recordActions(EntityPlayer plr) {
+        //if( event.phase.equals(Phase.END)){
+            if (plr == null) { return;}
+            if(lastPitch == null || lastYaw == null) {
+                lastPitch = plr.cameraPitch;
+                lastYaw = plr.cameraYaw;
+            } else {
+                float diffPitch = lastPitch - plr.cameraPitch;
+                lastPitch = plr.cameraPitch;
+                float diffYaw = lastYaw - plr.cameraYaw;
+                lastYaw = plr.cameraYaw;
+
+                
+
+                ByteBuf byteBuf = Unpooled.buffer();
+                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+                packetBuffer.writeFloat(lastPitch);
+                packetBuffer.writeFloat(lastYaw);
+                packetListener.save(new SPacketCustomPayload("recorded_camera_actions", packetBuffer));
+
+                //TODO remove after validation of action space
+                String debugStr = "Turn/Tilt" + " > " + lastYaw + lastPitch;
+                ITextComponent debugMsg = new TextComponentString(debugStr);
+                packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+            }
+
+            int hotbarIdx = plr.inventory.currentItem;
             boolean setHotbar = false;
             for (KeyBinding binding : mc.gameSettings.keyBindings){
                 if(binding.isKeyDown()){
@@ -188,7 +209,7 @@ public class RecordingEventHandler {
                 ITextComponent debugMsg = new TextComponentString(debugStr);
                 packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
             }
-        }
+        //}
     }
 
     @SubscribeEvent

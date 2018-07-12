@@ -241,7 +241,7 @@ public class ConnectionEventHandler {
     }
 
     private void stopRecording(){
-        core.printInfoToChat("replaymod.chat.recordingstoped");
+        core.printInfoToChat("Recording Stoped");
         // Unregister existing handlers
         if (packetListener != null) {
             logger.info("Trying to do something to the networkManager");
