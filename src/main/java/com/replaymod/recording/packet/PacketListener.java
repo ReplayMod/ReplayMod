@@ -143,8 +143,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             long now = System.currentTimeMillis();
 
             if(packet instanceof SPacketCustomPayload && 
-                ((((SPacketCustomPayload)packet).getChannelName() == "recorded_actions") ||
-                 (((SPacketCustomPayload)packet).getChannelName() == "recorded_camera_actions")))
+                ((((SPacketCustomPayload)packet).getChannelName().equals("recorded_actions")) ||
+                 (((SPacketCustomPayload)packet).getChannelName().equals("recorded_camera_actions"))))
             {   // Send action recording packets to a new file for easier parsing
                 saveService.submit(() -> {
                     if (serverWasPaused) {
@@ -187,6 +187,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
+        logger.info("Packet Listener marked inactive");
         metaData.setDuration((int) lastSentPacket);
         saveMetaData();
 
@@ -199,6 +200,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
         synchronized (replayFile) {
             try {
+                logger.info("Saving replay file");
                 replayFile.save();
                 replayFile.close();
             } catch (IOException e) {
@@ -417,5 +419,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void setServerWasPaused() {
         this.serverWasPaused = true;
+    }
+
+    public void setExperementMetadata(String experementMetadata){
+        this.metaData.setExpMetadata(experementMetadata);
     }
 }

@@ -13,6 +13,7 @@ import com.replaymod.core.utils.Utils;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.gui.GuiRecordingOverlay;
 import com.replaymod.recording.packet.PacketListener;
+import com.replaymod.replaystudio.replay.Replay;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 //import com.replaymod.replaystudio.replay.ZipReplayFile;
@@ -133,13 +134,14 @@ public class ConnectionEventHandler {
                         if (recordObject.has("record")){
                             boolean recordFlag = recordObject.get("record").getAsBoolean();
 
-                            if (recordFlag && recordObject.has("experiment")) {
+                            if (recordObject.has("experiment")) {
                                 JsonObject experimentMetaData = recordObject.get("experiment").getAsJsonObject();
                                 logger.error("I parsed metadata :" +  experimentMetaData.toString());
-                                startRecording(experimentMetaData.toString());
-                            }
-                            else if (!recordFlag){
-                                stopRecording();
+
+                                if(recordFlag){
+                                    startRecording(experimentMetaData.toString());}
+                                else{
+                                    stopRecording(experimentMetaData.toString());}
                             }
                             else {
                                 logger.error("Experiment field not present! Not recording!");
@@ -148,6 +150,7 @@ public class ConnectionEventHandler {
                     }
                 } catch (IOException e) {
                     logger.error("IO Exception encounterd when trying to manage recording state!");
+                    return;
                 }    
             }
         }
@@ -214,7 +217,7 @@ public class ConnectionEventHandler {
             //File currentFile = new File(folder, Utils.replayNameToFileName(name));
             //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
             
-            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, experimentMetaData, logger);
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, logger);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
@@ -224,6 +227,7 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
+            metaData.setExpMetadata(experimentMetaData);
             packetListener = new PacketListener(replayFile, metaData);//, streamName, awsCredentials, mcServerSocket);
             networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
@@ -240,19 +244,22 @@ public class ConnectionEventHandler {
         }
     }
 
-    private void stopRecording(){
+    private void stopRecording() {
         core.printInfoToChat("Recording Stoped");
         // Unregister existing handlers
         if (packetListener != null) {
-            logger.info("Trying to do something to the networkManager");
-            if (networkManager.channel().pipeline().get("replay_recorder") != null){
-                networkManager.channel().pipeline().remove(packetListener);
-            }
+  
             logger.info("Trying to unregister guiOverlay");
             guiOverlay.unregister();
             guiOverlay = null;
             logger.info("Trying to unregister the event handler");
             recordingEventHandler.unregister();
+
+            logger.info("Trying to do something to the networkManager");
+            if (networkManager.channel().pipeline().get("replay_recorder") != null){
+                networkManager.channel().pipeline().remove(packetListener);
+                packetListener.channelInactive(null);
+            }
 
             recordingEventHandler = null;
             packetListener = null;
@@ -260,6 +267,14 @@ public class ConnectionEventHandler {
             logger.info("Trying to return stream");
             returnFirehoseStream();
         }
+    }
+
+    private void stopRecording(String experimentMetaData){
+        if (packetListener != null) {
+            logger.info("Recording experment metadata");
+            packetListener.setExperementMetadata(experimentMetaData);
+        }
+        stopRecording();
     }
 
     private AmazonKinesisFirehose getFirehoseStream(){

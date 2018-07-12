@@ -146,30 +146,31 @@ public class RecordingEventHandler {
         //if( event.phase.equals(Phase.END)){
             if (plr == null) { return;}
             if(lastPitch == null || lastYaw == null) {
-                lastPitch = plr.cameraPitch;
-                lastYaw = plr.cameraYaw;
+                lastPitch = plr.rotationPitch;
+                lastYaw = plr.rotationYawHead;
             } else {
-                float diffPitch = lastPitch - plr.cameraPitch;
-                lastPitch = plr.cameraPitch;
-                float diffYaw = lastYaw - plr.cameraYaw;
-                lastYaw = plr.cameraYaw;
-
-                
+                float diffPitch = lastPitch - plr.rotationPitch;
+                lastPitch = plr.rotationPitch;
+                float diffYaw = lastYaw - plr.rotationYawHead;
+                lastYaw = plr.rotationYawHead;
 
                 ByteBuf byteBuf = Unpooled.buffer();
                 PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                packetBuffer.writeFloat(lastPitch);
                 packetBuffer.writeFloat(lastYaw);
+                packetBuffer.writeFloat(lastPitch);
                 packetListener.save(new SPacketCustomPayload("recorded_camera_actions", packetBuffer));
 
-                //TODO remove after validation of action space
-                String debugStr = "Turn/Tilt" + " > " + lastYaw + lastPitch;
-                ITextComponent debugMsg = new TextComponentString(debugStr);
-                packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
+                    //TODO remove after validation of action space
+                    String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
+                    ITextComponent debugMsg = new TextComponentString(debugStr);
+                    packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                }
+
+                
             }
 
             int hotbarIdx = plr.inventory.currentItem;
-            boolean setHotbar = false;
             for (KeyBinding binding : mc.gameSettings.keyBindings){
                 if(binding.isKeyDown()){
                     // //Record that key was down
@@ -179,9 +180,9 @@ public class RecordingEventHandler {
                     //     " - " + binding.isPressed() + 
                     //     " - " + binding.getKeyDescription());
                     
-                    // Hotbar bindings are 2-10
+                    // Hotbar bindings are 2-10 - handle this seperatly to account for scroll wheel
                     if (2 <= binding.getKeyCode() && binding.getKeyCode() <= 10){
-                        if (binding.getKeyCode() != hotbarIdx) {continue;} else {setHotbar = true;}
+                        continue;
                     }
 
                     ByteBuf byteBuf = Unpooled.buffer();
@@ -195,9 +196,8 @@ public class RecordingEventHandler {
                     packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
                 }
             }
-            if (!setHotbar && hotbarIdx != lastHotbar){
+            if (hotbarIdx != lastHotbar){
                 lastHotbar = hotbarIdx;
-                logger.info("Scroll-wheel used to set hot bar...");
                 logger.info("Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")");
                 ByteBuf byteBuf = Unpooled.buffer();
                 PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
@@ -216,6 +216,8 @@ public class RecordingEventHandler {
     public void onPlayerTick(PlayerTickEvent e) {
         try {
             if(e.player != player(mc)) return;
+
+            recordActions(e.player);
 
             boolean force = false;
             if(lastX == null || lastY == null || lastZ == null) {
