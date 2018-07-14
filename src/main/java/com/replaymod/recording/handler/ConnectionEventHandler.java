@@ -139,9 +139,9 @@ public class ConnectionEventHandler {
                                 logger.error("I parsed metadata :" +  experimentMetaData.toString());
 
                                 if(recordFlag){
-                                    startRecording(experimentMetaData.toString());}
+                                    markStartRecording(experimentMetaData.toString());}
                                 else{
-                                    stopRecording(experimentMetaData.toString());}
+                                    markStopRecording(experimentMetaData.toString());}
                             }
                             else {
                                 logger.error("Experiment field not present! Not recording!");
@@ -244,7 +244,7 @@ public class ConnectionEventHandler {
         }
     }
 
-    private void stopRecording() {
+    private void close() {
         core.printInfoToChat("Recording Stoped");
         // Unregister existing handlers
         if (packetListener != null) {
@@ -269,12 +269,25 @@ public class ConnectionEventHandler {
         }
     }
 
-    private void stopRecording(String experimentMetaData){
+    private void markStartRecording(String experimentMetadata){
         if (packetListener != null) {
             logger.info("Recording experment metadata");
-            packetListener.setExperementMetadata(experimentMetaData);
+            packetListener.setExperementMetadata(experimentMetadata);
         }
-        stopRecording();
+        packetListener.addMarker(true);
+    }
+
+
+    private void markStopRecording(){
+        packetListener.addMarker(false);
+    }
+
+    private void markStopRecording(String experimentMetadata){
+        if (packetListener != null) {
+            logger.info("Recording experment metadata");
+            packetListener.setExperementMetadata(experimentMetadata);
+        }
+        markStopRecording();
     }
 
     private AmazonKinesisFirehose getFirehoseStream(){
@@ -522,16 +535,16 @@ public class ConnectionEventHandler {
             }
         };
 
+        startRecording("{\"experement\": \"debug\"}");
+
         recordingManager = new Thread(recordingService);
         recordingManager.start();
-        // DEBUG record on connection to server
-        //startRecording("{\"experement\": \"debug\"}");
     }
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
         recordingManager.interrupt();   
-        stopRecording();     
+        close();     
     }
 
     public PacketListener getPacketListener() {

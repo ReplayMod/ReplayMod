@@ -419,6 +419,37 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         });
     }
 
+    public void addMarker(Boolean recording) {
+        Entity view = getRenderViewEntity(Minecraft.getMinecraft());
+        int timestamp = (int) (System.currentTimeMillis() - startTime);
+
+        Marker marker = new Marker();
+        marker.setTime(timestamp);
+        marker.setX(view.posX);
+        marker.setY(view.posY);
+        marker.setZ(view.posZ);
+        marker.setYaw(view.rotationYaw);
+        marker.setPitch(view.rotationPitch);
+        if (recording) {
+            marker.setStartRecording(true);
+        } else {
+            marker.setStopRecording(true);
+        }
+        marker.setMetadata(metaData.toString());
+        // Roll is always 0
+        saveService.submit(() -> {
+            synchronized (replayFile) {
+                try {
+                    Set<Marker> markers = replayFile.getMarkers().or(HashSet::new);
+                    markers.add(marker);
+                    replayFile.writeMarkers(markers);
+                } catch (IOException e) {
+                    logger.error("Writing markers:", e);
+                }
+            }
+        });
+    }
+
     public void setServerWasPaused() {
         this.serverWasPaused = true;
     }
