@@ -267,16 +267,16 @@ public class ConnectionEventHandler {
             logger.info("Trying to unregister the event handler");
             recordingEventHandler.unregister();
 
-            logger.info("PAcket listerns dis-connect state is " + Boolean.toString(packetListener.getFinishedDeactivating()));
-            logger.info("Trying mark packet listerner inactive");
-            packetListener.channelInactive(null);
+            // logger.info("Packet listener disconnect state is " + Boolean.toString(packetListener.getFinishedDeactivating()));
+            // logger.info("Trying mark packet listerner inactive");
+            // packetListener.channelInactive(null);
 
 
             recordingEventHandler = null;
             packetListener = null;
 
-            logger.info("Trying to return stream");
-            returnFirehoseStream();
+            // logger.info("Trying to return stream");
+            // returnFirehoseStream();
         }
     }
 
