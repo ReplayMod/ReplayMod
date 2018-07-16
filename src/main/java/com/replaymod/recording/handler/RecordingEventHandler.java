@@ -145,27 +145,35 @@ public class RecordingEventHandler {
     private void recordActions(EntityPlayer plr) {
         //if( event.phase.equals(Phase.END)){
             if (plr == null) { return;}
+            //Record tick time
+            ByteBuf byteBuf = Unpooled.buffer();
+                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+                packetListener.save(new SPacketCustomPayload("t", packetBuffer));
+
             if(lastPitch == null || lastYaw == null) {
                 lastPitch = plr.rotationPitch;
                 lastYaw = plr.rotationYawHead;
             } else {
                 float diffPitch = lastPitch - plr.rotationPitch;
-                lastPitch = plr.rotationPitch;
                 float diffYaw = lastYaw - plr.rotationYawHead;
-                lastYaw = plr.rotationYawHead;
-
-                ByteBuf byteBuf = Unpooled.buffer();
-                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                packetBuffer.writeFloat(lastYaw);
-                packetBuffer.writeFloat(lastPitch);
-                packetListener.save(new SPacketCustomPayload("recorded_camera_actions", packetBuffer));
-
-                if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
-                    //TODO remove after validation of action space
-                    String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
-                    ITextComponent debugMsg = new TextComponentString(debugStr);
-                    packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                
+                if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.0001){
+                    byteBuf = Unpooled.buffer();
+                    packetBuffer = new PacketBuffer(byteBuf);
+                    packetBuffer.writeFloat(lastYaw);
+                    packetBuffer.writeFloat(lastPitch);
+                    packetListener.save(new SPacketCustomPayload("c", packetBuffer));
+                    lastPitch = plr.rotationPitch;
+                    lastYaw = plr.rotationYawHead;
                 }
+                
+
+                // if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
+                //     //TODO remove after validation of action space
+                //     String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
+                //     ITextComponent debugMsg = new TextComponentString(debugStr);
+                //     packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                // }
 
                 
             }
@@ -185,29 +193,29 @@ public class RecordingEventHandler {
                         continue;
                     }
 
-                    ByteBuf byteBuf = Unpooled.buffer();
-                    PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+                    byteBuf = Unpooled.buffer();
+                    packetBuffer = new PacketBuffer(byteBuf);
                     packetBuffer.writeVarInt(binding.getKeyCode());
-                    packetListener.save(new SPacketCustomPayload("recorded_actions", packetBuffer));
+                    packetListener.save(new SPacketCustomPayload("a", packetBuffer));
 
-                    //TODO remove after validation of action space
-                    String debugStr = binding.getDisplayName() + ":" + binding.getKeyCode() + " > " + binding.getKeyDescription();
-                    ITextComponent debugMsg = new TextComponentString(debugStr);
-                    packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                    // //TODO remove after validation of action space
+                    // String debugStr = binding.getDisplayName() + ":" + binding.getKeyCode() + " > " + binding.getKeyDescription();
+                    // ITextComponent debugMsg = new TextComponentString(debugStr);
+                    // packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
                 }
             }
             if (hotbarIdx != lastHotbar){
                 lastHotbar = hotbarIdx;
                 logger.info("Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")");
-                ByteBuf byteBuf = Unpooled.buffer();
-                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+                byteBuf = Unpooled.buffer();
+                packetBuffer = new PacketBuffer(byteBuf);
                 packetBuffer.writeVarInt(hotbarIdx + 2);
                 packetListener.save(new SPacketCustomPayload("recorded_actions", packetBuffer));
 
-                //TODO remove after validation of action space
-                String debugStr = "Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")";
-                ITextComponent debugMsg = new TextComponentString(debugStr);
-                packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                // //TODO remove after validation of action space
+                // String debugStr = "Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")";
+                // ITextComponent debugMsg = new TextComponentString(debugStr);
+                // packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
             }
         //}
     }

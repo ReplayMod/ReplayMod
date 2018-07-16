@@ -143,8 +143,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             long now = System.currentTimeMillis();
 
             if(packet instanceof SPacketCustomPayload && 
-                ((((SPacketCustomPayload)packet).getChannelName().equals("recorded_actions")) ||
-                 (((SPacketCustomPayload)packet).getChannelName().equals("recorded_camera_actions"))))
+                ((((SPacketCustomPayload)packet).getChannelName().equals("a")) || //Action
+                 (((SPacketCustomPayload)packet).getChannelName().equals("t")) || //Tick
+                 (((SPacketCustomPayload)packet).getChannelName().equals("c"))))  //Camera move
             {   // Send action recording packets to a new file for easier parsing
                 saveService.submit(() -> {
                     if (serverWasPaused) {
@@ -194,6 +195,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         saveService.shutdown();
         try {
             saveService.awaitTermination(10, TimeUnit.SECONDS);
+            logger.info("Save service terminated");
         } catch (InterruptedException e) {
             logger.error("Waiting for save service termination:", e);
         }
