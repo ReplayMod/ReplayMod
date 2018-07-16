@@ -259,12 +259,14 @@ public class ConnectionEventHandler {
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-        recordingManager.interrupt(); 
-        markStopRecording("{}");
-        core.printInfoToChat("Recording Stoped");
+        
         // Unregister existing handlers
         if (packetListener != null) {
   
+            recordingManager.interrupt(); 
+            markStopRecording("{}");
+            core.printInfoToChat("Recording Stoped");
+
             logger.info("Trying to unregister guiOverlay");
             guiOverlay.unregister();
             guiOverlay = null;
