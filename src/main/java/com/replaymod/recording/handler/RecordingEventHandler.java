@@ -146,9 +146,22 @@ public class RecordingEventHandler {
         //if( event.phase.equals(Phase.END)){
             if (plr == null) { return;}
             //Record tick time
-            ByteBuf byteBuf = Unpooled.buffer();
-                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+
+            //Record if gui window is open
+            if(mc.currentScreen != null) {
+                // GUI is open - mark this and return (no actions possible)
+                byteBuf = Unpooled.buffer();
+                packetBuffer = new PacketBuffer(byteBuf);
+                packetBuffer.writeVarInt(0);
                 packetListener.save(new SPacketCustomPayload("t", packetBuffer));
+                return;
+            } else {
+                // Gui is not open - mark tick and record any actions
+                byteBuf = Unpooled.buffer();
+                packetBuffer = new PacketBuffer(byteBuf);
+                packetBuffer.writeVarInt(1);
+                packetListener.save(new SPacketCustomPayload("t", packetBuffer));
+            }
 
             if(lastPitch == null || lastYaw == null) {
                 lastPitch = plr.rotationPitch;
@@ -210,7 +223,7 @@ public class RecordingEventHandler {
                 byteBuf = Unpooled.buffer();
                 packetBuffer = new PacketBuffer(byteBuf);
                 packetBuffer.writeVarInt(hotbarIdx + 2);
-                packetListener.save(new SPacketCustomPayload("recorded_actions", packetBuffer));
+                packetListener.save(new SPacketCustomPayload("a", packetBuffer));
 
                 // //TODO remove after validation of action space
                 // String debugStr = "Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")";
