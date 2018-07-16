@@ -73,6 +73,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
 
+    private boolean finishedDeactivating = false;
+
 
     /**
      * Used to keep track of the last metadata save job submitted to the save service and
@@ -188,6 +190,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
+        if (finishedDeactivating) {return;}
         logger.info("Packet Listener marked inactive");
         metaData.setDuration((int) lastSentPacket);
         saveMetaData();
@@ -209,6 +212,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 logger.error("Saving replay file:", e);
             }
         }
+
+        finishedDeactivating = true;
+    }
+
+    public boolean getFinishedDeactivating(){
+        return this.finishedDeactivating;
     }
 
     @Override
@@ -398,6 +407,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         Entity view = getRenderViewEntity(Minecraft.getMinecraft());
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
+        if (view == null) {return;}
+
         Marker marker = new Marker();
         marker.setTime(timestamp);
         marker.setX(view.posX);
@@ -422,6 +433,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     public void addMarker(Boolean recording) {
         Entity view = getRenderViewEntity(Minecraft.getMinecraft());
         int timestamp = (int) (System.currentTimeMillis() - startTime);
+
+        if (view == null) {return;}
 
         Marker marker = new Marker();
         marker.setTime(timestamp);
