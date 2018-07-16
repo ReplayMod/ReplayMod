@@ -146,19 +146,19 @@ public class RecordingEventHandler {
         //if( event.phase.equals(Phase.END)){
             if (plr == null) { return;}
             //Record tick time
-
+            
             //Record if gui window is open
             if(mc.currentScreen != null) {
                 // GUI is open - mark this and return (no actions possible)
-                byteBuf = Unpooled.buffer();
-                packetBuffer = new PacketBuffer(byteBuf);
+                ByteBuf byteBuf = Unpooled.buffer();
+                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
                 packetBuffer.writeVarInt(0);
                 packetListener.save(new SPacketCustomPayload("t", packetBuffer));
                 return;
             } else {
                 // Gui is not open - mark tick and record any actions
-                byteBuf = Unpooled.buffer();
-                packetBuffer = new PacketBuffer(byteBuf);
+                ByteBuf byteBuf = Unpooled.buffer();
+                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
                 packetBuffer.writeVarInt(1);
                 packetListener.save(new SPacketCustomPayload("t", packetBuffer));
             }
@@ -171,8 +171,8 @@ public class RecordingEventHandler {
                 float diffYaw = lastYaw - plr.rotationYawHead;
                 
                 if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.0001){
-                    byteBuf = Unpooled.buffer();
-                    packetBuffer = new PacketBuffer(byteBuf);
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
                     packetBuffer.writeFloat(lastYaw);
                     packetBuffer.writeFloat(lastPitch);
                     packetListener.save(new SPacketCustomPayload("c", packetBuffer));
@@ -206,8 +206,8 @@ public class RecordingEventHandler {
                         continue;
                     }
 
-                    byteBuf = Unpooled.buffer();
-                    packetBuffer = new PacketBuffer(byteBuf);
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
                     packetBuffer.writeVarInt(binding.getKeyCode());
                     packetListener.save(new SPacketCustomPayload("a", packetBuffer));
 
@@ -220,8 +220,8 @@ public class RecordingEventHandler {
             if (hotbarIdx != lastHotbar){
                 lastHotbar = hotbarIdx;
                 logger.info("Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")");
-                byteBuf = Unpooled.buffer();
-                packetBuffer = new PacketBuffer(byteBuf);
+                ByteBuf byteBuf = Unpooled.buffer();
+                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
                 packetBuffer.writeVarInt(hotbarIdx + 2);
                 packetListener.save(new SPacketCustomPayload("a", packetBuffer));
 

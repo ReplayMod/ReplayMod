@@ -87,10 +87,6 @@ import java.util.concurrent.TimeUnit;
  * Handles connection events and initiates recording if enabled.
  */
 public class ConnectionEventHandler {
-
-    private static int FIREHOSE_MAX_CLIENT_CREATION_DELAY = (10 * 60 * 1000);
-    private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 100;
-
     private static final String packetHandlerKey = "packet_handler";
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
     private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
@@ -203,17 +199,12 @@ public class ConnectionEventHandler {
             //Excnage key with minecraft server
             authenticateWithServer();
 
-            AmazonKinesisFirehose firehoseClient = getFirehoseStream();
-            if (firehoseClient == null){
-                return;
-            }
-
             //File folder = core.getReplayFolder();
             //String name = sdf.format(Calendar.getInstance().getTime());
             //File currentFile = new File(folder, Utils.replayNameToFileName(name));
             //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
             
-            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, logger);
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), uid, logger);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
@@ -250,6 +241,19 @@ public class ConnectionEventHandler {
         } catch (Throwable e) {
             e.printStackTrace();
             core.printWarningToChat("replaymod.chat.recordingfailed");
+            if (recordingManager != null) {
+                recordingManager.interrupt(); 
+            }
+            // Unregister existing handlers
+            if (packetListener != null) {
+                logger.info("Trying to unregister guiOverlay");
+                guiOverlay.unregister();
+                guiOverlay = null;
+                logger.info("Trying to unregister the event handler");
+                recordingEventHandler.unregister();
+                recordingEventHandler = null;
+                packetListener = null;
+            }
         }
     }
 
@@ -294,138 +298,6 @@ public class ConnectionEventHandler {
             packetListener.setExperementMetadata(experimentMetadata);
         }
         packetListener.addMarker(false);
-    }
-
-    private AmazonKinesisFirehose getFirehoseStream(){
-        ////////////////////////////////////////////
-        //       FireHose Key Retrieval           //
-        ////////////////////////////////////////////
-        // Send Firehose key request
-        JsonObject firehoseJson  = new JsonObject();
-        firehoseJson.addProperty("cmd", "get_firehose_key");
-        firehoseJson.addProperty("uid", uid);
-        String firehoseStr = firehoseJson.toString();
-        DatagramPacket firehoseKeyRequest = new DatagramPacket(firehoseStr.getBytes(), firehoseStr.getBytes().length);
-        try {
-            userServerSocket.send(firehoseKeyRequest);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            userServerSocket.close();
-            //mcServerSocket.close();
-            return null;
-        }
-    
-        // Get response
-        String tmp= null; 
-        JsonObject awsKeys = null;
-        byte[] buff1 = new byte[65535];
-        BasicSessionCredentials awsCredentials;
-        DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length);
-        try {
-            
-            while (tmp == null){
-                userServerSocket.receive(firehoseKeyData);
-                String dataStr = new String(firehoseKeyData.getData(), firehoseKeyData.getOffset(), firehoseKeyData.getLength());
-                awsKeys = new JsonParser().parse(dataStr).getAsJsonObject();
-                if (awsKeys.get("stream_name") != null){
-                    tmp = awsKeys.get("stream_name").getAsString();
-                }
-            }
-            
-            this.streamName = tmp;
-            awsCredentials = new BasicSessionCredentials(
-                awsKeys.get("access_key").getAsString(),
-                awsKeys.get("secret_key").getAsString(),
-                awsKeys.get("session_token").getAsString());
-            
-        
-        } catch (NullPointerException | IOException e) {
-            logger.error("Could not parse returned firehose stream infromation");
-            if (awsKeys != null){
-                logger.error("Tried to parse " + awsKeys.toString());
-            }
-            e.printStackTrace();
-            userServerSocket.close();
-            //mcServerSocket.close();
-            returnFirehoseStream();
-            return null;
-        }
-        
-        logger.info(String.format("StreamName:    %s%n", streamName));
-        //logger.info(String.format("Access Key:    %s%n", accessKey));
-        //logger.info(String.format("Secret Key:    %s%n", secretKey));
-        //logger.info(String.format("Session Token: %s%n", sessionToken));
-
-        // Firehose client
-        AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
-            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-            .withRegion("us-east-1")
-            .build();
-
-        //Check if the given stream is open
-        boolean timeout = true;
-        long startTime = System.currentTimeMillis();
-        long endTime = startTime + FIREHOSE_MAX_CLIENT_CREATION_DELAY; //TODO reduce maximum delay
-        while (System.currentTimeMillis() < endTime) {
-            try {
-                Thread.sleep(FIREHOSE_CLIENT_STATE_REFRESH_DELAY);
-            } catch (InterruptedException e) {
-                // Ignore interruption (doesn't impact deliveryStream creation)
-            }
-
-            DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
-            describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
-
-            DescribeDeliveryStreamResult describeDeliveryStreamResponse =
-                firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
-
-            DeliveryStreamDescription  deliveryStreamDescription = 
-                describeDeliveryStreamResponse.getDeliveryStreamDescription();
-
-            String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
-            if (deliveryStreamStatus.equals("ACTIVE")) {
-                timeout = false;
-                break;
-            }
-        }
-
-        if (timeout) {
-            logger.error("Waited too long for stream activation! Stream may be mis-configured!");
-            // TODO handle this cleanly
-        } else {
-            logger.info("Active Firehose Stream Established!");
-        }
-        return firehoseClient;
-    }
-    private void returnFirehoseStream(){
-        if (streamName == null){ return;}
-        // Send Minecraft dissconnect notification
-        JsonObject mcKeyJson = new JsonObject();
-        mcKeyJson.addProperty("cmd", "return_firehose_key");
-        mcKeyJson.addProperty("uid", uid);
-        mcKeyJson.addProperty("stream_name", streamName);
-        String mcKeyStr = mcKeyJson.toString();
-        DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
-        try {
-            userServerSocket.send(mcKeyRequest);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return;
-        }
-
-        byte[] buff1 = new byte[2400];
-        DatagramPacket returnResponse = new DatagramPacket(buff1, buff1.length);
-        try {
-            userServerSocket.receive(returnResponse);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        } finally {
-            String dataStr = new String(returnResponse.getData(), returnResponse.getOffset(), returnResponse.getLength());
-            JsonElement json = new JsonParser().parse(dataStr).getAsJsonObject();
-            logger.info("Return result: " + json.toString());   
-        }
-        
     }
 
     /* Event Handler
