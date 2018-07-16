@@ -164,10 +164,8 @@ public class ConnectionEventHandler {
         }
     }
 
-
-    private void startRecording(String experimentMetaData){
+    public void onConnectedToServerEvent(NetworkManager networkManager) {
         try {
-            AmazonKinesisFirehose firehoseClient;
             boolean local = networkManager.isLocalChannel();
             if (local) {
                 //#if MC>=10800
@@ -180,20 +178,11 @@ public class ConnectionEventHandler {
                     logger.info("Singleplayer Recording is disabled");
                     return;
                 }
-
-                logger.info("Recording Disabled for single player");
-                return;
             } else {
                 if(!core.getSettingsRegistry().get(Setting.RECORD_SERVER)) {
                     logger.info("Multiplayer Recording is disabled");
                     return;
-                } else {
-                    firehoseClient = getFirehoseStream();
                 }
-            }
-
-            if (firehoseClient == null){
-                return;
             }
 
             String worldName;
@@ -208,7 +197,14 @@ public class ConnectionEventHandler {
             //#endif
             } else {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
-                returnFirehoseStream();
+                return;
+            }
+
+            //Excnage key with minecraft server
+            authenticateWithServer();
+
+            AmazonKinesisFirehose firehoseClient = getFirehoseStream();
+            if (firehoseClient == null){
                 return;
             }
 
@@ -227,8 +223,7 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
-            metaData.setExpMetadata(experimentMetaData);
-            packetListener = new PacketListener(replayFile, metaData);//, streamName, awsCredentials, mcServerSocket);
+            packetListener = new PacketListener(replayFile, metaData);
             networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
             recordingEventHandler = new RecordingEventHandler(packetListener, logger);
@@ -238,13 +233,30 @@ public class ConnectionEventHandler {
             guiOverlay.register();
 
             core.printInfoToChat("replaymod.chat.recordingstarted");
+            
+            ////////////////////////////////////////////
+            //        Recording Manager Thread        //
+            ////////////////////////////////////////////
+
+            Runnable recordingService = new Runnable(){
+                public void run(){
+                    manageRecording();
+                }
+            };
+
+            recordingManager = new Thread(recordingService);
+            recordingManager.start();
+
         } catch (Throwable e) {
             e.printStackTrace();
             core.printWarningToChat("replaymod.chat.recordingfailed");
         }
     }
 
-    private void close() {
+    @SubscribeEvent
+    public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
+        recordingManager.interrupt(); 
+        markStopRecording("{}");
         core.printInfoToChat("Recording Stoped");
         // Unregister existing handlers
         if (packetListener != null) {
@@ -255,11 +267,10 @@ public class ConnectionEventHandler {
             logger.info("Trying to unregister the event handler");
             recordingEventHandler.unregister();
 
-            logger.info("Trying to do something to the networkManager");
-            if (networkManager.channel().pipeline().get("replay_recorder") != null){
-                networkManager.channel().pipeline().remove(packetListener);
-                packetListener.channelInactive(null);
-            }
+            logger.info("PAcket listerns dis-connect state is " + Boolean.toString(packetListener.getFinishedDeactivating()));
+            logger.info("Trying mark packet listerner inactive");
+            packetListener.channelInactive(null);
+
 
             recordingEventHandler = null;
             packetListener = null;
@@ -277,17 +288,12 @@ public class ConnectionEventHandler {
         packetListener.addMarker(true);
     }
 
-
-    private void markStopRecording(){
-        packetListener.addMarker(false);
-    }
-
     private void markStopRecording(String experimentMetadata){
         if (packetListener != null) {
             logger.info("Recording experment metadata");
             packetListener.setExperementMetadata(experimentMetadata);
         }
-        markStopRecording();
+        packetListener.addMarker(false);
     }
 
     private AmazonKinesisFirehose getFirehoseStream(){
@@ -430,8 +436,7 @@ public class ConnectionEventHandler {
     * sends authorization to minecraft server
     * establishes thread to listen for recording start/stop events
     */
-    public void onConnectedToServerEvent(NetworkManager networkManager) {
-        this.networkManager = networkManager;
+    public void authenticateWithServer() {
         try{
             String mcUsername = mc.getSession().getUsername();
             String mcUUID = mc.getSession().getPlayerID();
@@ -524,27 +529,6 @@ public class ConnectionEventHandler {
         } else {
             logger.error("Minecraft server connection is not complete - not sending play key");
         }     
-
-        ////////////////////////////////////////////
-        //        Recording Manager Thread        //
-        ////////////////////////////////////////////
-
-        Runnable recordingService = new Runnable(){
-            public void run(){
-                manageRecording();
-            }
-        };
-
-        startRecording("{\"experement\": \"debug\"}");
-
-        recordingManager = new Thread(recordingService);
-        recordingManager.start();
-    }
-
-    @SubscribeEvent
-    public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-        recordingManager.interrupt();   
-        close();     
     }
 
     public PacketListener getPacketListener() {
