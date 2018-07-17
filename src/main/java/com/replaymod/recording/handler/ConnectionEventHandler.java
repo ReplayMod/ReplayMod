@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.utils.Utils;
@@ -106,7 +107,6 @@ public class ConnectionEventHandler {
     private Thread recordingManager;
 
     private String uid;
-    private String streamName;
 
     public ConnectionEventHandler(Logger logger, ReplayMod core) {
         this.logger = logger;
@@ -120,12 +120,13 @@ public class ConnectionEventHandler {
         try{
             logger.error("Recording Service Started");
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
-            String jsonStr;
+            String jsonStr = "";
             while (true){
                 try{
                     jsonStr = in.readLine();
                     Thread.sleep(100);
                     if( jsonStr != null){
+                        
                         JsonObject recordObject = new JsonParser().parse(jsonStr).getAsJsonObject();
                         if (recordObject.has("record")){
                             boolean recordFlag = recordObject.get("record").getAsBoolean();
@@ -144,9 +145,11 @@ public class ConnectionEventHandler {
                             }
                         }
                     }
-                } catch (IOException e) {
+                } catch (JsonSyntaxException | IOException e) {
+                    logger.error(e.toString());
+                    logger.error(jsonStr);
                     logger.error("IO Exception encounterd when trying to manage recording state!");
-                    return;
+                    markStopRecording("{}");
                 }    
             }
         }
@@ -259,7 +262,6 @@ public class ConnectionEventHandler {
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-        
         // Unregister existing handlers
         if (packetListener != null) {
   
@@ -273,16 +275,8 @@ public class ConnectionEventHandler {
             logger.info("Trying to unregister the event handler");
             recordingEventHandler.unregister();
 
-            // logger.info("Packet listener disconnect state is " + Boolean.toString(packetListener.getFinishedDeactivating()));
-            // logger.info("Trying mark packet listerner inactive");
-            // packetListener.channelInactive(null);
-
-
             recordingEventHandler = null;
             packetListener = null;
-
-            // logger.info("Trying to return stream");
-            // returnFirehoseStream();
         }
     }
 
@@ -290,16 +284,18 @@ public class ConnectionEventHandler {
         if (packetListener != null) {
             logger.info("Recording experment metadata");
             packetListener.setExperementMetadata(experimentMetadata);
+            packetListener.addMarker(true);
         }
-        packetListener.addMarker(true);
+        
     }
 
     private void markStopRecording(String experimentMetadata){
         if (packetListener != null) {
             logger.info("Recording experment metadata");
             packetListener.setExperementMetadata(experimentMetadata);
+            packetListener.addMarker(false);
         }
-        packetListener.addMarker(false);
+        
     }
 
     /* Event Handler

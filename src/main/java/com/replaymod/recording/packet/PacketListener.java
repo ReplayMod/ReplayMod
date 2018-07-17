@@ -431,18 +431,27 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void addMarker(Boolean recording) {
+        logger.info("Add marker called");
         Entity view = getRenderViewEntity(Minecraft.getMinecraft());
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
-        if (view == null) {return;}
-
         Marker marker = new Marker();
         marker.setTime(timestamp);
-        marker.setX(view.posX);
-        marker.setY(view.posY);
-        marker.setZ(view.posZ);
-        marker.setYaw(view.rotationYaw);
-        marker.setPitch(view.rotationPitch);
+
+        if (view == null) {
+            marker.setX(0);
+            marker.setY(0);
+            marker.setZ(0);
+            marker.setYaw(0);
+            marker.setPitch(0);
+        } else {
+            marker.setX(view.posX);
+            marker.setY(view.posY);
+            marker.setZ(view.posZ);
+            marker.setYaw(view.rotationYaw);
+            marker.setPitch(view.rotationPitch);
+        } 
+
         if (recording) {
             marker.setStartRecording(true);
         } else {
@@ -456,7 +465,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     Set<Marker> markers = replayFile.getMarkers().or(HashSet::new);
                     markers.add(marker);
                     replayFile.writeMarkers(markers);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     logger.error("Writing markers:", e);
                 }
             }
