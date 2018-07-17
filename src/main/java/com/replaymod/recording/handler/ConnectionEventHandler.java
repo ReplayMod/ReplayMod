@@ -282,7 +282,7 @@ public class ConnectionEventHandler {
 
     private void markStartRecording(String experimentMetadata){
         if (packetListener != null) {
-            logger.info("Recording experment metadata");
+            logger.info("Recording experment metadata - Start Recording!");
             packetListener.setExperementMetadata(experimentMetadata);
             packetListener.addMarker(true);
         }

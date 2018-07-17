@@ -18,8 +18,10 @@ import static de.johni0702.minecraft.gui.utils.Utils.clamp;
 public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> implements Draggable {
     protected static final int TEXTURE_MARKER_X = 109;
     protected static final int TEXTURE_MARKER_Y = 20;
-    protected static final int TEXTURE_MARKER_SELECTED_X = 114;
-    protected static final int TEXTURE_MARKER_SELECTED_Y = 20;
+
+    protected static final int TEXTURE_MARKER_SELECTED_X = TEXTURE_MARKER_X + 5;
+    protected static final int TEXTURE_MARKER_SELECTED_Y = TEXTURE_MARKER_Y;
+
     protected static final int MARKER_SIZE = 5;
 
     private final ReplayHandler replayHandler;
@@ -71,6 +73,12 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
         } else {
             textureX = TEXTURE_MARKER_X;
             textureY = TEXTURE_MARKER_Y;
+        }
+
+        if (marker.getStartRecording()) {
+            textureY += MARKER_SIZE;
+        } else if (marker.getStopRecording()){
+            textureY += 2*MARKER_SIZE;
         }
         renderer.drawTexturedRect(markerX - 2, size.getHeight() - BORDER_BOTTOM - MARKER_SIZE,
                 textureX, textureY, MARKER_SIZE, MARKER_SIZE);
