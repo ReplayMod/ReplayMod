@@ -209,14 +209,6 @@ public class RecordingEventHandler {
                     ByteBuf byteBuf = Unpooled.buffer();
                     PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
                     packetBuffer.writeVarInt(binding.getKeyCode());
-                    if(binding.getKeyCode() > 128){
-                        logger.info("Key code is huge: " );
-                        logger.info(binding.getKeyModifier() +
-                        " - " + binding.getDisplayName() + 
-                        " - " + binding.getKeyCode() +  
-                        " - " + binding.isPressed() + 
-                        " - " + binding.getKeyDescription());
-                    }
                     packetListener.save(new SPacketCustomPayload("a", packetBuffer));
 
                     // //TODO remove after validation of action space
