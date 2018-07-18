@@ -30,7 +30,6 @@ import java.util.*;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.EnumPacketDirection;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 
@@ -67,7 +66,9 @@ public class ReplayHandler {
     /**
      * Decodes and sends packets into channel.
      */
-    private final ReplaySender replaySender;
+    private final FullReplaySender fullReplaySender;
+    private final QuickReplaySender quickReplaySender;
+    private boolean quickMode = false;
 
     /**
      * Currently active replay restrictions.
@@ -85,6 +86,8 @@ public class ReplayHandler {
 
     private EmbeddedChannel channel;
 
+    private int replayDuration;
+
     /**
      * The position at which the camera should be located after the next jump.
      */
@@ -96,11 +99,14 @@ public class ReplayHandler {
         Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
         this.replayFile = replayFile;
 
+        replayDuration = replayFile.getMetaData().getDuration();
+
         FML_BUS.post(new ReplayOpenEvent.Pre(this));
 
         markers = new ArrayList<>(replayFile.getMarkers().or(Collections.emptySet()));
 
-        replaySender = new ReplaySender(this, replayFile, false);
+        fullReplaySender = new FullReplaySender(this, replayFile, false);
+        quickReplaySender = new QuickReplaySender(ReplayModReplay.instance, replayFile);
 
         setup();
 
@@ -109,7 +115,7 @@ public class ReplayHandler {
 
         FML_BUS.post(new ReplayOpenEvent.Post(this));
 
-        replaySender.setAsyncMode(asyncMode);
+        fullReplaySender.setAsyncMode(asyncMode);
     }
 
     void restartedReplay() {
@@ -131,7 +137,8 @@ public class ReplayHandler {
 
         FML_BUS.post(new ReplayCloseEvent.Pre(this));
 
-        replaySender.terminateReplay();
+        fullReplaySender.terminateReplay();
+        quickReplaySender.unregister();
 
         replayFile.save();
         replayFile.close();
@@ -185,7 +192,8 @@ public class ReplayHandler {
         NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
         channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
 
-        channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
+        channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
+        channel.pipeline().addFirst("ReplayModReplay_quickReplaySender", quickReplaySender);
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
         networkDispatcher.clientToServerHandshake();
@@ -194,7 +202,7 @@ public class ReplayHandler {
         //$$ NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
         //$$ channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
         //$$
-        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
+        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
         //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "fml:packet_handler", networkDispatcher);
         //$$ channel.pipeline().fireChannelActive();
         //#endif
@@ -225,7 +233,7 @@ public class ReplayHandler {
         //$$ ChannelOutboundHandlerAdapter dummyHandler = new ChannelOutboundHandlerAdapter();
         //$$ channel = new EmbeddedChannel(dummyHandler);
         //$$ channel.pipeline().remove(dummyHandler);
-        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", replaySender);
+        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
         //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "packet_handler", networkManager);
         //$$ channel.pipeline().fireChannelActive();
         //$$
@@ -247,11 +255,38 @@ public class ReplayHandler {
     }
 
     public ReplaySender getReplaySender() {
-        return replaySender;
+        return quickMode ? quickReplaySender : fullReplaySender;
     }
 
     public GuiReplayOverlay getOverlay() {
         return overlay;
+    }
+
+    public void setQuickMode(boolean quickMode) {
+        if (quickMode == this.quickMode) return;
+        if (quickMode && !fullReplaySender.isAsyncMode()) return; // Cannot activate quick mode when already in sync mode
+        this.quickMode = quickMode;
+        if (quickMode) {
+            fullReplaySender.setSyncModeAndWait();
+            quickReplaySender.register();
+            quickReplaySender.restart();
+            quickReplaySender.sendPacketsTill(fullReplaySender.currentTimeStamp());
+            quickReplaySender.setAsyncMode(true);
+        } else {
+            quickReplaySender.setSyncModeAndWait();
+            quickReplaySender.unregister();
+            fullReplaySender.sendPacketsTill(0);
+            fullReplaySender.sendPacketsTill(quickReplaySender.currentTimeStamp());
+            fullReplaySender.setAsyncMode(true);
+        }
+    }
+
+    public boolean isQuickMode() {
+        return quickMode;
+    }
+
+    public int getReplayDuration() {
+        return replayDuration;
     }
 
     /**
@@ -363,6 +398,12 @@ public class ReplayHandler {
     }
 
     public void doJump(int targetTime, boolean retainCameraPosition) {
+        if (getReplaySender() == quickReplaySender) {
+            quickReplaySender.sendPacketsTill(targetTime);
+            return;
+        }
+        FullReplaySender replaySender = fullReplaySender;
+
         if (replaySender.isHurrying()) {
             return; // When hurrying, no Timeline jumping etc. is possible
         }

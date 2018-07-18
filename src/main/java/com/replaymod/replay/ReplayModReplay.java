@@ -142,6 +142,12 @@ public class ReplayModReplay {
             }
         });
 
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.quickmode", Keyboard.KEY_Q, () -> {
+            if (replayHandler != null) {
+                replayHandler.setQuickMode(!replayHandler.isQuickMode());
+            }
+        });
+
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollclockwise", Keyboard.KEY_L, () -> {
             // Noop, actual handling logic in CameraEntity#update
         });

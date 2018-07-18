@@ -128,7 +128,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             public void run(int time) {
                 replayHandler.doJump(time, true);
             }
-        }).setLength(replayHandler.getReplaySender().replayLength());
+        }).setLength(replayHandler.getReplayDuration());
     }
 
     public double getSpeedSliderValue() {
