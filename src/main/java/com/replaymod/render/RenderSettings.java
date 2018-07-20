@@ -66,6 +66,63 @@ public class RenderSettings {
         }
     }
 
+    public enum ObservationPreset {
+        NONE("",""),
+        DEFAULT("inventory", "json"),
+        JSON_FULL("full", "json"),
+        JSON_MAIN_INVENTORY("inventory", "json"),
+        JSON_HOTBAR("hotbar", "json"),
+
+        RAW_FULL("full", "bin"),
+        RAW_MAIN_INVENTORY("inventory", "json"),
+        RAW_HOTBAR("hotbar", "bin");
+
+        public static final int[] slotIds = 
+        { 0,  1,  2,  3,  4,  5,  6,  7,  8, // Hotbar
+          9, 10, 11, 12, 13, 14, 15, 16, 17, // Main Inv
+         18, 19, 20, 21, 22, 23, 24, 25, 26, // Main Inv
+         27, 28, 29, 30, 31, 32, 33, 34, 35, // Main Inv
+        100,    101,    102,    103,   -106};//Armor + Off hand （full)
+
+        private static final int[] invSizes = {
+            9,   // hotbar
+            36,  // inventory
+            41}; // full
+
+        private static final int hotbar_len = 9;
+        private static final int inventory_len = 36;
+        private static final int full_len = 41;
+
+
+        private final String type;
+        private final String fileExtension;
+
+        ObservationPreset(String preset, String fileExtension) {
+            this.type = preset;
+            this.fileExtension = fileExtension;
+        }
+
+        public int getSize() {
+            if (type.contains("full")) return 41;
+            if (type.contains("hotbar")) return 9;
+            if (type.contains("inventory")) return 36;
+            return 0; //Type unknown
+        }
+
+        public String getFileExtension() {
+            return fileExtension;
+        }
+
+        public boolean isJSON() {
+            return type.contains("json");
+        }
+
+        @Override
+        public String toString() {
+            return I18n.format("replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase());
+        }
+    }
+
     @AllArgsConstructor
     public enum AntiAliasing {
         NONE(1), X2(2), X4(4), X8(8);
@@ -81,11 +138,13 @@ public class RenderSettings {
 
     private final RenderMethod renderMethod;
     private final EncodingPreset encodingPreset;
+    private final ObservationPreset observationPreset;
     private final int videoWidth;
     private final int videoHeight;
     private final int framesPerSecond;
     private final int bitRate;
     private final File outputFile;
+    private final File observationFile;
 
     private final boolean renderNameTags;
     private final boolean stabilizeYaw;

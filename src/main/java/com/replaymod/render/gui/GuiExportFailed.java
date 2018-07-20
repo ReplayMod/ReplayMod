@@ -83,11 +83,13 @@ public class GuiExportFailed extends GuiScreen {
             doRestart.accept(new RenderSettings(
                     oldSettings.getRenderMethod(),
                     oldSettings.getEncodingPreset(),
+                    oldSettings.getObservationPreset(),
                     oldSettings.getVideoWidth(),
                     oldSettings.getVideoHeight(),
                     oldSettings.getFramesPerSecond(),
                     oldSettings.getBitRate(),
                     oldSettings.getOutputFile(),
+                    oldSettings.getObservationFile(),
                     oldSettings.isRenderNameTags(),
                     oldSettings.isStabilizeYaw(),
                     oldSettings.isStabilizePitch(),

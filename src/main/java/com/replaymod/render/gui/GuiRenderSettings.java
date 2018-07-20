@@ -82,6 +82,23 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 }
             }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.EncodingPreset.values());
 
+    public final GuiDropdownMenu<RenderSettings.ObservationPreset> observationPresetDropdown =
+            new GuiDropdownMenu<RenderSettings.ObservationPreset>().onSelection(new Consumer<Integer>() {
+                @Override
+                public void consume(Integer old) {
+                    RenderSettings.ObservationPreset newPreset = observationPresetDropdown.getSelectedValue();
+                    // Update export arguments to match new Preset
+                    //exportArguments.setText(newPreset.getValue());
+                    // If the user hasn't changed the output file by themselves,
+                    // if (!outputFileManuallySet) {
+                    //     // generate a new output file name with updated file extension
+                    //     observationFile = generateObservationFile(newPreset);
+                    //     outputFileButton.setLabel(observationFile.getName());
+                    // }
+                    updateInputs();
+                }
+            }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.ObservationPreset.values());
+
     public final GuiNumberField videoWidth = new GuiNumberField().setSize(50, 20).setMinValue(1).setValidateOnFocusChange(true);
     public final GuiNumberField videoHeight = new GuiNumberField().setSize(50, 20).setMinValue(1).setValidateOnFocusChange(true);
     public final GuiSlider frameRateSlider = new GuiSlider().onValueChanged(new Runnable() {
@@ -127,6 +144,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             .addElements(new GridLayout.Data(1, 0.5),
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.renderer"), renderMethodDropdown,
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.presets"), encodingPresetDropdown,
+                    new GuiLabel().setI18nText("replaymod.gui.rendersettings.presets"), observationPresetDropdown,
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.customresolution"), videoResolutionPanel,
                     new GuiLabel().setI18nText("replaymod.gui.settings.bitrate"), new GuiPanel().addElements(null,
                             new GuiPanel().addElements(null, bitRateField, bitRateUnit).setLayout(new HorizontalLayout()),
@@ -273,8 +291,11 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
     private final ReplayHandler replayHandler;
     private final Timeline timeline;
+    private String dateStr;
     private File outputFile;
+    private File observationFile;
     private boolean outputFileManuallySet;
+    private boolean observationFileManuallySet;
 
     public GuiRenderSettings(ReplayHandler replayHandler, Timeline timeline) {
         this.replayHandler = replayHandler;
@@ -386,6 +407,13 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             outputFileManuallySet = true;
         }
         outputFileButton.setLabel(outputFile.getName());
+        if (settings.getObservationFile() == null) {
+            observationFile = generateObservationFile(settings.getObservationPreset());
+            observationFileManuallySet = false;
+        } else {
+            outputFile = settings.getObservationFile();
+            observationFileManuallySet = true;
+        }
         nametagCheckbox.setChecked(settings.isRenderNameTags());
         stabilizeYaw.setChecked(settings.isStabilizeYaw());
         stabilizePitch.setChecked(settings.isStabilizePitch());
@@ -409,11 +437,13 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         return new RenderSettings(
                 renderMethodDropdown.getSelectedValue(),
                 encodingPresetDropdown.getSelectedValue(),
+                observationPresetDropdown.getSelectedValue(),
                 videoWidth.getInteger(),
                 videoHeight.getInteger(),
                 frameRateSlider.getValue() + 10,
                 bitRateField.getInteger() << (10 * bitRateUnit.getSelected()),
                 serialize ? null : outputFile,
+                serialize ? null : observationFile,
                 nametagCheckbox.isChecked(),
                 stabilizeYaw.isChecked() && (serialize || stabilizeYaw.isEnabled()),
                 stabilizePitch.isChecked() && (serialize || stabilizePitch.isEnabled()),
@@ -428,14 +458,26 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     }
 
     protected File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
-        String fileName = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
+        if (this.dateStr == null) {
+            dateStr = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
+        }
         File folder = ReplayModRender.instance.getVideoFolder();
-        return new File(folder, fileName + "." + encodingPreset.getFileExtension());
+        return new File(folder, dateStr + "." + encodingPreset.getFileExtension());
+    }
+
+    protected File generateObservationFile(RenderSettings.ObservationPreset obsPreset) {
+        if (this.dateStr == null) {
+            dateStr = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
+        }
+        File folder = ReplayModRender.instance.getVideoFolder();
+        return new File(folder, dateStr + "." + obsPreset.getFileExtension());
     }
 
     private RenderSettings getDefaultRenderSettings() {
-        return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT, 1920, 1080, 60, 10 << 20, null,
-                true, false, false, false, null, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
+        return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT,  
+        RenderSettings.ObservationPreset.DEFAULT, 1920, 1080, 60, 10 << 20, null, null,
+        true, false, false, false, null, false, RenderSettings.AntiAliasing.NONE, "", 
+        RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
     }
 
     @Override
