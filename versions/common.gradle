@@ -150,7 +150,7 @@ dependencies {
     def studioVersion = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
     if (studioVersion == '1.8.9') studioVersion = '1.8'
 
-    shade("com.github.cmu-rl.replay_studio:$studioVersion:87deab53eb991368328944dff58f0dfd2eda7fc6"){
+    shade("com.github.cmu-rl.replay_studio:$studioVersion:c04bd0e0a75b03684b3de3fa794ddeb15bea077a"){
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
