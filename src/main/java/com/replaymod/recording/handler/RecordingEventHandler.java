@@ -171,24 +171,34 @@ public class RecordingEventHandler {
             } else {
                 float diffPitch = lastPitch - plr.rotationPitch;
                 float diffYaw = lastYaw - plr.rotationYawHead;
+
+                if (diffPitch < -180.0) {
+                    diffPitch += 360.0;
+                } else if (diffPitch > 180) {
+                    diffPitch -= 360.0;
+                }
+                if (diffYaw < -180.0) {
+                    diffYaw += 360.0;
+                } else if (diffYaw > 180) {
+                    diffYaw -= 360.0;
+                }
                 
                 if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.0001){
                     ByteBuf byteBuf = Unpooled.buffer();
                     PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                    packetBuffer.writeFloat(lastYaw);
-                    packetBuffer.writeFloat(lastPitch);
+                    packetBuffer.writeFloat(diffYaw);
+                    packetBuffer.writeFloat(diffPitch);
                     packetListener.save(new SPacketCustomPayload("c", packetBuffer));
                     lastPitch = plr.rotationPitch;
                     lastYaw = plr.rotationYawHead;
                 }
                 
-
-                // if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
-                //     //TODO remove after validation of action space
-                //     String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
-                //     ITextComponent debugMsg = new TextComponentString(debugStr);
-                //     packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
-                // }
+                if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
+                    //TODO remove after validation of action space
+                    String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
+                    ITextComponent debugMsg = new TextComponentString(debugStr);
+                    packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                }
 
                 
             }
