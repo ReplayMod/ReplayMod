@@ -444,6 +444,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 bitRateField.getInteger() << (10 * bitRateUnit.getSelected()),
                 serialize ? null : outputFile,
                 serialize ? null : observationFile,
+                false,
+                null,
                 nametagCheckbox.isChecked(),
                 stabilizeYaw.isChecked() && (serialize || stabilizeYaw.isEnabled()),
                 stabilizePitch.isChecked() && (serialize || stabilizePitch.isEnabled()),
@@ -475,7 +477,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
     private RenderSettings getDefaultRenderSettings() {
         return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT,  
-        RenderSettings.ObservationPreset.DEFAULT, 1920, 1080, 60, 10 << 20, null, null,
+        RenderSettings.ObservationPreset.DEFAULT, 1920, 1080, 60, 10 << 20, null, null, false, null,
         true, false, false, false, null, false, RenderSettings.AntiAliasing.NONE, "", 
         RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
     }

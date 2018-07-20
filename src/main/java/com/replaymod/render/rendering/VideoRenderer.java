@@ -137,13 +137,32 @@ public class VideoRenderer implements RenderInfo {
                 //$$ timer.elapsedPartialTicks = timer.renderPartialTicks = 0;
                 //$$ timer.timerSpeed = 1;
                 //#endif
-                while (replayTime < videoStart) {
-                    timer.elapsedTicks = 1;
-                    replayTime += 50;
-                    replayHandler.getReplaySender().sendPacketsTill(replayTime);
-                    tick();
+
+                // //BAH render using timestamp file
+                // if (settings.isSynchronizedRender()) {
+                //     while (replayTime < videoStart) {
+                //         for (Integer tickLoc : settings.getTimestamps()){
+                //             timer.elapsedTicks = 1;
+                //             if (replayTime > tickLoc){
+                //                 continue;
+                //             } else {
+                //                 replayTime = tickLoc;
+                //             }
+                //             replayHandler.getReplaySender().sendPacketsTill(tickLoc);
+                //             tick();
+                //         }
+                //     }
+                // } else {
+                    while (replayTime < videoStart) {
+                        timer.elapsedTicks = 1;
+                        replayTime += 50;
+                        replayHandler.getReplaySender().sendPacketsTill(replayTime);
+                        tick();
+                    }
                 }
-            }
+
+
+            // }
         }
 
         mc.renderGlobal.renderEntitiesStartupCounter = 0;
@@ -157,6 +176,7 @@ public class VideoRenderer implements RenderInfo {
                 MetadataInjector.inject360Metadata(settings.getOutputFile());
             }
         }
+        //mc.player.inventory.toString();
 
         finish();
 

@@ -7,6 +7,7 @@ import net.minecraft.client.resources.I18n;
 import org.lwjgl.util.ReadableColor;
 
 import java.io.File;
+import java.util.List;
 
 @Data
 public class RenderSettings {
@@ -119,7 +120,7 @@ public class RenderSettings {
 
         @Override
         public String toString() {
-            return I18n.format("replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase());
+            return I18n.format("observations." + name().replace('_', '.').toLowerCase());
         }
     }
 
@@ -145,6 +146,8 @@ public class RenderSettings {
     private final int bitRate;
     private final File outputFile;
     private final File observationFile;
+    private final boolean synchronizedRender;
+    private final List<Integer> timestamps;
 
     private final boolean renderNameTags;
     private final boolean stabilizeYaw;
@@ -153,6 +156,7 @@ public class RenderSettings {
     private final ReadableColor chromaKeyingColor;
     private final boolean inject360Metadata;
     private final AntiAliasing antiAliasing;
+    
 
     private final String exportCommand;
     private final String exportArguments;
