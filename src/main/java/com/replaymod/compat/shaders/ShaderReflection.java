@@ -25,16 +25,19 @@ public class ShaderReflection {
 
     static {
         try {
-            shaders_frameTimeCounter = Class.forName("shadersmod.client.Shaders")
-                    .getDeclaredField("frameTimeCounter");
+            Class<?> shadersClass;
+            try {
+                shadersClass = Class.forName("shadersmod.client.Shaders"); // Pre Optifine 1.12.2 E1
+            } catch (ClassNotFoundException ignore) {
+                shadersClass = Class.forName("net.optifine.shaders.Shaders"); // Post Optifine 1.12.2 E1
+            }
+            shaders_frameTimeCounter = shadersClass.getDeclaredField("frameTimeCounter");
             shaders_frameTimeCounter.setAccessible(true);
 
-            shaders_isShadowPass = Class.forName("shadersmod.client.Shaders")
-                    .getDeclaredField("isShadowPass");
+            shaders_isShadowPass = shadersClass.getDeclaredField("isShadowPass");
             shaders_isShadowPass.setAccessible(true);
 
-            shaders_beginRender = Class.forName("shadersmod.client.Shaders")
-                    .getDeclaredMethod("beginRender", Minecraft.class, float.class, long.class);
+            shaders_beginRender = shadersClass.getDeclaredMethod("beginRender", Minecraft.class, float.class, long.class);
             shaders_beginRender.setAccessible(true);
 
             renderGlobal_chunksToUpdateForced = Class.forName("net.minecraft.client.renderer.RenderGlobal")
