@@ -200,7 +200,9 @@ public class ConnectionEventHandler {
             }
 
             //Excnage key with minecraft server
-            authenticateWithServer();
+            if (!authenticateWithServer()) {
+                return;
+            }
 
             //File folder = core.getReplayFolder();
             //String name = sdf.format(Calendar.getInstance().getTime());
@@ -298,7 +300,9 @@ public class ConnectionEventHandler {
         
     }
 
-    /* Event Handler
+    /** Event Handler
+     * 
+     * Returns true if authentication was sucessfull
     * 
     * configures userServerSocket -> userServer
     * configures mcServerSocket -> current MinecraftServer
@@ -306,7 +310,7 @@ public class ConnectionEventHandler {
     * sends authorization to minecraft server
     * establishes thread to listen for recording start/stop events
     */
-    public void authenticateWithServer() {
+    public boolean authenticateWithServer() {
         try{
             String mcUsername = mc.getSession().getUsername();
             String mcUUID = mc.getSession().getPlayerID();
@@ -330,7 +334,7 @@ public class ConnectionEventHandler {
             logger.info("Error establishing connection to user server");
             e.printStackTrace();
             logger.error("Error establishing connection to user server");
-            return;
+            return false;
         }
         InetAddress mcServerAddress;
         PrintWriter mcServerOut = null;
@@ -349,6 +353,7 @@ public class ConnectionEventHandler {
             mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
         } catch (IOException e) {
             logger.error("Error establishing connection to minecraft server");
+            return false;
         }
 
         ////////////////////////////////////////////
@@ -367,7 +372,7 @@ public class ConnectionEventHandler {
             // TODO Auto-generated catch block
             e.printStackTrace();
             userServerSocket.close();
-            return;
+            return false;
         }
     
         // Get response
@@ -381,7 +386,7 @@ public class ConnectionEventHandler {
         } catch (IOException e) {
             e.printStackTrace();
             userServerSocket.close();
-            return;
+            return false;
         }
         
         logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
@@ -398,7 +403,26 @@ public class ConnectionEventHandler {
             mcServerOut.flush();
         } else {
             logger.error("Minecraft server connection is not complete - not sending play key");
-        }     
+        } 
+        
+        // Get response
+        boolean authenicated = false;
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
+            String jsonStr = "";
+            jsonStr = in.readLine();
+            JsonObject authResponse = new JsonParser().parse(jsonStr).getAsJsonObject();
+            authenicated = authResponse.get("authorized").getAsBoolean();
+        } catch (JsonSyntaxException | IOException e) {
+            e.printStackTrace();
+            userServerSocket.close();
+            logger.error("Error recieving response from server");
+            return false;
+        }
+        
+        logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
+        logger.info(String.format("Server response: %s%n", Boolean.toString(authenicated)));
+        return authenicated;
     }
 
     public PacketListener getPacketListener() {
