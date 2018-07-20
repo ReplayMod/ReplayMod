@@ -193,12 +193,12 @@ public class RecordingEventHandler {
                     lastYaw = plr.rotationYawHead;
                 }
                 
-                if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
-                    //TODO remove after validation of action space
-                    String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
-                    ITextComponent debugMsg = new TextComponentString(debugStr);
-                    packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
-                }
+                // if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
+                //     //TODO remove after validation of action space
+                //     String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
+                //     ITextComponent debugMsg = new TextComponentString(debugStr);
+                //     packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                // }
 
                 
             }
