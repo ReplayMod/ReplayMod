@@ -142,12 +142,13 @@ public class RecordingEventHandler {
     }
     //#endif
 
-    // @SubscribeEvent
-    // public void onClientTick(TickEvent.ClientTickEvent event) {
-    private void recordActions(EntityPlayer plr, Phase phase) {
-        if( phase.equals(Phase.END)){
-            if (plr == null) { return;}
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+    //private void recordActions(EntityPlayer plr, Phase phase) {
+        if( event.phase.equals(Phase.END)){
+            if (player(mc) == null) { return;}
             //Record tick time
+            EntityPlayer plr = player(mc);
             
             //Record if gui window is open
             if(mc.currentScreen != null) {
@@ -193,12 +194,12 @@ public class RecordingEventHandler {
                     lastYaw = plr.rotationYawHead;
                 }
                 
-                // if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
-                //     //TODO remove after validation of action space
-                //     String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
-                //     ITextComponent debugMsg = new TextComponentString(debugStr);
-                //     packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
-                // }
+                if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.01) {
+                    //TODO remove after validation of action space
+                    String debugStr = "Turn/Tilt" + " > " + Float.toString(diffYaw) + ' ' + Float.toString(diffPitch);
+                    ITextComponent debugMsg = new TextComponentString(debugStr);
+                    packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                }
 
                 
             }
@@ -223,10 +224,10 @@ public class RecordingEventHandler {
                     packetBuffer.writeVarInt(binding.getKeyCode());
                     packetListener.save(new SPacketCustomPayload("a", packetBuffer));
 
-                    // //TODO remove after validation of action space
-                    // String debugStr = binding.getDisplayName() + ":" + binding.getKeyCode() + " > " + binding.getKeyDescription();
-                    // ITextComponent debugMsg = new TextComponentString(debugStr);
-                    // packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                    //TODO remove after validation of action space
+                    String debugStr = binding.getDisplayName() + ":" + binding.getKeyCode() + " > " + binding.getKeyDescription();
+                    ITextComponent debugMsg = new TextComponentString(debugStr);
+                    packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
                 }
             }
             if (hotbarIdx != lastHotbar){
@@ -237,21 +238,19 @@ public class RecordingEventHandler {
                 packetBuffer.writeVarInt(hotbarIdx + 2);
                 packetListener.save(new SPacketCustomPayload("a", packetBuffer));
 
-                // //TODO remove after validation of action space
-                // String debugStr = "Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")";
-                // ITextComponent debugMsg = new TextComponentString(debugStr);
-                // packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
+                //TODO remove after validation of action space
+                String debugStr = "Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")";
+                ITextComponent debugMsg = new TextComponentString(debugStr);
+                packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
             }
         }
     }
 
     @SubscribeEvent
-    public void onClientTick(ClientTickEvent e) {
+    public void onPlayerTick(PlayerTickEvent e) {
         try {
-            //if(player != player(mc)) return;
-            EntityPlayer player = player(mc);
-
-            recordActions(player, e.phase);
+            if(e.player != player(mc)) return;
+            EntityPlayer player = e.player;
 
             boolean force = false;
             if(lastX == null || lastY == null || lastZ == null) {
