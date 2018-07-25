@@ -87,7 +87,7 @@ public class ReplaySender extends ChannelDuplexHandler {
             SPacketUpdateHealth.class,
             SPacketOpenWindow.class,
             SPacketCloseWindow.class,
-            SPacketSetSlot.class,
+            //SPacketSetSlot.class,
             SPacketWindowItems.class,
             SPacketSignEditorOpen.class,
             SPacketStatistics.class,

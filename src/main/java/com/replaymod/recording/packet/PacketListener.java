@@ -145,8 +145,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             long now = System.currentTimeMillis();
 
             if(packet instanceof SPacketCustomPayload && 
-                ((((SPacketCustomPayload)packet).getChannelName().equals("recorded_actions")) ||
-                 (((SPacketCustomPayload)packet).getChannelName().equals("recorded_camera_actions"))))
+                ((((SPacketCustomPayload)packet).getChannelName().equals("a")) || //Action
+                 (((SPacketCustomPayload)packet).getChannelName().equals("t")) || //Tick
+                 (((SPacketCustomPayload)packet).getChannelName().equals("c"))))  //Camera move
             {   // Send action recording packets to a new file for easier parsing
                 saveService.submit(() -> {
                     if (serverWasPaused) {
@@ -197,6 +198,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         saveService.shutdown();
         try {
             saveService.awaitTermination(10, TimeUnit.SECONDS);
+            logger.info("Save service terminated");
         } catch (InterruptedException e) {
             logger.error("Waiting for save service termination:", e);
         }
@@ -429,18 +431,27 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void addMarker(Boolean recording) {
+        logger.info("Add marker called");
         Entity view = getRenderViewEntity(Minecraft.getMinecraft());
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
-        if (view == null) {return;}
-
         Marker marker = new Marker();
         marker.setTime(timestamp);
-        marker.setX(view.posX);
-        marker.setY(view.posY);
-        marker.setZ(view.posZ);
-        marker.setYaw(view.rotationYaw);
-        marker.setPitch(view.rotationPitch);
+
+        if (view == null) {
+            marker.setX(0);
+            marker.setY(0);
+            marker.setZ(0);
+            marker.setYaw(0);
+            marker.setPitch(0);
+        } else {
+            marker.setX(view.posX);
+            marker.setY(view.posY);
+            marker.setZ(view.posZ);
+            marker.setYaw(view.rotationYaw);
+            marker.setPitch(view.rotationPitch);
+        } 
+
         if (recording) {
             marker.setStartRecording(true);
         } else {
@@ -454,7 +465,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     Set<Marker> markers = replayFile.getMarkers().or(HashSet::new);
                     markers.add(marker);
                     replayFile.writeMarkers(markers);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     logger.error("Writing markers:", e);
                 }
             }

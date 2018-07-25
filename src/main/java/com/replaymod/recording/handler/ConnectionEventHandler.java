@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.utils.Utils;
@@ -87,10 +88,6 @@ import java.util.concurrent.TimeUnit;
  * Handles connection events and initiates recording if enabled.
  */
 public class ConnectionEventHandler {
-
-    private static int FIREHOSE_MAX_CLIENT_CREATION_DELAY = (10 * 60 * 1000);
-    private static int FIREHOSE_CLIENT_STATE_REFRESH_DELAY = 100;
-
     private static final String packetHandlerKey = "packet_handler";
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
     private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
@@ -110,7 +107,6 @@ public class ConnectionEventHandler {
     private Thread recordingManager;
 
     private String uid;
-    private String streamName;
 
     public ConnectionEventHandler(Logger logger, ReplayMod core) {
         this.logger = logger;
@@ -124,12 +120,13 @@ public class ConnectionEventHandler {
         try{
             logger.error("Recording Service Started");
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
-            String jsonStr;
+            String jsonStr = "";
             while (true){
                 try{
                     jsonStr = in.readLine();
                     Thread.sleep(100);
                     if( jsonStr != null){
+                        
                         JsonObject recordObject = new JsonParser().parse(jsonStr).getAsJsonObject();
                         if (recordObject.has("record")){
                             boolean recordFlag = recordObject.get("record").getAsBoolean();
@@ -148,9 +145,11 @@ public class ConnectionEventHandler {
                             }
                         }
                     }
-                } catch (IOException e) {
+                } catch (JsonSyntaxException | IOException e) {
+                    logger.error(e.toString());
+                    logger.error(jsonStr);
                     logger.error("IO Exception encounterd when trying to manage recording state!");
-                    return;
+                    markStopRecording("{}");
                 }    
             }
         }
@@ -201,10 +200,7 @@ public class ConnectionEventHandler {
             }
 
             //Excnage key with minecraft server
-            authenticateWithServer();
-
-            AmazonKinesisFirehose firehoseClient = getFirehoseStream();
-            if (firehoseClient == null){
+            if (!authenticateWithServer()) {
                 return;
             }
 
@@ -213,7 +209,7 @@ public class ConnectionEventHandler {
             //File currentFile = new File(folder, Utils.replayNameToFileName(name));
             //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
             
-            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), firehoseClient, streamName, logger);
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), uid, logger);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
@@ -250,185 +246,63 @@ public class ConnectionEventHandler {
         } catch (Throwable e) {
             e.printStackTrace();
             core.printWarningToChat("replaymod.chat.recordingfailed");
+            if (recordingManager != null) {
+                recordingManager.interrupt(); 
+            }
+            // Unregister existing handlers
+            if (packetListener != null) {
+                logger.info("Trying to unregister guiOverlay");
+                guiOverlay.unregister();
+                guiOverlay = null;
+                logger.info("Trying to unregister the event handler");
+                recordingEventHandler.unregister();
+                recordingEventHandler = null;
+                packetListener = null;
+            }
         }
     }
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-        recordingManager.interrupt(); 
-        markStopRecording("{}");
-        core.printInfoToChat("Recording Stoped");
         // Unregister existing handlers
         if (packetListener != null) {
   
+            recordingManager.interrupt(); 
+            markStopRecording("{}");
+            core.printInfoToChat("Recording Stoped");
+
             logger.info("Trying to unregister guiOverlay");
             guiOverlay.unregister();
             guiOverlay = null;
             logger.info("Trying to unregister the event handler");
             recordingEventHandler.unregister();
 
-            logger.info("PAcket listerns dis-connect state is " + Boolean.toString(packetListener.getFinishedDeactivating()));
-            logger.info("Trying mark packet listerner inactive");
-            packetListener.channelInactive(null);
-
-
             recordingEventHandler = null;
             packetListener = null;
-
-            logger.info("Trying to return stream");
-            returnFirehoseStream();
         }
     }
 
     private void markStartRecording(String experimentMetadata){
         if (packetListener != null) {
-            logger.info("Recording experment metadata");
+            logger.info("Recording experment metadata - Start Recording!");
             packetListener.setExperementMetadata(experimentMetadata);
+            packetListener.addMarker(true);
         }
-        packetListener.addMarker(true);
+        
     }
 
     private void markStopRecording(String experimentMetadata){
         if (packetListener != null) {
             logger.info("Recording experment metadata");
             packetListener.setExperementMetadata(experimentMetadata);
-        }
-        packetListener.addMarker(false);
-    }
-
-    private AmazonKinesisFirehose getFirehoseStream(){
-        ////////////////////////////////////////////
-        //       FireHose Key Retrieval           //
-        ////////////////////////////////////////////
-        // Send Firehose key request
-        JsonObject firehoseJson  = new JsonObject();
-        firehoseJson.addProperty("cmd", "get_firehose_key");
-        firehoseJson.addProperty("uid", uid);
-        String firehoseStr = firehoseJson.toString();
-        DatagramPacket firehoseKeyRequest = new DatagramPacket(firehoseStr.getBytes(), firehoseStr.getBytes().length);
-        try {
-            userServerSocket.send(firehoseKeyRequest);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            userServerSocket.close();
-            //mcServerSocket.close();
-            return null;
-        }
-    
-        // Get response
-        String tmp= null; 
-        JsonObject awsKeys = null;
-        byte[] buff1 = new byte[65535];
-        BasicSessionCredentials awsCredentials;
-        DatagramPacket firehoseKeyData = new DatagramPacket(buff1, buff1.length);
-        try {
-            
-            while (tmp == null){
-                userServerSocket.receive(firehoseKeyData);
-                String dataStr = new String(firehoseKeyData.getData(), firehoseKeyData.getOffset(), firehoseKeyData.getLength());
-                awsKeys = new JsonParser().parse(dataStr).getAsJsonObject();
-                if (awsKeys.get("stream_name") != null){
-                    tmp = awsKeys.get("stream_name").getAsString();
-                }
-            }
-            
-            this.streamName = tmp;
-            awsCredentials = new BasicSessionCredentials(
-                awsKeys.get("access_key").getAsString(),
-                awsKeys.get("secret_key").getAsString(),
-                awsKeys.get("session_token").getAsString());
-            
-        
-        } catch (NullPointerException | IOException e) {
-            logger.error("Could not parse returned firehose stream infromation");
-            if (awsKeys != null){
-                logger.error("Tried to parse " + awsKeys.toString());
-            }
-            e.printStackTrace();
-            userServerSocket.close();
-            //mcServerSocket.close();
-            returnFirehoseStream();
-            return null;
-        }
-        
-        logger.info(String.format("StreamName:    %s%n", streamName));
-        //logger.info(String.format("Access Key:    %s%n", accessKey));
-        //logger.info(String.format("Secret Key:    %s%n", secretKey));
-        //logger.info(String.format("Session Token: %s%n", sessionToken));
-
-        // Firehose client
-        AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClientBuilder.standard()
-            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-            .withRegion("us-east-1")
-            .build();
-
-        //Check if the given stream is open
-        boolean timeout = true;
-        long startTime = System.currentTimeMillis();
-        long endTime = startTime + FIREHOSE_MAX_CLIENT_CREATION_DELAY; //TODO reduce maximum delay
-        while (System.currentTimeMillis() < endTime) {
-            try {
-                Thread.sleep(FIREHOSE_CLIENT_STATE_REFRESH_DELAY);
-            } catch (InterruptedException e) {
-                // Ignore interruption (doesn't impact deliveryStream creation)
-            }
-
-            DescribeDeliveryStreamRequest describeDeliveryStreamRequest = new DescribeDeliveryStreamRequest();
-            describeDeliveryStreamRequest.withDeliveryStreamName(streamName);
-
-            DescribeDeliveryStreamResult describeDeliveryStreamResponse =
-                firehoseClient.describeDeliveryStream(describeDeliveryStreamRequest);
-
-            DeliveryStreamDescription  deliveryStreamDescription = 
-                describeDeliveryStreamResponse.getDeliveryStreamDescription();
-
-            String deliveryStreamStatus = deliveryStreamDescription.getDeliveryStreamStatus();
-            if (deliveryStreamStatus.equals("ACTIVE")) {
-                timeout = false;
-                break;
-            }
-        }
-
-        if (timeout) {
-            logger.error("Waited too long for stream activation! Stream may be mis-configured!");
-            // TODO handle this cleanly
-        } else {
-            logger.info("Active Firehose Stream Established!");
-        }
-        return firehoseClient;
-    }
-    private void returnFirehoseStream(){
-        if (streamName == null){ return;}
-        // Send Minecraft dissconnect notification
-        JsonObject mcKeyJson = new JsonObject();
-        mcKeyJson.addProperty("cmd", "return_firehose_key");
-        mcKeyJson.addProperty("uid", uid);
-        mcKeyJson.addProperty("stream_name", streamName);
-        String mcKeyStr = mcKeyJson.toString();
-        DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
-        try {
-            userServerSocket.send(mcKeyRequest);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return;
-        }
-
-        byte[] buff1 = new byte[2400];
-        DatagramPacket returnResponse = new DatagramPacket(buff1, buff1.length);
-        try {
-            userServerSocket.receive(returnResponse);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        } finally {
-            String dataStr = new String(returnResponse.getData(), returnResponse.getOffset(), returnResponse.getLength());
-            JsonElement json = new JsonParser().parse(dataStr).getAsJsonObject();
-            logger.info("Return result: " + json.toString());   
+            packetListener.addMarker(false);
         }
         
     }
 
-    /* Event Handler
+    /** Event Handler
+     * 
+     * Returns true if authentication was sucessfull
     * 
     * configures userServerSocket -> userServer
     * configures mcServerSocket -> current MinecraftServer
@@ -436,7 +310,7 @@ public class ConnectionEventHandler {
     * sends authorization to minecraft server
     * establishes thread to listen for recording start/stop events
     */
-    public void authenticateWithServer() {
+    public boolean authenticateWithServer() {
         try{
             String mcUsername = mc.getSession().getUsername();
             String mcUUID = mc.getSession().getPlayerID();
@@ -460,7 +334,7 @@ public class ConnectionEventHandler {
             logger.info("Error establishing connection to user server");
             e.printStackTrace();
             logger.error("Error establishing connection to user server");
-            return;
+            return false;
         }
         InetAddress mcServerAddress;
         PrintWriter mcServerOut = null;
@@ -479,6 +353,7 @@ public class ConnectionEventHandler {
             mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
         } catch (IOException e) {
             logger.error("Error establishing connection to minecraft server");
+            return false;
         }
 
         ////////////////////////////////////////////
@@ -497,7 +372,7 @@ public class ConnectionEventHandler {
             // TODO Auto-generated catch block
             e.printStackTrace();
             userServerSocket.close();
-            return;
+            return false;
         }
     
         // Get response
@@ -511,7 +386,7 @@ public class ConnectionEventHandler {
         } catch (IOException e) {
             e.printStackTrace();
             userServerSocket.close();
-            return;
+            return false;
         }
         
         logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
@@ -528,7 +403,26 @@ public class ConnectionEventHandler {
             mcServerOut.flush();
         } else {
             logger.error("Minecraft server connection is not complete - not sending play key");
-        }     
+        } 
+        
+        // Get response
+        boolean authenicated = false;
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
+            String jsonStr = "";
+            jsonStr = in.readLine();
+            JsonObject authResponse = new JsonParser().parse(jsonStr).getAsJsonObject();
+            authenicated = authResponse.get("authorized").getAsBoolean();
+        } catch (JsonSyntaxException | IOException e) {
+            e.printStackTrace();
+            userServerSocket.close();
+            logger.error("Error recieving response from server");
+            return false;
+        }
+        
+        logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
+        logger.info(String.format("Server response: %s%n", Boolean.toString(authenicated)));
+        return authenicated;
     }
 
     public PacketListener getPacketListener() {

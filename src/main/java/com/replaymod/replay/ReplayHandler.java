@@ -320,6 +320,7 @@ public class ReplayHandler {
         if (getRenderViewEntity(mc) != e) {
             setRenderViewEntity(mc, e);
             cameraEntity.setCameraPosRot(e);
+            player(mc).inventory = cameraEntity.inventory;
         }
     }
 
