@@ -254,23 +254,40 @@ public class VideoRenderer implements RenderInfo {
         //$$ mc.gameSettings.mapSoundLevels = mutedSounds;
         //#endif
 
-        fps = settings.getFramesPerSecond();
+        if(settings.isSynchronizedRender()) {
+            totalFrames = settings.getTimestamps().size();
 
-        long duration = 0;
-        for (Path path : timeline.getPaths()) {
-            if (!path.isActive()) continue;
+            for (Path path : timeline.getPaths()) {
+                if (!path.isActive()) continue;
 
-            // Prepare path interpolations
-            path.updateAll();
-            // Find end time
-            Collection<Keyframe> keyframes = path.getKeyframes();
-            if (keyframes.size() > 0) {
-                duration = Math.max(duration, getLast(keyframes).getTime());
+                // Prepare path interpolations
+                path.updateAll();
+                // Find end time
+                Collection<Keyframe> keyframes = path.getKeyframes();
+                if (keyframes.size() > 0) {
+                    //duration = Math.max(duration, getLast(keyframes).getTime());
+                }
             }
+
+        } else {
+            fps = settings.getFramesPerSecond();
+
+            long duration = 0;
+            for (Path path : timeline.getPaths()) {
+                if (!path.isActive()) continue;
+
+                // Prepare path interpolations
+                path.updateAll();
+                // Find end time
+                Collection<Keyframe> keyframes = path.getKeyframes();
+                if (keyframes.size() > 0) {
+                    duration = Math.max(duration, getLast(keyframes).getTime());
+                }
+            }
+
+            totalFrames = (int) (duration*fps/1000);
         }
-
-        totalFrames = (int) (duration*fps/1000);
-
+        
         updateDisplaySize();
 
         //#if MC<=10809
@@ -433,7 +450,18 @@ public class VideoRenderer implements RenderInfo {
         return totalFrames;
     }
 
-    public int getVideoTime() { return framesDone * 1000 / fps; }
+    public int getVideoTime() { 
+        if (settings.isSynchronizedRender()) {
+            if (framesDone < settings.getTimestamps().size()) {
+                return settings.getTimestamps().get(framesDone);
+
+            } else {
+                return settings.getTimestamps().get(settings.getTimestamps().size() - 1);
+            }
+        } else {
+            return framesDone * 1000 / fps; 
+        }
+    }
 
     public void setPaused(boolean paused) {
         this.paused = paused;
