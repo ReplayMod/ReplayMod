@@ -22,7 +22,9 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.entity.spawn.Serve
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerBlockChangePacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerChunkDataPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerMultiBlockChangePacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerNotifyClientPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUnloadChunkPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUpdateTimePacket;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -101,6 +103,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private TreeMap<Integer, Collection<TrackedThing>> thingDespawnsT = new TreeMap<>();
     private ListMultimap<Integer, TrackedThing> thingDespawns = Multimaps.newListMultimap(thingDespawnsT, ArrayList::new);
     private List<TrackedThing> activeThings = new LinkedList<>();
+    private TreeMap<Integer, Packet<?>> worldTimes = new TreeMap<>();
+    private TreeMap<Integer, Packet<?>> thunderStrengths = new TreeMap<>(); // For some reason, this isn't tied to Weather
 
     public QuickReplaySender(ReplayModReplay mod, ReplayFile replayFile) {
         this.mod = mod;
@@ -246,10 +250,13 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         studio.setParsing(ServerBlockChangePacket.class, true);
         studio.setParsing(ServerMultiBlockChangePacket.class, true);
         studio.setParsing(ServerPlayerListEntryPacket.class, true);
+        studio.setParsing(ServerUpdateTimePacket.class, true);
+        studio.setParsing(ServerNotifyClientPacket.class, true);
 
         Map<UUID, PlayerListEntry> playerListEntries = new HashMap<>();
         Map<Integer, Entity> activeEntities = new HashMap<>();
         Map<Long, Chunk> activeChunks = new HashMap<>();
+        Weather activeWeather = null;
 
         try (ReplayInputStream in = replayFile.getPacketData(studio)) {
             double duration = replayFile.getMetaData().getDuration();
@@ -337,6 +344,39 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                     }
                 } else if (packet instanceof ServerRespawnPacket) {
                     // FIXME
+                } else if (packet instanceof ServerUpdateTimePacket) {
+                    worldTimes.put(time, toMC(packet));
+                } else if (packet instanceof ServerNotifyClientPacket) {
+                    ServerNotifyClientPacket p = (ServerNotifyClientPacket) packet;
+                    switch (p.getNotification()) {
+                        case START_RAIN:
+                            if (activeWeather != null) {
+                                activeWeather.despawnPackets = Collections.singletonList(toMC(packet));
+                                activeWeather.despawnTime = time;
+                                thingDespawns.put(time, activeWeather);
+                            }
+                            activeWeather = new Weather(toMC(packet));
+                            activeWeather.spawnTime = time;
+                            thingSpawns.put(time, activeWeather);
+                            break;
+                        case STOP_RAIN:
+                            if (activeWeather != null) {
+                                activeWeather.despawnPackets = Collections.singletonList(toMC(packet));
+                                activeWeather.despawnTime = time;
+                                thingDespawns.put(time, activeWeather);
+                                activeWeather = null;
+                            }
+                            break;
+                        case RAIN_STRENGTH:
+                            if (activeWeather != null) {
+                                activeWeather.rainStrengths.put(time, toMC(packet));
+                            }
+                            break;
+                        case THUNDER_STRENGTH:
+                            thunderStrengths.put(time, toMC(packet));
+                            break;
+                        default: break;
+                    }
                 }
                 if (entityId != null) {
                     Entity entity = activeEntities.get(entityId);
@@ -374,6 +414,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                             }
                         }));
                 activeThings.forEach(thing -> thing.play(currentTimeStamp, replayTime, ctx::fireChannelRead));
+                playMap(worldTimes, currentTimeStamp, replayTime, ctx::fireChannelRead);
+                playMap(thunderStrengths, currentTimeStamp, replayTime, ctx::fireChannelRead);
             } else {
                 activeThings.removeIf(thing -> {
                     if (thing.spawnTime > replayTime) {
@@ -391,6 +433,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                             }
                         }));
                 activeThings.forEach(thing -> thing.rewind(currentTimeStamp, replayTime, ctx::fireChannelRead));
+                rewindMap(worldTimes, currentTimeStamp, replayTime, ctx::fireChannelRead);
+                rewindMap(thunderStrengths, currentTimeStamp, replayTime, ctx::fireChannelRead);
             }
             currentTimeStamp = replayTime;
         });
@@ -432,6 +476,20 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         return (long)x << 32 | (long)z & 0xFFFFFFFFL;
     }
 
+    private static <V> void playMap(NavigableMap<Integer, V> updates, int currentTimeStamp, int replayTime, Consumer<V> update) {
+        Map.Entry<Integer, V> lastUpdate = updates.floorEntry(replayTime);
+        if (lastUpdate != null && lastUpdate.getKey() > currentTimeStamp) {
+            update.accept(lastUpdate.getValue());
+        }
+    }
+
+    private static <V> void rewindMap(NavigableMap<Integer, V> updates, int currentTimeStamp, int replayTime, Consumer<V> update) {
+        Map.Entry<Integer, V> lastUpdate = updates.floorEntry(replayTime);
+        if (lastUpdate != null && !lastUpdate.getKey().equals(updates.floorKey(currentTimeStamp))) {
+            update.accept(lastUpdate.getValue());
+        }
+    }
+
     private static abstract class TrackedThing {
         List<Packet<?>> spawnPackets;
         List<Packet<?>> despawnPackets;
@@ -454,20 +512,14 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
         @Override
         public void play(int currentTimeStamp, int replayTime, Consumer<Packet<?>> send) {
-            Map.Entry<Integer, Location> lastUpdate = locations.floorEntry(replayTime);
-            if (lastUpdate != null && lastUpdate.getKey() > currentTimeStamp) {
-                Location l = lastUpdate.getValue();
-                send.accept(toMC(new ServerEntityTeleportPacket(id, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), false)));
-            }
+            playMap(locations, currentTimeStamp, replayTime, l ->
+                    send.accept(toMC(new ServerEntityTeleportPacket(id, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), false))));
         }
 
         @Override
         public void rewind(int currentTimeStamp, int replayTime, Consumer<Packet<?>> send) {
-            Map.Entry<Integer, Location> lastUpdate = locations.floorEntry(replayTime);
-            if (lastUpdate != null && !lastUpdate.getKey().equals(locations.floorKey(currentTimeStamp))) {
-                Location l = lastUpdate.getValue();
-                send.accept(toMC(new ServerEntityTeleportPacket(id, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), false)));
-            }
+            rewindMap(locations, currentTimeStamp, replayTime, l ->
+                    send.accept(toMC(new ServerEntityTeleportPacket(id, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), false))));
         }
     }
 
@@ -515,6 +567,24 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             this.pos = pos;
             this.from = from;
             this.to = to;
+        }
+    }
+
+    private static class Weather extends TrackedThing {
+        private TreeMap<Integer, Packet<?>> rainStrengths = new TreeMap<>();
+
+        private Weather(Packet<?> spawnPacket) {
+            this.spawnPackets = Collections.singletonList(spawnPacket);
+        }
+
+        @Override
+        public void play(int currentTimeStamp, int replayTime, Consumer<Packet<?>> send) {
+            playMap(rainStrengths, currentTimeStamp, replayTime, send);
+        }
+
+        @Override
+        public void rewind(int currentTimeStamp, int replayTime, Consumer<Packet<?>> send) {
+            rewindMap(rainStrengths, currentTimeStamp, replayTime, send);
         }
     }
 }
