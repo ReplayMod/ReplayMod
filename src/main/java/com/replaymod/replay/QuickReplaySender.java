@@ -10,6 +10,7 @@ import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
 import com.github.steveice10.mc.protocol.data.game.world.WorldType;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockChangeRecord;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
+import com.github.steveice10.mc.protocol.data.game.world.notify.ClientNotification;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerPlayerListEntryPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerRespawnPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityDestroyPacket;
@@ -355,17 +356,15 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                     switch (p.getNotification()) {
                         case START_RAIN:
                             if (activeWeather != null) {
-                                activeWeather.despawnPackets = Collections.singletonList(toMC(packet));
                                 activeWeather.despawnTime = time;
                                 thingDespawns.put(time, activeWeather);
                             }
-                            activeWeather = new Weather(toMC(packet));
+                            activeWeather = new Weather();
                             activeWeather.spawnTime = time;
                             thingSpawns.put(time, activeWeather);
                             break;
                         case STOP_RAIN:
                             if (activeWeather != null) {
-                                activeWeather.despawnPackets = Collections.singletonList(toMC(packet));
                                 activeWeather.despawnTime = time;
                                 thingDespawns.put(time, activeWeather);
                                 activeWeather = null;
@@ -577,8 +576,9 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private static class Weather extends TrackedThing {
         private TreeMap<Integer, Packet<?>> rainStrengths = new TreeMap<>();
 
-        private Weather(Packet<?> spawnPacket) {
-            this.spawnPackets = Collections.singletonList(spawnPacket);
+        private Weather() {
+            this.spawnPackets = Collections.singletonList(toMC(new ServerNotifyClientPacket(ClientNotification.START_RAIN, null)));
+            this.despawnPackets = Collections.singletonList(toMC(new ServerNotifyClientPacket(ClientNotification.STOP_RAIN, null)));
         }
 
         @Override
