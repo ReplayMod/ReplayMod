@@ -210,22 +210,22 @@ public class RecordingEventHandler {
                     // //Record that key was down
                     // logger.info(binding.getKeyModifier() +
                     //     " - " + binding.getDisplayName() + 
-                    //     " - " + binding.getKeyCode() +  
+                    //     " - " + binding.getKeyCodeDefault() +  
                     //     " - " + binding.isPressed() + 
                     //     " - " + binding.getKeyDescription());
                     
                     // Hotbar bindings are 2-10 - handle this seperatly to account for scroll wheel
-                    if (2 <= binding.getKeyCode() && binding.getKeyCode() <= 10){
+                    if (2 <= binding.getKeyCodeDefault() && binding.getKeyCodeDefault() <= 10){
                         continue;
                     }
 
                     ByteBuf byteBuf = Unpooled.buffer();
                     PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                    packetBuffer.writeVarInt(binding.getKeyCode());
+                    packetBuffer.writeVarInt(binding.getKeyCodeDefault());
                     packetListener.save(new SPacketCustomPayload("a", packetBuffer));
 
                     //TODO remove after validation of action space
-                    String debugStr = binding.getDisplayName() + ":" + binding.getKeyCode() + " > " + binding.getKeyDescription();
+                    String debugStr = binding.getDisplayName() + ":" + binding.getKeyCodeDefault() + " > " + binding.getKeyDescription();
                     ITextComponent debugMsg = new TextComponentString(debugStr);
                     packetListener.save(new SPacketChat(debugMsg, ChatType.CHAT));
                 }
