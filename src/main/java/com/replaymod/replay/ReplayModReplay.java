@@ -144,7 +144,8 @@ public class ReplayModReplay {
 
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.quickmode", Keyboard.KEY_Q, () -> {
             if (replayHandler != null) {
-                replayHandler.setQuickMode(!replayHandler.isQuickMode());
+                replayHandler.ensureQuickModeInitialized(() ->
+                        replayHandler.setQuickMode(!replayHandler.isQuickMode()));
             }
         });
 

@@ -124,6 +124,10 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         this.ctx = ctx;
     }
 
+    public ListenableFuture<Void> getInitializationPromise() {
+        return initPromise;
+    }
+
     public ListenableFuture<Void> initialize(Consumer<Double> progress) {
         if (initPromise != null) {
             return initPromise;
@@ -148,9 +152,9 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         return promise;
     }
 
-    public void ensureInitialized(Runnable body) {
+    private void ensureInitialized(Runnable body) {
         if (initPromise == null) {
-            // TODO progress popup
+            LOGGER.warn("QuickReplaySender used without prior initialization!", new Throwable());
             initialize(progress -> {});
         }
         Futures.addCallback(initPromise, new FutureCallback<Void>() {

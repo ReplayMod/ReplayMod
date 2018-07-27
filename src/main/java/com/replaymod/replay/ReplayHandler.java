@@ -1,7 +1,11 @@
 package com.replaymod.replay;
 
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.SpectatorCameraController;
@@ -11,6 +15,9 @@ import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.util.Location;
+import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
+import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.Minecraft;
@@ -18,6 +25,7 @@ import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.NetworkManager;
@@ -47,10 +55,13 @@ import static net.minecraft.client.renderer.GlStateManager.*;
 //$$ import java.net.SocketAddress;
 //$$
 //$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
-//$$ import static com.replaymod.replay.ReplayModReplay.LOGGER;
 //#endif
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import static com.replaymod.core.versions.MCVer.*;
+import static com.replaymod.replay.ReplayModReplay.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -260,6 +271,57 @@ public class ReplayHandler {
 
     public GuiReplayOverlay getOverlay() {
         return overlay;
+    }
+
+    public void ensureQuickModeInitialized(Runnable andThen) {
+        ListenableFuture<Void> future = quickReplaySender.getInitializationPromise();
+        if (future == null) {
+            InitializingQuickModePopup popup = new InitializingQuickModePopup(overlay);
+            future = quickReplaySender.initialize(progress -> popup.progressBar.setProgress(progress.floatValue()));
+            Futures.addCallback(future, new FutureCallback<Void>() {
+                @Override
+                public void onSuccess(@Nullable Void result) {
+                    popup.close();
+                }
+
+                @Override
+                public void onFailure(@Nonnull Throwable t) {
+                    String message = "Failed to initialize quick mode. It will not be available.";
+                    Utils.error(LOGGER, overlay, CrashReport.makeCrashReport(t, message), popup::close);
+                }
+            });
+        }
+        Futures.addCallback(future, new FutureCallback<Void>() {
+            @Override
+            public void onSuccess(@Nullable Void result) {
+                andThen.run();
+            }
+
+            @Override
+            public void onFailure(@Nonnull Throwable t) {
+                // Exception already printed in callback added above
+            }
+        });
+    }
+
+    private class InitializingQuickModePopup extends AbstractGuiPopup<InitializingQuickModePopup> {
+        private final GuiProgressBar progressBar = new GuiProgressBar(popup).setSize(300, 20)
+                .setI18nLabel("replaymod.gui.loadquickmode");
+
+        public InitializingQuickModePopup(GuiContainer container) {
+            super(container);
+            open();
+        }
+
+        @Override
+        public void close() {
+            super.close();
+        }
+
+        @Override
+        protected InitializingQuickModePopup getThis() {
+            return this;
+        }
     }
 
     public void setQuickMode(boolean quickMode) {
