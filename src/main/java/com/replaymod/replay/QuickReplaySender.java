@@ -26,6 +26,12 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerMultiB
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerNotifyClientPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUnloadChunkPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUpdateTimePacket;
+import com.github.steveice10.mc.protocol.util.NetUtil;
+import com.github.steveice10.packetlib.io.NetInput;
+import com.github.steveice10.packetlib.io.NetOutput;
+import com.github.steveice10.packetlib.io.stream.StreamNetInput;
+import com.github.steveice10.packetlib.io.stream.StreamNetOutput;
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
@@ -57,6 +63,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -66,6 +74,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -81,6 +90,9 @@ import static com.replaymod.replay.ReplayModReplay.LOGGER;
  */
 @ChannelHandler.Sharable
 public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySender {
+    private static final String CACHE_ENTRY = "quickModeCache.bin";
+    private static final int CACHE_VERSION = 0;
+
     private final Minecraft mc = Minecraft.getMinecraft();
 
     private final ReplayModReplay mod;
@@ -99,11 +111,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     private ListenableFuture<Void> initPromise;
 
-    private TreeMap<Integer, Collection<TrackedThing>> thingSpawnsT = new TreeMap<>();
-    private ListMultimap<Integer, TrackedThing> thingSpawns = Multimaps.newListMultimap(thingSpawnsT, ArrayList::new);
-    private TreeMap<Integer, Collection<TrackedThing>> thingDespawnsT = new TreeMap<>();
-    private ListMultimap<Integer, TrackedThing> thingDespawns = Multimaps.newListMultimap(thingDespawnsT, ArrayList::new);
-    private List<TrackedThing> activeThings = new LinkedList<>();
+    private TreeMap<Integer, Collection<BakedTrackedThing>> thingSpawnsT = new TreeMap<>();
+    private ListMultimap<Integer, BakedTrackedThing> thingSpawns = Multimaps.newListMultimap(thingSpawnsT, ArrayList::new);
+    private TreeMap<Integer, Collection<BakedTrackedThing>> thingDespawnsT = new TreeMap<>();
+    private ListMultimap<Integer, BakedTrackedThing> thingDespawns = Multimaps.newListMultimap(thingDespawnsT, ArrayList::new);
+    private List<BakedTrackedThing> activeThings = new LinkedList<>();
     private TreeMap<Integer, Packet<?>> worldTimes = new TreeMap<>();
     private TreeMap<Integer, Packet<?>> thunderStrengths = new TreeMap<>(); // For some reason, this isn't tied to Weather
 
@@ -138,7 +150,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         new Thread(() -> {
             try {
                 long start = System.currentTimeMillis();
-                analyseReplay(progress);
+                if (!tryLoadFromCache(progress)) {
+                    double progressSplit = 0.9; // 90% of progress time for analysing, 10% for loading
+                    analyseReplay(replayFile, d -> progress.accept(d * progressSplit));
+                    tryLoadFromCache(d -> progress.accept(d * (1 - progressSplit) + progressSplit));
+                }
                 LOGGER.info("Initialized quick replay sender in " + (System.currentTimeMillis() - start) + "ms");
             } catch (Throwable e) {
                 LOGGER.error("Initializing quick replay sender:", e);
@@ -242,7 +258,56 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         sendPacketsTill(currentTimeStamp + replayTimePassed);
     }
 
-    private void analyseReplay(Consumer<Double> progress) {
+    private boolean tryLoadFromCache(Consumer<Double> progress) throws IOException {
+        Optional<InputStream> cacheOpt = replayFile.get(CACHE_ENTRY);
+        if (!cacheOpt.isPresent()) return false;
+        boolean success = loadFromCache(cacheOpt.get(), progress);
+        if (!success) {
+            thingSpawnsT.clear();
+            thingDespawnsT.clear();
+            worldTimes.clear();
+            thunderStrengths.clear();
+        }
+        return success;
+    }
+
+    private boolean loadFromCache(InputStream rawIn, Consumer<Double> progress) throws IOException {
+        long sysTimeStart = System.currentTimeMillis();
+        NetInput in = new StreamNetInput(rawIn);
+        int version = in.readVarInt();
+        if (version > CACHE_VERSION) return false; // More recent than this version, no chance we can read that
+
+        int size = in.readVarInt();
+        int spawnTime = 0;
+        for (int i = 0; i < size; i++) {
+            progress.accept((double) i / size);
+            spawnTime += in.readVarInt();
+            for (int j = in.readVarInt(); j > 0; j--) {
+                int despawnTime = in.readVarInt();
+                BakedTrackedThing trackedThing;
+                switch (in.readVarInt()) {
+                    case 0: trackedThing = new BakedEntity(version, in); break;
+                    case 1: trackedThing = new BakedChunk(version, in); break;
+                    case 2: trackedThing = new BakedWeather(version, in); break;
+                    default: return false;
+                }
+                trackedThing.spawnTime = spawnTime;
+                trackedThing.despawnTime = despawnTime;
+                thingSpawns.put(spawnTime, trackedThing);
+                thingDespawns.put(despawnTime, trackedThing);
+            }
+        }
+
+        // These should go quick, they probably won't need to update progress
+        progress.accept(1.0);
+        readFromCache(version, in, worldTimes);
+        readFromCache(version, in, thunderStrengths);
+
+        LOGGER.info("Loaded quick replay from cache in " + (System.currentTimeMillis() - sysTimeStart) + "ms");
+        return true;
+    }
+
+    private static void analyseReplay(ReplayFile replayFile, Consumer<Double> progress) throws IOException {
         ReplayStudio studio = new ReplayStudio();
         PacketUtils.registerAllMovementRelated(studio);
         studio.setParsing(ServerSpawnMobPacket.class, true);
@@ -258,29 +323,42 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         studio.setParsing(ServerUpdateTimePacket.class, true);
         studio.setParsing(ServerNotifyClientPacket.class, true);
 
+        TreeMap<Integer, Collection<TrackedThing>> thingSpawnsT = new TreeMap<>();
+        ListMultimap<Integer, TrackedThing> thingSpawns = Multimaps.newListMultimap(thingSpawnsT, ArrayList::new);
+        TreeMap<Integer, com.github.steveice10.packetlib.packet.Packet> worldTimes = new TreeMap<>();
+        TreeMap<Integer, com.github.steveice10.packetlib.packet.Packet> thunderStrengths = new TreeMap<>();
         Map<UUID, PlayerListEntry> playerListEntries = new HashMap<>();
         Map<Integer, Entity> activeEntities = new HashMap<>();
         Map<Long, Chunk> activeChunks = new HashMap<>();
         Weather activeWeather = null;
 
+        // 90% of estimated time are for analysis, 10% for writing cache
+        // This heuristic is based on simply running the function on some 3h replay.
+        // Numbers may be significantly different for smaller replays where GC doesn't kick in. But the progress bar
+        // will hopefully be barely visible in that case anyway.
+        // May need to be updated when performance of MCProtocolLib or this code is improved.
+        // Same for the split between analyseReplay and loadFromCache declared in #initialize(...)
+        final double progressSplit = 0.9;
+
+        double sysTimeStart = System.currentTimeMillis();
+        double duration;
         try (ReplayInputStream in = replayFile.getPacketData(studio)) {
-            double duration = replayFile.getMetaData().getDuration();
+            duration = replayFile.getMetaData().getDuration();
             PacketData packetData;
             while ((packetData = in.readPacket()) != null) {
                 com.github.steveice10.packetlib.packet.Packet packet = packetData.getPacket();
                 int time = (int) packetData.getTime();
-                progress.accept(time / duration);
+                progress.accept(time / duration * progressSplit);
                 Integer entityId = PacketUtils.getEntityId(packet);
                 if (packet instanceof ServerSpawnMobPacket
                         || packet instanceof ServerSpawnObjectPacket
                         || packet instanceof ServerSpawnPaintingPacket) {
-                    Entity entity = new Entity(entityId, Collections.singletonList(toMC(packet)));
+                    Entity entity = new Entity(entityId, Collections.singletonList(packet));
                     entity.spawnTime = time;
                     thingSpawns.put(time, entity);
                     Entity prev = activeEntities.put(entityId, entity);
                     if (prev != null) {
                         prev.despawnTime = time;
-                        thingDespawns.put(time, prev);
                     }
                 } else if (packet instanceof ServerSpawnPlayerPacket) {
                     ServerPlayerListEntryPacket listEntryPacket = new ServerPlayerListEntryPacket(
@@ -289,20 +367,18 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                                     playerListEntries.get(((ServerSpawnPlayerPacket) packet).getUUID())
                             }
                     );
-                    Entity entity = new Entity(entityId, Arrays.asList(toMC(listEntryPacket), toMC(packet)));
+                    Entity entity = new Entity(entityId, Arrays.asList(listEntryPacket, packet));
                     entity.spawnTime = time;
                     thingSpawns.put(time, entity);
                     Entity prev = activeEntities.put(entityId, entity);
                     if (prev != null) {
                         prev.despawnTime = time;
-                        thingDespawns.put(time, prev);
                     }
                 } else if (packet instanceof ServerEntityDestroyPacket) {
                     for (int id : ((ServerEntityDestroyPacket) packet).getEntityIds()) {
                         Entity entity = activeEntities.remove(id);
                         if (entity != null) {
                             entity.despawnTime = time;
-                            thingDespawns.put(time, entity);
                         }
                     }
                 } else if (packet instanceof ServerChunkDataPacket) {
@@ -314,7 +390,6 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                     if (prev != null) {
                         prev.currentBlockState = null; // free memory because we no longer need it
                         prev.despawnTime = time;
-                        thingDespawns.put(time, prev);
                     }
                 } else if (packet instanceof ServerUnloadChunkPacket) {
                     ServerUnloadChunkPacket p = (ServerUnloadChunkPacket) packet;
@@ -322,7 +397,6 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                     if (prev != null) {
                         prev.currentBlockState = null; // free memory because we no longer need it
                         prev.despawnTime = time;
-                        thingDespawns.put(time, prev);
                     }
                 } else if (packet instanceof ServerBlockChangePacket || packet instanceof ServerMultiBlockChangePacket) {
                     for (BlockChangeRecord record :
@@ -350,14 +424,13 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 } else if (packet instanceof ServerRespawnPacket) {
                     // FIXME
                 } else if (packet instanceof ServerUpdateTimePacket) {
-                    worldTimes.put(time, toMC(packet));
+                    worldTimes.put(time, packet);
                 } else if (packet instanceof ServerNotifyClientPacket) {
                     ServerNotifyClientPacket p = (ServerNotifyClientPacket) packet;
                     switch (p.getNotification()) {
                         case START_RAIN:
                             if (activeWeather != null) {
                                 activeWeather.despawnTime = time;
-                                thingDespawns.put(time, activeWeather);
                             }
                             activeWeather = new Weather();
                             activeWeather.spawnTime = time;
@@ -366,17 +439,16 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                         case STOP_RAIN:
                             if (activeWeather != null) {
                                 activeWeather.despawnTime = time;
-                                thingDespawns.put(time, activeWeather);
                                 activeWeather = null;
                             }
                             break;
                         case RAIN_STRENGTH:
                             if (activeWeather != null) {
-                                activeWeather.rainStrengths.put(time, toMC(packet));
+                                activeWeather.rainStrengths.put(time, packet);
                             }
                             break;
                         case THUNDER_STRENGTH:
-                            thunderStrengths.put(time, toMC(packet));
+                            thunderStrengths.put(time, packet);
                             break;
                         default: break;
                     }
@@ -392,9 +464,43 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                     }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        LOGGER.info("Analysed replay in " + (System.currentTimeMillis() - sysTimeStart) + "ms");
+
+        sysTimeStart = System.currentTimeMillis();
+        try (OutputStream cacheOut = replayFile.write(CACHE_ENTRY)) {
+            NetOutput out = new StreamNetOutput(cacheOut);
+            out.writeVarInt(CACHE_VERSION);
+
+            out.writeVarInt(thingSpawnsT.size());
+            int lastTime = 0;
+            for (Map.Entry<Integer, Collection<TrackedThing>> entry : thingSpawnsT.entrySet()) {
+                int time = entry.getKey();
+                out.writeVarInt(time - lastTime);
+                lastTime = time;
+
+                progress.accept(time / duration * (1 - progressSplit) + progressSplit);
+
+                Collection<TrackedThing> trackedThings = entry.getValue();
+                out.writeVarInt(trackedThings.size());
+                for (TrackedThing trackedThing : trackedThings) {
+                    out.writeVarInt(trackedThing.despawnTime);
+                    if (trackedThing instanceof Entity) {
+                        out.writeVarInt(0);
+                    } else if (trackedThing instanceof Chunk) {
+                        out.writeVarInt(1);
+                    } else if (trackedThing instanceof Weather) {
+                        out.writeVarInt(2);
+                    } else {
+                        throw new UnsupportedOperationException("Unknown type of tracked thing: " + trackedThing);
+                    }
+                    trackedThing.writeToCache(out);
+                }
+            }
+            writeToCache(out, worldTimes);
+            writeToCache(out, thunderStrengths);
+        }
+        LOGGER.info("Wrote quick replay to cache in " + (System.currentTimeMillis() - sysTimeStart) + "ms");
     }
 
     @Override
@@ -475,6 +581,86 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
     }
 
+    private static Packet<?> readPacketFromCache(int version, NetInput in) throws IOException {
+        int readerIndex = byteBuf.readerIndex(); // Mark the current reader and writer index (should be at start)
+        int writerIndex = byteBuf.writerIndex();
+        try {
+            packetBuf.writeBytes(in.readBytes(in.readVarInt()));
+
+            int packetId = packetBuf.readVarInt();
+            Packet<?> mcPacket = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
+            mcPacket.readPacketData(packetBuf);
+            return mcPacket;
+        } catch (Exception e) {
+            Throwables.throwIfInstanceOf(e, IOException.class);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
+        } finally {
+            byteBuf.readerIndex(readerIndex); // Reset reader & writer index for next use
+            byteBuf.writerIndex(writerIndex);
+        }
+    }
+
+    private static List<Packet<?>> readPacketsFromCache(int version, NetInput in) throws IOException {
+        int size = in.readVarInt();
+        List<Packet<?>> packets = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            packets.add(readPacketFromCache(version, in));
+        }
+        return packets;
+    }
+
+    private static void readFromCache(int version, NetInput in, SortedMap<Integer, Packet<?>> packets) throws IOException {
+        int time = 0;
+        for (int i = in.readVarInt(); i > 0; i--) {
+            time += in.readVarInt();
+            packets.put(time, readPacketFromCache(version, in));
+        }
+    }
+
+    private static void writeToCache(NetOutput out, com.github.steveice10.packetlib.packet.Packet packet) throws IOException {
+        int readerIndex = byteBuf.readerIndex(); // Mark the current reader and writer index (should be at start)
+        int writerIndex = byteBuf.writerIndex();
+        try {
+            encoder.write(0, packet); // Re-encode packet, data will end up in byteBuf
+            encoder.flush();
+
+            byteBuf.skipBytes(8); // Skip packet length & timestamp
+
+            int size = byteBuf.readableBytes();
+            out.writeVarInt(size);
+            for (int i = 0; i < size; i++) {
+                out.writeByte(byteBuf.readByte());
+            }
+        } catch (Exception e) {
+            Throwables.throwIfInstanceOf(e, IOException.class);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
+        } finally {
+            byteBuf.readerIndex(readerIndex); // Reset reader & writer index for next use
+            byteBuf.writerIndex(writerIndex);
+        }
+    }
+
+    private static void writeToCache(NetOutput out, Collection<com.github.steveice10.packetlib.packet.Packet> packets) throws IOException {
+        out.writeVarInt(packets.size());
+        for (com.github.steveice10.packetlib.packet.Packet packet : packets) {
+            writeToCache(out, packet);
+        }
+    }
+
+    private static void writeToCache(NetOutput out, SortedMap<Integer, com.github.steveice10.packetlib.packet.Packet> packets) throws IOException {
+        out.writeVarInt(packets.size());
+        int lastTime = 0;
+        for (Map.Entry<Integer, com.github.steveice10.packetlib.packet.Packet> entry : packets.entrySet()) {
+            int time = entry.getKey();
+            out.writeVarInt(time - lastTime);
+            lastTime = time;
+
+            writeToCache(out, entry.getValue());
+        }
+    }
+
     private static long coordToLong(int x, int z) {
         return (long)x << 32 | (long)z & 0xFFFFFFFFL;
     }
@@ -494,10 +680,38 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     }
 
     private static abstract class TrackedThing {
+        List<com.github.steveice10.packetlib.packet.Packet> spawnPackets;
+        List<com.github.steveice10.packetlib.packet.Packet> despawnPackets;
+        int spawnTime;
+        int despawnTime = Integer.MAX_VALUE;
+
+        private TrackedThing(List<com.github.steveice10.packetlib.packet.Packet> spawnPackets,
+                             List<com.github.steveice10.packetlib.packet.Packet> despawnPackets) {
+            this.spawnPackets = spawnPackets;
+            this.despawnPackets = despawnPackets;
+        }
+
+        public void writeToCache(NetOutput out) throws IOException {
+            QuickReplaySender.writeToCache(out, spawnPackets);
+            QuickReplaySender.writeToCache(out, despawnPackets);
+        }
+    }
+
+    // For quicker jumping we store MC packets.
+    // However, during replay analysis it's easier to use MCProtocolLib ones in part because MC packets have been
+    // renamed from 1.8 to 1.9 but also because we cannot easily serialize them for caching.
+    // Therefore during analysis we use TrackedThing which we then serialize (we'd have to do that anyway for caching)
+    // and afterwards unserialize in BakedTrackedThing as MC packets for replaying.
+    private static abstract class BakedTrackedThing {
         List<Packet<?>> spawnPackets;
         List<Packet<?>> despawnPackets;
         int spawnTime;
         int despawnTime = Integer.MAX_VALUE;
+
+        private BakedTrackedThing(int version, NetInput in) throws IOException {
+            spawnPackets = readPacketsFromCache(version, in);
+            despawnPackets = readPacketsFromCache(version, in);
+        }
 
         public abstract void play(int currentTimeStamp, int replayTime, Consumer<Packet<?>> send);
         public abstract void rewind(int currentTimeStamp, int replayTime, Consumer<Packet<?>> send);
@@ -507,10 +721,45 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         private int id;
         private NavigableMap<Integer, Location> locations = new TreeMap<>();
 
-        private Entity(int entityId, List<Packet<?>> spawnPackets) {
+        private Entity(int entityId, List<com.github.steveice10.packetlib.packet.Packet> spawnPackets) {
+            super(spawnPackets, Collections.singletonList(new ServerEntityDestroyPacket(entityId)));
             this.id = entityId;
-            this.spawnPackets = spawnPackets;
-            this.despawnPackets = Collections.singletonList(toMC(new ServerEntityDestroyPacket(entityId)));
+        }
+
+        @Override
+        public void writeToCache(NetOutput out) throws IOException {
+            super.writeToCache(out);
+
+            out.writeVarInt(id);
+            out.writeVarInt(locations.size());
+            int lastTime = 0;
+            for (Map.Entry<Integer, Location> entry : locations.entrySet()) {
+                int time = entry.getKey();
+                Location loc = entry.getValue();
+                out.writeVarInt(time - lastTime);
+                lastTime = time;
+                out.writeDouble(loc.getX());
+                out.writeDouble(loc.getY());
+                out.writeDouble(loc.getZ());
+                out.writeFloat(loc.getYaw());
+                out.writeFloat(loc.getPitch());
+            }
+        }
+    }
+
+    private static class BakedEntity extends BakedTrackedThing {
+        private int id;
+        private NavigableMap<Integer, Location> locations = new TreeMap<>();
+
+        private BakedEntity(int version, NetInput in) throws IOException {
+            super(version, in);
+
+            id = in.readVarInt();
+            int time = 0;
+            for (int i = in.readVarInt(); i > 0; i--) {
+                time += in.readVarInt();
+                locations.put(time, new Location(in.readDouble(), in.readDouble(), in.readDouble(), in.readFloat(), in.readFloat()));
+            }
         }
 
         @Override
@@ -532,11 +781,54 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         private BlockStorage[] currentBlockState = new BlockStorage[16];
 
         private Chunk(Column column) {
-            this.spawnPackets = Collections.singletonList(toMC(new ServerChunkDataPacket(column)));
-            this.despawnPackets = Collections.singletonList(toMC(new ServerUnloadChunkPacket(column.getX(), column.getZ())));
+            super(Collections.singletonList(new ServerChunkDataPacket(column)),
+                    Collections.singletonList(new ServerUnloadChunkPacket(column.getX(), column.getZ())));
             com.github.steveice10.mc.protocol.data.game.chunk.Chunk[] chunks = column.getChunks();
             for (int i = 0; i < currentBlockState.length; i++) {
                 currentBlockState[i] = chunks[i] == null ? new BlockStorage() : chunks[i].getBlocks();
+            }
+        }
+
+        @Override
+        public void writeToCache(NetOutput out) throws IOException {
+            super.writeToCache(out);
+
+            out.writeVarInt(blocksT.size());
+            int lastTime = 0;
+            for (Map.Entry<Integer, Collection<BlockChange>> entry : blocksT.entrySet()) {
+                int time = entry.getKey();
+                out.writeVarInt(time - lastTime);
+                lastTime = time;
+
+                Collection<BlockChange> blockChanges = entry.getValue();
+                out.writeVarInt(blockChanges.size());
+                for (BlockChange blockChange : blockChanges) {
+                    NetUtil.writePosition(out, blockChange.pos);
+                    NetUtil.writeBlockState(out, blockChange.from);
+                    NetUtil.writeBlockState(out, blockChange.to);
+                }
+            }
+        }
+    }
+
+    private static class BakedChunk extends BakedTrackedThing {
+        private TreeMap<Integer, Collection<BlockChange>> blocksT = new TreeMap<>();
+        private ListMultimap<Integer, BlockChange> blocks = Multimaps.newListMultimap(blocksT, LinkedList::new); // LinkedList to allow .descendingIterator
+
+        private BakedChunk(int version, NetInput in) throws IOException {
+            super(version, in);
+
+            int time = 0;
+            for (int i = in.readVarInt(); i > 0; i--) {
+                time += in.readVarInt();
+
+                for (int j = in.readVarInt(); j > 0; j--) {
+                    blocks.put(time, new BlockChange(
+                            NetUtil.readPosition(in),
+                            NetUtil.readBlockState(in),
+                            NetUtil.readBlockState(in)
+                    ));
+                }
             }
         }
 
@@ -574,11 +866,28 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     }
 
     private static class Weather extends TrackedThing {
-        private TreeMap<Integer, Packet<?>> rainStrengths = new TreeMap<>();
+        private TreeMap<Integer, com.github.steveice10.packetlib.packet.Packet> rainStrengths = new TreeMap<>();
 
         private Weather() {
-            this.spawnPackets = Collections.singletonList(toMC(new ServerNotifyClientPacket(ClientNotification.START_RAIN, null)));
-            this.despawnPackets = Collections.singletonList(toMC(new ServerNotifyClientPacket(ClientNotification.STOP_RAIN, null)));
+            super(Collections.singletonList(new ServerNotifyClientPacket(ClientNotification.START_RAIN, null)),
+                    Collections.singletonList(new ServerNotifyClientPacket(ClientNotification.STOP_RAIN, null)));
+        }
+
+        @Override
+        public void writeToCache(NetOutput out) throws IOException {
+            super.writeToCache(out);
+
+            QuickReplaySender.writeToCache(out, rainStrengths);
+        }
+    }
+
+    private static class BakedWeather extends BakedTrackedThing {
+        private TreeMap<Integer, Packet<?>> rainStrengths = new TreeMap<>();
+
+        private BakedWeather(int version, NetInput in) throws IOException {
+            super(version, in);
+
+            readFromCache(version, in, rainStrengths);
         }
 
         @Override
