@@ -422,7 +422,14 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                         }
                     }
                 } else if (packet instanceof ServerRespawnPacket) {
-                    // FIXME
+                    activeEntities.values().forEach(entity -> entity.despawnTime = time);
+                    activeEntities.clear();
+                    activeChunks.values().forEach(chunk -> chunk.despawnTime = time);
+                    activeChunks.clear();
+                    if (activeWeather != null) {
+                        activeWeather.despawnTime = time;
+                    }
+                    activeWeather = null;
                 } else if (packet instanceof ServerUpdateTimePacket) {
                     worldTimes.put(time, packet);
                 } else if (packet instanceof ServerNotifyClientPacket) {
