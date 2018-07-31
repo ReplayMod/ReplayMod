@@ -33,6 +33,10 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager; // RAH
+import org.apache.logging.log4j.Logger; // RAH
+import com.replaymod.replay.events.ReplayPlayingEvent; // RAH - Alert ReplayModSimplePathing that the video is playing
+
 
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
@@ -111,6 +115,10 @@ public class ReplaySender extends ChannelDuplexHandler {
             //$$ S39PacketPlayerAbilities.class
             //#endif
     );
+
+	//RAH
+	private boolean automationInitialization = false;
+	// RAH
 
     private static int TP_DISTANCE_LIMIT = 128;
 
@@ -247,6 +255,15 @@ public class ReplaySender extends ChannelDuplexHandler {
         return asyncMode;
     }
 
+	/**
+	* RAH - Added
+	*
+	*/
+	public int getPlayerId()
+	{
+		return actualID;
+    }
+    
     /**
      * Set whether this replay sender  to operate in sync mode.
      * When in sync mode, it will send packets when {@link #sendPacketsTill(int)} is called.
@@ -857,8 +874,21 @@ public class ReplaySender extends ChannelDuplexHandler {
                                     // Pause after jumping
                                     setReplaySpeed(0);
                                 }
+								// RAH Begin - If replay is playing, everything is setup, so we can launch initKeyFrames and rendering
+								// Things are complicated because this thread is not the MC threads, so we have to jump through hoops
+								// I need to be able to send a message to replayHandler or guiPathing - somehow!
+								if (!automationInitialization && lastTimeStamp >= 4977) {
+									LogManager.getLogger().debug("Triggering event");
+									automationInitialization = true;
+									setReplaySpeed(0);
+									/// Events to ReplayModSimplePathing weren't adequate - resulted in No OpenGL context found in thread error
+									//FML_BUS.post(new ReplayPlayingEvent.Post(replayHandler)); // Events spawn a new thread, must be MC thread
+									//replayHandler.startedReplay();
+								}
+								// RAH End
                             } catch (EOFException eof) {
                                 // Reached end of file
+								LogManager.getLogger().debug("End of File");
                                 // Pause the replay which will cause it to freeze before getting restarted
                                 setReplaySpeed(0);
                                 // Then wait until the user tells us to continue
@@ -924,6 +954,7 @@ public class ReplaySender extends ChannelDuplexHandler {
     public void jumpToTime(int millis) {
         Preconditions.checkState(asyncMode, "Can only jump in async mode. Use sendPacketsTill(int) instead.");
         if(millis < lastTimeStamp && !isHurrying()) {
+			LogManager.getLogger().debug("RAH: lastTimeStamp " + lastTimeStamp + " startFromBeginning"); 
             startFromBeginning = true;
         }
 

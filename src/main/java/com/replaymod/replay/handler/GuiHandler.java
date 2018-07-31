@@ -19,6 +19,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+// RAH Start
+import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
+import com.replaymod.replaystudio.PacketData;
+import com.replaymod.replaystudio.Studio;
+import java.io.File; // RAH
+import java.io.FileFilter; // RAH
+import java.io.IOException; // RAH 
+import org.apache.commons.io.FileUtils; // RAH
+import org.apache.commons.io.IOCase; // RAH
+import org.apache.commons.io.filefilter.SuffixFileFilter; // RAH
+import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.replay.ZipReplayFile;
+import com.replaymod.replaystudio.studio.ReplayStudio;
+// RAH end
+
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
@@ -34,6 +51,10 @@ public class GuiHandler {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     private final ReplayModReplay mod;
+
+	// RAH begin
+	private   GuiReplayViewer guiReplayViewer;
+	//RAH end
 
     public GuiHandler(ReplayModReplay mod) {
         this.mod = mod;
@@ -125,15 +146,71 @@ public class GuiHandler {
                 getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer"));
         button.width = button.width / 2 - 2;
         getButtonList(event).add(button);
+		//processFile(); // RAH Can we call this directly from the main menu?
     }
+
+	// RAH 
+	/**
+	* Delay initiating the load button so that things can come up operationally
+	*
+	**/
+	private void delayedClick(int delay_ms)
+	{
+		LOGGER.debug("GuiHandler.delayedClick()" + delay_ms);
+		if (delay_ms > 0) {
+			new Thread(() -> {
+				try {
+					Thread.sleep(delay_ms);
+				} catch (InterruptedException e) {
+					LOGGER.debug(e);
+					return;
+				}
+				LOGGER.debug("calling guiReplayViewer.loadButton");
+				guiReplayViewer.loadButton.onClick();
+			}).start(); // End of thread
+		}
+	}
+
+	/**
+	* RAH - There must be 1 and only 1 .mcpr file in the directory - otherwise things get whacky - we'll address this later
+	*
+	**/
+	public void processFile()
+	{
+		LOGGER.debug("Process Single File");
+		//try {
+		//	Thread.sleep(500);
+		//} catch (InterruptedException e) {
+		//	LOGGER.debug(e);
+		//	return;
+		//}
+        try {
+			File folder = mod.getCore().getReplayFolder();
+            for (final File file : folder.listFiles((FileFilter) new SuffixFileFilter(".mcpr", IOCase.INSENSITIVE))) {
+                if (Thread.interrupted()) break;
+				LOGGER.debug("mod.startReplay("+file+")");
+				mod.startReplay(file); // RAH - this returns after setup, so we can't loop through all the files - just one at a time
+			}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }	
+	}
 
     @SubscribeEvent
     public void onButton(GuiScreenEvent.ActionPerformedEvent.Pre event) {
+		LOGGER.debug("Replay Viewer Called");
         if(!getButton(event).enabled) return;
 
         if (getGui(event) instanceof GuiMainMenu) {
             if (getButton(event).id == BUTTON_REPLAY_VIEWER) {
-                new GuiReplayViewer(mod).display();
+				LOGGER.debug("Main Menu Replay Viewer Button Press");
+				// RAH - we can bypass guiReplayViewer completely
+				//guiReplayViewer = new GuiReplayViewer(mod);
+				//guiReplayViewer.display(); // RAH - added variable and made it a member variable
+				processFile();
+				// RAH, this doesn't work because we are not the MC thread.
+				//delayedClick(5000); // RAH - after a few seconds, load the selected item - which is the first file
+				//guiReplayViewer.loadButton.onClick();
             }
         }
 

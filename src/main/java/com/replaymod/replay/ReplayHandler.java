@@ -26,6 +26,13 @@ import org.lwjgl.opengl.Display;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.logging.log4j.LogManager; // RAH
+import org.apache.logging.log4j.Logger; // RAH
+import com.replaymod.simplepathing.gui.GuiPathing; // RAH
+import com.replaymod.replay.events.ReplayPlayingEvent; // RAH
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent; //RAH
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent; // RAH
+
 //#if MC>=10800
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -51,6 +58,9 @@ import static net.minecraft.client.renderer.GlStateManager.*;
 //$$ import static com.replaymod.replay.ReplayModReplay.LOGGER;
 //#endif
 
+import org.apache.logging.log4j.LogManager; // RAH 
+import org.apache.logging.log4j.Logger; // RAH
+
 import static com.replaymod.core.versions.MCVer.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -58,6 +68,8 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 public class ReplayHandler {
 
     private static Minecraft mc = Minecraft.getMinecraft();
+	private static final Logger logger = LogManager.getLogger(); // RAH
+	private GuiPathing guiPathing; // RAH
 
     /**
      * The file currently being played.
@@ -92,14 +104,21 @@ public class ReplayHandler {
 
     private UUID spectating;
 
+	/* RAH I added this even handler, I am pretty sure the even is never received */
+	@SubscribeEvent
+	public void postReplayPlaying(ReplayPlayingEvent.Post event) {
+		//guiPathing.renderButton.onClick();
+		LogManager.getLogger().debug("================================== Video is playing per replaySender ====================================");
+		//guiPathing.renderButton.onClick(); // Start rendering
+	}
+
     public ReplayHandler(ReplayFile replayFile, boolean asyncMode) throws IOException {
         Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
         this.replayFile = replayFile;
 
         FML_BUS.post(new ReplayOpenEvent.Pre(this));
 
-        markers = new ArrayList<>(replayFile.getMarkers().or(Collections.emptySet()));
-
+		markers = new ArrayList<>(replayFile.getMarkers().or(Collections.emptySet()));
         replaySender = new ReplaySender(this, replayFile, false);
 
         setup();
@@ -110,7 +129,26 @@ public class ReplayHandler {
         FML_BUS.post(new ReplayOpenEvent.Post(this));
 
         replaySender.setAsyncMode(asyncMode);
+
+		// RAH This function has to return - it is blocking 
     }
+
+	/** RAH --- Not used, as of now */
+	public void setGuiPathing (GuiPathing guipath)
+	{
+		LogManager.getLogger().debug("RAH: ReplayHandler-> Setting guiPathing"); 
+		guiPathing = guipath;
+	}
+
+
+	/** RAH - 
+	* ReplaySender calls this once the video is playing, however it is in the wrong thread so we can't push the renderButton here - keep for now - may find another work around
+	*
+	**/
+	void startedReplay() {
+		LogManager.getLogger().debug("Video is playing per replaySender");
+		guiPathing.renderButton.onClick(); // Start rendering
+	}
 
     void restartedReplay() {
         channel.close();
@@ -120,7 +158,7 @@ public class ReplayHandler {
             mc.setIngameNotInFocus();
             mc.loadWorld(null);
         });
-
+			
         restrictions = new Restrictions();
 
         setup();
