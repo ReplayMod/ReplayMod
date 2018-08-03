@@ -515,7 +515,7 @@ public class GuiPathing {
 		replayHandler.getReplaySender().setReplaySpeed(1); // video was paused, we need to let it play a small amount so we can get new camera parameters to make the system happy
 		// Sleep a bit so the engine and play and update variables.
 		try {
-				Thread.sleep(000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				logger.debug(e);
 				return;
