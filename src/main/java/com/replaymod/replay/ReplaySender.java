@@ -877,7 +877,7 @@ public class ReplaySender extends ChannelDuplexHandler {
 								// RAH Begin - If replay is playing, everything is setup, so we can launch initKeyFrames and rendering
 								// Things are complicated because this thread is not the MC threads, so we have to jump through hoops
 								// I need to be able to send a message to replayHandler or guiPathing - somehow!
-								if (!automationInitialization && lastTimeStamp >= 4977) {
+								if (!automationInitialization && lastTimeStamp >= 1977) {
 									LogManager.getLogger().debug("Triggering event");
 									automationInitialization = true;
 									setReplaySpeed(0);
