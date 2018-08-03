@@ -150,11 +150,17 @@ public class noGuiRenderSettings  {
 
 	// RAH - when removing gui, I wiped out encodingPresets BC it is part of the GUI framework - use hardcoded values
 	protected File generateOutputFile() {
-        return new File("/", "foo.MP4");
-		//String dateStr = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
-		//String fileName = String.format("CMURL_%010d_%010d-",startTime_ms,endTime_ms) + dateStr;
-        //File folder = ReplayModRender.instance.getVideoFolder();
-		//return new File(folder, fileName + ".MP4");  // No longer have encodingPreset, hardcoding to MP4
+		String dateStr = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
+		String fileName = String.format("CMURL_%010d_%010d-",startTime_ms,endTime_ms) + dateStr;
+        File folder = ReplayModRender.instance.getVideoFolder();
+		return new File(folder, fileName + ".mp4");  // No longer have encodingPreset, hardcoding to MP4
+    }
+
+    protected File generateObservationFile() {
+		String dateStr = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
+		String fileName = String.format("CMURL_%010d_%010d-",startTime_ms,endTime_ms) + dateStr;
+        File folder = ReplayModRender.instance.getVideoFolder();
+		return new File(folder, fileName + ".bin");  // No longer have encodingPreset, hardcoding to MP4
     }
 
     private RenderSettings getDefaultRenderSettings() {
@@ -165,7 +171,7 @@ public class noGuiRenderSettings  {
         int bitRate = 2; // was 10 - Do know what this is, mbps, kbps - some other value? There is a shift happening - be careful
         
         return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT,  
-        RenderSettings.ObservationPreset.DEFAULT, width, height, frameRate, bitRate << 20, null, null, false, null,
+        RenderSettings.ObservationPreset.DEFAULT, width, height, frameRate, bitRate << 20, generateOutputFile(), generateObservationFile(), false, null,
         true, false, false, false, null, false, RenderSettings.AntiAliasing.NONE, "", 
         RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
     }
