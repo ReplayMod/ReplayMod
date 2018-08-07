@@ -243,6 +243,16 @@ public class ConnectionEventHandler {
             recordingManager = new Thread(recordingService);
             recordingManager.start();
 
+            ////////////////////////////////////////////
+            //           User Notification            //
+            ////////////////////////////////////////////
+
+            if(replayFile instanceof StreamReplayFile){
+                core.printInfoToChat("Stream info: ");
+                core.printInfoToChat(((StreamReplayFile)replayFile).getStreamName());
+                core.printInfoToChat("Version " + ((StreamReplayFile)replayFile).getStreamVersion());
+            }
+            
         } catch (Throwable e) {
             e.printStackTrace();
             core.printWarningToChat("replaymod.chat.recordingfailed");
