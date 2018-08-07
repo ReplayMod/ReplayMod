@@ -69,7 +69,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private ChannelHandlerContext context = null;
 
     private final long startTime;
-    private long lastSentPacket;
+    private long lastSentPacket = 0;
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
 
@@ -131,6 +131,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
                 uuids.add(uuid.toString());
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
+                metaData.setDuration((int) lastSentPacket);
                 saveMetaData();
             }
             //#if MC<10904
