@@ -121,10 +121,11 @@ public class ConnectionEventHandler {
             logger.error("Recording Service Started");
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
             String jsonStr = "";
+            int connectionAttempts = 10;
             while (true){
                 try{
                     jsonStr = in.readLine();
-                    Thread.sleep(100);
+                    
                     if( jsonStr != null){
                         
                         JsonObject recordObject = new JsonParser().parse(jsonStr).getAsJsonObject();
@@ -145,12 +146,26 @@ public class ConnectionEventHandler {
                             }
                         }
                     }
-                } catch (JsonSyntaxException | IOException e) {
+                } catch (JsonSyntaxException e) {
                     logger.error(e.toString());
                     logger.error(jsonStr);
-                    logger.error("IO Exception encounterd when trying to manage recording state!");
+                    logger.error("JsonSyntaxException in parsing string!");
                     markStopRecording("{}");
-                }    
+                } catch (IOException e)  {
+                    logger.error("Issue connecting to minecraft server - TCP connection error");
+                    if (connectionAttempts-- < 1) {
+                        logger.error("Giving up on connecting to serever!");
+                        logger.error("Trying to quit...");
+                        onDisconnectedFromServerEvent(null);
+                    } else {
+                        logger.info("Opening new connection to server");
+                        mcServerSocket.connect(mcServerSocket.getRemoteSocketAddress(), 500);
+                        in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
+                    }
+                    
+                }
+
+                Thread.sleep(50);
             }
         }
         catch (IOException e) {
