@@ -53,17 +53,6 @@ public class ReplayModRecording {
         core = ReplayMod.instance;
 
         core.getSettingsRegistry().register(Setting.class);
-
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
-            @Override
-            public void run() {
-                PacketListener packetListener = connectionEventHandler.getPacketListener();
-                if (packetListener != null) {
-                    packetListener.addMarker();
-                    core.printInfoToChat("replaymod.chat.addedmarker");
-                }
-            }
-        });
     }
 
     @Mod.EventHandler
