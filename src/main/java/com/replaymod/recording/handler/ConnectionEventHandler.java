@@ -157,9 +157,10 @@ public class ConnectionEventHandler {
                         logger.error("Giving up on connecting to serever!");
                         logger.error("Trying to quit...");
                         onDisconnectedFromServerEvent(null);
+                        mc.world.sendQuittingDisconnectingPacket();
                     } else {
                         logger.info("Opening new connection to server");
-                        mcServerSocket.connect(mcServerSocket.getRemoteSocketAddress(), 500);
+                        mcServerSocket.connect(mcServerSocket.getRemoteSocketAddress(), 1000);
                         in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
                     }
                     
@@ -263,7 +264,7 @@ public class ConnectionEventHandler {
             ////////////////////////////////////////////
 
             if(replayFile instanceof StreamReplayFile){
-                core.printInfoToChat("Stream info: ");
+                core.printInfoToChat("ClientRecorder v" + core.getVersion());
                 core.printInfoToChat(((StreamReplayFile)replayFile).getStreamName());
                 core.printInfoToChat("Version " + ((StreamReplayFile)replayFile).getStreamVersion());
             }
@@ -389,6 +390,7 @@ public class ConnectionEventHandler {
         JsonObject mcKeyJson = new JsonObject();
         mcKeyJson.addProperty("cmd", "get_minecraft_key");
         mcKeyJson.addProperty("uid", uid);
+        mcKeyJson.addProperty("version", core.getVersion());
         String mcKeyStr = mcKeyJson.toString();
         DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
         try {
