@@ -171,8 +171,19 @@ public class ReplayHandler {
 
         replaySender.terminateReplay();
 
-        replayFile.save();
-        replayFile.close();
+		// RAH wrap the save and close calls in try loops because the save often throws exception and then fails to finish function
+		// We can ignore the save, which allows us to close the file and clean up after the replay
+		try {
+			replayFile.save();
+		} catch (Exception e) {
+			LogManager.getLogger().debug("RAH ReplayHandler.endReplay() SAVE exception!!!!!!!!!!!!!!!!!!!!!");
+		}
+		try {
+			replayFile.close();
+		} catch (Exception e) {
+			LogManager.getLogger().debug("RAH ReplayHandler.endReplay() CLOSE exception!!!!!!!!!!!!!!!!!!!!!");
+		}
+		// RAH End
 
         channel.close().awaitUninterruptibly();
 
@@ -197,6 +208,7 @@ public class ReplayHandler {
         mc.displayGuiScreen(null);
 
         FML_BUS.post(new ReplayCloseEvent.Post(this));
+		LOGGER.debug("ReplayHandler.endReplay() done");
     }
 
     private void setup() {
