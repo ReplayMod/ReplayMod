@@ -208,7 +208,7 @@ public class ReplayHandler {
         mc.displayGuiScreen(null);
 
         FML_BUS.post(new ReplayCloseEvent.Post(this));
-		LOGGER.debug("ReplayHandler.endReplay() done");
+		LogManager.getLogger().debug("ReplayHandler.endReplay() done");
     }
 
     private void setup() {
