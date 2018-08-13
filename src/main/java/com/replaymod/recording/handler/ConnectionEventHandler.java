@@ -415,6 +415,12 @@ public class ConnectionEventHandler {
             userServerSocket.close();
             return false;
         }
+
+        if (minecraftKey == null) {
+            logger.info("Minecraft key not in json reponse");
+            userServerSocket.close();
+            return false;
+        }
         
         logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
 
