@@ -424,6 +424,18 @@ public class ConnectionEventHandler {
         
         logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
 
+        // Clear previous authenication responses
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
+            while(in.ready()){
+                in.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            mcServerOut.close();
+            logger.error("Not able to flush input prior to mc server authentication");
+        }
+
         // Send key to Minecraft Server
         JsonObject authJson = new JsonObject();
         authJson.addProperty("cmd", "authorize_user");
@@ -448,7 +460,7 @@ public class ConnectionEventHandler {
             authenicated = authResponse.get("authorized").getAsBoolean();
         } catch (JsonSyntaxException | IOException e) {
             e.printStackTrace();
-            userServerSocket.close();
+            mcServerOut.close();
             logger.error("Error recieving response from server");
             return false;
         }
