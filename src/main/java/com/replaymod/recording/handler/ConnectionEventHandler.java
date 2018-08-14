@@ -118,7 +118,7 @@ public class ConnectionEventHandler {
 
     private void manageRecording(){
         try{
-            logger.error("Recording Service Started");
+            logger.info("Recording Service Started");
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
             String jsonStr = "";
             int connectionAttempts = 10;
@@ -134,7 +134,7 @@ public class ConnectionEventHandler {
 
                             if (recordObject.has("experiment")) {
                                 JsonObject experimentMetaData = recordObject.get("experiment").getAsJsonObject();
-                                logger.error("I parsed metadata :" +  experimentMetaData.toString());
+                                logger.info("I parsed metadata :" +  experimentMetaData.toString());
 
                                 if(recordFlag){
                                     markStartRecording(experimentMetaData.toString());}
@@ -155,7 +155,7 @@ public class ConnectionEventHandler {
                     logger.error("Issue connecting to minecraft server - TCP connection error");
                     if (connectionAttempts-- < 1) {
                         logger.error("Giving up on connecting to serever!");
-                        logger.error("Trying to quit...");
+                        logger.info("Trying to quit...");
                         onDisconnectedFromServerEvent(null);
                         mc.world.sendQuittingDisconnectingPacket();
                     } else {
