@@ -173,7 +173,7 @@ public class noGuiRenderSettings  {
         return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT,  
         RenderSettings.ObservationPreset.DEFAULT, width, height, frameRate, bitRate << 20, generateOutputFile(), generateObservationFile(), false, null,
         true, false, false, false, null, false, RenderSettings.AntiAliasing.NONE, "", 
-        RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
+        RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), true);
     }
 
 
