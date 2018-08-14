@@ -430,13 +430,10 @@ public class ConnectionEventHandler {
         authJson.addProperty("uid", uid);
         authJson.addProperty("minecraft_key", minecraftKey);
         String authStr = authJson.toString();      
-        if (mcServerOut != null){
-            mcServerOut.write(authStr);
-            mcServerOut.append('\n');
-            mcServerOut.flush();
-        } else {
-            logger.error("Minecraft server connection is not complete - not sending play key");
-        } 
+        mcServerOut.write(authStr);
+        mcServerOut.append('\n');
+        mcServerOut.flush();
+
         
         // Get response
         boolean authenicated = false;
