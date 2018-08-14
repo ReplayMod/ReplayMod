@@ -225,7 +225,7 @@ public class ConnectionEventHandler {
             //File currentFile = new File(folder, Utils.replayNameToFileName(name));
             //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
             
-            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), uid, logger);
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), uid, core.getVersion(), logger);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
