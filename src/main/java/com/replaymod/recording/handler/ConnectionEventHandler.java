@@ -375,8 +375,9 @@ public class ConnectionEventHandler {
             mcServerAddress = InetAddress.getByName(minecraft_ip); 
             mcServerSocket = new Socket();
             mcServerSocket.setKeepAlive(true);
+            mcServerSocket.setTcpNoDelay(true);
+            mcServerSocket.setPerformancePreferences(2, 1, 0);
             mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
-            mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
         } catch (IOException e) {
             logger.error("Error establishing connection to minecraft server");
             return false;
@@ -425,11 +426,17 @@ public class ConnectionEventHandler {
         logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
 
         // Send key to Minecraft Server
+        try {
+            mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
         JsonObject authJson = new JsonObject();
         authJson.addProperty("cmd", "authorize_user");
         authJson.addProperty("uid", uid);
         authJson.addProperty("minecraft_key", minecraftKey);
-        String authStr = authJson.toString();      
+        String authStr = authJson.toString();   
         mcServerOut.write(authStr);
         mcServerOut.append('\n');
         mcServerOut.flush();
@@ -439,15 +446,12 @@ public class ConnectionEventHandler {
         boolean authenicated = false;
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
-            String jsonStr = "";
-            while (jsonStr == null){
-                jsonStr = in.readLine();
-            }
+            String jsonStr;
+            jsonStr = in.readLine(); //TODO mcServer will sometimes not respond
             JsonObject authResponse = new JsonParser().parse(jsonStr).getAsJsonObject();
             authenicated = authResponse.get("authorized").getAsBoolean();
         } catch (JsonSyntaxException | IOException e) {
             e.printStackTrace();
-            mcServerOut.close();
             logger.error("Error recieving response from server");
             return false;
         }
