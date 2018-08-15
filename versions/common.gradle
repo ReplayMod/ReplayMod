@@ -168,13 +168,6 @@ dependencies {
 
     shade 'com.amazonaws:aws-java-sdk-kinesis:1.11.228' // AWS api for streaming support
 
-    //Test forcing log4j2
-    //shade 'org.apache.logging.log4j:log4j-api'
-    //shade 'org.apache.logging.log4j:log4j-core'
-
-    //Test using logging bridge
-    //shade group: 'org.apache.logging.log4j', name: 'log4j-jcl', version: '2.11.0'
-
     testCompile 'junit:junit:4.11'
 }
 
