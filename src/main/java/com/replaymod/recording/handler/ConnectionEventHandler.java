@@ -118,13 +118,14 @@ public class ConnectionEventHandler {
 
     private void manageRecording(){
         try{
-            logger.error("Recording Service Started");
+            logger.info("Recording Service Started");
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
             String jsonStr = "";
+            int connectionAttempts = 10;
             while (true){
                 try{
                     jsonStr = in.readLine();
-                    Thread.sleep(100);
+                    
                     if( jsonStr != null){
                         
                         JsonObject recordObject = new JsonParser().parse(jsonStr).getAsJsonObject();
@@ -133,7 +134,7 @@ public class ConnectionEventHandler {
 
                             if (recordObject.has("experiment")) {
                                 JsonObject experimentMetaData = recordObject.get("experiment").getAsJsonObject();
-                                logger.error("I parsed metadata :" +  experimentMetaData.toString());
+                                logger.info("I parsed metadata :" +  experimentMetaData.toString());
 
                                 if(recordFlag){
                                     markStartRecording(experimentMetaData.toString());}
@@ -145,12 +146,27 @@ public class ConnectionEventHandler {
                             }
                         }
                     }
-                } catch (JsonSyntaxException | IOException e) {
+                } catch (JsonSyntaxException e) {
                     logger.error(e.toString());
                     logger.error(jsonStr);
-                    logger.error("IO Exception encounterd when trying to manage recording state!");
+                    logger.error("JsonSyntaxException in parsing string!");
                     markStopRecording("{}");
-                }    
+                } catch (IOException e)  {
+                    logger.error("Issue connecting to minecraft server - TCP connection error");
+                    if (connectionAttempts-- < 1) {
+                        logger.error("Giving up on connecting to serever!");
+                        logger.info("Trying to quit...");
+                        onDisconnectedFromServerEvent(null);
+                        mc.world.sendQuittingDisconnectingPacket();
+                    } else {
+                        logger.info("Opening new connection to server");
+                        mcServerSocket.connect(mcServerSocket.getRemoteSocketAddress(), 1000);
+                        in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
+                    }
+                    
+                }
+
+                Thread.sleep(50);
             }
         }
         catch (IOException e) {
@@ -209,7 +225,7 @@ public class ConnectionEventHandler {
             //File currentFile = new File(folder, Utils.replayNameToFileName(name));
             //ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
             
-            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), uid, logger);
+            ReplayFile replayFile = new StreamReplayFile(new ReplayStudio(), uid, core.getVersion(), logger);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
@@ -248,7 +264,8 @@ public class ConnectionEventHandler {
             ////////////////////////////////////////////
 
             if(replayFile instanceof StreamReplayFile){
-                core.printInfoToChat("Stream info: ");
+                core.printInfoToChat("ClientRecorder v" + core.getVersion());
+
                 core.printInfoToChat(((StreamReplayFile)replayFile).getStreamName());
                 core.printInfoToChat("Version " + ((StreamReplayFile)replayFile).getStreamVersion());
             }
@@ -359,8 +376,9 @@ public class ConnectionEventHandler {
             mcServerAddress = InetAddress.getByName(minecraft_ip); 
             mcServerSocket = new Socket();
             mcServerSocket.setKeepAlive(true);
+            mcServerSocket.setTcpNoDelay(true);
+            mcServerSocket.setPerformancePreferences(2, 1, 0);
             mcServerSocket.connect(new InetSocketAddress(mcServerAddress, 8888), 500);
-            mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
         } catch (IOException e) {
             logger.error("Error establishing connection to minecraft server");
             return false;
@@ -374,6 +392,7 @@ public class ConnectionEventHandler {
         JsonObject mcKeyJson = new JsonObject();
         mcKeyJson.addProperty("cmd", "get_minecraft_key");
         mcKeyJson.addProperty("uid", uid);
+        mcKeyJson.addProperty("version", core.getVersion());
         String mcKeyStr = mcKeyJson.toString();
         DatagramPacket mcKeyRequest = new DatagramPacket(mcKeyStr.getBytes(), mcKeyStr.getBytes().length);
         try {
@@ -398,34 +417,42 @@ public class ConnectionEventHandler {
             userServerSocket.close();
             return false;
         }
+
+        if (minecraftKey == null) {
+            logger.info("Minecraft key not in json reponse");
+            userServerSocket.close();
+            return false;
+        }
         
         logger.info(String.format("Minecraft Key:    %s%n", minecraftKey));
 
         // Send key to Minecraft Server
+        try {
+            mcServerOut = new PrintWriter(new DataOutputStream(mcServerSocket.getOutputStream()), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
         JsonObject authJson = new JsonObject();
         authJson.addProperty("cmd", "authorize_user");
         authJson.addProperty("uid", uid);
         authJson.addProperty("minecraft_key", minecraftKey);
-        String authStr = authJson.toString();      
-        if (mcServerOut != null){
-            mcServerOut.write(authStr);
-            mcServerOut.append('\n');
-            mcServerOut.flush();
-        } else {
-            logger.error("Minecraft server connection is not complete - not sending play key");
-        } 
+        String authStr = authJson.toString();   
+        mcServerOut.write(authStr);
+        mcServerOut.append('\n');
+        mcServerOut.flush();
+
         
         // Get response
         boolean authenicated = false;
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(mcServerSocket.getInputStream()));
-            String jsonStr = "";
-            jsonStr = in.readLine();
+            String jsonStr;
+            jsonStr = in.readLine(); //TODO mcServer will sometimes not respond
             JsonObject authResponse = new JsonParser().parse(jsonStr).getAsJsonObject();
             authenicated = authResponse.get("authorized").getAsBoolean();
         } catch (JsonSyntaxException | IOException e) {
             e.printStackTrace();
-            userServerSocket.close();
             logger.error("Error recieving response from server");
             return false;
         }
