@@ -35,7 +35,7 @@ import static com.replaymod.extras.ReplayModExtras.LOGGER;
 
 public class OpenEyeExtra implements Extra {
     private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + Loader.MC_VERSION;
-    private static final Setting<Boolean> ASK_FOR_OPEN_EYE = new Setting<>("advanced", "askForOpenEye", null, true);
+    private static final Setting<Boolean> ASK_FOR_OPEN_EYE = new Setting<>("advanced", "askForOpenEye", null, false);
 
     private ReplayMod mod;
 

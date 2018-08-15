@@ -265,6 +265,7 @@ public class ConnectionEventHandler {
 
             if(replayFile instanceof StreamReplayFile){
                 core.printInfoToChat("ClientRecorder v" + core.getVersion());
+
                 core.printInfoToChat(((StreamReplayFile)replayFile).getStreamName());
                 core.printInfoToChat("Version " + ((StreamReplayFile)replayFile).getStreamVersion());
             }

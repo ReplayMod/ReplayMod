@@ -19,12 +19,12 @@ public abstract class MixinShaderRenderChunk {
      *  to always return true while rendering so no chunks are being added
      *  to a separate rendering queue
      */
-    @Inject(method = "isPlayerUpdate", at = @At("HEAD"), cancellable = true)
-    private void replayModCompat_disableIsPlayerUpdate(CallbackInfoReturnable<Boolean> ci) {
-        // TODO: Update to 1.12 once optifine is available
-        if (((EntityRendererHandler.IEntityRenderer) mc.entityRenderer).replayModRender_getHandler() == null) return;
-        ci.setReturnValue(true);
-    }
+    // @Inject(method = "isPlayerUpdate", at = @At("HEAD"), cancellable = true)
+    // private void replayModCompat_disableIsPlayerUpdate(CallbackInfoReturnable<Boolean> ci) {
+    //     // TODO: Update to 1.12 once optifine is available
+    //     if (((EntityRendererHandler.IEntityRenderer) mc.entityRenderer).replayModRender_getHandler() == null) return;
+    //     ci.setReturnValue(true);
+    // }
 
 
 }
