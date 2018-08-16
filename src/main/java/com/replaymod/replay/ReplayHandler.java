@@ -172,12 +172,14 @@ public class ReplayHandler {
         replaySender.terminateReplay();
 
 		// RAH wrap the save and close calls in try loops because the save often throws exception and then fails to finish function
-		// We can ignore the save, which allows us to close the file and clean up after the replay
-		try {
-			replayFile.save();
-		} catch (Exception e) {
-			LogManager.getLogger().debug("RAH ReplayHandler.endReplay() SAVE exception!!!!!!!!!!!!!!!!!!!!!");
-		}
+        // We can ignore the save, which allows us to close the file and clean up after the replay
+        
+        //Don't save the replay file - we delete it anyway
+		// try {
+		// 	replayFile.save();
+		// } catch (Exception e) {
+		// 	LogManager.getLogger().debug("RAH ReplayHandler.endReplay() SAVE exception!!!!!!!!!!!!!!!!!!!!!");
+		// }
 		try {
 			replayFile.close();
 		} catch (Exception e) {
