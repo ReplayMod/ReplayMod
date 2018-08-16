@@ -18,6 +18,8 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.replay.Replay;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -138,31 +140,13 @@ public class VideoRenderer implements RenderInfo {
                 //$$ timer.timerSpeed = 1;
                 //#endif
 
-                // //BAH render using timestamp file
-                // if (settings.isSynchronizedRender()) {
-                //     while (replayTime < videoStart) {
-                //         for (Integer tickLoc : settings.getTimestamps()){
-                //             timer.elapsedTicks = 1;
-                //             if (replayTime > tickLoc){
-                //                 continue;
-                //             } else {
-                //                 replayTime = tickLoc;
-                //             }
-                //             replayHandler.getReplaySender().sendPacketsTill(tickLoc);
-                //             tick();
-                //         }
-                //     }
-                // } else {
-                    while (replayTime < videoStart) {
-                        timer.elapsedTicks = 1;
-                        replayTime += 50;
-                        replayHandler.getReplaySender().sendPacketsTill(replayTime);
-                        tick();
-                    }
+                while (replayTime < videoStart) {
+                    timer.elapsedTicks = 1;
+                    replayTime += 50;
+                    replayHandler.getReplaySender().sendPacketsTill(replayTime);
+                    tick();
                 }
-
-
-            // }
+            }
         }
 
         mc.renderGlobal.renderEntitiesStartupCounter = 0;
@@ -176,7 +160,6 @@ public class VideoRenderer implements RenderInfo {
                 MetadataInjector.inject360Metadata(settings.getOutputFile());
             }
         }
-        //mc.player.inventory.toString();
 
         finish();
 
@@ -205,9 +188,13 @@ public class VideoRenderer implements RenderInfo {
         // Updating the timer will cause the timeline player to update the game state
         mc.timer.updateTimer();
 
-        int elapsedTicks = mc.timer.elapsedTicks;
-        while (elapsedTicks-- > 0) {
+        if (settings.isSynchronizedRender()){
             tick();
+        } else {
+            int elapsedTicks = mc.timer.elapsedTicks;
+            while (elapsedTicks-- > 0) {
+                tick();
+            }
         }
 
         // change Minecraft's display size back
@@ -255,18 +242,13 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         if(settings.isSynchronizedRender()) {
-            totalFrames = settings.getTimestamps().size();
+            totalFrames = timeline.getTickTimestamps().size();
 
             for (Path path : timeline.getPaths()) {
                 if (!path.isActive()) continue;
 
                 // Prepare path interpolations
                 path.updateAll();
-                // Find end time
-                Collection<Keyframe> keyframes = path.getKeyframes();
-                if (keyframes.size() > 0) {
-                    //duration = Math.max(duration, getLast(keyframes).getTime());
-                }
             }
 
         } else {
@@ -452,11 +434,11 @@ public class VideoRenderer implements RenderInfo {
 
     public int getVideoTime() { 
         if (settings.isSynchronizedRender()) {
-            if (framesDone < settings.getTimestamps().size()) {
-                return settings.getTimestamps().get(framesDone);
+            if (framesDone < timeline.getTickTimestamps().get().size()) {
+                return timeline.getTickTimestamps().get().get(framesDone);
 
             } else {
-                return settings.getTimestamps().get(settings.getTimestamps().size() - 1);
+                return timeline.getTickTimestamps().get().get(settings.getTimestamps().size() - 1);
             }
         } else {
             return framesDone * 1000 / fps; 

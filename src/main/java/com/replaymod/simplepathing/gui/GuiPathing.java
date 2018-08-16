@@ -140,7 +140,7 @@ public class GuiPathing {
 			// RAH removed - GuiRenderSettings renderSettings = new GuiRenderSettings(replayHandler, timeline); 
 			// RAH removed - renderSettings.display();
 
-			// RAH Added - begin
+            // RAH Added - begin
 			noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline); 
 			renderSettings.doRender(renderStartTime_ms,renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
 			// RAH Added - end
@@ -660,6 +660,7 @@ public class GuiPathing {
     private boolean preparePathsForPlayback() {
         SPTimeline timeline = mod.getCurrentTimeline();
         timeline.getTimeline().getPaths().forEach(Path::updateAll);
+        timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
 
         // Make sure time keyframes's values are monotonically increasing
         int lastTime = 0;
