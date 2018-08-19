@@ -46,6 +46,7 @@ import static net.minecraft.client.renderer.GlStateManager.*;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
@@ -56,6 +57,8 @@ import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+
+import static java.lang.Math.toIntExact;
 
 public class VideoRenderer implements RenderInfo {
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -129,7 +132,6 @@ public class VideoRenderer implements RenderInfo {
         Optional<Integer> optionalVideoStartTime = timeline.getValue(TimestampProperty.PROPERTY, 0);
         if (optionalVideoStartTime.isPresent()) {
             int videoStart = optionalVideoStartTime.get();
-
             if (videoStart > 1000) {
                 int replayTime = videoStart - 1000;
                 //#if MC>=11200
@@ -181,7 +183,7 @@ public class VideoRenderer implements RenderInfo {
         mc.displayWidth = displayWidth;
         mc.displayHeight = displayHeight;
 
-        if (!settings.isHighPerformance() || framesDone % fps == 0) {
+        if (!settings.isHighPerformance() || framesDone % 60 == 0) {
             drawGui();
         }
 
@@ -246,8 +248,6 @@ public class VideoRenderer implements RenderInfo {
 
             for (Path path : timeline.getPaths()) {
                 if (!path.isActive()) continue;
-
-                // Prepare path interpolations
                 path.updateAll();
             }
 
@@ -434,11 +434,15 @@ public class VideoRenderer implements RenderInfo {
 
     public int getVideoTime() { 
         if (settings.isSynchronizedRender()) {
-            if (framesDone < timeline.getTickTimestamps().get().size()) {
-                return timeline.getTickTimestamps().get().get(framesDone);
+            List<Long> ticks = timeline.getTickTimestamps();
+            if (ticks == null) {
+                logger.error("someone gave me null ticks! that bitch!");
+            }
+            if (framesDone < ticks.size()) {
+                return toIntExact(ticks.get(framesDone));
 
             } else {
-                return timeline.getTickTimestamps().get().get(settings.getTimestamps().size() - 1);
+                return toIntExact(ticks.get(ticks.size() - 1));
             }
         } else {
             return framesDone * 1000 / fps; 

@@ -151,7 +151,7 @@ dependencies {
     if (studioVersion == '1.8.9') studioVersion = '1.8'
 
 
-    shade("com.github.cmu-rl.replay_studio:$studioVersion:4f7b00f88124fa3d6a45dae868afb4960626eb59"){
+    shade("com.github.cmu-rl.replay_studio:$studioVersion:e408530af5f9f9b5b7b3a7f19085219997306d4b"){
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }

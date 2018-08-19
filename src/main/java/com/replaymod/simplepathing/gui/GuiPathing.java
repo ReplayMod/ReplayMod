@@ -128,6 +128,7 @@ public class GuiPathing {
             // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
             SPTimeline spTimeline = mod.getCurrentTimeline();
             Timeline timeline;
+   
             try {
                 TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
                 String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
@@ -140,11 +141,20 @@ public class GuiPathing {
 			// RAH removed - GuiRenderSettings renderSettings = new GuiRenderSettings(replayHandler, timeline); 
 			// RAH removed - renderSettings.display();
 
-            // RAH Added - begin
-			noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline); 
-			renderSettings.doRender(renderStartTime_ms,renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
-			// RAH Added - end
 
+            noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline);
+
+            // If render is synchronized load the timestamp file
+            if (renderSettings.isSynchronizedRender() && timeline.getTickTimestamps() != null){
+                timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
+                logger.info(entityTracker.getClientTickTimestamps().toString()); 
+            } 
+            else if (renderSettings.isSynchronizedRender()) {
+                logger.error("No timestamp file found!");
+            }
+
+			 
+			renderSettings.doRender(renderStartTime_ms, renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
         }
     }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.renderpath"));
@@ -660,7 +670,6 @@ public class GuiPathing {
     private boolean preparePathsForPlayback() {
         SPTimeline timeline = mod.getCurrentTimeline();
         timeline.getTimeline().getPaths().forEach(Path::updateAll);
-        timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
 
         // Make sure time keyframes's values are monotonically increasing
         int lastTime = 0;
