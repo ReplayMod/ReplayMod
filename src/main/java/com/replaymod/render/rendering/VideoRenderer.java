@@ -436,7 +436,7 @@ public class VideoRenderer implements RenderInfo {
         if (settings.isSynchronizedRender()) {
             List<Long> ticks = timeline.getTickTimestamps();
             if (ticks == null) {
-                logger.error("someone gave me null ticks! that bitch!");
+                LOGGER.error("someone gave me null ticks! that bitch!");
             }
             if (framesDone < ticks.size()) {
                 return toIntExact(ticks.get(framesDone));
