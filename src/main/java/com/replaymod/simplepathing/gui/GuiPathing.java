@@ -128,6 +128,16 @@ public class GuiPathing {
             // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
             SPTimeline spTimeline = mod.getCurrentTimeline();
             Timeline timeline;
+
+            
+            // If render is synchronized load the timestamp file
+            if (timeline.getTickTimestamps() != null){
+                timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
+                logger.info(entityTracker.getClientTickTimestamps().toString()); 
+            } 
+            else {
+                logger.error("No tick timestamp file found!");
+            }
    
             try {
                 TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
@@ -143,16 +153,6 @@ public class GuiPathing {
 
 
             noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline);
-
-            // If render is synchronized load the timestamp file
-            if (renderSettings.isSynchronizedRender() && timeline.getTickTimestamps() != null){
-                timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
-                logger.info(entityTracker.getClientTickTimestamps().toString()); 
-            } 
-            else if (renderSettings.isSynchronizedRender()) {
-                logger.error("No timestamp file found!");
-            }
-
 			 
 			renderSettings.doRender(renderStartTime_ms, renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
         }
