@@ -184,7 +184,7 @@ public class VideoRenderer implements RenderInfo {
         mc.displayWidth = displayWidth;
         mc.displayHeight = displayHeight;
 
-        if (!settings.isHighPerformance() || framesDone % 60 == 0) {
+        if (!settings.isHighPerformance() || framesDone % fps == 0) {
             drawGui();
         }
 
@@ -245,6 +245,7 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         if(settings.isSynchronizedRender()) {
+            fps = 20;
             if (timeline.getTickTimestamps() == null){
                 LOGGER.error("Unable to load tick timestamps - were custom tick packets recorded?");
             } else {
