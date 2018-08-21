@@ -46,6 +46,7 @@ import static net.minecraft.client.renderer.GlStateManager.*;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
@@ -56,6 +57,8 @@ import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+
+import static java.lang.Math.toIntExact;
 
 public class VideoRenderer implements RenderInfo {
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -82,6 +85,7 @@ public class VideoRenderer implements RenderInfo {
 
     private int framesDone;
     private int totalFrames;
+    private List<Long> ticks;
 
     private final GuiVideoRenderer gui;
     private boolean paused;
@@ -129,7 +133,6 @@ public class VideoRenderer implements RenderInfo {
         Optional<Integer> optionalVideoStartTime = timeline.getValue(TimestampProperty.PROPERTY, 0);
         if (optionalVideoStartTime.isPresent()) {
             int videoStart = optionalVideoStartTime.get();
-
             if (videoStart > 1000) {
                 int replayTime = videoStart - 1000;
                 //#if MC>=11200
@@ -242,12 +245,16 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         if(settings.isSynchronizedRender()) {
-            totalFrames = timeline.getTickTimestamps().size();
+            fps = 20;
+            if (timeline.getTickTimestamps() == null){
+                LOGGER.error("Unable to load tick timestamps - were custom tick packets recorded?");
+            } else {
+                ticks = timeline.getTickTimestamps();
+                totalFrames = ticks.size();
+            }   
 
             for (Path path : timeline.getPaths()) {
                 if (!path.isActive()) continue;
-
-                // Prepare path interpolations
                 path.updateAll();
             }
 
@@ -434,11 +441,14 @@ public class VideoRenderer implements RenderInfo {
 
     public int getVideoTime() { 
         if (settings.isSynchronizedRender()) {
-            if (framesDone < timeline.getTickTimestamps().get().size()) {
-                return timeline.getTickTimestamps().get().get(framesDone);
-
+            if (ticks == null) {
+                LOGGER.error("Unable to retrieve ticks");
+                return 0;
+            }
+            if (framesDone < ticks.size()) {
+                return toIntExact(ticks.get(framesDone));
             } else {
-                return timeline.getTickTimestamps().get().get(settings.getTimestamps().size() - 1);
+                return toIntExact(ticks.get(ticks.size() - 1));
             }
         } else {
             return framesDone * 1000 / fps; 

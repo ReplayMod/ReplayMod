@@ -101,6 +101,7 @@ public class SPTimeline implements PathingRegistry {
     public void setEntityTracker(EntityPositionTracker entityTracker) {
         Preconditions.checkState(this.entityTracker == null, "Entity tracker already set");
         this.entityTracker = entityTracker;
+        this.timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
     }
 
     public void setDefaultInterpolatorType(InterpolatorType defaultInterpolatorType) {

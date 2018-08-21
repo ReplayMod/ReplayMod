@@ -45,6 +45,7 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,6 +55,7 @@ import org.lwjgl.util.ReadableDimension;
 import org.lwjgl.util.ReadablePoint;
 import org.lwjgl.util.WritablePoint;
 
+import net.minecraftforge.common.MinecraftForge;
 //#if MC>=10800
 import net.minecraftforge.fml.common.Loader;
 //#else
@@ -64,6 +66,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static com.replaymod.core.utils.Utils.error;
@@ -83,13 +87,18 @@ import com.replaymod.extras.playeroverview.PlayerOverview;
 import net.minecraft.init.MobEffects;
 import com.replaymod.replay.events.ReplayPlayingEvent; // RAH
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent; //RAH
+import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent; // RAH
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 
 /**
  * Gui plug-in to the GuiReplayOverlay for simple pathing.
  */
 public class GuiPathing {
+    
+    private static final Minecraft mc = Minecraft.getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
 	// RAH Added event - unfortunately sending events to a separate thread doesnt appear to work, but this seems silly
@@ -117,34 +126,68 @@ public class GuiPathing {
         }
     }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTooltip(new GuiTooltip());
 
+
+
+    @SubscribeEvent
+    public final void onEntityTrackerLoaded(EntityTrackerLoadedEvent event){
+        LOGGER.info("onEntityTrackerLoaded reached");
+        LOGGER.info(" in minecraft thread? " + Boolean.toString(mc.isCallingFromMinecraftThread()));
+
+        EventBus bus = FORGE_BUS;
+            bus.register(new Object() {
+                @SubscribeEvent
+                public void onRenderTick(TickEvent.RenderTickEvent event) {
+                    if (event.phase == TickEvent.Phase.START) {
+                        startRender();
+                        bus.unregister(this);
+                    }
+                }
+            });
+
+    }
+
+    public final void startRender(){
+        initKeyFrames(); //before doing render, set start/stop keyframes
+
+        if (!preparePathsForPlayback()) return;
+
+        // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
+        SPTimeline spTimeline = mod.getCurrentTimeline();
+        Timeline timeline;
+
+        try {
+            TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
+            String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
+            timeline = serialization.deserialize(serialized).get("");
+        } catch (Throwable t) {
+            error(LOGGER, replayHandler.getOverlay(), CrashReport.makeCrashReport(t, "Cloning timeline"), () -> {});
+            return;
+        }
+
+        // RAH removed - GuiRenderSettings renderSettings = new GuiRenderSettings(replayHandler, timeline); 
+        // RAH removed - renderSettings.display();
+
+
+        noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline);
+
+        // If render is synchronized load the timestamp file
+        if (renderSettings.isSynchronizedRender() && entityTracker.getClientTickTimestamps() != null){
+            timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
+            logger.info("GuiPathing setting client tick timestamps");
+            logger.info(entityTracker.getClientTickTimestamps().toString()); 
+        } 
+        else if (renderSettings.isSynchronizedRender()) {
+            logger.error("No timestamp file found!");
+        }
+        
+        renderSettings.doRender(renderStartTime_ms, renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
+    }
+
+
     public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
         @Override
         public void run() {
-
-			initKeyFrames(); // RAH - before doing render, set start/stop keyframes
-
-            if (!preparePathsForPlayback()) return;
-
-            // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
-            SPTimeline spTimeline = mod.getCurrentTimeline();
-            Timeline timeline;
-            try {
-                TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
-                String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
-                timeline = serialization.deserialize(serialized).get("");
-            } catch (Throwable t) {
-                error(LOGGER, replayHandler.getOverlay(), CrashReport.makeCrashReport(t, "Cloning timeline"), () -> {});
-                return;
-            }
-
-			// RAH removed - GuiRenderSettings renderSettings = new GuiRenderSettings(replayHandler, timeline); 
-			// RAH removed - renderSettings.display();
-
-            // RAH Added - begin
-			noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline); 
-			renderSettings.doRender(renderStartTime_ms,renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
-			// RAH Added - end
-
+            startRender();
         }
     }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.renderpath"));
@@ -314,7 +357,10 @@ public class GuiPathing {
         this.player = new RealtimeTimelinePlayer(replayHandler);
         final GuiReplayOverlay overlay = replayHandler.getOverlay();
 
-		replayHandler.setGuiPathing(this);
+        replayHandler.setGuiPathing(this);
+        
+        LOGGER.info("Registering GuiPathing to EVENT_BUS");
+        MinecraftForge.EVENT_BUS.register(this);
 
         playPauseButton.setTexturePosH(new ReadablePoint() {
             @Override
@@ -628,10 +674,14 @@ public class GuiPathing {
         }
     }
 
+    public static class EntityTrackerLoadedEvent extends net.minecraftforge.fml.common.eventhandler.Event  {
+    }
+
     private void startLoadingEntityTracker() {
         Preconditions.checkState(entityTrackerFuture == null);
         // Start loading entity tracker
         entityTrackerFuture = SettableFuture.create();
+
         new Thread(() -> {
             EntityPositionTracker tracker = new EntityPositionTracker(replayHandler.getReplayFile());
             try {
@@ -640,7 +690,7 @@ public class GuiPathing {
                     if (entityTrackerLoadingProgress != null) {
                         entityTrackerLoadingProgress.accept(p);
                     }
-                });
+                }); 
                 logger.info("Loaded entity tracker in " + (System.currentTimeMillis() - start) + "ms");
             } catch (Throwable e) {
                 logger.error("Loading entity tracker:", e);
@@ -653,6 +703,8 @@ public class GuiPathing {
             entityTracker = tracker;
             mod.getCore().runLater(() -> {
                 entityTrackerFuture.set(null);
+                MinecraftForge.EVENT_BUS.post(new EntityTrackerLoadedEvent());
+                // startRender();
             });
         }).start();
     }
@@ -660,7 +712,6 @@ public class GuiPathing {
     private boolean preparePathsForPlayback() {
         SPTimeline timeline = mod.getCurrentTimeline();
         timeline.getTimeline().getPaths().forEach(Path::updateAll);
-        timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
 
         // Make sure time keyframes's values are monotonically increasing
         int lastTime = 0;
