@@ -85,6 +85,7 @@ public class VideoRenderer implements RenderInfo {
 
     private int framesDone;
     private int totalFrames;
+    private List<Long> ticks;
 
     private final GuiVideoRenderer gui;
     private boolean paused;
@@ -244,7 +245,12 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         if(settings.isSynchronizedRender()) {
-            totalFrames = timeline.getTickTimestamps().size();
+            if (timeline.getTickTimestamps() == null){
+                LOGGER.error("Unable to load tick timestamps - were custom tick packets recorded?");
+            } else {
+                ticks = timeline.getTickTimestamps();
+                totalFrames = ticks.size();
+            }   
 
             for (Path path : timeline.getPaths()) {
                 if (!path.isActive()) continue;
@@ -434,13 +440,12 @@ public class VideoRenderer implements RenderInfo {
 
     public int getVideoTime() { 
         if (settings.isSynchronizedRender()) {
-            List<Long> ticks = timeline.getTickTimestamps();
             if (ticks == null) {
-                LOGGER.error("someone gave me null ticks! that bitch!");
+                LOGGER.error("Unable to retrieve ticks");
+                return 0;
             }
             if (framesDone < ticks.size()) {
                 return toIntExact(ticks.get(framesDone));
-
             } else {
                 return toIntExact(ticks.get(ticks.size() - 1));
             }

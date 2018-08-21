@@ -64,6 +64,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static com.replaymod.core.utils.Utils.error;
@@ -120,24 +122,15 @@ public class GuiPathing {
     public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
         @Override
         public void run() {
+            
 
-			initKeyFrames(); // RAH - before doing render, set start/stop keyframes
+			initKeyFrames(); //before doing render, set start/stop keyframes
 
             if (!preparePathsForPlayback()) return;
 
             // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
             SPTimeline spTimeline = mod.getCurrentTimeline();
             Timeline timeline;
-
-            
-            // If render is synchronized load the timestamp file
-            if (timeline.getTickTimestamps() != null){
-                timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
-                logger.info(entityTracker.getClientTickTimestamps().toString()); 
-            } 
-            else {
-                logger.error("No tick timestamp file found!");
-            }
    
             try {
                 TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
@@ -153,7 +146,17 @@ public class GuiPathing {
 
 
             noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline);
-			 
+
+            // If render is synchronized load the timestamp file
+            if (renderSettings.isSynchronizedRender() && entityTracker.getClientTickTimestamps() != null){
+                timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
+                logger.info("GuiPathing setting client tick timestamps");
+                logger.info(entityTracker.getClientTickTimestamps().toString()); 
+            } 
+            else if (renderSettings.isSynchronizedRender()) {
+                logger.error("No timestamp file found!");
+            }
+            
 			renderSettings.doRender(renderStartTime_ms, renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
         }
     }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
@@ -696,6 +699,37 @@ public class GuiPathing {
 
     public void zoomTimeline(double factor) {
         scrollbar.setZoom(scrollbar.getZoom() * factor);
+    }
+
+    public boolean ensureEntityTracker() {
+        if (entityTracker == null) {
+            LOGGER.debug("Entity tracker not yet loaded, delaying...");
+            LoadEntityTrackerPopup popup = new LoadEntityTrackerPopup(replayHandler.getOverlay());
+            entityTrackerLoadingProgress = p -> popup.progressBar.setProgress(p.floatValue());
+            Futures.addCallback(entityTrackerFuture, new FutureCallback<Void>() {
+                @Override
+                public void onSuccess(@Nullable Void result) {
+                    popup.close();
+                    if (mod.getCurrentTimeline().getEntityTracker() == null) {
+                        mod.getCurrentTimeline().setEntityTracker(entityTracker);
+                    }
+                    //called function here
+                }
+
+                @Override
+                public void onFailure(@Nonnull Throwable t) {
+                    String message = "Failed to load entity tracker, pathing will be unavailable.";
+                    GuiReplayOverlay overlay = replayHandler.getOverlay();
+                    Utils.error(LOGGER, overlay, CrashReport.makeCrashReport(t, message), popup::close);
+                    popup.close();
+                }
+            });
+            return false;
+        }
+        if (mod.getCurrentTimeline().getEntityTracker() == null) {
+            mod.getCurrentTimeline().setEntityTracker(entityTracker);
+        }
+        return true;
     }
 
     public boolean ensureEntityTracker(Runnable withDelayedTracker) {
