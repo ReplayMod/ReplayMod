@@ -34,6 +34,12 @@ import org.lwjgl.opengl.Display;
 import java.io.IOException;
 import java.util.*;
 
+//#if MC<10904
+//$$ import de.johni0702.minecraft.gui.element.GuiLabel;
+//$$ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
+//$$ import de.johni0702.minecraft.gui.utils.Colors;
+//#endif
+
 //#if MC>=10800
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -78,8 +84,12 @@ public class ReplayHandler {
      * Decodes and sends packets into channel.
      */
     private final FullReplaySender fullReplaySender;
+    //#if MC>=10904
     private final QuickReplaySender quickReplaySender;
     private boolean quickMode = false;
+    //#else
+    //$$ private static final String QUICK_MODE_MIN_MC = "1.9.4";
+    //#endif
 
     /**
      * Currently active replay restrictions.
@@ -117,7 +127,9 @@ public class ReplayHandler {
         markers = new ArrayList<>(replayFile.getMarkers().or(Collections.emptySet()));
 
         fullReplaySender = new FullReplaySender(this, replayFile, false);
+        //#if MC>=10904
         quickReplaySender = new QuickReplaySender(ReplayModReplay.instance, replayFile);
+        //#endif
 
         setup();
 
@@ -149,7 +161,9 @@ public class ReplayHandler {
         FML_BUS.post(new ReplayCloseEvent.Pre(this));
 
         fullReplaySender.terminateReplay();
+        //#if MC>=10904
         quickReplaySender.unregister();
+        //#endif
 
         replayFile.save();
         replayFile.close();
@@ -214,6 +228,9 @@ public class ReplayHandler {
         //$$ channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
         //$$
         //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
+        //#if MC>=10904
+        //$$ channel.pipeline().addFirst("ReplayModReplay_quickReplaySender", quickReplaySender);
+        //#endif
         //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "fml:packet_handler", networkDispatcher);
         //$$ channel.pipeline().fireChannelActive();
         //#endif
@@ -266,13 +283,18 @@ public class ReplayHandler {
     }
 
     public ReplaySender getReplaySender() {
+        //#if MC>=10904
         return quickMode ? quickReplaySender : fullReplaySender;
+        //#else
+        //$$ return fullReplaySender;
+        //#endif
     }
 
     public GuiReplayOverlay getOverlay() {
         return overlay;
     }
 
+    //#if MC>=10904
     public void ensureQuickModeInitialized(Runnable andThen) {
         ListenableFuture<Void> future = quickReplaySender.getInitializationPromise();
         if (future == null) {
@@ -346,6 +368,20 @@ public class ReplayHandler {
     public boolean isQuickMode() {
         return quickMode;
     }
+    //#else
+    //$$ public void ensureQuickModeInitialized(@SuppressWarnings("unused") Runnable andThen) {
+    //$$     GuiInfoPopup.open(overlay,
+    //$$             new GuiLabel().setI18nText("replaymod.gui.noquickmode", QUICK_MODE_MIN_MC).setColor(Colors.BLACK));
+    //$$ }
+    //$$
+    //$$ public void setQuickMode(@SuppressWarnings("unused") boolean quickMode) {
+    //$$     throw new UnsupportedOperationException("Quick Mode not supported on this version.");
+    //$$ }
+    //$$
+    //$$ public boolean isQuickMode() {
+    //$$     return false;
+    //$$ }
+    //#endif
 
     public int getReplayDuration() {
         return replayDuration;
@@ -460,10 +496,12 @@ public class ReplayHandler {
     }
 
     public void doJump(int targetTime, boolean retainCameraPosition) {
+        //#if MC>=10904
         if (getReplaySender() == quickReplaySender) {
             quickReplaySender.sendPacketsTill(targetTime);
             return;
         }
+        //#endif
         FullReplaySender replaySender = fullReplaySender;
 
         if (replaySender.isHurrying()) {

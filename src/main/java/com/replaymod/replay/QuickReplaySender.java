@@ -1,3 +1,4 @@
+//#if MC>=10904
 package com.replaymod.replay;
 
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntry;
@@ -32,14 +33,13 @@ import com.github.steveice10.packetlib.io.NetOutput;
 import com.github.steveice10.packetlib.io.stream.StreamNetInput;
 import com.github.steveice10.packetlib.io.stream.StreamNetOutput;
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import com.replaymod.core.utils.WrappedTimer;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.replaystudio.PacketData;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
@@ -78,6 +78,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Consumer;
+
+//#if MC>=11200
+import com.replaymod.core.utils.WrappedTimer;
+//#endif
 
 import static com.replaymod.core.versions.MCVer.FML_BUS;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
@@ -574,12 +578,17 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
                 byteBuf.skipBytes(8); // Skip packet length & timestamp
 
-                int packetId = packetBuf.readVarInt();
+                int packetId =
+                        //#if MC>=11102
+                        packetBuf.readVarInt();
+                        //#else
+                        //$$ packetBuf.readVarIntFromBuffer();
+                        //#endif
                 Packet<?> mcPacket = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
                 mcPacket.readPacketData(packetBuf);
                 return mcPacket;
             } catch (Exception e) {
-                Throwables.throwIfUnchecked(e);
+                Utils.throwIfUnchecked(e);
                 throw new RuntimeException(e);
             } finally {
                 byteBuf.readerIndex(readerIndex); // Reset reader & writer index for next use
@@ -594,13 +603,18 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         try {
             packetBuf.writeBytes(in.readBytes(in.readVarInt()));
 
-            int packetId = packetBuf.readVarInt();
+            int packetId =
+                    //#if MC>=11102
+                    packetBuf.readVarInt();
+                    //#else
+                    //$$ packetBuf.readVarIntFromBuffer();
+                    //#endif
             Packet<?> mcPacket = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
             mcPacket.readPacketData(packetBuf);
             return mcPacket;
         } catch (Exception e) {
-            Throwables.throwIfInstanceOf(e, IOException.class);
-            Throwables.throwIfUnchecked(e);
+            Utils.throwIfInstanceOf(e, IOException.class);
+            Utils.throwIfUnchecked(e);
             throw new RuntimeException(e);
         } finally {
             byteBuf.readerIndex(readerIndex); // Reset reader & writer index for next use
@@ -640,8 +654,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 out.writeByte(byteBuf.readByte());
             }
         } catch (Exception e) {
-            Throwables.throwIfInstanceOf(e, IOException.class);
-            Throwables.throwIfUnchecked(e);
+            Utils.throwIfInstanceOf(e, IOException.class);
+            Utils.throwIfUnchecked(e);
             throw new RuntimeException(e);
         } finally {
             byteBuf.readerIndex(readerIndex); // Reset reader & writer index for next use
@@ -908,3 +922,4 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
     }
 }
+//#endif
