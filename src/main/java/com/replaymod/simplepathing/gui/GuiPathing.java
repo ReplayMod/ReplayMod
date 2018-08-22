@@ -171,16 +171,17 @@ public class GuiPathing {
         noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline);
 
         // If render is synchronized load the timestamp file
-        if (renderSettings.isSynchronizedRender() && entityTracker.getClientTickTimestamps() != null){
+        if (renderSettings.isSynchronizedRender() && entityTracker.getClientTickTimestamps() != null && entityTracker.getClientTickTimestamps().size() > 0){
             timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
             logger.info("GuiPathing setting client tick timestamps");
             logger.info(entityTracker.getClientTickTimestamps().toString()); 
+            renderSettings.doRender(renderStartTime_ms, renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
         } 
         else if (renderSettings.isSynchronizedRender()) {
             logger.error("No timestamp file found!");
+            renderSettings.skipRender();
         }
         
-        renderSettings.doRender(renderStartTime_ms, renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
     }
 
 
