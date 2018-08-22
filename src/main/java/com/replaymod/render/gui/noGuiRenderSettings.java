@@ -107,6 +107,24 @@ public class noGuiRenderSettings  {
 				e.printStackTrace();
 		}
     }
+    public void skipRender ()
+	{
+		// RAH - Create an output file to communicate we are done rendering
+		File file = new File("finished.txt");
+		if ( ! file.exists( ) )
+			try {
+				file.createNewFile( );
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		//System.exit(0);
+		//mod.getReplayHandler().endReplay();
+		try {
+			this.replayHandler.endReplay(); // RAH - after done with rendering, return to the main MC screen
+		} catch (Exception e) {
+				e.printStackTrace();
+		}
+    }
 
 
 
