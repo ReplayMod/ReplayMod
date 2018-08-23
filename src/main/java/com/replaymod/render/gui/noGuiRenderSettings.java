@@ -120,7 +120,7 @@ public class noGuiRenderSettings  {
 		//System.exit(0);
 		//mod.getReplayHandler().endReplay();
 		try {
-			this.replayHandler.endReplay(); // RAH - after done with rendering, return to the main MC screen
+            this.replayHandler.endReplay(); // RAH - after done with rendering, return to the main MC screen
 		} catch (Exception e) {
 				e.printStackTrace();
 		}

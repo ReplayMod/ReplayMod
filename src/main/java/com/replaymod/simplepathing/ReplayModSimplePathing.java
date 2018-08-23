@@ -74,13 +74,16 @@ public class ReplayModSimplePathing {
 
     @SubscribeEvent
     public void postReplayOpen(ReplayOpenEvent.Post event) {
+        LOGGER.info("Replay post event fired - new timeline created");
         clearCurrentTimeline();
         guiPathing = new GuiPathing(core, this, event.getReplayHandler());
     }
 
     @SubscribeEvent
     public void onReplayClose(ReplayCloseEvent.Post event) {
+        LOGGER.info("Replay close event fired -timeline set to null");
         currentTimeline = null;
+        guiPathing.unregisterAll();
         guiPathing = null;
         selectedPath = null;
     }

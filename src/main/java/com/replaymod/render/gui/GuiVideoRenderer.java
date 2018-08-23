@@ -32,9 +32,9 @@ public class GuiVideoRenderer extends GuiScreen {
         @Override
         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
             if (previewCheckbox.isChecked()) {
-                renderPreview(renderer, size);
-            } else {
                 renderNoPreview(renderer, size);
+            } else {
+                renderPreview(renderer, size);
             }
         }
     }.setSize(Integer.MAX_VALUE, Integer.MAX_VALUE);
@@ -259,7 +259,7 @@ public class GuiVideoRenderer extends GuiScreen {
     }
 
     public void updatePreview(RGBFrame frame) {
-        if (previewCheckbox.isChecked() && previewTexture != null) {
+        if (!previewCheckbox.isChecked() && previewTexture != null) {
             ByteBuffer buffer = frame.getByteBuffer();
             buffer.mark();
             synchronized (this) {

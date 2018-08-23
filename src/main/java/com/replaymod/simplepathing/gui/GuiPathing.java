@@ -1,6 +1,24 @@
 package com.replaymod.simplepathing.gui;
 
+import static com.replaymod.core.utils.Utils.error;
+import static com.replaymod.core.versions.MCVer.FORGE_BUS;
+import static com.replaymod.core.versions.MCVer.getRenderViewEntity;
+import static com.replaymod.core.versions.MCVer.world;
+import static com.replaymod.simplepathing.ReplayModSimplePathing.LOGGER;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Consumer;
+
+import static java.lang.Math.toIntExact;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -15,6 +33,7 @@ import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.gui.noGuiRenderSettings;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.camera.CameraEntity;
+import com.replaymod.replay.events.ReplayPlayingEvent; // RAH
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -24,6 +43,15 @@ import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.Dimension;
+import org.lwjgl.util.ReadableDimension;
+import org.lwjgl.util.ReadablePoint;
+import org.lwjgl.util.WritablePoint;
+
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -47,47 +75,14 @@ import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.ReadablePoint;
-import org.lwjgl.util.WritablePoint;
-
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.MobEffects;
 import net.minecraftforge.common.MinecraftForge;
 //#if MC>=10800
 import net.minecraftforge.fml.common.Loader;
 //#else
 //$$ import cpw.mods.fml.common.Loader;
 //#endif
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
-
-import static com.replaymod.core.utils.Utils.error;
-import static com.replaymod.core.versions.MCVer.*;
-import static com.replaymod.simplepathing.ReplayModSimplePathing.LOGGER;
-
-// RAH
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import com.replaymod.core.ReplayMod;
-import com.replaymod.core.utils.Utils;
-import com.replaymod.extras.Extra;
-import java.util.*;
-import java.util.stream.Collectors;
-import com.google.common.base.Predicate;
-import com.replaymod.extras.playeroverview.PlayerOverview;
-import net.minecraft.init.MobEffects;
-import com.replaymod.replay.events.ReplayPlayingEvent; // RAH
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent; //RAH
-import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent; // RAH
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -138,22 +133,32 @@ public class GuiPathing {
                 @SubscribeEvent
                 public void onRenderTick(TickEvent.RenderTickEvent event) {
                     if (event.phase == TickEvent.Phase.START) {
+                        LOGGER.info("Starting render from object");
                         startRender();
-                        bus.unregister(this);
+                        LOGGER.info("Unregisteing forge render-start handler");
+                        FORGE_BUS.unregister(this);
                     }
                 }
             });
 
     }
 
-    public final void startRender(){
-        initKeyFrames(); //before doing render, set start/stop keyframes
+    public final void startRender(){      
+        LOGGER.info("started rendering");
+
+        List<Long> ticks = entityTracker.getClientTickTimestamps();
+        if (ticks != null && ticks.size() > 1){
+            int startTime = toIntExact(ticks.get(0));
+            int endTime   = toIntExact(ticks.get(ticks.size() - 1));
+            initKeyFrames(startTime, endTime); //before doing render, set start/stop keyframes
+        }
 
         if (!preparePathsForPlayback()) return;
 
         // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
-        SPTimeline spTimeline = mod.getCurrentTimeline();
-        Timeline timeline;
+        LOGGER.info("got the current timeline in the mod");
+        SPTimeline spTimeline = mod.getCurrentTimeline();  
+        Timeline timeline; //spTimeline.getTimeline();
 
         try {
             TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
@@ -164,17 +169,16 @@ public class GuiPathing {
             return;
         }
 
-        // RAH removed - GuiRenderSettings renderSettings = new GuiRenderSettings(replayHandler, timeline); 
-        // RAH removed - renderSettings.display();
-
+        
 
         noGuiRenderSettings renderSettings = new noGuiRenderSettings(replayHandler, timeline);
 
         // If render is synchronized load the timestamp file
-        if (renderSettings.isSynchronizedRender() && entityTracker.getClientTickTimestamps() != null && entityTracker.getClientTickTimestamps().size() > 0){
-            timeline.setTickTimestamps(entityTracker.getClientTickTimestamps());
-            logger.info("GuiPathing setting client tick timestamps");
-            logger.info(entityTracker.getClientTickTimestamps().toString()); 
+        if (renderSettings.isSynchronizedRender() && ticks != null && ticks.size() > 0){
+            timeline.setTickTimestamps(ticks);
+            logger.info("GuiPathing setting client tick timestamps: ", Integer.toString(
+                entityTracker.getClientTickTimestamps().size()
+            ));
             renderSettings.doRender(renderStartTime_ms, renderEndTime_ms); // Since our rendering is not static, need render start/end relative to the whole 'file' or 'session'
         } 
         else if (renderSettings.isSynchronizedRender()) {
@@ -497,13 +501,16 @@ public class GuiPathing {
 
     }
 
-
+    public void unregisterAll(){
+        LOGGER.info("Unregistering GuiPathing to EVENT_BUS");
+        MinecraftForge.EVENT_BUS.unregister(this);
+    }
 	/** RAH - all new
 	* This is for automation, set keyframes (time and position) so this file can be rendered
 	* It is called from renderButton.run() - at that point in the code, the framework is loaded and available to query
 	*
 	**/
-	public void initKeyFrames() {
+	public void initKeyFrames(int startTime_ms, int endTime_ms) {
 
 		// Trying to set keyframes for automation.
 		// Steps:
@@ -512,8 +519,6 @@ public class GuiPathing {
 		//        3.) updateKeyframe for time and Position 
 		//        repeat 2 and 3 for end of file
 
-		int startTime_ms = 0; // This is set below
-		int endTime_ms = replayHandler.getReplaySender().replayLength(); 
 		int spectatedId = -1; // This is set below
 
 		// Step 1
@@ -547,7 +552,7 @@ public class GuiPathing {
 		replayHandler.getReplaySender().setReplaySpeed(0);
 		startTime_ms = replayHandler.getReplaySender().currentTimeStamp(); 
 		timeline.setCursorPosition(0);
-		renderStartTime_ms = startTime_ms;
+        renderStartTime_ms = startTime_ms;
 
 		// Step 3 - update Key frames - uses replaySender.currentTimeStamp()
 		myUpdateKeyframe(SPPath.TIME,startTime_ms); // Yuk - I hate having to change the function name - myUpdateKeyframe used startTime_ms instead of replaySender.currentTimeSamp()
@@ -562,13 +567,12 @@ public class GuiPathing {
 		replayHandler.getReplaySender().setReplaySpeed(1); // video was paused, we need to let it play a small amount so we can get new camera parameters to make the system happy
 		// Sleep a bit so the engine and play and update variables.
 		try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				logger.debug(e);
 				return;
 		}
-		//renderEndTime_ms = replayHandler.getReplaySender().currentTimeStamp();
-		renderEndTime_ms = endTime_ms - startTime_ms; // !!!!!! - I am not sure this logic is coorect
+		renderEndTime_ms = endTime_ms - startTime_ms; // !!!!!! - I am not sure this logic is correct
 		replayHandler.getReplaySender().setReplaySpeed(0);
 		myUpdateKeyframe(SPPath.TIME,renderEndTime_ms);  
 		updateKeyframe(SPPath.POSITION,spectatedId); 
