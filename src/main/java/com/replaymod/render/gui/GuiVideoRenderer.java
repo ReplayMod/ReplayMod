@@ -11,6 +11,7 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiCheckbox;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
+import de.johni0702.minecraft.gui.function.Tickable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -22,7 +23,7 @@ import org.lwjgl.util.ReadablePoint;
 
 import java.nio.ByteBuffer;
 
-public class GuiVideoRenderer extends GuiScreen {
+public class GuiVideoRenderer extends GuiScreen implements Tickable {
     private static final ResourceLocation NO_PREVIEW_TEXTURE = new ResourceLocation("replaymod", "logo.jpg");
 
     private final VideoRenderer renderer;
@@ -135,7 +136,7 @@ public class GuiVideoRenderer extends GuiScreen {
     private int currentIndex = 0;
 
     @Override
-    public void draw(GuiRenderer guiRenderer, ReadableDimension size, RenderInfo renderInfo) {
+    public void tick() {
         long current = System.currentTimeMillis();
 
         //first, update the total render time (only if rendering is not paused and has already started)
@@ -206,8 +207,6 @@ public class GuiVideoRenderer extends GuiScreen {
         int framesDone = renderer.getFramesDone(), framesTotal = renderer.getTotalFrames();
         progressBar.setI18nLabel("replaymod.gui.rendering.progress", framesDone, framesTotal);
         progressBar.setProgress((float) framesDone / framesTotal);
-
-        super.draw(guiRenderer, size, renderInfo);
     }
 
     private String secToString(int seconds) {

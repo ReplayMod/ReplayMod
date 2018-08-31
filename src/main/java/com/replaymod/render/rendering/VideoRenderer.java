@@ -358,6 +358,7 @@ public class VideoRenderer implements RenderInfo {
             int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
             int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
 
+            gui.toMinecraft().updateScreen();
             gui.toMinecraft().drawScreen(mouseX, mouseY, 0);
 
             guiFramebuffer.unbindFramebuffer();
