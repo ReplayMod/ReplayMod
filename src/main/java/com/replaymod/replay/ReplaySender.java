@@ -530,18 +530,9 @@ public class ReplaySender extends ChannelDuplexHandler {
                     LogManager.getLogger().info("[CUSTOM ACTION LOG] " + jsonObject.toString());
                     currentActions = new ArrayList<>();
                 }
-                CustomActionPacket.Tick tick = new CustomActionPacket.Tick();
-                tick.fromPacketBuffer(packet.getBufferData());
-                currentActions.add(tick);
-            } else if (channelName.equals("c")) {
-                CustomActionPacket.Camera camera = new CustomActionPacket.Camera();
-                camera.fromPacketBuffer(packet.getBufferData());
-                currentActions.add(camera);
-            } else if (channelName.equals("a")) {
-                CustomActionPacket.Action action = new CustomActionPacket.Action();
-                action.fromPacketBuffer(packet.getBufferData());
-                currentActions.add(action);
             }
+            CustomActionPacket.CustomAction action = CustomActionPacket.getActionFromPacket(packet);
+            currentActions.add(action);
         //#if MC>=10800
         }
 

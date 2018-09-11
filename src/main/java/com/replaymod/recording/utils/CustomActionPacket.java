@@ -3,14 +3,30 @@ package com.replaymod.recording.utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.network.play.server.SPacketCustomPayload;
 
 public class CustomActionPacket {
     public interface CustomAction {
         PacketBuffer toPacketBuffer();
         void fromPacketBuffer(PacketBuffer packetBuffer);
+    }
+
+    public static CustomAction getActionFromPacket(SPacketCustomPayload packet) {
+        String channelName = packet.getChannelName();
+        CustomAction action;
+        if (channelName.equals("t")) {
+            action = new Tick();
+            action.fromPacketBuffer(packet.getBufferData());
+        } else if (channelName.equals("c")) {
+            action = new Camera();
+            action.fromPacketBuffer(packet.getBufferData());
+        } else if (channelName.equals("a")) {
+            action = new Action();
+            action.fromPacketBuffer(packet.getBufferData());
+        } else {
+            return null;
+        }
+        return action;
     }
 
     public static class Tick implements CustomAction {
