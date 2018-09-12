@@ -1,9 +1,14 @@
 package com.replaymod.replay;
 
+import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerUseItemPacket;
+import com.google.api.client.json.Json;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.recording.utils.CustomActionPacket;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
@@ -126,6 +131,11 @@ public class ReplaySender extends ChannelDuplexHandler {
      * The replay handler responsible for the current replay.
      */
     private final ReplayHandler replayHandler;
+
+    /**
+     * For recording the custom actions, stores all the actions done in the current tick
+     */
+    private ArrayList<CustomActionPacket.CustomAction> currentActions = new ArrayList<>();
 
     /**
      * Whether to work in async mode.
@@ -504,6 +514,25 @@ public class ReplaySender extends ChannelDuplexHandler {
             if ("MC|BOpen".equals(channelName)) {
                 return null;
             }
+            if (channelName.equals("t")) {
+                if (currentActions.size() > 0) {
+                    JsonObject jsonObject = new JsonObject();
+                    for (CustomActionPacket.CustomAction action : currentActions) {
+                        if (action instanceof CustomActionPacket.Tick) {
+                            jsonObject.addProperty("isGUIOpen", ((CustomActionPacket.Tick) action).isGUIOpen);
+                        } else if (action instanceof CustomActionPacket.Camera) {
+                            jsonObject.addProperty("cameraYaw", ((CustomActionPacket.Camera) action).diffYaw);
+                            jsonObject.addProperty("cameraPitch", ((CustomActionPacket.Camera) action).diffPitch);
+                        } else if (action instanceof CustomActionPacket.Action) {
+                            jsonObject.addProperty("action", ((CustomActionPacket.Action) action).action);
+                        }
+                    }
+                    LogManager.getLogger().info("[CUSTOM ACTION LOG] " + jsonObject.toString());
+                    currentActions = new ArrayList<>();
+                }
+            }
+            CustomActionPacket.CustomAction action = CustomActionPacket.getActionFromPacket(packet);
+            currentActions.add(action);
         //#if MC>=10800
         }
 

@@ -1,6 +1,7 @@
 package com.replaymod.recording.handler;
 
 import com.replaymod.recording.packet.PacketListener;
+import com.replaymod.recording.utils.CustomActionPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
@@ -153,17 +154,13 @@ public class RecordingEventHandler {
             //Record if gui window is open
             if(mc.currentScreen != null) {
                 // GUI is open - mark this and return (no actions possible)
-                ByteBuf byteBuf = Unpooled.buffer();
-                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                packetBuffer.writeVarInt(0);
-                packetListener.save(new SPacketCustomPayload("t", packetBuffer));
+                CustomActionPacket.Tick tick = new CustomActionPacket.Tick(true);
+                packetListener.save(new SPacketCustomPayload("t", tick.toPacketBuffer()));
                 return;
             } else {
                 // Gui is not open - mark tick and record any actions
-                ByteBuf byteBuf = Unpooled.buffer();
-                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                packetBuffer.writeVarInt(1);
-                packetListener.save(new SPacketCustomPayload("t", packetBuffer));
+                CustomActionPacket.Tick tick = new CustomActionPacket.Tick(false);
+                packetListener.save(new SPacketCustomPayload("t", tick.toPacketBuffer()));
             }
 
             if(lastPitch == null || lastYaw == null) {
@@ -185,11 +182,8 @@ public class RecordingEventHandler {
                 }
                 
                 if (Math.abs(diffPitch) + Math.abs(diffYaw) > 0.0001){
-                    ByteBuf byteBuf = Unpooled.buffer();
-                    PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                    packetBuffer.writeFloat(diffYaw);
-                    packetBuffer.writeFloat(diffPitch);
-                    packetListener.save(new SPacketCustomPayload("c", packetBuffer));
+                    CustomActionPacket.Camera camera = new CustomActionPacket.Camera(diffYaw, diffPitch);
+                    packetListener.save(new SPacketCustomPayload("c", camera.toPacketBuffer()));
                     lastPitch = plr.rotationPitch;
                     lastYaw = plr.rotationYawHead;
                 }
@@ -219,10 +213,8 @@ public class RecordingEventHandler {
                         continue;
                     }
 
-                    ByteBuf byteBuf = Unpooled.buffer();
-                    PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                    packetBuffer.writeVarInt(binding.getKeyCodeDefault());
-                    packetListener.save(new SPacketCustomPayload("a", packetBuffer));
+                    CustomActionPacket.Action action = new CustomActionPacket.Action(binding.getKeyCodeDefault());
+                    packetListener.save(new SPacketCustomPayload("a", action.toPacketBuffer()));
 
                     //TODO remove after validation of action space
                     String debugStr = binding.getDisplayName() + ":" + binding.getKeyCodeDefault() + " > " + binding.getKeyDescription();
@@ -233,10 +225,8 @@ public class RecordingEventHandler {
             if (hotbarIdx != lastHotbar){
                 lastHotbar = hotbarIdx;
                 logger.info("Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")");
-                ByteBuf byteBuf = Unpooled.buffer();
-                PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-                packetBuffer.writeVarInt(hotbarIdx + 2);
-                packetListener.save(new SPacketCustomPayload("a", packetBuffer));
+                CustomActionPacket.Action action = new CustomActionPacket.Action(hotbarIdx + 2);
+                packetListener.save(new SPacketCustomPayload("a", action.toPacketBuffer()));
 
                 //TODO remove after validation of action space
                 String debugStr = "Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")";
