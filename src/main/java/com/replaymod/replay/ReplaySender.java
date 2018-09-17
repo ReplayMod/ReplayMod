@@ -523,9 +523,11 @@ public class ReplaySender extends ChannelDuplexHandler {
                         } else if (action instanceof CustomActionPacket.Camera) {
                             jsonObject.addProperty("cameraYaw", ((CustomActionPacket.Camera) action).diffYaw);
                             jsonObject.addProperty("cameraPitch", ((CustomActionPacket.Camera) action).diffPitch);
-                        } else if (action instanceof CustomActionPacket.Action) {
-                            jsonObject.addProperty("action", ((CustomActionPacket.Action) action).action);
+                        } else if (action instanceof CustomActionPacket.Keypress) {
+                            //TODO use diffrent format for recodrding key-presses to support multiple actions per tick
+                            jsonObject.addProperty("action", ((CustomActionPacket.Keypress) action).action);
                         }
+                        //TODO include methods for SlotClick, ButtonClick, and RecipeClick
                     }
                     LogManager.getLogger().info("[CUSTOM ACTION LOG] " + jsonObject.toString());
                     currentActions = new ArrayList<>();

@@ -1,15 +1,22 @@
 package com.replaymod.recording.handler;
 
+import com.replaymod.recording.events.GuiContainerActionEvent;
 import com.replaymod.recording.packet.PacketListener;
+import com.replaymod.recording.utils.ContainerListener;
 import com.replaymod.recording.utils.CustomActionPacket;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.client.CPacketClickWindow;
+import net.minecraft.network.play.client.CPacketPlaceRecipe;
 import net.minecraft.network.play.server.*;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 
@@ -44,6 +51,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 //$$ import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 //#endif
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.lang.reflect.Field;
@@ -144,6 +152,88 @@ public class RecordingEventHandler {
     //#endif
 
     @SubscribeEvent
+    public void onGuiOpen(GuiOpenEvent event){
+        ContainerListener containerListener = new ContainerListener(logger);
+        mc.player.openContainer.addListener(containerListener);
+        logger.info("Gui open bitch!");
+        logger.info(event.toString());
+    }
+
+    @SubscribeEvent
+    public void onGuiSlotClick(GuiContainerActionEvent.SlotUpdate event){
+        CPacketClickWindow cPkt = new CPacketClickWindow(
+                event.getGuiWindowId(),
+                event.getSlotId(),
+                event.getMouseButton(),
+                event.getClickType(),
+                event.getItemStack(),
+                event.getTransationID());
+        CustomActionPacket.SlotClick slotClick = new CustomActionPacket.SlotClick(cPkt);
+        try {
+            packetListener.save(new SPacketCustomPayload("s", slotClick.toPacketBuffer()));
+            logger.info(event.toString());
+        } catch (IOException e) {
+            logger.error("Error capturing slotClick!");
+            e.printStackTrace();
+        }
+    }
+
+    @SubscribeEvent
+    public void onGuiRecipeClicked(GuiContainerActionEvent.RecipeClicked event){
+        CPacketPlaceRecipe cPkt = new CPacketPlaceRecipe(
+                event.getWindowID(),
+                event.getRecipe(),
+                event.isShiftPressed());
+        CustomActionPacket.RecipeClick recipeClick = new CustomActionPacket.RecipeClick(cPkt);
+        try {
+            packetListener.save(new SPacketCustomPayload("r", recipeClick.toPacketBuffer()));
+            logger.info(event.toString());
+        } catch (IOException e) {
+            logger.error("Error capturing slotClick!");
+            e.printStackTrace();
+        }
+    }
+
+    @SubscribeEvent
+    public void onGuiWindowClosed(GuiContainerActionEvent.WindowClosed event){
+        CustomActionPacket.CloseWindow closeWindow = new CustomActionPacket.CloseWindow(
+                event.getWindowID(),
+                event.getHeldStack());
+        try {
+            packetListener.save(new SPacketCustomPayload("cw", closeWindow.toPacketBuffer()));
+            logger.info(event.toString());
+        } catch (IOException e) {
+            logger.error("Error capturing slotClick!");
+            e.printStackTrace();
+        }
+    }
+
+    @SubscribeEvent
+    public void onGuiButtonAction(GuiScreenEvent.ActionPerformedEvent event){
+        CustomActionPacket.ButtonClick buttonClick = new CustomActionPacket.ButtonClick(
+                mc.player.openContainer.windowId,
+                event.getButton().id,
+                event.getButton().enabled);
+        packetListener.save(new SPacketCustomPayload("t", buttonClick.toPacketBuffer()));
+
+        //TODO remove debug message
+        String message = "";
+        //Log button
+        message += "Button " + Integer.toString(event.getButton().id) + "\t";
+        //Log buttons
+        message += ("List:");
+        for (GuiButton button : event.getButtonList()){
+            message += (Integer.toString(button.id) + ", ");
+        }
+        message += "\t";
+        //Log guiWindowID
+        message += "GuiID " + mc.player.inventoryContainer.windowId + "\t";
+        message += "GuiClass " + event.getClass().getName();
+
+        logger.info(message);
+    }
+
+    @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
     //private void recordActions(EntityPlayer plr, Phase phase) {
         if( event.phase.equals(Phase.END)){
@@ -213,7 +303,7 @@ public class RecordingEventHandler {
                         continue;
                     }
 
-                    CustomActionPacket.Action action = new CustomActionPacket.Action(binding.getKeyCodeDefault());
+                    CustomActionPacket.Keypress action = new CustomActionPacket.Keypress(binding.getKeyCodeDefault());
                     packetListener.save(new SPacketCustomPayload("a", action.toPacketBuffer()));
 
                     //TODO remove after validation of action space
@@ -225,7 +315,7 @@ public class RecordingEventHandler {
             if (hotbarIdx != lastHotbar){
                 lastHotbar = hotbarIdx;
                 logger.info("Setting hotbar to " + Integer.toString(hotbarIdx) + " (key:" + Integer.toString(hotbarIdx + 2) + ")");
-                CustomActionPacket.Action action = new CustomActionPacket.Action(hotbarIdx + 2);
+                CustomActionPacket.Keypress action = new CustomActionPacket.Keypress(hotbarIdx + 2);
                 packetListener.save(new SPacketCustomPayload("a", action.toPacketBuffer()));
 
                 //TODO remove after validation of action space

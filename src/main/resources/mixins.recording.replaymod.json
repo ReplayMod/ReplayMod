@@ -6,6 +6,7 @@
   "client": [
     //#if MC>=10904
     "MixinPlayerControllerMP",
+    "MixinEntityPlayerSP",
     "MixinWorldClient",
     //#endif
     //#if MC<=10710
