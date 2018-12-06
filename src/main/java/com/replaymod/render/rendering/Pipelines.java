@@ -61,19 +61,27 @@ public class Pipelines {
 
     public static Pipeline<CubicOpenGlFrame, RGBFrame> newEquirectangularPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderSettings settings = renderInfo.getRenderSettings();
+
+        EquirectangularToRGBProcessor processor = new EquirectangularToRGBProcessor(settings.getVideoWidth(),
+                settings.getVideoHeight(), settings.getSphericalFovX());
+
         FrameCapturer<CubicOpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new CubicPboOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, settings.getVideoWidth() / 4);
+            capturer = new CubicPboOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, processor.getFrameSize());
         } else {
-            capturer = new CubicOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, settings.getVideoWidth() / 4);
+            capturer = new CubicOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, processor.getFrameSize());
         }
-        return new Pipeline<>(capturer, new EquirectangularToRGBProcessor(settings.getVideoWidth() / 4), consumer);
+        return new Pipeline<>(capturer, processor, consumer);
     }
 
     public static Pipeline<ODSOpenGlFrame, RGBFrame> newODSPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderSettings settings = renderInfo.getRenderSettings();
+
+        ODSToRGBProcessor processor = new ODSToRGBProcessor(settings.getVideoWidth(),
+                settings.getVideoHeight(), settings.getSphericalFovX());
+
         FrameCapturer<ODSOpenGlFrame> capturer =
-                new ODSFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, settings.getVideoWidth() / 4);
-        return new Pipeline<>(capturer, new ODSToRGBProcessor(settings.getVideoWidth() / 4), consumer);
+                new ODSFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, processor.getFrameSize());
+        return new Pipeline<>(capturer, processor, consumer);
     }
 }

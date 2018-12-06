@@ -21,6 +21,7 @@ import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.services.youtube.model.VideoStatus;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.render.RenderSettings;
@@ -41,8 +42,7 @@ import static com.replaymod.extras.ReplayModExtras.LOGGER;
 public class YoutubeUploader {
     private static final String CLIENT_ID = "743126594724-mfe7pj1k7e47uu5pk4503c8st9vj9ibu.apps.googleusercontent.com";
     private static final String CLIENT_SECRET = "gMwcy3mRYCRamCIjJIYP7rqc";
-    private static final String FFMPEG_ODS =
-            "-i %s -vf scale=iw:iw*9/16,setdar=16:9 -c:v libx264 -preset slow -crf 16 %s";
+    private static final String FFMPEG_MP4 = "-i %s -c:v libx264 -preset slow -crf 16 %s";
     private static final JsonFactory JSON_FACTORY = new GsonFactory();
     private final NetHttpTransport httpTransport;
     private final DataStoreFactory dataStoreFactory;
@@ -131,68 +131,73 @@ public class YoutubeUploader {
     }
 
     private File preUpload() throws InterruptedException, IOException {
-        if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS) {
-            File tmpFile = new File(videoFile.getParentFile(), System.currentTimeMillis() + ".mp4");
-            tmpFile.deleteOnExit();
+        File outputFile = videoFile;
 
-            String args = String.format(FFMPEG_ODS, videoFile.getName(), tmpFile.getName());
+        if (settings.getRenderMethod().isSpherical()) {
+            // inject spherical metadata for YouTube unless already done
 
-            CommandLine commandLine = new CommandLine(settings.getExportCommand());
-            commandLine.addArguments(args);
-            LOGGER.info("Re-encoding for ODS with {} {}", settings.getExportCommand(), args);
-            Process process = new ProcessBuilder(commandLine.toStrings()).directory(videoFile.getParentFile()).start();
+            boolean isMp4 = Files.getFileExtension(outputFile.getName()).equalsIgnoreCase("mp4");
 
-            final AtomicBoolean active = new AtomicBoolean(true);
-            final InputStream in = process.getErrorStream();
-            new Thread(() -> {
-                try {
-                    StringBuilder sb = new StringBuilder();
-                    while (active.get()) {
-                        char c = (char) in.read();
-                        if (c == '\r') {
-                            String str = sb.toString();
-                            LOGGER.debug("[FFmpeg] {}", str);
-                            if (str.startsWith("frame=")) {
-                                str = str.substring(6).trim();
-                                str = str.substring(0, str.indexOf(' '));
-                                double frame = Integer.parseInt(str);
-                                progress = Suppliers.ofInstance(frame / videoFrames);
+            if (!isMp4) {
+                // convert non-mp4 videos into mp4 format to be able to inject metadata
+                outputFile = new File(outputFile.getParentFile(), System.currentTimeMillis() + ".mp4");
+                outputFile.deleteOnExit();
+
+                String args = String.format(FFMPEG_MP4, videoFile.getName(), outputFile.getName());
+
+                CommandLine commandLine = new CommandLine(settings.getExportCommandOrDefault());
+                commandLine.addArguments(args);
+                LOGGER.info("Re-encoding for metadata injection with {} {}", settings.getExportCommand(), args);
+                Process process = new ProcessBuilder(commandLine.toStrings()).directory(outputFile.getParentFile()).start();
+
+                final AtomicBoolean active = new AtomicBoolean(true);
+                final InputStream in = process.getErrorStream();
+                new Thread(() -> {
+                    try {
+                        StringBuilder sb = new StringBuilder();
+                        while (active.get()) {
+                            char c = (char) in.read();
+                            if (c == '\r') {
+                                String str = sb.toString();
+                                LOGGER.debug("[FFmpeg] {}", str);
+                                if (str.startsWith("frame=")) {
+                                    str = str.substring(6).trim();
+                                    str = str.substring(0, str.indexOf(' '));
+                                    double frame = Integer.parseInt(str);
+                                    progress = Suppliers.ofInstance(frame / videoFrames);
+                                }
+                                sb = new StringBuilder();
+                            } else {
+                                sb.append(c);
                             }
-                            sb = new StringBuilder();
-                        } else {
-                            sb.append(c);
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                }).start();
+
+                int result;
+                try {
+                    result = process.waitFor();
+                } catch (InterruptedException e) {
+                    process.destroy();
+                    throw e;
+                } finally {
+                    active.set(false);
                 }
-            }).start();
-
-            int result;
-            try {
-                result = process.waitFor();
-            } catch (InterruptedException e) {
-                process.destroy();
-                throw e;
-            } finally {
-                active.set(false);
-            }
-            if (result != 0) {
-                throw new IOException("FFmpeg returned: " + result);
+                if (result != 0) {
+                    throw new IOException("FFmpeg returned: " + result);
+                }
             }
 
-            MetadataInjector.injectODSMetadata(tmpFile);
-
-            return tmpFile;
-
-        } else if (settings.getRenderMethod() == RenderSettings.RenderMethod.EQUIRECTANGULAR) {
-            // if metadata hasn't been injected before, inject it before the upload
-            if (!settings.isInject360Metadata()) {
-                MetadataInjector.inject360Metadata(videoFile);
+            if (!settings.isInjectSphericalMetadata() || !isMp4) {
+                MetadataInjector.injectMetadata(settings.getRenderMethod(), outputFile,
+                        settings.getTargetVideoWidth(), settings.getTargetVideoHeight(),
+                        settings.getSphericalFovX(), settings.getSphericalFovY());
             }
         }
 
-        return videoFile;
+        return outputFile;
     }
 
     private Video doUpload(YouTube youTube, File processedFile) throws IOException {

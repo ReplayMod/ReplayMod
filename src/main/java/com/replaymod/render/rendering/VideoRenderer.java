@@ -22,6 +22,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.util.ReportedException;
 import net.minecraft.util.Timer;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -150,12 +151,15 @@ public class VideoRenderer implements RenderInfo {
 
         renderingPipeline.run();
 
-        if (settings.isInject360Metadata()) {
-            if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS) {
-                MetadataInjector.injectODSMetadata(settings.getOutputFile());
-            } else {
-                MetadataInjector.inject360Metadata(settings.getOutputFile());
-            }
+        if (mc.hasCrashed) {
+            setFailure(mc.crashReporter.getCrashCause());
+            throw new ReportedException(mc.crashReporter);
+        }
+
+        if (settings.isInjectSphericalMetadata()) {
+            MetadataInjector.injectMetadata(settings.getRenderMethod(), settings.getOutputFile(),
+                    settings.getTargetVideoWidth(), settings.getTargetVideoHeight(),
+                    settings.getSphericalFovX(), settings.getSphericalFovY());
         }
 
         finish();
