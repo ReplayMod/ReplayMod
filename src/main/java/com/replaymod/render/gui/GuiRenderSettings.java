@@ -128,7 +128,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.renderer"), renderMethodDropdown,
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.presets"), encodingPresetDropdown,
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.customresolution"), videoResolutionPanel,
-                    new GuiLabel().setI18nText("replaymod.gui.settings.bitrate"), new GuiPanel().addElements(null,
+                    new GuiLabel().setI18nText("replaymod.gui.rendersettings.bitrate"), new GuiPanel().addElements(null,
                             new GuiPanel().addElements(null, bitRateField, bitRateUnit).setLayout(new HorizontalLayout()),
                             frameRateSlider).setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3)),
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.outputfile"), outputFileButton)
