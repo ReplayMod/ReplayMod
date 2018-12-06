@@ -147,7 +147,7 @@ public class YoutubeUploader {
 
                 CommandLine commandLine = new CommandLine(settings.getExportCommandOrDefault());
                 commandLine.addArguments(args);
-                LOGGER.info("Re-encoding for metadata injection with {} {}", settings.getExportCommand(), args);
+                LOGGER.info("Re-encoding for metadata injection with {} {}", commandLine.getExecutable(), args);
                 Process process = new ProcessBuilder(commandLine.toStrings()).directory(outputFile.getParentFile()).start();
 
                 final AtomicBoolean active = new AtomicBoolean(true);

@@ -150,22 +150,22 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             .setI18nLabel("replaymod.gui.rendersettings.chromakey");
     public final GuiColorPicker chromaKeyingColor = new GuiColorPicker().setSize(30, 15);
 
-    public final int minSphericalFov = 120;
-    public final int maxSphericalFov = 360;
-    public final int sphericalFovSteps = 5;
+    public static final int MIN_SPHERICAL_FOV = 120;
+    public static final int MAX_SPHERICAL_FOV = 360;
+    public static final int SPHERICAL_FOV_STEP_SIZE = 5;
     public final GuiSlider sphericalFovSlider = new GuiSlider()
             .onValueChanged(new Runnable() {
                 @Override
                 public void run() {
                     sphericalFovSlider.setText(I18n.format("replaymod.gui.rendersettings.sphericalFov")
-                            + ": " + (minSphericalFov + sphericalFovSlider.getValue() * sphericalFovSteps) + "°");
+                            + ": " + (MIN_SPHERICAL_FOV + sphericalFovSlider.getValue() * SPHERICAL_FOV_STEP_SIZE) + "°");
 
                     updateInputs();
                 }
-            }).setSize(200, 20).setSteps((maxSphericalFov - minSphericalFov) / sphericalFovSteps);
+            }).setSize(200, 20).setSteps((MAX_SPHERICAL_FOV - MIN_SPHERICAL_FOV) / SPHERICAL_FOV_STEP_SIZE);
 
-    public final GuiCheckbox inject360Metadata = new GuiCheckbox()
-            .setI18nLabel("replaymod.gui.rendersettings.360metadata");
+    public final GuiCheckbox injectSphericalMetadata = new GuiCheckbox()
+            .setI18nLabel("replaymod.gui.rendersettings.sphericalmetadata");
 
     public final GuiDropdownMenu<RenderSettings.AntiAliasing> antiAliasingDropdown = new GuiDropdownMenu<RenderSettings.AntiAliasing>()
             .setSize(200, 20).setValues(RenderSettings.AntiAliasing.values()).setSelected(RenderSettings.AntiAliasing.NONE);
@@ -176,7 +176,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                     .addElements(new GridLayout.Data(0, 0.5),
                             new GuiLabel().setI18nText("replaymod.gui.rendersettings.stabilizecamera"), stabilizePanel,
                             chromaKeyingCheckbox, chromaKeyingColor,
-                            inject360Metadata, sphericalFovSlider,
+                            injectSphericalMetadata, sphericalFovSlider,
                             new GuiLabel().setI18nText("replaymod.gui.rendersettings.antialiasing"), antiAliasingDropdown));
 
     public final GuiTextField exportCommand = new GuiTextField().setI18nHint("replaymod.gui.rendersettings.command")
@@ -309,7 +309,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         videoWidth.setEnabled(!renderMethod.hasFixedAspectRatio());
 
         // Validate video width and height
-        String error = isResolutionValid();
+        String error = updateResolution();
         if (error == null) {
             renderButton.setEnabled().setTooltip(null);
             videoWidth.setTextColor(Colors.WHITE);
@@ -346,14 +346,14 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         // Enable/Disable inject metadata checkbox
         if (encodingPresetDropdown.getSelectedValue().getFileExtension().equals("mp4")
                 && renderMethod.isSpherical()) {
-            inject360Metadata.setEnabled().setTooltip(null);
+            injectSphericalMetadata.setEnabled().setTooltip(null);
         } else {
-            inject360Metadata.setDisabled().setTooltip(new GuiTooltip().setColor(Colors.RED)
-                    .setI18nText("replaymod.gui.rendersettings.360metadata.error"));
+            injectSphericalMetadata.setDisabled().setTooltip(new GuiTooltip().setColor(Colors.RED)
+                    .setI18nText("replaymod.gui.rendersettings.sphericalmetadata.error"));
         }
     }
 
-    protected String isResolutionValid() {
+    protected String updateResolution() {
         RenderSettings.EncodingPreset preset = encodingPresetDropdown.getSelectedValue();
         RenderSettings.RenderMethod method = renderMethodDropdown.getSelectedValue();
 
@@ -366,10 +366,10 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 return "replaymod.gui.rendersettings.customresolution.warning.cubic.height";
             }
 
-            int sphericalFov = minSphericalFov + sphericalFovSlider.getValue() * sphericalFovSteps;
+            int sphericalFov = MIN_SPHERICAL_FOV + sphericalFovSlider.getValue() * SPHERICAL_FOV_STEP_SIZE;
             videoWidth = videoWidthForHeight(method, videoHeight, sphericalFov, sphericalFov);
 
-            this.videoWidth.setValue(videoWidth); // TODO: isResolutionValid should not have side-effects
+            this.videoWidth.setValue(videoWidth);
         } else {
             videoWidth = this.videoWidth.getInteger();
         }
@@ -457,8 +457,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             chromaKeyingCheckbox.setChecked(true);
             chromaKeyingColor.setColor(settings.getChromaKeyingColor());
         }
-        sphericalFovSlider.setValue((settings.getSphericalFovX() - minSphericalFov) / sphericalFovSteps);
-        inject360Metadata.setChecked(settings.isInjectSphericalMetadata());
+        sphericalFovSlider.setValue((settings.getSphericalFovX() - MIN_SPHERICAL_FOV) / SPHERICAL_FOV_STEP_SIZE);
+        injectSphericalMetadata.setChecked(settings.isInjectSphericalMetadata());
         antiAliasingDropdown.setSelected(settings.getAntiAliasing());
         exportCommand.setText(settings.getExportCommand());
         exportArguments.setText(settings.getExportArguments());
@@ -467,7 +467,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     }
 
     public RenderSettings save(boolean serialize) {
-        int sphericalFov = minSphericalFov + sphericalFovSlider.getValue() * sphericalFovSteps;
+        int sphericalFov = MIN_SPHERICAL_FOV + sphericalFovSlider.getValue() * SPHERICAL_FOV_STEP_SIZE;
 
         return new RenderSettings(
                 renderMethodDropdown.getSelectedValue(),
@@ -482,8 +482,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 stabilizePitch.isChecked() && (serialize || stabilizePitch.isEnabled()),
                 stabilizeRoll.isChecked() && (serialize || stabilizeRoll.isEnabled()),
                 chromaKeyingCheckbox.isChecked() ? chromaKeyingColor.getColor() : null,
-                sphericalFov, sphericalFov,
-                inject360Metadata.isChecked() && (serialize || inject360Metadata.isEnabled()),
+                sphericalFov, Math.min(180, sphericalFov),
+                injectSphericalMetadata.isChecked() && (serialize || injectSphericalMetadata.isEnabled()),
                 antiAliasingDropdown.getSelectedValue(),
                 exportCommand.getText(),
                 exportArguments.getText(),

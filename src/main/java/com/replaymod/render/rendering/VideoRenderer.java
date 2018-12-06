@@ -152,7 +152,6 @@ public class VideoRenderer implements RenderInfo {
         renderingPipeline.run();
 
         if (mc.hasCrashed) {
-            setFailure(mc.crashReporter.getCrashCause());
             throw new ReportedException(mc.crashReporter);
         }
 
