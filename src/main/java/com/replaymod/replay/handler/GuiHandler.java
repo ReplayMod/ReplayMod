@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
+import net.minecraft.client.gui.GuiMultiplayer;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
 
@@ -102,8 +103,8 @@ public class GuiHandler {
     }
 
     @SubscribeEvent
-    public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
-        if (!(getGui(event) instanceof GuiMainMenu)) {
+    public void ensureReplayStopped(GuiScreenEvent.InitGuiEvent event) {
+        if (!(getGui(event) instanceof GuiMainMenu || getGui(event) instanceof GuiMultiplayer)) {
             return;
         }
 
@@ -120,7 +121,14 @@ public class GuiHandler {
                 }
             }
         }
+    }
 
+
+    @SubscribeEvent
+    public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
+        if (!(getGui(event) instanceof GuiMainMenu)) {
+            return;
+        }
         GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, getGui(event).width / 2 - 100,
                 getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer"));
         button.width = button.width / 2 - 2;
