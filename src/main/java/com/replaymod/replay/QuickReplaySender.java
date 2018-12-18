@@ -81,6 +81,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
@@ -317,6 +319,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         readFromCache(in, thunderStrengths);
         int size = in.readVarInt();
 
+        LOGGER.info("Creating quick mode buffer of size: {}KB", size / 1024);
         buf = com.github.steveice10.netty.buffer.Unpooled.buffer(size);
         int read = 0;
         while (true) {
@@ -610,6 +613,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private static final ByteBufOutputStream byteBufOut = new ByteBufOutputStream(byteBuf);
     private static final PacketBuffer packetBuf = new PacketBuffer(byteBuf);
     private static final ReplayOutputStream encoder = new ReplayOutputStream(new ReplayStudio(), byteBufOut);
+    private static final Inflater inflater = new Inflater();
+    private static final Deflater deflater = new Deflater();
 
     private static Packet<?> toMC(com.github.steveice10.packetlib.packet.Packet packet) {
         // We need to re-encode MCProtocolLib packets, so we can then decode them as NMS packets
@@ -647,7 +652,21 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         int readerIndex = byteBuf.readerIndex(); // Mark the current reader and writer index (should be at start)
         int writerIndex = byteBuf.writerIndex();
         try {
-            packetBuf.writeBytes(in.readBytes(in.readVarInt()));
+            int prefix = in.readVarInt();
+            int len = prefix >> 1;
+            if ((prefix & 1) == 1) {
+                int fullLen = in.readVarInt();
+                byteBuf.writeBytes(in.readBytes(len));
+                byteBuf.capacity(byteBuf.writerIndex() + fullLen);
+
+                inflater.setInput(byteBuf.array(), byteBuf.arrayOffset() + byteBuf.readerIndex(), len);
+                inflater.inflate(byteBuf.array(), byteBuf.arrayOffset() + byteBuf.writerIndex(), fullLen);
+
+                byteBuf.readerIndex(byteBuf.readerIndex() + len);
+                byteBuf.writerIndex(byteBuf.writerIndex() + fullLen);
+            } else {
+                byteBuf.writeBytes(in.readBytes(len));
+            }
 
             int packetId =
                     //#if MC>=11102
@@ -665,6 +684,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         } finally {
             byteBuf.readerIndex(readerIndex); // Reset reader & writer index for next use
             byteBuf.writerIndex(writerIndex);
+            inflater.reset();
         }
     }
 
@@ -695,12 +715,37 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
             byteBuf.skipBytes(8); // Skip packet length & timestamp
 
+            int rawIndex = byteBuf.readerIndex();
             int size = byteBuf.readableBytes();
-            int len = writeVarInt(out, size);
-            for (int i = 0; i < size; i++) {
-                out.writeByte(byteBuf.readByte());
+
+            byteBuf.ensureWritable(size);
+            deflater.setInput(byteBuf.array(), byteBuf.arrayOffset() + byteBuf.readerIndex(), size);
+            deflater.finish();
+            int compressedSize = 0;
+            while (!deflater.finished() && compressedSize < size) {
+                compressedSize += deflater.deflate(
+                        byteBuf.array(),
+                        byteBuf.arrayOffset() + byteBuf.writerIndex() + compressedSize,
+                        size - compressedSize
+                );
             }
-            return len + size;
+
+            int len = 0;
+            if (compressedSize < size) {
+                byteBuf.readerIndex(rawIndex + size);
+                byteBuf.writerIndex(rawIndex + size + compressedSize);
+                len += writeVarInt(out, compressedSize << 1 | 1);
+                len += writeVarInt(out, size);
+            } else {
+                byteBuf.readerIndex(rawIndex);
+                byteBuf.writerIndex(rawIndex + size);
+                len += writeVarInt(out, size << 1);
+            }
+            while (byteBuf.isReadable()) {
+                out.writeByte(byteBuf.readByte());
+                len += 1;
+            }
+            return len;
         } catch (Exception e) {
             Utils.throwIfInstanceOf(e, IOException.class);
             Utils.throwIfUnchecked(e);
@@ -708,6 +753,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         } finally {
             byteBuf.readerIndex(readerIndex); // Reset reader & writer index for next use
             byteBuf.writerIndex(writerIndex);
+            deflater.reset();
         }
     }
 
