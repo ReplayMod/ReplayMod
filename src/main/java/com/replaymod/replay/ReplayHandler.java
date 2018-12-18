@@ -510,7 +510,48 @@ public class ReplayHandler {
     public void doJump(int targetTime, boolean retainCameraPosition) {
         //#if MC>=10904
         if (getReplaySender() == quickReplaySender) {
+            // Always round to full tick
+            targetTime = targetTime + targetTime % 50;
+
+            if (targetTime >= 50) {
+                // Jump to time of previous tick first
+                quickReplaySender.sendPacketsTill(targetTime - 50);
+            }
+
+            // Update all entity positions (especially prev/lastTick values)
+            for (Entity entity : loadedEntityList(world(mc))) {
+                if (entity instanceof EntityOtherPlayerMP) {
+                    EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
+                    e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);
+                    e.rotationYaw = (float) e.otherPlayerMPYaw;
+                    e.rotationPitch = (float) e.otherPlayerMPPitch;
+                }
+                entity.lastTickPosX = entity.prevPosX = entity.posX;
+                entity.lastTickPosY = entity.prevPosY = entity.posY;
+                entity.lastTickPosZ = entity.prevPosZ = entity.posZ;
+                entity.prevRotationYaw = entity.rotationYaw;
+                entity.prevRotationPitch = entity.rotationPitch;
+            }
+
+            // Run previous tick
+            try {
+                mc.runTick();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Jump to target tick
             quickReplaySender.sendPacketsTill(targetTime);
+
+            // Immediately apply player teleport interpolation
+            for (Entity entity : loadedEntityList(world(mc))) {
+                if (entity instanceof EntityOtherPlayerMP) {
+                    EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
+                    e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);
+                    e.rotationYaw = (float) e.otherPlayerMPYaw;
+                    e.rotationPitch = (float) e.otherPlayerMPPitch;
+                }
+            }
             return;
         }
         //#endif
