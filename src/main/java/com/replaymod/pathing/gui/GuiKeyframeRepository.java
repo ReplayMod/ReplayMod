@@ -229,6 +229,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
         timelines.putAll(replayFile.getTimelines(registry));
 
         for (Map.Entry<String, Timeline> entry : timelines.entrySet()) {
+            if (entry.getKey().isEmpty()) continue; // don't show auto-save slot
             list.getListPanel().addElements(null, new Entry(entry.getKey()));
         }
     }
