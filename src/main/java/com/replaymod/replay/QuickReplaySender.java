@@ -451,10 +451,10 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                                     ? new BlockChangeRecord[]{ ((ServerBlockChangePacket) packet).getRecord() }
                                     : ((ServerMultiBlockChangePacket) packet).getRecords()) {
                         Position pos = record.getPosition();
-                        Chunk chunk = activeChunks.get(coordToLong(pos.getX() / 16, pos.getZ() / 16));
+                        Chunk chunk = activeChunks.get(coordToLong(pos.getX() >> 4, pos.getZ() >> 4));
                         if (chunk != null) {
-                            BlockStorage blockStorage = chunk.currentBlockState[pos.getY() / 16];
-                            int x = Math.floorMod(pos.getX(), 16), y = Math.floorMod(pos.getY(), 16), z = Math.floorMod(pos.getZ(), 16);
+                            BlockStorage blockStorage = chunk.currentBlockState[pos.getY() >> 4];
+                            int x = pos.getX() & 15, y = pos.getY() & 15, z = pos.getZ() & 15;
                             BlockState prevState = blockStorage.get(x, y, z);
                             BlockState newState = record.getBlock();
                             blockStorage.set(x, y, z, newState);
