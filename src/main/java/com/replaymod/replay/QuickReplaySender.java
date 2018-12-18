@@ -15,6 +15,7 @@ import com.github.steveice10.mc.protocol.data.game.world.notify.ClientNotificati
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerPlayerListEntryPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerRespawnPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityDestroyPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityHeadLookPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityTeleportPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.player.ServerPlayerPositionRotationPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.spawn.ServerSpawnMobPacket;
@@ -932,14 +933,18 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
         @Override
         public void play(int currentTimeStamp, int replayTime, Consumer<Packet<?>> send) {
-            playMap(locations, currentTimeStamp, replayTime, l ->
-                    send.accept(toMC(new ServerEntityTeleportPacket(id, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), false))));
+            playMap(locations, currentTimeStamp, replayTime, l -> {
+                send.accept(toMC(new ServerEntityTeleportPacket(id, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), false)));
+                send.accept(toMC(new ServerEntityHeadLookPacket(id, l.getYaw())));
+            });
         }
 
         @Override
         public void rewind(int currentTimeStamp, int replayTime, Consumer<Packet<?>> send) {
-            rewindMap(locations, currentTimeStamp, replayTime, l ->
-                    send.accept(toMC(new ServerEntityTeleportPacket(id, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), false))));
+            rewindMap(locations, currentTimeStamp, replayTime, l -> {
+                send.accept(toMC(new ServerEntityTeleportPacket(id, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch(), false)));
+                send.accept(toMC(new ServerEntityHeadLookPacket(id, l.getYaw())));
+            });
         }
     }
 
