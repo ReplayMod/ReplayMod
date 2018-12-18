@@ -356,6 +356,14 @@ public class ReplayHandler {
             throw new IllegalStateException("Cannot switch to quick mode while in async mode.");
         }
         this.quickMode = quickMode;
+
+        CameraEntity cam = getCameraEntity();
+        if (cam != null) {
+            targetCameraPosition = new Location(cam.posX, cam.posY, cam.posZ, cam.rotationYaw, cam.rotationPitch);
+        } else {
+            targetCameraPosition = null;
+        }
+
         if (quickMode) {
             quickReplaySender.register();
             quickReplaySender.restart();
@@ -365,6 +373,8 @@ public class ReplayHandler {
             fullReplaySender.sendPacketsTill(0);
             fullReplaySender.sendPacketsTill(quickReplaySender.currentTimeStamp());
         }
+
+        moveCameraToTargetPosition();
     }
 
     public boolean isQuickMode() {
