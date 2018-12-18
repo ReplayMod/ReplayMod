@@ -404,11 +404,40 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                     }
                 } else if (packet instanceof ServerChunkDataPacket) {
                     Column column = ((ServerChunkDataPacket) packet).getColumn();
-                    Chunk chunk = new Chunk(column);
-                    chunk.spawnTime = time;
-                    Chunk prev = activeChunks.put(coordToLong(column.getX(), column.getZ()), chunk);
-                    if (prev != null) {
-                        index = prev.writeToCache(indexOut, out, time, index);
+                    if (column.hasBiomeData()) {
+                        Chunk chunk = new Chunk(column);
+                        chunk.spawnTime = time;
+                        Chunk prev = activeChunks.put(coordToLong(column.getX(), column.getZ()), chunk);
+                        if (prev != null) {
+                            index = prev.writeToCache(indexOut, out, time, index);
+                        }
+                    } else {
+                        Chunk chunk = activeChunks.get(coordToLong(column.getX(), column.getZ()));
+                        if (chunk != null) {
+                            int sectionY = 0;
+                            for (com.github.steveice10.mc.protocol.data.game.chunk.Chunk section : column.getChunks()) {
+                                if (section == null) {
+                                    sectionY++;
+                                    continue;
+                                }
+                                BlockStorage toBlocks = section.getBlocks();
+                                BlockStorage fromBlocks = chunk.currentBlockState[sectionY];
+                                for (int y = 0; y < 16; y++) {
+                                    for (int z = 0; z < 16; z++) {
+                                        for (int x = 0; x < 16; x++) {
+                                            BlockState fromState = fromBlocks.get(x, y, z);
+                                            BlockState toState = toBlocks.get(x, y, z);
+                                            if (!fromState.equals(toState)) {
+                                                Position pos = new Position(column.getX() << 4 | x, sectionY << 4 | y, column.getZ() << 4 | z);
+                                                chunk.blocks.put(time, new BlockChange(pos, fromState, toState));
+                                            }
+                                        }
+                                    }
+                                }
+                                chunk.currentBlockState[sectionY] = toBlocks;
+                                sectionY++;
+                            }
+                        }
                     }
                 } else if (packet instanceof ServerUnloadChunkPacket) {
                     ServerUnloadChunkPacket p = (ServerUnloadChunkPacket) packet;
