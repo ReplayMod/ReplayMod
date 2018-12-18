@@ -348,20 +348,22 @@ public class ReplayHandler {
 
     public void setQuickMode(boolean quickMode) {
         if (quickMode == this.quickMode) return;
-        if (quickMode && !fullReplaySender.isAsyncMode()) return; // Cannot activate quick mode when already in sync mode
+        if (quickMode && fullReplaySender.isAsyncMode()) {
+            // If this method is called via runLater, then it cannot switch to sync mode by itself as there might be
+            // some rogue packets in the task queue after it. Instead the caller must switch to sync mode first and
+            // use runLater until all packets have been processed (when using setAsyncModeAndWait, one runLater should
+            // be sufficient).
+            throw new IllegalStateException("Cannot switch to quick mode while in async mode.");
+        }
         this.quickMode = quickMode;
         if (quickMode) {
-            fullReplaySender.setSyncModeAndWait();
             quickReplaySender.register();
             quickReplaySender.restart();
             quickReplaySender.sendPacketsTill(fullReplaySender.currentTimeStamp());
-            quickReplaySender.setAsyncMode(true);
         } else {
-            quickReplaySender.setSyncModeAndWait();
             quickReplaySender.unregister();
             fullReplaySender.sendPacketsTill(0);
             fullReplaySender.sendPacketsTill(quickReplaySender.currentTimeStamp());
-            fullReplaySender.setAsyncMode(true);
         }
     }
 
