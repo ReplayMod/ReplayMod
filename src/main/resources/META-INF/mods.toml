@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[13,)"
+updateJSONURL="https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json"
+issueTrackerURL="https://replaymod.com/forum"
+displayURL="https://replaymod.com"
+logoFile="replaymod_logo.png"
+authors="CrushedPixel, johni0702"
+
+[[mods]]
+modId="replaymod"
+version="${version}"
+displayName="Replay Mod"
+description='''
+A Mod which allows you to record, replay and share your Minecraft experience.
+'''
+
+[[dependencies.replaymod]]
+    modId="forge"
+    mandatory=true
+    versionRange="[14.23.2.0,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.replaymod]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[ 1.13 ]"
+    ordering="NONE"
+    side="BOTH"

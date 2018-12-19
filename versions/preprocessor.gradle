@@ -9,6 +9,17 @@ static def evalVar(vars, String var) {
 import java.util.regex.Pattern
 
 static def evalExpr(vars, String expr) {
+    expr = expr.trim()
+
+    def parts = expr.split(/\|\|/)
+    if (parts.length > 1) {
+        return parts.any { evalExpr(vars, it) }
+    }
+    parts = expr.split(/&&/)
+    if (parts.length > 1) {
+        return !parts.any { !evalExpr(vars, it) }
+    }
+
     def matcher = Pattern.compile(/(.+)(<=|>=|<|>)(.+)/).matcher(expr)
     if (matcher.matches()) {
         def lhs = evalVar(vars, matcher.group(1))

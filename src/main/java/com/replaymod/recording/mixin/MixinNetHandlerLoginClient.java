@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+// FIXME event not (yet?) in 1.13 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 //#else
 //$$ import cpw.mods.fml.common.network.FMLNetworkEvent;
 //#endif
@@ -25,12 +25,16 @@ public abstract class MixinNetHandlerLoginClient {
     //$$ private NetworkManager field_147393_d;
     //#endif
 
-    /**
-     * Starts the recording right before switching into PLAY state.
-     * We cannot use the {@link FMLNetworkEvent.ClientConnectedToServerEvent}
-     * as it only fires after the forge handshake.
-     */
-    @Inject(method = "handleLoginSuccess", at=@At("HEAD"))
+    //#if MC>=11300
+    @Inject(method = "func_209521_a", at=@At("HEAD"))
+    //#else
+    //$$ /**
+    //$$  * Starts the recording right before switching into PLAY state.
+    //$$  * We cannot use the {@link FMLNetworkEvent.ClientConnectedToServerEvent}
+    //$$  * as it only fires after the forge handshake.
+    //$$  */
+    //$$ @Inject(method = "handleLoginSuccess", at=@At("HEAD"))
+    //#endif
     public void replayModRecording_initiateRecording(CallbackInfo cb) {
         //#if MC>=10800
         ReplayModRecording.instance.initiateRecording(networkManager);

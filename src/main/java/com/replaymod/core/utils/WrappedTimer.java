@@ -8,15 +8,27 @@ public class WrappedTimer extends Timer {
     protected final Timer wrapped;
 
     public WrappedTimer(Timer wrapped) {
-        super(0);
+        //#if MC>=11300
+        super(0, 0);
+        //#else
+        //$$ super(0);
+        //#endif
         this.wrapped = wrapped;
         copy(wrapped, this);
     }
 
     @Override
-    public void updateTimer() {
+    public void updateTimer(
+            //#if MC>=11300
+            long sysClock
+            //#endif
+    ) {
         copy(this, wrapped);
-        wrapped.updateTimer();
+        wrapped.updateTimer(
+                //#if MC>=11300
+                sysClock
+                //#endif
+        );
         copy(wrapped, this);
     }
 
@@ -26,7 +38,7 @@ public class WrappedTimer extends Timer {
         to.lastSyncSysClock = from.lastSyncSysClock;
         to.elapsedPartialTicks = from.elapsedPartialTicks;
         //#if MC>=11200
-        to.tickLength = from.tickLength;
+        // FIXME (should be good to go once AT are applied) to.tickLength = from.tickLength;
         //#else
         //$$ to.ticksPerSecond = from.ticksPerSecond;
         //$$ to.lastHRTime = from.lastHRTime;

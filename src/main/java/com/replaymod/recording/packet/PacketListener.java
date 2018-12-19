@@ -29,7 +29,7 @@ import net.minecraft.util.text.TextComponentString;
 
 //#if MC>=10800
 import net.minecraft.network.EnumPacketDirection;
-import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+// FIXME import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 //#else
 //$$ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 //#endif
@@ -49,7 +49,7 @@ import static com.replaymod.core.versions.MCVer.*;
 
 public class PacketListener extends ChannelInboundHandlerAdapter {
 
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
     private final ReplayFile replayFile;
@@ -229,6 +229,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //#endif
                 //#endif
 
+                /* FIXME
                 if (packet instanceof FMLProxyPacket) {
                     // This packet requires special handling
                     //#if MC>=10800
@@ -239,6 +240,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     super.channelRead(ctx, msg);
                     return;
                 }
+                */
 
                 save(packet);
 
@@ -358,7 +360,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void addMarker() {
-        Entity view = getRenderViewEntity(Minecraft.getMinecraft());
+        Entity view = getRenderViewEntity(mc);
         int timestamp = (int) (System.currentTimeMillis() - startTime);
 
         Marker marker = new Marker();

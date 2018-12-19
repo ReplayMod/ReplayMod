@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#if MC>=10800
 //#if MC>=10904
 import net.minecraft.network.play.server.SPacketPlayerListItem.Action;
-import net.minecraft.network.play.server.SPacketPlayerListItem.AddPlayerData;
+// FIXME requires RuntimeInvisParam workaround import net.minecraft.network.play.server.SPacketPlayerListItem.AddPlayerData;
 //#else
 //$$ import net.minecraft.network.play.server.S38PacketPlayerListItem.Action;
 //$$ import net.minecraft.network.play.server.S38PacketPlayerListItem.AddPlayerData;
@@ -61,6 +61,7 @@ public abstract class MixinNetHandlerPlayClient {
 
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null && packet.getAction() == Action.ADD_PLAYER) {
+            /* FIXME see import
             for (AddPlayerData data : packet.getEntries()) {
                 if (data.getProfile() == null || data.getProfile().getId() == null) continue;
                 // Only add spawn packet for our own player and only if he isn't known yet
@@ -69,6 +70,7 @@ public abstract class MixinNetHandlerPlayClient {
                     handler.onPlayerJoin();
                 }
             }
+            */
         }
     }
     //#else

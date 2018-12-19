@@ -1,3 +1,4 @@
+/* FIXME
 package com.replaymod.core;
 
 import org.apache.logging.log4j.LogManager;
@@ -96,3 +97,4 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
     }
 
 }
+*/

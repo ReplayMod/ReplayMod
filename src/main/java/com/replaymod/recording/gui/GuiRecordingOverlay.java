@@ -10,8 +10,12 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 //#if MC>=10800
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
+import static net.minecraft.client.renderer.GlStateManager.*;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -50,9 +54,9 @@ public class GuiRecordingOverlay {
         if (settingsRegistry.get(Setting.INDICATOR)) {
             FontRenderer fontRenderer = getFontRenderer(mc);
             fontRenderer.drawString(I18n.format("replaymod.gui.recording").toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
-            mc.renderEngine.bindTexture(TEXTURE);
-            GlStateManager.resetColor();
-            GlStateManager.enableAlpha();
+            bindTexture(TEXTURE);
+            resetColor();
+            enableAlpha();
             Gui.drawModalRectWithCustomSizedTexture(10, 10, 58, 20, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
         }
     }

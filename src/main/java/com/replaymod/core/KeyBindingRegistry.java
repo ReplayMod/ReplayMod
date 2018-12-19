@@ -6,12 +6,19 @@ import com.replaymod.core.versions.MCVer;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.ReportedException;
-import org.lwjgl.input.Keyboard;
+
+//#if MC>=11300
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 //#else
@@ -95,24 +102,25 @@ public class KeyBindingRegistry {
             } catch (Throwable cause) {
                 CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Key Binding");
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
-                category.addCrashSection("Key Binding", keyBinding);
+                MCVer.addDetail(category, "Key Binding", keyBinding::toString);
                 MCVer.addDetail(category, "Handler", runnable::toString);
-                throw new ReportedException(crashReport);
+                throw newReportedException(crashReport);
             }
         }
     }
 
     public void handleRaw() {
-        int keyCode = Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey();
+        //int keyCode = Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey();
+        int keyCode = -1; // FIXME
         for (final Runnable runnable : rawHandlers.get(keyCode)) {
             try {
                 runnable.run();
             } catch (Throwable cause) {
                 CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Raw Key Binding");
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
-                category.addCrashSection("Key Code", keyCode);
+                MCVer.addDetail(category, "Key Code", () -> "" + keyCode);
                 MCVer.addDetail(category, "Handler", runnable::toString);
-                throw new ReportedException(crashReport);
+                throw newReportedException(crashReport);
             }
         }
     }

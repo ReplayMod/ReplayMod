@@ -7,11 +7,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.*;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
+// FIXME not (yet?) 1.13 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 
 //#if MC>=10904
-import net.minecraft.entity.EntityLiving;
+//#if MC>=11300
+import net.minecraft.entity.EntityLivingBase;
+//#else
+//$$ import net.minecraft.entity.EntityLiving;
+//#endif
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.EnumHand;
@@ -25,7 +29,11 @@ import net.minecraft.util.math.BlockPos;
 //#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
@@ -42,7 +50,7 @@ import static com.replaymod.core.versions.MCVer.*;
 
 public class RecordingEventHandler {
 
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = getMinecraft();
     private final PacketListener packetListener;
 
     private Double lastX, lastY, lastZ;
@@ -171,9 +179,15 @@ public class RecordingEventHandler {
                 byte newPitch = (byte) ((int) (e.player.rotationPitch * 256.0F / 360.0F));
 
                 //#if MC>=10904
-                packet = new SPacketEntity.S17PacketEntityLookMove(e.player.getEntityId(),
+                //#if MC>=11300
+                packet = new SPacketEntity.Move(
+                //#else
+                //$$ packet = new SPacketEntity.S17PacketEntityLookMove(
+                //#endif
+                        e.player.getEntityId(),
                         (short) Math.round(dx * 4096), (short) Math.round(dy * 4096), (short) Math.round(dz * 4096),
-                        newYaw, newPitch, e.player.onGround);
+                        newYaw, newPitch, e.player.onGround
+                );
                 //#else
                 //$$ packet = new S14PacketEntity.S17PacketEntityLookMove(e.player.getEntityId(),
                 //$$         (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
@@ -300,9 +314,15 @@ public class RecordingEventHandler {
 
             //Leaving Ride
 
-            if((!player(mc).isRiding() && lastRiding != -1) ||
-                    (player(mc).isRiding() && lastRiding != getRidingEntity(player(mc)).getEntityId())) {
-                if(!player(mc).isRiding()) {
+            //#if MC>=11300
+            if((!player(mc).isPassenger() && lastRiding != -1) ||
+                    (player(mc).isPassenger() && lastRiding != getRidingEntity(player(mc)).getEntityId())) {
+                if(!player(mc).isPassenger()) {
+            //#else
+            //$$ if((!player(mc).isRiding() && lastRiding != -1) ||
+            //$$         (player(mc).isRiding() && lastRiding != getRidingEntity(player(mc)).getEntityId())) {
+            //$$     if(!player(mc).isRiding()) {
+            //#endif
                     lastRiding = -1;
                 } else {
                     lastRiding = getRidingEntity(player(mc)).getEntityId();
@@ -331,7 +351,11 @@ public class RecordingEventHandler {
                 lastActiveHand = player(mc).getActiveHand();
                 EntityDataManager dataManager = new EntityDataManager(null);
                 int state = (wasHandActive ? 1 : 0) | (lastActiveHand == EnumHand.OFF_HAND ? 2 : 0);
-                dataManager.register(EntityLiving.HAND_STATES, (byte) state);
+                //#if MC>=11300
+                dataManager.register(EntityLivingBase.LIVING_FLAGS, (byte) state);
+                //#else
+                //$$ dataManager.register(EntityLiving.HAND_STATES, (byte) state);
+                //#endif
                 packetListener.save(new SPacketEntityMetadata(player(mc).getEntityId(), dataManager, true));
             }
             //#endif
@@ -394,6 +418,7 @@ public class RecordingEventHandler {
         }
     }
 
+    /* FIXME event not (yet?) on 1.13
     @SubscribeEvent
     public void enterMinecart(MinecartInteractEvent event) {
         try {
@@ -418,6 +443,7 @@ public class RecordingEventHandler {
             e.printStackTrace();
         }
     }
+    */
 
     //#if MC>=10800
     public void onBlockBreakAnim(int breakerId, BlockPos pos, int progress) {

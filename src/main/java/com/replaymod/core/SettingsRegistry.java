@@ -88,7 +88,7 @@ public class SettingsRegistry {
     }
 
     public void save() {
-        configuration.save();
+        // FIXME forge config api is currently broken configuration.save();
     }
 
     public interface SettingKey<T> {

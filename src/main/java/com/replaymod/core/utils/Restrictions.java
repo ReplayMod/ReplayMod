@@ -18,6 +18,7 @@ import static com.replaymod.core.versions.MCVer.readString;
  * @see <a href="https://gist.github.com/Johni0702/2547c463e51f65f312cb">Replay Restrictions Gist</a>
  */
 public class Restrictions {
+    // FIXME these should be ResourceLocations now
     public static final String PLUGIN_CHANNEL = "Replay|Restrict";
     private boolean noXray;
     private boolean noNoclip;

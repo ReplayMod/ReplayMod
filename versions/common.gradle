@@ -5,11 +5,12 @@ buildscript {
         mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}" as int
     } else {
         def f = file('mcVersion')
-        mcVersion = f.exists() ? f.readLines().first() as int : 11202
+        mcVersion = f.exists() ? f.readLines().first() as int : 11300
     }
     project.ext.mcVersion = mcVersion
 
     repositories {
+        mavenLocal()
         jcenter()
         mavenCentral()
         maven {
@@ -30,6 +31,7 @@ buildscript {
             exclude group: 'org.ow2.asm', module: 'asm-debug-all'
         }
         classpath 'net.minecraftforge.gradle:ForgeGradle:' + (
+                mcVersion >= 11300 ? '3.+' :
                 mcVersion >= 11200 ? '2.3-SNAPSHOT' :
                 mcVersion >= 10904 ? '2.2-SNAPSHOT' :
                 mcVersion >= 10809 ? '2.1-SNAPSHOT' :
@@ -40,9 +42,21 @@ buildscript {
     }
 }
 
+def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
+
+def FG3 = mcVersion >= 11300
+
 if (mcVersion >= 10800) {
-    apply plugin: 'net.minecraftforge.gradle.forge'
-    apply plugin: 'org.spongepowered.mixin'
+    if (FG3) {
+        apply plugin: 'net.minecraftforge.gradle'
+        // FIXME use mixin plugin once updated
+        compileJava {
+            options.compilerArgs += ['-AreobfSrgFile=' + new File(project.buildDir, 'mcp-srg.srg').getCanonicalPath()]
+        }
+    } else {
+        apply plugin: 'net.minecraftforge.gradle.forge'
+        apply plugin: 'org.spongepowered.mixin'
+    }
 } else {
     apply plugin: 'forge'
 
@@ -56,16 +70,27 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 afterEvaluate {
-    version = project.minecraft.version + '-' + rootProject.version
+    version = mcVersionStr + '-' + rootProject.version
 }
 group= "com.replaymod"
 archivesBaseName = "replaymod"
 
 minecraft {
-    if (mcVersion >= 10800) {
-        coreMod = 'com.replaymod.core.LoadingPlugin'
+    if (FG3) {
+        runConfig {
+            name = 'Minecraft Client'
+            main = 'net.minecraftforge.userdev.UserdevLauncher'
+            ideaModuleName = '${project.name}_main'
+            workingDirectory = project.file('eclipse').canonicalPath
+            environment 'target', 'fmldevclient'
+            environment 'assetDirectory', downloadAssets.output.absolutePath
+        }
+    } else {
+        if (mcVersion >= 10800) {
+            coreMod = 'com.replaymod.core.LoadingPlugin'
+        }
+        runDir = "../../eclipse"
     }
-    runDir = "../../eclipse"
 
     version = [
             11202: '1.12.2-14.23.0.2486',
@@ -80,6 +105,7 @@ minecraft {
             10710: '1.7.10-10.13.4.1558-1.7.10',
     ][mcVersion]
     mappings = [
+            11300: "snapshot_20180921-1.13",
             11202: "snapshot_20170615",
             11201: "snapshot_20170615",
             11200: "snapshot_20170615",
@@ -92,15 +118,20 @@ minecraft {
             10710: "stable_12",
     ][mcVersion]
 }
+
 afterEvaluate {
-    // Note cannot use minecraft.replace because that has already been forwarded to the task by FG by now
-    tasks.sourceMainJava.replace '@MOD_VERSION@', project.version
-    // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
-    // a newer srg-compatible MC version (that may be using a different protocol version)
-    tasks.sourceMainJava.replace '@MC_VERSION@', "[ ${project.minecraft.version} ]"
+    if (mcVersion >= 11300) {
+    } else {
+        // Note cannot use minecraft.replace because that has already been forwarded to the task by FG by now
+        tasks.sourceMainJava.replace '@MOD_VERSION@', project.version
+        // Includes intentional whitespace to stop Forge from declaring the mod to be compatible with
+        // a newer srg-compatible MC version (that may be using a different protocol version)
+        tasks.sourceMainJava.replace '@MC_VERSION@', "[ $mcVersionStr ]"
+    }
 }
 
 repositories {
+    mavenLocal()
     maven {
         name = "SpongePowered Repo"
         url = "http://repo.spongepowered.org/maven/"
@@ -116,9 +147,20 @@ configurations {
 }
 
 dependencies {
+    if (FG3) {
+        minecraft 'net.minecraftforge.test:forge:' + [
+                11300: '1.13-24.0.33-1.13-pre',
+        ][mcVersion]
+    }
+
+    annotationProcessor group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
+    compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
+
     // compile 'com.github.SpongePowered:Mixin:404f5da' // 0.7.5-SNAPSHOT
     // ^ mixin doesn't compile on jitpack, so we'll have to depend on the SNAPSHOT and build it manually for reprod
-    compile 'org.spongepowered:mixin:0.7.5-SNAPSHOT'
+    annotationProcessor 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
+    compileOnly 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
+    compile 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
     shade 'com.googlecode.mp4parser:isoparser:1.1.7'
     shade 'org.apache.commons:commons-exec:1.3'
     def withoutGuava = { exclude group: 'com.google.guava', module: 'guava-jdk5' }
@@ -129,9 +171,9 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    def studioVersion = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
+    def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shade("com.github.ReplayMod.ReplayStudio:$studioVersion:2d8d41d"){
+    shade("com.replaymod.replaystudio:$studioVersion:2d8d41d"){ // FIXME
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
@@ -144,6 +186,7 @@ dependencies {
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
 
+    annotationProcessor 'org.projectlombok:lombok:1.16.6'
     compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
 
     testCompile 'junit:junit:4.11'
@@ -173,8 +216,10 @@ if (project.name != 'core') {
 
     def preprocessedSrc = 'build/preprocessed/src'
     def preprocessedRes = 'build/preprocessed/res'
+    def preprocessedAT = 'build/preprocessed/at.cfg'
     def originalSrc = '../../src/main/java'
     def originalRes = '../../src/main/resources'
+    def originalAT = originalRes + '/META-INF/replaymod_at.cfg'
     def vars = [MC: mcVersion as int]
 
     sourceSets {
@@ -200,19 +245,42 @@ if (project.name != 'core') {
 
     compileJava.dependsOn preprocessJava
     processResources.dependsOn preprocessResources
-    (mcVersion >= 10800 ? [deobfMcMCP, deobfMcSRG] : [deobfuscateJar, deobfBinJar]).each { task ->
-        task.dependsOn preprocessResources
+    if (FG3) {
+        // FG3 reads the AT file right after project evaluation, so we need to convert it right now
+        project.convertTree(vars, originalAT, preprocessedAT)
+        minecraft.accessTransformers << file(preprocessedAT)
+    } else {
+        (mcVersion >= 10800 ? [deobfMcMCP, deobfMcSRG] : [deobfuscateJar, deobfBinJar]).each { task ->
+            task.dependsOn preprocessResources
+        }
+        minecraft.accessTransformer preprocessedRes + '/META-INF/replaymod_at.cfg'
     }
-
-    minecraft.accessTransformer preprocessedRes + '/META-INF/replaymod_at.cfg'
 } else {
+    if (FG3) {
+        minecraft.accessTransformers << file('../../src/main/resources/META-INF/replaymod_at.cfg')
+    }
     sourceSets {
         main.java.srcDirs = ['../../src/main/java']
         main.resources.srcDirs = ['../../src/main/resources']
     }
 }
+sourceSets {
+    main {
+        java {
+            exclude 'com/replaymod/compat'
+            exclude 'com/replaymod/editor'
+            exclude 'com/replaymod/extras'
+            exclude 'com/replaymod/online'
+            exclude 'com/replaymod/pathing'
+            exclude 'com/replaymod/render'
+            exclude 'com/replaymod/replay'
+            exclude 'com/replaymod/restrictions'
+            exclude 'com/replaymod/simplepathing'
+        }
+    }
+}
 
-
+if (!FG3) { // FIXME
 def reobfTask = mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf
 task configureRelocation() {
     dependsOn tasks.jar
@@ -237,6 +305,7 @@ task configureRelocation() {
     }
 }
 reobfTask.dependsOn configureRelocation
+}
 
 if (mcVersion <= 10710) {
     // Dummy task so "./gradlew reobfJar" also builds 1.7.10
@@ -294,21 +363,23 @@ processResources
         {
             // this will ensure that this task is redone when the versions change.
             inputs.property 'version', { project.version }
-            inputs.property 'mcversion', { project.minecraft.version }
+            inputs.property 'mcversion', { mcVersionStr }
 
-            // replace stuff in mcmod.info, nothing else
+            // replace stuff in mcmod.info (pre 1.13) and mods.toml (1.13+), nothing else
             from(sourceSets.main.resources.srcDirs) { spec ->
                 include 'mcmod.info'
+                include 'mods.toml'
 
                 // replace version and mcversion
                 afterEvaluate {
-                    spec.expand 'version': project.version, 'mcversion': project.minecraft.version
+                    spec.expand 'version': project.version, 'mcversion': mcVersionStr
                 }
             }
 
-            // copy everything else, thats not the mcmod.info
+            // copy everything else, thats not the mcmod.info (or mods.toml)
             from(sourceSets.main.resources.srcDirs) {
                 exclude 'mcmod.info'
+                exclude 'mods.toml'
             }
         }
 
@@ -325,14 +396,42 @@ sourceSets {
     }
 }
 
-task copySrg(type: Copy, dependsOn: 'genSrgs') {
-    from {project.tasks.genSrgs.mcpToSrg}
-    into 'build'
+if (FG3) {
+    task copySrg(dependsOn: 'createMcpToSrg') {
+        doLast {
+            def tsrg = file(project.tasks.createMcpToSrg.output).readLines()
+            def srg = []
+            def cls = ''
+            for (def line : tsrg) {
+                if (line[0] != '\t') {
+                    srg.add('CL: ' + line)
+                    cls = line.split(' ')[0]
+                } else {
+                    def parts = line.substring(1).split(' ')
+                    if (line.contains('(')) {
+                        srg.add('MD: ' + cls + '/' + parts[0] + ' ' + parts[1] + ' ' + cls + '/' + parts[2] + ' ' + parts[1])
+                    } else {
+                        srg.add('FD: ' + cls + '/' + parts[0] + ' ' + cls + '/' + parts[1])
+                    }
+                }
+            }
+            new File(project.buildDir, 'mcp-srg.srg').write(srg.join('\n'))
+        }
+    }
+} else {
+    task copySrg(type: Copy, dependsOn: 'genSrgs') {
+        from {project.tasks.genSrgs.mcpToSrg}
+        into 'build'
+    }
 }
 
-setupDecompWorkspace.dependsOn copySrg
-setupDevWorkspace.dependsOn copySrg
-project.tasks.idea.dependsOn copySrg
+if (FG3) {
+    // FIXME project.tasks.idea.dependsOn copySrg
+    compileJava.dependsOn copySrg // FIXME can probably remove this one once mixingradle is updated
+} else {
+    setupDecompWorkspace.dependsOn copySrg
+    setupDevWorkspace.dependsOn copySrg
+}
 
 if (mcVersion <= 10710) {
     reobf.doFirst {
@@ -351,6 +450,7 @@ if (mcVersion <= 10710) {
     }
 }
 
+/* FIXME
 // Mixin uses multiple HashMaps to generate the refmap.
 // HashMaps are unordered collections and as such do not produce deterministic output.
 // To fix that, we simply sort the refmap json file.
@@ -375,6 +475,7 @@ compileJava.doLast {
         refmapFile.withWriter { it.write json }
     }
 }
+*/
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -425,10 +526,11 @@ def annotationWorkaround = {
     jar.delete()
     tmp.renameTo(jar)
 }
-if (mcVersion >= 10809) {
+if (mcVersion >= 10809 && !FG3) {
     tasks.deobfMcMCP.doLast annotationWorkaround
 }
 
+if (!FG3) { // FIXME
 task runIntegrationTest(type: JavaExec, dependsOn: ["makeStart", "jar"]) {
     main = 'GradleStart'
     standardOutput = System.out
@@ -451,6 +553,7 @@ task runIntegrationTest(type: JavaExec, dependsOn: ["makeStart", "jar"]) {
         runIntegrationTest.args = runClient.args + "--gameDir" + testDir.canonicalPath
         runIntegrationTest.classpath runClient.classpath + sourceSets.integrationTest.output
     }
+}
 }
 
 defaultTasks 'build'

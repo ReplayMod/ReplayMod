@@ -18,15 +18,19 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
+
+//#if MC>=11300
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
 import net.minecraft.client.network.NetworkPlayerInfo;
@@ -64,7 +68,8 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static net.minecraft.client.Minecraft.getMinecraft;
+import static com.replaymod.core.versions.MCVer.Minecraft_mcDataDir;
+import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 public class Utils {
 
@@ -189,7 +194,11 @@ public class Utils {
     }
 
     public static boolean isCtrlDown() {
-        return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+        //#if MC>=11300
+        return GuiScreen.isCtrlKeyDown();
+        //#else
+        //$$ return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+        //#endif
     }
 
     public static <T> void addCallback(ListenableFuture<T> future, Consumer<T> onSuccess, Consumer<Throwable> onFailure) {
@@ -216,7 +225,7 @@ public class Utils {
         // Try to save the crash report
         if (crashReport.getFile() == null) {
             try {
-                File folder = new File(getMinecraft().mcDataDir, "crash-reports");
+                File folder = new File(Minecraft_mcDataDir(getMinecraft()), "crash-reports");
                 File file = new File(folder, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
                 logger.debug("Saving crash report to file: {}", file);
                 crashReport.saveToFile(file);
@@ -262,8 +271,8 @@ public class Utils {
                                     l -> new GuiLabel().setText(l).setColor(Colors.BLACK)).toArray(GuiElement[]::new)));
 
             // Replace close button with panel containing close and copy buttons
-            GuiButton copyToClipboardButton = new GuiButton().setI18nLabel("chat.copy").onClick(() ->
-                    GuiScreen.setClipboardString(crashReport)).setSize(150, 20);
+            GuiButton copyToClipboardButton = new GuiButton().setI18nLabel("chat.copy")/* FIXME .onClick(() ->
+                    //GuiScreen.setClipboardString(crashReport))*/.setSize(150, 20);
             GuiButton closeButton = getCloseButton();
             popup.removeElement(closeButton);
             popup.addElements(new VerticalLayout.Data(1),

@@ -11,7 +11,13 @@ public class OpenGLUtils {
 
     static {
         IntBuffer buffer = BufferUtils.createIntBuffer(16);
-        GL11.glGetInteger(GL11.GL_MAX_VIEWPORT_DIMS, buffer);
+        //#if MC>=11300
+        // FIXME GL11.glGetIntegerv(GL11.GL_MAX_VIEWPORT_DIMS, buffer);
+        buffer.put(0xffff);
+        buffer.put(0xffff);
+        //#else
+        //$$ GL11.glGetInteger(GL11.GL_MAX_VIEWPORT_DIMS, buffer);
+        //#endif
         VIEWPORT_MAX_WIDTH = buffer.get();
         VIEWPORT_MAX_HEIGHT = buffer.get();
     }

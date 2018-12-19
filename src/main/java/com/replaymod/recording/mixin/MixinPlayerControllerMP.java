@@ -23,10 +23,12 @@ public abstract class MixinPlayerControllerMP implements RecordingEventHandler.R
     // The new method will then play it and (if applicable) record it. (See MixinWorldClient)
     // This is necessary for the block break event (particles and sound) to be recorded. Otherwise it looks like the
     // event was emitted because of a packet (player will be null) and not as it actually was (by the player).
+    /* FIXME test if this is still an issue (the call seems to be gone)
     @Redirect(method = "onPlayerDestroyBlock", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/World;playEvent(ILnet/minecraft/util/math/BlockPos;I)V"))
     public void replayModRecording_playEvent_fixed(World world, int type, BlockPos pos, int data) {
         world.playEvent(player(mc), type, pos, data);
     }
+    */
 }
 //#endif

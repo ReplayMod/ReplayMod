@@ -9,7 +9,11 @@ import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -41,21 +45,25 @@ public class MainMenuHandler {
                 // and then move back down by 10 to compensate for the space to the exit button that was already there
                 int offset = -2 * 24 + 10;
                 y(button, y(button) + offset);
-                //#if MC>=11202
+            }
+                /* FIXME
+                //#if MC>=11300
                 if (button == gui.realmsButton) {
                     realmsOffset = offset;
                 }
                 //#endif
             }
-            //#if MC>=11202
+            //#if MC>=11300
             if (realmsOffset != 0 && gui.realmsNotification instanceof GuiScreenRealmsProxy) {
                 gui.realmsNotification = new RealmsNotificationProxy((GuiScreenRealmsProxy) gui.realmsNotification, realmsOffset);
             }
             //#endif
+            */
         }
     }
 
-    //#if MC>=11202
+    /* FIXME
+    //#if MC>=11300
     private static class RealmsNotificationProxy extends GuiScreen {
         private final GuiScreenRealmsProxy proxy;
         private final int offset;
@@ -98,4 +106,5 @@ public class MainMenuHandler {
         }
     }
     //#endif
+    */
 }

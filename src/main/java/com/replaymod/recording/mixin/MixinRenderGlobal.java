@@ -15,6 +15,7 @@ import net.minecraft.util.math.BlockPos;
 //#endif
 //#endif
 
+/* FIXME runtimeinvisparameter
 @Mixin(RenderGlobal.class)
 public abstract class MixinRenderGlobal implements RecordingEventHandler.RecordingEventSender {
 
@@ -53,3 +54,4 @@ public abstract class MixinRenderGlobal implements RecordingEventHandler.Recordi
         }
     }
 }
+*/

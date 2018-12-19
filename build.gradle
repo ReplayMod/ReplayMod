@@ -1,3 +1,6 @@
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
 import groovy.json.JsonOutput
 
 def latestVersion = file('version.txt').readLines().first()

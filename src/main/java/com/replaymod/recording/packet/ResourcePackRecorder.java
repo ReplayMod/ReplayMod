@@ -9,7 +9,7 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.client.resources.ResourcePackRepository;
+// FIXME import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.util.HttpUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,8 +36,6 @@ import net.minecraft.network.NetworkManager;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nonnull;
-
-import static com.replaymod.core.versions.MCVer.*;
 //#else
 //$$ import net.minecraft.client.multiplayer.ServerData.ServerResourceMode;
 //$$ import net.minecraft.client.multiplayer.ServerList;
@@ -52,12 +50,14 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 /**
  * Records resource packs and handles incoming resource pack packets during recording.
  */
 public class ResourcePackRecorder {
     private static final Logger logger = LogManager.getLogger();
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = getMinecraft();
 
     private final ReplayFile replayFile;
 
@@ -131,11 +131,12 @@ public class ResourcePackRecorder {
 
         if (url.startsWith("level://")) {
             String levelName = url.substring("level://".length());
-            File savesDir = new File(mc.mcDataDir, "saves");
+            File savesDir = new File(mcDataDir(mc), "saves");
             final File levelDir = new File(savesDir, levelName);
 
             if (levelDir.isFile()) {
                 netManager.sendPacket(makeStatusPacket(hash, Action.ACCEPTED));
+                /* FIXME
                 Futures.addCallback(setServerResourcePack(mc.getResourcePackRepository(), levelDir), new FutureCallback<Object>() {
                     @Override
                     public void onSuccess(Object result) {
@@ -148,6 +149,7 @@ public class ResourcePackRecorder {
                         netManager.sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
                     }
                 });
+                */
             } else {
                 netManager.sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
             }
@@ -155,7 +157,7 @@ public class ResourcePackRecorder {
             final ServerData serverData = mc.getCurrentServerData();
             if (serverData != null && serverData.getResourceMode() == ServerData.ServerResourceMode.ENABLED) {
                 netManager.sendPacket(makeStatusPacket(hash, Action.ACCEPTED));
-                downloadResourcePackFuture(requestId, url, hash);
+                // FIXME downloadResourcePackFuture(requestId, url, hash);
             } else if (serverData != null && serverData.getResourceMode() != ServerData.ServerResourceMode.PROMPT) {
                 netManager.sendPacket(makeStatusPacket(hash, Action.DECLINED));
             } else {
@@ -163,13 +165,17 @@ public class ResourcePackRecorder {
                 //noinspection Convert2Lambda
                 mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
                     @Override
-                    public void confirmClicked(boolean result, int id) {
+                    //#if MC>=11300
+                    public void confirmResult(boolean result, int id) {
+                    //#else
+                    //$$ public void confirmClicked(boolean result, int id) {
+                    //#endif
                         if (serverData != null) {
                             serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
                         }
                         if (result) {
                             netManager.sendPacket(makeStatusPacket(hash, Action.ACCEPTED));
-                            downloadResourcePackFuture(requestId, url, hash);
+                            // FIXME downloadResourcePackFuture(requestId, url, hash);
                         } else {
                             netManager.sendPacket(makeStatusPacket(hash, Action.DECLINED));
                         }
@@ -188,6 +194,7 @@ public class ResourcePackRecorder {
         //#endif
     }
 
+    /* FIXME
     private void downloadResourcePackFuture(int requestId, String url, final String hash) {
         Futures.addCallback(downloadResourcePack(requestId, url, hash), new FutureCallback() {
             @Override
@@ -370,4 +377,5 @@ public class ResourcePackRecorder {
     //$$ }
     //#endif
 
+*/
 }

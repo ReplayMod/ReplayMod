@@ -15,8 +15,12 @@ import net.minecraft.network.NetworkManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//$$ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
+//#endif
 
 import static com.replaymod.core.versions.MCVer.WorldType_DEBUG_ALL_BLOCK_STATES;
 //#else
@@ -28,6 +32,8 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import static com.replaymod.core.versions.MCVer.getMinecraft;
+
 /**
  * Handles connection events and initiates recording if enabled.
  */
@@ -36,7 +42,7 @@ public class ConnectionEventHandler {
     private static final String packetHandlerKey = "packet_handler";
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
     private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = getMinecraft();
 
     private final Logger logger;
     private final ReplayMod core;
@@ -55,7 +61,11 @@ public class ConnectionEventHandler {
             boolean local = networkManager.isLocalChannel();
             if (local) {
                 //#if MC>=10800
-                if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
+                //#if MC>=11300
+                if (mc.getIntegratedServer().getWorld(0).getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
+                //#else
+                //$$ if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
+                //#endif
                     logger.info("Debug World recording is not supported.");
                     return;
                 }
@@ -74,10 +84,10 @@ public class ConnectionEventHandler {
             String worldName;
             if (local) {
                 worldName = mc.getIntegratedServer().getWorldName();
-            } else if (Minecraft.getMinecraft().getCurrentServerData() != null) {
-                worldName = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+            } else if (mc.getCurrentServerData() != null) {
+                worldName = mc.getCurrentServerData().serverIP;
             //#if MC>=11100
-            } else if (Minecraft.getMinecraft().isConnectedToRealms()) {
+            } else if (mc.isConnectedToRealms()) {
                 // we can't access the server name without tapping too deep in the Realms Library
                 worldName = "A Realms Server";
             //#endif
@@ -97,7 +107,7 @@ public class ConnectionEventHandler {
             ReplayMetaData metaData = new ReplayMetaData();
             metaData.setSingleplayer(local);
             metaData.setServerName(worldName);
-            metaData.setGenerator("ReplayMod v" + ReplayMod.getContainer().getVersion());
+            metaData.setGenerator("ReplayMod v" + ReplayMod.instance.getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
             packetListener = new PacketListener(replayFile, metaData);
@@ -116,6 +126,7 @@ public class ConnectionEventHandler {
         }
     }
 
+    /* FIXME event not (yet?) in 1.13
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
         if (packetListener != null) {
@@ -126,6 +137,7 @@ public class ConnectionEventHandler {
             packetListener = null;
         }
     }
+    */
 
     public PacketListener getPacketListener() {
         return packetListener;

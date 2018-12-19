@@ -14,8 +14,12 @@ import net.minecraftforge.registries.RegistryManager;
 //#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
+//#if MC>=11300
+// FIXME
+//#else
+//$$ import net.minecraftforge.fml.common.Loader;
+//$$ import net.minecraftforge.fml.common.ModContainer;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.Loader;
 //$$ import cpw.mods.fml.common.ModContainer;
@@ -29,16 +33,19 @@ import java.util.stream.Stream;
 public class ModCompat {
     @SuppressWarnings("unchecked")
     public static Collection<ModInfo> getInstalledNetworkMods() {
-        Map<String, ModContainer> ignoreCaseMap = Loader.instance().getModList().stream()
-                .collect(Collectors.toMap(m -> m.getModId().toLowerCase(), Function.identity()));
+        //#if MC>=11300
+        return Stream.<ModInfo>empty().collect(Collectors.toList());
+        //#else
+        //$$ Map<String, ModContainer> ignoreCaseMap = Loader.instance().getModList().stream()
+        //$$         .collect(Collectors.toMap(m -> m.getModId().toLowerCase(), Function.identity()));
         //#if MC>=11200
-        return RegistryManager.ACTIVE.takeSnapshot(false).keySet().stream()
-                .map(RegistryManager.ACTIVE::getRegistry)
-                .map(ForgeRegistry::getKeys).flatMap(Set::stream)
-                .map(ResourceLocation::getResourceDomain).filter(s -> !s.equals("minecraft")).distinct()
-                .map(String::toLowerCase).map(ignoreCaseMap::get).filter(mod -> mod != null)
-                .map(mod -> new ModInfo(mod.getModId(), mod.getName(), mod.getVersion()))
-                .collect(Collectors.toList());
+        //$$ return RegistryManager.ACTIVE.takeSnapshot(false).keySet().stream()
+        //$$         .map(RegistryManager.ACTIVE::getRegistry)
+        //$$         .map(ForgeRegistry::getKeys).flatMap(Set::stream)
+        //$$         .map(ResourceLocation::getResourceDomain).filter(s -> !s.equals("minecraft")).distinct()
+        //$$         .map(String::toLowerCase).map(ignoreCaseMap::get).filter(mod -> mod != null)
+        //$$         .map(mod -> new ModInfo(mod.getModId(), mod.getName(), mod.getVersion()))
+        //$$         .collect(Collectors.toList());
         //#else
         //#if MC>=10800
         //$$ return Stream.concat(
@@ -59,6 +66,7 @@ public class ModCompat {
         //$$         .map(String::toLowerCase).map(ignoreCaseMap::get).filter(mod -> mod != null)
         //$$         .map(mod -> new ModInfo(mod.getModId(), mod.getName(), mod.getVersion()))
         //$$         .collect(Collectors.toList());
+        //#endif
         //#endif
         //#endif
     }

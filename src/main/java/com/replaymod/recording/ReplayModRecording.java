@@ -5,53 +5,54 @@ import com.replaymod.core.utils.Restrictions;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.handler.GuiHandler;
 import com.replaymod.recording.packet.PacketListener;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
+import io.netty.util.AttributeKey;
 import net.minecraft.network.NetworkManager;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
+
+//#if MC>=11300
+import com.replaymod.core.versions.MCVer.Keyboard;
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.EventBus;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
+//#if MC>=11300
+import net.minecraftforge.fml.network.NetworkRegistry;
 //#else
-//$$ import cpw.mods.fml.common.Mod;
+//$$ import net.minecraftforge.fml.common.network.NetworkRegistry;
+//#endif
+//#else
 //$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
 //$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-//$$ import cpw.mods.fml.common.eventhandler.EventBus;
 //$$ import cpw.mods.fml.common.network.NetworkRegistry;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 
-@Mod(modid = ReplayModRecording.MOD_ID,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
-        acceptableRemoteVersions = "*",
-        //#if MC>=10800
-        clientSideOnly = true,
-        //#endif
-        useMetadata = true)
-public class ReplayModRecording {
-    public static final String MOD_ID = "replaymod-recording";
+public class ReplayModRecording extends ReplayMod.Module {
 
-    @Mod.Instance(MOD_ID)
+    private static final Logger LOGGER = LogManager.getLogger();
+    private static final AttributeKey<Void> ATTR_CHECKED = AttributeKey.newInstance("ReplayModRecording_checked");
+
+    { instance = this; }
     public static ReplayModRecording instance;
 
     private ReplayMod core;
 
-    private Logger logger;
-
     private ConnectionEventHandler connectionEventHandler;
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
-        core = ReplayMod.instance;
+    public ReplayModRecording(ReplayMod mod) {
+        core = mod;
+    }
 
+    @Override
+    public void preInit(FMLPreInitializationEvent event) {
         core.getSettingsRegistry().register(Setting.class);
 
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
@@ -66,20 +67,27 @@ public class ReplayModRecording {
         });
     }
 
-    @Mod.EventHandler
+    @Override
     public void init(FMLInitializationEvent event) {
-        EventBus bus = FML_BUS;
-        bus.register(connectionEventHandler = new ConnectionEventHandler(logger, core));
+        FML_BUS.register(connectionEventHandler = new ConnectionEventHandler(LOGGER, core));
 
         new GuiHandler(core).register();
 
-        NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
+        //#if MC>=11300
+        // FIXME
+        //#else
+        //$$ NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
+        //#endif
     }
 
     @ChannelHandler.Sharable
     private static class RestrictionsChannelHandler extends ChannelDuplexHandler {}
 
     public void initiateRecording(NetworkManager networkManager) {
+        Channel channel = networkManager.channel();
+        if (channel.pipeline().get("ReplayModReplay_replaySender") != null) return;
+        if (channel.hasAttr(ATTR_CHECKED)) return;
+        channel.attr(ATTR_CHECKED).set(null);
         connectionEventHandler.onConnectedToServerEvent(networkManager);
     }
 }
