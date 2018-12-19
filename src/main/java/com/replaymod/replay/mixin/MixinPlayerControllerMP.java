@@ -13,7 +13,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //#if MC>=11200
-import net.minecraft.stats.RecipeBook;
+//#if MC>=11300
+import net.minecraft.client.util.RecipeBookClient;
+//#else
+//$$ import net.minecraft.stats.RecipeBook;
+//#endif
 //#endif
 //#if MC>=10904
 import net.minecraft.stats.StatisticsManager;
@@ -44,10 +48,16 @@ public abstract class MixinPlayerControllerMP {
     //#endif
 
     //#if MC>=11200
-    @Inject(method = "func_192830_a", at=@At("HEAD"), cancellable = true)
-    private void replayModReplay_createReplayCamera(World worldIn, StatisticsManager statisticsManager, RecipeBook recipeBook, CallbackInfoReturnable<EntityPlayerSP> ci) {
+    @Inject(method = "createPlayer", at=@At("HEAD"), cancellable = true)
+    private void replayModReplay_createReplayCamera(World worldIn, StatisticsManager statisticsManager, RecipeBookClient recipeBookClient, CallbackInfoReturnable<EntityPlayerSP> ci) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {
-            ci.setReturnValue(new CameraEntity(mc, worldIn, connection, statisticsManager, recipeBook));
+            ci.setReturnValue(new CameraEntity(mc, worldIn, connection, statisticsManager, recipeBookClient));
+    //#else
+    //#if MC>=11200
+    //$$ @Inject(method = "func_192830_a", at=@At("HEAD"), cancellable = true)
+    //$$ private void replayModReplay_createReplayCamera(World worldIn, StatisticsManager statisticsManager, RecipeBook recipeBook, CallbackInfoReturnable<EntityPlayerSP> ci) {
+    //$$     if (ReplayModReplay.instance.getReplayHandler() != null) {
+    //$$         ci.setReturnValue(new CameraEntity(mc, worldIn, connection, statisticsManager, recipeBook));
     //#else
     //#if MC>=10904
     //$$ @Inject(method = "createClientPlayer", at=@At("HEAD"), cancellable = true)
@@ -68,12 +78,17 @@ public abstract class MixinPlayerControllerMP {
     //#endif
     //#endif
     //#endif
+    //#endif
             ci.cancel();
         }
     }
 
     //#if MC>=10800
-    @Inject(method = "isSpectator", at=@At("HEAD"), cancellable = true)
+    //#if MC>=11300
+    @Inject(method = "isSpectatorMode", at=@At("HEAD"), cancellable = true)
+    //#else
+    //$$ @Inject(method = "isSpectator", at=@At("HEAD"), cancellable = true)
+    //#endif
     private void replayModReplay_isSpectator(CallbackInfoReturnable<Boolean> ci) {
         if (player(mc) instanceof CameraEntity) { // this check should in theory not be required
             ci.setReturnValue(player(mc).isSpectator());

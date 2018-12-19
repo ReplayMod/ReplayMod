@@ -1,3 +1,4 @@
+/* FIXME
 package com.replaymod.replay;
 
 import com.replaymod.core.utils.WrappedTimer;
@@ -264,3 +265,4 @@ public class InputReplayTimer extends WrappedTimer {
     //$$ public static class RunScheduledTasks extends Event {}
     //#endif
 }
+*/

@@ -62,7 +62,6 @@ import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import javax.annotation.Nullable;
@@ -85,11 +84,18 @@ import java.util.function.Consumer;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
+
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.FML_BUS;
+import static com.replaymod.core.versions.MCVer.getMinecraft;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
 /**
@@ -104,7 +110,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private static final String CACHE_INDEX_ENTRY = "quickModeCacheIndex.bin";
     private static final int CACHE_VERSION = 0;
 
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = getMinecraft();
 
     private final ReplayModReplay mod;
     private final ReplayFile replayFile;
@@ -980,8 +986,13 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 for (BlockChange blockChange : blockChanges) {
                     NetUtil.writePosition(cacheOut, blockChange.pos);
                     index += 8;
-                    index += writeVarInt(cacheOut, blockChange.from.getId() << 4 | blockChange.from.getData() & 15);
-                    index += writeVarInt(cacheOut, blockChange.to.getId() << 4 | blockChange.to.getData() & 15);
+                    //#if MC>=11300
+                    index += writeVarInt(cacheOut, blockChange.from.getId());
+                    index += writeVarInt(cacheOut, blockChange.to.getId());
+                    //#else
+                    //$$ index += writeVarInt(cacheOut, blockChange.from.getId() << 4 | blockChange.from.getData() & 15);
+                    //$$ index += writeVarInt(cacheOut, blockChange.to.getId() << 4 | blockChange.to.getData() & 15);
+                    //#endif
                 }
             }
 

@@ -8,6 +8,7 @@ import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.core.utils.OpenGLUtils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.ReplayModRecording;
+import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
@@ -138,6 +139,7 @@ public class ReplayMod {
     private final List<Module> modules = new ArrayList<>();
     {
         modules.add(new ReplayModRecording(this));
+        modules.add(new ReplayModReplay(this));
     }
 
     public KeyBindingRegistry getKeyBindingRegistry() {

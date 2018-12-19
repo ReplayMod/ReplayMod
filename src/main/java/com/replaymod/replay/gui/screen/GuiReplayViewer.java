@@ -10,6 +10,7 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -31,24 +32,24 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import lombok.Getter;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
-import net.minecraft.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.lwjgl.Sys;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.ReadablePoint;
 
-import java.awt.*;
+//#if MC>=11300
+import com.replaymod.core.versions.MCVer.Keyboard;
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
@@ -57,6 +58,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
+import static com.replaymod.core.versions.MCVer.*;
 
 public class GuiReplayViewer extends GuiScreen {
     private final ReplayModReplay mod;
@@ -93,29 +95,8 @@ public class GuiReplayViewer extends GuiScreen {
         public void run() {
             try {
                 File folder = mod.getCore().getReplayFolder();
-                String path = folder.getAbsolutePath();
 
-                // First try OS specific methods
-                try {
-                    switch (Util.getOSType()) {
-                        case WINDOWS:
-                            Runtime.getRuntime().exec(String.format("cmd.exe /C start \"Open file\" \"%s\"", path));
-                            return;
-                        case OSX:
-                            Runtime.getRuntime().exec(new String[]{"/usr/bin/open", path});
-                            return;
-                    }
-                } catch (IOException e) {
-                    LogManager.getLogger().error("Cannot open file", e);
-                }
-
-                // Otherwise try to java way
-                try {
-                    Desktop.getDesktop().browse(folder.toURI());
-                } catch (Throwable throwable) {
-                    // And if all fails, lwjgl
-                    Sys.openURL("file://" + path);
-                }
+                MCVer.openFile(folder);
             } catch (IOException e) {
                 mod.getLogger().error("Cannot open file", e);
             }
@@ -232,7 +213,7 @@ public class GuiReplayViewer extends GuiScreen {
         try {
             list.setFolder(mod.getCore().getReplayFolder());
         } catch (IOException e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Getting replay folder"));
+            throw newReportedException(CrashReport.makeCrashReport(e, "Getting replay folder"));
         }
 
         setTitle(new GuiLabel().setI18nText("replaymod.gui.replayviewer"));

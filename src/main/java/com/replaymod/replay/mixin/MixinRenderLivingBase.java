@@ -1,7 +1,6 @@
 package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.camera.CameraEntity;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,7 +25,7 @@ import static com.replaymod.core.versions.MCVer.*;
 public abstract class MixinRenderLivingBase {
     @Inject(method = "canRenderName", at = @At("HEAD"), cancellable = true)
     private void replayModReplay_canRenderInvisibleName(EntityLivingBase entity, CallbackInfoReturnable<Boolean> ci) {
-        EntityPlayer thePlayer = player(Minecraft.getMinecraft());
+        EntityPlayer thePlayer = player(getMinecraft());
         if (thePlayer instanceof CameraEntity && entity.isInvisible()) {
             ci.setReturnValue(false);
         }

@@ -2,6 +2,8 @@ package com.replaymod.replay;
 
 import net.minecraft.client.Minecraft;
 
+import static com.replaymod.core.versions.MCVer.getMinecraft;
+
 public interface ReplaySender {
     int currentTimeStamp();
 
@@ -10,7 +12,7 @@ public interface ReplaySender {
      * @return {@code true} if it is paused, {@code false} otherwise
      */
     public default boolean paused() {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = getMinecraft();
         //#if MC>=11200
         return mc.timer.tickLength == Float.POSITIVE_INFINITY;
         //#else

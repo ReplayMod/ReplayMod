@@ -12,8 +12,13 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import com.replaymod.replaystudio.data.Marker;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.ReadablePoint;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
+
+//#if MC>=11300
+import com.replaymod.core.versions.MCVer.Keyboard;
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
     private static GuiNumberField newGuiNumberField() {

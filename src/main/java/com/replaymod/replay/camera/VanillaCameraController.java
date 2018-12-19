@@ -1,9 +1,15 @@
 package com.replaymod.replay.camera;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
-import org.lwjgl.util.vector.Vector3f;
+
+//#if MC>=11300
+import net.minecraft.client.GameSettings;
+//#else
+//$$ import net.minecraft.client.settings.GameSettings;
+//#endif
+
+import javax.vecmath.Vector3f;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -42,11 +48,11 @@ public class VanillaCameraController implements CameraController {
         Vector3f direction = new Vector3f(0, 0, 0);
         for (int i = 0; i < 6; i++) { // First, get movement direction depending on keys pressed
             if (isKeyDown(bindings[i])) {
-                Vector3f.add(direction, DIRECTIONS[i], direction);
+                direction.add(DIRECTIONS[i]);
             }
         }
         if (direction.length() == 0) return;
-        direction.normalise(direction); // Normalize, so we don't move quicker if we hold down multiple keys
+        direction.normalize(); // Normalize, so we don't move quicker if we hold down multiple keys
         double yawRadians = Math.toRadians(camera.rotationYaw);
         float yawSin = (float) Math.sin(yawRadians), yawCos = (float) Math.cos(yawRadians);
         // Rotate by yaw

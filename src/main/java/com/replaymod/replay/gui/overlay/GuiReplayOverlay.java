@@ -14,15 +14,24 @@ import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
+import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.GameSettings;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.ReadablePoint;
-import org.lwjgl.util.WritablePoint;
+
+//#if MC>=11300
+import net.minecraft.client.GameSettings;
+//#else
+//$$ import net.minecraft.client.settings.GameSettings;
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -160,12 +169,14 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
                 setMouseVisible(true);
             }
         }
+        /* FIXME
         if (Keyboard.getEventKeyState()) {
             // Handle the F1 key binding while the overlay is opened as a gui screen
             if (isMouseVisible() && Keyboard.getEventKey() == Keyboard.KEY_F1) {
                 gameSettings.hideGUI = !gameSettings.hideGUI;
             }
         }
+        */
     }
 
     @Override

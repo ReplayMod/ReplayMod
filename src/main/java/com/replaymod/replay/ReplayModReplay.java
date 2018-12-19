@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraControllerRegistry;
 import com.replaymod.replay.camera.CameraEntity;
@@ -19,16 +20,20 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.Minecraft;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
+
+//#if MC>=11300
+import com.replaymod.core.versions.MCVer.Keyboard;
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 //#else
-//$$ import cpw.mods.fml.common.Mod;
 //$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
 //$$ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 //$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -40,25 +45,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
-@Mod(modid = ReplayModReplay.MOD_ID,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
-        acceptableRemoteVersions = "*",
-        //#if MC>=10800
-        clientSideOnly = true,
-        //#endif
-        useMetadata = true)
-public class ReplayModReplay {
-    public static final String MOD_ID = "replaymod-replay";
+public class ReplayModReplay extends ReplayMod.Module {
 
-    @Mod.Instance(MOD_ID)
+    { instance = this; }
     public static ReplayModReplay instance;
 
     private ReplayMod core;
 
     private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 
-    public static Logger LOGGER;
+    public static Logger LOGGER = LogManager.getLogger();
 
     protected ReplayHandler replayHandler;
 
@@ -66,14 +62,15 @@ public class ReplayModReplay {
         return replayHandler;
     }
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        LOGGER = event.getModLog();
-        core = ReplayMod.instance;
+    public ReplayModReplay(ReplayMod core) {
+        this.core = core;
+    }
 
+    @Override
+    public void preInit(FMLPreInitializationEvent event) {
         core.getSettingsRegistry().register(Setting.class);
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.marker", MCVer.Keyboard.KEY_M, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null ) {
@@ -109,7 +106,7 @@ public class ReplayModReplay {
             @Override
             public void run() {
                 if (replayHandler != null) {
-                    Minecraft mc = Minecraft.getMinecraft();
+                    Minecraft mc = MCVer.getMinecraft();
                     ListenableFuture<NoGuiScreenshot> future = NoGuiScreenshot.take(mc, 1280, 720);
                     Futures.addCallback(future, new FutureCallback<NoGuiScreenshot>() {
                         @Override
@@ -181,15 +178,15 @@ public class ReplayModReplay {
         });
     }
 
-    @Mod.EventHandler
+    @Override
     public void init(FMLInitializationEvent event) {
         Minecraft mc = core.getMinecraft();
-        mc.timer = new InputReplayTimer(mc.timer, this);
+        // FIXME mc.timer = new InputReplayTimer(mc.timer, this);
 
         new GuiHandler(this).register();
     }
 
-    @Mod.EventHandler
+    @Override
     public void postInit(FMLPostInitializationEvent event) {
         Setting.CAMERA.setChoices(new ArrayList<>(cameraControllerRegistry.getControllers()));
     }

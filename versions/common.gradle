@@ -273,7 +273,6 @@ sourceSets {
             exclude 'com/replaymod/online'
             exclude 'com/replaymod/pathing'
             exclude 'com/replaymod/render'
-            exclude 'com/replaymod/replay'
             exclude 'com/replaymod/restrictions'
             exclude 'com/replaymod/simplepathing'
         }

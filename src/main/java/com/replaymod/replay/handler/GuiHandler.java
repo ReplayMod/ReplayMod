@@ -1,5 +1,6 @@
 package com.replaymod.replay.handler;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import net.minecraft.client.Minecraft;
@@ -11,7 +12,11 @@ import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -32,7 +37,7 @@ public class GuiHandler {
     private static final int BUTTON_REPLAY_VIEWER = 17890234;
     private static final int BUTTON_EXIT_REPLAY = 17890235;
 
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = MCVer.getMinecraft();
 
     private final ReplayModReplay mod;
 
@@ -130,7 +135,7 @@ public class GuiHandler {
             return;
         }
         GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, getGui(event).width / 2 - 100,
-                getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer"));
+                getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer")){};
         button.width = button.width / 2 - 2;
         getButtonList(event).add(button);
     }

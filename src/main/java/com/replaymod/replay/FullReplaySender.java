@@ -34,6 +34,10 @@ import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+//#if MC>=11300
+import net.minecraft.util.ResourceLocation;
+//#endif
+
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
 //#endif
@@ -49,7 +53,11 @@ import net.minecraft.util.text.ITextComponent;
 //#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -185,7 +193,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     /**
      * The minecraft instance.
      */
-    protected Minecraft mc = Minecraft.getMinecraft();
+    protected Minecraft mc = getMinecraft();
 
     /**
      * The total length of this replay in milliseconds.
@@ -265,7 +273,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     }
 
     /**
-     * Return a fake {@link Minecraft#getSystemTime()} value that respects slowdown/speedup/pause and works in both,
+     * Return a fake system tile in milliseconds value that respects slowdown/speedup/pause and works in both,
      * sync and async mode.
      * Note: For sync mode this returns the last value passed to {@link #sendPacketsTill(int)}.
      * @return The timestamp in milliseconds since the start of the replay
@@ -308,7 +316,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         if (world(mc) != null) {
             for (EntityPlayer playerEntity : playerEntities(world(mc))) {
                 if (!playerEntity.addedToChunk && playerEntity instanceof EntityOtherPlayerMP) {
-                    playerEntity.onLivingUpdate();
+                    // FIXME playerEntity.onLivingUpdate();
                 }
             }
         }
@@ -361,7 +369,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             World world = world(mc);
                             for (int i = 0; i < world.loadedEntityList.size(); ++i) {
                                 Entity entity = loadedEntityList(world).get(i);
-                                if (entity.isDead) {
+                                //#if MC>=11300
+                                if (entity.removed) {
+                                //#else
+                                //$$ if (entity.isDead) {
+                                //#endif
                                     int chunkX = entity.chunkCoordX;
                                     int chunkY = entity.chunkCoordZ;
 
@@ -370,7 +382,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                     //#else
                                     //$$ if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
                                     //#endif
-                                        world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);
+                                        //#if MC>=11300
+                                        //#else
+                                        world.getChunk(chunkX, chunkY).removeEntity(entity);
+                                        //#else
+                                        //$$ world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);
+                                        //#endif
                                     }
 
                                     world.loadedEntityList.remove(i--);
@@ -418,10 +435,14 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //$$ if (p instanceof S3FPacketCustomPayload) {
         //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
         //#endif
+            //#if MC>=11300
+            ResourceLocation channelName = packet.getChannelName();
+            //#else
             //#if MC>=10800
-            String channelName = packet.getChannelName();
+            //$$ String channelName = packet.getChannelName();
             //#else
             //$$ String channelName = packet.func_149169_c();
+            //#endif
             //#endif
             if (Restrictions.PLUGIN_CHANNEL.equals(channelName)) {
                 final String unknown = replayHandler.getRestrictions().handle(packet);
@@ -459,7 +480,13 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //$$ IChatComponent reason = ((S40PacketDisconnect) p).func_149165_c();
             //#endif
         //#endif
-            if ("Please update to view this replay.".equals(reason.getUnformattedText())) {
+            //#if MC>=11300
+            // FIXME or is it getString?
+            String message = reason.getUnformattedComponentText();
+            //#else
+            //$$ String message = reason.getUnformattedText();
+            //#endif
+            if ("Please update to view this replay.".equals(message)) {
                 // This version of the mod supports replay restrictions so we are allowed
                 // to remove this packet.
                 return null;
@@ -475,6 +502,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //$$ if (p instanceof S3FPacketCustomPayload) {
         //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
         //#endif
+            /* FIXME
             //#if MC>=10800
             String channelName = packet.getChannelName();
             //#else
@@ -483,6 +511,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             if ("MC|BOpen".equals(channelName)) {
                 return null;
             }
+            */
         //#if MC>=10800
         }
 
@@ -514,7 +543,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         if (!file.exists()) {
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
-                        setServerResourcePack(mc.getResourcePackRepository(), file);
+                        // FIXME setServerResourcePack(mc.getResourcePackRepository(), file);
                     }
                 }
                 return null;
@@ -540,7 +569,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#if MC>=10800
             int dimension = packet.getDimension();
             EnumDifficulty difficulty = packet.getDifficulty();
-            int maxPlayers = packet.getMaxPlayers();
+            //#if MC>=11300
+            int maxPlayers = 0;// FIXME needs AT packet.maxPlayers;
+            //#else
+            //$$ int maxPlayers = packet.getMaxPlayers();
+            //#endif
             WorldType worldType = packet.getWorldType();
 
             //#if MC>=10904
@@ -1064,7 +1097,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     // Needs to be called at least 4 times thanks to
                     // EntityOtherPlayerMP#otherPlayerMPPosRotationIncrements (max vanilla value is 3)
                     for (int i = 0; i < 4; i++) {
-                        entity.onUpdate();
+                        //#if MC>=11300
+                        entity.tick();
+                        //#else
+                        //$$ entity.onUpdate();
+                        //#endif
                     }
 
                     // Check whether the entity has left the chunk

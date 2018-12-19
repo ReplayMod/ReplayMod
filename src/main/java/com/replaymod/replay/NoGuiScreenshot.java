@@ -38,6 +38,12 @@ public class NoGuiScreenshot {
                     return;
                 }
 
+                //#if MC>=11300
+                int frameWidth = mc.mainWindow.getFramebufferWidth(), frameHeight = mc.mainWindow.getFramebufferHeight();
+                //#else
+                //$$ int frameWidth = mc.displayWidth, frameHeight = mc.displayHeight;
+                //#endif
+
                 final boolean guiHidden = mc.gameSettings.hideGUI;
                 try {
                     mc.gameSettings.hideGUI = true;
@@ -57,7 +63,7 @@ public class NoGuiScreenshot {
                     mc.getFramebuffer().unbindFramebuffer();
                     GlStateManager.popMatrix();
                     GlStateManager.pushMatrix();
-                    mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
+                    mc.getFramebuffer().framebufferRender(frameWidth, frameHeight);
                     GlStateManager.popMatrix();
                 } catch (Throwable t) {
                     future.setException(t);
@@ -73,7 +79,7 @@ public class NoGuiScreenshot {
                 // disk for better maintainability
                 File tmpFolder = Files.createTempDir();
                 try {
-                    ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", mc.displayWidth, mc.displayHeight, mc.getFramebuffer());
+                    ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer());
                     File screenshotFile = new File(tmpFolder, "screenshots/tmp");
                     BufferedImage image = ImageIO.read(screenshotFile);
                     int imageWidth = image.getWidth();
