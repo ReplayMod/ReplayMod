@@ -281,4 +281,17 @@ public class Utils {
             super.draw(renderer, size, renderInfo);
         }
     }
+
+    public static <T extends Throwable> void throwIfInstanceOf(Throwable t, Class<T> cls) throws T {
+        if (cls.isInstance(t)) {
+            throw cls.cast(t);
+        }
+    }
+    public static void throwIfUnchecked(Throwable t) {
+        if (t instanceof RuntimeException) {
+            throw (RuntimeException) t;
+        } else if (t instanceof Error) {
+            throw (Error) t;
+        }
+    }
 }
