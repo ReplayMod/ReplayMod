@@ -3,6 +3,7 @@ package com.replaymod.render.processor;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.utils.ByteBufferPool;
+import lombok.Getter;
 import org.apache.commons.lang3.Validate;
 import org.lwjgl.util.Dimension;
 
@@ -18,6 +19,7 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
     private static final byte IMAGE_TOP = 4;
     private static final byte IMAGE_BOTTOM = 5;
 
+    @Getter
     private final int frameSize;
     private final int width;
     private final int height;
@@ -26,18 +28,36 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
     private final int[][] imageX;
     private final int[][] imageY;
 
+    public EquirectangularToRGBProcessor(int outputWidth, int outputHeight, int sphericalFovX) {
+        // calculate the dimensions of the original equirectangular projection
+        // (before cropping according to FOV)
+        width = outputWidth;
+        height = outputHeight;
 
-    public EquirectangularToRGBProcessor(int frameSize) {
-        this.frameSize = frameSize;
+        int fullWidth;
+        if (sphericalFovX < 360) {
+            fullWidth = Math.round(width * 360 / (float) sphericalFovX);
+        } else {
+            fullWidth = width;
+        }
 
-        width = frameSize * 4;
-        height = frameSize * 2;
+        int fullHeight = fullWidth / 2;
+
+        frameSize = fullWidth / 4;
+
         image = new byte[height][width];
         imageX = new int[height][width];
         imageY = new int[height][width];
-        for (int i = 0; i < width; i++) {
-            double yaw = PI * 2 * i / width;
-            int piQuarter = 8 * i / width - 4;
+
+        int xOffset = (fullWidth - width) / 2;
+        int yOffset = (fullHeight - height) / 2;
+
+        for (int x = 0; x < width; x++) {
+            // get x position relative to the full projection
+            int i = xOffset + x;
+
+            double yaw = PI * 2 * i / fullWidth;
+            int piQuarter = 8 * i / fullWidth - 4;
             byte target;
             if (piQuarter < -3) {
                 target = IMAGE_BACK;
@@ -50,13 +70,16 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
             } else {
                 target = IMAGE_BACK;
             }
-            double fYaw = (yaw + PI/4) % (PI / 2) - PI/4;
+            double fYaw = (yaw + PI / 4) % (PI / 2) - PI / 4;
             double d = 1 / Math.cos(fYaw);
             double gcXN = (Math.tan(fYaw) + 1) / 2;
-            for (int j = 0; j < height; j++) {
+            for (int y = 0; y < height; y++) {
+                // get y position relative to the full projection
+                int j = yOffset + y;
+
                 double cXN = gcXN;
                 byte pt = target;
-                double pitch = PI * j / height - PI / 2;
+                double pitch = PI * j / fullHeight - PI / 2;
                 double cYN = (Math.tan(pitch) * d + 1) / 2;
 
                 if (cYN >= 1) {
@@ -74,9 +97,9 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
 
                 int imgX = (int) Math.min(frameSize - 1, (cXN * frameSize));
                 int imgY = (int) Math.min(frameSize - 1, (cYN * frameSize));
-                image[j][i] = pt;
-                imageX[j][i] = imgX;
-                imageY[j][i] = frameSize - imgY - 1; // The OpenGl buffer contains data flipped vertically
+                image[y][x] = pt;
+                imageX[y][x] = imgX;
+                imageY[y][x] = frameSize - imgY - 1; // The OpenGl buffer contains data flipped vertically
             }
         }
     }

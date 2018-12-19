@@ -12,8 +12,8 @@ import java.nio.ByteBuffer;
 public class ODSToRGBProcessor extends AbstractFrameProcessor<ODSOpenGlFrame, RGBFrame> {
     private final EquirectangularToRGBProcessor processor;
 
-    public ODSToRGBProcessor(int frameSize) {
-        processor = new EquirectangularToRGBProcessor(frameSize);
+    public ODSToRGBProcessor(int outputWidth, int outputHeight, int sphericalFovX) {
+        processor = new EquirectangularToRGBProcessor(outputWidth, outputHeight / 2, sphericalFovX);
     }
 
     @Override
@@ -33,5 +33,9 @@ public class ODSToRGBProcessor extends AbstractFrameProcessor<ODSOpenGlFrame, RG
     @Override
     public void close() throws IOException {
         processor.close();
+    }
+
+    public int getFrameSize() {
+        return processor.getFrameSize();
     }
 }
