@@ -126,7 +126,7 @@ public class ClassicCameraController implements CameraController {
 
         lastCall = Sys.getTime();
 
-        if(direction == null || motion < THRESHOLD) {
+        if(direction == null || direction.lengthSquared() == 0 || motion < THRESHOLD) {
             return;
         }
 

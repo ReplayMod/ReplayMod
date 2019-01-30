@@ -27,7 +27,13 @@ public class OptifineReflection {
 
     public static void reloadLang() {
         try {
-            Class.forName("Lang").getDeclaredMethod("resourcesReloaded").invoke(null);
+            Class<?> langClass;
+            try {
+                langClass = Class.forName("Lang"); // Pre Optifine 1.12.2 E1
+            } catch (ClassNotFoundException ignore) {
+                langClass = Class.forName("net.optifine.Lang"); // Post Optifine 1.12.2 E1
+            }
+            langClass.getDeclaredMethod("resourcesReloaded").invoke(null);
         } catch (ClassNotFoundException ignore) {
             // no optifine installed
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {

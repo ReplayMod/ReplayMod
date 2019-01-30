@@ -6,11 +6,18 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
+import com.replaymod.replaystudio.pathing.PathingRegistry;
+import com.replaymod.replaystudio.pathing.change.Change;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
+import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.pathing.serialize.TimelineSerialization;
+import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
 import lombok.Getter;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.util.ReportedException;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
@@ -23,6 +30,14 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 //$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -74,8 +89,43 @@ public class ReplayModSimplePathing {
 
     @SubscribeEvent
     public void postReplayOpen(ReplayOpenEvent.Post event) {
-        clearCurrentTimeline();
+        ReplayFile replayFile = event.getReplayHandler().getReplayFile();
+        try {
+            synchronized (replayFile) {
+                Timeline timeline = replayFile.getTimelines(new SPTimeline()).get("");
+                if (timeline != null) {
+                    setCurrentTimeline(new SPTimeline(timeline));
+                } else {
+                    setCurrentTimeline(new SPTimeline());
+                }
+            }
+        } catch (IOException e) {
+            throw new ReportedException(CrashReport.makeCrashReport(e, "Reading timeline"));
+        }
+
         guiPathing = new GuiPathing(core, this, event.getReplayHandler());
+
+        saveService = Executors.newSingleThreadExecutor();
+        new Runnable() {
+            @Override
+            public void run() {
+                maybeSaveTimeline(replayFile);
+                if (guiPathing != null) {
+                    core.runLater(this);
+                }
+            }
+        }.run();
+    }
+
+    @SubscribeEvent
+    public void preReplayClose(ReplayCloseEvent.Pre event) {
+        saveService.shutdown();
+        try {
+            saveService.awaitTermination(1, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        saveService = null;
     }
 
     @SubscribeEvent
@@ -150,5 +200,53 @@ public class ReplayModSimplePathing {
 
     public GuiPathing getGuiPathing() {
         return guiPathing;
+    }
+
+    private final AtomicInteger lastSaveId = new AtomicInteger();
+    private ExecutorService saveService;
+    private Change lastChange;
+    private void maybeSaveTimeline(ReplayFile replayFile) {
+        SPTimeline spTimeline = currentTimeline;
+        if (spTimeline == null || saveService == null) {
+            lastChange = null;
+            return;
+        }
+
+        Change latestChange = spTimeline.getTimeline().peekUndoStack();
+        if (latestChange == null || latestChange == lastChange) {
+            return;
+        }
+        lastChange = latestChange;
+
+        // Clone the timeline for async saving
+        Timeline timeline;
+        try {
+            TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
+            String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
+            timeline = serialization.deserialize(serialized).get("");
+        } catch (Throwable t) {
+            CrashReport report = CrashReport.makeCrashReport(t, "Cloning timeline");
+            throw new ReportedException(report);
+        }
+
+        int id = lastSaveId.incrementAndGet();
+        saveService.submit(() -> {
+            if (lastSaveId.get() != id) {
+                return; // Another job has been scheduled, it will do the hard work.
+            }
+            try {
+                saveTimeline(replayFile, spTimeline, timeline);
+            } catch (IOException e) {
+                LOGGER.error("Auto-saving timeline:", e);
+            }
+        });
+    }
+
+    private void saveTimeline(ReplayFile replayFile, PathingRegistry pathingRegistry, Timeline timeline) throws IOException {
+        synchronized (replayFile) {
+            Map<String, Timeline> timelineMap = replayFile.getTimelines(pathingRegistry);
+            timelineMap.put("", timeline);
+            replayFile.writeTimelines(pathingRegistry, timelineMap);
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.SettableFuture;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
@@ -20,17 +21,21 @@ import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.*;
-import de.johni0702.minecraft.gui.element.advanced.GuiResourceLoadingList;
+import de.johni0702.minecraft.gui.element.advanced.AbstractGuiResourceLoadingList;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
+import lombok.Getter;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.util.ReportedException;
 import net.minecraft.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
@@ -53,55 +58,15 @@ import java.util.Date;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
-public class GuiReplayViewer extends GuiScreen implements Typeable {
+public class GuiReplayViewer extends GuiScreen {
     private final ReplayModReplay mod;
 
-    public final GuiResourceLoadingList<GuiReplayEntry> list = new GuiResourceLoadingList<GuiReplayEntry>(this).onSelectionChanged(new Runnable() {
+    public final GuiReplayList list = new GuiReplayList(this).onSelectionChanged(new Runnable() {
         @Override
         public void run() {
             replayButtonPanel.forEach(IGuiButton.class).setEnabled(list.getSelected() != null);
             if (list.getSelected() != null && list.getSelected().incompatible) {
                 loadButton.setDisabled();
-            }
-        }
-    }).onLoad(new Consumer<Consumer<Supplier<GuiReplayEntry>>> () {
-        @Override
-        public void consume(Consumer<Supplier<GuiReplayEntry>> obj) {
-            try {
-                File folder = mod.getCore().getReplayFolder();
-                for (final File file : folder.listFiles((FileFilter) new SuffixFileFilter(".mcpr", IOCase.INSENSITIVE))) {
-                    if (Thread.interrupted()) break;
-                    try (ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file)) {
-
-                        Optional<BufferedImage> thumb = replayFile.getThumb();
-                        // Make sure that to int[] conversion doesn't have to occur in main thread
-                        final BufferedImage theThumb;
-                        if (thumb.isPresent()) {
-                            BufferedImage buf = thumb.get();
-                            // This is the same way minecraft calls this method, we cache the result and hand
-                            // minecraft a BufferedImage with way simpler logic using the precomputed values
-                            final int[] theIntArray = buf.getRGB(0, 0, buf.getWidth(), buf.getHeight(), null, 0, buf.getWidth());
-                            theThumb = new BufferedImage(buf.getWidth(), buf.getHeight(), BufferedImage.TYPE_INT_ARGB) {
-                                @Override
-                                public int[] getRGB(int startX, int startY, int w, int h, int[] rgbArray, int offset, int scansize) {
-                                    System.arraycopy(theIntArray, 0, rgbArray, 0, theIntArray.length);
-                                    return null; // Minecraft doesn't use the return value
-                                }
-                            };
-                        } else {
-                            theThumb = null;
-                        }
-                        final ReplayMetaData metaData = replayFile.getMetaData();
-
-                        if (metaData != null) {
-                            obj.consume(() -> new GuiReplayEntry(file, metaData, theThumb));
-                        }
-                    } catch (Exception e) {
-                        LOGGER.error("Could not load Replay File {}", file.getName(), e);
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }).onSelectionDoubleClicked(() -> {
@@ -110,7 +75,7 @@ public class GuiReplayViewer extends GuiScreen implements Typeable {
             // Disable load button to prevent the player from opening the replay twice at the same time
             this.loadButton.setDisabled();
         }
-    }).setDrawShadow(true).setDrawSlider(true);
+    });
 
     public final GuiButton loadButton = new GuiButton().onClick(new Runnable() {
         @Override
@@ -264,6 +229,12 @@ public class GuiReplayViewer extends GuiScreen implements Typeable {
     public GuiReplayViewer(ReplayModReplay mod) {
         this.mod = mod;
 
+        try {
+            list.setFolder(mod.getCore().getReplayFolder());
+        } catch (IOException e) {
+            throw new ReportedException(CrashReport.makeCrashReport(e, "Getting replay folder"));
+        }
+
         setTitle(new GuiLabel().setI18nText("replaymod.gui.replayviewer"));
 
         setLayout(new CustomLayout<GuiScreen>() {
@@ -277,20 +248,140 @@ public class GuiReplayViewer extends GuiScreen implements Typeable {
         });
     }
 
-    private final GuiImage defaultThumbnail = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL);
+    private static final GuiImage DEFAULT_THUMBNAIL = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL);
 
-    @Override
-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-        if (keyCode == Keyboard.KEY_F1) {
-            SettingsRegistry reg = ReplayMod.instance.getSettingsRegistry();
-            reg.set(Setting.SHOW_SERVER_IPS, !reg.get(Setting.SHOW_SERVER_IPS));
-            reg.save();
-            list.load();
+    public static class GuiSelectReplayPopup extends AbstractGuiPopup<GuiSelectReplayPopup> {
+        public static GuiSelectReplayPopup openGui(GuiContainer container, File folder) {
+            GuiSelectReplayPopup popup = new GuiSelectReplayPopup(container, folder);
+            popup.list.load();
+            popup.open();
+            return popup;
         }
-        return false;
+
+        @Getter
+        private final SettableFuture<File> future = SettableFuture.create();
+
+        @Getter
+        private final GuiReplayList list = new GuiReplayList(popup);
+
+        @Getter
+        private final GuiButton acceptButton = new GuiButton(popup).setI18nLabel("gui.done").setSize(50, 20).setDisabled();
+
+        @Getter
+        private final GuiButton cancelButton = new GuiButton(popup).setI18nLabel("gui.cancel").setSize(50, 20);
+
+
+        public GuiSelectReplayPopup(GuiContainer container, File folder) {
+            super(container);
+
+            list.setFolder(folder);
+
+            list.onSelectionChanged(() -> {
+                acceptButton.setEnabled(list.getSelected() != null);
+            }).onSelectionDoubleClicked(() -> {
+                close();
+                future.set(list.getSelected().file);
+            });
+            acceptButton.onClick(() -> {
+                future.set(list.getSelected().file);
+                close();
+            });
+            cancelButton.onClick(() -> {
+                future.set(null);
+                close();
+            });
+
+            popup.setLayout(new CustomLayout<GuiPanel>() {
+                @Override
+                protected void layout(GuiPanel container, int width, int height) {
+                    pos(cancelButton, width - width(cancelButton), height - height(cancelButton));
+                    pos(acceptButton, x(cancelButton) - 5 - width(acceptButton), y(cancelButton));
+                    pos(list, 0, 5);
+                    size(list, width, height - height(cancelButton) - 10);
+                }
+
+                @Override
+                public ReadableDimension calcMinSize(GuiContainer container) {
+                    return new Dimension(330, 200);
+                }
+            });
+        }
+
+        @Override
+        protected GuiSelectReplayPopup getThis() {
+            return this;
+        }
     }
 
-    public class GuiReplayEntry extends AbstractGuiContainer<GuiReplayEntry> implements Comparable<GuiReplayEntry> {
+    public static class GuiReplayList extends AbstractGuiResourceLoadingList<GuiReplayList, GuiReplayEntry> implements Typeable {
+        private File folder = null;
+
+        public GuiReplayList(GuiContainer container) {
+            super(container);
+        }
+
+        {
+            onLoad((Consumer<Supplier<GuiReplayEntry>> results) -> {
+                File[] files = folder.listFiles((FileFilter) new SuffixFileFilter(".mcpr", IOCase.INSENSITIVE));
+                if (files == null) {
+                    LOGGER.warn("Failed to list files in {}", folder);
+                    return;
+                }
+                for (final File file : files) {
+                    if (Thread.interrupted()) break;
+                    try (ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file)) {
+                        Optional<BufferedImage> thumb = replayFile.getThumb();
+                        // Make sure that to int[] conversion doesn't have to occur in main thread
+                        final BufferedImage theThumb;
+                        if (thumb.isPresent()) {
+                            BufferedImage buf = thumb.get();
+                            // This is the same way minecraft calls this method, we cache the result and hand
+                            // minecraft a BufferedImage with way simpler logic using the precomputed values
+                            final int[] theIntArray = buf.getRGB(0, 0, buf.getWidth(), buf.getHeight(), null, 0, buf.getWidth());
+                            theThumb = new BufferedImage(buf.getWidth(), buf.getHeight(), BufferedImage.TYPE_INT_ARGB) {
+                                @Override
+                                public int[] getRGB(int startX, int startY, int w, int h, int[] rgbArray, int offset, int scansize) {
+                                    System.arraycopy(theIntArray, 0, rgbArray, 0, theIntArray.length);
+                                    return null; // Minecraft doesn't use the return value
+                                }
+                            };
+                        } else {
+                            theThumb = null;
+                        }
+                        final ReplayMetaData metaData = replayFile.getMetaData();
+
+                        if (metaData != null) {
+                            results.consume(() -> new GuiReplayEntry(file, metaData, theThumb));
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("Could not load Replay File {}", file.getName(), e);
+                    }
+                }
+            }).setDrawShadow(true).setDrawSlider(true);
+        }
+
+        public void setFolder(File folder) {
+            this.folder = folder;
+        }
+
+        @Override
+        public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+            if (keyCode == Keyboard.KEY_F1) {
+                SettingsRegistry reg = ReplayMod.instance.getSettingsRegistry();
+                reg.set(Setting.SHOW_SERVER_IPS, !reg.get(Setting.SHOW_SERVER_IPS));
+                reg.save();
+                load();
+            }
+            return false;
+        }
+
+        @Override
+        protected GuiReplayList getThis() {
+            return this;
+        }
+    }
+
+    public static class GuiReplayEntry extends AbstractGuiContainer<GuiReplayEntry> implements Comparable<GuiReplayEntry> {
         public final File file;
         public final GuiLabel name = new GuiLabel();
         public final GuiLabel server = new GuiLabel().setColor(Colors.LIGHT_GRAY);
@@ -334,7 +425,7 @@ public class GuiReplayViewer extends GuiScreen implements Typeable {
             dateMillis = metaData.getDate();
             date.setText(new SimpleDateFormat().format(new Date(dateMillis)));
             if (thumbImage == null) {
-                thumbnail = new GuiImage(defaultThumbnail).setSize(30 * 16 / 9, 30);
+                thumbnail = new GuiImage(DEFAULT_THUMBNAIL).setSize(30 * 16 / 9, 30);
                 addElements(null, thumbnail);
             } else {
                 thumbnail = new GuiImage(this).setTexture(thumbImage).setSize(30 * 16 / 9, 30);

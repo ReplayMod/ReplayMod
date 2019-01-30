@@ -1,7 +1,10 @@
 package com.replaymod.editor.gui;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import com.google.gson.JsonObject;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.filter.ChangeTimestampFilter;
 import com.replaymod.replaystudio.filter.RemoveFilter;
@@ -12,6 +15,7 @@ import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.stream.PacketStream;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiNumberField;
 import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
@@ -20,13 +24,11 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
-import org.apache.commons.io.IOCase;
-import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.util.Dimension;
 
+import javax.annotation.Nullable;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,9 +52,10 @@ public class GuiTrimPanel extends GuiPanel {
 
     private final GuiReplayEditor gui;
 
-    public final GuiDropdownMenu<File> inputReplays = new GuiDropdownMenu<File>(this)
-            .setMinSize(new Dimension(200, 20)).onSelection(i -> updateSelectedReplay())
-            .setToString(f -> f == NO_REPLAY ? "" : Utils.fileNameToReplayName(f.getName()));
+    private final GuiButton inputReplayButton = new GuiButton(this)
+            .setMinSize(new Dimension(200, 20))
+            .setMaxSize(new Dimension(350, 20));
+    private File inputReplay = NO_REPLAY;
 
     public final GuiNumberField startHour = newGuiNumberField();
     public final GuiNumberField startMin = newGuiNumberField();
@@ -104,24 +107,31 @@ public class GuiTrimPanel extends GuiPanel {
         endMarker.setToString(toString).setMinSize(new Dimension(100, 20)).onSelection(i ->
                 onSelectedMarkerChanged(endMarker, endHour, endMin, endSec, endMilli));
 
-        File[] files = null;
-        try {
-            File folder = gui.getMod().getReplayFolder();
-            files = folder.listFiles((FileFilter) new SuffixFileFilter(".mcpr", IOCase.INSENSITIVE));
-        } catch (IOException e) {
-            Utils.error(LOGGER, gui, CrashReport.makeCrashReport(e, "Listing available replays"), gui.backButton::onClick);
-        }
-        if (files == null) {
-            LOGGER.warn("Replay file list is null, has the replay folder been deleted?");
-            files = new File[0];
-        } else {
-            LOGGER.debug("Found {} replays in the replay folder", files.length);
-        }
-        if (files.length == 0) {
-            inputReplays.setValues(NO_REPLAY);
-        } else {
-            inputReplays.setValues(files);
-        }
+        inputReplayButton.onClick(() -> {
+            File folder;
+            try {
+                folder = gui.getMod().getReplayFolder();
+            } catch (IOException e) {
+                Utils.error(LOGGER, gui, CrashReport.makeCrashReport(e, "Getting replay folder"), gui.backButton::onClick);
+                return;
+            }
+            GuiReplayViewer.GuiSelectReplayPopup popup = GuiReplayViewer.GuiSelectReplayPopup.openGui(gui, folder);
+            Futures.addCallback(popup.getFuture(), new FutureCallback<File>() {
+                @Override
+                public void onSuccess(@Nullable File result) {
+                    if (result != null) {
+                        inputReplay = result;
+                        updateSelectedReplay();
+                        updateReadyState();
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    Utils.error(LOGGER, gui, CrashReport.makeCrashReport(t, "Selecting replay"), gui.backButton::onClick);
+                }
+            });
+        });
 
         updateSelectedReplay();
         updateReadyState();
@@ -135,7 +145,7 @@ public class GuiTrimPanel extends GuiPanel {
             JsonObject config = new JsonObject();
             config.addProperty("offset", -start);
             // Pass filters to save dialog
-            gui.save(inputReplays.getSelectedValue(),
+            gui.save(inputReplay,
                     Pair.of(new PacketStream.FilterInfo(new SquashFilter(), -1, start), new JsonObject()),
                     Pair.of(new PacketStream.FilterInfo(ctf, start, end), config),
                     Pair.of(new PacketStream.FilterInfo(new RemoveFilter(), end, -1), new JsonObject())
@@ -161,7 +171,11 @@ public class GuiTrimPanel extends GuiPanel {
     }
 
     private void updateSelectedReplay() {
-        File file = inputReplays.getSelectedValue();
+        File file = inputReplay;
+
+        // Update input button label
+        inputReplayButton.setLabel(file == NO_REPLAY ? I18n.format("gui.none") : Utils.fileNameToReplayName(file.getName()));
+
         // Load markers and meta data from replay file
         ReplayMetaData metaData;
         Set<Marker> markers;
@@ -196,6 +210,6 @@ public class GuiTrimPanel extends GuiPanel {
     }
 
     private void updateReadyState() {
-        gui.saveButton.setEnabled(inputReplays.getSelectedValue() != NO_REPLAY);
+        gui.saveButton.setEnabled(inputReplay != NO_REPLAY);
     }
 }

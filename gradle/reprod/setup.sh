@@ -34,7 +34,7 @@ popd
 java -Dproxywitness.httpUris=http://export.mcpbot.bspk.rs/versions.json \
      -Dproxywitness.useCache=false \
      -jar deps/proxy-witness/build/libs/proxy-witness.jar \
-     "$PROXY_PORT" checksums.txt > proxy.log 2>&1 &
+     "$PROXY_PORT" checksums.empty.txt > proxy.log 2>&1 &
 proxy_pid=$!
 trap "kill $proxy_pid" EXIT
 
