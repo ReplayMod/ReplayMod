@@ -66,18 +66,25 @@ public class GuiHandler {
                 switch (b.id) {
                     // Replace "Exit Server" button with "Exit Replay" button
                     case BUTTON_EXIT_SERVER:
-                        b.displayString = I18n.format("replaymod.gui.exit");
-                        b.id = BUTTON_EXIT_REPLAY;
+                        removeButton(event, b);
+                        addButton(event, new GuiButton(BUTTON_EXIT_REPLAY, b.x, b.y, b.width, b.height, I18n.format("replaymod.gui.exit")) {
+                            //#if MC>=11300
+                            @Override
+                            public void onClick(double mouseX, double mouseY) {
+                                onButton(new GuiScreenEvent.ActionPerformedEvent.Pre(getGui(event), this, new ArrayList<>()));
+                            }
+                            //#endif
+                        });
                         break;
                     // Remove "Advancements", "Stats" and "Open to LAN" buttons
                     case BUTTON_ADVANCEMENTS:
-                        buttonList.remove(achievements = b);
+                        removeButton(event, achievements = b);
                         break;
                     case BUTTON_STATS:
-                        buttonList.remove(stats = b);
+                        removeButton(event, stats = b);
                         break;
                     case BUTTON_OPEN_TO_LAN:
-                        buttonList.remove(openToLan = b);
+                        removeButton(event, openToLan = b);
                         break;
                 }
             }
@@ -135,9 +142,16 @@ public class GuiHandler {
             return;
         }
         GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, getGui(event).width / 2 - 100,
-                getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer")){};
+                getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer")) {
+            //#if MC>=11300
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                onButton(new GuiScreenEvent.ActionPerformedEvent.Pre(getGui(event), this, new ArrayList<>()));
+            }
+            //#endif
+        };
         button.width = button.width / 2 - 2;
-        getButtonList(event).add(button);
+        addButton(event, button);
     }
 
     @SubscribeEvent

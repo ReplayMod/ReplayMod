@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 //#if MC>=11300
 import net.minecraft.util.Util;
 //#else
-import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.Minecraft;
 //#endif
 
 //#if MC>=10800

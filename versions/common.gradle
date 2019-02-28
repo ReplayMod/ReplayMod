@@ -121,6 +121,7 @@ minecraft {
 
 afterEvaluate {
     if (mcVersion >= 11300) {
+        // FIXME
     } else {
         // Note cannot use minecraft.replace because that has already been forwarded to the task by FG by now
         tasks.sourceMainJava.replace '@MOD_VERSION@', project.version

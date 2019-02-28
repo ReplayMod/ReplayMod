@@ -19,6 +19,7 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 
 //#if MC>=11300
+import com.replaymod.core.versions.LangResourcePack;
 import net.minecraft.resources.FolderPack;
 import net.minecraft.resources.IResourcePack;
 import net.minecraftforge.fml.javafmlmod.FMLModLoadingContext;
@@ -168,6 +169,9 @@ public class ReplayMod {
         OpenGLUtils.init();
 
         I18n.setI18n(net.minecraft.client.resources.I18n::format);
+        //#if MC>=11300
+        MCVer.getMinecraft().resourcePackRepository.addPackFinder(new LangResourcePack.Finder());
+        //#endif
 
         //#if MC>=11300
         config = new Configuration(new File(mcDataDir(mc), "configs/replaymod.cfg")); // FIXME where'd the suggestion go?

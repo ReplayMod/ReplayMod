@@ -383,7 +383,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                     //$$ if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
                                     //#endif
                                         //#if MC>=11300
-                                        //#else
                                         world.getChunk(chunkX, chunkY).removeEntity(entity);
                                         //#else
                                         //$$ world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);

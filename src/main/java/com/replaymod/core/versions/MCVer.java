@@ -120,6 +120,22 @@ public class MCVer {
         //#endif
     }
 
+    public static void addButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
+        //#if MC>=11300
+        event.addButton(button);
+        //#else
+        //$$ getButtonList(event).add(button);
+        //#endif
+    }
+
+    public static void removeButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
+        //#if MC>=11300
+        event.removeButton(button);
+        //#else
+        //$$ getButtonList(event).remove(button);
+        //#endif
+    }
+
     @SuppressWarnings("unchecked")
     public static List<GuiButton> getButtonList(GuiScreenEvent.InitGuiEvent event) {
         //#if MC>=10904
