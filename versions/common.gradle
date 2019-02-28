@@ -5,7 +5,7 @@ buildscript {
         mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}" as int
     } else {
         def f = file('mcVersion')
-        mcVersion = f.exists() ? f.readLines().first() as int : 11300
+        mcVersion = f.exists() ? f.readLines().first() as int : 11302
     }
     project.ext.mcVersion = mcVersion
 
@@ -77,13 +77,17 @@ archivesBaseName = "replaymod"
 
 minecraft {
     if (FG3) {
-        runConfig {
-            name = 'Minecraft Client'
-            main = 'net.minecraftforge.userdev.UserdevLauncher'
-            ideaModuleName = '${project.name}_main'
-            workingDirectory = project.file('eclipse').canonicalPath
-            environment 'target', 'fmldevclient'
-            environment 'assetDirectory', downloadAssets.output.absolutePath
+        runs {
+            client {
+                workingDirectory project.file('eclipse')
+                property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+                property 'forge.logging.console.level', 'debug'
+                mods {
+                    replaymod {
+                        source sourceSets.main
+                    }
+                }
+            }
         }
     } else {
         if (mcVersion >= 10800) {
@@ -92,20 +96,22 @@ minecraft {
         runDir = "../../eclipse"
     }
 
-    version = [
-            11202: '1.12.2-14.23.0.2486',
-            11201: '1.12.1-14.22.0.2444',
-            11200: '1.12-14.21.1.2387',
-            11102: '1.11.2-13.20.0.2216',
-            11100: '1.11-13.19.1.2188',
-            11002: '1.10.2-12.18.2.2099',
-            10904: '1.9.4-12.17.0.1976',
-            10809: '1.8.9-11.15.1.1722',
-            10800: '1.8-11.14.4.1563',
-            10710: '1.7.10-10.13.4.1558-1.7.10',
-    ][mcVersion]
+    if (!FG3) {
+        version = [
+                11202: '1.12.2-14.23.0.2486',
+                11201: '1.12.1-14.22.0.2444',
+                11200: '1.12-14.21.1.2387',
+                11102: '1.11.2-13.20.0.2216',
+                11100: '1.11-13.19.1.2188',
+                11002: '1.10.2-12.18.2.2099',
+                10904: '1.9.4-12.17.0.1976',
+                10809: '1.8.9-11.15.1.1722',
+                10800: '1.8-11.14.4.1563',
+                10710: '1.7.10-10.13.4.1558-1.7.10',
+        ][mcVersion]
+    }
     mappings = [
-            11300: "snapshot_20180921-1.13",
+            11302: "snapshot_20180921-1.13",
             11202: "snapshot_20170615",
             11201: "snapshot_20170615",
             11200: "snapshot_20170615",
@@ -149,8 +155,8 @@ configurations {
 
 dependencies {
     if (FG3) {
-        minecraft 'net.minecraftforge.test:forge:' + [
-                11300: '1.13-24.0.33-1.13-pre',
+        minecraft 'net.minecraftforge:forge:' + [
+                11302: '1.13.2-25.0.63',
         ][mcVersion]
     }
 
@@ -174,7 +180,7 @@ dependencies {
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shade("com.replaymod.replaystudio:$studioVersion:2d8d41d"){ // FIXME
+    shade("com.replaymod.replaystudio:$studioVersion:98ab667"){ // FIXME
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }

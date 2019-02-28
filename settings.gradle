@@ -6,7 +6,7 @@ include ':jGui'
         //'1.8.9', FIXME
         //'1.9.4',
         //'1.12',
-        '1.13'
+        '1.13.2'
 ].each { version ->
     include ":jGui:$version"
     project(":jGui:$version").with {
@@ -27,7 +27,7 @@ def versions = [
         //'1.12',
         //'1.12.1',
         //'1.12.2',
-        '1.13'
+        '1.13.2'
 ]
 versions.each { version ->
     include ":$version"
