@@ -5,9 +5,9 @@ import com.coremedia.iso.boxes.*;
 import com.google.common.primitives.Bytes;
 import com.googlecode.mp4parser.BasicContainer;
 import com.replaymod.render.RenderSettings;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.lwjgl.util.Dimension;
 
 import java.io.File;
 import java.io.FileOutputStream;

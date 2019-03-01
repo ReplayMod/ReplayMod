@@ -1,9 +1,9 @@
 package com.replaymod.render.frame;
 
 import com.replaymod.render.rendering.Frame;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import lombok.Getter;
 import org.apache.commons.lang3.Validate;
-import org.lwjgl.util.ReadableDimension;
 
 import java.nio.ByteBuffer;
 

@@ -1,6 +1,6 @@
 package com.replaymod.render.utils;
 
-import net.minecraft.client.Minecraft;
+import com.replaymod.core.versions.MCVer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
 
@@ -24,7 +24,7 @@ public class SoundHandler {
      */
     public void playSound(ResourceLocation loc) {
         try {
-            InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(loc).getInputStream();
+            InputStream is = MCVer.getMinecraft().getResourceManager().getResource(loc).getInputStream();
             byte[] bytes = IOUtils.toByteArray(is);
             is.close();
             AudioInputStream ais = AudioSystem.getAudioInputStream(new ByteArrayInputStream(bytes));

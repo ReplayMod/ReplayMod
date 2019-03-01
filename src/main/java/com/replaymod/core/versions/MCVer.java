@@ -345,8 +345,7 @@ public class MCVer {
         return world.playerEntities;
     }
 
-    /* FIXME
-    public static BooleanState fog() {
+    public static GlStateManager.BooleanState fog() {
         //#if MC>=11300
         return GlStateManager.FOG.fog;
         //#else
@@ -362,7 +361,7 @@ public class MCVer {
         //#endif
     }
 
-    public static void fog(BooleanState fog) {
+    public static void fog(GlStateManager.BooleanState fog) {
         //#if MC>=11300
         GlStateManager.FOG.fog = fog;
         //#else
@@ -378,7 +377,7 @@ public class MCVer {
         //#endif
     }
 
-    public static BooleanState texture2DState(int index) {
+    public static GlStateManager.BooleanState texture2DState(int index) {
         //#if MC>=11300
         return GlStateManager.TEXTURES[index].texture2DState;
         //#else
@@ -390,7 +389,7 @@ public class MCVer {
         //#endif
     }
 
-    public static void texture2DState(int index, BooleanState texture2DState) {
+    public static void texture2DState(int index, GlStateManager.BooleanState texture2DState) {
         //#if MC>=11300
         GlStateManager.TEXTURES[index].texture2DState = texture2DState;
         //#else
@@ -401,7 +400,6 @@ public class MCVer {
         //#endif
         //#endif
     }
-    */
 
     public static void ServerList_saveSingleServer(ServerData serverData) {
         //#if MC>=10904
@@ -609,6 +607,14 @@ public class MCVer {
         return Minecraft.getInstance();
         //#else
         //$$ return Minecraft.getMinecraft();
+        //#endif
+    }
+
+    public static long milliTime() {
+        //#if MC>=11300
+        return Util.milliTime();
+        //#else
+        //$$ return Minecraft.getSystemTime();
         //#endif
     }
 

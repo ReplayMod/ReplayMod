@@ -1,16 +1,17 @@
 package com.replaymod.render.capturer;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.Frame;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.utils.ByteBufferPool;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.WritableDimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.WritableDimension;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,7 +31,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     protected int framesDone;
     private Framebuffer frameBuffer;
 
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = MCVer.getMinecraft();
 
     public OpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         this.worldRenderer = worldRenderer;
@@ -64,7 +65,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
 
     protected Framebuffer frameBuffer() {
         if (frameBuffer == null) {
-            frameBuffer = Minecraft.getMinecraft().getFramebuffer();
+            frameBuffer = mc.getFramebuffer();
         }
         return frameBuffer;
     }
@@ -113,13 +114,17 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     }
 
     protected void resize(int width, int height) {
-        if (width != mc.displayWidth || height != mc.displayHeight) {
-            setWindowSize(width, height);
+        //#if MC>=11300
+        Framebuffer fb = mc.getFramebuffer();
+        if (fb.framebufferWidth != width || fb.framebufferHeight != height) {
+            fb.createFramebuffer(width, height);
         }
-    }
-
-    private void setWindowSize(int width, int height) {
-        mc.resize(width, height);
+        //#else
+        //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
+        //$$     setWindowSize(width, height);
+        //$$     mc.resize(width, height);
+        //$$ }
+        //#endif
     }
 
     @Override

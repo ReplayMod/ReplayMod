@@ -1,12 +1,12 @@
 package com.replaymod.render;
 
+import com.replaymod.core.versions.MCVer;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
-import org.lwjgl.util.ReadableColor;
 
 import java.io.File;
 import java.util.Arrays;
@@ -15,10 +15,14 @@ import java.util.Optional;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
+//#if MC>=11300
+import org.apache.maven.artifact.versioning.ComparableVersion;
+//#else
 //#if MC>=10800
-import net.minecraftforge.fml.common.versioning.ComparableVersion;
+//$$ import net.minecraftforge.fml.common.versioning.ComparableVersion;
 //#else
 //$$ import cpw.mods.fml.common.versioning.ComparableVersion;
+//#endif
 //#endif
 
 @Data
@@ -170,7 +174,7 @@ public class RenderSettings {
         switch (Util.getOSType()) {
             case WINDOWS:
                 // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
-                File inDotMinecraft = new File(Minecraft.getMinecraft().mcDataDir, "ffmpeg/bin/ffmpeg.exe");
+                File inDotMinecraft = new File(MCVer.mcDataDir(MCVer.getMinecraft()), "ffmpeg/bin/ffmpeg.exe");
                 if (inDotMinecraft.exists()) {
                     LOGGER.debug("FFmpeg found in .minecraft/ffmpeg");
                     return inDotMinecraft.getAbsolutePath();

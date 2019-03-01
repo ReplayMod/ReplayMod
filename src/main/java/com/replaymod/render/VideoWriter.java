@@ -1,18 +1,18 @@
 package com.replaymod.render;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.StreamPipe;
-import net.minecraft.client.Minecraft;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.lwjgl.util.ReadableDimension;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -68,7 +68,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         } catch (IOException e) {
             throw new NoFFmpegException(e);
         }
-        File exportLogFile = new File(Minecraft.getMinecraft().mcDataDir, "export.log");
+        File exportLogFile = new File(MCVer.mcDataDir(MCVer.getMinecraft()), "export.log");
         OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream(exportLogFile), ffmpegLog);
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();
@@ -124,9 +124,9 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
             }
             CrashReport report = CrashReport.makeCrashReport(t, "Exporting frame");
             CrashReportCategory exportDetails = report.makeCategory("Export details");
-            exportDetails.addCrashSection("Export command", settings.getExportCommand());
-            exportDetails.addCrashSection("Export args", commandArgs);
-            Minecraft.getMinecraft().crashed(report);
+            MCVer.addDetail(exportDetails, "Export command", settings::getExportCommand);
+            MCVer.addDetail(exportDetails, "Export args", commandArgs::toString);
+            MCVer.getMinecraft().crashed(report);
         }
     }
 

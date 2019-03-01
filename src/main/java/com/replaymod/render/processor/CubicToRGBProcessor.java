@@ -3,7 +3,7 @@ package com.replaymod.render.processor;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.utils.ByteBufferPool;
-import org.lwjgl.util.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 
 import java.nio.ByteBuffer;
 

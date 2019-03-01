@@ -1,65 +1,57 @@
 package com.replaymod.render;
 
+import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
-import net.minecraftforge.common.config.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=10800
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.Mod;
-//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-@Mod(modid = ReplayModRender.MOD_ID,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
-        acceptableRemoteVersions = "*",
-        //#if MC>=10800
-        clientSideOnly = true,
-        //#endif
-        useMetadata = true)
-public class ReplayModRender {
-    public static final String MOD_ID = "replaymod-render";
-
-    @Mod.Instance(MOD_ID)
+public class ReplayModRender implements Module {
+    { instance = this; }
     public static ReplayModRender instance;
 
     private ReplayMod core;
 
-    public static Logger LOGGER;
+    public static Logger LOGGER = LogManager.getLogger();
 
-    private Configuration configuration;
     private final List<RenderJob> renderQueue = new ArrayList<>();
+
+    public ReplayModRender(ReplayMod core) {
+        this.core = core;
+
+        core.getSettingsRegistry().register(Setting.class);
+    }
 
     public ReplayMod getCore() {
         return core;
     }
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        LOGGER = event.getModLog();
-        core = ReplayMod.instance;
-        configuration = new Configuration(event.getSuggestedConfigurationFile());
-
+    @Override
+    public void initClient() {
         FML_BUS.register(this);
-
-        core.getSettingsRegistry().register(Setting.class);
     }
 
     @SubscribeEvent
@@ -69,17 +61,17 @@ public class ReplayModRender {
 
     public File getVideoFolder() {
         String path = core.getSettingsRegistry().get(Setting.RENDER_PATH);
-        File folder = new File(path.startsWith("./") ? core.getMinecraft().mcDataDir : null, path);
+        File folder = new File(path.startsWith("./") ? mcDataDir(core.getMinecraft()) : null, path);
         try {
             FileUtils.forceMkdir(folder);
         } catch (IOException e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Cannot create video folder."));
+            throw newReportedException(CrashReport.makeCrashReport(e, "Cannot create video folder."));
         }
         return folder;
     }
 
-    public Configuration getConfiguration() {
-        return configuration;
+    public Path getRenderSettingsPath() {
+        return mcDataDir(core.getMinecraft()).toPath().resolve("config/replaymod-rendersettings.json");
     }
 
     public List<RenderJob> getRenderQueue() {

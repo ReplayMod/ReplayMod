@@ -8,6 +8,7 @@ import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.core.utils.OpenGLUtils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.ReplayModRecording;
+import com.replaymod.render.ReplayModRender;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.GuiScreen;
@@ -163,6 +164,7 @@ public class ReplayMod implements Module {
         modules.add(this);
         modules.add(new ReplayModRecording(this));
         modules.add(new ReplayModReplay(this));
+        modules.add(new ReplayModRender(this));
 
         //#if MC>=11300
         settingsRegistry.register();

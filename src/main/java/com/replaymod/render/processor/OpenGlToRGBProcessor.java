@@ -2,7 +2,7 @@ package com.replaymod.render.processor;
 
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.frame.RGBFrame;
-import org.lwjgl.util.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 
 import java.nio.ByteBuffer;
 

@@ -1,15 +1,22 @@
 package com.replaymod.render.rendering;
 
+import com.replaymod.core.versions.MCVer;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
-import org.lwjgl.opengl.Display;
+
+//#if MC>=11300
+import org.lwjgl.glfw.GLFW;
+//#else
+//$$ import org.lwjgl.opengl.Display;
+//#endif
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static com.replaymod.core.versions.MCVer.newReportedException;
 
 public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
@@ -48,9 +55,13 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
                     }
                 }, new ThreadPoolExecutor.DiscardPolicy());
 
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = MCVer.getMinecraft();
         while (!capturer.isDone() && !Thread.currentThread().isInterrupted()) {
-            if (Display.isCloseRequested() || mc.hasCrashed) {
+            //#if MC>=11300
+            if (GLFW.glfwWindowShouldClose(mc.mainWindow.getHandle()) || mc.hasCrashed) {
+            //#else
+            //$$ if (Display.isCloseRequested() || mc.hasCrashed) {
+            //#endif
                 Thread.currentThread().interrupt();
                 return;
             }
@@ -73,7 +84,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
             consumer.close();
         } catch (Throwable t) {
             CrashReport crashReport = CrashReport.makeCrashReport(t, "Cleaning up rendering pipeline");
-            throw new ReportedException(crashReport);
+            throw newReportedException(crashReport);
         }
     }
 
@@ -105,7 +116,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
                 }
             } catch (Throwable t) {
                 CrashReport crashReport = CrashReport.makeCrashReport(t, "Processing frame");
-                Minecraft.getMinecraft().crashed(crashReport);
+                MCVer.getMinecraft().crashed(crashReport);
             }
         }
     }

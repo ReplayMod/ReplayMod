@@ -1,18 +1,28 @@
 package com.replaymod.render.utils;
 
 import com.google.common.base.Objects;
+import com.replaymod.core.versions.MCVer;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
-import org.lwjgl.opengl.ARBBufferObject;
-import org.lwjgl.opengl.GLContext;
-import org.lwjgl.opengl.Util;
+
+//#if MC>=11300
+import org.lwjgl.opengl.ARBVertexBufferObject;
+import org.lwjgl.opengl.GL;
+//#else
+//$$ import org.lwjgl.opengl.ARBBufferObject;
+//$$ import org.lwjgl.opengl.GLContext;
+//$$ import org.lwjgl.opengl.Util;
+//#endif
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.ARBPixelBufferObject.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL21.GL_PIXEL_PACK_BUFFER;
+
+//#if MC>=11300
+import static org.lwjgl.opengl.ARBVertexBufferObject.*;
+//#endif
 
 public class PixelBufferObject {
     @RequiredArgsConstructor
@@ -24,8 +34,13 @@ public class PixelBufferObject {
         private final int arb, gl15;
     }
 
-    public static final boolean SUPPORTED = GLContext.getCapabilities().GL_ARB_pixel_buffer_object || GLContext.getCapabilities().OpenGL15;
-    private static final boolean arb = !GLContext.getCapabilities().OpenGL15;
+    //#if MC>=11300
+    public static final boolean SUPPORTED = GL.getCapabilities().GL_ARB_pixel_buffer_object || GL.getCapabilities().OpenGL15;
+    private static final boolean arb = !GL.getCapabilities().OpenGL15;
+    //#else
+    //$$ public static final boolean SUPPORTED = GLContext.getCapabilities().GL_ARB_pixel_buffer_object || GLContext.getCapabilities().OpenGL15;
+    //$$ private static final boolean arb = !GLContext.getCapabilities().OpenGL15;
+    //#endif
 
     private static ThreadLocal<Integer> bound = new ThreadLocal<>();
     private static ThreadLocal<Integer> mapped = new ThreadLocal<>();
@@ -39,12 +54,20 @@ public class PixelBufferObject {
         }
 
         this.size = size;
-        this.handle = arb ? ARBBufferObject.glGenBuffersARB() : glGenBuffers();
+        //#if MC>=11300
+        this.handle = arb ? ARBVertexBufferObject.glGenBuffersARB() : glGenBuffers();
+        //#else
+        //$$ this.handle = arb ? ARBBufferObject.glGenBuffersARB() : glGenBuffers();
+        //#endif
 
         bind();
 
         if (arb) {
-            ARBBufferObject.glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, size, usage.arb);
+            //#if MC>=11300
+            ARBVertexBufferObject.glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, size, usage.arb);
+            //#else
+            //$$ ARBBufferObject.glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, size, usage.arb);
+            //#endif
         } else {
             glBufferData(GL_PIXEL_PACK_BUFFER, size, usage.gl15);
         }
@@ -61,7 +84,11 @@ public class PixelBufferObject {
 
     public void bind() {
         if (arb) {
-            ARBBufferObject.glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, getHandle());
+            //#if MC>=11300
+            ARBVertexBufferObject.glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, getHandle());
+            //#else
+            //$$ ARBBufferObject.glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, getHandle());
+            //#endif
         } else {
             glBindBuffer(GL_PIXEL_PACK_BUFFER, getHandle());
         }
@@ -71,7 +98,11 @@ public class PixelBufferObject {
     public void unbind() {
         checkBound();
         if (arb) {
-            ARBBufferObject.glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
+            //#if MC>=11300
+            ARBVertexBufferObject.glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
+            //#else
+            //$$ ARBBufferObject.glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
+            //#endif
         } else {
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         }
@@ -95,13 +126,19 @@ public class PixelBufferObject {
         checkNotMapped();
         ByteBuffer buffer;
         if (arb) {
-            buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB, size, null);
+            //#if MC>=11300
+            buffer = ARBVertexBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB, size, null);
+            //#else
+            //$$ buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB, size, null);
+            //#endif
         } else {
             buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY, size, null);
         }
-        if (buffer == null) {
-            Util.checkGLError();
-        }
+        //#if MC<11300
+        //$$ if (buffer == null) {
+        //$$     Util.checkGLError();
+        //$$ }
+        //#endif
         mapped.set(getHandle());
         return buffer;
     }
@@ -111,13 +148,19 @@ public class PixelBufferObject {
         checkNotMapped();
         ByteBuffer buffer;
         if (arb) {
-            buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_WRITE_ONLY_ARB, size, null);
+            //#if MC>=11300
+            buffer = ARBVertexBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_WRITE_ONLY_ARB, size, null);
+            //#else
+            //$$ buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_WRITE_ONLY_ARB, size, null);
+            //#endif
         } else {
             buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_WRITE_ONLY, size, null);
         }
-        if (buffer == null) {
-            Util.checkGLError();
-        }
+        //#if MC<11300
+        //$$ if (buffer == null) {
+        //$$     Util.checkGLError();
+        //$$ }
+        //#endif
         mapped.set(getHandle());
         return buffer;
     }
@@ -127,13 +170,19 @@ public class PixelBufferObject {
         checkNotMapped();
         ByteBuffer buffer;
         if (arb) {
-            buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_WRITE_ARB, size, null);
+            //#if MC>=11300
+            buffer = ARBVertexBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_WRITE_ARB, size, null);
+            //#else
+            //$$ buffer = ARBBufferObject.glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_WRITE_ARB, size, null);
+            //#endif
         } else {
             buffer = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_WRITE, size, null);
         }
-        if (buffer == null) {
-            Util.checkGLError();
-        }
+        //#if MC<11300
+        //$$ if (buffer == null) {
+        //$$     Util.checkGLError();
+        //$$ }
+        //#endif
         mapped.set(getHandle());
         return buffer;
     }
@@ -144,7 +193,11 @@ public class PixelBufferObject {
             throw new IllegalStateException("Buffer not mapped.");
         }
         if (arb) {
-            ARBBufferObject.glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
+            //#if MC>=11300
+            ARBVertexBufferObject.glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
+            //#else
+            //$$ ARBBufferObject.glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
+            //#endif
         } else {
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         }
@@ -154,7 +207,11 @@ public class PixelBufferObject {
     public void delete() {
         if (handle != -1) {
             if (arb) {
-                ARBBufferObject.glDeleteBuffersARB(getHandle());
+                //#if MC>=11300
+                ARBVertexBufferObject.glDeleteBuffersARB(getHandle());
+                //#else
+                //$$ ARBBufferObject.glDeleteBuffersARB(getHandle());
+                //#endif
             } else {
                 glDeleteBuffers(getHandle());
             }
@@ -167,12 +224,7 @@ public class PixelBufferObject {
         super.finalize();
         if (handle != -1) {
             LogManager.getLogger().warn("PBO garbage collected before deleted!");
-            Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-                @Override
-                public void run() {
-                    delete();
-                }
-            });
+            MCVer.getMinecraft().addScheduledTask(this::delete);
         }
     }
 }

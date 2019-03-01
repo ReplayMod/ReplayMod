@@ -3,9 +3,9 @@ package com.replaymod.render.processor;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.utils.ByteBufferPool;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import lombok.Getter;
 import org.apache.commons.lang3.Validate;
-import org.lwjgl.util.Dimension;
 
 import java.nio.ByteBuffer;
 

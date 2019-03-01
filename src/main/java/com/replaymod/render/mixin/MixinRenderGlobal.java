@@ -2,7 +2,6 @@
 package com.replaymod.render.mixin;
 
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
@@ -10,8 +9,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=11300
+import net.minecraft.client.renderer.WorldRenderer;
+//#else
+//$$ import net.minecraft.client.renderer.RenderGlobal;
+//#endif
 
 //#if MC<10904
 //$$ import net.minecraft.client.renderer.chunk.RenderChunk;
@@ -19,7 +23,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //#endif
 
-@Mixin(RenderGlobal.class)
+//#if MC>=11300
+@Mixin(WorldRenderer.class)
+//#else
+//$$ @Mixin(RenderGlobal.class)
+//#endif
 public abstract class MixinRenderGlobal {
     public ChunkLoadingRenderGlobal replayModRender_hook;
     private boolean replayModRender_passThroughSetupTerrain;

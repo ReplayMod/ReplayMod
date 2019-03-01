@@ -3,9 +3,9 @@ package com.replaymod.render.capturer;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.PixelBufferObject;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.renderer.OpenGlHelper;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.ReadableDimension;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

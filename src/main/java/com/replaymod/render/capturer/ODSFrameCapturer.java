@@ -1,16 +1,16 @@
 package com.replaymod.render.capturer;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.shader.Program;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.util.ReadableDimension;
 
 //#if MC>=10800
 import net.minecraft.client.renderer.GlStateManager;
@@ -38,7 +38,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
     private final BooleanState[] previousStates = new BooleanState[3];
     private final BooleanState previousFogState;
 
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = MCVer.getMinecraft();
 
     public ODSFrameCapturer(WorldRenderer worldRenderer, final RenderInfo renderInfo, int frameSize) {
         RenderInfo fakeInfo = new RenderInfo() {
@@ -98,7 +98,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             });
             shaderProgram.stopUsing();
         } catch (Exception e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Creating ODS shaders"));
+            throw newReportedException(CrashReport.makeCrashReport(e, "Creating ODS shaders"));
         }
     }
 

@@ -1,7 +1,7 @@
 package com.replaymod.render.capturer;
 
 import com.replaymod.render.RenderSettings;
-import org.lwjgl.util.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 
 public interface RenderInfo {
     ReadableDimension getFrameSize();
