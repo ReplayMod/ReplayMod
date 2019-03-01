@@ -7,6 +7,7 @@ import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.core.utils.OpenGLUtils;
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.online.ReplayModOnline;
 import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.replay.ReplayModReplay;
@@ -164,7 +165,9 @@ public class ReplayMod implements Module {
         // Register all RM modules
         modules.add(this);
         modules.add(new ReplayModRecording(this));
-        modules.add(new ReplayModReplay(this));
+        ReplayModReplay replayModule = new ReplayModReplay(this);
+        modules.add(replayModule);
+        modules.add(new ReplayModOnline(this, replayModule));
         modules.add(new ReplayModRender(this));
         modules.add(new ReplayModSimplePathing(this));
 

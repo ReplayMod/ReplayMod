@@ -15,7 +15,12 @@ import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import java.util.ArrayList;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -45,8 +50,15 @@ public class GuiHandler {
         }
 
         GuiButton button = new GuiButton(BUTTON_REPLAY_CENTER, getGui(event).width / 2 - 100,
-                getGui(event).height / 4 + 10 + 4 * 24, I18n.format("replaymod.gui.replaycenter"));
-        getButtonList(event).add(button);
+                getGui(event).height / 4 + 10 + 4 * 24, I18n.format("replaymod.gui.replaycenter")) {
+            //#if MC>=11300
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                onButton(new GuiScreenEvent.ActionPerformedEvent.Pre(getGui(event), this, new ArrayList<>()));
+            }
+            //#endif
+        };
+        addButton(event, button);
     }
 
     @SubscribeEvent

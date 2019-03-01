@@ -276,7 +276,6 @@ sourceSets {
             exclude 'com/replaymod/compat'
             exclude 'com/replaymod/editor'
             exclude 'com/replaymod/extras'
-            exclude 'com/replaymod/online'
             exclude 'com/replaymod/restrictions'
         }
     }

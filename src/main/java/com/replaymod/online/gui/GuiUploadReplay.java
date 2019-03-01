@@ -33,12 +33,15 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+
+//#if MC>=11300
+//#else
+//$$ import net.minecraft.client.settings.GameSettings;
+//#endif
 
 import javax.annotation.Nullable;
 import java.awt.image.BufferedImage;
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.replaymod.core.versions.MCVer.newReportedException;
 import static java.util.Arrays.stream;
 
 public class GuiUploadReplay extends GuiScreen {
@@ -130,7 +134,7 @@ public class GuiUploadReplay extends GuiScreen {
             metaData = replayFile.getMetaData();
             optThumbnail = replayFile.getThumb();
         } catch (IOException e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Read replay file " + file.getName()));
+            throw newReportedException(CrashReport.makeCrashReport(e, "Read replay file " + file.getName()));
         }
 
         // Apply to gui
@@ -147,7 +151,11 @@ public class GuiUploadReplay extends GuiScreen {
             // Get name of key used for thumbnail creation
             KeyBindingRegistry registry = mod.getCore().getKeyBindingRegistry();
             KeyBinding keyBinding = registry.getKeyBindings().get("replaymod.input.thumbnail");
-            String keyName = keyBinding == null ? "???" : GameSettings.getKeyDisplayString(keyBinding.getKeyCode());
+            //#if MC>=11300
+            String keyName = keyBinding == null ? "???" : keyBinding.func_197978_k();
+            //#else
+            //$$ String keyName = keyBinding == null ? "???" : GameSettings.getKeyDisplayString(keyBinding.getKeyCode());
+            //#endif
 
             // No thumbnail, show default thumbnail and hint on how to create one
             thumbnail.setTexture(Utils.DEFAULT_THUMBNAIL);

@@ -1,6 +1,6 @@
 package com.replaymod.online;
 
-import net.minecraft.client.Minecraft;
+import com.replaymod.core.versions.MCVer;
 
 import java.util.Random;
 
@@ -9,7 +9,7 @@ public class AuthenticationHash {
     private static final Random random = new Random();
 
     public AuthenticationHash() {
-        username = Minecraft.getMinecraft().getSession().getUsername();
+        username = MCVer.getMinecraft().getSession().getUsername();
         currentTime = System.currentTimeMillis();
         randomLong = random.nextLong();
         hash = getAuthenticationHash();
