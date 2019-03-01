@@ -11,6 +11,7 @@ import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.util.I18n;
+import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -165,6 +166,7 @@ public class ReplayMod implements Module {
         modules.add(new ReplayModRecording(this));
         modules.add(new ReplayModReplay(this));
         modules.add(new ReplayModRender(this));
+        modules.add(new ReplayModSimplePathing(this));
 
         //#if MC>=11300
         settingsRegistry.register();

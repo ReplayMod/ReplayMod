@@ -1,5 +1,7 @@
 package com.replaymod.simplepathing;
 
+import com.replaymod.core.KeyBindingRegistry;
+import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.replay.ReplayModReplay;
@@ -17,18 +19,18 @@ import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
 import lombok.Getter;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
 
-//#if MC>=10800
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#else
-//$$ import cpw.mods.fml.common.Mod;
-//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//$$ import org.lwjgl.input.Keyboard;
+//#if MC>=10800
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#endif
 
 import java.io.IOException;
@@ -41,38 +43,32 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-@Mod(modid = ReplayModSimplePathing.MOD_ID,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
-        acceptableRemoteVersions = "*",
-        //#if MC>=10800
-        clientSideOnly = true,
-        //#endif
-        useMetadata = true)
-public class ReplayModSimplePathing {
-    public static final String MOD_ID = "replaymod-simplepathing";
-
-    @Mod.Instance(MOD_ID)
+public class ReplayModSimplePathing implements Module {
+    { instance = this; }
     public static ReplayModSimplePathing instance;
 
     private ReplayMod core;
 
-    public static Logger LOGGER;
+    public static Logger LOGGER = LogManager.getLogger();
 
     private GuiPathing guiPathing;
+    private PathPreview pathPreview = new PathPreview(this);
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        LOGGER = event.getModLog();
-        core = ReplayMod.instance;
+    public ReplayModSimplePathing(ReplayMod core) {
+        this.core = core;
 
         core.getSettingsRegistry().register(Setting.class);
+    }
 
+    @Override
+    public void initClient() {
         FML_BUS.register(this);
-
-        PathPreview pathPreview = new PathPreview(this);
         pathPreview.register();
+    }
 
+    @Override
+    public void registerKeyBindings(KeyBindingRegistry registry) {
+        pathPreview.registerKeyBindings(registry);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.keyframerepository", Keyboard.KEY_X, () -> {
             if (guiPathing != null) guiPathing.keyframeRepoButtonPressed();
         });
@@ -100,7 +96,7 @@ public class ReplayModSimplePathing {
                 }
             }
         } catch (IOException e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Reading timeline"));
+            throw newReportedException(CrashReport.makeCrashReport(e, "Reading timeline"));
         }
 
         guiPathing = new GuiPathing(core, this, event.getReplayHandler());
@@ -226,7 +222,7 @@ public class ReplayModSimplePathing {
             timeline = serialization.deserialize(serialized).get("");
         } catch (Throwable t) {
             CrashReport report = CrashReport.makeCrashReport(t, "Cloning timeline");
-            throw new ReportedException(report);
+            throw newReportedException(report);
         }
 
         int id = lastSaveId.incrementAndGet();

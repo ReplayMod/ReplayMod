@@ -45,19 +45,22 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
+import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
 import net.minecraft.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.ReadablePoint;
-import org.lwjgl.util.WritablePoint;
 
+//#if MC>=11300
+//#else
+//$$ import org.lwjgl.input.Keyboard;
 //#if MC>=10800
-import net.minecraftforge.fml.common.Loader;
+//$$ import net.minecraftforge.fml.common.Loader;
 //#else
 //$$ import cpw.mods.fml.common.Loader;
+//#endif
 //#endif
 
 import javax.annotation.Nonnull;
@@ -211,15 +214,9 @@ public class GuiPathing {
             }).addElements(null, timelineTime, timeline, scrollbar, zoomButtonPanel);
 
     public final GuiPanel panel = new GuiPanel()
-            .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5));
-
-    {
-        panel.addElements(new HorizontalLayout.Data(0.5), playPauseButton);
-        if (Loader.isModLoaded("replaymod-render")) {
-            panel.addElements(new HorizontalLayout.Data(0.5), renderButton);
-        }
-        panel.addElements(new HorizontalLayout.Data(0.5), positionKeyframeButton, timeKeyframeButton, timelinePanel);
-    }
+            .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5))
+            .addElements(new HorizontalLayout.Data(0.5),
+                    playPauseButton, renderButton, positionKeyframeButton, timeKeyframeButton, timelinePanel);
 
     /**
      * IGuiClickable dummy component that is inserted at a high level.

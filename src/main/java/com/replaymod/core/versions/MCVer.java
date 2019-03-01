@@ -31,6 +31,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 //#if MC>=11300
 import net.minecraft.client.MainWindow;
+import net.minecraft.client.util.InputMappings;
 import net.minecraft.crash.ReportedException;
 import org.lwjgl.glfw.GLFW;
 //#else
@@ -709,6 +710,8 @@ public class MCVer {
     public static void colorLogicOp(int op) { GlStateManager.logicOp(op); }
 
     public static abstract class Keyboard {
+        public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
+        public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
         public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
         public static final int KEY_HOME = GLFW.GLFW_KEY_HOME;
         public static final int KEY_END = GLFW.GLFW_KEY_END;
@@ -747,6 +750,10 @@ public class MCVer {
         public static final int KEY_X = GLFW.GLFW_KEY_X;
         public static final int KEY_Y = GLFW.GLFW_KEY_Y;
         public static final int KEY_Z = GLFW.GLFW_KEY_Z;
+
+        public static boolean isKeyDown(int keyCode) {
+            return InputMappings.isKeyDown(keyCode);
+        }
     }
     //#endif
 }
