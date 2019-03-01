@@ -370,8 +370,17 @@ public class RecordingEventHandler {
         try {
             //#if MC>=11100
             //#if MC>=11200
-            packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId(),
-                    event.pickedUp.getItem().getMaxStackSize()));
+            //#if MC>=11300
+            ItemStack stack = event.getStack();
+            packetListener.save(new SPacketCollectItem(
+                    event.getOriginalEntity().getEntityId(),
+                    event.getPlayer().getEntityId(),
+                    event.getStack().getCount()
+            ));
+            //#else
+            //$$ packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId(),
+            //$$         event.pickedUp.getItem().getMaxStackSize()));
+            //#endif
             //#else
             //$$ packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId(),
             //$$         event.pickedUp.getEntityItem().getMaxStackSize()));

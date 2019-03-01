@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11300
 import net.minecraft.world.dimension.Dimension;
+import net.minecraft.world.storage.WorldSavedDataStorage;
 //#else
 //$$ import net.minecraft.world.WorldProvider;
 //#endif
@@ -31,14 +32,22 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     @Shadow
     private Minecraft mc;
 
-    protected MixinWorldClient(ISaveHandler saveHandlerIn, WorldInfo info,
+    protected MixinWorldClient(ISaveHandler saveHandlerIn,
+                               //#if MC>=11300
+                               WorldSavedDataStorage mapStorage,
+                               //#endif
+                               WorldInfo info,
                                //#if MC>=11300
                                Dimension providerIn,
                                //#else
                                //$$ WorldProvider providerIn,
                                //#endif
                                Profiler profilerIn, boolean client) {
-        super(saveHandlerIn, info, providerIn, profilerIn, client);
+        super(saveHandlerIn,
+                //#if MC>=11300
+                mapStorage,
+                //#endif
+                info, providerIn, profilerIn, client);
     }
 
     private RecordingEventHandler replayModRecording_getRecordingEventHandler() {

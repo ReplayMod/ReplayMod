@@ -47,7 +47,7 @@ public class LangResourcePack extends AbstractResourcePack {
     }
 
     private ModFileResourcePack getParent() {
-        return (ModFileResourcePack) ResourcePackLoader.getResourcePackFor(ReplayMod.MOD_ID);
+        return ResourcePackLoader.getResourcePackFor(ReplayMod.MOD_ID).orElseThrow(() -> new RuntimeException("Failed to get ReplayMod resource pack!"));
     }
 
     private String langName(String path) {

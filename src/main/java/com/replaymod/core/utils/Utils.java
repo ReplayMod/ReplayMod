@@ -73,12 +73,25 @@ import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 public class Utils {
 
+    private static InputStream getResourceAsStream(String path) {
+        // FIXME this seems broken in 1.13, hence the workaround. probably want to open an issue with modlauncher (or forge?)
+        //#ifdef DEV_ENV
+        try {
+            return new java.io.FileInputStream(new File("../src/main/resources" + path));
+        } catch (java.io.FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        //#else
+        //$$ return Utils.class.getResourceAsStream(path);
+        //#endif
+    }
+
     public static final BufferedImage DEFAULT_THUMBNAIL;
 
     static {
         BufferedImage thumbnail;
         try {
-            thumbnail = ImageIO.read(Utils.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
+            thumbnail = ImageIO.read(getResourceAsStream("/default_thumb.jpg"));
         } catch (Exception e) {
             thumbnail = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
             e.printStackTrace();
@@ -103,7 +116,7 @@ public class Utils {
 
     static {
         // Largely from https://community.letsencrypt.org/t/134/37
-        try (InputStream in = Utils.class.getResourceAsStream("/dst_root_ca_x3.pem")){
+        try (InputStream in = getResourceAsStream("/dst_root_ca_x3.pem")){
             Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(in);
 
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());

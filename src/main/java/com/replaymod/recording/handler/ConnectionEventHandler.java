@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 //#if MC>=10800
 //#if MC>=11300
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#else
 //$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -62,7 +63,7 @@ public class ConnectionEventHandler {
             if (local) {
                 //#if MC>=10800
                 //#if MC>=11300
-                if (mc.getIntegratedServer().getWorld(0).getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
+                if (mc.getIntegratedServer().getWorld(DimensionType.OVERWORLD).getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
                 //#else
                 //$$ if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
                 //#endif

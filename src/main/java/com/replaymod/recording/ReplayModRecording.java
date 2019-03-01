@@ -1,5 +1,7 @@
 package com.replaymod.recording;
 
+import com.replaymod.core.KeyBindingRegistry;
+import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.recording.handler.ConnectionEventHandler;
@@ -20,22 +22,18 @@ import com.replaymod.core.versions.MCVer.Keyboard;
 //#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 //#if MC>=11300
 import net.minecraftforge.fml.network.NetworkRegistry;
 //#else
 //$$ import net.minecraftforge.fml.common.network.NetworkRegistry;
 //#endif
 //#else
-//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 //$$ import cpw.mods.fml.common.network.NetworkRegistry;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 
-public class ReplayModRecording extends ReplayMod.Module {
+public class ReplayModRecording implements Module {
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final AttributeKey<Void> ATTR_CHECKED = AttributeKey.newInstance("ReplayModRecording_checked");
@@ -49,13 +47,13 @@ public class ReplayModRecording extends ReplayMod.Module {
 
     public ReplayModRecording(ReplayMod mod) {
         core = mod;
+
+        core.getSettingsRegistry().register(Setting.class);
     }
 
     @Override
-    public void preInit(FMLPreInitializationEvent event) {
-        core.getSettingsRegistry().register(Setting.class);
-
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
+    public void registerKeyBindings(KeyBindingRegistry registry) {
+        registry.registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
             @Override
             public void run() {
                 PacketListener packetListener = connectionEventHandler.getPacketListener();
@@ -68,7 +66,7 @@ public class ReplayModRecording extends ReplayMod.Module {
     }
 
     @Override
-    public void init(FMLInitializationEvent event) {
+    public void initClient() {
         FML_BUS.register(connectionEventHandler = new ConnectionEventHandler(LOGGER, core));
 
         new GuiHandler(core).register();

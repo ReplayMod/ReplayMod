@@ -1,11 +1,15 @@
 package com.replaymod.recording.mixin;
 
 import com.replaymod.recording.handler.RecordingEventHandler;
-import net.minecraft.client.renderer.RenderGlobal;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=11300
+//#else
+//$$ import net.minecraft.client.renderer.RenderGlobal;
+//#endif
 
 //#if MC>=10904
 import net.minecraft.util.math.BlockPos;

@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 
 //#if MC>=11300
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.dimension.DimensionType;
 //#endif
 
 //#if MC>=11200
@@ -377,10 +378,14 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                     int chunkX = entity.chunkCoordX;
                                     int chunkY = entity.chunkCoordZ;
 
+                                    //#if MC>=11300
+                                    if (entity.addedToChunk && world.getChunkProvider().provideChunk(chunkX, chunkY, false, false) != null) {
+                                    //#else
                                     //#if MC>=10904
-                                    if (entity.addedToChunk && world.getChunkProvider().getLoadedChunk(chunkX, chunkY) != null) {
+                                    //$$ if (entity.addedToChunk && world.getChunkProvider().getLoadedChunk(chunkX, chunkY) != null) {
                                     //#else
                                     //$$ if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
+                                    //#endif
                                     //#endif
                                         //#if MC>=11300
                                         world.getChunk(chunkX, chunkY).removeEntity(entity);
@@ -566,7 +571,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             actualID = entId;
             entId = -1789435; // Camera entity id should be negative which is an invalid id and can't be used by servers
             //#if MC>=10800
-            int dimension = packet.getDimension();
+            //#if MC>=11300
+            DimensionType dimension = packet.func_212642_e();
+            //#else
+            //$$ int dimension = packet.getDimension();
+            //#endif
             EnumDifficulty difficulty = packet.getDifficulty();
             //#if MC>=11300
             int maxPlayers = 0;// FIXME needs AT packet.maxPlayers;
@@ -596,7 +605,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //#if MC>=10904
         if(p instanceof SPacketRespawn) {
             SPacketRespawn respawn = (SPacketRespawn) p;
-            p = new SPacketRespawn(respawn.getDimensionID(),
+            p = new SPacketRespawn(
+                    //#if MC>=11300
+                    respawn.func_212643_b(),
+                    //#else
+                    //$$ respawn.getDimensionID(),
+                    //#endif
                     respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
         //#else
         //$$ if(p instanceof S07PacketRespawn) {
@@ -1083,7 +1097,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             World world = world(mc);
             IChunkProvider chunkProvider = world.getChunkProvider();
             // Get the chunk that will be unloaded
-            Chunk chunk = chunkProvider.provideChunk(x, z);
+            //#if MC>=11300
+            Chunk chunk = chunkProvider.provideChunk(x, z, false, false);
+            //#else
+            //$$ Chunk chunk = chunkProvider.provideChunk(x, z);
+            //#endif
             if (!chunk.isEmpty()) {
                 List<Entity> entitiesInChunk = new ArrayList<>();
                 // Gather all entities in that chunk
@@ -1109,11 +1127,15 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     if (entity.chunkCoordX != chunkX || entity.chunkCoordZ != chunkZ) {
                         // Entity has left the chunk
                         chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
+                        //#if MC>=11300
+                        Chunk newChunk = chunkProvider.provideChunk(chunkX, chunkZ, false, false);
+                        //#else
                         //#if MC>=10904
-                        Chunk newChunk = chunkProvider.getLoadedChunk(chunkX, chunkZ);
+                        //$$ Chunk newChunk = chunkProvider.getLoadedChunk(chunkX, chunkZ);
                         //#else
                         //$$ Chunk newChunk = chunkProvider.chunkExists(chunkX, chunkZ)
                         //$$         ? chunkProvider.provideChunk(chunkX, chunkZ) : null;
+                        //#endif
                         //#endif
                         if (newChunk != null) {
                             newChunk.addEntity(entity);

@@ -17,12 +17,12 @@ A Mod which allows you to record, replay and share your Minecraft experience.
 [[dependencies.replaymod]]
     modId="forge"
     mandatory=true
-    versionRange="[14.23.2.0,)"
+    versionRange="[15.0,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.replaymod]]
     modId="minecraft"
     mandatory=true
-    versionRange="[ 1.13 ]"
+    versionRange="[ 1.13.2 ]"
     ordering="NONE"
     side="BOTH"

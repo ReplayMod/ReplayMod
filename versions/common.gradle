@@ -79,9 +79,8 @@ minecraft {
     if (FG3) {
         runs {
             client {
-                workingDirectory project.file('eclipse')
-                property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-                property 'forge.logging.console.level', 'debug'
+                workingDirectory rootProject.file('eclipse')
+                property 'forge.logging.console.level', 'info'
                 mods {
                     replaymod {
                         source sourceSets.main
