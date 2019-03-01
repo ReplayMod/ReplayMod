@@ -1,21 +1,13 @@
 package com.replaymod.extras;
 
+import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.extras.advancedscreenshots.AdvancedScreenshots;
 import com.replaymod.extras.playeroverview.PlayerOverview;
 import com.replaymod.extras.urischeme.UriSchemeExtra;
 import com.replaymod.extras.youtube.YoutubeUpload;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-//#if MC>=10800
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-//#else
-//$$ import cpw.mods.fml.common.Mod;
-//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-//#endif
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,18 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Mod(modid = ReplayModExtras.MOD_ID,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
-        acceptableRemoteVersions = "*",
-        //#if MC>=10800
-        clientSideOnly = true,
-        //#endif
-        useMetadata = true)
-public class ReplayModExtras {
-    public static final String MOD_ID = "replaymod-extras";
-
-    @Mod.Instance(MOD_ID)
+public class ReplayModExtras implements Module {
+    { instance = this; }
     public static ReplayModExtras instance;
 
     private static final List<Class<? extends Extra>> builtin = Arrays.asList(
@@ -44,22 +26,19 @@ public class ReplayModExtras {
             YoutubeUpload.class,
             FullBrightness.class,
             HotkeyButtons.class,
-            LocalizationExtra.class,
             OpenEyeExtra.class
     );
 
     private final Map<Class<? extends Extra>, Extra> instances = new HashMap<>();
 
-    public static Logger LOGGER;
+    public static Logger LOGGER = LogManager.getLogger();
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        LOGGER = event.getModLog();
-        ReplayMod.instance.getSettingsRegistry().register(Setting.class);
+    public ReplayModExtras(ReplayMod core) {
+        core.getSettingsRegistry().register(Setting.class);
     }
 
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
+    @Override
+    public void initClient() {
         for (Class<? extends Extra> cls : builtin) {
             try {
                 Extra extra = cls.newInstance();

@@ -18,12 +18,17 @@ import de.johni0702.minecraft.gui.element.advanced.GuiTextArea;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiFileChooserPopup;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.resources.I18n;
 import org.apache.commons.io.IOUtils;
-import org.lwjgl.Sys;
-import org.lwjgl.util.ReadableDimension;
+
+//#if MC>=11300
+import net.minecraft.util.Util;
+//#else
+//$$ import org.lwjgl.Sys;
+//#endif
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -213,7 +218,11 @@ public class GuiYoutubeUpload extends GuiScreen {
                             try {
                                 Desktop.getDesktop().browse(new URL(url).toURI());
                             } catch(Throwable throwable) {
-                                Sys.openURL(url);
+                                //#if MC>=11300
+                                Util.getOSType().openURI(url);
+                                //#else
+                                //$$ Sys.openURL(url);
+                                //#endif
                             }
                             upload = null;
                             progressBar.setLabel(I18n.format("replaymod.gui.ytuploadprogress.done", url));

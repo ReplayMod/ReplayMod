@@ -8,11 +8,21 @@ import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import de.johni0702.minecraft.gui.element.GuiImage;
 import de.johni0702.minecraft.gui.element.IGuiImage;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
-import net.minecraft.client.settings.GameSettings;
-import org.lwjgl.input.Keyboard;
+
+//#if MC>=11300
+import com.replaymod.core.versions.MCVer.Keyboard;
+import net.minecraft.client.GameSettings;
+//#else
+//$$ import net.minecraft.client.settings.GameSettings;
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -28,7 +38,11 @@ public class FullBrightness implements Extra {
 
     private GameSettings gameSettings;
     private boolean active;
-    private float originalGamma;
+    //#if MC>=11300
+    private double originalGamma;
+    //#else
+    //$$ private float originalGamma;
+    //#endif
 
     @Override
     public void register(final ReplayMod mod) throws Exception {
@@ -39,7 +53,11 @@ public class FullBrightness implements Extra {
             @Override
             public void run() {
                 active = !active;
-                mod.getMinecraft().entityRenderer.lightmapUpdateNeeded = true;
+                //#if MC>=11300
+                // FIXME check if this is no longer required (especially when replay is paused)
+                //#else
+                //$$ mod.getMinecraft().entityRenderer.lightmapUpdateNeeded = true;
+                //#endif
                 ReplayHandler replayHandler = module.getReplayHandler();
                 if (replayHandler != null) {
                     updateIndicator(replayHandler.getOverlay());

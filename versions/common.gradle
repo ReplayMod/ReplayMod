@@ -274,7 +274,6 @@ sourceSets {
     main {
         java {
             exclude 'com/replaymod/compat'
-            exclude 'com/replaymod/extras'
             exclude 'com/replaymod/restrictions'
         }
     }

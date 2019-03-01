@@ -6,6 +6,9 @@ import javax.swing.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.Arrays;
 
 public abstract class UriScheme {
@@ -82,4 +85,19 @@ public abstract class UriScheme {
     }
 
     public abstract void install() throws Exception;
+
+    File findJarFile() throws IOException {
+        CodeSource codeSource = UriScheme.class.getProtectionDomain().getCodeSource();
+        if (codeSource != null) {
+            URL location = codeSource.getLocation();
+            if (location != null) {
+                try {
+                    return new File(location.toURI());
+                } catch (URISyntaxException e) {
+                    throw new IOException(e);
+                }
+            }
+        }
+        throw new IOException("No jar file found. Is this a development environment?");
+    }
 }

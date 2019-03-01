@@ -297,10 +297,9 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         this.replayHandler = replayHandler;
         this.timeline = timeline;
 
-        Path path = ReplayModRender.instance.getRenderSettingsPath();
         String json = "{}";
         try {
-            json = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+            json = new String(Files.readAllBytes(getSettingsPath()), StandardCharsets.UTF_8);
         } catch (FileNotFoundException ignored) {
         } catch (IOException e) {
             LOGGER.error("Reading render settings:", e);
@@ -507,6 +506,10 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         return new File(folder, fileName + "." + encodingPreset.getFileExtension());
     }
 
+    protected Path getSettingsPath() {
+        return ReplayModRender.instance.getRenderSettingsPath();
+    }
+
     private RenderSettings getDefaultRenderSettings() {
         return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT, 1920, 1080, 60, 10 << 20, null,
                 true, false, false, false, null, 360, 180, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
@@ -516,9 +519,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     public void close() {
         RenderSettings settings = save(true);
         String json = new Gson().toJson(settings);
-        Path path = ReplayModRender.instance.getRenderSettingsPath();
         try {
-            Files.write(path, json.getBytes(StandardCharsets.UTF_8));
+            Files.write(getSettingsPath(), json.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             LOGGER.error("Saving render settings:", e);
         }

@@ -1,6 +1,5 @@
 package com.replaymod.extras.urischeme;
 
-import com.replaymod.core.ReplayMod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
 
@@ -9,7 +8,7 @@ import java.io.IOException;
 public class WindowsUriScheme extends UriScheme {
     @Override
     public void install() throws IOException, InterruptedException {
-        String path = ReplayMod.getContainer().getSource().getAbsolutePath().replace("\\", "\\\\").replace("\"", "\\\"");
+        String path = findJarFile().getAbsolutePath().replace("\\", "\\\\").replace("\"", "\\\"");
         regAdd("\\replaymod /f /ve /d \"URL:replaymod Protocol\"");
         regAdd("\\replaymod /f /v \"URL Protocol\" /d \"\"");
         regAdd("\\replaymod\\shell\\open\\command /f /ve /d \"java -cp \\\"" + path + "\\\" " + UriScheme.class.getName() + " \\\"%1\\\"\"");

@@ -11,11 +11,19 @@ import com.replaymod.replay.events.ReplayOpenEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.RenderHandEvent;
-import org.lwjgl.input.Keyboard;
+
+//#if MC>=11300
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
 import com.google.common.base.Predicate;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.EventPriority;
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;

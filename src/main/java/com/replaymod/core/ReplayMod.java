@@ -8,6 +8,7 @@ import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.core.utils.OpenGLUtils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.ReplayModEditor;
+import com.replaymod.extras.ReplayModExtras;
 import com.replaymod.online.ReplayModOnline;
 import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.render.ReplayModRender;
@@ -172,6 +173,7 @@ public class ReplayMod implements Module {
         modules.add(new ReplayModRender(this));
         modules.add(new ReplayModSimplePathing(this));
         modules.add(new ReplayModEditor(this));
+        modules.add(new ReplayModExtras(this));
 
         //#if MC>=11300
         settingsRegistry.register();

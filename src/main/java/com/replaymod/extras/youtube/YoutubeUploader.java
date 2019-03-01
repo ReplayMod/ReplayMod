@@ -24,6 +24,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.metadata.MetadataInjector;
 import lombok.Getter;
@@ -78,7 +79,7 @@ public class YoutubeUploader {
         this.videoVisibility = videoVisibility;
         this.videoSnippet = videoSnippet;
         this.httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        this.dataStoreFactory = new FileDataStoreFactory(minecraft.mcDataDir);
+        this.dataStoreFactory = new FileDataStoreFactory(MCVer.mcDataDir(minecraft));
 
     }
 
