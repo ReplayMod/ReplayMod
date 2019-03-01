@@ -22,10 +22,10 @@ import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.util.Dimension;
 
 import javax.annotation.Nullable;
 import java.io.File;
