@@ -38,7 +38,7 @@ public class WrappedTimer extends Timer {
         to.lastSyncSysClock = from.lastSyncSysClock;
         to.elapsedPartialTicks = from.elapsedPartialTicks;
         //#if MC>=11200
-        // FIXME (should be good to go once AT are applied) to.tickLength = from.tickLength;
+        to.tickLength = from.tickLength;
         //#else
         //$$ to.ticksPerSecond = from.ticksPerSecond;
         //$$ to.lastHRTime = from.lastHRTime;
