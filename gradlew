@@ -65,7 +65,12 @@ cd "`dirname \"$PRG\"`/" >/dev/null
 APP_HOME="`pwd -P`"
 cd "$SAVED" >/dev/null
 
-CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+if [ "$1" == "--old-gradle" ]; then
+    shift
+    CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper-old.jar
+else
+    CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+fi
 
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then

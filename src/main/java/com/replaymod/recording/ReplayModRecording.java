@@ -36,7 +36,9 @@ import static com.replaymod.core.versions.MCVer.*;
 public class ReplayModRecording implements Module {
 
     private static final Logger LOGGER = LogManager.getLogger();
+    //#if MC>=11300
     private static final AttributeKey<Void> ATTR_CHECKED = AttributeKey.newInstance("ReplayModRecording_checked");
+    //#endif
 
     { instance = this; }
     public static ReplayModRecording instance;
@@ -84,8 +86,10 @@ public class ReplayModRecording implements Module {
     public void initiateRecording(NetworkManager networkManager) {
         Channel channel = networkManager.channel();
         if (channel.pipeline().get("ReplayModReplay_replaySender") != null) return;
+        //#if MC>=11300
         if (channel.hasAttr(ATTR_CHECKED)) return;
         channel.attr(ATTR_CHECKED).set(null);
+        //#endif
         connectionEventHandler.onConnectedToServerEvent(networkManager);
     }
 }

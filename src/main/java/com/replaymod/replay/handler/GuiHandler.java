@@ -67,7 +67,7 @@ public class GuiHandler {
                     // Replace "Exit Server" button with "Exit Replay" button
                     case BUTTON_EXIT_SERVER:
                         removeButton(event, b);
-                        addButton(event, new GuiButton(BUTTON_EXIT_REPLAY, b.x, b.y, b.width, b.height, I18n.format("replaymod.gui.exit")) {
+                        addButton(event, new GuiButton(BUTTON_EXIT_REPLAY, x(b), y(b), b.width, b.height, I18n.format("replaymod.gui.exit")) {
                             //#if MC>=11300
                             @Override
                             public void onClick(double mouseX, double mouseY) {

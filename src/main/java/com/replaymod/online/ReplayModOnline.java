@@ -18,15 +18,15 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//#if MC>=10800
 //#if MC>=11300
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#else
 //$$ import net.minecraftforge.common.config.Configuration;
+//#if MC>=10800
 //$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#endif
 
 import java.io.File;

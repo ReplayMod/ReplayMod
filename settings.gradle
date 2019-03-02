@@ -1,13 +1,47 @@
+def f = file('versions/core/mcVersion')
+def coreMcVersion = f.exists() ? f.readLines().first() as int : 11302
+
+def jGuiVersions = []
+def replayModVersions = []
+if (gradle.gradleVersion.startsWith('3.')) {
+    if (coreMcVersion <= 10710) {
+        jGuiVersions += ['core']
+        replayModVersions += ['core']
+    }
+    jGuiVersions += [
+            '1.7.10',
+    ]
+    replayModVersions += [
+            '1.7.10',
+    ]
+} else {
+    if (coreMcVersion > 10710) {
+        jGuiVersions += ['core']
+        replayModVersions += ['core']
+    }
+    jGuiVersions += [
+            '1.8',
+            '1.8.9',
+            '1.9.4',
+            '1.12',
+            '1.13.2'
+    ]
+    replayModVersions += [
+            '1.8',
+            '1.8.9',
+            '1.9.4',
+            '1.10.2',
+            '1.11',
+            '1.11.2',
+            '1.12',
+            '1.12.1',
+            '1.12.2',
+            '1.13.2'
+    ]
+}
+
 include ':jGui'
-[
-        'core',
-        //'1.7.10', FIXME
-        //'1.8', FIXME
-        //'1.8.9', FIXME
-        //'1.9.4',
-        //'1.12',
-        '1.13.2'
-].each { version ->
+jGuiVersions.each { version ->
     include ":jGui:$version"
     project(":jGui:$version").with {
         projectDir = file("jGui/versions/$version")
@@ -15,21 +49,7 @@ include ':jGui'
     }
 }
 
-def versions = [
-        'core',
-        //'1.7.10', FIXME
-        //'1.8', FIXME
-        //'1.8.9', FIXME
-        //'1.9.4',
-        //'1.10.2',
-        //'1.11',
-        //'1.11.2',
-        //'1.12',
-        //'1.12.1',
-        //'1.12.2',
-        '1.13.2'
-]
-versions.each { version ->
+replayModVersions.each { version ->
     include ":$version"
     project(":$version").with {
         projectDir = file("versions/$version")

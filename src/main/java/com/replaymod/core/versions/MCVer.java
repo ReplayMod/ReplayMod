@@ -69,7 +69,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 //#if MC>=10800
 import net.minecraft.client.renderer.GlStateManager;
-// FIXME import net.minecraft.client.renderer.GlStateManager.BooleanState;
+import net.minecraft.client.renderer.GlStateManager.BooleanState;
 import net.minecraft.world.WorldType;
 //#if MC>=11300
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -346,7 +346,7 @@ public class MCVer {
         return world.playerEntities;
     }
 
-    public static GlStateManager.BooleanState fog() {
+    public static BooleanState fog() {
         //#if MC>=11300
         return GlStateManager.FOG.fog;
         //#else
@@ -362,7 +362,7 @@ public class MCVer {
         //#endif
     }
 
-    public static void fog(GlStateManager.BooleanState fog) {
+    public static void fog(BooleanState fog) {
         //#if MC>=11300
         GlStateManager.FOG.fog = fog;
         //#else
@@ -378,7 +378,7 @@ public class MCVer {
         //#endif
     }
 
-    public static GlStateManager.BooleanState texture2DState(int index) {
+    public static BooleanState texture2DState(int index) {
         //#if MC>=11300
         return GlStateManager.TEXTURES[index].texture2DState;
         //#else
@@ -390,7 +390,7 @@ public class MCVer {
         //#endif
     }
 
-    public static void texture2DState(int index, GlStateManager.BooleanState texture2DState) {
+    public static void texture2DState(int index, BooleanState texture2DState) {
         //#if MC>=11300
         GlStateManager.TEXTURES[index].texture2DState = texture2DState;
         //#else

@@ -121,7 +121,6 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         }
         //#else
         //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
-        //$$     setWindowSize(width, height);
         //$$     mc.resize(width, height);
         //$$ }
         //#endif

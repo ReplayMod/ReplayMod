@@ -30,6 +30,7 @@ import net.minecraft.util.Timer;
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.gui.ScaledResolution;
+//$$ import org.lwjgl.input.Mouse;
 //$$ import org.lwjgl.opengl.Display;
 //#endif
 

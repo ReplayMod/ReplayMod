@@ -18,6 +18,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import static net.minecraft.client.renderer.GlStateManager.*;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
 //#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE;

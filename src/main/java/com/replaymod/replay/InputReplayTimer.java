@@ -1,4 +1,3 @@
-/* FIXME
 package com.replaymod.replay;
 
 import com.replaymod.core.utils.WrappedTimer;
@@ -7,26 +6,28 @@ import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.events.ReplayDispatchKeypressesEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
 import net.minecraft.util.Timer;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.common.MinecraftForge;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
+//#if MC>=11300
+//#else
+//$$ import net.minecraft.client.settings.GameSettings;
+//$$ import org.lwjgl.input.Keyboard;
+//$$ import org.lwjgl.input.Mouse;
 //#if MC>=10800
-import net.minecraftforge.fml.common.FMLCommonHandler;
-
-import java.io.IOException;
+//$$ import net.minecraftforge.fml.common.FMLCommonHandler;
+//$$
+//$$ import java.io.IOException;
 //#else
 //$$ import cpw.mods.fml.common.FMLCommonHandler;
 //$$ import cpw.mods.fml.common.eventhandler.Event;
 //$$ import net.minecraft.client.renderer.entity.RenderManager;
 //$$
 //$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
+//#endif
 //#endif
 
 public class InputReplayTimer extends WrappedTimer {
@@ -39,6 +40,7 @@ public class InputReplayTimer extends WrappedTimer {
         this.mc = mod.getCore().getMinecraft();
     }
 
+    /* FIXME
     @Override
     public void updateTimer() {
         super.updateTimer();
@@ -260,9 +262,9 @@ public class InputReplayTimer extends WrappedTimer {
 
         FMLCommonHandler.instance().fireKeyInput();
     }
+    */
 
     //#if MC<=10710
     //$$ public static class RunScheduledTasks extends Event {}
     //#endif
 }
-*/

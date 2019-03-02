@@ -9,10 +9,15 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.resources.I18n;
-// FIXME import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.util.HttpUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC>=11300
+// FIXME
+//#else
+//$$ import net.minecraft.client.resources.ResourcePackRepository;
+//#endif
 
 //#if MC>=10904
 import net.minecraft.network.play.client.CPacketResourcePackStatus;
@@ -303,6 +308,7 @@ public class ResourcePackRecorder {
             //#endif
         }
     }
+    */
     //#else
     //$$ public synchronized S3FPacketCustomPayload handleResourcePack(S3FPacketCustomPayload packet) {
     //$$     final int requestId = nextRequestId++;
@@ -377,5 +383,4 @@ public class ResourcePackRecorder {
     //$$ }
     //#endif
 
-*/
 }

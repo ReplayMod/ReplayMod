@@ -506,16 +506,22 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //$$ if (p instanceof S3FPacketCustomPayload) {
         //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
         //#endif
-            /* FIXME
             //#if MC>=10800
-            String channelName = packet.getChannelName();
+            //#if MC>=11300
+            ResourceLocation channelName = packet.getChannelName();
+            //#else
+            //$$ String channelName = packet.getChannelName();
+            //#endif
             //#else
             //$$ String channelName = packet.func_149169_c();
             //#endif
-            if ("MC|BOpen".equals(channelName)) {
+            //#if MC>=11300
+            if (SPacketCustomPayload.BOOK_OPEN.equals(channelName)) {
+            //#else
+            //$$ if ("MC|BOpen".equals(channelName)) {
+            //#endif
                 return null;
             }
-            */
         //#if MC>=10800
         }
 

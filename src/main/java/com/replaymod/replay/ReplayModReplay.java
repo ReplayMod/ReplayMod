@@ -61,7 +61,7 @@ public class ReplayModReplay implements Module {
 
     @Override
     public void registerKeyBindings(KeyBindingRegistry registry) {
-        registry.registerKeyBinding("replaymod.input.marker", MCVer.Keyboard.KEY_M, new Runnable() {
+        registry.registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null ) {

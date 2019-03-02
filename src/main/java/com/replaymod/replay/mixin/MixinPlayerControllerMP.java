@@ -47,7 +47,7 @@ public abstract class MixinPlayerControllerMP {
     //$$ private NetHandlerPlayClient netClientHandler;
     //#endif
 
-    //#if MC>=11200
+    //#if MC>=11300
     @Inject(method = "createPlayer", at=@At("HEAD"), cancellable = true)
     private void replayModReplay_createReplayCamera(World worldIn, StatisticsManager statisticsManager, RecipeBookClient recipeBookClient, CallbackInfoReturnable<EntityPlayerSP> ci) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {

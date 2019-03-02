@@ -8,7 +8,6 @@ import com.replaymod.render.hooks.EntityRendererHandler;
 import com.replaymod.replay.camera.CameraEntity;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.opengl.GL11;
@@ -20,13 +19,15 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11300
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.GameSettings;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.client.renderer.WorldRenderer;
 //#else
 //$$ import net.minecraft.client.renderer.EntityRenderer;
 //$$ import net.minecraft.client.renderer.RenderGlobal;
 //$$ import net.minecraft.client.settings.GameSettings;
+//$$ import org.lwjgl.util.glu.Project;
 //#endif
 
 //#if MC>=10904

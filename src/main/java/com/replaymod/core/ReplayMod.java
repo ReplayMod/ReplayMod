@@ -61,7 +61,6 @@ import net.minecraftforge.fml.ModList;
 //$$ import net.minecraftforge.fml.common.Mod.Instance;
 //$$ import net.minecraftforge.fml.common.ModContainer;
 //$$ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-//$$ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 //$$ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 //$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -74,7 +73,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 //$$ import cpw.mods.fml.common.Mod.Instance;
 //$$ import cpw.mods.fml.common.ModContainer;
 //$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 //$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //$$ import cpw.mods.fml.common.gameevent.TickEvent;
@@ -158,7 +156,11 @@ public class ReplayMod implements Module {
 
         // Initialize the static OpenGL info field from the minecraft main thread
         // Unfortunately lwjgl uses static methods so we have to make use of magic init calls as well
+        //#if MC>=11300
         DeferredWorkQueue.runLater(OpenGLUtils::init);
+        //#else
+        //$$ OpenGLUtils.init();
+        //#endif
 
         //#if MC>=11300
         DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().resourcePackRepository.addPackFinder(new LangResourcePack.Finder()));
@@ -177,13 +179,18 @@ public class ReplayMod implements Module {
 
         //#if MC>=11300
         settingsRegistry.register();
-        //#else
-        //$$ config = new Configuration(event.getSuggestedConfigurationFile());
-        //$$ config.load();
-        //$$ settingsRegistry.setConfiguration(config);
-        //$$ settingsRegistry.save(); // Save default values to disk
         //#endif
     }
+
+    //#if MC<=11300
+    //$$ @EventHandler
+    //$$ public void init(FMLPreInitializationEvent event) {
+    //$$     config = new Configuration(event.getSuggestedConfigurationFile());
+    //$$     config.load();
+    //$$     settingsRegistry.setConfiguration(config);
+    //$$     settingsRegistry.save(); // Save default values to disk
+    //$$ }
+    //#endif
 
     public KeyBindingRegistry getKeyBindingRegistry() {
         return keyBindingRegistry;
@@ -424,7 +431,6 @@ public class ReplayMod implements Module {
 
     private void printToChat(boolean warning, String message, Object... args) {
         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
-            /* FIXME: needs RuntimeInvisibleParameterAnnotations workaround
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
             //#if MC>=10904
             Style coloredDarkGray = new Style().setColor(TextFormatting.DARK_GRAY);
@@ -445,8 +451,7 @@ public class ReplayMod implements Module {
             //#endif
             // Send message to chat GUI
             // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
-            */
-            mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation(message, args));
+            mc.ingameGUI.getChatGUI().printChatMessage(text);
         }
     }
 }
