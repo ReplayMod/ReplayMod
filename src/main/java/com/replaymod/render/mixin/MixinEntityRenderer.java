@@ -315,6 +315,11 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
     }
 
+    @Redirect(method = "renderCloudsCheck", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/Matrix4f;perspective(DFFF)Lnet/minecraft/client/renderer/Matrix4f;"))
+    private Matrix4f replayModRender_perspective$2(double fovY, float aspect, float zNear, float zFar) {
+        return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
+    }
+
     private Matrix4f replayModRender_perspective(float fovY, float aspect, float zNear, float zFar) {
         if (replayModRender_getHandler() != null && replayModRender_getHandler().omnidirectional) {
             fovY = 90;
@@ -379,7 +384,11 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
         }
         if (replayModRender_getHandler() != null && replayModRender_getHandler().omnidirectional) {
             // Minecraft goes back a little so we have to revert that
-            GL11.glTranslatef(0.0F, 0.0F, 0.1F);
+            //#if MC>=11300
+            GL11.glTranslatef(0.0F, 0.0F, -0.05F);
+            //#else
+            //$$ GL11.glTranslatef(0.0F, 0.0F, 0.1F);
+            //#endif
         }
     }
 }
