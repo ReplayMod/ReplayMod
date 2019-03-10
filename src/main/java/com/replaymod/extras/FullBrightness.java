@@ -54,7 +54,7 @@ public class FullBrightness implements Extra {
             public void run() {
                 active = !active;
                 //#if MC>=11300
-                // FIXME check if this is no longer required (especially when replay is paused)
+                mod.getMinecraft().entityRenderer.tick(); // need to tick once to update lightmap when replay is paused
                 //#else
                 //$$ mod.getMinecraft().entityRenderer.lightmapUpdateNeeded = true;
                 //#endif

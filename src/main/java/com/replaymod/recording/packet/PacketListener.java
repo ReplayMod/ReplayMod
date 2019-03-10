@@ -33,7 +33,9 @@ import net.minecraft.util.text.TextComponentString;
 
 //#if MC>=10800
 import net.minecraft.network.EnumPacketDirection;
-// FIXME import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+//#if MC<11300
+//$$ import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 //#endif
@@ -244,18 +246,18 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //#endif
                 //#endif
 
-                /* FIXME
-                if (packet instanceof FMLProxyPacket) {
-                    // This packet requires special handling
+                //#if MC<11300
+                //$$ if (packet instanceof FMLProxyPacket) {
+                //$$     // This packet requires special handling
                     //#if MC>=10800
-                    ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
+                    //$$ ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
                     //#else
                     //$$ save(((FMLProxyPacket) packet).toS3FPacket());
                     //#endif
-                    super.channelRead(ctx, msg);
-                    return;
-                }
-                */
+                //$$     super.channelRead(ctx, msg);
+                //$$     return;
+                //$$ }
+                //#endif
 
                 save(packet);
 

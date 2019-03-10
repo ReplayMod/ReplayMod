@@ -1,7 +1,6 @@
 package com.replaymod.extras;
 
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.Setting;
 import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -40,7 +39,6 @@ import static com.replaymod.extras.ReplayModExtras.LOGGER;
 
 public class OpenEyeExtra implements Extra {
     private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + ReplayMod.getMinecraftVersion();
-    private static final Setting<Boolean> ASK_FOR_OPEN_EYE = new Setting<>("advanced", "askForOpenEye", null, true);
 
     private ReplayMod mod;
 
@@ -53,7 +51,7 @@ public class OpenEyeExtra implements Extra {
         //#else
         //$$ boolean isOpenEyeLoaded = Loader.isModLoaded("OpenEye");
         //#endif
-        if (!isOpenEyeLoaded && mod.getSettingsRegistry().get(ASK_FOR_OPEN_EYE)) {
+        if (!isOpenEyeLoaded && mod.getSettingsRegistry().get(Setting.ASK_FOR_OPEN_EYE)) {
             new Thread(() -> {
                 try {
                     LOGGER.trace("Checking for OpenEye availability");
@@ -121,7 +119,7 @@ public class OpenEyeExtra implements Extra {
                 }).start();
             });
             noButton.onClick(() -> {
-                mod.getSettingsRegistry().set(ASK_FOR_OPEN_EYE, false);
+                mod.getSettingsRegistry().set(Setting.ASK_FOR_OPEN_EYE, false);
                 mod.getSettingsRegistry().save();
                 parent.display();
             });

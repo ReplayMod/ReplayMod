@@ -20,6 +20,7 @@ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.versions.MCVer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ResourceLocation;
@@ -284,8 +285,8 @@ public class Utils {
                                     l -> new GuiLabel().setText(l).setColor(Colors.BLACK)).toArray(GuiElement[]::new)));
 
             // Replace close button with panel containing close and copy buttons
-            GuiButton copyToClipboardButton = new GuiButton().setI18nLabel("chat.copy")/* FIXME .onClick(() ->
-                    //GuiScreen.setClipboardString(crashReport))*/.setSize(150, 20);
+            GuiButton copyToClipboardButton = new GuiButton().setI18nLabel("chat.copy").onClick(() ->
+                    MCVer.setClipboardString(crashReport)).setSize(150, 20);
             GuiButton closeButton = getCloseButton();
             popup.removeElement(closeButton);
             popup.addElements(new VerticalLayout.Data(1),

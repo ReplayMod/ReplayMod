@@ -74,7 +74,7 @@ public class ReplayModRecording implements Module {
         new GuiHandler(core).register();
 
         //#if MC>=11300
-        // FIXME
+        NetworkRegistry.newEventChannel(Restrictions.PLUGIN_CHANNEL, () -> "0", any -> true, any -> true);
         //#else
         //$$ NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
         //#endif

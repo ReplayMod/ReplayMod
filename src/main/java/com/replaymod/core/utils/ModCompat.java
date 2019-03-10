@@ -11,11 +11,12 @@ import net.minecraftforge.registries.RegistryManager;
 //#else
 //$$ import cpw.mods.fml.common.registry.GameData;
 //#endif
+//$$ import java.util.stream.Stream;
 //#endif
 
 //#if MC>=10800
 //#if MC>=11300
-// FIXME
+import net.minecraftforge.fml.ModList;
 //#else
 //$$ import net.minecraftforge.fml.common.Loader;
 //$$ import net.minecraftforge.fml.common.ModContainer;
@@ -28,13 +29,20 @@ import net.minecraftforge.registries.RegistryManager;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ModCompat {
     @SuppressWarnings("unchecked")
     public static Collection<ModInfo> getInstalledNetworkMods() {
         //#if MC>=11300
-        return Stream.<ModInfo>empty().collect(Collectors.toList());
+        Map<String, ModInfo> modInfoMap = ModList.get().getMods().stream()
+                .map(m -> new ModInfo(m.getModId(), m.getDisplayName(), m.getVersion().toString()))
+                .collect(Collectors.toMap(ModInfo::getId, Function.identity()));
+        return RegistryManager.ACTIVE.takeSnapshot(false).keySet().stream()
+                .map(RegistryManager.ACTIVE::getRegistry)
+                .map(ForgeRegistry::getKeys).flatMap(Set::stream)
+                .map(ResourceLocation::getNamespace).filter(s -> !s.equals("minecraft")).distinct()
+                .map(modInfoMap::get).filter(Objects::nonNull)
+                .collect(Collectors.toList());
         //#else
         //$$ Map<String, ModContainer> ignoreCaseMap = Loader.instance().getModList().stream()
         //$$         .collect(Collectors.toMap(m -> m.getModId().toLowerCase(), Function.identity()));

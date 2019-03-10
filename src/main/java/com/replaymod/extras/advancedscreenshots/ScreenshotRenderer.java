@@ -26,7 +26,8 @@ public class ScreenshotRenderer implements RenderInfo {
     public boolean renderScreenshot() throws Throwable {
         try {
             //#if MC>=11300
-            // FIXME
+            int displayWidthBefore = mc.mainWindow.framebufferWidth;
+            int displayHeightBefore = mc.mainWindow.framebufferHeight;
             //#else
             //$$ int displayWidthBefore = mc.displayWidth;
             //$$ int displayHeightBefore = mc.displayHeight;
@@ -48,7 +49,9 @@ public class ScreenshotRenderer implements RenderInfo {
 
             mc.gameSettings.hideGUI = hideGUIBefore;
             //#if MC>=11300
-            // FIXME
+            mc.mainWindow.framebufferWidth = displayWidthBefore;
+            mc.mainWindow.framebufferHeight = displayHeightBefore;
+            mc.getFramebuffer().createBindFramebuffer(displayWidthBefore, displayHeightBefore);
             //#else
             //$$ mc.resize(displayWidthBefore, displayHeightBefore);
             //#endif

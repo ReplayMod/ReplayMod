@@ -582,7 +582,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         if (!file.exists()) {
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
-                        // FIXME setServerResourcePack(mc.getResourcePackRepository(), file);
+                        setServerResourcePack(file);
                     }
                 }
                 return null;

@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
-import com.replaymod.core.utils.OpenGLUtils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.ReplayModEditor;
 import com.replaymod.extras.ReplayModExtras;
@@ -155,14 +154,6 @@ public class ReplayMod implements Module {
 
     public ReplayMod() {
         I18n.setI18n(net.minecraft.client.resources.I18n::format);
-
-        // Initialize the static OpenGL info field from the minecraft main thread
-        // Unfortunately lwjgl uses static methods so we have to make use of magic init calls as well
-        //#if MC>=11300
-        DeferredWorkQueue.runLater(OpenGLUtils::init);
-        //#else
-        //$$ OpenGLUtils.init();
-        //#endif
 
         //#if MC>=11300
         DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().resourcePackRepository.addPackFinder(new LangResourcePack.Finder()));

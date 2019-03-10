@@ -690,10 +690,9 @@ public class ReplayHandler {
         //#if MC>=11300
         if (entity instanceof EntityLivingBase) {
             EntityLivingBase e = (EntityLivingBase) entity;
-            // FIXME
-            // e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);
-            // e.rotationYaw = (float) e.otherPlayerMPYaw;
-            // e.rotationPitch = (float) e.otherPlayerMPPitch;
+            e.setPosition(e.interpTargetX, e.interpTargetY, e.interpTargetZ);
+            e.rotationYaw = (float) e.interpTargetYaw;
+            e.rotationPitch = (float) e.interpTargetPitch;
         }
         //#else
         //$$ if (entity instanceof EntityOtherPlayerMP) {

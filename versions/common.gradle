@@ -154,7 +154,7 @@ configurations {
 dependencies {
     if (FG3) {
         minecraft 'net.minecraftforge:forge:' + [
-                11302: '1.13.2-25.0.63',
+                11302: '1.13.2-25.0.76',
         ][mcVersion]
     }
 

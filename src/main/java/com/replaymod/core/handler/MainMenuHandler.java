@@ -1,5 +1,6 @@
 package com.replaymod.core.handler;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
@@ -17,8 +18,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
-
-import java.io.IOException;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -45,10 +44,9 @@ public class MainMenuHandler {
                 // and then move back down by 10 to compensate for the space to the exit button that was already there
                 int offset = -2 * 24 + 10;
                 y(button, y(button) + offset);
-            }
-                /* FIXME
+
                 //#if MC>=11300
-                if (button == gui.realmsButton) {
+                if (button.id == 14) {
                     realmsOffset = offset;
                 }
                 //#endif
@@ -58,11 +56,9 @@ public class MainMenuHandler {
                 gui.realmsNotification = new RealmsNotificationProxy((GuiScreenRealmsProxy) gui.realmsNotification, realmsOffset);
             }
             //#endif
-            */
         }
     }
 
-    /* FIXME
     //#if MC>=11300
     private static class RealmsNotificationProxy extends GuiScreen {
         private final GuiScreenRealmsProxy proxy;
@@ -74,30 +70,25 @@ public class MainMenuHandler {
         }
 
         @Override
-        public void setGuiSize(int w, int h) {
-            proxy.setGuiSize(w, h);
+        public void setWorldAndResolution(Minecraft mc, int width, int height) {
+            proxy.setWorldAndResolution(mc, width, height);
         }
 
         @Override
-        public void initGui() {
-            proxy.initGui();
+        public void tick() {
+            proxy.tick();
         }
 
         @Override
-        public void updateScreen() {
-            proxy.updateScreen();
-        }
-
-        @Override
-        public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        public void render(int mouseX, int mouseY, float partialTicks) {
             GL11.glTranslated(0, offset, 0);
-            proxy.drawScreen(mouseX, mouseY - offset, partialTicks);
+            proxy.render(mouseX, mouseY - offset, partialTicks);
             GL11.glTranslated(0, -offset, 0);
         }
 
         @Override
-        public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-            proxy.mouseClicked(mouseX, mouseY - offset, mouseButton);
+        public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+            return proxy.mouseClicked(mouseX, mouseY - offset, mouseButton);
         }
 
         @Override
@@ -106,5 +97,4 @@ public class MainMenuHandler {
         }
     }
     //#endif
-    */
 }

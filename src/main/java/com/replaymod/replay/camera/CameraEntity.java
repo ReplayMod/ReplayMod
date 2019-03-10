@@ -10,14 +10,12 @@ import com.replaymod.replay.events.ReplayChatMessageEvent;
 import com.replaymod.replaystudio.util.Location;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -29,6 +27,9 @@ import net.minecraftforge.common.MinecraftForge;
 
 //#if MC>=11300
 import net.minecraft.util.math.RayTraceFluidMode;
+//#else
+//$$ import net.minecraft.block.material.Material;
+//$$ import net.minecraft.entity.EntityLivingBase;
 //#endif
 
 //#if MC>=10904
@@ -289,12 +290,12 @@ public class CameraEntity
         return falseUnlessSpectating(Entity::isEntityInsideOpaqueBlock); // Make sure no suffocation overlay is rendered
     }
 
-    /* FIXME
-    @Override
-    public boolean isInsideOfMaterial(Material materialIn) {
-        return falseUnlessSpectating(e -> e.isInsideOfMaterial(materialIn)); // Make sure no overlays are rendered
-    }
-    */
+    //#if MC<11300
+    //$$ @Override
+    //$$ public boolean isInsideOfMaterial(Material materialIn) {
+    //$$     return falseUnlessSpectating(e -> e.isInsideOfMaterial(materialIn)); // Make sure no overlays are rendered
+    //$$ }
+    //#endif
 
     //#if MC>=10800
     @Override
@@ -473,13 +474,13 @@ public class CameraEntity
     //$$ }
     //#endif
 
-    /* FIXME
-    @Override
-    public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
-        // Do not open any block GUIs for the camera entities
-        // Note: Vanilla GUIs are filtered out on a packet level, this only applies to mod GUIs
-    }
-    */
+    //#if MC<11300
+    //$$ @Override
+    //$$ public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
+    //$$     // Do not open any block GUIs for the camera entities
+    //$$     // Note: Vanilla GUIs are filtered out on a packet level, this only applies to mod GUIs
+    //$$ }
+    //#endif
 
     @Override
     //#if MC>=11300
@@ -618,14 +619,12 @@ public class CameraEntity
                     lastHandRendered = player;
 
                     //#if MC>=10904
-                    /* FIXME needs AT
                     mc.entityRenderer.itemRenderer.prevEquippedProgressMainHand = 1;
                     mc.entityRenderer.itemRenderer.prevEquippedProgressOffHand = 1;
                     mc.entityRenderer.itemRenderer.equippedProgressMainHand = 1;
                     mc.entityRenderer.itemRenderer.equippedProgressOffHand = 1;
                     mc.entityRenderer.itemRenderer.itemStackMainHand = player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND);
                     mc.entityRenderer.itemRenderer.itemStackOffHand = player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND);
-                    */
                     //#else
                     //$$ mc.entityRenderer.itemRenderer.prevEquippedProgress = 1;
                     //$$ mc.entityRenderer.itemRenderer.equippedProgress = 1;

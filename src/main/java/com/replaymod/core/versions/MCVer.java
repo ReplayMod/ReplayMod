@@ -433,11 +433,14 @@ public class MCVer {
     //$$ }
     //#endif
 
-    /* FIXME
-    public static ListenableFuture setServerResourcePack(ResourcePackRepository repo, File file) {
+    public static ListenableFuture setServerResourcePack(File file) {
+        //#if MC>=11300
+        return getMinecraft().getPackFinder().func_195741_a(file);
+        //#else
+        //$$ ResourcePackRepository repo = getMinecraft().getResourcePackRepository();
         //#if MC>=10809
         //#if MC>=11200
-        return repo.setServerResourcePack(file);
+        //$$ return repo.setServerResourcePack(file);
         //#else
         //$$ return repo.setResourcePackInstance(file);
         //#endif
@@ -451,8 +454,8 @@ public class MCVer {
         //$$ return Futures.immediateFuture(null);
         //#endif
         //#endif
+        //#endif
     }
-    */
 
     public static boolean isKeyDown(KeyBinding keyBinding) {
         //#if MC>=10800
