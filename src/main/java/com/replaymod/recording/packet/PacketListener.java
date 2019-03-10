@@ -17,6 +17,10 @@ import net.minecraft.network.play.server.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+//#if MC>=11300
+import net.minecraft.network.login.server.SPacketLoginSuccess;
+//#endif
+
 //#if MC>=10904
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.text.TextComponentString;
@@ -67,6 +71,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long lastSentPacket;
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
+    //#if MC>=11300
+    private EnumConnectionState connectionState = EnumConnectionState.LOGIN;
+    //#else
+    //$$ private EnumConnectionState connectionState = EnumConnectionState.PLAY;
+    //#endif
 
     /**
      * Used to keep track of the last metadata save job submitted to the save service and
@@ -147,6 +156,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     throw new RuntimeException(e);
                 }
             });
+
+            //#if MC>=11300
+            if (packet instanceof SPacketLoginSuccess) {
+                connectionState = EnumConnectionState.PLAY;
+            }
+            //#endif
         } catch(Exception e) {
             logger.error("Writing packet:", e);
         }
@@ -339,9 +354,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         //#endif
 
         //#if MC>=10800
-        Integer packetId = EnumConnectionState.PLAY.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
+        Integer packetId = connectionState.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
         //#else
-        //$$ Integer packetId = (Integer) EnumConnectionState.PLAY.func_150755_b().inverse().get(packet.getClass());
+        //$$ Integer packetId = (Integer) connectionState.func_150755_b().inverse().get(packet.getClass());
         //#endif
         if (packetId == null) {
             throw new IOException("Unknown packet type:" + packet.getClass());

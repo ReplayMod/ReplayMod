@@ -184,7 +184,7 @@ dependencies {
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shade("com.replaymod.replaystudio:$studioVersion:98ab667"){ // FIXME
+    shade("com.replaymod.replaystudio:$studioVersion:9e362ef"){ // FIXME
         exclude group: 'com.google.guava', module: 'guava' // provided by MC
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }

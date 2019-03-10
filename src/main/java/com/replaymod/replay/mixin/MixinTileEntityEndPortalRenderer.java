@@ -37,7 +37,7 @@ public class MixinTileEntityEndPortalRenderer {
     //#endif
     //#endif
     //#endif
-    private static long replayModReplay_getEnchantmentTime() {
+    private long replayModReplay_getEnchantmentTime() {
         ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
         if (replayHandler != null) {
             return replayHandler.getReplaySender().currentTimeStamp();

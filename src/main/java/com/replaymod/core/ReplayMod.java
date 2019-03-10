@@ -25,7 +25,8 @@ import org.apache.commons.io.FileUtils;
 //#if MC>=11300
 import com.replaymod.core.versions.LangResourcePack;
 import net.minecraft.resources.FolderPack;
-import net.minecraft.resources.IResourcePack;
+import net.minecraft.resources.IPackFinder;
+import net.minecraft.resources.ResourcePackInfo;
 import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -87,6 +88,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.FutureTask;
 
@@ -211,7 +213,6 @@ public class ReplayMod implements Module {
     static { // Note: even preInit is too late and we'd have to issue another resource reload
         @SuppressWarnings("unchecked")
         //#if MC>=11300
-        List<IResourcePack> defaultResourcePacks = new ArrayList<>(); // FIXME: probably replaced with DownloadingPackFinder
         FolderPack jGuiResourcePack = new FolderPack(new File("../jGui/src/main/resources")) {
             @Override
             protected InputStream getInputStream(String resourceName) throws IOException {
@@ -233,7 +234,16 @@ public class ReplayMod implements Module {
                 }
             }
         };
-        defaultResourcePacks.add(jGuiResourcePack);
+        //#if MC>=11300
+        mc.resourcePackRepository.addPackFinder(new IPackFinder() {
+            @Override
+            public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> map, ResourcePackInfo.IFactory<T> factory) {
+                map.put("jgui", ResourcePackInfo.func_195793_a("jgui", true, () -> jGuiResourcePack, factory, ResourcePackInfo.Priority.BOTTOM));
+            }
+        });
+        //#else
+        //$$ defaultResourcePacks.add(jGuiResourcePack);
+        //#endif
         //#if MC<=10710
         //$$ FolderResourcePack mainResourcePack = new FolderResourcePack(new File("../src/main/resources")) {
         //$$     @Override

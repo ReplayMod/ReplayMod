@@ -83,6 +83,12 @@ public class RecordingEventHandler {
         }
     }
 
+    //#if MC>=11300
+    public void onPacket(Packet<?> packet) {
+        packetListener.save(packet);
+    }
+    //#endif
+
     public void onPlayerJoin() {
         try {
             //#if MC>=10904

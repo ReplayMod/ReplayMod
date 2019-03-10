@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11300
+import net.minecraft.client.renderer.WorldRenderer;
 //#else
 //$$ import net.minecraft.client.renderer.RenderGlobal;
 //#endif
@@ -19,8 +20,11 @@ import net.minecraft.util.math.BlockPos;
 //#endif
 //#endif
 
-/* FIXME runtimeinvisparameter
-@Mixin(RenderGlobal.class)
+//#if MC>=11300
+@Mixin(WorldRenderer.class)
+//#else
+//$$ @Mixin(RenderGlobal.class)
+//#endif
 public abstract class MixinRenderGlobal implements RecordingEventHandler.RecordingEventSender {
 
     private RecordingEventHandler recordingEventHandler;
@@ -58,4 +62,3 @@ public abstract class MixinRenderGlobal implements RecordingEventHandler.Recordi
         }
     }
 }
-*/

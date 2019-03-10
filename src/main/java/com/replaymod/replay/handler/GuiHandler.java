@@ -29,6 +29,9 @@ import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
 public class GuiHandler {
+    //#if MC>=11300
+    private static final int BUTTON_OPTIONS = 0;
+    //#endif
     private static final int BUTTON_EXIT_SERVER = 1;
     private static final int BUTTON_ADVANCEMENTS = 5;
     private static final int BUTTON_STATS = 6;
@@ -86,16 +89,24 @@ public class GuiHandler {
                     case BUTTON_OPEN_TO_LAN:
                         removeButton(event, openToLan = b);
                         break;
+                    //#if MC>=11300
+                    case BUTTON_OPTIONS:
+                        b.width = 200;
+                        break;
+                    //#endif
                 }
             }
             if (achievements != null && stats != null) {
                 moveAllButtonsDirectlyBelowUpwards(buttonList, y(achievements),
                         x(achievements), x(stats) + stats.width);
             }
-            if (openToLan != null) {
-                moveAllButtonsDirectlyBelowUpwards(buttonList, y(openToLan),
-                        x(openToLan), x(openToLan) + openToLan.width);
-            }
+            // In 1.13+ Forge, the Options button shares one row with the Open to LAN button
+            //#if MC<11300
+            //$$ if (openToLan != null) {
+            //$$     moveAllButtonsDirectlyBelowUpwards(buttonList, y(openToLan),
+            //$$             x(openToLan), x(openToLan) + openToLan.width);
+            //$$ }
+            //#endif
         }
     }
 

@@ -4,6 +4,10 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=11300
+    "MixinKeyboardListener",
+    "MixinMouseHelper",
+    //#endif
     //#if MC>=10904
     "MixinPlayerControllerMP",
     "MixinWorldClient",
@@ -14,7 +18,9 @@
     //#endif
     "MixinNetHandlerLoginClient",
     "MixinNetHandlerPlayClient",
-    "MixinNetworkDispatcher",
+    //#if MC<11300
+    //$$ "MixinNetworkDispatcher",
+    //#endif
     "MixinRenderGlobal"
   ],
   "compatibilityLevel": "JAVA_8",

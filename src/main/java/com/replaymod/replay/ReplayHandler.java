@@ -49,7 +49,6 @@ import net.minecraft.entity.EntityLivingBase;
 //#if MC>=10800
 import net.minecraft.network.EnumPacketDirection;
 //#if MC>=11300
-import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraftforge.fml.network.NetworkHooks;
 //#else
 //$$ import com.mojang.authlib.GameProfile;
@@ -57,6 +56,7 @@ import net.minecraftforge.fml.network.NetworkHooks;
 //$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //$$ import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 //#endif
+import net.minecraft.client.network.NetHandlerLoginClient;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
 //#else
@@ -236,32 +236,25 @@ public class ReplayHandler {
 
         networkManager.setNetHandler(new NetHandlerLoginClient(networkManager, mc, null, it -> {}));
         NetworkHooks.registerClientLoginChannel(networkManager);
+        // FIXME make this work (with vanilla and mods) on all other versions again, now that login phase is included
+        //       probably have to change some of the forge handshake calls
         //#else
-        //$$ NetHandlerPlayClient netHandlerPlayClient =
-        //$$         new NetHandlerPlayClient(mc, null, networkManager, new GameProfile(UUID.randomUUID(), "Player"));
-        //$$ networkManager.setNetHandler(netHandlerPlayClient);
-        //$$ FMLClientHandler.instance().setPlayClient(netHandlerPlayClient);
+        //$$ NetHandlerLoginClient netHandlerLoginClient =
+        //$$         new NetHandlerLoginClient(networkManager, mc, null);
+        //$$ networkManager.setNetHandler(netHandlerLoginClient);
         //$$
         //#if MC>=11200
         //$$ channel = new EmbeddedChannel();
-        //$$ NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
-        //$$ channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
-        //$$
         //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
         //$$ channel.pipeline().addFirst("ReplayModReplay_quickReplaySender", quickReplaySender);
         //$$ channel.pipeline().addLast("packet_handler", networkManager);
         //$$ channel.pipeline().fireChannelActive();
-        //$$ networkDispatcher.clientToServerHandshake();
         //#else
         //$$ channel = new EmbeddedChannel(networkManager);
-        //$$ NetworkDispatcher networkDispatcher = new NetworkDispatcher(networkManager);
-        //$$ channel.attr(NetworkDispatcher.FML_DISPATCHER).set(networkDispatcher);
-        //$$
         //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
         //#if MC>=10904
         //$$ channel.pipeline().addFirst("ReplayModReplay_quickReplaySender", quickReplaySender);
         //#endif
-        //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "fml:packet_handler", networkDispatcher);
         //$$ channel.pipeline().fireChannelActive();
         //#endif
         //#endif
@@ -295,13 +288,6 @@ public class ReplayHandler {
         //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
         //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "packet_handler", networkManager);
         //$$ channel.pipeline().fireChannelActive();
-        //$$
-        //$$ // Call twice to force-overwrite the NetworkManager's internal state
-        //$$ networkManager.setConnectionState(EnumConnectionState.PLAY);
-        //$$ networkManager.getNetHandler().onConnectionStateTransition(EnumConnectionState.LOGIN, EnumConnectionState.PLAY);
-        //$$ networkManager.setConnectionState(EnumConnectionState.PLAY);
-        //$$
-        //$$ FMLNetworkHandler.fmlClientHandshake(networkManager);
         //#endif
     }
 

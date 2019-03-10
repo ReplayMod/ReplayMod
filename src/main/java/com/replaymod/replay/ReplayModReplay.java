@@ -172,7 +172,7 @@ public class ReplayModReplay implements Module {
         });
 
         Minecraft mc = core.getMinecraft();
-        // FIXME mc.timer = new InputReplayTimer(mc.timer, this);
+        mc.timer = new InputReplayTimer(mc.timer, this);
 
         new GuiHandler(this).register();
     }

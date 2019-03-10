@@ -48,8 +48,10 @@ import net.minecraft.world.GameType;
 //$$ import net.minecraft.world.WorldSettings.GameType;
 //#endif
 //#if MC>=10904
+import net.minecraft.network.login.server.SPacketLoginSuccess;
 import net.minecraft.util.text.ITextComponent;
 //#else
+//$$ import net.minecraft.network.login.server.S02PacketLoginSuccess;
 //$$ import net.minecraft.util.IChatComponent;
 //#endif
 
@@ -123,6 +125,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
     private static int TP_DISTANCE_LIMIT = 128;
 
+    private static final ByteBuf byteBuf = Unpooled.buffer();
+    private static final ByteBufOutputStream byteBufOut = new ByteBufOutputStream(byteBuf);
+
     /**
      * The replay handler responsible for the current replay.
      */
@@ -166,10 +171,20 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     protected ReplayInputStream replayIn;
 
     /**
+     * @see PacketData#PacketData(ReplayInputStream, ReplayOutputStream)
+     */
+    private ReplayOutputStream encoder;
+
+    /**
      * The next packet that should be sent.
      * This is required as some actions such as jumping to a specified timestamp have to peek at the next packet.
      */
     protected PacketData nextPacket;
+
+    /**
+     * Whether we're currently reading packets from the login phase.
+     */
+    private boolean loginPhase;
 
     /**
      * Whether we need to restart the current replay. E.g. when jumping backwards in time
@@ -317,7 +332,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         if (world(mc) != null) {
             for (EntityPlayer playerEntity : playerEntities(world(mc))) {
                 if (!playerEntity.addedToChunk && playerEntity instanceof EntityOtherPlayerMP) {
-                    // FIXME playerEntity.onLivingUpdate();
+                    //#if MC>=11300
+                    playerEntity.livingTick();
+                    //#else
+                    //$$ playerEntity.onLivingUpdate();
+                    //#endif
                 }
             }
         }
@@ -416,10 +435,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         int i = readVarInt(pb);
 
+        EnumConnectionState state = loginPhase ? EnumConnectionState.LOGIN : EnumConnectionState.PLAY;
         //#if MC>=10800
-        Packet p = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, i);
+        Packet p = state.getPacket(EnumPacketDirection.CLIENTBOUND, i);
         //#else
-        //$$ Packet p = Packet.generatePacket(EnumConnectionState.PLAY.func_150755_b(), i);
+        //$$ Packet p = Packet.generatePacket(state.func_150755_b(), i);
         //#endif
         p.readPacketData(pb);
 
@@ -432,6 +452,15 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
      * @return The processed packet or {@code null} if no packet shall be sent
      */
     protected Packet processPacket(Packet p) throws Exception {
+        //#if MC>=10904
+        if (p instanceof SPacketLoginSuccess) {
+        //#else
+        //$$ if (p instanceof S02PacketLoginSuccess) {
+        //#endif
+            loginPhase = false;
+            return p;
+        }
+
         //#if MC>=10904
         if (p instanceof SPacketCustomPayload) {
             SPacketCustomPayload packet = (SPacketCustomPayload) p;
@@ -584,7 +613,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
             EnumDifficulty difficulty = packet.getDifficulty();
             //#if MC>=11300
-            int maxPlayers = 0;// FIXME needs AT packet.maxPlayers;
+            int maxPlayers = packet.maxPlayers;
             //#else
             //$$ int maxPlayers = packet.getMaxPlayers();
             //#endif
@@ -832,7 +861,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 while (!terminate) {
                     synchronized (FullReplaySender.this) {
                         if (replayIn == null) {
-                            replayIn = replayFile.getPacketData();
+                            replayIn = replayFile.getPacketData(new ReplayStudio(), true);
+                            encoder = new ReplayOutputStream(new ReplayStudio(), byteBufOut, true);
                         }
                         // Packet loop
                         while (true) {
@@ -859,7 +889,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                                 // Read the next packet if we don't already have one
                                 if (nextPacket == null) {
-                                    nextPacket = new PacketData(replayIn);
+                                    nextPacket = new PacketData(replayIn, encoder);
                                 }
 
                                 int nextTimeStamp = nextPacket.timestamp;
@@ -912,6 +942,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         // Restart the replay.
                         hasWorldLoaded = false;
                         lastTimeStamp = 0;
+                        loginPhase = true;
                         startFromBeginning = false;
                         nextPacket = null;
                         lastPacketSent = System.currentTimeMillis();
@@ -1025,13 +1056,15 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         replayIn.close();
                         replayIn = null;
                     }
+                    loginPhase = true;
                     startFromBeginning = false;
                     nextPacket = null;
                     replayHandler.restartedReplay();
                 }
 
                 if (replayIn == null) {
-                    replayIn = replayFile.getPacketData();
+                    replayIn = replayFile.getPacketData(new ReplayStudio(), true);
+                    encoder = new ReplayOutputStream(new ReplayStudio(), byteBufOut, true);
                 }
 
                 while (true) { // Send packets
@@ -1043,7 +1076,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             nextPacket = null;
                         } else {
                             // Otherwise read one from the input stream
-                            pd = new PacketData(replayIn);
+                            pd = new PacketData(replayIn, encoder);
                         }
 
                         int nextTimeStamp = pd.timestamp;
@@ -1176,19 +1209,16 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     }
 
     private static final class PacketData {
-        private static final ByteBuf byteBuf = Unpooled.buffer();
-        private static final ByteBufOutputStream byteBufOut = new ByteBufOutputStream(byteBuf);
-        private static final ReplayOutputStream encoder = new ReplayOutputStream(new ReplayStudio(), byteBufOut);
         private final int timestamp;
         private final byte[] bytes;
 
-        public PacketData(ReplayInputStream in) throws IOException {
+        PacketData(ReplayInputStream in, ReplayOutputStream encoder) throws IOException {
             com.replaymod.replaystudio.PacketData data = in.readPacket();
             timestamp = (int) data.getTime();
             // We need to re-encode MCProtocolLib packets, so we can later decode them as NMS packets
             // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
             // to apply ViaVersion (and potentially other magic) to it.
-            synchronized (encoder) {
+            synchronized (byteBuf) {
                 byteBuf.markReaderIndex(); // Mark the current reader and writer index (should be at start)
                 byteBuf.markWriterIndex();
 

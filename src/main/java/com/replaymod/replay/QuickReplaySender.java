@@ -1,6 +1,7 @@
 //#if MC>=10904
 package com.replaymod.replay;
 
+import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntry;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntryAction;
 import com.github.steveice10.mc.protocol.data.game.chunk.BlockStorage;
@@ -28,6 +29,7 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerMultiB
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerNotifyClientPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUnloadChunkPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUpdateTimePacket;
+import com.github.steveice10.mc.protocol.packet.login.server.LoginSuccessPacket;
 import com.github.steveice10.mc.protocol.util.NetUtil;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
@@ -209,6 +211,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     public void restart() {
         activeThings.clear();
         currentTimeStamp = 0;
+        ctx.fireChannelRead(toMC(new LoginSuccessPacket(new GameProfile(UUID.nameUUIDFromBytes(new byte[0]), "Player")), EnumConnectionState.LOGIN));
         ctx.fireChannelRead(toMC(new ServerRespawnPacket(0, Difficulty.NORMAL, GameMode.SPECTATOR, WorldType.DEFAULT)));
         ctx.fireChannelRead(toMC(new ServerPlayerPositionRotationPacket(0, 0, 0, 0, 0, 0)));
     }
@@ -624,6 +627,10 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private static final Deflater deflater = new Deflater();
 
     private static Packet<?> toMC(com.github.steveice10.packetlib.packet.Packet packet) {
+        return toMC(packet, EnumConnectionState.PLAY);
+    }
+
+    private static Packet<?> toMC(com.github.steveice10.packetlib.packet.Packet packet, EnumConnectionState state) {
         // We need to re-encode MCProtocolLib packets, so we can then decode them as NMS packets
         // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
         // to apply ViaVersion (and potentially other magic) to it.
@@ -642,7 +649,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                         //#else
                         //$$ packetBuf.readVarIntFromBuffer();
                         //#endif
-                Packet<?> mcPacket = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
+                Packet<?> mcPacket = state.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
                 mcPacket.readPacketData(packetBuf);
                 return mcPacket;
             } catch (Exception e) {
