@@ -56,3 +56,5 @@ replayModVersions.each { version ->
         buildFileName = '../common.gradle'
     }
 }
+
+include ':mixin-hack'
