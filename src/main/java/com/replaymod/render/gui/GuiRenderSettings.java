@@ -42,6 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -300,7 +301,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         String json = "{}";
         try {
             json = new String(Files.readAllBytes(getSettingsPath()), StandardCharsets.UTF_8);
-        } catch (FileNotFoundException ignored) {
+        } catch (NoSuchFileException | FileNotFoundException ignored) {
         } catch (IOException e) {
             LOGGER.error("Reading render settings:", e);
         }

@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
@@ -32,7 +33,7 @@ public class PlainFileAuthData implements AuthData {
         String authKey;
         try {
             authKey = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-        } catch (FileNotFoundException ignored) {
+        } catch (NoSuchFileException | FileNotFoundException ignored) {
             return;
         }
         AuthConfirmation result = apiClient.checkAuthkey(authKey);

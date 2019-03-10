@@ -273,10 +273,13 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
                 //#if MC>=11300
                 NativeImage data = previewTexture.getTextureData();
                 assert data != null;
-                for (int x = 0; x < data.getWidth(); x++) {
-                    for (int y = 0; y < data.getHeight(); y++) {
-                        int value = 0xff << 24 | (buffer.get() & 0xff) << 16 | (buffer.get() & 0xff) << 8 |  (buffer.get() & 0xff);
-                        data.setPixelRGBA(x, y, value);
+                for (int y = 0; y < data.getHeight(); y++) {
+                    for (int x = 0; x < data.getWidth(); x++) {
+                        int r = buffer.get() & 0xff;
+                        int g = buffer.get() & 0xff;
+                        int b = buffer.get() & 0xff;
+                        int value = 0xff << 24 | b << 16 | g << 8 |  r;
+                        data.setPixelRGBA(x, y, value); // actually takes ABGR, not RGBA
                     }
                 }
                 //#else

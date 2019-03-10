@@ -11,6 +11,9 @@
     //$$ "MixinRendererLivingEntity",
     //#endif
     "MixinEntityRenderer",
+    //#if MC>=11300
+    "MixinFogRenderer",
+    //#endif
     "MixinFrustum",
     "MixinRender",
     //#if MC>=10800

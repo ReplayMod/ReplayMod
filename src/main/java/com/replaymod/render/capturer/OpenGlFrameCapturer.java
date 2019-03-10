@@ -119,6 +119,8 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         if (fb.framebufferWidth != width || fb.framebufferHeight != height) {
             fb.createFramebuffer(width, height);
         }
+        mc.mainWindow.framebufferWidth = width;
+        mc.mainWindow.framebufferHeight = height;
         //#else
         //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
         //$$     mc.resize(width, height);

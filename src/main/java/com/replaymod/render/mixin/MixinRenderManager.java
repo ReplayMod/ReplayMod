@@ -23,7 +23,11 @@ public abstract class MixinRenderManager {
     @Shadow
     private float playerViewY;
 
-    @Inject(method = "doRenderEntity", at = @At("HEAD"))
+    //#if MC>=11300
+    @Inject(method = "renderEntity", at = @At("HEAD"))
+    //#else
+    //$$ @Inject(method = "doRenderEntity", at = @At("HEAD"))
+    //#endif
     //#if MC>=10904
     private void replayModRender_reorientForCubicRendering(Entity entity, double dx, double dy, double dz, float iDoNotKnow, float partialTicks, boolean iDoNotCare, CallbackInfo ci) {
     //#else

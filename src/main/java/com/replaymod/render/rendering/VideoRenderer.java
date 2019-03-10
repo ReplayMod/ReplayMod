@@ -181,7 +181,10 @@ public class VideoRenderer implements RenderInfo {
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
         //#if MC>=11300
-        // FIXME is this even necessary?
+        int displayWidthBefore = mc.mainWindow.framebufferWidth;
+        int displayHeightBefore = mc.mainWindow.framebufferHeight;
+        mc.mainWindow.framebufferWidth = displayWidth;
+        mc.mainWindow.framebufferHeight = displayHeight;
         //#else
         //$$ int displayWidthBefore = mc.displayWidth;
         //$$ int displayHeightBefore = mc.displayHeight;
@@ -207,7 +210,8 @@ public class VideoRenderer implements RenderInfo {
 
         // change Minecraft's display size back
         //#if MC>=11300
-        // FIXME
+        mc.mainWindow.framebufferWidth = displayWidthBefore;
+        mc.mainWindow.framebufferHeight = displayHeightBefore;
         //#else
         //$$ mc.displayWidth = displayWidthBefore;
         //$$ mc.displayHeight = displayHeightBefore;
@@ -359,6 +363,8 @@ public class VideoRenderer implements RenderInfo {
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
         //#if MC>=11300
         mc.getFramebuffer().createFramebuffer(displayWidth, displayHeight);
+        mc.mainWindow.framebufferWidth = displayWidth;
+        mc.mainWindow.framebufferHeight = displayHeight;
         //#else
         //$$ mc.resize(displayWidth, displayHeight);
         //#endif

@@ -88,10 +88,6 @@ public class EntityRendererHandler implements WorldRenderer {
         this.omnidirectional = omnidirectional;
     }
 
-    public interface GluPerspective {
-        void replayModRender_gluPerspective(float fovY, float aspect, float zNear, float zFar);
-    }
-
     public interface IEntityRenderer {
         void replayModRender_setHandler(EntityRendererHandler handler);
         EntityRendererHandler replayModRender_getHandler();

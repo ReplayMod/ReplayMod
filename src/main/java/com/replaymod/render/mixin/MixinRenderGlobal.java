@@ -39,12 +39,31 @@ public abstract class MixinRenderGlobal {
     public ChunkRenderDispatcher renderDispatcher;
 
     @Shadow
-    public abstract void setupTerrain(Entity viewEntity, double partialTicks, ICamera camera,
-                                      int frameCount, boolean playerSpectator);
+    public abstract void setupTerrain(
+            Entity viewEntity,
+            //#if MC>=11300
+            float partialTicks,
+            //#else
+            //$$ double partialTicks,
+            //#endif
+            ICamera camera,
+            int frameCount,
+            boolean playerSpectator
+    );
 
     @Inject(method = "setupTerrain", at = @At("HEAD"), cancellable = true)
-    public void replayModRender_setupTerrain(Entity viewEntity, double partialTicks, ICamera camera,
-                                               int frameCount, boolean playerSpectator, CallbackInfo ci) {
+    private void replayModRender_setupTerrain(
+            Entity viewEntity,
+            //#if MC>=11300
+            float partialTicks,
+            //#else
+            //$$ double partialTicks,
+            //#endif
+            ICamera camera,
+            int frameCount,
+            boolean playerSpectator,
+            CallbackInfo ci
+    ) {
         if (replayModRender_hook != null && !replayModRender_passThroughSetupTerrain) {
             replayModRender_passThroughSetupTerrain = true;
 
