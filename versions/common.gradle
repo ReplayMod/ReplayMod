@@ -125,7 +125,7 @@ minecraft {
 
 afterEvaluate {
     if (mcVersion >= 11300) {
-        // FIXME
+        // No longer required in 1.13+ because all version info is in the toml file
     } else {
         // Note cannot use minecraft.replace because that has already been forwarded to the task by FG by now
         tasks.sourceMainJava.replace '@MOD_VERSION@', project.version
@@ -147,8 +147,14 @@ repositories {
 configurations {
     shade
     compile.extendsFrom shade
+}
 
-    // FIXME seems to be inherited now? shade.exclude group: 'com.google.code.gson', module: 'gson' // provided by MC
+def shadeExclusions = {
+    // Cannot just add these to the shade configuration because they'd be inherited by the compile configuration then
+    exclude group: 'com.google.guava', module: 'guava-jdk5'
+    exclude group: 'com.google.guava', module: 'guava' // provided by MC
+    exclude group: 'com.google.code.gson', module: 'gson' // provided by MC
+    exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
 }
 
 dependencies {
@@ -156,13 +162,6 @@ dependencies {
         minecraft 'net.minecraftforge:forge:' + [
                 11302: '1.13.2-25.0.76',
         ][mcVersion]
-    }
-
-    if (FG3) {
-        // FIXME gson should be bundled with MC, not sure why forge doesn't add it (probably related to above shade.exclude)
-        annotationProcessor group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
-        compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
-        compile group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
     }
 
     // compile 'com.github.SpongePowered:Mixin:404f5da' // 0.7.5-SNAPSHOT
@@ -174,20 +173,16 @@ dependencies {
     compile 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
     shade 'com.googlecode.mp4parser:isoparser:1.1.7'
     shade 'org.apache.commons:commons-exec:1.3'
-    def withoutGuava = { exclude group: 'com.google.guava', module: 'guava-jdk5' }
-    shade 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0', withoutGuava
-    shade 'com.google.api-client:google-api-client-gson:1.20.0', withoutGuava
-    shade 'com.google.api-client:google-api-client-java6:1.20.0', withoutGuava
+    shade 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0', shadeExclusions
+    shade 'com.google.api-client:google-api-client-gson:1.20.0', shadeExclusions
+    shade 'com.google.api-client:google-api-client-java6:1.20.0', shadeExclusions
     shade 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shade("com.replaymod.replaystudio:$studioVersion:9e362ef"){ // FIXME
-        exclude group: 'com.google.guava', module: 'guava' // provided by MC
-        exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
-    }
+    shade "com.replaymod.replaystudio:$studioVersion:9e362ef", shadeExclusions // FIXME
 
     def jGuiVersion = project.name
     if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
