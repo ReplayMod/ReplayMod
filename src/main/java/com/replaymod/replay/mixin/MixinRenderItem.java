@@ -26,10 +26,11 @@ import net.minecraft.util.Util;
 public class MixinRenderItem {
     //#if MC>=11300
     @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
+    private static long getEnchantmentTime() {
     //#else
     //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))
+    //$$ private long getEnchantmentTime() {
     //#endif
-    private static long getEnchantmentTime() {
         ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
         if (replayHandler != null) {
             return replayHandler.getReplaySender().currentTimeStamp();
