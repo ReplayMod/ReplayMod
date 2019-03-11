@@ -146,7 +146,13 @@ static def convertFile(Map<String, String> kws, Map<String, Integer> vars, File 
 project.ext.convertTree = { Map<String, Integer> vars, String inName, String outName=inName ->
     def defaultKws = [if: '//#if ', ifdef: '//#ifdef ', else: '//#else', endif: '//#endif', eval: '//$$']
     def cfgKws = [if: '##if ', ifdef: '##ifdef ', else: '##else', endif: '##endif', eval: '#$$']
-    def extensions = ['.java': defaultKws, '.gradle': defaultKws, '.json': defaultKws, '.cfg': cfgKws]
+    def extensions = [
+            '.java': defaultKws,
+            '.gradle': defaultKws,
+            '.json': defaultKws,
+            '.mcmeta': defaultKws,
+            '.cfg': cfgKws
+    ]
     def inPath = project.file(inName).toPath()
     def outPath = project.file(outName).toPath()
     def inPlace = inPath.toAbsolutePath().equals(outPath.toAbsolutePath())
