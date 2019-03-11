@@ -6,11 +6,11 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
-import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.studio.protocol.StudioCodec;
+import com.replaymod.replaystudio.studio.protocol.StudioSession;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -125,9 +125,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
     private static int TP_DISTANCE_LIMIT = 128;
 
-    private static final ByteBuf byteBuf = Unpooled.buffer();
-    private static final ByteBufOutputStream byteBufOut = new ByteBufOutputStream(byteBuf);
-
     /**
      * The replay handler responsible for the current replay.
      */
@@ -169,11 +166,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
      * When accessing this stream make sure to synchronize on {@code this} as it's used from multiple threads.
      */
     protected ReplayInputStream replayIn;
-
-    /**
-     * @see PacketData#PacketData(ReplayInputStream, ReplayOutputStream)
-     */
-    private ReplayOutputStream encoder;
 
     /**
      * The next packet that should be sent.
@@ -862,7 +854,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     synchronized (FullReplaySender.this) {
                         if (replayIn == null) {
                             replayIn = replayFile.getPacketData(new ReplayStudio(), true);
-                            encoder = new ReplayOutputStream(new ReplayStudio(), byteBufOut, true);
                         }
                         // Packet loop
                         while (true) {
@@ -889,7 +880,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                                 // Read the next packet if we don't already have one
                                 if (nextPacket == null) {
-                                    nextPacket = new PacketData(replayIn, encoder);
+                                    nextPacket = new PacketData(replayIn, loginPhase);
                                 }
 
                                 int nextTimeStamp = nextPacket.timestamp;
@@ -1064,7 +1055,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                 if (replayIn == null) {
                     replayIn = replayFile.getPacketData(new ReplayStudio(), true);
-                    encoder = new ReplayOutputStream(new ReplayStudio(), byteBufOut, true);
                 }
 
                 while (true) { // Send packets
@@ -1076,7 +1066,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             nextPacket = null;
                         } else {
                             // Otherwise read one from the input stream
-                            pd = new PacketData(replayIn, encoder);
+                            pd = new PacketData(replayIn, loginPhase);
                         }
 
                         int nextTimeStamp = pd.timestamp;
@@ -1209,10 +1199,14 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     }
 
     private static final class PacketData {
+        private static final com.github.steveice10.netty.buffer.ByteBuf byteBuf = com.github.steveice10.netty.buffer.Unpooled.buffer();
+        private static final StudioCodec codecLoginPhase = new StudioCodec(new StudioSession(new ReplayStudio(), false, true));
+        private static final StudioCodec codecPlayPhase = new StudioCodec(new StudioSession(new ReplayStudio(), false, false));
+
         private final int timestamp;
         private final byte[] bytes;
 
-        PacketData(ReplayInputStream in, ReplayOutputStream encoder) throws IOException {
+        PacketData(ReplayInputStream in, boolean loginPhase) throws IOException {
             com.replaymod.replaystudio.PacketData data = in.readPacket();
             timestamp = (int) data.getTime();
             // We need to re-encode MCProtocolLib packets, so we can later decode them as NMS packets
@@ -1222,10 +1216,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 byteBuf.markReaderIndex(); // Mark the current reader and writer index (should be at start)
                 byteBuf.markWriterIndex();
 
-                encoder.write(data); // Re-encode packet, data will end up in byteBuf
-                encoder.flush();
+                try {
+                    (loginPhase ? codecLoginPhase : codecPlayPhase).encode(null, data.getPacket(), byteBuf);
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
 
-                byteBuf.skipBytes(8); // Skip packet length & timestamp
                 bytes = new byte[byteBuf.readableBytes()]; // Create bytes array of sufficient size
                 byteBuf.readBytes(bytes); // Read all data into bytes
 
