@@ -283,10 +283,10 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private boolean tryLoadFromCache(Consumer<Double> progress) throws IOException {
         boolean success = false;
 
-        Optional<InputStream> cacheIndexOpt = replayFile.get(CACHE_INDEX_ENTRY);
+        Optional<InputStream> cacheIndexOpt = replayFile.getCache(CACHE_INDEX_ENTRY);
         if (!cacheIndexOpt.isPresent()) return false;
         try (InputStream indexIn = cacheIndexOpt.get()) {
-            Optional<InputStream> cacheOpt = replayFile.get(CACHE_ENTRY);
+            Optional<InputStream> cacheOpt = replayFile.getCache(CACHE_ENTRY);
             if (!cacheOpt.isPresent()) return false;
             try (InputStream cacheIn = cacheOpt.get()) {
                 success = loadFromCache(cacheIn, indexIn, progress);
@@ -370,8 +370,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         double sysTimeStart = System.currentTimeMillis();
         double duration;
         try (ReplayInputStream in = replayFile.getPacketData(studio);
-             OutputStream cacheOut = replayFile.write(CACHE_ENTRY);
-             OutputStream cacheIndexOut = replayFile.write(CACHE_INDEX_ENTRY)) {
+             OutputStream cacheOut = replayFile.writeCache(CACHE_ENTRY);
+             OutputStream cacheIndexOut = replayFile.writeCache(CACHE_INDEX_ENTRY)) {
             NetOutput out = new StreamNetOutput(cacheOut);
             out.writeVarInt(CACHE_VERSION);
             NetOutput indexOut = new StreamNetOutput(cacheIndexOut);

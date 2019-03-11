@@ -136,7 +136,6 @@ afterEvaluate {
 }
 
 repositories {
-    mavenLocal()
     maven {
         name = "SpongePowered Repo"
         url = "http://repo.spongepowered.org/maven/"
@@ -182,7 +181,7 @@ dependencies {
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shade "com.replaymod.replaystudio:$studioVersion:9e362ef", shadeExclusions // FIXME
+    shade "com.github.ReplayMod.ReplayStudio:$studioVersion:e0562a30", shadeExclusions
 
     def jGuiVersion = project.name
     if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
