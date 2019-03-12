@@ -49,8 +49,12 @@ public class GuiHandler {
             return;
         }
 
-        GuiButton button = new GuiButton(BUTTON_REPLAY_CENTER, getGui(event).width / 2 - 100,
-                getGui(event).height / 4 + 10 + 4 * 24, I18n.format("replaymod.gui.replaycenter")) {
+        GuiButton button = new GuiButton(
+                BUTTON_REPLAY_CENTER,
+                getGui(event).width / 2 + 2,
+                getGui(event).height / 4 + 10 + 4 * 24,
+                I18n.format("replaymod.gui.replaycenter")
+        ) {
             //#if MC>=11300
             @Override
             public void onClick(double mouseX, double mouseY) {
@@ -58,6 +62,7 @@ public class GuiHandler {
             }
             //#endif
         };
+        button.width = button.width / 2 - 2;
         addButton(event, button);
     }
 

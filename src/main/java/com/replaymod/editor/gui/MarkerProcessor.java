@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MarkerProcessor {
@@ -49,7 +50,7 @@ public class MarkerProcessor {
         }
     }
 
-    public static void apply(Path path) throws IOException {
+    public static void apply(Path path, Consumer<Float> progress) throws IOException {
         if (!hasWork(path)) {
             return;
         }
@@ -71,6 +72,7 @@ public class MarkerProcessor {
             Iterator<Marker> markerIterator = markers.iterator();
             boolean anySplit = markers.stream().anyMatch(m -> m.getName().equals(MARKER_NAME_SPLIT));
 
+            int inputDuration = inputReplayFile.getMetaData().getDuration();
             ReplayInputStream replayInputStream = inputReplayFile.getPacketData(studio, true);
             int timeOffset = 0;
             SquashFilter cutFilter = null;
@@ -142,6 +144,7 @@ public class MarkerProcessor {
                                 duration = nextPacket.getTime() - timeOffset;
                             }
                             nextPacket = replayInputStream.readPacket();
+                            progress.accept((float) nextPacket.getTime() / (float) inputDuration);
                         }
                     }
 

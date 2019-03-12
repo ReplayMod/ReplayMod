@@ -153,7 +153,7 @@ public class GuiHandler {
             return;
         }
         GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, getGui(event).width / 2 - 100,
-                getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer")) {
+                getGui(event).height / 4 + 10 + 4 * 24, I18n.format("replaymod.gui.replayviewer")) {
             //#if MC>=11300
             @Override
             public void onClick(double mouseX, double mouseY) {

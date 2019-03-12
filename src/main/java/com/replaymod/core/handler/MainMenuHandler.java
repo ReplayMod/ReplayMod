@@ -40,9 +40,9 @@ public class MainMenuHandler {
                 if (x(button) + button.width < gui.width / 2 - 100
                         || x(button) > gui.width / 2 + 100
                         || y(button) > gui.height / 4 + 10 + 4 * 24) continue;
-                // Move button up to make space for two rows of buttons
+                // Move button up to make space for one rows of buttons
                 // and then move back down by 10 to compensate for the space to the exit button that was already there
-                int offset = -2 * 24 + 10;
+                int offset = -1 * 24 + 10;
                 y(button, y(button) + offset);
 
                 //#if MC>=11300

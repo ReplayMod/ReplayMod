@@ -210,7 +210,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     replayFile.close();
 
                     if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS)) {
-                        MarkerProcessor.apply(outputPath);
+                        MarkerProcessor.apply(outputPath, progress -> {});
                     }
                 } catch (IOException e) {
                     logger.error("Saving replay file:", e);

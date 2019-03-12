@@ -112,7 +112,7 @@ public class ReplayHandler {
      */
     private boolean suppressCameraMovements;
 
-    private final List<Marker> markers;
+    private Set<Marker> markers;
 
     private final GuiReplayOverlay overlay;
 
@@ -135,7 +135,7 @@ public class ReplayHandler {
 
         FML_BUS.post(new ReplayOpenEvent.Pre(this));
 
-        markers = new ArrayList<>(replayFile.getMarkers().or(Collections.emptySet()));
+        markers = replayFile.getMarkers().or(Collections.emptySet());
 
         fullReplaySender = new FullReplaySender(this, replayFile, false);
         //#if MC>=10904
@@ -430,26 +430,6 @@ public class ReplayHandler {
      */
     public void setSuppressCameraMovements(boolean suppressCameraMovements) {
         this.suppressCameraMovements = suppressCameraMovements;
-    }
-
-    /**
-     * Returns all markers.
-     * When changed, {@link #saveMarkers()} should be called to save the changes.
-     * @return Collection of markers in no particular order
-     */
-    public Collection<Marker> getMarkers() {
-        return markers;
-    }
-
-    /**
-     * Saves all markers.
-     */
-    public void saveMarkers() {
-        try {
-            replayFile.writeMarkers(new HashSet<>(markers));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**

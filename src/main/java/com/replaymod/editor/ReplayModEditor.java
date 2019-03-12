@@ -23,7 +23,7 @@ public class ReplayModEditor implements Module {
 
     @Override
     public void initClient() {
-        new GuiHandler(this).register();
+        new GuiHandler().register();
     }
 
     public ReplayMod getCore() {

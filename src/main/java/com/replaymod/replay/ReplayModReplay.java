@@ -14,7 +14,6 @@ import com.replaymod.replay.camera.CameraControllerRegistry;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.ClassicCameraController;
 import com.replaymod.replay.camera.VanillaCameraController;
-import com.replaymod.replay.gui.overlay.GuiMarkerTimeline;
 import com.replaymod.replay.gui.screen.GuiModCompatWarning;
 import com.replaymod.replay.handler.GuiHandler;
 import com.replaymod.replaystudio.data.Marker;
@@ -75,20 +74,8 @@ public class ReplayModReplay implements Module {
                         marker.setYaw(camera.rotationYaw);
                         marker.setPitch(camera.rotationPitch);
                         marker.setRoll(camera.roll);
-                        replayHandler.getMarkers().add(marker);
-                        replayHandler.saveMarkers();
+                        replayHandler.getOverlay().timeline.addMarker(marker);
                     }
-                }
-            }
-        });
-
-        registry.registerRaw(Keyboard.KEY_DELETE, () -> {
-            if (replayHandler != null) {
-                GuiMarkerTimeline timeline = replayHandler.getOverlay().timeline;
-                if (timeline.getSelectedMarker() != null) {
-                    replayHandler.getMarkers().remove(timeline.getSelectedMarker());
-                    replayHandler.saveMarkers();
-                    timeline.setSelectedMarker(null);
                 }
             }
         });
