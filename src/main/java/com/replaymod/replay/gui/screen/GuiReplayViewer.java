@@ -55,7 +55,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 import static com.replaymod.core.versions.MCVer.*;
@@ -66,7 +69,7 @@ public class GuiReplayViewer extends GuiScreen {
     public final GuiReplayList list = new GuiReplayList(this).onSelectionChanged(new Runnable() {
         @Override
         public void run() {
-            replayButtonPanel.forEach(IGuiButton.class).setEnabled(list.getSelected() != null);
+            replaySpecificButtons.forEach(b -> b.setEnabled(list.getSelected() != null));
             if (list.getSelected() != null && list.getSelected().incompatible) {
                 loadButton.setDisabled();
             }
@@ -88,7 +91,7 @@ public class GuiReplayViewer extends GuiScreen {
                 e.printStackTrace();
             }
         }
-    }).setSize(73, 20).setI18nLabel("replaymod.gui.load").setDisabled();
+    }).setSize(150, 20).setI18nLabel("replaymod.gui.load").setDisabled();
 
     public final GuiButton folderButton = new GuiButton().onClick(new Runnable() {
         @Override
@@ -199,13 +202,17 @@ public class GuiReplayViewer extends GuiScreen {
         }
     }).setSize(73, 20).setI18nLabel("replaymod.gui.cancel");
 
-    public final GuiPanel replayButtonPanel = new GuiPanel().setLayout(new GridLayout().setSpacingX(5).setSpacingY(5)
-            .setColumns(2)).addElements(null, loadButton, new GuiPanel() /* Upload */, renameButton, deleteButton);
-    public final GuiPanel generalButtonPanel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(5))
-            .addElements(null, folderButton, new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
-                    .addElements(null, settingsButton, cancelButton));
-    public final GuiPanel buttonPanel = new GuiPanel(this).setLayout(new HorizontalLayout().setSpacing(6))
-            .addElements(null, replayButtonPanel, generalButtonPanel);
+    public final List<GuiButton> replaySpecificButtons = new ArrayList<>();
+    { replaySpecificButtons.addAll(Arrays.asList(loadButton, renameButton, deleteButton)); }
+    public final GuiPanel uploadButton = new GuiPanel();
+    public final GuiPanel editorButton = new GuiPanel();
+
+    public final GuiPanel upperButtonPanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
+            .addElements(null, loadButton, editorButton, uploadButton);
+    public final GuiPanel lowerButtonPanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
+            .addElements(null, renameButton, deleteButton, settingsButton, cancelButton);
+    public final GuiPanel buttonPanel = new GuiPanel(this).setLayout(new VerticalLayout().setSpacing(5))
+            .addElements(null, upperButtonPanel, lowerButtonPanel);
 
     public GuiReplayViewer(ReplayModReplay mod) {
         this.mod = mod;

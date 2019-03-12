@@ -5,9 +5,8 @@ import com.replaymod.editor.ReplayModEditor;
 import com.replaymod.editor.gui.GuiEditReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
-import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import de.johni0702.minecraft.gui.element.GuiElement;
+import de.johni0702.minecraft.gui.element.GuiButton;
 import net.minecraft.crash.CrashReport;
 import net.minecraftforge.client.event.GuiScreenEvent;
 
@@ -39,25 +38,18 @@ public class GuiHandler {
         }
         final GuiReplayViewer replayViewer = (GuiReplayViewer) guiScreen;
         // Inject Edit button
-        for (GuiElement element : replayViewer.replayButtonPanel.getChildren()) {
-            if (element instanceof GuiPanel && (((GuiPanel) element).getChildren().isEmpty())) {
-                new de.johni0702.minecraft.gui.element.GuiButton((GuiPanel) element).onClick(new Runnable() {
+        replayViewer.replaySpecificButtons.add(new GuiButton(replayViewer.editorButton).onClick(() -> {
+            try {
+                new GuiEditReplay(replayViewer, replayViewer.list.getSelected().file.toPath()) {
                     @Override
-                    public void run() {
-                        try {
-                            new GuiEditReplay(replayViewer, replayViewer.list.getSelected().file.toPath()) {
-                                @Override
-                                protected void close() {
-                                    super.close();
-                                    replayViewer.list.load();
-                                }
-                            }.open();
-                        } catch (IOException e) {
-                            Utils.error(ReplayModEditor.LOGGER, replayViewer, CrashReport.makeCrashReport(e, "Opening replay editor"), () -> {});
-                        }
+                    protected void close() {
+                        super.close();
+                        replayViewer.list.load();
                     }
-                }).setSize(73, 20).setI18nLabel("replaymod.gui.replayeditor").setDisabled();
+                }.open();
+            } catch (IOException e) {
+                Utils.error(ReplayModEditor.LOGGER, replayViewer, CrashReport.makeCrashReport(e, "Opening replay editor"), () -> {});
             }
-        }
+        }).setSize(73, 20).setI18nLabel("replaymod.gui.edit").setDisabled());
     }
 }
