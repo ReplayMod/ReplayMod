@@ -60,7 +60,7 @@ public class ReplayModRecording implements Module {
             public void run() {
                 PacketListener packetListener = connectionEventHandler.getPacketListener();
                 if (packetListener != null) {
-                    packetListener.addMarker();
+                    packetListener.addMarker(null);
                     core.printInfoToChat("replaymod.chat.addedmarker");
                 }
             }
@@ -91,5 +91,9 @@ public class ReplayModRecording implements Module {
         channel.attr(ATTR_CHECKED).set(null);
         //#endif
         connectionEventHandler.onConnectedToServerEvent(networkManager);
+    }
+
+    public ConnectionEventHandler getConnectionEventHandler() {
+        return connectionEventHandler;
     }
 }

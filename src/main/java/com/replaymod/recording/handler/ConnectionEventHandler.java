@@ -3,7 +3,9 @@ package com.replaymod.recording.handler;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.Setting;
+import com.replaymod.recording.gui.GuiRecordingControls;
 import com.replaymod.recording.gui.GuiRecordingOverlay;
 import com.replaymod.recording.packet.PacketListener;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -17,16 +19,9 @@ import org.apache.logging.log4j.Logger;
 //#if MC>=10800
 //#if MC>=11300
 import net.minecraft.world.dimension.DimensionType;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.WorldType_DEBUG_ALL_BLOCK_STATES;
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//$$ import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 //#endif
 
 import java.io.File;
@@ -51,6 +46,7 @@ public class ConnectionEventHandler {
     private RecordingEventHandler recordingEventHandler;
     private PacketListener packetListener;
     private GuiRecordingOverlay guiOverlay;
+    private GuiRecordingControls guiControls;
 
     public ConnectionEventHandler(Logger logger, ReplayMod core) {
         this.logger = logger;
@@ -111,26 +107,33 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.instance.getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
-            packetListener = new PacketListener(replayFile, metaData);
+            packetListener = new PacketListener(core, currentFile.toPath(), replayFile, metaData);
             networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
             recordingEventHandler = new RecordingEventHandler(packetListener);
             recordingEventHandler.register();
 
-            guiOverlay = new GuiRecordingOverlay(mc, core.getSettingsRegistry());
+            guiControls = new GuiRecordingControls(core, packetListener);
+            guiControls.register();
+
+            guiOverlay = new GuiRecordingOverlay(mc, core.getSettingsRegistry(), guiControls);
             guiOverlay.register();
 
-            core.printInfoToChat("replaymod.chat.recordingstarted");
+            if (core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING)) {
+                core.printInfoToChat("replaymod.chat.recordingstarted");
+            } else {
+                packetListener.addMarker(MarkerProcessor.MARKER_NAME_START_CUT, 0);
+            }
         } catch (Throwable e) {
             e.printStackTrace();
             core.printWarningToChat("replaymod.chat.recordingfailed");
         }
     }
 
-    /* FIXME event not (yet?) in 1.13
-    @SubscribeEvent
-    public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
+    public void reset() {
         if (packetListener != null) {
+            guiControls.unregister();
+            guiControls = null;
             guiOverlay.unregister();
             guiOverlay = null;
             recordingEventHandler.unregister();
@@ -138,7 +141,6 @@ public class ConnectionEventHandler {
             packetListener = null;
         }
     }
-    */
 
     public PacketListener getPacketListener() {
         return packetListener;

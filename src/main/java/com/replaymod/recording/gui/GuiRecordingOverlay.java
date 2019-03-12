@@ -31,10 +31,12 @@ import static com.replaymod.core.versions.MCVer.*;
 public class GuiRecordingOverlay {
     private final Minecraft mc;
     private final SettingsRegistry settingsRegistry;
+    private final GuiRecordingControls guiControls;
 
-    public GuiRecordingOverlay(Minecraft mc, SettingsRegistry settingsRegistry) {
+    public GuiRecordingOverlay(Minecraft mc, SettingsRegistry settingsRegistry, GuiRecordingControls guiControls) {
         this.mc = mc;
         this.settingsRegistry = settingsRegistry;
+        this.guiControls = guiControls;
     }
 
     public void register() {
@@ -52,9 +54,11 @@ public class GuiRecordingOverlay {
     @SubscribeEvent
     public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
         if (getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
+        if (guiControls.isStopped()) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {
             FontRenderer fontRenderer = getFontRenderer(mc);
-            fontRenderer.drawString(I18n.format("replaymod.gui.recording").toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
+            String text = guiControls.isPaused() ? I18n.format("replaymod.gui.paused") : I18n.format("replaymod.gui.recording");
+            fontRenderer.drawString(text.toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
             bindTexture(TEXTURE);
             resetColor();
             enableAlpha();

@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.core.gui.GuiBackgroundProcesses;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
@@ -152,6 +153,8 @@ public class ReplayMod implements Module {
 
     private final List<Module> modules = new ArrayList<>();
 
+    private final GuiBackgroundProcesses backgroundProcesses = new GuiBackgroundProcesses();
+
     public ReplayMod() {
         I18n.setI18n(net.minecraft.client.resources.I18n::format);
 
@@ -285,6 +288,7 @@ public class ReplayMod implements Module {
         //#endif
 
         FML_BUS.register(keyBindingRegistry);
+        FORGE_BUS.register(backgroundProcesses);
 
         // 1.7.10 crashes when render distance > 16
         //#if MC>=10800
@@ -454,5 +458,9 @@ public class ReplayMod implements Module {
             // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
             mc.ingameGUI.getChatGUI().printChatMessage(text);
         }
+    }
+
+    public GuiBackgroundProcesses getBackgroundProcesses() {
+        return backgroundProcesses;
     }
 }

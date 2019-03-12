@@ -1,9 +1,16 @@
 package com.replaymod.recording.packet;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.editor.gui.MarkerProcessor;
+import com.replaymod.recording.ReplayModRecording;
+import com.replaymod.recording.Setting;
+import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
+import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.utils.Colors;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -42,6 +49,7 @@ import net.minecraft.network.EnumPacketDirection;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,6 +66,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private static final Minecraft mc = getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
+    private final ReplayMod core;
+    private final Path outputPath;
     private final ReplayFile replayFile;
 
     private final ResourcePackRecorder resourcePackRecorder;
@@ -85,7 +95,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
      */
     private final AtomicInteger lastSaveMetaDataId = new AtomicInteger();
 
-    public PacketListener(ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
+    public PacketListener(ReplayMod core, Path outputPath, ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
+        this.core = core;
+        this.outputPath = outputPath;
         this.replayFile = replayFile;
         this.metaData = metaData;
         this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
@@ -174,21 +186,39 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         metaData.setDuration((int) lastSentPacket);
         saveMetaData();
 
-        saveService.shutdown();
-        try {
-            saveService.awaitTermination(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            logger.error("Waiting for save service termination:", e);
-        }
-
-        synchronized (replayFile) {
-            try {
-                replayFile.save();
-                replayFile.close();
-            } catch (IOException e) {
-                logger.error("Saving replay file:", e);
+        core.runLater(() -> {
+            ConnectionEventHandler connectionEventHandler = ReplayModRecording.instance.getConnectionEventHandler();
+            if (connectionEventHandler.getPacketListener() == this) {
+                connectionEventHandler.reset();
             }
-        }
+        });
+
+        GuiLabel savingLabel = new GuiLabel().setI18nText("replaymod.gui.replaysaving.title").setColor(Colors.BLACK);
+        new Thread(() -> {
+            core.runLater(() -> core.getBackgroundProcesses().addProcess(savingLabel));
+
+            saveService.shutdown();
+            try {
+                saveService.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                logger.error("Waiting for save service termination:", e);
+            }
+
+            synchronized (replayFile) {
+                try {
+                    replayFile.save();
+                    replayFile.close();
+
+                    if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS)) {
+                        MarkerProcessor.apply(outputPath);
+                    }
+                } catch (IOException e) {
+                    logger.error("Saving replay file:", e);
+                }
+            }
+
+            core.runLater(() -> core.getBackgroundProcesses().removeProcess(savingLabel));
+        }).start();
     }
 
     @Override
@@ -376,11 +406,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         return array;
     }
 
-    public void addMarker() {
+    public void addMarker(String name) {
+        addMarker(name, (int) getCurrentDuration());
+    }
+
+    public void addMarker(String name, int timestamp) {
         Entity view = getRenderViewEntity(mc);
-        int timestamp = (int) (System.currentTimeMillis() - startTime);
 
         Marker marker = new Marker();
+        marker.setName(name);
         marker.setTime(timestamp);
         marker.setX(view.posX);
         marker.setY(view.posY);
@@ -399,6 +433,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 }
             }
         });
+    }
+
+    public long getCurrentDuration() {
+        return lastSentPacket;
     }
 
     public void setServerWasPaused() {
