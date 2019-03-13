@@ -21,7 +21,7 @@ public class ODSToRGBProcessor extends AbstractFrameProcessor<ODSOpenGlFrame, RG
         RGBFrame leftFrame = processor.process(rawFrame.getLeft());
         RGBFrame rightFrame = processor.process(rawFrame.getRight());
         ReadableDimension size = new Dimension(leftFrame.getSize().getWidth(), leftFrame.getSize().getHeight() * 2);
-        ByteBuffer result = ByteBufferPool.allocate(size.getWidth() * size.getHeight() * 3);
+        ByteBuffer result = ByteBufferPool.allocate(size.getWidth() * size.getHeight() * 4);
         result.put(leftFrame.getByteBuffer());
         result.put(rightFrame.getByteBuffer());
         result.rewind();

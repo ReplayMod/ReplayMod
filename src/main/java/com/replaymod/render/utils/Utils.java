@@ -13,12 +13,12 @@ public class Utils {
      * @param width Target image width
      */
     public static void openGlBytesToRBG(ByteBuffer buffer, int bufferWidth, int xOffset, int yOffset, ByteBuffer to, int width) {
-        byte[] rowBuf = new byte[bufferWidth * 3];
+        byte[] rowBuf = new byte[bufferWidth * 4];
         // Copy image flipped vertically to target buffer
-        int rows = buffer.remaining() / 3 / bufferWidth;
+        int rows = buffer.remaining() / 4 / bufferWidth;
         for (int i = 0; i < rows; i++) {
             buffer.get(rowBuf);
-            to.position(((yOffset + rows - i - 1) * width + xOffset) * 3);
+            to.position(((yOffset + rows - i - 1) * width + xOffset) * 4);
             to.put(rowBuf);
         }
         to.rewind();

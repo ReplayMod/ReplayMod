@@ -9,9 +9,9 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritableDimension;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -97,17 +97,10 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     }
 
     protected OpenGlFrame captureFrame(int frameId, D captureData) {
-        GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
-        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-
-        ByteBuffer buffer = ByteBufferPool.allocate(getFrameWidth() * getFrameHeight() * 3);
-        if (OpenGlHelper.isFramebufferEnabled()) {
-            frameBuffer().bindFramebufferTexture();
-            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buffer);
-            frameBuffer().unbindFramebufferTexture();
-        } else {
-            GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buffer);
-        }
+        ByteBuffer buffer = ByteBufferPool.allocate(getFrameWidth() * getFrameHeight() * 4);
+        frameBuffer().bindFramebuffer(true);
+        GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, buffer);
+        frameBuffer().unbindFramebuffer();
         buffer.rewind();
 
         return new OpenGlFrame(frameId, new Dimension(getFrameWidth(), getFrameHeight()), buffer);

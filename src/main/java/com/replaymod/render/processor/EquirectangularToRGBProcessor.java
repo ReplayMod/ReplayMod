@@ -108,13 +108,13 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
     public RGBFrame process(CubicOpenGlFrame rawFrame) {
         Validate.isTrue(rawFrame.getLeft().getSize().getWidth() == frameSize, "Frame size must be %d but was %d",
                 frameSize, rawFrame.getLeft().getSize().getWidth());
-        ByteBuffer result = ByteBufferPool.allocate(width * height * 3);
+        ByteBuffer result = ByteBufferPool.allocate(width * height * 4);
         ByteBuffer[] images = {
                 rawFrame.getBack().getByteBuffer(), rawFrame.getFront().getByteBuffer(),
                 rawFrame.getLeft().getByteBuffer(), rawFrame.getRight().getByteBuffer(),
                 rawFrame.getTop().getByteBuffer(), rawFrame.getBottom().getByteBuffer()
         };
-        byte[] pixel = new byte[3];
+        byte[] pixel = new byte[4];
         byte[] image;
         int[] imageX, imageY;
         for (int y = 0; y < height; y++) {
@@ -123,7 +123,7 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
             imageY = this.imageY[y];
             for (int x = 0; x < width; x++) {
                 ByteBuffer source = images[image[x]];
-                source.position((imageX[x] + imageY[x] * frameSize) * 3);
+                source.position((imageX[x] + imageY[x] * frameSize) * 4);
                 source.get(pixel);
                 result.put(pixel);
             }

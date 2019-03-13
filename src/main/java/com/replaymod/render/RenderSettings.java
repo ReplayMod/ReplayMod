@@ -72,7 +72,7 @@ public class RenderSettings {
         }
 
         public String getValue() {
-            return "-y -f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - %FILTERS%" + preset;
+            return "-y -f rawvideo -pix_fmt bgra -s %WIDTH%x%HEIGHT% -r %FPS% -i - %FILTERS%" + preset;
         }
 
         public String getFileExtension() {

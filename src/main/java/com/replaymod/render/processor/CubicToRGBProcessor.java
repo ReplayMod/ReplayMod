@@ -15,7 +15,7 @@ public class CubicToRGBProcessor extends AbstractFrameProcessor<CubicOpenGlFrame
         int size = rawFrame.getLeft().getSize().getWidth();
         int width = size * 4;
         int height = size * 3;
-        ByteBuffer result = ByteBufferPool.allocate(width * height * 3);
+        ByteBuffer result = ByteBufferPool.allocate(width * height * 4);
         openGlBytesToRBG(rawFrame.getLeft().getByteBuffer(), size, 0, size, result, width);
         openGlBytesToRBG(rawFrame.getFront().getByteBuffer(), size, size, size, result, width);
         openGlBytesToRBG(rawFrame.getRight().getByteBuffer(), size, size * 2, size, result, width);
