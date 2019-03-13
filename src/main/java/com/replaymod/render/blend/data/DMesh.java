@@ -1,5 +1,7 @@
 package com.replaymod.render.blend.data;
 
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import org.blender.dna.CustomData;
 import org.blender.dna.CustomDataLayer;
 import org.blender.dna.Image;
@@ -16,8 +18,6 @@ import org.blender.dna.Mesh;
 import org.cakelab.blender.io.block.BlockCodes;
 import org.cakelab.blender.nio.CArrayFacade;
 import org.cakelab.blender.nio.CPointer;
-import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -199,9 +199,9 @@ public class DMesh {
 
         public void serialize(MVert mVert) throws IOException {
             CArrayFacade<Float> pos = mVert.getCo();
-            pos.set(0, this.pos.x);
-            pos.set(1, this.pos.y);
-            pos.set(2, this.pos.z);
+            pos.set(0, this.pos.getX());
+            pos.set(1, this.pos.getY());
+            pos.set(2, this.pos.getZ());
             CArrayFacade<Short> norm = mVert.getNo();
             norm.set(0, this.normX);
             norm.set(1, this.normY);

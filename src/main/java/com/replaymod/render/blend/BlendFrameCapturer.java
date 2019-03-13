@@ -1,12 +1,12 @@
 package com.replaymod.render.blend;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.utils.ByteBufferPool;
-import net.minecraft.client.Minecraft;
-import org.lwjgl.util.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 
 import java.io.IOException;
 
@@ -34,7 +34,7 @@ public class BlendFrameCapturer implements FrameCapturer<RGBFrame> {
         renderInfo.updateForNextFrame();
 
         BlendState.getState().preFrame(framesDone);
-        worldRenderer.renderWorld(Minecraft.getMinecraft().timer.renderPartialTicks, null);
+        worldRenderer.renderWorld(MCVer.getMinecraft().timer.renderPartialTicks, null);
         BlendState.getState().postFrame(framesDone);
 
         return new RGBFrame(framesDone++, new Dimension(0, 0), ByteBufferPool.allocate(0));

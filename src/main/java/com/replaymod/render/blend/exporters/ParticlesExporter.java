@@ -1,20 +1,21 @@
 //#if MC>=10800
 package com.replaymod.render.blend.exporters;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.blend.BlendMeshBuilder;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
 
 //#if MC>=10904
 import net.minecraft.client.particle.Particle;
 //#else
 //$$ import net.minecraft.client.particle.EntityFX;
+//$$ import net.minecraft.entity.Entity;
 //#endif
 
 //#if MC>=10809
@@ -29,7 +30,7 @@ import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.blend.Util.getGlModelViewMatrix;
 
 public class ParticlesExporter implements Exporter {
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = MCVer.getMinecraft();
     private final RenderState renderState;
     private DObject pointAtObject;
     private DObject particlesObject;
@@ -151,7 +152,7 @@ public class ParticlesExporter implements Exporter {
         //$$ builder.startDrawingQuads();
         //#endif
         //#if MC>=10809
-        particle.renderParticle(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
+        particle.renderParticle(builder, MCVer.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
         //#else
         //$$ particle.func_180434_a(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
         //#endif

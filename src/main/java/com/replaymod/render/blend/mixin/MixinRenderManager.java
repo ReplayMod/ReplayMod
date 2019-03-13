@@ -18,7 +18,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(RenderManager.class)
 public abstract class MixinRenderManager {
 
-    @Inject(method = "doRenderEntity",
+    @Inject(
+            //#if MC>=11300
+            method = "renderEntity",
+            //#else
+            //$$ method = "doRenderEntity",
+            //#endif
             at = @At(value = "INVOKE",
                      target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFF)V"))
     public void preRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks, boolean box,
@@ -33,7 +38,12 @@ public abstract class MixinRenderManager {
         }
     }
 
-    @Inject(method = "doRenderEntity",
+    @Inject(
+            //#if MC>=11300
+            method = "renderEntity",
+            //#else
+            //$$ method = "doRenderEntity",
+            //#endif
             at = @At(value = "INVOKE",
                      target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFF)V",
                      shift = At.Shift.AFTER))

@@ -3,11 +3,16 @@ package com.replaymod.render.blend.mixin;
 
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.exporters.ModelRendererExporter;
-import net.minecraft.client.model.ModelRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=11300
+import net.minecraft.client.renderer.entity.model.ModelRenderer;
+//#else
+//$$ import net.minecraft.client.model.ModelRenderer;
+//#endif
 
 @Mixin(ModelRenderer.class)
 public abstract class MixinModelRenderer {

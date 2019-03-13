@@ -13,15 +13,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(TileEntityRendererDispatcher.class)
 public abstract class MixinTileEntityRendererDispatcher {
 
-    //#if MC>=11200
-    @Inject(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntity;DDDFIF)V",
+    //#if MC>=11300
+    @Inject(method = "render(Lnet/minecraft/tileentity/TileEntity;DDDFIZ)V",
             at = @At("HEAD"))
-    public void preRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, float alpha, CallbackInfo ci) {
+    public void preRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, boolean hasNoBlock, CallbackInfo ci) {
+        float alpha = 1;
+    //#else
+    //#if MC>=11200
+    //$$ @Inject(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntity;DDDFIF)V",
+    //$$         at = @At("HEAD"))
+    //$$ public void preRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, float alpha, CallbackInfo ci) {
     //#else
     //$$ @Inject(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntity;DDDFI)V",
     //$$         at = @At("HEAD"))
     //$$ public void preRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, CallbackInfo ci) {
     //$$    float alpha = 1;
+    //#endif
     //#endif
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
@@ -29,14 +36,19 @@ public abstract class MixinTileEntityRendererDispatcher {
         }
     }
 
-    //#if MC>=11200
-    @Inject(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntity;DDDFIF)V",
+    //#if MC>=11300
+    @Inject(method = "render(Lnet/minecraft/tileentity/TileEntity;DDDFIZ)V",
             at = @At("RETURN"))
-    public void postRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, float alpha, CallbackInfo ci) {
+    public void postRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, boolean hasNoBlock, CallbackInfo ci) {
+    //#if MC>=11200
+    //$$ @Inject(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntity;DDDFIF)V",
+    //$$         at = @At("RETURN"))
+    //$$ public void postRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, float alpha, CallbackInfo ci) {
     //#else
     //$$ @Inject(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntity;DDDFI)V",
     //$$         at = @At("RETURN"))
     //$$ public void postRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, CallbackInfo ci) {
+    //#endif
     //#endif
         BlendState blendState = BlendState.getState();
         if (blendState != null) {

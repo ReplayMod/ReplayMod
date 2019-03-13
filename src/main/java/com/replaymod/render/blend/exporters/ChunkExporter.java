@@ -1,18 +1,18 @@
 //#if MC>=10800
 package com.replaymod.render.blend.exporters;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.blend.BlendMeshBuilder;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.Exporter;
-import com.replaymod.render.blend.data.DMaterial;
 import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
 import com.replaymod.replaystudio.us.myles.ViaVersion.util.ReflectionUtil;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.chunk.CompiledChunk;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -20,7 +20,12 @@ import net.minecraft.client.renderer.vertex.VertexBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.util.vector.Vector3f;
+
+//#if MC>=11300
+import net.minecraft.client.renderer.WorldRenderer.ContainerLocalRenderInformation;
+//#else
+//$$ import net.minecraft.client.renderer.RenderGlobal.ContainerLocalRenderInformation;
+//#endif
 
 //#if MC>=10904
 import net.minecraft.util.BlockRenderLayer;
@@ -68,10 +73,10 @@ public class ChunkExporter implements Exporter {
     @SneakyThrows
     public void setup() throws IOException {
 
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = MCVer.getMinecraft();
         @SuppressWarnings("unchecked")
-        List<RenderGlobal.ContainerLocalRenderInformation> renderInfos = mc.renderGlobal.renderInfos;
-        for (RenderGlobal.ContainerLocalRenderInformation renderInfo : renderInfos) {
+        List<ContainerLocalRenderInformation> renderInfos = mc.renderGlobal.renderInfos;
+        for (ContainerLocalRenderInformation renderInfo : renderInfos) {
             RenderChunk renderChunk = ReflectionUtil.get(renderInfo, "renderChunk", RenderChunk.class); // SneakyThrows
             CompiledChunk compiledChunk = renderChunk.getCompiledChunk();
             if (!compiledChunk.isEmpty()) {
@@ -167,7 +172,7 @@ public class ChunkExporter implements Exporter {
         GL15.glGetBufferSubData(OpenGlHelper.GL_ARRAY_BUFFER, 0, byteBuffer);
         vertexBuffer.unbindBuffer();
 
-        Minecraft.getMinecraft().getTextureManager().bindTexture(LOCATION_BLOCKS_TEXTURE);
+        MCVer.getMinecraft().getTextureManager().bindTexture(LOCATION_BLOCKS_TEXTURE);
 
         return BlendMeshBuilder.addBufferToMesh(byteBuffer, GL11.GL_QUADS, DefaultVertexFormats.BLOCK, null, null);
     }

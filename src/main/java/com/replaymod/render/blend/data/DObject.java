@@ -1,6 +1,8 @@
 package com.replaymod.render.blend.data;
 
 import com.replaymod.render.blend.Util;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Quaternion;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import org.blender.dna.AnimData;
 import org.blender.dna.BlenderObject;
 import org.blender.dna.Material;
@@ -11,8 +13,6 @@ import org.blender.dna.bTrackToConstraint;
 import org.cakelab.blender.io.block.BlockCodes;
 import org.cakelab.blender.nio.CArrayFacade;
 import org.cakelab.blender.nio.CPointer;
-import org.lwjgl.util.vector.Quaternion;
-import org.lwjgl.util.vector.Vector3f;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -179,7 +179,7 @@ dependencies {
 
     shade 'org.aspectj:aspectjrt:1.8.2'
 
-    shade 'com.github.ReplayMod.JavaBlend:2.79.0:e0a1b9a'
+    shade 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'

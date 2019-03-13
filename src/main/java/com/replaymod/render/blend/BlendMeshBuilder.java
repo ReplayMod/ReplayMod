@@ -3,13 +3,13 @@ package com.replaymod.render.blend;
 
 import com.replaymod.render.blend.data.DMaterial;
 import com.replaymod.render.blend.data.DMesh;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.ReadableVector3f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.ReadableVector3f;
-import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
 
 //#if MC>=10904
 //#if MC>=11200
@@ -139,7 +139,12 @@ public class BlendMeshBuilder
     }
 
     public static DMesh addBufferToMesh(ByteBuffer buffer, int mode, VertexFormat vertexFormat, DMesh mesh, ReadableVector3f vertOffset) {
-        return addBufferToMesh(buffer, buffer.remaining() / vertexFormat.getNextOffset(), mode, vertexFormat, mesh, vertOffset);
+        //#if MC>=11300
+        int vertexCount = buffer.remaining() / vertexFormat.getSize();
+        //#else
+        //$$ int vertexCount = buffer.remaining() / vertexFormat.getNextOffset();
+        //#endif
+        return addBufferToMesh(buffer, vertexCount, mode, vertexFormat, mesh, vertOffset);
     }
 
     public static DMesh addBufferToMesh(ByteBuffer buffer, int vertexCount, int mode, VertexFormat vertexFormat, DMesh mesh, ReadableVector3f vertOffset) {
@@ -188,7 +193,11 @@ public class BlendMeshBuilder
         List<DMesh.Vertex> vertices = new ArrayList<>(vertexCount);
         List<Vector2f> uvs = new ArrayList<>(vertexCount);
         List<Integer> colors = new ArrayList<>(vertexCount);
-        int step = vertexFormat.getNextOffset();
+        //#if MC>=11300
+        int step = vertexFormat.getSize();
+        //#else
+        //$$ int step = vertexFormat.getNextOffset();
+        //#endif
         for (int offset = 0; offset < vertexCount * step; offset += step) {
             vertices.add(new DMesh.Vertex(
                      buffer.getFloat(offset      ) - vertOffset.getX(),

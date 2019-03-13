@@ -1,5 +1,9 @@
 package com.replaymod.render.blend;
 
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix3f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Quaternion;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -8,10 +12,6 @@ import org.blender.dna.ListBase;
 import org.blender.utils.BlenderFactory;
 import org.cakelab.blender.nio.CPointer;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.Matrix3f;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Quaternion;
-import org.lwjgl.util.vector.Vector3f;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -37,7 +37,11 @@ public class Util {
     private static FloatBuffer floatBuffer = GLAllocation.createDirectFloatBuffer(16);
     public static Matrix4f getGlMatrix(int matrix) {
         floatBuffer.clear();
-        GL11.glGetFloat(matrix, floatBuffer);
+        //#if MC>=11300
+        GL11.glGetFloatv(matrix, floatBuffer);
+        //#else
+        //$$ GL11.glGetFloat(matrix, floatBuffer);
+        //#endif
         floatBuffer.rewind();
         Matrix4f mat = new Matrix4f();
         mat.load(floatBuffer);
@@ -159,7 +163,11 @@ public class Util {
 
     public static String getTileEntityId(TileEntity tileEntity) {
         NBTTagCompound nbt = new NBTTagCompound();
-        tileEntity.writeToNBT(nbt);
+        //#if MC>=11300
+        tileEntity.write(nbt);
+        //#else
+        //$$ tileEntity.writeToNBT(nbt);
+        //#endif
         return nbt.getString("id");
     }
 

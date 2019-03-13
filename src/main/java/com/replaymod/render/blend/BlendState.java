@@ -12,7 +12,6 @@ import com.replaymod.render.blend.exporters.TileEntityExporter;
 //#endif
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.ReportedException;
 import org.apache.commons.io.output.NullOutputStream;
 import org.blender.utils.BlenderFactory;
 import org.cakelab.blender.io.BlenderFile;
@@ -83,7 +82,7 @@ public class BlendState implements Exporter {
                 CrashReport report = CrashReport.makeCrashReport(e, "Setup of blend exporter");
                 CrashReportCategory category = report.makeCategory("Exporter");
                 addDetail(category, "Exporter", exporter::toString);
-                throw new ReportedException(report);
+                throw newReportedException(report);
             }
         }
     }
@@ -97,7 +96,7 @@ public class BlendState implements Exporter {
                 CrashReport report = CrashReport.makeCrashReport(e, "Tear down of blend exporter");
                 CrashReportCategory category = report.makeCategory("Exporter");
                 addDetail(category, "Exporter", exporter::toString);
-                throw new ReportedException(report);
+                throw newReportedException(report);
             }
         }
 
@@ -134,8 +133,8 @@ public class BlendState implements Exporter {
                 CrashReport report = CrashReport.makeCrashReport(e, "Pre frame of blend exporter");
                 CrashReportCategory category = report.makeCategory("Exporter");
                 addDetail(category, "Exporter", exporter::toString);
-                category.addCrashSection("Frame", frame);
-                throw new ReportedException(report);
+                addDetail(category, "Frame", () -> String.valueOf(frame));
+                throw newReportedException(report);
             }
         }
     }
@@ -149,8 +148,8 @@ public class BlendState implements Exporter {
                 CrashReport report = CrashReport.makeCrashReport(e, "Post frame of blend exporter");
                 CrashReportCategory category = report.makeCategory("Exporter");
                 addDetail(category, "Exporter", exporter::toString);
-                category.addCrashSection("Frame", frame);
-                throw new ReportedException(report);
+                addDetail(category, "Frame", () -> String.valueOf(frame));
+                throw newReportedException(report);
             }
         }
 

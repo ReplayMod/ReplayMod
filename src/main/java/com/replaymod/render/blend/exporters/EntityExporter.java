@@ -1,14 +1,15 @@
 //#if MC>=10800
 package com.replaymod.render.blend.exporters;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DObject;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
 
 import java.io.IOException;
 import java.util.IdentityHashMap;
@@ -17,7 +18,7 @@ import java.util.Map;
 import static com.replaymod.render.blend.Util.getGlModelViewMatrix;
 
 public class EntityExporter implements Exporter {
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = MCVer.getMinecraft();
     private final RenderState renderState;
     private DObject entitiesObject;
     private Map<Entity, DObject> entityObjects;
@@ -59,7 +60,11 @@ public class EntityExporter implements Exporter {
         if (entityObject == null) {
             entityObject = new DObject(DObject.Type.OB_EMPTY);
             entityObject.setParent(renderState.peekObject());
-            entityObject.id.name = entity.getName();
+            //#if MC>=11300
+            entityObject.id.name = entity.getName().getString();
+            //#else
+            //$$ entityObject.id.name = entity.getName();
+            //#endif
             entityObjects.put(entity, entityObject);
         }
         renderState.pushObject(entityObject);
