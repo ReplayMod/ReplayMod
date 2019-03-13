@@ -1,7 +1,6 @@
 package com.replaymod.replay.gui.overlay;
 
 import com.google.common.base.Strings;
-import com.replaymod.replay.ReplayHandler;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.*;
@@ -16,11 +15,11 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 
 //#if MC>=11300
 import com.replaymod.core.versions.MCVer.Keyboard;
-
-import java.util.function.Consumer;
 //#else
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
+
+import java.util.function.Consumer;
 
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
     private static GuiNumberField newGuiNumberField() {
