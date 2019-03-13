@@ -24,7 +24,7 @@ import static org.cakelab.blender.io.block.BlockCodes.ID_DATA;
 
 public class Serializer {
     private final Map<Object, CPointer<Object>> serialized = new HashMap<>();
-    private final Set<String> usedNames = new HashSet<>();
+    private final Map<String, Integer> usedNames = new HashMap<>();
 
     public <T> CPointer<T> getMajor(Object obj, Class<T> clazz) {
         CPointer<Object> pointer = serialized.get(obj);
@@ -47,13 +47,8 @@ public class Serializer {
         if (id.code != ID_DATA) {
             ID asID = pointer.cast(ID.class).get();
             String name = id.code.toString().substring(0, 2) + id.name;
-            String fullName = name;
-            int i = 0;
-            while (usedNames.contains(fullName)) {
-                fullName = name + "." + i;
-                i++;
-            }
-            usedNames.add(fullName);
+            int counter = usedNames.compute(name, (n, i) -> i == null ? 0 : i + 1);
+            String fullName = counter == 0 ? name : name + "." + counter;
             asID.getName().fromString(fullName);
         }
 
