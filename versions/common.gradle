@@ -192,6 +192,9 @@ dependencies {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
+    project(":jGui:$jGuiVersion").afterEvaluate {
+        shade files(project(":jGui:$jGuiVersion").tasks.preshadowJar.archivePath) // include pre-shadowed lwjgl_util
+    }
 
     if (!gradle.gradleVersion.startsWith('3.')) {
         annotationProcessor 'org.projectlombok:lombok:1.16.6'
