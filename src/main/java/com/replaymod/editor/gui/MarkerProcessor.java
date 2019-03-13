@@ -98,7 +98,7 @@ public class MarkerProcessor {
                                     timeOffset
                             );
                             for (PacketData packet : packets) {
-                                replayOutputStream.write(packet.getTime() - timeOffset, packet.getPacket());
+                                replayOutputStream.write(0, packet.getPacket());
                             }
                         }
 
@@ -116,7 +116,7 @@ public class MarkerProcessor {
                                                 nextMarker.getTime()
                                         );
                                         for (PacketData packet : packets) {
-                                            replayOutputStream.write(packet.getTime() - timeOffset, packet.getPacket());
+                                            replayOutputStream.write(nextMarker.getTime() - timeOffset, packet.getPacket());
                                         }
                                         cutFilter = null;
                                     }
