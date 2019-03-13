@@ -10,10 +10,15 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 //#if MC>=10800
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
+import static net.minecraft.client.renderer.GlStateManager.*;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
 //#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
@@ -26,10 +31,12 @@ import static com.replaymod.core.versions.MCVer.*;
 public class GuiRecordingOverlay {
     private final Minecraft mc;
     private final SettingsRegistry settingsRegistry;
+    private final GuiRecordingControls guiControls;
 
-    public GuiRecordingOverlay(Minecraft mc, SettingsRegistry settingsRegistry) {
+    public GuiRecordingOverlay(Minecraft mc, SettingsRegistry settingsRegistry, GuiRecordingControls guiControls) {
         this.mc = mc;
         this.settingsRegistry = settingsRegistry;
+        this.guiControls = guiControls;
     }
 
     public void register() {
@@ -47,12 +54,14 @@ public class GuiRecordingOverlay {
     @SubscribeEvent
     public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
         if (getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
+        if (guiControls.isStopped()) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {
             FontRenderer fontRenderer = getFontRenderer(mc);
-            fontRenderer.drawString(I18n.format("replaymod.gui.recording").toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
-            mc.renderEngine.bindTexture(TEXTURE);
-            GlStateManager.resetColor();
-            GlStateManager.enableAlpha();
+            String text = guiControls.isPaused() ? I18n.format("replaymod.gui.paused") : I18n.format("replaymod.gui.recording");
+            fontRenderer.drawString(text.toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
+            bindTexture(TEXTURE);
+            resetColor();
+            enableAlpha();
             Gui.drawModalRectWithCustomSizedTexture(10, 10, 58, 20, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
         }
     }

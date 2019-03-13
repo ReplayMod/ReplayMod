@@ -2,7 +2,9 @@ package com.replaymod.replay.camera;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.replaymod.replay.Setting;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +16,7 @@ public class CameraControllerRegistry {
     public void register(String name, Function<CameraEntity, CameraController> constructor) {
         Preconditions.checkState(!constructors.containsKey(name), "Controller " + name + " is already registered.");
         constructors.put(name, constructor);
+        Setting.CAMERA.setChoices(new ArrayList<>(getControllers()));
     }
 
     public Set<String> getControllers() {

@@ -1,5 +1,6 @@
 package com.replaymod.render.hooks;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.capturer.CaptureData;
 import com.replaymod.render.capturer.RenderInfo;
@@ -8,8 +9,12 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 
 //#if MC>=10800
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+//#if MC>=11300
+import net.minecraftforge.fml.hooks.BasicEventHooks;
+//#else
+//$$ import net.minecraft.client.renderer.GlStateManager;
+//$$ import net.minecraftforge.fml.common.FMLCommonHandler;
+//#endif
 //#else
 //$$ import com.replaymod.core.versions.MCVer.GlStateManager;
 //$$ import cpw.mods.fml.common.FMLCommonHandler;
@@ -18,7 +23,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import java.io.IOException;
 
 public class EntityRendererHandler implements WorldRenderer {
-    public final Minecraft mc = Minecraft.getMinecraft();
+    public final Minecraft mc = MCVer.getMinecraft();
 
     @Getter
     protected final RenderSettings settings;
@@ -44,21 +49,33 @@ public class EntityRendererHandler implements WorldRenderer {
     }
 
     public void renderWorld(float partialTicks, long finishTimeNano) {
-        FMLCommonHandler.instance().onRenderTickStart(partialTicks);
+        //#if MC>=11300
+        BasicEventHooks.onRenderTickStart(partialTicks);
+        //#else
+        //$$ FMLCommonHandler.instance().onRenderTickStart(partialTicks);
+        //#endif
 
-        mc.entityRenderer.updateLightmap(partialTicks);
-
-        GlStateManager.enableDepth();
-        GlStateManager.enableAlpha();
-        GlStateManager.alphaFunc(516, 0.5F);
-
+        //#if MC>=11300
+        mc.entityRenderer.renderWorld(partialTicks, finishTimeNano);
+        //#else
+        //$$ mc.entityRenderer.updateLightmap(partialTicks);
+        //$$
+        //$$ GlStateManager.enableDepth();
+        //$$ GlStateManager.enableAlpha();
+        //$$ GlStateManager.alphaFunc(516, 0.5F);
+        //$$
         //#if MC>=10800
-        mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
+        //$$ mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
         //#else
         //$$ mc.entityRenderer.renderWorld(partialTicks, finishTimeNano);
         //#endif
+        //#endif
 
-        FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
+        //#if MC>=11300
+        BasicEventHooks.onRenderTickEnd(partialTicks);
+        //#else
+        //$$ FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
+        //#endif
     }
 
     @Override
@@ -69,10 +86,6 @@ public class EntityRendererHandler implements WorldRenderer {
     @Override
     public void setOmnidirectional(boolean omnidirectional) {
         this.omnidirectional = omnidirectional;
-    }
-
-    public interface GluPerspective {
-        void replayModRender_gluPerspective(float fovY, float aspect, float zNear, float zFar);
     }
 
     public interface IEntityRenderer {

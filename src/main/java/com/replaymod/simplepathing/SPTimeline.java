@@ -31,7 +31,6 @@ import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
 import lombok.Getter;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.ReportedException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Triple;
@@ -660,7 +659,7 @@ public class SPTimeline implements PathingRegistry {
             CrashReport crash = CrashReport.makeCrashReport(e, "Serializing interpolator");
             CrashReportCategory category = crash.makeCategory("Serializing interpolator");
             addDetail(category, "Interpolator", interpolator::toString);
-            throw new ReportedException(crash);
+            throw newReportedException(crash);
         }
 
         return baos.toString();
@@ -674,8 +673,8 @@ public class SPTimeline implements PathingRegistry {
         } catch (IOException e) {
             CrashReport crash = CrashReport.makeCrashReport(e, "De-serializing interpolator");
             CrashReportCategory category = crash.makeCategory("De-serializing interpolator");
-            category.addCrashSection("Interpolator", json);
-            throw new ReportedException(crash);
+            addDetail(category, "Interpolator", json::toString);
+            throw newReportedException(crash);
         }
     }
 }

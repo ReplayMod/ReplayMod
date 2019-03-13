@@ -1,9 +1,8 @@
 package com.replaymod.replay.camera;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import org.lwjgl.Sys;
-import org.lwjgl.util.vector.Vector3f;
+
+import javax.vecmath.Vector3f;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -22,7 +21,7 @@ public class ClassicCameraController implements CameraController {
     private Vector3f direction;
     private Vector3f dirBefore;
     private double motion;
-    private long lastCall = Sys.getTime();
+    private long lastCall = System.currentTimeMillis();
 
     private boolean speedup = false;
 
@@ -34,7 +33,7 @@ public class ClassicCameraController implements CameraController {
     public void update(float partialTicksPassed) {
         boolean forward = false, backward = false, left = false, right = false, up = false, down = false;
         speedup = false;
-        for(KeyBinding kb : Minecraft.getMinecraft().gameSettings.keyBindings) {
+        for(KeyBinding kb : getMinecraft().gameSettings.keyBindings) {
             if(!isKeyDown(kb)) continue;
             if(kb.getKeyDescription().equals("key.forward")) {
                 forward = true;
@@ -109,7 +108,7 @@ public class ClassicCameraController implements CameraController {
     }
 
     private void updateMovement() {
-        long frac = Sys.getTime() - lastCall;
+        long frac = System.currentTimeMillis() - lastCall;
 
         if(frac == 0) return;
 
@@ -124,13 +123,14 @@ public class ClassicCameraController implements CameraController {
 
         motion = Math.min(motion, MAX_SPEED);
 
-        lastCall = Sys.getTime();
+        lastCall = System.currentTimeMillis();
 
-        if(direction == null || motion < THRESHOLD) {
+        if(direction == null || direction.lengthSquared() == 0 || motion < THRESHOLD) {
             return;
         }
 
-        Vector3f movement = direction.normalise(null);
+        Vector3f movement = new Vector3f(direction);
+        movement.normalize();
         double factor = motion * (frac / 1000D);
 
         camera.moveCamera(movement.x * factor, movement.y * factor, movement.z * factor);
@@ -162,7 +162,9 @@ public class ClassicCameraController implements CameraController {
         Vector3f dbf = direction;
 
         if(dirBefore != null) {
-            direction = Vector3f.add(direction, dirBefore.normalise(null), null);
+            dirBefore.normalize();
+            dirBefore.add(direction);
+            direction = dirBefore;
         }
 
         dirBefore = dbf;

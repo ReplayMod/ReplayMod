@@ -34,10 +34,10 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.crash.CrashReport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
 import java.io.File;

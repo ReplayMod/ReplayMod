@@ -4,15 +4,21 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreenWorking;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.client.resources.ResourcePackRepository;
-import net.minecraft.util.HttpUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC>=11300
+import de.johni0702.minecraft.gui.utils.Consumer;
+import net.minecraft.client.resources.DownloadingPackFinder;
+//#else
+//$$ import net.minecraft.client.gui.GuiScreenWorking;
+//$$ import net.minecraft.client.resources.ResourcePackRepository;
+//$$ import net.minecraft.util.HttpUtil;
+//#endif
 
 //#if MC>=10904
 import net.minecraft.network.play.client.CPacketResourcePackStatus;
@@ -33,11 +39,11 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
-import org.apache.commons.io.FileUtils;
+//#if MC<11300
+//$$ import org.apache.commons.io.FileUtils;
+//#endif
 
 import javax.annotation.Nonnull;
-
-import static com.replaymod.core.versions.MCVer.*;
 //#else
 //$$ import net.minecraft.client.multiplayer.ServerData.ServerResourceMode;
 //$$ import net.minecraft.client.multiplayer.ServerList;
@@ -52,12 +58,14 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.replaymod.core.versions.MCVer.*;
+
 /**
  * Records resource packs and handles incoming resource pack packets during recording.
  */
 public class ResourcePackRecorder {
     private static final Logger logger = LogManager.getLogger();
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = getMinecraft();
 
     private final ReplayFile replayFile;
 
@@ -131,12 +139,12 @@ public class ResourcePackRecorder {
 
         if (url.startsWith("level://")) {
             String levelName = url.substring("level://".length());
-            File savesDir = new File(mc.mcDataDir, "saves");
+            File savesDir = new File(mcDataDir(mc), "saves");
             final File levelDir = new File(savesDir, levelName);
 
             if (levelDir.isFile()) {
                 netManager.sendPacket(makeStatusPacket(hash, Action.ACCEPTED));
-                Futures.addCallback(setServerResourcePack(mc.getResourcePackRepository(), levelDir), new FutureCallback<Object>() {
+                Futures.addCallback(setServerResourcePack(levelDir), new FutureCallback<Object>() {
                     @Override
                     public void onSuccess(Object result) {
                         recordResourcePack(levelDir, requestId);
@@ -163,7 +171,11 @@ public class ResourcePackRecorder {
                 //noinspection Convert2Lambda
                 mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
                     @Override
-                    public void confirmClicked(boolean result, int id) {
+                    //#if MC>=11300
+                    public void confirmResult(boolean result, int id) {
+                    //#else
+                    //$$ public void confirmClicked(boolean result, int id) {
+                    //#endif
                         if (serverData != null) {
                             serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
                         }
@@ -202,100 +214,112 @@ public class ResourcePackRecorder {
         });
     }
 
+    //#if MC>=11300
     private ListenableFuture downloadResourcePack(final int requestId, String url, String hash) {
-        final ResourcePackRepository repo = mc.mcResourcePackRepository;
-        String fileName;
-        if (hash.matches("^[a-f0-9]{40}$")) {
-            fileName = hash;
-        } else {
-            fileName = url.substring(url.lastIndexOf("/") + 1);
+        DownloadingPackFinder packFinder = mc.getPackFinder();
+        ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file, requestId));
+        return packFinder.downloadResourcePack(url, hash);
+    }
 
-            if (fileName.contains("?")) {
-                fileName = fileName.substring(0, fileName.indexOf("?"));
-            }
-
-            if (!fileName.endsWith(".zip")) {
-                return Futures.immediateFailedFuture(new IllegalArgumentException("Invalid filename; must end in .zip"));
-            }
-
-            fileName = "legacy_" + fileName.replaceAll("\\W", "");
-        }
-
-        final File file = new File(repo.dirServerResourcepacks, fileName);
+    public interface IDownloadingPackFinder {
+        void setRequestCallback(Consumer<File> callback);
+    }
+    //#else
+    //$$ private ListenableFuture downloadResourcePack(final int requestId, String url, String hash) {
+    //$$     final ResourcePackRepository repo = mc.mcResourcePackRepository;
+    //$$     String fileName;
+    //$$     if (hash.matches("^[a-f0-9]{40}$")) {
+    //$$         fileName = hash;
+    //$$     } else {
+    //$$         fileName = url.substring(url.lastIndexOf("/") + 1);
+    //$$
+    //$$         if (fileName.contains("?")) {
+    //$$             fileName = fileName.substring(0, fileName.indexOf("?"));
+    //$$         }
+    //$$
+    //$$         if (!fileName.endsWith(".zip")) {
+    //$$             return Futures.immediateFailedFuture(new IllegalArgumentException("Invalid filename; must end in .zip"));
+    //$$         }
+    //$$
+    //$$         fileName = "legacy_" + fileName.replaceAll("\\W", "");
+    //$$     }
+    //$$
+    //$$     final File file = new File(repo.dirServerResourcepacks, fileName);
         //#if MC>=10809
-        repo.lock.lock();
+        //$$ repo.lock.lock();
         //#else
         //$$ repo.field_177321_h.lock();
         //#endif
-        try {
+    //$$     try {
             //#if MC>=10809
-            repo.clearResourcePack();
+            //$$ repo.clearResourcePack();
             //#else
             //$$ repo.func_148529_f();
             //#endif
-
-            if (file.exists() && hash.length() == 40) {
-                try {
-                    String fileHash = Hashing.sha1().hashBytes(Files.toByteArray(file)).toString();
-                    if (fileHash.equals(hash)) {
-                        recordResourcePack(file, requestId);
-                        return setServerResourcePack(repo, file);
-                    }
-
-                    logger.warn("File " + file + " had wrong hash (expected " + hash + ", found " + fileHash + "). Deleting it.");
-                    FileUtils.deleteQuietly(file);
-                } catch (IOException ioexception) {
-                    logger.warn("File " + file + " couldn\'t be hashed. Deleting it.", ioexception);
-                    FileUtils.deleteQuietly(file);
-                }
-            }
-
-            final GuiScreenWorking guiScreen = new GuiScreenWorking();
-            final Minecraft mc = Minecraft.getMinecraft();
-
-            Futures.getUnchecked(mc.addScheduledTask(() -> mc.displayGuiScreen(guiScreen)));
-
+    //$$
+    //$$         if (file.exists() && hash.length() == 40) {
+    //$$             try {
+    //$$                 String fileHash = Hashing.sha1().hashBytes(Files.toByteArray(file)).toString();
+    //$$                 if (fileHash.equals(hash)) {
+    //$$                     recordResourcePack(file, requestId);
+    //$$                     return setServerResourcePack(file);
+    //$$                 }
+    //$$
+    //$$                 logger.warn("File " + file + " had wrong hash (expected " + hash + ", found " + fileHash + "). Deleting it.");
+    //$$                 FileUtils.deleteQuietly(file);
+    //$$             } catch (IOException ioexception) {
+    //$$                 logger.warn("File " + file + " couldn\'t be hashed. Deleting it.", ioexception);
+    //$$                 FileUtils.deleteQuietly(file);
+    //$$             }
+    //$$         }
+    //$$
+    //$$         final GuiScreenWorking guiScreen = new GuiScreenWorking();
+    //$$         final Minecraft mc = Minecraft.getMinecraft();
+    //$$
+    //$$         Futures.getUnchecked(mc.addScheduledTask(() -> mc.displayGuiScreen(guiScreen)));
+    //$$
             //#if MC>=10809
             //#if MC>=11002
             //#if MC>=11100
-            Map<String, String> sessionInfo = ResourcePackRepository.getDownloadHeaders();
+            //$$ Map<String, String> sessionInfo = ResourcePackRepository.getDownloadHeaders();
             //#else
             //$$ Map<String, String> sessionInfo = ResourcePackRepository.func_190115_a();
             //#endif
             //#else
             //$$ Map<String, String> sessionInfo = Minecraft.getSessionInfo();
             //#endif
-            repo.downloadingPacks = HttpUtil.downloadResourcePack(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
-            Futures.addCallback(repo.downloadingPacks, new FutureCallback<Object>() {
+            //$$ repo.downloadingPacks = HttpUtil.downloadResourcePack(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
+            //$$ Futures.addCallback(repo.downloadingPacks, new FutureCallback<Object>() {
             //#else
             //$$ Map sessionInfo = Minecraft.getSessionInfo();
             //$$ repo.field_177322_i = HttpUtil.func_180192_a(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
             //$$ Futures.addCallback(repo.field_177322_i, new FutureCallback() {
             //#endif
-                @Override
-                public void onSuccess(Object value) {
-                    recordResourcePack(file, requestId);
-                    setServerResourcePack(repo, file);
-                }
-
-                @Override
-                public void onFailure(@Nonnull Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            });
+    //$$             @Override
+    //$$             public void onSuccess(Object value) {
+    //$$                 recordResourcePack(file, requestId);
+    //$$                 setServerResourcePack(file);
+    //$$             }
+    //$$
+    //$$             @Override
+    //$$             public void onFailure(@Nonnull Throwable throwable) {
+    //$$                 throwable.printStackTrace();
+    //$$             }
+    //$$         });
             //#if MC>=10809
-            return repo.downloadingPacks;
+            //$$ return repo.downloadingPacks;
             //#else
             //$$ return repo.field_177322_i;
             //#endif
-        } finally {
+    //$$     } finally {
             //#if MC>=10809
-            repo.lock.unlock();
+            //$$ repo.lock.unlock();
             //#else
             //$$ repo.field_177321_h.unlock();
             //#endif
-        }
-    }
+    //$$     }
+    //$$ }
+    //#endif
     //#else
     //$$ public synchronized S3FPacketCustomPayload handleResourcePack(S3FPacketCustomPayload packet) {
     //$$     final int requestId = nextRequestId++;

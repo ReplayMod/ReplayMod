@@ -1,7 +1,6 @@
 package com.replaymod.online.gui;
 
 import com.mojang.authlib.exceptions.AuthenticationException;
-import com.replaymod.core.versions.MCVer;
 import com.replaymod.online.api.ApiClient;
 import com.replaymod.online.api.ApiException;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
@@ -13,9 +12,9 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Consumers;
 import de.johni0702.minecraft.gui.utils.Utils;
 import com.replaymod.core.utils.Patterns;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import net.minecraft.client.gui.FontRenderer;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableColor;
 
 import static com.replaymod.core.versions.MCVer.*;
 

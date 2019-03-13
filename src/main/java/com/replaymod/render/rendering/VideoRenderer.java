@@ -1,6 +1,7 @@
 package com.replaymod.render.rendering;
 
 import com.replaymod.core.utils.WrappedTimer;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
@@ -19,15 +20,20 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.Timer;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
+
+//#if MC>=11300
+import org.lwjgl.glfw.GLFW;
+//#else
+//$$ import net.minecraft.client.gui.ScaledResolution;
+//$$ import org.lwjgl.input.Mouse;
+//$$ import org.lwjgl.opengl.Display;
+//#endif
 
 //#if MC>=10904
 import net.minecraft.util.SoundCategory;
@@ -57,7 +63,7 @@ import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class VideoRenderer implements RenderInfo {
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = MCVer.getMinecraft();
     private final RenderSettings settings;
     private final ReplayHandler replayHandler;
     private final Timeline timeline;
@@ -158,12 +164,14 @@ public class VideoRenderer implements RenderInfo {
 
         renderingPipeline.run();
 
-        if (settings.isInject360Metadata()) {
-            if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS) {
-                MetadataInjector.injectODSMetadata(settings.getOutputFile());
-            } else {
-                MetadataInjector.inject360Metadata(settings.getOutputFile());
-            }
+        if (mc.hasCrashed) {
+            throw newReportedException(mc.crashReporter);
+        }
+
+        if (settings.isInjectSphericalMetadata()) {
+            MetadataInjector.injectMetadata(settings.getRenderMethod(), settings.getOutputFile(),
+                    settings.getTargetVideoWidth(), settings.getTargetVideoHeight(),
+                    settings.getSphericalFovX(), settings.getSphericalFovY());
         }
 
         finish();
@@ -180,18 +188,28 @@ public class VideoRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
-        int displayWidthBefore = mc.displayWidth;
-        int displayHeightBefore = mc.displayHeight;
-
-        mc.displayWidth = displayWidth;
-        mc.displayHeight = displayHeight;
+        //#if MC>=11300
+        int displayWidthBefore = mc.mainWindow.framebufferWidth;
+        int displayHeightBefore = mc.mainWindow.framebufferHeight;
+        mc.mainWindow.framebufferWidth = displayWidth;
+        mc.mainWindow.framebufferHeight = displayHeight;
+        //#else
+        //$$ int displayWidthBefore = mc.displayWidth;
+        //$$ int displayHeightBefore = mc.displayHeight;
+        //$$ mc.displayWidth = displayWidth;
+        //$$ mc.displayHeight = displayHeight;
+        //#endif
 
         if (!settings.isHighPerformance() || framesDone % fps == 0) {
             drawGui();
         }
 
         // Updating the timer will cause the timeline player to update the game state
-        mc.timer.updateTimer();
+        mc.timer.updateTimer(
+                //#if MC>=11300
+                MCVer.milliTime()
+                //#endif
+        );
 
         int elapsedTicks = mc.timer.elapsedTicks;
         while (elapsedTicks-- > 0) {
@@ -199,8 +217,13 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // change Minecraft's display size back
-        mc.displayWidth = displayWidthBefore;
-        mc.displayHeight = displayHeightBefore;
+        //#if MC>=11300
+        mc.mainWindow.framebufferWidth = displayWidthBefore;
+        mc.mainWindow.framebufferHeight = displayHeightBefore;
+        //#else
+        //$$ mc.displayWidth = displayWidthBefore;
+        //$$ mc.displayHeight = displayHeightBefore;
+        //#endif
 
         framesDone++;
         return mc.timer.renderPartialTicks;
@@ -216,30 +239,51 @@ public class VideoRenderer implements RenderInfo {
         timelinePlayerFuture = timelinePlayer.start(timeline);
 
         if (!OpenGlHelper.isFramebufferEnabled()) {
-            Display.setResizable(false);
+            //#if MC>=11300
+            GLFW.glfwSetWindowAttrib(mc.mainWindow.getHandle(), GLFW.GLFW_RESIZABLE, 1);
+            //#else
+            //$$ Display.setResizable(false);
+            //#endif
         }
         if (mc.gameSettings.showDebugInfo) {
             debugInfoWasShown = true;
             mc.gameSettings.showDebugInfo = false;
         }
-        if (Mouse.isGrabbed()) {
+        //#if MC>=11300
+        if (mc.mouseHelper.isMouseGrabbed()) {
             mouseWasGrabbed = true;
         }
-        Mouse.setGrabbed(false);
+        mc.mouseHelper.ungrabMouse();
+        //#else
+        //$$ if (Mouse.isGrabbed()) {
+        //$$     mouseWasGrabbed = true;
+        //$$ }
+        //$$ Mouse.setGrabbed(false);
+        //#endif
 
         // Mute all sounds except GUI sounds (buttons, etc.)
-        Map<SoundCategory, Float> mutedSounds = new EnumMap<>(SoundCategory.class);
+        //#if MC>=11300
+        originalSoundLevels = new EnumMap<>(SoundCategory.class);
         for (SoundCategory category : SoundCategory.values()) {
-            mutedSounds.put(category, 0f);
+            if (category != SoundCategory.MASTER) {
+                originalSoundLevels.put(category, mc.gameSettings.getSoundLevel(category));
+                mc.gameSettings.setSoundLevel(category, 0);
+            }
         }
+        //#else
+        //$$ Map<SoundCategory, Float> mutedSounds = new EnumMap<>(SoundCategory.class);
+        //$$ for (SoundCategory category : SoundCategory.values()) {
+        //$$     mutedSounds.put(category, 0f);
+        //$$ }
         //#if MC>=10904
-        originalSoundLevels = mc.gameSettings.soundLevels;
-        mutedSounds.put(SoundCategory.MASTER, originalSoundLevels.get(SoundCategory.MASTER));
-        mc.gameSettings.soundLevels = mutedSounds;
+        //$$ originalSoundLevels = mc.gameSettings.soundLevels;
+        //$$ mutedSounds.put(SoundCategory.MASTER, originalSoundLevels.get(SoundCategory.MASTER));
+        //$$ mc.gameSettings.soundLevels = mutedSounds;
         //#else
         //$$ originalSoundLevels = mc.gameSettings.mapSoundLevels;
         //$$ mutedSounds.put(SoundCategory.MASTER, (Float) originalSoundLevels.get(SoundCategory.MASTER));
         //$$ mc.gameSettings.mapSoundLevels = mutedSounds;
+        //#endif
         //#endif
 
         fps = settings.getFramesPerSecond();
@@ -282,14 +326,28 @@ public class VideoRenderer implements RenderInfo {
         timelinePlayer.onTick(new ReplayTimer.UpdatedEvent());
 
         if (!OpenGlHelper.isFramebufferEnabled()) {
-            Display.setResizable(true);
+            //#if MC>=11300
+            GLFW.glfwSetWindowAttrib(mc.mainWindow.getHandle(), GLFW.GLFW_RESIZABLE, 0);
+            //#else
+            //$$ Display.setResizable(true);
+            //#endif
         }
         mc.gameSettings.showDebugInfo = debugInfoWasShown;
         if (mouseWasGrabbed) {
-            mc.mouseHelper.grabMouseCursor();
+            //#if MC>=11300
+            mc.mouseHelper.grabMouse();
+            //#else
+            //$$ mc.mouseHelper.grabMouseCursor();
+            //#endif
         }
         //#if MC>=10904
-        mc.gameSettings.soundLevels = originalSoundLevels;
+        //#if MC>=11300
+        for (Map.Entry<SoundCategory, Float> entry : originalSoundLevels.entrySet()) {
+            mc.gameSettings.setSoundLevel(entry.getKey(), entry.getValue());
+        }
+        //#else
+        //$$ mc.gameSettings.soundLevels = originalSoundLevels;
+        //#endif
         //#else
         //$$ mc.gameSettings.mapSoundLevels = originalSoundLevels;
         //#endif
@@ -311,7 +369,13 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
-        mc.resize(displayWidth, displayHeight);
+        //#if MC>=11300
+        mc.getFramebuffer().createFramebuffer(displayWidth, displayHeight);
+        mc.mainWindow.framebufferWidth = displayWidth;
+        mc.mainWindow.framebufferHeight = displayHeight;
+        //#else
+        //$$ mc.resize(displayWidth, displayHeight);
+        //#endif
     }
 
     private void tick() {
@@ -322,14 +386,14 @@ public class VideoRenderer implements RenderInfo {
         }
 
         mc.currentScreen = gui.toMinecraft();
-        //#if MC>=10800
-        try {
-            mc.runTick();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        //#if MC>=10800 && MC<11300
+        //$$ try {
+        //$$     mc.runTick();
+        //$$ } catch (IOException e) {
+        //$$     throw new RuntimeException(e);
+        //$$ }
         //#else
-        //$$ mc.runTick();
+        mc.runTick();
         //#endif
     }
 
@@ -338,7 +402,11 @@ public class VideoRenderer implements RenderInfo {
             // Resize the GUI framebuffer if the display size changed
             if (!settings.isHighPerformance() && displaySizeChanged()) {
                 updateDisplaySize();
-                guiFramebuffer.createBindFramebuffer(mc.displayWidth, mc.displayHeight);
+                //#if MC>=11300
+                guiFramebuffer.createBindFramebuffer(mc.mainWindow.getFramebufferWidth(), mc.mainWindow.getFramebufferHeight());
+                //#else
+                //$$ guiFramebuffer.createBindFramebuffer(mc.displayWidth, mc.displayHeight);
+                //#endif
             }
 
             pushMatrix();
@@ -346,27 +414,47 @@ public class VideoRenderer implements RenderInfo {
             enableTexture2D();
             guiFramebuffer.bindFramebuffer(true);
 
-            mc.entityRenderer.setupOverlayRendering();
+            //#if MC>=11300
+            mc.mainWindow.setupOverlayRendering();
+            //#else
+            //$$ mc.entityRenderer.setupOverlayRendering();
+            //#endif
 
-            ScaledResolution scaled = newScaledResolution(mc);
-            gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
+            //#if MC>=11300
+            gui.toMinecraft().setWorldAndResolution(mc, mc.mainWindow.getScaledWidth(), mc.mainWindow.getScaledHeight());
+            //#else
+            //$$ ScaledResolution scaled = newScaledResolution(mc);
+            //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
+            //#endif
 
+            // Events are polled on 1.13+ in mainWindow.update which is called later
+            //#if MC<11300
             //#if MC>=10800
-            try {
-                gui.toMinecraft().handleInput();
-            } catch (IOException e) {
-                // That's a strange exception from this kind of method O_o
-                // It isn't actually thrown here, so we'll deal with it the easy way
-                throw new RuntimeException(e);
-            }
+            //$$ try {
+            //$$     gui.toMinecraft().handleInput();
+            //$$ } catch (IOException e) {
+            //$$     // That's a strange exception from this kind of method O_o
+            //$$     // It isn't actually thrown here, so we'll deal with it the easy way
+            //$$     throw new RuntimeException(e);
+            //$$ }
             //#else
             //$$ gui.toMinecraft().handleInput();
             //#endif
+            //#endif
 
-            int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
-            int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
+            //#if MC>=11300
+            int mouseX = (int) mc.mouseHelper.getMouseX();
+            int mouseY = (int) mc.mouseHelper.getMouseY();
 
-            gui.toMinecraft().drawScreen(mouseX, mouseY, 0);
+            gui.toMinecraft().tick();
+            gui.toMinecraft().render(mouseX, mouseY, 0);
+            //#else
+            //$$ int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
+            //$$ int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
+            //$$
+            //$$ gui.toMinecraft().updateScreen();
+            //$$ gui.toMinecraft().drawScreen(mouseX, mouseY, 0);
+            //#endif
 
             guiFramebuffer.unbindFramebuffer();
             popMatrix();
@@ -374,20 +462,30 @@ public class VideoRenderer implements RenderInfo {
             guiFramebuffer.framebufferRender(displayWidth, displayHeight);
             popMatrix();
 
-            // if not in high performance mode, update the gui size if screen size changed
-            // otherwise just swap the progress gui to screen
-            if (settings.isHighPerformance()) {
-                Display.update();
-            } else {
+            //#if MC>=11300
+            mc.mainWindow.update(false);
+            //#else
+            //$$ // if not in high performance mode, update the gui size if screen size changed
+            //$$ // otherwise just swap the progress gui to screen
+            //$$ if (settings.isHighPerformance()) {
+            //$$     Display.update();
+            //$$ } else {
                 //#if MC>=10800
-                mc.updateDisplay();
+                //$$ mc.updateDisplay();
                 //#else
                 //$$ mc.resetSize();
                 //#endif
+            //$$ }
+            //#endif
+            //#if MC>=11300
+            if (mc.mouseHelper.isMouseGrabbed()) {
+                mc.mouseHelper.ungrabMouse();
             }
-            if (Mouse.isGrabbed()) {
-                Mouse.setGrabbed(false);
-            }
+            //#else
+            //$$ if (Mouse.isGrabbed()) {
+            //$$     Mouse.setGrabbed(false);
+            //$$ }
+            //#endif
             if (paused) {
                 try {
                     Thread.sleep(50);
@@ -400,12 +498,21 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private boolean displaySizeChanged() {
-        return displayWidth != Display.getWidth() || displayHeight != Display.getHeight();
+        //#if MC>=11300
+        return displayWidth != mc.mainWindow.getWidth() || displayHeight != mc.mainWindow.getHeight();
+        //#else
+        //$$ return displayWidth != Display.getWidth() || displayHeight != Display.getHeight();
+        //#endif
     }
 
     private void updateDisplaySize() {
-        displayWidth = Display.getWidth();
-        displayHeight = Display.getHeight();
+        //#if MC>=11300
+        displayWidth = mc.mainWindow.getWidth();
+        displayHeight = mc.mainWindow.getHeight();
+        //#else
+        //$$ displayWidth = Display.getWidth();
+        //$$ displayHeight = Display.getHeight();
+        //#endif
     }
 
     public int getFramesDone() {

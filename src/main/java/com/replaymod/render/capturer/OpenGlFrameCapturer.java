@@ -1,16 +1,17 @@
 package com.replaymod.render.capturer;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.Frame;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.utils.ByteBufferPool;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.WritableDimension;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.WritableDimension;
+import org.lwjgl.opengl.GL12;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,7 +31,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     protected int framesDone;
     private Framebuffer frameBuffer;
 
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = MCVer.getMinecraft();
 
     public OpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         this.worldRenderer = worldRenderer;
@@ -64,7 +65,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
 
     protected Framebuffer frameBuffer() {
         if (frameBuffer == null) {
-            frameBuffer = Minecraft.getMinecraft().getFramebuffer();
+            frameBuffer = mc.getFramebuffer();
         }
         return frameBuffer;
     }
@@ -96,30 +97,28 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     }
 
     protected OpenGlFrame captureFrame(int frameId, D captureData) {
-        GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
-        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-
-        ByteBuffer buffer = ByteBufferPool.allocate(getFrameWidth() * getFrameHeight() * 3);
-        if (OpenGlHelper.isFramebufferEnabled()) {
-            frameBuffer().bindFramebufferTexture();
-            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buffer);
-            frameBuffer().unbindFramebufferTexture();
-        } else {
-            GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buffer);
-        }
+        ByteBuffer buffer = ByteBufferPool.allocate(getFrameWidth() * getFrameHeight() * 4);
+        frameBuffer().bindFramebuffer(true);
+        GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, buffer);
+        frameBuffer().unbindFramebuffer();
         buffer.rewind();
 
         return new OpenGlFrame(frameId, new Dimension(getFrameWidth(), getFrameHeight()), buffer);
     }
 
     protected void resize(int width, int height) {
-        if (width != mc.displayWidth || height != mc.displayHeight) {
-            setWindowSize(width, height);
+        //#if MC>=11300
+        Framebuffer fb = mc.getFramebuffer();
+        if (fb.framebufferWidth != width || fb.framebufferHeight != height) {
+            fb.createFramebuffer(width, height);
         }
-    }
-
-    private void setWindowSize(int width, int height) {
-        mc.resize(width, height);
+        mc.mainWindow.framebufferWidth = width;
+        mc.mainWindow.framebufferHeight = height;
+        //#else
+        //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
+        //$$     mc.resize(width, height);
+        //$$ }
+        //#endif
     }
 
     @Override

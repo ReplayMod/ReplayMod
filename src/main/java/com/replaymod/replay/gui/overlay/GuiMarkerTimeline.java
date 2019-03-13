@@ -2,27 +2,46 @@ package com.replaymod.replay.gui.overlay;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.util.Location;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
 import de.johni0702.minecraft.gui.function.Draggable;
+import de.johni0702.minecraft.gui.function.Typeable;
+import de.johni0702.minecraft.gui.utils.lwjgl.Point;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.client.resources.I18n;
-import org.lwjgl.util.Point;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.ReadablePoint;
+
+//#if MC>=11300
+import com.replaymod.core.versions.MCVer.Keyboard;
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import static de.johni0702.minecraft.gui.utils.Utils.clamp;
 
-public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> implements Draggable {
+public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> implements Draggable, Typeable {
     protected static final int TEXTURE_MARKER_X = 109;
     protected static final int TEXTURE_MARKER_Y = 20;
     protected static final int TEXTURE_MARKER_SELECTED_X = 114;
     protected static final int TEXTURE_MARKER_SELECTED_Y = 20;
     protected static final int MARKER_SIZE = 5;
 
+    @Nullable
     private final ReplayHandler replayHandler;
+    private final Consumer<Set<Marker>> saveMarkers;
+    protected Set<Marker> markers;
 
     private ReadableDimension lastSize;
 
@@ -32,8 +51,27 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
     private boolean dragging;
     private long lastClickTime;
 
-    public GuiMarkerTimeline(ReplayHandler replayHandler) {
+    public GuiMarkerTimeline(@Nonnull ReplayHandler replayHandler) {
         this.replayHandler = replayHandler;
+        try {
+            this.markers = replayHandler.getReplayFile().getMarkers().or(HashSet::new);
+        } catch (IOException e) {
+            ReplayModReplay.LOGGER.error("Failed to get markers from replay", e);
+            this.markers = new HashSet<>();
+        }
+        this.saveMarkers = (markers) -> {
+            try {
+                replayHandler.getReplayFile().writeMarkers(markers);
+            } catch (IOException e) {
+                ReplayModReplay.LOGGER.error("Failed to save markers to replay", e);
+            }
+        };
+    }
+
+    public GuiMarkerTimeline(Set<Marker> markers, Consumer<Set<Marker>> saveMarkers) {
+        this.replayHandler = null;
+        this.markers = markers;
+        this.saveMarkers = saveMarkers;
     }
 
     @Override
@@ -52,7 +90,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
     protected void drawMarkers(GuiRenderer renderer, ReadableDimension size) {
         renderer.bindTexture(ReplayMod.TEXTURE);
 
-        for (Marker marker : replayHandler.getMarkers()) {
+        for (Marker marker : markers) {
             drawMarker(renderer, size, marker);
         }
     }
@@ -63,7 +101,10 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
         double positionInVisible = markerPos - getOffset();
         double fractionOfVisible = positionInVisible / visibleLength;
         int markerX = (int) (BORDER_LEFT + fractionOfVisible * (size.getWidth() - BORDER_LEFT - BORDER_RIGHT));
+        drawMarker(renderer, size, marker, markerX);
+    }
 
+    protected void drawMarker(GuiRenderer renderer, ReadableDimension size, Marker marker, int markerX) {
         int textureX, textureY;
         if (marker.equals(selectedMarker)) {
             textureX = TEXTURE_MARKER_SELECTED_X;
@@ -99,7 +140,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
 
         int visibleLength = (int) (getLength() * getZoom());
         int contentWidth = lastSize.getWidth() - BORDER_LEFT - BORDER_RIGHT;
-        for (Marker marker : replayHandler.getMarkers()) {
+        for (Marker marker : markers) {
             int markerPos = clamp(marker.getTime(), getOffset(), getOffset() + visibleLength);
             double positionInVisible = markerPos - getOffset();
             double fractionOfVisible = positionInVisible / visibleLength;
@@ -122,16 +163,24 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
                     draggingStartX = position.getX();
                     draggingTimeDelta = marker.getTime() - getTimeAt(position.getX(), position.getY());
                 } else { // Double click
-                    new GuiEditMarkerPopup(replayHandler, getContainer(), marker).open();
+                    new GuiEditMarkerPopup(getContainer(), marker, (updatedMarker) -> {
+                        markers.remove(marker);
+                        markers.add(updatedMarker);
+                        saveMarkers.accept(markers);
+                    }).open();
                 }
                 lastClickTime = now;
             } else if (button == 1) { // Right click
                 selectedMarker = null;
-                replayHandler.setTargetPosition(new Location(
-                        marker.getX(), marker.getY(), marker.getZ(),
-                        marker.getPitch(), marker.getYaw()
-                ));
-                replayHandler.doJump(marker.getTime(), false);
+                if (replayHandler != null) {
+                    replayHandler.setTargetPosition(new Location(
+                            marker.getX(), marker.getY(), marker.getZ(),
+                            marker.getPitch(), marker.getYaw()
+                    ));
+                    replayHandler.doJump(marker.getTime(), false);
+                } else {
+                    setCursorPosition(marker.getTime());
+                }
             }
             return true;
         } else {
@@ -164,7 +213,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
             mouseDrag(position, button, 0);
             if (dragging) {
                 dragging = false;
-                replayHandler.saveMarkers();
+                saveMarkers.accept(markers);
                 return true;
             }
         }
@@ -186,5 +235,20 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
 
     public Marker getSelectedMarker() {
         return selectedMarker;
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (keyCode == Keyboard.KEY_DELETE && selectedMarker != null) {
+            markers.remove(selectedMarker);
+            saveMarkers.accept(markers);
+            return true;
+        }
+        return false;
+    }
+
+    public void addMarker(Marker marker) {
+        markers.add(marker);
+        saveMarkers.accept(markers);
     }
 }

@@ -3,8 +3,8 @@ package com.replaymod.render.processor;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.frame.StereoscopicOpenGlFrame;
 import com.replaymod.render.utils.ByteBufferPool;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 
 import java.nio.ByteBuffer;
 
@@ -17,7 +17,7 @@ public class StereoscopicToRGBProcessor extends AbstractFrameProcessor<Stereosco
         int width = size.getWidth();
         ByteBuffer leftBuffer = rawFrame.getLeft().getByteBuffer();
         ByteBuffer rightBuffer = rawFrame.getRight().getByteBuffer();
-        ByteBuffer result = ByteBufferPool.allocate(width * 2 * size.getHeight() * 3);
+        ByteBuffer result = ByteBufferPool.allocate(width * 2 * size.getHeight() * 4);
         openGlBytesToRBG(leftBuffer, width, 0, 0, result, width * 2);
         openGlBytesToRBG(rightBuffer, width, size.getWidth(), 0, result, width * 2);
         ByteBufferPool.release(leftBuffer);

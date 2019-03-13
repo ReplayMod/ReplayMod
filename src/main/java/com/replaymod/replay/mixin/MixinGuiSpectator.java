@@ -2,7 +2,6 @@
 package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.camera.CameraEntity;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiSpectator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +19,7 @@ public abstract class MixinGuiSpectator {
     //#endif
     public void isInReplay(int i, CallbackInfo ci) {
         // Prevent spectator gui from opening while in a replay
-        if (player(Minecraft.getMinecraft()) instanceof CameraEntity) {
+        if (player(getMinecraft()) instanceof CameraEntity) {
             ci.cancel();
         }
     }

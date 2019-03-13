@@ -18,15 +18,20 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.versions.MCVer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
+
+//#if MC>=11300
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
 import net.minecraft.client.network.NetworkPlayerInfo;
@@ -64,16 +69,30 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static net.minecraft.client.Minecraft.getMinecraft;
+import static com.replaymod.core.versions.MCVer.Minecraft_mcDataDir;
+import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 public class Utils {
+
+    private static InputStream getResourceAsStream(String path) {
+        // FIXME this seems broken in 1.13, hence the workaround. probably want to open an issue with modlauncher (or forge?)
+        //#ifdef DEV_ENV
+        try {
+            return new java.io.FileInputStream(new File("../src/main/resources" + path));
+        } catch (java.io.FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        //#else
+        //$$ return Utils.class.getResourceAsStream(path);
+        //#endif
+    }
 
     public static final BufferedImage DEFAULT_THUMBNAIL;
 
     static {
         BufferedImage thumbnail;
         try {
-            thumbnail = ImageIO.read(Utils.class.getClassLoader().getResourceAsStream("default_thumb.jpg"));
+            thumbnail = ImageIO.read(getResourceAsStream("/default_thumb.jpg"));
         } catch (Exception e) {
             thumbnail = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
             e.printStackTrace();
@@ -98,7 +117,7 @@ public class Utils {
 
     static {
         // Largely from https://community.letsencrypt.org/t/134/37
-        try (InputStream in = Utils.class.getResourceAsStream("/dst_root_ca_x3.pem")){
+        try (InputStream in = getResourceAsStream("/dst_root_ca_x3.pem")){
             Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(in);
 
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -189,7 +208,11 @@ public class Utils {
     }
 
     public static boolean isCtrlDown() {
-        return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+        //#if MC>=11300
+        return GuiScreen.isCtrlKeyDown();
+        //#else
+        //$$ return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+        //#endif
     }
 
     public static <T> void addCallback(ListenableFuture<T> future, Consumer<T> onSuccess, Consumer<Throwable> onFailure) {
@@ -216,7 +239,7 @@ public class Utils {
         // Try to save the crash report
         if (crashReport.getFile() == null) {
             try {
-                File folder = new File(getMinecraft().mcDataDir, "crash-reports");
+                File folder = new File(Minecraft_mcDataDir(getMinecraft()), "crash-reports");
                 File file = new File(folder, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
                 logger.debug("Saving crash report to file: {}", file);
                 crashReport.saveToFile(file);
@@ -263,7 +286,7 @@ public class Utils {
 
             // Replace close button with panel containing close and copy buttons
             GuiButton copyToClipboardButton = new GuiButton().setI18nLabel("chat.copy").onClick(() ->
-                    GuiScreen.setClipboardString(crashReport)).setSize(150, 20);
+                    MCVer.setClipboardString(crashReport)).setSize(150, 20);
             GuiButton closeButton = getCloseButton();
             popup.removeElement(closeButton);
             popup.addElements(new VerticalLayout.Data(1),
@@ -279,6 +302,19 @@ public class Utils {
             // Re-size the scrollable containing the crash report to 3/4 of the screen
             scrollable.setSize(size.getWidth() * 3 / 4, size.getHeight() * 3 / 4);
             super.draw(renderer, size, renderInfo);
+        }
+    }
+
+    public static <T extends Throwable> void throwIfInstanceOf(Throwable t, Class<T> cls) throws T {
+        if (cls.isInstance(t)) {
+            throw cls.cast(t);
+        }
+    }
+    public static void throwIfUnchecked(Throwable t) {
+        if (t instanceof RuntimeException) {
+            throw (RuntimeException) t;
+        } else if (t instanceof Error) {
+            throw (Error) t;
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.replaymod.recording.mixin;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -30,8 +31,7 @@ import static com.replaymod.core.versions.MCVer.*;
 @Mixin(NetHandlerPlayClient.class)
 public abstract class MixinNetHandlerPlayClient {
 
-    @Shadow
-    private Minecraft gameController;
+    private static Minecraft gameController = MCVer.getMinecraft();
 
     //#if MC>=10800
     @Shadow

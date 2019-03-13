@@ -3,20 +3,19 @@ package com.replaymod.replay.camera;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
 import com.replaymod.replay.events.ReplayChatMessageEvent;
 import com.replaymod.replaystudio.util.Location;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -26,10 +25,21 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.common.MinecraftForge;
 
+//#if MC>=11300
+import net.minecraft.util.math.RayTraceFluidMode;
+//#else
+//$$ import net.minecraft.block.material.Material;
+//$$ import net.minecraft.entity.EntityLivingBase;
+//#endif
+
 //#if MC>=10904
 import net.minecraft.inventory.EntityEquipmentSlot;
 //#if MC>=11200
-import net.minecraft.stats.RecipeBook;
+//#if MC>=11300
+import net.minecraft.client.util.RecipeBookClient;
+//#else
+//$$ import net.minecraft.stats.RecipeBook;
+//#endif
 //#endif
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.util.EnumHand;
@@ -45,9 +55,14 @@ import net.minecraft.util.text.ITextComponent;
 
 //#if MC>=10800
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.EventPriority;
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.EventPriority;
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -97,9 +112,13 @@ public class CameraEntity
      */
     private final EventHandler eventHandler = new EventHandler();
 
+    //#if MC>=11300
+    public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBookClient recipeBookClient) {
+        super(mcIn, worldIn, netHandlerPlayClient, statisticsManager, recipeBookClient);
+    //#else
     //#if MC>=11200
-    public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
-        super(mcIn, worldIn, netHandlerPlayClient, statisticsManager, recipeBook);
+    //$$ public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
+    //$$     super(mcIn, worldIn, netHandlerPlayClient, statisticsManager, recipeBook);
     //#else
     //#if MC>=10904
     //$$ public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager) {
@@ -111,6 +130,7 @@ public class CameraEntity
     //#else
     //$$ public CameraEntity(Minecraft mcIn, World worldIn, Session session, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
     //$$     super(mcIn, worldIn, session, netHandlerPlayClient, statFileWriter);
+    //#endif
     //#endif
     //#endif
     //#endif
@@ -196,7 +216,11 @@ public class CameraEntity
 
     private void updateBoundingBox() {
         //#if MC>=10800
-        setEntityBoundingBox(new AxisAlignedBB(
+        //#if MC>=11300
+        setBoundingBox(new AxisAlignedBB(
+        //#else
+        //$$ setEntityBoundingBox(new AxisAlignedBB(
+        //#endif
         //#else
         //$$ this.boundingBox.setBB(AxisAlignedBB.getBoundingBox(
         //#endif
@@ -205,7 +229,11 @@ public class CameraEntity
     }
 
     @Override
-    public void onUpdate() {
+    //#if MC>=11300
+    public void tick() {
+    //#else
+    //$$ public void onUpdate() {
+    //#endif
         //#if MC>=10800
         Entity view = getRenderViewEntity(mc);
         //#else
@@ -262,10 +290,12 @@ public class CameraEntity
         return falseUnlessSpectating(Entity::isEntityInsideOpaqueBlock); // Make sure no suffocation overlay is rendered
     }
 
-    @Override
-    public boolean isInsideOfMaterial(Material materialIn) {
-        return falseUnlessSpectating(e -> e.isInsideOfMaterial(materialIn)); // Make sure no overlays are rendered
-    }
+    //#if MC<11300
+    //$$ @Override
+    //$$ public boolean isInsideOfMaterial(Material materialIn) {
+    //$$     return falseUnlessSpectating(e -> e.isInsideOfMaterial(materialIn)); // Make sure no overlays are rendered
+    //$$ }
+    //#endif
 
     //#if MC>=10800
     @Override
@@ -405,17 +435,31 @@ public class CameraEntity
         return super.isHandActive();
     }
 
+    //#if MC>=11300
     @Override
-    public RayTraceResult rayTrace(double p_174822_1_, float p_174822_3_) {
-        RayTraceResult pos = super.rayTrace(p_174822_1_, 1f);
+    public RayTraceResult rayTrace(double blockReachDistance, float partialTicks, RayTraceFluidMode p_174822_4_) {
+        RayTraceResult pos = super.rayTrace(blockReachDistance, partialTicks, p_174822_4_);
 
         // Make sure we can never look at blocks (-> no outline)
-        if(pos != null && pos.typeOfHit == RayTraceResult.Type.BLOCK) {
-            pos.typeOfHit = RayTraceResult.Type.MISS;
+        if(pos != null && pos.type == RayTraceResult.Type.BLOCK) {
+            pos.type = RayTraceResult.Type.MISS;
         }
 
         return pos;
     }
+    //#else
+    //$$ @Override
+    //$$ public RayTraceResult rayTrace(double p_174822_1_, float p_174822_3_) {
+    //$$     RayTraceResult pos = super.rayTrace(p_174822_1_, 1f);
+    //$$
+    //$$     // Make sure we can never look at blocks (-> no outline)
+    //$$     if(pos != null && pos.typeOfHit == RayTraceResult.Type.BLOCK) {
+    //$$         pos.typeOfHit = RayTraceResult.Type.MISS;
+    //$$     }
+    //$$
+    //$$     return pos;
+    //$$ }
+    //#endif
     //#else
     //$$ @Override
     //$$ public MovingObjectPosition rayTrace(double p_174822_1_, float p_174822_3_) {
@@ -430,15 +474,22 @@ public class CameraEntity
     //$$ }
     //#endif
 
-    @Override
-    public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
-        // Do not open any block GUIs for the camera entities
-        // Note: Vanilla GUIs are filtered out on a packet level, this only applies to mod GUIs
-    }
+    //#if MC<11300
+    //$$ @Override
+    //$$ public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
+    //$$     // Do not open any block GUIs for the camera entities
+    //$$     // Note: Vanilla GUIs are filtered out on a packet level, this only applies to mod GUIs
+    //$$ }
+    //#endif
 
     @Override
-    public void setDead() {
-        super.setDead();
+    //#if MC>=11300
+    public void remove() {
+        super.remove();
+    //#else
+    //$$ public void setDead() {
+    //$$     super.setDead();
+    //#endif
         FORGE_BUS.unregister(eventHandler);
         FML_BUS.unregister(eventHandler);
     }
@@ -530,11 +581,11 @@ public class CameraEntity
         @SubscribeEvent
         public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
             // The crosshair should only render if targeted entity can actually be spectated
-            if (getType(event) == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+            if (MCVer.getType(event) == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
                 event.setCanceled(!canSpectate(mc.pointedEntity));
             }
             // Hotbar should never be rendered
-            if (getType(event) == RenderGameOverlayEvent.ElementType.HOTBAR) {
+            if (MCVer.getType(event) == RenderGameOverlayEvent.ElementType.HOTBAR) {
                 event.setCanceled(true);
             }
         }
@@ -605,7 +656,7 @@ public class CameraEntity
 
         @SubscribeEvent
         public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
-            switch (getType(event)) {
+            switch (MCVer.getType(event)) {
                 case ALL:
                     heldItemTooltipsWasTrue = mc.gameSettings.heldItemTooltips;
                     mc.gameSettings.heldItemTooltips = false;
@@ -641,7 +692,7 @@ public class CameraEntity
 
         @SubscribeEvent
         public void postRenderGameOverlay(RenderGameOverlayEvent.Post event) {
-            if (getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
+            if (MCVer.getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
             mc.gameSettings.heldItemTooltips = heldItemTooltipsWasTrue;
         }
     }

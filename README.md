@@ -8,6 +8,10 @@ After the initial clone, running `./gradlew setupDecompWorkspace` is necessary. 
 This will also be necessary if the `replaymod_at.cfg` file has been changed (getting errors about code that is trying 
 to access private fields is a good indication that this has happened).
 
+**Note**: ForgeGradle 1.2 (used for 1.7.10) is not compatible with Gradle 4.
+As such, you need to use an older version (Gradle 3.x) to build the ReplayMod for 1.7.10.
+An easy way to do that is to pass `--old-gradle` as the first argument to the Gradle wrapper shell script: `./gradlew --old-gradle build`
+
 ### No IDE
 You can build the mod by running `./gradlew build`. You can then find the final jar files in `versions/$MCVERSION/build/libs/`.
 You can also build single versions by running `./gradlew :1.8:build` (builds the MC 1.8 version).

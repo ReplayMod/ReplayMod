@@ -38,6 +38,12 @@ public class NoGuiScreenshot {
                     return;
                 }
 
+                //#if MC>=11300
+                int frameWidth = mc.mainWindow.getFramebufferWidth(), frameHeight = mc.mainWindow.getFramebufferHeight();
+                //#else
+                //$$ int frameWidth = mc.displayWidth, frameHeight = mc.displayHeight;
+                //#endif
+
                 final boolean guiHidden = mc.gameSettings.hideGUI;
                 try {
                     mc.gameSettings.hideGUI = true;
@@ -48,16 +54,20 @@ public class NoGuiScreenshot {
                     mc.getFramebuffer().bindFramebuffer(true);
                     GlStateManager.enableTexture2D();
 
+                    //#if MC>=11300
+                    mc.entityRenderer.renderWorld(mc.timer.renderPartialTicks, System.nanoTime());
+                    //#else
                     //#if MC>=10809
-                    mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks, System.nanoTime());
+                    //$$ mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks, System.nanoTime());
                     //#else
                     //$$ mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks);
+                    //#endif
                     //#endif
 
                     mc.getFramebuffer().unbindFramebuffer();
                     GlStateManager.popMatrix();
                     GlStateManager.pushMatrix();
-                    mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
+                    mc.getFramebuffer().framebufferRender(frameWidth, frameHeight);
                     GlStateManager.popMatrix();
                 } catch (Throwable t) {
                     future.setException(t);
@@ -73,7 +83,12 @@ public class NoGuiScreenshot {
                 // disk for better maintainability
                 File tmpFolder = Files.createTempDir();
                 try {
-                    ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", mc.displayWidth, mc.displayHeight, mc.getFramebuffer());
+                    //#if MC>=11300
+                    ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer(), (msg) ->
+                            mc.addScheduledTask(() -> mc.ingameGUI.getChatGUI().printChatMessage(msg)));
+                    //#else
+                    //$$ ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer());
+                    //#endif
                     File screenshotFile = new File(tmpFolder, "screenshots/tmp");
                     BufferedImage image = ImageIO.read(screenshotFile);
                     int imageWidth = image.getWidth();

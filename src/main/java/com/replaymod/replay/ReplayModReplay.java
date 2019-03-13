@@ -4,14 +4,16 @@ import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.replaymod.core.KeyBindingRegistry;
+import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraControllerRegistry;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.ClassicCameraController;
 import com.replaymod.replay.camera.VanillaCameraController;
-import com.replaymod.replay.gui.overlay.GuiMarkerTimeline;
 import com.replaymod.replay.gui.screen.GuiModCompatWarning;
 import com.replaymod.replay.handler.GuiHandler;
 import com.replaymod.replaystudio.data.Marker;
@@ -19,46 +21,30 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.Minecraft;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.input.Keyboard;
 
-//#if MC>=10800
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+//#if MC>=11300
+import com.replaymod.core.versions.MCVer.Keyboard;
 //#else
-//$$ import cpw.mods.fml.common.Mod;
-//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//$$ import org.lwjgl.input.Keyboard;
 //#endif
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Optional;
 
-@Mod(modid = ReplayModReplay.MOD_ID,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
-        acceptableRemoteVersions = "*",
-        //#if MC>=10800
-        clientSideOnly = true,
-        //#endif
-        useMetadata = true)
-public class ReplayModReplay {
-    public static final String MOD_ID = "replaymod-replay";
+public class ReplayModReplay implements Module {
 
-    @Mod.Instance(MOD_ID)
+    { instance = this; }
     public static ReplayModReplay instance;
 
     private ReplayMod core;
 
     private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 
-    public static Logger LOGGER;
+    public static Logger LOGGER = LogManager.getLogger();
 
     protected ReplayHandler replayHandler;
 
@@ -66,14 +52,15 @@ public class ReplayModReplay {
         return replayHandler;
     }
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        LOGGER = event.getModLog();
-        core = ReplayMod.instance;
+    public ReplayModReplay(ReplayMod core) {
+        this.core = core;
 
         core.getSettingsRegistry().register(Setting.class);
+    }
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
+    @Override
+    public void registerKeyBindings(KeyBindingRegistry registry) {
+        registry.registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null ) {
@@ -87,29 +74,17 @@ public class ReplayModReplay {
                         marker.setYaw(camera.rotationYaw);
                         marker.setPitch(camera.rotationPitch);
                         marker.setRoll(camera.roll);
-                        replayHandler.getMarkers().add(marker);
-                        replayHandler.saveMarkers();
+                        replayHandler.getOverlay().timeline.addMarker(marker);
                     }
                 }
             }
         });
 
-        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
-            if (replayHandler != null) {
-                GuiMarkerTimeline timeline = replayHandler.getOverlay().timeline;
-                if (timeline.getSelectedMarker() != null) {
-                    replayHandler.getMarkers().remove(timeline.getSelectedMarker());
-                    replayHandler.saveMarkers();
-                    timeline.setSelectedMarker(null);
-                }
-            }
-        });
-
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.thumbnail", Keyboard.KEY_N, new Runnable() {
+        registry.registerKeyBinding("replaymod.input.thumbnail", Keyboard.KEY_N, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null) {
-                    Minecraft mc = Minecraft.getMinecraft();
+                    Minecraft mc = MCVer.getMinecraft();
                     ListenableFuture<NoGuiScreenshot> future = NoGuiScreenshot.take(mc, 1280, 720);
                     Futures.addCallback(future, new FutureCallback<NoGuiScreenshot>() {
                         @Override
@@ -133,12 +108,23 @@ public class ReplayModReplay {
             }
         });
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
+        registry.registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null) {
                     replayHandler.getOverlay().playPauseButton.onClick();
                 }
+            }
+        });
+
+        registry.registerKeyBinding("replaymod.input.quickmode", Keyboard.KEY_Q, () -> {
+            if (replayHandler != null) {
+                replayHandler.getReplaySender().setSyncModeAndWait();
+                core.runLater(() ->
+                        replayHandler.ensureQuickModeInitialized(() -> {
+                            replayHandler.setQuickMode(!replayHandler.isQuickMode());
+                            replayHandler.getReplaySender().setAsyncMode(true);
+                        }));
             }
         });
 
@@ -153,7 +139,10 @@ public class ReplayModReplay {
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.resettilt", Keyboard.KEY_K, () -> {
             Optional.ofNullable(replayHandler).map(ReplayHandler::getCameraEntity).ifPresent(c -> c.roll = 0);
         });
+    }
 
+    @Override
+    public void initClient() {
         cameraControllerRegistry.register("replaymod.camera.classic", new Function<CameraEntity, CameraController>() {
             @Nullable
             @Override
@@ -168,19 +157,11 @@ public class ReplayModReplay {
                 return new VanillaCameraController(core.getMinecraft(), cameraEntity);
             }
         });
-    }
 
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
         Minecraft mc = core.getMinecraft();
         mc.timer = new InputReplayTimer(mc.timer, this);
 
         new GuiHandler(this).register();
-    }
-
-    @Mod.EventHandler
-    public void postInit(FMLPostInitializationEvent event) {
-        Setting.CAMERA.setChoices(new ArrayList<>(cameraControllerRegistry.getControllers()));
     }
 
     public void startReplay(File file) throws IOException {

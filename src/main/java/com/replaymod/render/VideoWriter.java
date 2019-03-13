@@ -1,19 +1,18 @@
 package com.replaymod.render;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.StreamPipe;
-import net.minecraft.client.Minecraft;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.Util;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.lwjgl.util.ReadableDimension;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -22,16 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-//#if MC>=10800
-import net.minecraftforge.fml.common.versioning.ComparableVersion;
-//#else
-//$$ import cpw.mods.fml.common.versioning.ComparableVersion;
-//#endif
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.apache.commons.lang3.Validate.isTrue;
@@ -64,7 +54,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
                     .replace("%BITRATE%", String.valueOf(settings.getBitRate()))
                     .replace("%FILTERS%", settings.getVideoFilters());
 
-        String executable = settings.getExportCommand().isEmpty() ? findFFmpeg() : settings.getExportCommand();
+        String executable = settings.getExportCommandOrDefault();
         LOGGER.info("Starting {} with args: {}", executable, commandArgs);
         String[] cmdline;
         try {
@@ -78,60 +68,12 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         } catch (IOException e) {
             throw new NoFFmpegException(e);
         }
-        File exportLogFile = new File(Minecraft.getMinecraft().mcDataDir, "export.log");
+        File exportLogFile = new File(MCVer.mcDataDir(MCVer.getMinecraft()), "export.log");
         OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream(exportLogFile), ffmpegLog);
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();
         outputStream = process.getOutputStream();
         channel = Channels.newChannel(outputStream);
-    }
-
-    private String findFFmpeg() {
-        switch (Util.getOSType()) {
-            case WINDOWS:
-                // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
-                File inDotMinecraft = new File(Minecraft.getMinecraft().mcDataDir, "ffmpeg/bin/ffmpeg.exe");
-                if (inDotMinecraft.exists()) {
-                    LOGGER.debug("FFmpeg found in .minecraft/ffmpeg");
-                    return inDotMinecraft.getAbsolutePath();
-                }
-                break;
-            case OSX:
-                // The PATH doesn't seem to be set as expected on OSX, therefore we check some common locations ourselves
-                for (String path : new String[]{"/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"}) {
-                    File file = new File(path);
-                    if (file.exists()) {
-                        LOGGER.debug("Found FFmpeg at {}", path);
-                        return path;
-                    } else {
-                        LOGGER.debug("FFmpeg not located at {}", path);
-                    }
-                }
-                // Homebrew doesn't seem to reliably symlink its installed binaries either
-                File homebrewFolder = new File("/usr/local/Cellar/ffmpeg");
-                String[] homebrewVersions = homebrewFolder.list();
-                if (homebrewVersions != null) {
-                    Optional<File> latestOpt = Arrays.stream(homebrewVersions)
-                            .map(ComparableVersion::new) // Convert file name to comparable version
-                            .sorted(Comparator.reverseOrder()) // Sort for latest version
-                            .map(ComparableVersion::toString) // Convert back to file name
-                            .map(v -> new File(new File(homebrewFolder, v), "bin/ffmpeg")) // Convert to binary files
-                            .filter(File::exists) // Filter invalid installations (missing executable)
-                            .findFirst(); // Take first one
-                    if (latestOpt.isPresent()) {
-                        File latest = latestOpt.get();
-                        LOGGER.debug("Found {} versions of FFmpeg installed with homebrew, chose {}",
-                                homebrewVersions.length, latest);
-                        return latest.getAbsolutePath();
-                    }
-                }
-                break;
-            case LINUX: // Linux users are entrusted to have their PATH configured correctly (most package manager do this)
-            case SOLARIS: // Never heard of anyone running this mod on Solaris having any problems
-            case UNKNOWN: // Unknown OS, just try to use "ffmpeg"
-        }
-        LOGGER.debug("Using default FFmpeg executable");
-        return "ffmpeg";
     }
 
     @Override
@@ -182,9 +124,9 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
             }
             CrashReport report = CrashReport.makeCrashReport(t, "Exporting frame");
             CrashReportCategory exportDetails = report.makeCategory("Export details");
-            exportDetails.addCrashSection("Export command", settings.getExportCommand());
-            exportDetails.addCrashSection("Export args", commandArgs);
-            Minecraft.getMinecraft().crashed(report);
+            MCVer.addDetail(exportDetails, "Export command", settings::getExportCommand);
+            MCVer.addDetail(exportDetails, "Export args", commandArgs::toString);
+            MCVer.getMinecraft().crashed(report);
         }
     }
 

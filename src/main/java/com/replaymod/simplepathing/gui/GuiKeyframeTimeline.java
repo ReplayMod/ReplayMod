@@ -1,6 +1,7 @@
 package com.replaymod.simplepathing.gui;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
@@ -16,11 +17,10 @@ import com.replaymod.simplepathing.SPTimeline.SPPath;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
 import de.johni0702.minecraft.gui.function.Draggable;
-import net.minecraft.client.Minecraft;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.util.Point;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.ReadablePoint;
+import de.johni0702.minecraft.gui.utils.lwjgl.Point;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -46,7 +46,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
     /**
      * The time at which {@link #lastClickedKeyframe} was updated.
-     * According to {@link Minecraft#getSystemTime()}.
+     * According to {@link MCVer#milliTime()}.
      */
     private long lastClickedTime;
 
@@ -191,7 +191,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             // Clicked on keyframe
             long keyframeTime = pathKeyframePair.getRight();
             if (button == 0) { // Left click
-                long now = Minecraft.getSystemTime();
+                long now = MCVer.milliTime();
                 if (lastClickedKeyframe == keyframeTime) {
                     // Clicked the same keyframe again, potentially a double click
                     if (now - lastClickedTime < DOUBLE_CLICK_INTERVAL) {

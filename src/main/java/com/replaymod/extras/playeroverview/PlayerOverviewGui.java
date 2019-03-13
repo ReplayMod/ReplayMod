@@ -18,15 +18,13 @@ import de.johni0702.minecraft.gui.function.Closeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
 
 //#if MC>=10904
 import net.minecraft.init.MobEffects;
-import net.minecraft.init.SoundEvents;
 //#else
 //$$ import net.minecraft.potion.Potion;
 //#endif
@@ -55,30 +53,12 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
     public final GuiCheckbox checkAll = new GuiCheckbox(contentPanel){
         @Override
         public void onClick() {
-            //#if MC>=10904
-            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            //#else
-            //#if MC>=10800
-            //$$ getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
-            //#else
-            //$$ getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(BUTTON_SOUND, 1.0F));
-            //#endif
-            //#endif
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(true);
         }
     }.setLabel("").setChecked(true).setTooltip(new GuiTooltip().setI18nText("replaymod.gui.playeroverview.showall"));
     public final GuiCheckbox uncheckAll = new GuiCheckbox(contentPanel){
         @Override
         public void onClick() {
-            //#if MC>=10904
-            getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            //#else
-            //#if MC>=10800
-            //$$ getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.create(BUTTON_SOUND, 1.0F));
-            //#else
-            //$$ getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.createPositionedSoundRecord(BUTTON_SOUND, 1.0F));
-            //#endif
-            //#endif
             playersScrollable.forEach(IGuiCheckbox.class).setChecked(false);
         }
     }.setLabel("").setChecked(false).setTooltip(new GuiTooltip().setI18nText("replaymod.gui.playeroverview.hideall"));
@@ -135,10 +115,14 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                         }
                     }.setSize(16, 16),
                     new GuiLabel().setText(
+                            //#if MC>=11300
+                            p.getName().getFormattedText()
+                            //#else
                             //#if MC>=10800
-                            p.getName()
+                            //$$ p.getName()
                             //#else
                             //$$ p.getDisplayName()
+                            //#endif
                             //#endif
                     ).setColor(isSpectator(p) ? Colors.DKGREY : Colors.WHITE)
             ).onClick(new Runnable() {
@@ -196,10 +180,14 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
         public int compare(EntityPlayer o1, EntityPlayer o2) {
             if (isSpectator(o1) && !isSpectator(o2)) return 1;
             if (isSpectator(o2) && !isSpectator(o1)) return -1;
+            //#if MC>=11300
+            return o1.getName().getFormattedText().compareToIgnoreCase(o2.getName().getFormattedText());
+            //#else
             //#if MC>=10800
-            return o1.getName().compareToIgnoreCase(o2.getName());
+            //$$ return o1.getName().compareToIgnoreCase(o2.getName());
             //#else
             //$$ return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+            //#endif
             //#endif
         }
     }

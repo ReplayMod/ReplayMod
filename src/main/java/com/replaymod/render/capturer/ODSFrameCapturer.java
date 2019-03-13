@@ -6,14 +6,11 @@ import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.shader.Program;
-import net.minecraft.client.Minecraft;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.util.ReadableDimension;
 
 //#if MC>=10800
-import net.minecraft.client.renderer.GlStateManager;
 import static net.minecraft.client.renderer.GlStateManager.*;
 //#else
 //$$ import com.replaymod.render.hooks.GLStateTracker.BooleanState;
@@ -36,9 +33,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
     private final Program.Uniform leftEyeVariable;
 
     private final BooleanState[] previousStates = new BooleanState[3];
-    private final BooleanState previousFogState;
-
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private BooleanState previousFogState;
 
     public ODSFrameCapturer(WorldRenderer worldRenderer, final RenderInfo renderInfo, int frameSize) {
         RenderInfo fakeInfo = new RenderInfo() {
@@ -62,9 +57,9 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             @Override
             public float updateForNextFrame() {
                 if (call++ % 2 == 0) {
-                    shaderProgram.stopUsing();
+                    unbindProgram();
                     partialTicks = renderInfo.updateForNextFrame();
-                    shaderProgram.use();
+                    bindProgram();
                 }
                 return partialTicks;
             }
@@ -78,28 +73,41 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         right = new CubicStereoFrameCapturer(worldRenderer, fakeInfo, frameSize);
         try {
             shaderProgram = new Program(vertexResource, fragmentResource);
-            shaderProgram.use();
             leftEyeVariable = shaderProgram.getUniformVariable("leftEye");
             directionVariable = shaderProgram.getUniformVariable("direction");
-            setTexture("texture", 0);
-            setTexture("lightMap", 1);
-            linkState(0, "textureEnabled");
-            linkState(1, "lightMapEnabled");
-            linkState(2, "hurtTextureEnabled");
-            final Program.Uniform uniform = shaderProgram.getUniformVariable("fogEnabled");
-            previousFogState = fog();
-            uniform.set(previousFogState.currentState);
-            fog(new BooleanState(previousFogState.capability) {
-                @Override
-                public void setState(boolean state) {
-                    super.setState(state);
-                    uniform.set(state);
-                }
-            });
-            shaderProgram.stopUsing();
         } catch (Exception e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Creating ODS shaders"));
+            throw newReportedException(CrashReport.makeCrashReport(e, "Creating ODS shaders"));
         }
+    }
+
+    private void bindProgram() {
+        shaderProgram.use();
+        setTexture("texture", 0);
+        setTexture("lightMap", 1);
+        linkState(0, "textureEnabled");
+        linkState(1, "lightMapEnabled");
+        linkState(2, "hurtTextureEnabled");
+        final Program.Uniform uniform = shaderProgram.getUniformVariable("fogEnabled");
+        previousFogState = fog();
+        uniform.set(previousFogState.currentState);
+        fog(new BooleanState(previousFogState.capability) {
+            { currentState = previousFogState.currentState; }
+            @Override
+            public void setState(boolean state) {
+                super.setState(state);
+                uniform.set(state);
+            }
+        });
+    }
+
+    private void unbindProgram() {
+        for (int i = 0; i < previousStates.length; i++) {
+            previousStates[i].currentState = texture2DState(i).currentState;
+            texture2DState(i, previousStates[i]);
+        }
+        previousFogState.currentState = fog().currentState;
+        fog(previousFogState);
+        shaderProgram.stopUsing();
     }
 
     private void setTexture(String texture, int i) {
@@ -111,6 +119,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         previousStates[id] = texture2DState(id);
         uniform.set(previousStates[id].currentState);
         texture2DState(id, new BooleanState(previousStates[id].capability) {
+            { currentState = previousStates[id].currentState; }
             @Override
             public void setState(boolean state) {
                 super.setState(state);
@@ -126,12 +135,12 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
     @Override
     public ODSOpenGlFrame process() {
-        shaderProgram.use();
+        bindProgram();
         leftEyeVariable.set(true);
         CubicOpenGlFrame leftFrame = left.process();
         leftEyeVariable.set(false);
         CubicOpenGlFrame rightFrame = right.process();
-        shaderProgram.stopUsing();
+        unbindProgram();
 
         if (leftFrame != null && rightFrame != null) {
             return new ODSOpenGlFrame(leftFrame, rightFrame);
@@ -144,10 +153,6 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         left.close();
         right.close();
         shaderProgram.delete();
-        for (int i = 0; i < previousStates.length; i++) {
-            texture2DState(i, previousStates[i]);
-        }
-        fog(previousFogState);
     }
 
     private class CubicStereoFrameCapturer extends CubicPboOpenGlFrameCapturer {

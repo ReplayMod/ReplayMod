@@ -3,14 +3,20 @@ package com.replaymod.render.hooks;
 
 import com.replaymod.render.utils.JailingQueue;
 import net.minecraft.client.renderer.RegionRenderCacheBuilder;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.chunk.ChunkRenderWorker;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
+
+//#if MC>=11300
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.chunk.ChunkRenderTask;
+//#else
+//$$ import net.minecraft.client.renderer.RenderGlobal;
+//$$ import net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator;
+//#endif
 
 //#if MC>=10904
 import java.util.concurrent.PriorityBlockingQueue;
@@ -22,14 +28,28 @@ import static com.replaymod.core.versions.MCVer.*;
 
 public class ChunkLoadingRenderGlobal {
 
-    private final RenderGlobal hooked;
+    //#if MC>=11300
+    private final WorldRenderer hooked;
+    //#else
+    //$$ private final RenderGlobal hooked;
+    //#endif
     private ChunkRenderDispatcher renderDispatcher;
-    private JailingQueue<ChunkCompileTaskGenerator> workerJailingQueue;
+    //#if MC>=11300
+    private JailingQueue<ChunkRenderTask> workerJailingQueue;
+    //#else
+    //$$ private JailingQueue<ChunkCompileTaskGenerator> workerJailingQueue;
+    //#endif
     private CustomChunkRenderWorker renderWorker;
     private int frame;
 
     @SuppressWarnings("unchecked")
-    public ChunkLoadingRenderGlobal(RenderGlobal renderGlobal) {
+    public ChunkLoadingRenderGlobal(
+            //#if MC>=11300
+            WorldRenderer renderGlobal
+            //#else
+            //$$ RenderGlobal renderGlobal
+            //#endif
+    ) {
         this.hooked = renderGlobal;
 
         setup(renderGlobal.renderDispatcher);
@@ -51,14 +71,22 @@ public class ChunkLoadingRenderGlobal {
 
         int workerThreads = renderDispatcher.listThreadedWorkers.size();
         //#if MC>=10904
-        PriorityBlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
+        //#if MC>=11300
+        PriorityBlockingQueue<ChunkRenderTask> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
+        //#else
+        //$$ PriorityBlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
+        //#endif
         //#else
         //$$ BlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
         //#endif
         workerJailingQueue = new JailingQueue<>(queueChunkUpdates);
         renderDispatcher.queueChunkUpdates = workerJailingQueue;
         //#if MC>=10904
-        ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null, 0);
+        //#if MC>=11300
+        ChunkRenderTask element = new ChunkRenderTask(null, null, 0);
+        //#else
+        //$$ ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null, 0);
+        //#endif
         //#else
         //$$ ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null);
         //#endif
@@ -75,7 +103,11 @@ public class ChunkLoadingRenderGlobal {
         renderDispatcher.queueChunkUpdates = queueChunkUpdates;
 
         try {
-            Field hookField = RenderGlobal.class.getField("replayModRender_hook");
+            //#if MC>=11300
+            Field hookField = WorldRenderer.class.getField("replayModRender_hook");
+            //#else
+            //$$ Field hookField = RenderGlobal.class.getField("replayModRender_hook");
+            //#endif
             hookField.set(hooked, this);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new Error(e);
@@ -119,7 +151,11 @@ public class ChunkLoadingRenderGlobal {
         workerJailingQueue.freeAll();
 
         try {
-            Field hookField = RenderGlobal.class.getField("replayModRender_hook");
+            //#if MC>=11300
+            Field hookField = WorldRenderer.class.getField("replayModRender_hook");
+            //#else
+            //$$ Field hookField = RenderGlobal.class.getField("replayModRender_hook");
+            //#endif
             hookField.set(hooked, null);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new Error(e);
@@ -139,7 +175,13 @@ public class ChunkLoadingRenderGlobal {
         }
 
         @Override
-        protected void processTask(ChunkCompileTaskGenerator p_178474_1_) throws InterruptedException {
+        protected void processTask(
+                //#if MC>=11300
+                ChunkRenderTask p_178474_1_
+                //#else
+                //$$ ChunkCompileTaskGenerator p_178474_1_
+                //#endif
+        ) throws InterruptedException {
             super.processTask(p_178474_1_);
         }
     }

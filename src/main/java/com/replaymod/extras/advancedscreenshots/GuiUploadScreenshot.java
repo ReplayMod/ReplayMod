@@ -12,7 +12,7 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
-import org.lwjgl.util.ReadableColor;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 
 import java.awt.*;
 import java.io.IOException;

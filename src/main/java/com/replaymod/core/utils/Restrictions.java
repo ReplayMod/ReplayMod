@@ -3,6 +3,7 @@ package com.replaymod.core.utils;
 import net.minecraft.network.PacketBuffer;
 //#if MC>=10904
 import net.minecraft.network.play.server.SPacketCustomPayload;
+import net.minecraft.util.ResourceLocation;
 //#else
 //$$ import net.minecraft.network.play.server.S3FPacketCustomPayload;
 //#endif
@@ -18,7 +19,11 @@ import static com.replaymod.core.versions.MCVer.readString;
  * @see <a href="https://gist.github.com/Johni0702/2547c463e51f65f312cb">Replay Restrictions Gist</a>
  */
 public class Restrictions {
-    public static final String PLUGIN_CHANNEL = "Replay|Restrict";
+    //#if MC>=11300
+    public static final ResourceLocation PLUGIN_CHANNEL = new ResourceLocation("replaymod", "restrict");
+    //#else
+    //$$ public static final String PLUGIN_CHANNEL = "Replay|Restrict";
+    //#endif
     private boolean noXray;
     private boolean noNoclip;
     private boolean onlyFirstPerson;

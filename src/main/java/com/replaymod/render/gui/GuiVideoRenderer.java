@@ -11,18 +11,23 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiCheckbox;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
+import de.johni0702.minecraft.gui.function.Tickable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
-import org.lwjgl.util.ReadablePoint;
+
+//#if MC>=11300
+import net.minecraft.client.renderer.texture.NativeImage;
+//#endif
 
 import java.nio.ByteBuffer;
 
-public class GuiVideoRenderer extends GuiScreen {
+public class GuiVideoRenderer extends GuiScreen implements Tickable {
     private static final ResourceLocation NO_PREVIEW_TEXTURE = new ResourceLocation("replaymod", "logo.jpg");
 
     private final VideoRenderer renderer;
@@ -135,7 +140,7 @@ public class GuiVideoRenderer extends GuiScreen {
     private int currentIndex = 0;
 
     @Override
-    public void draw(GuiRenderer guiRenderer, ReadableDimension size, RenderInfo renderInfo) {
+    public void tick() {
         long current = System.currentTimeMillis();
 
         //first, update the total render time (only if rendering is not paused and has already started)
@@ -206,8 +211,6 @@ public class GuiVideoRenderer extends GuiScreen {
         int framesDone = renderer.getFramesDone(), framesTotal = renderer.getTotalFrames();
         progressBar.setI18nLabel("replaymod.gui.rendering.progress", framesDone, framesTotal);
         progressBar.setProgress((float) framesDone / framesTotal);
-
-        super.draw(guiRenderer, size, renderInfo);
     }
 
     private String secToString(int seconds) {
@@ -229,7 +232,11 @@ public class GuiVideoRenderer extends GuiScreen {
         final int videoHeight = videoSize.getHeight();
 
         if (previewTexture == null) {
-            previewTexture = new DynamicTexture(videoWidth, videoHeight);
+            //#if MC>=11300
+            previewTexture = new DynamicTexture(videoWidth, videoHeight, true);
+            //#else
+            //$$ previewTexture = new DynamicTexture(videoWidth, videoHeight);
+            //#endif
         }
 
         if (previewTextureDirty) {
@@ -263,13 +270,27 @@ public class GuiVideoRenderer extends GuiScreen {
             ByteBuffer buffer = frame.getByteBuffer();
             buffer.mark();
             synchronized (this) {
-                int[] data = previewTexture.getTextureData();
-                // Optifine changes the texture data array to be three times as long (for use by shaders),
-                // we only want to initialize the first third which is why we use the length of the buffer instead
-                // of the length of the data array
-                for (int i = 0; buffer.remaining() > 0; i++) {
-                    data[i] = 0xff << 24 | (buffer.get() & 0xff) << 16 | (buffer.get() & 0xff) << 8 |  (buffer.get() & 0xff);
+                //#if MC>=11300
+                NativeImage data = previewTexture.getTextureData();
+                assert data != null;
+                for (int y = 0; y < data.getHeight(); y++) {
+                    for (int x = 0; x < data.getWidth(); x++) {
+                        int r = buffer.get() & 0xff;
+                        int g = buffer.get() & 0xff;
+                        int b = buffer.get() & 0xff;
+                        int value = 0xff << 24 | b << 16 | g << 8 |  r;
+                        data.setPixelRGBA(x, y, value); // actually takes ABGR, not RGBA
+                    }
                 }
+                //#else
+                //$$ int[] data = previewTexture.getTextureData();
+                //$$ // Optifine changes the texture data array to be three times as long (for use by shaders),
+                //$$ // we only want to initialize the first third which is why we use the length of the buffer instead
+                //$$ // of the length of the data array
+                //$$ for (int i = 0; buffer.remaining() > 0; i++) {
+                //$$     data[i] = 0xff << 24 | (buffer.get() & 0xff) << 16 | (buffer.get() & 0xff) << 8 |  (buffer.get() & 0xff);
+                //$$ }
+                //#endif
                 previewTextureDirty = true;
             }
             buffer.reset();

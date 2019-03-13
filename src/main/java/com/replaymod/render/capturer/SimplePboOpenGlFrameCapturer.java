@@ -3,9 +3,9 @@ package com.replaymod.render.capturer;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.PixelBufferObject;
-import net.minecraft.client.renderer.OpenGlHelper;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.ReadableDimension;
+import org.lwjgl.opengl.GL12;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -18,7 +18,7 @@ public class SimplePboOpenGlFrameCapturer extends OpenGlFrameCapturer<OpenGlFram
         super(worldRenderer, renderInfo);
 
         ReadableDimension size = renderInfo.getFrameSize();
-        bufferSize = size.getHeight() * size.getWidth() * 3;
+        bufferSize = size.getHeight() * size.getWidth() * 4;
         pbo = new PixelBufferObject(bufferSize, PixelBufferObject.Usage.READ);
         otherPBO = new PixelBufferObject(bufferSize, PixelBufferObject.Usage.READ);
     }
@@ -64,16 +64,9 @@ public class SimplePboOpenGlFrameCapturer extends OpenGlFrameCapturer<OpenGlFram
     protected OpenGlFrame captureFrame(int frameId, CaptureData data) {
         pbo.bind();
 
-        GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
-        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-
-        if (OpenGlHelper.isFramebufferEnabled()) {
-            frameBuffer().bindFramebufferTexture();
-            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, 0);
-            frameBuffer().unbindFramebufferTexture();
-        } else {
-            GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, 0);
-        }
+        frameBuffer().bindFramebuffer(true);
+        GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, 0);
+        frameBuffer().unbindFramebuffer();
 
         pbo.unbind();
         return null;

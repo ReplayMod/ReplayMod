@@ -1,0 +1,14 @@
+{
+    "pack": {
+        "description": "ReplayMod resources",
+        //#if MC>=11300
+        "pack_format": 4
+        //#else
+        //#if MC>=11002
+        //$$ "pack_format": 2
+        //#else
+        //$$ "pack_format": 1
+        //#endif
+        //#endif
+    }
+}

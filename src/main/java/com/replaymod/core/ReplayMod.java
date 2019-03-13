@@ -2,20 +2,41 @@ package com.replaymod.core;
 
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.core.gui.GuiBackgroundProcesses;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
-import com.replaymod.core.utils.OpenGLUtils;
+import com.replaymod.core.versions.MCVer;
+import com.replaymod.editor.ReplayModEditor;
+import com.replaymod.extras.ReplayModExtras;
+import com.replaymod.online.ReplayModOnline;
+import com.replaymod.recording.ReplayModRecording;
+import com.replaymod.render.ReplayModRender;
+import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.util.I18n;
+import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.FolderResourcePack;
-import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.config.Configuration;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
+
+//#if MC>=11300
+import com.replaymod.core.versions.LangResourcePack;
+import net.minecraft.resources.FolderPack;
+import net.minecraft.resources.IPackFinder;
+import net.minecraft.resources.ResourcePackInfo;
+import net.minecraftforge.fml.DeferredWorkQueue;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.versions.mcp.MCPVersion;
+//#else
+//$$ import net.minecraft.client.resources.FolderResourcePack;
+//$$ import net.minecraft.client.resources.IResourcePack;
+//$$ import net.minecraftforge.common.config.Configuration;
+//#endif
 
 //#if MC>=10904
 import net.minecraft.util.text.*;
@@ -28,18 +49,23 @@ import net.minecraft.util.text.*;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.client.settings.GameSettings;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.Loader;
+//#if MC>=11300
+import net.minecraft.client.GameSettings;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModList;
+//#else
+//$$ import net.minecraft.client.settings.GameSettings;
+//$$ import net.minecraftforge.fml.client.FMLClientHandler;
+//$$ import net.minecraftforge.fml.common.Loader;
+//$$ import net.minecraftforge.fml.common.Mod.EventHandler;
+//$$ import net.minecraftforge.fml.common.Mod.Instance;
+//$$ import net.minecraftforge.fml.common.ModContainer;
+//$$ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+//$$ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.EventBus;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 //#else
 //$$ import cpw.mods.fml.common.Loader;
@@ -48,9 +74,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 //$$ import cpw.mods.fml.common.Mod.Instance;
 //$$ import cpw.mods.fml.common.ModContainer;
 //$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 //$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-//$$ import cpw.mods.fml.common.eventhandler.EventBus;
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //$$ import cpw.mods.fml.common.gameevent.TickEvent;
 //$$ import com.replaymod.replay.InputReplayTimer;
@@ -62,47 +86,107 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.FutureTask;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-@Mod(modid = ReplayMod.MOD_ID,
-        useMetadata = true,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
-        acceptableRemoteVersions = "*",
+//#if MC>=11300
+@Mod(ReplayMod.MOD_ID)
+//#else
+//$$ @Mod(modid = ReplayMod.MOD_ID,
+//$$         useMetadata = true,
+//$$         version = "@MOD_VERSION@",
+//$$         acceptedMinecraftVersions = "@MC_VERSION@",
+//$$         acceptableRemoteVersions = "*",
         //#if MC>=10800
-        clientSideOnly = true,
-        updateJSON = "https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json",
+        //$$ clientSideOnly = true,
+        //$$ updateJSON = "https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json",
         //#endif
-        guiFactory = "com.replaymod.core.gui.GuiFactory")
-public class ReplayMod {
+//$$         guiFactory = "com.replaymod.core.gui.GuiFactory")
+//#endif
+public class ReplayMod implements Module {
 
     public static ModContainer getContainer() {
-        return Loader.instance().getIndexedModList().get(MOD_ID);
+        //#if MC>=11300
+        return ModList.get().getModContainerById(MOD_ID).get();
+        //#else
+        //$$ return Loader.instance().getIndexedModList().get(MOD_ID);
+        //#endif
     }
 
     @Getter(lazy = true)
-    private static final String minecraftVersion = Loader.MC_VERSION;
+    //#if MC>=11300
+    private static final String minecraftVersion = MCPVersion.getMCVersion();
+    //#else
+    //$$ private static final String minecraftVersion = Loader.MC_VERSION;
+    //#endif
 
     public static final String MOD_ID = "replaymod";
 
     public static final ResourceLocation TEXTURE = new ResourceLocation("replaymod", "replay_gui.png");
     public static final int TEXTURE_SIZE = 256;
 
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = MCVer.getMinecraft();
 
-    @Deprecated
-    public static Configuration config;
+    //#if MC<11300
+    //$$ @Deprecated
+    //$$ public static Configuration config;
+    //#endif
 
     private final KeyBindingRegistry keyBindingRegistry = new KeyBindingRegistry();
     private final SettingsRegistry settingsRegistry = new SettingsRegistry();
+    {
+        settingsRegistry.register(Setting.class);
+    }
 
     // The instance of your mod that Forge uses.
-    @Instance(MOD_ID)
+    //#if MC>=11300
+    { instance = this; }
+    //#else
+    //$$ @Instance(MOD_ID)
+    //#endif
     public static ReplayMod instance;
+
+    private final List<Module> modules = new ArrayList<>();
+
+    private final GuiBackgroundProcesses backgroundProcesses = new GuiBackgroundProcesses();
+
+    public ReplayMod() {
+        I18n.setI18n(net.minecraft.client.resources.I18n::format);
+
+        //#if MC>=11300
+        DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().resourcePackRepository.addPackFinder(new LangResourcePack.Finder()));
+        //#endif
+
+        // Register all RM modules
+        modules.add(this);
+        modules.add(new ReplayModRecording(this));
+        ReplayModReplay replayModule = new ReplayModReplay(this);
+        modules.add(replayModule);
+        modules.add(new ReplayModOnline(this, replayModule));
+        modules.add(new ReplayModRender(this));
+        modules.add(new ReplayModSimplePathing(this));
+        modules.add(new ReplayModEditor(this));
+        modules.add(new ReplayModExtras(this));
+
+        //#if MC>=11300
+        settingsRegistry.register();
+        //#endif
+    }
+
+    //#if MC<=11300
+    //$$ @EventHandler
+    //$$ public void init(FMLPreInitializationEvent event) {
+    //$$     config = new Configuration(event.getSuggestedConfigurationFile());
+    //$$     config.load();
+    //$$     settingsRegistry.setConfiguration(config);
+    //$$     settingsRegistry.save(); // Save default values to disk
+    //$$ }
+    //#endif
 
     public KeyBindingRegistry getKeyBindingRegistry() {
         return keyBindingRegistry;
@@ -114,33 +198,28 @@ public class ReplayMod {
 
     public File getReplayFolder() throws IOException {
         String path = getSettingsRegistry().get(Setting.RECORDING_PATH);
-        File folder = new File(path.startsWith("./") ? getMinecraft().mcDataDir : null, path);
+        File folder = new File(path.startsWith("./") ? mcDataDir(getMinecraft()) : null, path);
         FileUtils.forceMkdir(folder);
         return folder;
-    }
-
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        // Initialize the static OpenGL info field from the minecraft main thread
-        // Unfortunately lwjgl uses static methods so we have to make use of magic init calls as well
-        OpenGLUtils.init();
-
-        I18n.setI18n(net.minecraft.client.resources.I18n::format);
-
-        config = new Configuration(event.getSuggestedConfigurationFile());
-        config.load();
-        settingsRegistry.setConfiguration(config);
     }
 
     //#ifdef DEV_ENV
     static { // Note: even preInit is too late and we'd have to issue another resource reload
         @SuppressWarnings("unchecked")
-        List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
-        FolderResourcePack jGuiResourcePack = new FolderResourcePack(new File("../jGui/src/main/resources")) {
+        //#if MC>=11300
+        FolderPack jGuiResourcePack = new FolderPack(new File("../jGui/src/main/resources")) {
             @Override
-            protected InputStream getInputStreamByName(String resourceName) throws IOException {
+            protected InputStream getInputStream(String resourceName) throws IOException {
                 try {
-                    return super.getInputStreamByName(resourceName);
+                    return super.getInputStream(resourceName);
+        //#else
+        //$$ List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
+        //$$ FolderResourcePack jGuiResourcePack = new FolderResourcePack(new File("../jGui/src/main/resources")) {
+        //$$     @Override
+        //$$     protected InputStream getInputStreamByName(String resourceName) throws IOException {
+        //$$         try {
+        //$$             return super.getInputStreamByName(resourceName);
+        //#endif
                 } catch (IOException e) {
                     if ("pack.mcmeta".equals(resourceName)) {
                         return new ByteArrayInputStream(("{\"pack\": {\"description\": \"dummy pack for jGui resources in dev-env\", \"pack_format\": 1}}").getBytes(Charsets.UTF_8));
@@ -149,7 +228,16 @@ public class ReplayMod {
                 }
             }
         };
-        defaultResourcePacks.add(jGuiResourcePack);
+        //#if MC>=11300
+        mc.resourcePackRepository.addPackFinder(new IPackFinder() {
+            @Override
+            public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> map, ResourcePackInfo.IFactory<T> factory) {
+                map.put("jgui", ResourcePackInfo.func_195793_a("jgui", true, () -> jGuiResourcePack, factory, ResourcePackInfo.Priority.BOTTOM));
+            }
+        });
+        //#else
+        //$$ defaultResourcePacks.add(jGuiResourcePack);
+        //#endif
         //#if MC<=10710
         //$$ FolderResourcePack mainResourcePack = new FolderResourcePack(new File("../src/main/resources")) {
         //$$     @Override
@@ -169,30 +257,43 @@ public class ReplayMod {
     }
     //#endif
 
-    @EventHandler
-    public void init(FMLInitializationEvent event) {
-        getSettingsRegistry().register(Setting.class);
+    //#if MC>=11300
+    {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> modules.forEach(Module::initCommon));
+        FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLClientSetupEvent event) -> modules.forEach(Module::initClient));
+        FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLClientSetupEvent event) -> modules.forEach(m -> m.registerKeyBindings(keyBindingRegistry)));
+    }
+    //#else
+    //$$ @EventHandler
+    //$$ public void init(FMLInitializationEvent event) {
+    //$$    modules.forEach(Module::initCommon);
+    //$$    modules.forEach(Module::initClient);
+    //$$    modules.forEach(m -> m.registerKeyBindings(keyBindingRegistry));
+    //$$ }
+    //#endif
 
+    @Override
+    public void registerKeyBindings(KeyBindingRegistry registry) {
+        registry.registerKeyBinding("replaymod.input.settings", 0, () -> {
+            new GuiReplaySettings(null, settingsRegistry).display();
+        });
+    }
+
+    @Override
+    public void initClient() {
         new MainMenuHandler().register();
 
         //#if MC<=10710
         //$$ FML_BUS.register(this); // For runLater(Runnable)
         //#endif
+
         FML_BUS.register(keyBindingRegistry);
-
-        getKeyBindingRegistry().registerKeyBinding("replaymod.input.settings", 0, () -> {
-            new GuiReplaySettings(null, settingsRegistry).display();
-        });
-    }
-
-    @EventHandler
-    public void postInit(FMLPostInitializationEvent event) throws IOException {
-        settingsRegistry.save(); // Save default values to disk
+        FORGE_BUS.register(backgroundProcesses);
 
         // 1.7.10 crashes when render distance > 16
         //#if MC>=10800
-        if(!FMLClientHandler.instance().hasOptifine())
-            GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
+        //if(!FMLClientHandler.instance().hasOptifine()) FIXME 1.13 update
+        GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
         //#endif
 
         testIfMoeshAndExitMinecraft();
@@ -240,19 +341,18 @@ public class ReplayMod {
 
     public void runLater(Runnable runnable) {
         if (mc.isCallingFromMinecraftThread() && inRunLater) {
-            EventBus bus = FORGE_BUS;
             //#if MC>=10800
-            bus.register(new Object() {
+            FORGE_BUS.register(new Object() {
                 @SubscribeEvent
                 public void onRenderTick(TickEvent.RenderTickEvent event) {
                     if (event.phase == TickEvent.Phase.START) {
                         runLater(runnable);
-                        bus.unregister(this);
+                        FORGE_BUS.unregister(this);
                     }
                 }
             });
             //#else
-            //$$ bus.register(new RunLaterHelper(runnable));
+            //$$ FORGE_BUS.register(new RunLaterHelper(runnable));
             //#endif
             return;
         }
@@ -309,7 +409,11 @@ public class ReplayMod {
     //#endif
 
     public String getVersion() {
-        return getContainer().getVersion();
+        //#if MC>=11300
+        return getContainer().getModInfo().getVersion().toString();
+        //#else
+        //$$ return getContainer().getVersion();
+        //#endif
     }
 
     private void testIfMoeshAndExitMinecraft() {
@@ -354,5 +458,9 @@ public class ReplayMod {
             // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
             mc.ingameGUI.getChatGUI().printChatMessage(text);
         }
+    }
+
+    public GuiBackgroundProcesses getBackgroundProcesses() {
+        return backgroundProcesses;
     }
 }

@@ -1,3 +1,6 @@
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
 import groovy.json.JsonOutput
 
 def latestVersion = file('version.txt').readLines().first()
@@ -13,7 +16,7 @@ if (releaseCommit == currentCommit) {
     version = "$latestVersion-$diff-g${currentCommit.substring(0, 7)}"
 }
 if (gitDescribe().endsWith('*')) {
-    version = "$version*"
+    version = "$version-dirty"
 }
 
 group= "com.replaymod"
@@ -22,18 +25,6 @@ subprojects {
     buildscript {
         repositories {
             maven { url 'https://jitpack.io' }
-        }
-        configurations.classpath.resolutionStrategy.eachDependency { dep ->
-            if (System.getenv('REPRODUCIBLE_BUILD') == '1') return
-            def req = dep.target
-            // Substitute FG 2.0 with custom fork that works with Gradle 3
-            if (req.group == 'net.minecraftforge.gradle' && req.name == 'ForgeGradle' && req.version == '2.0-SNAPSHOT') {
-                dep.useTarget 'com.github.ReplayMod:ForgeGradle:dd521d0'
-            }
-            // Substitute FG 2.1 with custom fork that works with Gradle 3
-            if (req.group == 'net.minecraftforge.gradle' && req.name == 'ForgeGradle' && req.version == '2.1-SNAPSHOT') {
-                dep.useTarget 'com.github.ReplayMod:ForgeGradle:9c2f79c'
-            }
         }
     }
 

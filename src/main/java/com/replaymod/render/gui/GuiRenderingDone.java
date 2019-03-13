@@ -1,6 +1,7 @@
 package com.replaymod.render.gui;
 
 import com.replaymod.core.SettingsRegistry;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.Setting;
@@ -13,13 +14,8 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.util.Util;
-import org.apache.logging.log4j.LogManager;
-import org.lwjgl.Sys;
 
-import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 
 @RequiredArgsConstructor
 public class GuiRenderingDone extends GuiScreen {
@@ -34,30 +30,7 @@ public class GuiRenderingDone extends GuiScreen {
     public final GuiButton openFolder = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            File folder = videoFile.getParentFile();
-            String path = folder.getAbsolutePath();
-
-            // First try OS specific methods
-            try {
-                switch (Util.getOSType()) {
-                    case WINDOWS:
-                        Runtime.getRuntime().exec(String.format("cmd.exe /C start \"Open file\" \"%s\"", path));
-                        return;
-                    case OSX:
-                        Runtime.getRuntime().exec(new String[]{"/usr/bin/open", path});
-                        return;
-                }
-            } catch (IOException e) {
-                LogManager.getLogger().error("Cannot open file", e);
-            }
-
-            // Otherwise try the java way
-            try {
-                Desktop.getDesktop().browse(folder.toURI());
-            } catch (Throwable throwable) {
-                // And if all fails, lwjgl
-                Sys.openURL("file://" + path);
-            }
+            MCVer.openFile(videoFile.getParentFile());
         }
     }).setSize(200, 20).setI18nLabel("replaymod.gui.openfolder");
 

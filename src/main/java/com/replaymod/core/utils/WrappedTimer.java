@@ -8,15 +8,27 @@ public class WrappedTimer extends Timer {
     protected final Timer wrapped;
 
     public WrappedTimer(Timer wrapped) {
-        super(0);
+        //#if MC>=11300
+        super(0, 0);
+        //#else
+        //$$ super(0);
+        //#endif
         this.wrapped = wrapped;
         copy(wrapped, this);
     }
 
     @Override
-    public void updateTimer() {
+    public void updateTimer(
+            //#if MC>=11300
+            long sysClock
+            //#endif
+    ) {
         copy(this, wrapped);
-        wrapped.updateTimer();
+        wrapped.updateTimer(
+                //#if MC>=11300
+                sysClock
+                //#endif
+        );
         copy(wrapped, this);
     }
 

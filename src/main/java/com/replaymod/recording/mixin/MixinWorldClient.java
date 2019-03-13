@@ -10,7 +10,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,6 +18,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=11300
+import net.minecraft.world.dimension.Dimension;
+import net.minecraft.world.storage.WorldSavedDataStorage;
+//#else
+//$$ import net.minecraft.world.WorldProvider;
+//#endif
+
 import static com.replaymod.core.versions.MCVer.*;
 
 @Mixin(WorldClient.class)
@@ -26,8 +32,22 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     @Shadow
     private Minecraft mc;
 
-    protected MixinWorldClient(ISaveHandler saveHandlerIn, WorldInfo info, WorldProvider providerIn, Profiler profilerIn, boolean client) {
-        super(saveHandlerIn, info, providerIn, profilerIn, client);
+    protected MixinWorldClient(ISaveHandler saveHandlerIn,
+                               //#if MC>=11300
+                               WorldSavedDataStorage mapStorage,
+                               //#endif
+                               WorldInfo info,
+                               //#if MC>=11300
+                               Dimension providerIn,
+                               //#else
+                               //$$ WorldProvider providerIn,
+                               //#endif
+                               Profiler profilerIn, boolean client) {
+        super(saveHandlerIn,
+                //#if MC>=11300
+                mapStorage,
+                //#endif
+                info, providerIn, profilerIn, client);
     }
 
     private RecordingEventHandler replayModRecording_getRecordingEventHandler() {

@@ -1,9 +1,16 @@
 package com.replaymod.recording.packet;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.editor.gui.MarkerProcessor;
+import com.replaymod.recording.ReplayModRecording;
+import com.replaymod.recording.Setting;
+import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
+import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.utils.Colors;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -17,6 +24,10 @@ import net.minecraft.network.play.server.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+//#if MC>=11300
+import net.minecraft.network.login.server.SPacketLoginSuccess;
+//#endif
+
 //#if MC>=10904
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.text.TextComponentString;
@@ -29,13 +40,16 @@ import net.minecraft.util.text.TextComponentString;
 
 //#if MC>=10800
 import net.minecraft.network.EnumPacketDirection;
-import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+//#if MC<11300
+//$$ import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 //#endif
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,9 +63,11 @@ import static com.replaymod.core.versions.MCVer.*;
 
 public class PacketListener extends ChannelInboundHandlerAdapter {
 
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
+    private final ReplayMod core;
+    private final Path outputPath;
     private final ReplayFile replayFile;
 
     private final ResourcePackRecorder resourcePackRecorder;
@@ -67,6 +83,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long lastSentPacket;
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
+    //#if MC>=11300
+    private EnumConnectionState connectionState = EnumConnectionState.LOGIN;
+    //#else
+    //$$ private EnumConnectionState connectionState = EnumConnectionState.PLAY;
+    //#endif
 
     /**
      * Used to keep track of the last metadata save job submitted to the save service and
@@ -74,7 +95,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
      */
     private final AtomicInteger lastSaveMetaDataId = new AtomicInteger();
 
-    public PacketListener(ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
+    public PacketListener(ReplayMod core, Path outputPath, ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
+        this.core = core;
+        this.outputPath = outputPath;
         this.replayFile = replayFile;
         this.metaData = metaData;
         this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
@@ -147,6 +170,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     throw new RuntimeException(e);
                 }
             });
+
+            //#if MC>=11300
+            if (packet instanceof SPacketLoginSuccess) {
+                connectionState = EnumConnectionState.PLAY;
+            }
+            //#endif
         } catch(Exception e) {
             logger.error("Writing packet:", e);
         }
@@ -157,21 +186,39 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         metaData.setDuration((int) lastSentPacket);
         saveMetaData();
 
-        saveService.shutdown();
-        try {
-            saveService.awaitTermination(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            logger.error("Waiting for save service termination:", e);
-        }
-
-        synchronized (replayFile) {
-            try {
-                replayFile.save();
-                replayFile.close();
-            } catch (IOException e) {
-                logger.error("Saving replay file:", e);
+        core.runLater(() -> {
+            ConnectionEventHandler connectionEventHandler = ReplayModRecording.instance.getConnectionEventHandler();
+            if (connectionEventHandler.getPacketListener() == this) {
+                connectionEventHandler.reset();
             }
-        }
+        });
+
+        GuiLabel savingLabel = new GuiLabel().setI18nText("replaymod.gui.replaysaving.title").setColor(Colors.BLACK);
+        new Thread(() -> {
+            core.runLater(() -> core.getBackgroundProcesses().addProcess(savingLabel));
+
+            saveService.shutdown();
+            try {
+                saveService.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                logger.error("Waiting for save service termination:", e);
+            }
+
+            synchronized (replayFile) {
+                try {
+                    replayFile.save();
+                    replayFile.close();
+
+                    if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS)) {
+                        MarkerProcessor.apply(outputPath, progress -> {});
+                    }
+                } catch (IOException e) {
+                    logger.error("Saving replay file:", e);
+                }
+            }
+
+            core.runLater(() -> core.getBackgroundProcesses().removeProcess(savingLabel));
+        }).start();
     }
 
     @Override
@@ -229,16 +276,18 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //#endif
                 //#endif
 
-                if (packet instanceof FMLProxyPacket) {
-                    // This packet requires special handling
+                //#if MC<11300
+                //$$ if (packet instanceof FMLProxyPacket) {
+                //$$     // This packet requires special handling
                     //#if MC>=10800
-                    ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
+                    //$$ ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
                     //#else
                     //$$ save(((FMLProxyPacket) packet).toS3FPacket());
                     //#endif
-                    super.channelRead(ctx, msg);
-                    return;
-                }
+                //$$     super.channelRead(ctx, msg);
+                //$$     return;
+                //$$ }
+                //#endif
 
                 save(packet);
 
@@ -337,9 +386,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         //#endif
 
         //#if MC>=10800
-        Integer packetId = EnumConnectionState.PLAY.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
+        Integer packetId = connectionState.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
         //#else
-        //$$ Integer packetId = (Integer) EnumConnectionState.PLAY.func_150755_b().inverse().get(packet.getClass());
+        //$$ Integer packetId = (Integer) connectionState.func_150755_b().inverse().get(packet.getClass());
         //#endif
         if (packetId == null) {
             throw new IOException("Unknown packet type:" + packet.getClass());
@@ -357,11 +406,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         return array;
     }
 
-    public void addMarker() {
-        Entity view = getRenderViewEntity(Minecraft.getMinecraft());
-        int timestamp = (int) (System.currentTimeMillis() - startTime);
+    public void addMarker(String name) {
+        addMarker(name, (int) getCurrentDuration());
+    }
+
+    public void addMarker(String name, int timestamp) {
+        Entity view = getRenderViewEntity(mc);
 
         Marker marker = new Marker();
+        marker.setName(name);
         marker.setTime(timestamp);
         marker.setX(view.posX);
         marker.setY(view.posY);
@@ -380,6 +433,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 }
             }
         });
+    }
+
+    public long getCurrentDuration() {
+        return lastSentPacket;
     }
 
     public void setServerWasPaused() {

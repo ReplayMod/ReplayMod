@@ -6,9 +6,6 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.model.ModelBox;
-import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -16,8 +13,8 @@ import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.resources.ResourcePackRepository;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -25,12 +22,32 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
+
+//#if MC>=11300
+import net.minecraft.client.MainWindow;
+import net.minecraft.client.renderer.entity.model.ModelBox;
+import net.minecraft.client.renderer.entity.model.ModelRenderer;
+import net.minecraft.client.util.InputMappings;
+import net.minecraft.crash.ReportedException;
+import org.lwjgl.glfw.GLFW;
+//#else
+//$$ import net.minecraft.client.gui.ScaledResolution;
+//$$ import net.minecraft.client.model.ModelBox;
+//$$ import net.minecraft.client.model.ModelRenderer;
+//$$ import net.minecraft.client.resources.ResourcePackRepository;
+//$$ import net.minecraft.util.ReportedException;
+//$$ import org.apache.logging.log4j.LogManager;
+//$$ import org.lwjgl.Sys;
+//$$ import java.awt.Desktop;
+//#endif
+
 
 //#if MC>=10904
 //#if MC>=11200
@@ -63,7 +80,11 @@ import net.minecraft.client.renderer.GlStateManager.BooleanState;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.world.WorldType;
-import net.minecraftforge.fml.common.eventhandler.EventBus;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.IEventBus;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.EventBus;
+//#endif
 //#else
 //$$ import com.google.common.util.concurrent.Futures;
 //$$ import com.replaymod.render.hooks.GLStateTracker;
@@ -85,11 +106,16 @@ import java.util.concurrent.Callable;
  * Abstraction over things that have changed between different MC versions.
  */
 public class MCVer {
-    public static EventBus FORGE_BUS = MinecraftForge.EVENT_BUS;
+    //#if MC>=11300
+    public static IEventBus FORGE_BUS = MinecraftForge.EVENT_BUS;
+    public static IEventBus FML_BUS = FORGE_BUS;
+    //#else
+    //$$ public static EventBus FORGE_BUS = MinecraftForge.EVENT_BUS;
     //#if MC>=10809
-    public static EventBus FML_BUS = FORGE_BUS;
+    //$$ public static EventBus FML_BUS = FORGE_BUS;
     //#else
     //$$ public static EventBus FML_BUS = FMLCommonHandler.instance().bus();
+    //#endif
     //#endif
 
     public static void addDetail(CrashReportCategory category, String name, Callable<String> callable) {
@@ -101,6 +127,22 @@ public class MCVer {
         //#endif
         //#else
         //$$ category.addCrashSectionCallable(name, callable);
+        //#endif
+    }
+
+    public static void addButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
+        //#if MC>=11300
+        event.addButton(button);
+        //#else
+        //$$ getButtonList(event).add(button);
+        //#endif
+    }
+
+    public static void removeButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
+        //#if MC>=11300
+        event.removeButton(button);
+        //#else
+        //$$ getButtonList(event).remove(button);
         //#endif
     }
 
@@ -226,6 +268,14 @@ public class MCVer {
             //#endif
     //#endif
 
+    public static File mcDataDir(Minecraft mc) {
+        //#if MC>=11300
+        return mc.gameDir;
+        //#else
+        //$$ return mc.mcDataDir;
+        //#endif
+    }
+
     //#if MC>=10800
     public static Entity getRenderViewEntity(Minecraft mc) {
         return mc.getRenderViewEntity();
@@ -318,8 +368,11 @@ public class MCVer {
     }
 
     public static BooleanState fog() {
+        //#if MC>=11300
+        return GlStateManager.FOG.fog;
+        //#else
         //#if MC>=10809
-        return GlStateManager.fogState.fog;
+        //$$ return GlStateManager.fogState.fog;
         //#else
         //#if MC>=10800
         //$$ return GlStateManager.fogState.field_179049_a;
@@ -327,11 +380,15 @@ public class MCVer {
         //$$ return GLStateTracker.getInstance().fog;
         //#endif
         //#endif
+        //#endif
     }
 
     public static void fog(BooleanState fog) {
+        //#if MC>=11300
+        GlStateManager.FOG.fog = fog;
+        //#else
         //#if MC>=10809
-        GlStateManager.fogState.fog = fog;
+        //$$ GlStateManager.fogState.fog = fog;
         //#else
         //#if MC>=10800
         //$$ GlStateManager.fogState.field_179049_a = fog;
@@ -339,21 +396,30 @@ public class MCVer {
         //$$ GLStateTracker.getInstance().fog = fog;
         //#endif
         //#endif
+        //#endif
     }
 
     public static BooleanState texture2DState(int index) {
+        //#if MC>=11300
+        return GlStateManager.TEXTURES[index].texture2DState;
+        //#else
         //#if MC>=10800
-        return GlStateManager.textureState[index].texture2DState;
+        //$$ return GlStateManager.textureState[index].texture2DState;
         //#else
         //$$ return GLStateTracker.getInstance().texture[index];
+        //#endif
         //#endif
     }
 
     public static void texture2DState(int index, BooleanState texture2DState) {
+        //#if MC>=11300
+        GlStateManager.TEXTURES[index].texture2DState = texture2DState;
+        //#else
         //#if MC>=10800
-        GlStateManager.textureState[index].texture2DState = texture2DState;
+        //$$ GlStateManager.textureState[index].texture2DState = texture2DState;
         //#else
         //$$ GLStateTracker.getInstance().texture[index] = texture2DState;
+        //#endif
         //#endif
     }
 
@@ -373,18 +439,29 @@ public class MCVer {
         //#endif
     }
 
-    public static ScaledResolution newScaledResolution(Minecraft mc) {
-        //#if MC>=10809
-        return new ScaledResolution(mc);
-        //#else
-        //$$ return new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-        //#endif
-    }
 
-    public static ListenableFuture setServerResourcePack(ResourcePackRepository repo, File file) {
+    //#if MC>=11300
+    public static MainWindow newScaledResolution(Minecraft mc) {
+        return mc.mainWindow;
+    }
+    //#else
+    //$$ public static ScaledResolution newScaledResolution(Minecraft mc) {
+    //#if MC>=10809
+    //$$ return new ScaledResolution(mc);
+    //#else
+    //$$ return new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+    //#endif
+    //$$ }
+    //#endif
+
+    public static ListenableFuture setServerResourcePack(File file) {
+        //#if MC>=11300
+        return getMinecraft().getPackFinder().func_195741_a(file);
+        //#else
+        //$$ ResourcePackRepository repo = getMinecraft().getResourcePackRepository();
         //#if MC>=10809
         //#if MC>=11200
-        return repo.setServerResourcePack(file);
+        //$$ return repo.setServerResourcePack(file);
         //#else
         //$$ return repo.setResourcePackInstance(file);
         //#endif
@@ -396,6 +473,7 @@ public class MCVer {
         //$$ repo.field_148532_f = new FileResourcePack(file);
         //$$ Minecraft.getMinecraft().scheduleResourcesRefresh();
         //$$ return Futures.immediateFuture(null);
+        //#endif
         //#endif
         //#endif
     }
@@ -566,9 +644,33 @@ public class MCVer {
 
     public static RenderManager getRenderManager() {
         //#if MC>=10800
-        return Minecraft.getMinecraft().getRenderManager();
+        return getMinecraft().getRenderManager();
         //#else
         //$$ return RenderManager.instance;
+        //#endif
+    }
+
+    public static Minecraft getMinecraft() {
+        //#if MC>=11300
+        return Minecraft.getInstance();
+        //#else
+        //$$ return Minecraft.getMinecraft();
+        //#endif
+    }
+
+    public static long milliTime() {
+        //#if MC>=11300
+        return Util.milliTime();
+        //#else
+        //$$ return Minecraft.getSystemTime();
+        //#endif
+    }
+
+    public static File Minecraft_mcDataDir(Minecraft mc) {
+        //#if MC>=11300
+        return mc.gameDir;
+        //#else
+        //$$ return mc.mcDataDir;
         //#endif
     }
 
@@ -577,6 +679,14 @@ public class MCVer {
         return MathHelper.floor(val);
         //#else
         //$$ return MathHelper.floor_double(val);
+        //#endif
+    }
+
+    public static void bindTexture(ResourceLocation texture) {
+        //#if MC>=11300
+        getMinecraft().getTextureManager().bindTexture(texture);
+        //#else
+        //$$ getMinecraft().renderEngine.bindTexture(texture);
         //#endif
     }
 
@@ -612,6 +722,40 @@ public class MCVer {
         //#endif
     }
 
+    public static ReportedException newReportedException(CrashReport crashReport) {
+        return new ReportedException(crashReport);
+    }
+
+    public static void openFile(File file) {
+        //#if MC>=11300
+        Util.getOSType().openFile(file);
+        //#else
+        //$$ String path = file.getAbsolutePath();
+        //$$
+        //$$ // First try OS specific methods
+        //$$ try {
+        //$$     switch (Util.getOSType()) {
+        //$$         case WINDOWS:
+        //$$             Runtime.getRuntime().exec(String.format("cmd.exe /C start \"Open file\" \"%s\"", path));
+        //$$             return;
+        //$$         case OSX:
+        //$$             Runtime.getRuntime().exec(new String[]{"/usr/bin/open", path});
+        //$$             return;
+        //$$     }
+        //$$ } catch (IOException e) {
+        //$$     LogManager.getLogger().error("Cannot open file", e);
+        //$$ }
+        //$$
+        //$$ // Otherwise try to java way
+        //$$ try {
+        //$$     Desktop.getDesktop().browse(file.toURI());
+        //$$ } catch (Throwable throwable) {
+        //$$     // And if all fails, lwjgl
+        //$$     Sys.openURL("file://" + path);
+        //$$ }
+        //#endif
+    }
+
     //#if MC<=10710
     //$$ public static class GlStateManager {
     //$$     public static void resetColor() { /* nop */ }
@@ -627,5 +771,60 @@ public class MCVer {
     //$$     public static void translate(double x, double y, double z) { glTranslated(x, y, z); }
     //$$     public static void rotate(float angle, float x, float y, float z) { glRotatef(angle, x, y, z); }
     //$$ }
+    //#endif
+
+    //#if MC>=11300
+    public static void color(float r, float g, float b, float a) { GlStateManager.color4f(r, g, b, a); }
+    public static void enableAlpha() { GlStateManager.enableAlphaTest(); }
+    public static void disableAlpha() { GlStateManager.disableAlphaTest(); }
+    public static void tryBlendFuncSeparate(int l, int r, int vl, int vr) { GlStateManager.blendFuncSeparate(l, r, vl, vr); }
+    public static void colorLogicOp(int op) { GlStateManager.logicOp(op); }
+
+    public static abstract class Keyboard {
+        public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
+        public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
+        public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
+        public static final int KEY_HOME = GLFW.GLFW_KEY_HOME;
+        public static final int KEY_END = GLFW.GLFW_KEY_END;
+        public static final int KEY_UP = GLFW.GLFW_KEY_UP;
+        public static final int KEY_DOWN = GLFW.GLFW_KEY_DOWN;
+        public static final int KEY_LEFT = GLFW.GLFW_KEY_LEFT;
+        public static final int KEY_RIGHT = GLFW.GLFW_KEY_RIGHT;
+        public static final int KEY_BACK = GLFW.GLFW_KEY_BACKSPACE;
+        public static final int KEY_DELETE = GLFW.GLFW_KEY_DELETE;
+        public static final int KEY_RETURN = GLFW.GLFW_KEY_ENTER;
+        public static final int KEY_TAB = GLFW.GLFW_KEY_TAB;
+        public static final int KEY_F1 = GLFW.GLFW_KEY_F1;
+        public static final int KEY_A = GLFW.GLFW_KEY_A;
+        public static final int KEY_B = GLFW.GLFW_KEY_B;
+        public static final int KEY_C = GLFW.GLFW_KEY_C;
+        public static final int KEY_D = GLFW.GLFW_KEY_D;
+        public static final int KEY_E = GLFW.GLFW_KEY_E;
+        public static final int KEY_F = GLFW.GLFW_KEY_F;
+        public static final int KEY_G = GLFW.GLFW_KEY_G;
+        public static final int KEY_H = GLFW.GLFW_KEY_H;
+        public static final int KEY_I = GLFW.GLFW_KEY_I;
+        public static final int KEY_J = GLFW.GLFW_KEY_J;
+        public static final int KEY_K = GLFW.GLFW_KEY_K;
+        public static final int KEY_L = GLFW.GLFW_KEY_L;
+        public static final int KEY_M = GLFW.GLFW_KEY_M;
+        public static final int KEY_N = GLFW.GLFW_KEY_N;
+        public static final int KEY_O = GLFW.GLFW_KEY_O;
+        public static final int KEY_P = GLFW.GLFW_KEY_P;
+        public static final int KEY_Q = GLFW.GLFW_KEY_Q;
+        public static final int KEY_R = GLFW.GLFW_KEY_R;
+        public static final int KEY_S = GLFW.GLFW_KEY_S;
+        public static final int KEY_T = GLFW.GLFW_KEY_T;
+        public static final int KEY_U = GLFW.GLFW_KEY_U;
+        public static final int KEY_V = GLFW.GLFW_KEY_V;
+        public static final int KEY_W = GLFW.GLFW_KEY_W;
+        public static final int KEY_X = GLFW.GLFW_KEY_X;
+        public static final int KEY_Y = GLFW.GLFW_KEY_Y;
+        public static final int KEY_Z = GLFW.GLFW_KEY_Z;
+
+        public static boolean isKeyDown(int keyCode) {
+            return InputMappings.isKeyDown(keyCode);
+        }
+    }
     //#endif
 }

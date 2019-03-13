@@ -1,12 +1,29 @@
 package com.replaymod.render;
 
+import com.replaymod.core.versions.MCVer;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import net.minecraft.client.resources.I18n;
-import org.lwjgl.util.ReadableColor;
+import net.minecraft.util.Util;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Optional;
+
+import static com.replaymod.render.ReplayModRender.LOGGER;
+
+//#if MC>=11300
+import org.apache.maven.artifact.versioning.ComparableVersion;
+//#else
+//#if MC>=10800
+//$$ import net.minecraftforge.fml.common.versioning.ComparableVersion;
+//#else
+//$$ import cpw.mods.fml.common.versioning.ComparableVersion;
+//#endif
+//#endif
 
 @Data
 public class RenderSettings {
@@ -20,6 +37,14 @@ public class RenderSettings {
 
         public String getDescription() {
             return I18n.format("replaymod.gui.rendersettings.renderer." + name().toLowerCase() + ".description");
+        }
+
+        public boolean isSpherical() {
+            return this == EQUIRECTANGULAR || this == ODS;
+        }
+
+        public boolean hasFixedAspectRatio() {
+            return this == EQUIRECTANGULAR || this == ODS || this == CUBIC;
         }
     }
 
@@ -49,7 +74,7 @@ public class RenderSettings {
         }
 
         public String getValue() {
-            return "-y -f rawvideo -pix_fmt rgb24 -s %WIDTH%x%HEIGHT% -r %FPS% -i - %FILTERS%" + preset;
+            return "-y -f rawvideo -pix_fmt bgra -s %WIDTH%x%HEIGHT% -r %FPS% -i - %FILTERS%" + preset;
         }
 
         public String getFileExtension() {
@@ -94,7 +119,9 @@ public class RenderSettings {
     private final boolean stabilizePitch;
     private final boolean stabilizeRoll;
     private final ReadableColor chromaKeyingColor;
-    private final boolean inject360Metadata;
+    private final int sphericalFovX;
+    private final int sphericalFovY;
+    private final boolean injectSphericalMetadata;
     private final AntiAliasing antiAliasing;
 
     private final String exportCommand;
@@ -131,12 +158,66 @@ public class RenderSettings {
     }
 
     public String getVideoFilters() {
-        if (antiAliasing == AntiAliasing.NONE) {
-            return "";
-        } else {
+        StringBuilder filters = new StringBuilder();
+
+        if (antiAliasing != AntiAliasing.NONE) {
             double factor = 1.0 / antiAliasing.getFactor();
-            return String.format("-vf scale=iw*%1$s:ih*%1$s ", factor);
+            filters.append(String.format("-filter:v scale=iw*%1$s:ih*%1$s ", factor));
         }
+
+        return filters.toString();
+    }
+
+    public String getExportCommandOrDefault() {
+        return exportCommand.isEmpty() ? findFFmpeg() : exportCommand;
+    }
+
+    private static String findFFmpeg() {
+        switch (Util.getOSType()) {
+            case WINDOWS:
+                // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
+                File inDotMinecraft = new File(MCVer.mcDataDir(MCVer.getMinecraft()), "ffmpeg/bin/ffmpeg.exe");
+                if (inDotMinecraft.exists()) {
+                    LOGGER.debug("FFmpeg found in .minecraft/ffmpeg");
+                    return inDotMinecraft.getAbsolutePath();
+                }
+                break;
+            case OSX:
+                // The PATH doesn't seem to be set as expected on OSX, therefore we check some common locations ourselves
+                for (String path : new String[]{"/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"}) {
+                    File file = new File(path);
+                    if (file.exists()) {
+                        LOGGER.debug("Found FFmpeg at {}", path);
+                        return path;
+                    } else {
+                        LOGGER.debug("FFmpeg not located at {}", path);
+                    }
+                }
+                // Homebrew doesn't seem to reliably symlink its installed binaries either
+                File homebrewFolder = new File("/usr/local/Cellar/ffmpeg");
+                String[] homebrewVersions = homebrewFolder.list();
+                if (homebrewVersions != null) {
+                    Optional<File> latestOpt = Arrays.stream(homebrewVersions)
+                            .map(ComparableVersion::new) // Convert file name to comparable version
+                            .sorted(Comparator.reverseOrder()) // Sort for latest version
+                            .map(ComparableVersion::toString) // Convert back to file name
+                            .map(v -> new File(new File(homebrewFolder, v), "bin/ffmpeg")) // Convert to binary files
+                            .filter(File::exists) // Filter invalid installations (missing executable)
+                            .findFirst(); // Take first one
+                    if (latestOpt.isPresent()) {
+                        File latest = latestOpt.get();
+                        LOGGER.debug("Found {} versions of FFmpeg installed with homebrew, chose {}",
+                                homebrewVersions.length, latest);
+                        return latest.getAbsolutePath();
+                    }
+                }
+                break;
+            case LINUX: // Linux users are entrusted to have their PATH configured correctly (most package manager do this)
+            case SOLARIS: // Never heard of anyone running this mod on Solaris having any problems
+            case UNKNOWN: // Unknown OS, just try to use "ffmpeg"
+        }
+        LOGGER.debug("Using default FFmpeg executable");
+        return "ffmpeg";
     }
 
 }

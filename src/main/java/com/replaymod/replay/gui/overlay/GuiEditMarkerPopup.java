@@ -1,7 +1,6 @@
 package com.replaymod.replay.gui.overlay;
 
 import com.google.common.base.Strings;
-import com.replaymod.replay.ReplayHandler;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.*;
@@ -12,16 +11,22 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import com.replaymod.replaystudio.data.Marker;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.ReadablePoint;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
+
+//#if MC>=11300
+import com.replaymod.core.versions.MCVer.Keyboard;
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
+
+import java.util.function.Consumer;
 
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
     private static GuiNumberField newGuiNumberField() {
         return new GuiNumberField().setSize(150, 20).setValidateOnFocusChange(true);
     }
 
-    private final ReplayHandler replayHandler;
-    private final Marker marker;
+    private final Consumer<Marker> onSave;
 
     public final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.editkeyframe.title.marker");
 
@@ -60,6 +65,7 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
     public final GuiButton saveButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
+            Marker marker = new Marker();
             marker.setName(Strings.emptyToNull(nameField.getText()));
             marker.setTime(timeField.getInteger());
             marker.setX(xField.getDouble());
@@ -68,7 +74,7 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
             marker.setYaw(yawField.getFloat());
             marker.setPitch(pitchField.getFloat());
             marker.setRoll(rollField.getFloat());
-            replayHandler.saveMarkers();
+            onSave.accept(marker);
             close();
         }
     }).setSize(150, 20).setI18nLabel("replaymod.gui.save");
@@ -84,10 +90,9 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(7))
             .addElements(new HorizontalLayout.Data(0.5), saveButton, cancelButton);
 
-    public GuiEditMarkerPopup(ReplayHandler replayHandler, GuiContainer container, Marker marker) {
+    public GuiEditMarkerPopup(GuiContainer container, Marker marker, Consumer<Marker> onSave) {
         super(container);
-        this.replayHandler = replayHandler;
-        this.marker = marker;
+        this.onSave = onSave;
 
         setBackgroundColor(Colors.DARK_TRANSPARENT);
 

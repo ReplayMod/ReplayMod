@@ -2,7 +2,7 @@ package com.replaymod.render.processor;
 
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.frame.RGBFrame;
-import org.lwjgl.util.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 
 import java.nio.ByteBuffer;
 
@@ -15,7 +15,7 @@ public class OpenGlToRGBProcessor extends AbstractFrameProcessor<OpenGlFrame, RG
         // Flip whole image in place
 
         ReadableDimension size = rawFrame.getSize();
-        int rowSize = size.getWidth() * 3;
+        int rowSize = size.getWidth() * 4;
         if (row == null || row.length < rowSize) {
             row = new byte[rowSize];
             rowSwap = new byte[rowSize];

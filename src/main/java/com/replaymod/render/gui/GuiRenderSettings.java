@@ -1,5 +1,6 @@
 package com.replaymod.render.gui;
 
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.gson.Gson;
@@ -27,18 +28,22 @@ import de.johni0702.minecraft.gui.popup.GuiFileChooserPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.Utils;
+import de.johni0702.minecraft.gui.utils.lwjgl.Color;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
-import org.lwjgl.util.Color;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableColor;
-import org.lwjgl.util.ReadableDimension;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -128,7 +133,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.renderer"), renderMethodDropdown,
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.presets"), encodingPresetDropdown,
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.customresolution"), videoResolutionPanel,
-                    new GuiLabel().setI18nText("replaymod.gui.settings.bitrate"), new GuiPanel().addElements(null,
+                    new GuiLabel().setI18nText("replaymod.gui.rendersettings.bitrate"), new GuiPanel().addElements(null,
                             new GuiPanel().addElements(null, bitRateField, bitRateUnit).setLayout(new HorizontalLayout()),
                             frameRateSlider).setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3)),
                     new GuiLabel().setI18nText("replaymod.gui.rendersettings.outputfile"), outputFileButton)
@@ -149,8 +154,22 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             .setI18nLabel("replaymod.gui.rendersettings.chromakey");
     public final GuiColorPicker chromaKeyingColor = new GuiColorPicker().setSize(30, 15);
 
-    public final GuiCheckbox inject360Metadata = new GuiCheckbox()
-            .setI18nLabel("replaymod.gui.rendersettings.360metadata");
+    public static final int MIN_SPHERICAL_FOV = 120;
+    public static final int MAX_SPHERICAL_FOV = 360;
+    public static final int SPHERICAL_FOV_STEP_SIZE = 5;
+    public final GuiSlider sphericalFovSlider = new GuiSlider()
+            .onValueChanged(new Runnable() {
+                @Override
+                public void run() {
+                    sphericalFovSlider.setText(I18n.format("replaymod.gui.rendersettings.sphericalFov")
+                            + ": " + (MIN_SPHERICAL_FOV + sphericalFovSlider.getValue() * SPHERICAL_FOV_STEP_SIZE) + "°");
+
+                    updateInputs();
+                }
+            }).setSize(200, 20).setSteps((MAX_SPHERICAL_FOV - MIN_SPHERICAL_FOV) / SPHERICAL_FOV_STEP_SIZE);
+
+    public final GuiCheckbox injectSphericalMetadata = new GuiCheckbox()
+            .setI18nLabel("replaymod.gui.rendersettings.sphericalmetadata");
 
     public final GuiDropdownMenu<RenderSettings.AntiAliasing> antiAliasingDropdown = new GuiDropdownMenu<RenderSettings.AntiAliasing>()
             .setSize(200, 20).setValues(RenderSettings.AntiAliasing.values()).setSelected(RenderSettings.AntiAliasing.NONE);
@@ -161,8 +180,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                     .addElements(new GridLayout.Data(0, 0.5),
                             new GuiLabel().setI18nText("replaymod.gui.rendersettings.stabilizecamera"), stabilizePanel,
                             chromaKeyingCheckbox, chromaKeyingColor,
-                            inject360Metadata,
-                            new GuiLabel(), // to show the anti-aliasing options in a new line
+                            injectSphericalMetadata, sphericalFovSlider,
                             new GuiLabel().setI18nText("replaymod.gui.rendersettings.antialiasing"), antiAliasingDropdown));
 
     public final GuiTextField exportCommand = new GuiTextField().setI18nHint("replaymod.gui.rendersettings.command")
@@ -280,7 +298,13 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         this.replayHandler = replayHandler;
         this.timeline = timeline;
 
-        String json = getConfigProperty(ReplayModRender.instance.getConfiguration()).getString();
+        String json = "{}";
+        try {
+            json = new String(Files.readAllBytes(getSettingsPath()), StandardCharsets.UTF_8);
+        } catch (NoSuchFileException | FileNotFoundException ignored) {
+        } catch (IOException e) {
+            LOGGER.error("Reading render settings:", e);
+        }
         RenderSettings settings = new GsonBuilder()
                 .registerTypeAdapter(RenderSettings.class, (InstanceCreator<RenderSettings>) type -> getDefaultRenderSettings())
                 .registerTypeAdapter(ReadableColor.class, new Gson().getAdapter(Color.class))
@@ -289,8 +313,13 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     }
 
     protected void updateInputs() {
+        RenderSettings.RenderMethod renderMethod = renderMethodDropdown.getSelectedValue();
+
+        // Enable/Disable video with input
+        videoWidth.setEnabled(!renderMethod.hasFixedAspectRatio());
+
         // Validate video width and height
-        String error = isResolutionValid();
+        String error = updateResolution();
         if (error == null) {
             renderButton.setEnabled().setTooltip(null);
             videoWidth.setTextColor(Colors.WHITE);
@@ -311,7 +340,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         }
 
         // Enable/Disable camera stabilization checkboxes
-        switch (renderMethodDropdown.getSelectedValue()) {
+        switch (renderMethod) {
             case CUBIC:
             case EQUIRECTANGULAR:
             case ODS:
@@ -321,50 +350,92 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 stabilizePanel.forEach(IGuiCheckbox.class).setDisabled();
         }
 
+        // Enable/Disable Spherical FOV slider
+        sphericalFovSlider.setEnabled(renderMethod.isSpherical());
+
         // Enable/Disable inject metadata checkbox
         if (encodingPresetDropdown.getSelectedValue().getFileExtension().equals("mp4")
-                && (renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.EQUIRECTANGULAR
-                || renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.ODS)) {
-            inject360Metadata.setEnabled().setTooltip(null);
+                && renderMethod.isSpherical()) {
+            injectSphericalMetadata.setEnabled().setTooltip(null);
         } else {
-            inject360Metadata.setDisabled().setTooltip(new GuiTooltip().setColor(Colors.RED)
-                    .setI18nText("replaymod.gui.rendersettings.360metadata.error"));
+            injectSphericalMetadata.setDisabled().setTooltip(new GuiTooltip().setColor(Colors.RED)
+                    .setI18nText("replaymod.gui.rendersettings.sphericalmetadata.error"));
         }
     }
 
-    protected String isResolutionValid() {
+    protected String updateResolution() {
         RenderSettings.EncodingPreset preset = encodingPresetDropdown.getSelectedValue();
         RenderSettings.RenderMethod method = renderMethodDropdown.getSelectedValue();
-        int videoWidth = this.videoWidth.getInteger();
+
         int videoHeight = this.videoHeight.getInteger();
+        int videoWidth;
+        if (method.hasFixedAspectRatio()) {
+            // cubic rendering requires an aspect ratio of 4:3,
+            // therefore the height must be divisible by 3
+            if (method == RenderSettings.RenderMethod.CUBIC && videoHeight % 3 != 0) {
+                return "replaymod.gui.rendersettings.customresolution.warning.cubic.height";
+            }
+
+            int sphericalFov = MIN_SPHERICAL_FOV + sphericalFovSlider.getValue() * SPHERICAL_FOV_STEP_SIZE;
+            videoWidth = videoWidthForHeight(method, videoHeight, sphericalFov, sphericalFov);
+
+            this.videoWidth.setValue(videoWidth);
+        } else {
+            videoWidth = this.videoWidth.getInteger();
+        }
 
         // Make sure the export arguments haven't been changed manually
         if (exportArguments.getText().equals(preset.getValue())) {
             // Yuv420 requires both dimensions to be even
             if (preset.isYuv420()
                     && (videoWidth % 2 != 0 || videoHeight % 2 != 0)) {
+
+                if (method == RenderSettings.RenderMethod.CUBIC) {
+                    // cubic yuv rendering has the special case that the height must be
+                    // divisible by both 3 and 2 - tell the user about it with a special message
+                    return "replaymod.gui.rendersettings.customresolution.warning.yuv420.cubic";
+                }
+
                 return "replaymod.gui.rendersettings.customresolution.warning.yuv420";
             }
         }
 
-        if (method == RenderSettings.RenderMethod.CUBIC
-                && (videoWidth * 3 / 4 != videoHeight || videoWidth * 3 % 4 != 0)) {
-            return "replaymod.gui.rendersettings.customresolution.warning.cubic";
-        }
-        if (method == RenderSettings.RenderMethod.EQUIRECTANGULAR
-                && (videoWidth / 2 != videoHeight || videoWidth % 2 != 0)) {
-            return "replaymod.gui.rendersettings.customresolution.warning.equirectangular";
-        }
-        if (method == RenderSettings.RenderMethod.ODS
-                && videoWidth != videoHeight) {
-            return "replaymod.gui.rendersettings.customresolution.warning.ods";
-        }
         //#if MC<10800
         //$$ if (method == RenderSettings.RenderMethod.BLEND) {
         //$$     return "replaymod.gui.rendersettings.no_blend_on_1_7_10";
         //$$ }
         //#endif
+
         return null;
+    }
+
+    protected int videoWidthForHeight(RenderSettings.RenderMethod method, int height,
+                                      int sphericalFovX, int sphericalFovY) {
+        if (method.isSpherical()) {
+            if (sphericalFovY < 180) {
+                // calculate the non-cropped height of the video
+                height = Math.round(height * 180 / (float) sphericalFovY);
+            }
+
+            int width = height * 2;
+
+            if (sphericalFovX < 360) {
+                // crop the resulting width
+                width = Math.round(width * (float) sphericalFovX / 360);
+            }
+
+            if (method == RenderSettings.RenderMethod.ODS) {
+                width = Math.round(width / 2f);
+            }
+
+            return width;
+
+        } else if (method == RenderSettings.RenderMethod.CUBIC) {
+            Preconditions.checkArgument(height % 3 == 0);
+            return height / 3 * 4;
+        }
+
+        throw new IllegalArgumentException();
     }
 
     public void load(RenderSettings settings) {
@@ -402,7 +473,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             chromaKeyingCheckbox.setChecked(true);
             chromaKeyingColor.setColor(settings.getChromaKeyingColor());
         }
-        inject360Metadata.setChecked(settings.isInject360Metadata());
+        sphericalFovSlider.setValue((settings.getSphericalFovX() - MIN_SPHERICAL_FOV) / SPHERICAL_FOV_STEP_SIZE);
+        injectSphericalMetadata.setChecked(settings.isInjectSphericalMetadata());
         antiAliasingDropdown.setSelected(settings.getAntiAliasing());
         exportCommand.setText(settings.getExportCommand());
         exportArguments.setText(settings.getExportArguments());
@@ -411,6 +483,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     }
 
     public RenderSettings save(boolean serialize) {
+        int sphericalFov = MIN_SPHERICAL_FOV + sphericalFovSlider.getValue() * SPHERICAL_FOV_STEP_SIZE;
+
         return new RenderSettings(
                 renderMethodDropdown.getSelectedValue(),
                 encodingPresetDropdown.getSelectedValue(),
@@ -424,7 +498,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 stabilizePitch.isChecked() && (serialize || stabilizePitch.isEnabled()),
                 stabilizeRoll.isChecked() && (serialize || stabilizeRoll.isEnabled()),
                 chromaKeyingCheckbox.isChecked() ? chromaKeyingColor.getColor() : null,
-                inject360Metadata.isChecked() && (serialize || inject360Metadata.isEnabled()),
+                sphericalFov, Math.min(180, sphericalFov),
+                injectSphericalMetadata.isChecked() && (serialize || injectSphericalMetadata.isEnabled()),
                 antiAliasingDropdown.getSelectedValue(),
                 exportCommand.getText(),
                 exportArguments.getText(),
@@ -438,23 +513,24 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         return new File(folder, fileName + "." + encodingPreset.getFileExtension());
     }
 
+    protected Path getSettingsPath() {
+        return ReplayModRender.instance.getRenderSettingsPath();
+    }
+
     private RenderSettings getDefaultRenderSettings() {
         return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT, 1920, 1080, 60, 10 << 20, null,
-                true, false, false, false, null, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
+                true, false, false, false, null, 360, 180, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
     }
 
     @Override
     public void close() {
         RenderSettings settings = save(true);
         String json = new Gson().toJson(settings);
-        Configuration config = ReplayModRender.instance.getConfiguration();
-        getConfigProperty(config).set(json);
-        config.save();
-    }
-
-    protected Property getConfigProperty(Configuration configuration) {
-        return configuration.get("rendersettings", "settings", "{}",
-                "Last state of the render settings GUI. Internal use only.");
+        try {
+            Files.write(getSettingsPath(), json.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            LOGGER.error("Saving render settings:", e);
+        }
     }
 
     public ReplayHandler getReplayHandler() {

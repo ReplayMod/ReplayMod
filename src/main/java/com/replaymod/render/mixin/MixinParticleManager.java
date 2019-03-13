@@ -1,10 +1,10 @@
 package com.replaymod.render.mixin;
 
 //#if MC>=10904
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.exporters.ParticlesExporter;
 import com.replaymod.render.hooks.EntityRendererHandler;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.entity.Entity;
@@ -48,7 +48,7 @@ public abstract class MixinParticleManager {
     //$$ private void renderParticle(Particle particle, VertexBuffer vertexBuffer, Entity view, float partialTicks,
     //#endif
                                  float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
-        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) Minecraft.getMinecraft().entityRenderer).replayModRender_getHandler();
+        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().entityRenderer).replayModRender_getHandler();
         if (handler != null && handler.omnidirectional) {
             // Align all particles towards the camera
             double dx = particle.prevPosX + (particle.posX - particle.prevPosX) * partialTicks - view.posX;

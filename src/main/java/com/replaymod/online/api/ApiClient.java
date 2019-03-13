@@ -6,6 +6,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.online.AuthenticationHash;
 import com.replaymod.online.api.replay.ReplayModApiMethods;
 import com.replaymod.online.api.replay.SearchQuery;
@@ -30,7 +31,7 @@ import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
 
 public class ApiClient {
 
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = MCVer.getMinecraft();
     private static final Gson gson = new Gson();
     private static final JsonParser jsonParser = new JsonParser();
 

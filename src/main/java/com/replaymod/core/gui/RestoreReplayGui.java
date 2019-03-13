@@ -43,6 +43,9 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
         yesButton.onClick(() -> {
             try {
                 ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), null, file);
+                // Commit all not-yet-committed files into the main zip file.
+                // If we don't do this, then re-writing packet data below can actually overwrite uncommitted packet data!
+                replayFile.save();
                 ReplayMetaData metaData = replayFile.getMetaData();
                 if (metaData != null && metaData.getDuration() == 0) {
                     // Try to restore replay duration

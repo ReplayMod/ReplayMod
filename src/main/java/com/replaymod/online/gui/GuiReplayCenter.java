@@ -37,9 +37,9 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import org.apache.commons.lang3.StringUtils;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -462,7 +462,7 @@ public class GuiReplayCenter extends GuiScreen {
 
                 @Override
                 public ReadableDimension calcMinSize(GuiContainer<?> container) {
-                    return new org.lwjgl.util.Dimension(300, thumbnail.getMinSize().getHeight());
+                    return new Dimension(300, thumbnail.getMinSize().getHeight());
                 }
             });
         }

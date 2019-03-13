@@ -3,7 +3,7 @@ package com.replaymod.render.processor;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.utils.ByteBufferPool;
-import org.lwjgl.util.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 
 import java.nio.ByteBuffer;
 
@@ -15,7 +15,7 @@ public class CubicToRGBProcessor extends AbstractFrameProcessor<CubicOpenGlFrame
         int size = rawFrame.getLeft().getSize().getWidth();
         int width = size * 4;
         int height = size * 3;
-        ByteBuffer result = ByteBufferPool.allocate(width * height * 3);
+        ByteBuffer result = ByteBufferPool.allocate(width * height * 4);
         openGlBytesToRBG(rawFrame.getLeft().getByteBuffer(), size, 0, size, result, width);
         openGlBytesToRBG(rawFrame.getFront().getByteBuffer(), size, size, size, result, width);
         openGlBytesToRBG(rawFrame.getRight().getByteBuffer(), size, size * 2, size, result, width);

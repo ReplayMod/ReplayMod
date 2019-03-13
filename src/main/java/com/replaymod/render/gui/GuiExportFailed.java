@@ -13,11 +13,12 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.util.ReportedException;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+import static com.replaymod.core.versions.MCVer.addDetail;
+import static com.replaymod.core.versions.MCVer.newReportedException;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 public class GuiExportFailed extends GuiScreen {
@@ -31,9 +32,9 @@ public class GuiExportFailed extends GuiScreen {
             // If they haven't, then this is probably a faulty ffmpeg installation and there's nothing we can do
             CrashReport crashReport = CrashReport.makeCrashReport(e, "Exporting video");
             CrashReportCategory details = crashReport.makeCategory("Export details");
-            details.addCrashSection("Settings", settings);
-            details.addCrashSection("FFmpeg log", e.getLog());
-            throw new ReportedException(crashReport);
+            addDetail(details, "Settings", settings::toString);
+            addDetail(details, "FFmpeg log", e::getLog);
+            throw newReportedException(crashReport);
         } else {
             // If they have, ask them whether it was intentional
             GuiExportFailed gui = new GuiExportFailed(e, doRestart);
@@ -93,7 +94,9 @@ public class GuiExportFailed extends GuiScreen {
                     oldSettings.isStabilizePitch(),
                     oldSettings.isStabilizeRoll(),
                     oldSettings.getChromaKeyingColor(),
-                    oldSettings.isInject360Metadata(),
+                    oldSettings.getSphericalFovX(),
+                    oldSettings.getSphericalFovY(),
+                    oldSettings.isInjectSphericalMetadata(),
                     oldSettings.getAntiAliasing(),
                     oldSettings.getExportCommand(),
                     oldSettings.getEncodingPreset().getValue(),

@@ -1,7 +1,10 @@
 package com.replaymod.online;
 
+import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.online.api.ApiClient;
+import com.replaymod.online.api.AuthData;
 import com.replaymod.online.gui.GuiLoginPrompt;
 import com.replaymod.online.gui.GuiReplayDownloading;
 import com.replaymod.online.gui.GuiSaveModifiedReplay;
@@ -12,48 +15,36 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import net.minecraftforge.common.config.Configuration;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//#if MC>=10800
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#else
-//$$ import cpw.mods.fml.common.Mod;
-//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+//$$ import net.minecraftforge.common.config.Configuration;
+//#if MC>=10800
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#endif
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static com.replaymod.core.versions.MCVer.*;
-import static net.minecraft.client.Minecraft.getMinecraft;
 
-@Mod(modid = ReplayModOnline.MOD_ID,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
-        acceptableRemoteVersions = "*",
-        //#if MC>=10800
-        clientSideOnly = true,
-        //#endif
-        useMetadata = true)
-public class ReplayModOnline {
-    public static final String MOD_ID = "replaymod-online";
-
-    @Mod.Instance(MOD_ID)
+public class ReplayModOnline implements Module {
+    { instance = this; }
     public static ReplayModOnline instance;
 
     private ReplayMod core;
 
     private ReplayModReplay replayModule;
 
-    public static Logger LOGGER;
+    public static Logger LOGGER = LogManager.getLogger();
 
     private ApiClient apiClient;
 
@@ -64,22 +55,31 @@ public class ReplayModOnline {
      */
     private File currentReplayOutputFile;
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        LOGGER = event.getModLog();
-        core = ReplayMod.instance;
-        replayModule = ReplayModReplay.instance;
+    public ReplayModOnline(ReplayMod core, ReplayModReplay replayModule) {
+        this.core = core;
+        this.replayModule = replayModule;
 
         core.getSettingsRegistry().register(Setting.class);
-
-        Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-        ConfigurationAuthData authData = new ConfigurationAuthData(config);
-        apiClient = new ApiClient(authData);
-        authData.load(apiClient);
     }
 
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
+    @Override
+    public void initClient() {
+        Path path = MCVer.mcDataDir(MCVer.getMinecraft()).toPath().resolve("config/replaymod-online.token");
+        PlainFileAuthData authData = new PlainFileAuthData(path);
+        apiClient = new ApiClient(authData);
+        if (Files.notExists(path)) {
+            AuthData oldAuthData = loadOldAuthData();
+            if (oldAuthData != null) {
+                authData.setData(oldAuthData.getUserName(), oldAuthData.getAuthKey());
+            }
+        } else {
+            try {
+                authData.load(apiClient);
+            } catch (IOException e) {
+                ReplayModOnline.LOGGER.error("Loading auth data:", e);
+            }
+        }
+
         if (!getDownloadsFolder().exists()){
             if (!getDownloadsFolder().mkdirs()) {
                 LOGGER.warn("Failed to create downloads folder: " + getDownloadsFolder());
@@ -88,10 +88,7 @@ public class ReplayModOnline {
 
         new GuiHandler(this).register();
         FML_BUS.register(this);
-    }
 
-    @Mod.EventHandler
-    public void postInit(FMLPostInitializationEvent event) {
         // Initial login prompt
         if (!core.getSettingsRegistry().get(Setting.SKIP_LOGIN_PROMPT)) {
             if (!isLoggedIn()) {
@@ -101,6 +98,23 @@ public class ReplayModOnline {
                 });
             }
         }
+    }
+
+    /**
+     * Loads old auth data from the legacy Configuration system and stores it in the new json file.
+     * Always returns null on 1.13+ where the Configuration system has been removed.
+     */
+    private AuthData loadOldAuthData() {
+        //#if MC<11300
+        //$$ Path path = MCVer.mcDataDir(MCVer.getMinecraft()).toPath().resolve("config/replaymod-online.cfg");
+        //$$ Configuration config = new Configuration(path.toFile());
+        //$$ ConfigurationAuthData authData = new ConfigurationAuthData(config);
+        //$$ authData.load(new ApiClient(authData));
+        //$$ if (authData.getAuthKey() != null) {
+        //$$     return authData;
+        //$$ }
+        //#endif
+        return null;
     }
 
     public ReplayMod getCore() {
@@ -125,7 +139,7 @@ public class ReplayModOnline {
 
     public File getDownloadsFolder() {
         String path = core.getSettingsRegistry().get(Setting.DOWNLOAD_PATH);
-        return new File(path.startsWith("./") ? getMinecraft().mcDataDir : null, path);
+        return new File(path.startsWith("./") ? mcDataDir(getMinecraft()) : null, path);
     }
 
     public File getDownloadedFile(int id) {

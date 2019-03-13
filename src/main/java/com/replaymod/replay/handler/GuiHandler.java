@@ -1,16 +1,22 @@
 package com.replaymod.replay.handler;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
+import net.minecraft.client.gui.GuiMultiplayer;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -23,6 +29,9 @@ import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
 public class GuiHandler {
+    //#if MC>=11300
+    private static final int BUTTON_OPTIONS = 0;
+    //#endif
     private static final int BUTTON_EXIT_SERVER = 1;
     private static final int BUTTON_ADVANCEMENTS = 5;
     private static final int BUTTON_STATS = 6;
@@ -31,7 +40,7 @@ public class GuiHandler {
     private static final int BUTTON_REPLAY_VIEWER = 17890234;
     private static final int BUTTON_EXIT_REPLAY = 17890235;
 
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = MCVer.getMinecraft();
 
     private final ReplayModReplay mod;
 
@@ -60,29 +69,44 @@ public class GuiHandler {
                 switch (b.id) {
                     // Replace "Exit Server" button with "Exit Replay" button
                     case BUTTON_EXIT_SERVER:
-                        b.displayString = I18n.format("replaymod.gui.exit");
-                        b.id = BUTTON_EXIT_REPLAY;
+                        removeButton(event, b);
+                        addButton(event, new GuiButton(BUTTON_EXIT_REPLAY, x(b), y(b), b.width, b.height, I18n.format("replaymod.gui.exit")) {
+                            //#if MC>=11300
+                            @Override
+                            public void onClick(double mouseX, double mouseY) {
+                                onButton(new GuiScreenEvent.ActionPerformedEvent.Pre(getGui(event), this, new ArrayList<>()));
+                            }
+                            //#endif
+                        });
                         break;
                     // Remove "Advancements", "Stats" and "Open to LAN" buttons
                     case BUTTON_ADVANCEMENTS:
-                        buttonList.remove(achievements = b);
+                        removeButton(event, achievements = b);
                         break;
                     case BUTTON_STATS:
-                        buttonList.remove(stats = b);
+                        removeButton(event, stats = b);
                         break;
                     case BUTTON_OPEN_TO_LAN:
-                        buttonList.remove(openToLan = b);
+                        removeButton(event, openToLan = b);
                         break;
+                    //#if MC>=11300
+                    case BUTTON_OPTIONS:
+                        b.width = 200;
+                        break;
+                    //#endif
                 }
             }
             if (achievements != null && stats != null) {
                 moveAllButtonsDirectlyBelowUpwards(buttonList, y(achievements),
                         x(achievements), x(stats) + stats.width);
             }
-            if (openToLan != null) {
-                moveAllButtonsDirectlyBelowUpwards(buttonList, y(openToLan),
-                        x(openToLan), x(openToLan) + openToLan.width);
-            }
+            // In 1.13+ Forge, the Options button shares one row with the Open to LAN button
+            //#if MC<11300
+            //$$ if (openToLan != null) {
+            //$$     moveAllButtonsDirectlyBelowUpwards(buttonList, y(openToLan),
+            //$$             x(openToLan), x(openToLan) + openToLan.width);
+            //$$ }
+            //#endif
         }
     }
 
@@ -102,8 +126,8 @@ public class GuiHandler {
     }
 
     @SubscribeEvent
-    public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
-        if (!(getGui(event) instanceof GuiMainMenu)) {
+    public void ensureReplayStopped(GuiScreenEvent.InitGuiEvent event) {
+        if (!(getGui(event) instanceof GuiMainMenu || getGui(event) instanceof GuiMultiplayer)) {
             return;
         }
 
@@ -120,11 +144,25 @@ public class GuiHandler {
                 }
             }
         }
+    }
 
+
+    @SubscribeEvent
+    public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
+        if (!(getGui(event) instanceof GuiMainMenu)) {
+            return;
+        }
         GuiButton button = new GuiButton(BUTTON_REPLAY_VIEWER, getGui(event).width / 2 - 100,
-                getGui(event).height / 4 + 10 + 3 * 24, I18n.format("replaymod.gui.replayviewer"));
+                getGui(event).height / 4 + 10 + 4 * 24, I18n.format("replaymod.gui.replayviewer")) {
+            //#if MC>=11300
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                onButton(new GuiScreenEvent.ActionPerformedEvent.Pre(getGui(event), this, new ArrayList<>()));
+            }
+            //#endif
+        };
         button.width = button.width / 2 - 2;
-        getButtonList(event).add(button);
+        addButton(event, button);
     }
 
     @SubscribeEvent

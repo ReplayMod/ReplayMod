@@ -1,11 +1,16 @@
 package com.replaymod.recording.mixin;
 
 import com.replaymod.recording.handler.RecordingEventHandler;
-import net.minecraft.client.renderer.RenderGlobal;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=11300
+import net.minecraft.client.renderer.WorldRenderer;
+//#else
+//$$ import net.minecraft.client.renderer.RenderGlobal;
+//#endif
 
 //#if MC>=10904
 import net.minecraft.util.math.BlockPos;
@@ -15,7 +20,11 @@ import net.minecraft.util.math.BlockPos;
 //#endif
 //#endif
 
-@Mixin(RenderGlobal.class)
+//#if MC>=11300
+@Mixin(WorldRenderer.class)
+//#else
+//$$ @Mixin(RenderGlobal.class)
+//#endif
 public abstract class MixinRenderGlobal implements RecordingEventHandler.RecordingEventSender {
 
     private RecordingEventHandler recordingEventHandler;

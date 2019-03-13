@@ -1,6 +1,7 @@
 package com.replaymod.simplepathing.preview;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
@@ -15,7 +16,6 @@ import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -26,7 +26,11 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=10800
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import com.replaymod.core.versions.MCVer.GlStateManager;
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -40,7 +44,7 @@ import static com.replaymod.core.versions.MCVer.*;
 
 public class PathPreviewRenderer {
     private static final ResourceLocation CAMERA_HEAD = new ResourceLocation("replaymod", "camera_head.png");
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft mc = MCVer.getMinecraft();
 
     private static final int SLOW_PATH_COLOR = 0xffcccc;
     private static final int FAST_PATH_COLOR = 0x660000;
@@ -239,7 +243,7 @@ public class PathPreviewRenderer {
                            Keyframe keyframe) {
         BufferBuilder_setTranslation(0, 0, 0);
 
-        mc.renderEngine.bindTexture(TEXTURE);
+        MCVer.bindTexture(TEXTURE);
 
         float posX = 80f / ReplayMod.TEXTURE_SIZE;
         float posY = 0f;
@@ -286,7 +290,7 @@ public class PathPreviewRenderer {
                             Triple<Float, Float, Float> rot) {
         BufferBuilder_setTranslation(0, 0, 0);
 
-        mc.renderEngine.bindTexture(CAMERA_HEAD);
+        MCVer.bindTexture(CAMERA_HEAD);
 
         GL11.glPushMatrix();
 

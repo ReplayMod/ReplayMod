@@ -4,6 +4,8 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
 import com.google.common.primitives.Bytes;
 import com.googlecode.mp4parser.BasicContainer;
+import com.replaymod.render.RenderSettings;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -30,12 +32,20 @@ public class MetadataInjector {
             "<GSpherical:Stitched>true</GSpherical:Stitched> " +
             "<GSpherical:StitchingSoftware>"+STITCHING_SOFTWARE+"</GSpherical:StitchingSoftware> " +
             "<GSpherical:ProjectionType>equirectangular</GSpherical:ProjectionType> ";
+    private static final String SPHERICAL_CROP_XML =
+            "<GSpherical:FullPanoWidthPixels>%d</GSpherical:FullPanoWidthPixels> " +
+            "<GSpherical:FullPanoHeightPixels>%d</GSpherical:FullPanoHeightPixels> " +
+            "<GSpherical:CroppedAreaImageWidthPixels>%d</GSpherical:CroppedAreaImageWidthPixels> " +
+            "<GSpherical:CroppedAreaImageHeightPixels>%d</GSpherical:CroppedAreaImageHeightPixels> " +
+            "<GSpherical:CroppedAreaLeftPixels>%d</GSpherical:CroppedAreaLeftPixels> " +
+            "<GSpherical:CroppedAreaTopPixels>%d</GSpherical:CroppedAreaTopPixels> ";
     private static final String STEREO_XML_CONTENTS = "<GSpherical:StereoMode>top-bottom</GSpherical:StereoMode>";
     private static final String SPHERICAL_XML_FOOTER = "</rdf:SphericalVideo>";
 
-    private static final String XML_360_METADATA = SPHERICAL_XML_HEADER + SPHERICAL_XML_CONTENTS + SPHERICAL_XML_FOOTER;
-    private static final String XML_ODS_METADATA = SPHERICAL_XML_HEADER + SPHERICAL_XML_CONTENTS
-            + STEREO_XML_CONTENTS + SPHERICAL_XML_FOOTER;
+    private static final String XML_MONO_METADATA = SPHERICAL_XML_HEADER + SPHERICAL_XML_CONTENTS
+            + SPHERICAL_CROP_XML + SPHERICAL_XML_FOOTER;
+    private static final String XML_STEREO_METADATA = SPHERICAL_XML_HEADER + SPHERICAL_XML_CONTENTS
+            + SPHERICAL_CROP_XML + STEREO_XML_CONTENTS + SPHERICAL_XML_FOOTER;
 
     /**
      * These bytes are taken from the variable 'spherical_uuid_id'
@@ -48,18 +58,43 @@ public class MetadataInjector {
             (byte)0x02, (byte)0x52, (byte)0x1f, (byte)0xdd
     };
 
-    private static final byte[] BYTES_360_METADATA = Bytes.concat(UUID_BYTES, XML_360_METADATA.getBytes());
-    private static final byte[] BYTES_ODS_METADATA = Bytes.concat(UUID_BYTES, XML_ODS_METADATA.getBytes());
+    public static void injectMetadata(RenderSettings.RenderMethod renderMethod, File videoFile,
+                                      int videoWidth, int videoHeight,
+                                      int sphericalFovX, int sphericalFovY) {
+        String xmlString;
+        switch (renderMethod) {
+            case EQUIRECTANGULAR:
+                xmlString = XML_MONO_METADATA;
+                break;
+            case ODS:
+                xmlString = XML_STEREO_METADATA;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid render method");
+        }
 
-    public static void inject360Metadata(File videoFile) {
-        writeMetadata(videoFile, BYTES_360_METADATA);
+        Dimension original = getOriginalDimensions(videoWidth, videoHeight, sphericalFovX, sphericalFovY);
+        writeMetadata(videoFile, String.format(xmlString,
+                original.getWidth(), original.getHeight(), videoWidth, videoHeight,
+                (original.getWidth() - videoWidth) / 2, (original.getHeight() - videoHeight) / 2));
     }
 
-    public static void injectODSMetadata(File videoFile) {
-        writeMetadata(videoFile, BYTES_ODS_METADATA);
+    private static Dimension getOriginalDimensions(int videoWidth, int videoHeight,
+                                                   int sphericalFovX, int sphericalFovY) {
+        if (sphericalFovX < 360) {
+            videoWidth = Math.round(videoWidth * 360 / (float) sphericalFovX);
+        }
+
+        if (sphericalFovY < 180) {
+            videoHeight = Math.round(videoHeight * 180 / (float) sphericalFovY);
+        }
+
+        return new Dimension(videoWidth, videoHeight);
     }
 
-    private static void writeMetadata(File videoFile, byte[] metadata) {
+    private static void writeMetadata(File videoFile, String metadata) {
+        byte[] bytes = Bytes.concat(UUID_BYTES, metadata.getBytes());
+
         File tempFile = null;
         FileOutputStream videoFileOutputStream = null;
         IsoFile tempIsoFile = null;
@@ -80,7 +115,7 @@ public class MetadataInjector {
 
             //create a new UserBox, which actually contains the Metadata bytes
             UserBox metadataBox = new UserBox(new byte[0]);
-            metadataBox.setData(metadata);
+            metadataBox.setData(bytes);
 
             //add the Metadata UserBox to the Movie Track
             trackBox.addBox(metadataBox);
@@ -97,7 +132,7 @@ public class MetadataInjector {
             videoFileOutputStream = new FileOutputStream(videoFile);
             tempIsoFile.getBox(videoFileOutputStream.getChannel());
         } catch(Exception e) {
-            LOGGER.error("360 Degree Metadata couldn't be injected", e);
+            LOGGER.error("Spherical Metadata couldn't be injected", e);
         } finally {
             IOUtils.closeQuietly(tempIsoFile);
             IOUtils.closeQuietly(videoFileOutputStream);

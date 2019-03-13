@@ -6,7 +6,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import org.lwjgl.input.Mouse;
+
+//#if MC>=11300
+// FIXME
+//#else
+//$$ import org.lwjgl.input.Mouse;
+//#endif
 
 import java.util.Arrays;
 
@@ -18,7 +23,7 @@ public class SpectatorCameraController implements CameraController {
 
     @Override
     public void update(float partialTicksPassed) {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = getMinecraft();
         if (mc.gameSettings.keyBindSneak.isPressed()) {
             ReplayModReplay.instance.getReplayHandler().spectateCamera();
         }
@@ -31,7 +36,11 @@ public class SpectatorCameraController implements CameraController {
         }
 
         // Prevent mouse movement
-        Mouse.updateCursor();
+        //#if MC>=11300
+        // FIXME
+        //#else
+        //$$ Mouse.updateCursor();
+        //#endif
 
         // Always make sure the camera is in the exact same spot as the spectated entity
         // This is necessary as some rendering code for the hand doesn't respect the view entity

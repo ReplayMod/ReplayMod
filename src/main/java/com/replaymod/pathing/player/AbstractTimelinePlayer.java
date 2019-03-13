@@ -14,7 +14,11 @@ import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraft.client.Minecraft;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -28,7 +32,7 @@ import static com.replaymod.core.versions.MCVer.*;
  * Plays a timeline.
  */
 public abstract class AbstractTimelinePlayer {
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = getMinecraft();
     private final ReplayHandler replayHandler;
     private Timeline timeline;
     protected long startOffset;

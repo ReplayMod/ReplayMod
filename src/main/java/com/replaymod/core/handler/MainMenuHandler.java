@@ -1,5 +1,6 @@
 package com.replaymod.core.handler;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
@@ -9,12 +10,14 @@ import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
-
-import java.io.IOException;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -37,17 +40,18 @@ public class MainMenuHandler {
                 if (x(button) + button.width < gui.width / 2 - 100
                         || x(button) > gui.width / 2 + 100
                         || y(button) > gui.height / 4 + 10 + 4 * 24) continue;
-                // Move button up to make space for two rows of buttons
+                // Move button up to make space for one rows of buttons
                 // and then move back down by 10 to compensate for the space to the exit button that was already there
-                int offset = -2 * 24 + 10;
+                int offset = -1 * 24 + 10;
                 y(button, y(button) + offset);
-                //#if MC>=11202
-                if (button == gui.realmsButton) {
+
+                //#if MC>=11300
+                if (button.id == 14) {
                     realmsOffset = offset;
                 }
                 //#endif
             }
-            //#if MC>=11202
+            //#if MC>=11300
             if (realmsOffset != 0 && gui.realmsNotification instanceof GuiScreenRealmsProxy) {
                 gui.realmsNotification = new RealmsNotificationProxy((GuiScreenRealmsProxy) gui.realmsNotification, realmsOffset);
             }
@@ -55,7 +59,7 @@ public class MainMenuHandler {
         }
     }
 
-    //#if MC>=11202
+    //#if MC>=11300
     private static class RealmsNotificationProxy extends GuiScreen {
         private final GuiScreenRealmsProxy proxy;
         private final int offset;
@@ -66,30 +70,25 @@ public class MainMenuHandler {
         }
 
         @Override
-        public void setGuiSize(int w, int h) {
-            proxy.setGuiSize(w, h);
+        public void setWorldAndResolution(Minecraft mc, int width, int height) {
+            proxy.setWorldAndResolution(mc, width, height);
         }
 
         @Override
-        public void initGui() {
-            proxy.initGui();
+        public void tick() {
+            proxy.tick();
         }
 
         @Override
-        public void updateScreen() {
-            proxy.updateScreen();
-        }
-
-        @Override
-        public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        public void render(int mouseX, int mouseY, float partialTicks) {
             GL11.glTranslated(0, offset, 0);
-            proxy.drawScreen(mouseX, mouseY - offset, partialTicks);
+            proxy.render(mouseX, mouseY - offset, partialTicks);
             GL11.glTranslated(0, -offset, 0);
         }
 
         @Override
-        public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-            proxy.mouseClicked(mouseX, mouseY - offset, mouseButton);
+        public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+            return proxy.mouseClicked(mouseX, mouseY - offset, mouseButton);
         }
 
         @Override

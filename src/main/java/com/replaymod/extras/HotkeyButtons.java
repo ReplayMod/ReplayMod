@@ -16,13 +16,21 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.resources.I18n;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.util.Dimension;
-import org.lwjgl.util.ReadableDimension;
+
+//#if MC>=11300
+//#else
+//$$ import org.lwjgl.input.Keyboard;
+//#endif
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -89,7 +97,11 @@ public class HotkeyButtons implements Extra {
                         // There doesn't seem to be an KeyBindingUpdate event, so we'll just update it every time
                         String keyName = "???";
                         try {
-                            keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
+                            //#if MC>=11300
+                            keyName = keyBinding.func_197978_k();
+                            //#else
+                            //$$ keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
+                            //#endif
                         } catch (ArrayIndexOutOfBoundsException e) {
                             // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
                         }

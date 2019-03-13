@@ -4,8 +4,8 @@ import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.Frame;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.PixelBufferObject;
-import net.minecraft.client.renderer.OpenGlHelper;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -19,7 +19,7 @@ public abstract class MultiFramePboOpenGlFrameCapturer<F extends Frame, D extend
         super(worldRenderer, renderInfo);
 
         data = type.getEnumConstants();
-        int bufferSize = framePixels * 3 * data.length;
+        int bufferSize = framePixels * 4 * data.length;
         pbo = new PixelBufferObject(bufferSize, PixelBufferObject.Usage.READ);
         otherPBO = new PixelBufferObject(bufferSize, PixelBufferObject.Usage.READ);
     }
@@ -47,7 +47,7 @@ public abstract class MultiFramePboOpenGlFrameCapturer<F extends Frame, D extend
             ByteBuffer pboBuffer = pbo.mapReadOnly();
 
             OpenGlFrame[] frames = new OpenGlFrame[data.length];
-            int frameBufferSize = getFrameWidth() * getFrameHeight() * 3;
+            int frameBufferSize = getFrameWidth() * getFrameHeight() * 4;
             for (int i = 0; i < frames.length; i++) {
                 ByteBuffer frameBuffer = ByteBufferPool.allocate(frameBufferSize);
                 pboBuffer.limit(pboBuffer.position() + frameBufferSize);
@@ -79,17 +79,10 @@ public abstract class MultiFramePboOpenGlFrameCapturer<F extends Frame, D extend
     protected OpenGlFrame captureFrame(int frameId, D captureData) {
         pbo.bind();
 
-        GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
-        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-
-        int offset = captureData.ordinal() * getFrameWidth() * getFrameHeight() * 3;
-        if (OpenGlHelper.isFramebufferEnabled()) {
-            frameBuffer().bindFramebufferTexture();
-            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, offset);
-            frameBuffer().unbindFramebufferTexture();
-        } else {
-            GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, offset);
-        }
+        int offset = captureData.ordinal() * getFrameWidth() * getFrameHeight() * 4;
+        frameBuffer().bindFramebuffer(true);
+        GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, offset);
+        frameBuffer().unbindFramebuffer();
 
         pbo.unbind();
         return null;

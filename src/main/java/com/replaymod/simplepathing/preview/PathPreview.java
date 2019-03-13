@@ -1,6 +1,6 @@
 package com.replaymod.simplepathing.preview;
 
-import com.replaymod.core.ReplayMod;
+import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedEvent;
 import com.replaymod.replay.ReplayHandler;
@@ -8,12 +8,16 @@ import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.Setting;
-import org.lwjgl.input.Keyboard;
 
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#else
+//$$ import org.lwjgl.input.Keyboard;
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#endif
 
 import static com.replaymod.core.versions.MCVer.*;
@@ -30,12 +34,13 @@ public class PathPreview {
 
     public void register() {
         FML_BUS.register(this);
+    }
 
-        ReplayMod core = mod.getCore();
-        mod.getCore().getKeyBindingRegistry().registerKeyBinding("replaymod.input.pathpreview", Keyboard.KEY_H, () -> {
-            SettingsRegistry registry = core.getSettingsRegistry();
-            registry.set(Setting.PATH_PREVIEW, !registry.get(Setting.PATH_PREVIEW));
-            registry.save();
+    public void registerKeyBindings(KeyBindingRegistry registry) {
+        registry.registerKeyBinding("replaymod.input.pathpreview", Keyboard.KEY_H, () -> {
+            SettingsRegistry settings = mod.getCore().getSettingsRegistry();
+            settings.set(Setting.PATH_PREVIEW, !settings.get(Setting.PATH_PREVIEW));
+            settings.save();
         });
     }
 

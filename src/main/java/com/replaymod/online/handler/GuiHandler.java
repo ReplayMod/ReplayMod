@@ -15,7 +15,12 @@ import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
 
 //#if MC>=10800
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import java.util.ArrayList;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#endif
 //#else
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -44,9 +49,21 @@ public class GuiHandler {
             return;
         }
 
-        GuiButton button = new GuiButton(BUTTON_REPLAY_CENTER, getGui(event).width / 2 - 100,
-                getGui(event).height / 4 + 10 + 4 * 24, I18n.format("replaymod.gui.replaycenter"));
-        getButtonList(event).add(button);
+        GuiButton button = new GuiButton(
+                BUTTON_REPLAY_CENTER,
+                getGui(event).width / 2 + 2,
+                getGui(event).height / 4 + 10 + 4 * 24,
+                I18n.format("replaymod.gui.replaycenter")
+        ) {
+            //#if MC>=11300
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                onButton(new GuiScreenEvent.ActionPerformedEvent.Pre(getGui(event), this, new ArrayList<>()));
+            }
+            //#endif
+        };
+        button.width = button.width / 2 - 2;
+        addButton(event, button);
     }
 
     @SubscribeEvent
@@ -57,22 +74,15 @@ public class GuiHandler {
         }
         final GuiReplayViewer replayViewer = (GuiReplayViewer) guiScreen;
         // Inject Upload button
-        for (GuiElement element : replayViewer.replayButtonPanel.getChildren()) {
-            if (element instanceof GuiPanel && (((GuiPanel) element).getChildren().isEmpty())) {
-                new de.johni0702.minecraft.gui.element.GuiButton((GuiPanel) element).onClick(new Runnable() {
-                    @Override
-                    public void run() {
-                        File replayFile = replayViewer.list.getSelected().file;
-                        GuiUploadReplay uploadGui = new GuiUploadReplay(replayViewer, mod, replayFile);
-                        if (mod.isLoggedIn()) {
-                            uploadGui.display();
-                        } else {
-                            new GuiLoginPrompt(mod.getApiClient(), replayViewer, uploadGui, true);
-                        }
-                    }
-                }).setSize(73, 20).setI18nLabel("replaymod.gui.upload").setDisabled();
+        replayViewer.replaySpecificButtons.add(new de.johni0702.minecraft.gui.element.GuiButton(replayViewer.uploadButton).onClick(() -> {
+            File replayFile = replayViewer.list.getSelected().file;
+            GuiUploadReplay uploadGui = new GuiUploadReplay(replayViewer, mod, replayFile);
+            if (mod.isLoggedIn()) {
+                uploadGui.display();
+            } else {
+                new GuiLoginPrompt(mod.getApiClient(), replayViewer, uploadGui, true);
             }
-        }
+        }).setSize(73, 20).setI18nLabel("replaymod.gui.upload").setDisabled());
     }
 
     @SubscribeEvent

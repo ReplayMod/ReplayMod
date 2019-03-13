@@ -2,13 +2,13 @@ package com.replaymod.extras.advancedscreenshots;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.extras.ReplayModExtras;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.Minecraft;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.crash.CrashReport;
-import org.lwjgl.util.ReadableDimension;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -48,7 +48,7 @@ public class ScreenshotWriter implements FrameConsumer<RGBFrame> {
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
             CrashReport report = CrashReport.makeCrashReport(e, "Exporting frame");
-            Minecraft.getMinecraft().crashed(report);
+            MCVer.getMinecraft().crashed(report);
         } catch (Throwable t) {
             CrashReport report = CrashReport.makeCrashReport(t, "Exporting frame");
 

@@ -5,9 +5,15 @@ import com.replaymod.render.blend.BlendMeshBuilder;
 import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
-import net.minecraft.client.model.ModelBox;
-import net.minecraft.client.model.ModelRenderer;
 import org.lwjgl.opengl.GL11;
+
+//#if MC>=11300
+import net.minecraft.client.renderer.entity.model.ModelBox;
+import net.minecraft.client.renderer.entity.model.ModelRenderer;
+//#else
+//$$ import net.minecraft.client.model.ModelBox;
+//$$ import net.minecraft.client.model.ModelRenderer;
+//#endif
 
 import java.io.IOException;
 
