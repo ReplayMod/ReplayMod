@@ -144,7 +144,11 @@ public class MarkerProcessor {
                                 duration = nextPacket.getTime() - timeOffset;
                             }
                             nextPacket = replayInputStream.readPacket();
-                            progress.accept((float) nextPacket.getTime() / (float) inputDuration);
+                            if (nextPacket != null) {
+                                progress.accept((float) nextPacket.getTime() / (float) inputDuration);
+                            } else {
+                                progress.accept(1f);
+                            }
                         }
                     }
 
