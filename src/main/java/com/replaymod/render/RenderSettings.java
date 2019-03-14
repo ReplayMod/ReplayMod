@@ -82,10 +82,10 @@ public class RenderSettings {
         }
 
         public boolean hasBitrateSetting() {
-            return preset.contains("%BITRATE%");
+            return preset != null && preset.contains("%BITRATE%");
         }
 
-        public boolean isYuv420() { return preset.contains("-pix_fmt yuv420p"); }
+        public boolean isYuv420() { return preset != null && preset.contains("-pix_fmt yuv420p"); }
 
         @Override
         public String toString() {
