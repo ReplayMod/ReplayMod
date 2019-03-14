@@ -60,7 +60,7 @@ public abstract class MixinRenderGlobal {
             //#if MC>=11300
             target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;render(Lnet/minecraft/tileentity/TileEntity;FI)V"
             //#else
-            //$$ target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;renderTileEntity(Lnet/minecraft/tileentity/TileEntity;FI)V")
+            //$$ target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;renderTileEntity(Lnet/minecraft/tileentity/TileEntity;FI)V"
             //#endif
     ))
     public void preTileEntityRender(Entity view, ICamera camera, float renderPartialTicks, CallbackInfo ci) {
@@ -75,7 +75,7 @@ public abstract class MixinRenderGlobal {
             //#if MC>=11300
             target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;render(Lnet/minecraft/tileentity/TileEntity;FI)V",
             //#else
-            //$$ target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;renderTileEntity(Lnet/minecraft/tileentity/TileEntity;FI)V"),
+            //$$ target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;renderTileEntity(Lnet/minecraft/tileentity/TileEntity;FI)V",
             //#endif
             shift = At.Shift.AFTER
     ))

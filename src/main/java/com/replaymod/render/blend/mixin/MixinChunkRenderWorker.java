@@ -19,7 +19,7 @@ import net.minecraft.client.renderer.chunk.ChunkRenderTask;
 public abstract class MixinChunkRenderWorker {
 
     @Inject(method = "processTask", at = @At("RETURN"))
-    //if MC>=11300
+    //#if MC>=11300
     public void afterChunkUpdate(ChunkRenderTask task, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {

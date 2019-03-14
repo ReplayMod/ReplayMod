@@ -40,6 +40,7 @@ public abstract class MixinTileEntityRendererDispatcher {
     @Inject(method = "render(Lnet/minecraft/tileentity/TileEntity;DDDFIZ)V",
             at = @At("RETURN"))
     public void postRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, boolean hasNoBlock, CallbackInfo ci) {
+    //#else
     //#if MC>=11200
     //$$ @Inject(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntity;DDDFIF)V",
     //$$         at = @At("RETURN"))

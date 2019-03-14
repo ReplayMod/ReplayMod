@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.model.IBakedModel;
 //$$ import net.minecraft.client.renderer.entity.RenderItem;
 //$$ import net.minecraft.client.resources.model.IBakedModel;
 //#endif
+//#endif
 
 //#if MC>=11300
 @Mixin(ItemRenderer.class)
