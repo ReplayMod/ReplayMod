@@ -10,6 +10,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 
 import java.io.IOException;
 import java.util.IdentityHashMap;
@@ -74,13 +75,24 @@ public class EntityExporter implements Exporter {
         // So, we translate there, then store the model-view-matrix and then translate back to let the
         // renderer translate there again.
         // Instead of actually translating, we just add the translation on the current model-view-matrix.
-        Matrix4f modelView = getGlModelViewMatrix();
-        Matrix4f.translate(new Vector3f((float) dx, (float) dy, (float) dz), modelView, modelView);
-        renderState.pushModelView(modelView);
-        renderState.applyLastModelViewTransformToObject();
+        if (!(entity instanceof EntityLivingBase)) { // except for EntityLivingBase which get special (better) treatment
+            Matrix4f modelView = getGlModelViewMatrix();
+            Matrix4f.translate(new Vector3f((float) dx, (float) dy, (float) dz), modelView, modelView);
+            renderState.pushModelView(modelView);
+            renderState.applyLastModelViewTransformToObject();
 
-        entityObject.keyframeLocRotScale(renderState.getFrame());
+            entityObject.keyframeLocRotScale(renderState.getFrame());
+        }
         entityObject.setVisible(renderState.getFrame());
+    }
+
+    public void postEntityLivingSetup() {
+        // For any entity which extends EntityLivingBase, we capture its rotation and scale after it has been setup
+        // in addition to its position (which we capture in preRender for other entities).
+        // We could add custom hooks for various other entities types as well but it's probably not worth it.
+        renderState.pushModelView();
+        renderState.applyLastModelViewTransformToObject();
+        renderState.peekObject().keyframeLocRotScale(renderState.getFrame());
     }
 
     public void postRender(Entity entity, double dx, double dy, double dz, float yaw, float renderPartialTicks) {

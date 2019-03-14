@@ -10,6 +10,7 @@
     "MixinModelRenderer",
     "MixinRenderGlobal",
     "MixinRenderItem",
+    "MixinRenderLivingBase",
     "MixinRenderManager",
     "MixinTileEntityRendererDispatcher"
     //#endif
