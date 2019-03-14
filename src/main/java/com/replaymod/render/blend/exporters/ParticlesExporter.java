@@ -49,7 +49,6 @@ public class ParticlesExporter implements Exporter {
 
     @Override
     public void setup() throws IOException {
-        if (false) return; // FIXME make configurable (also other methods below)
         // FIXME replace with camera
         pointAtObject = new DObject(DObject.Type.OB_EMPTY);
         pointAtObject.id.name = "Particles Target";
@@ -71,7 +70,6 @@ public class ParticlesExporter implements Exporter {
     }
 
     public void preParticlesRender(boolean lit) {
-        if (false) return;
         Matrix4f modelView = getGlModelViewMatrix();
         // Particles are rendered relative to the viewer location.
         // We however want our Particles object to not move when the viewer does,
@@ -85,7 +83,6 @@ public class ParticlesExporter implements Exporter {
     }
 
     public void postParticlesRender() {
-        if (false) return;
         renderState.pop();
     }
 
@@ -94,10 +91,9 @@ public class ParticlesExporter implements Exporter {
     //#else
     //$$ public void onRender(EntityFX particle, float renderPartialTicks) {
     //#endif
-        if (false) return;
         DObject particleObject = particleObjects.get(particle);
         if (particleObject == null) {
-            particleObject = new DObject(DObject.Type.OB_EMPTY);
+            particleObject = new DObject(DObject.Type.OB_EMPTY); // mesh generation is delayed, see below
             particleObject.setParent(renderState.peekObject());
             particleObject.pointAt = pointAtObject;
             particleObject.layers = 1 << 2;
@@ -124,15 +120,32 @@ public class ParticlesExporter implements Exporter {
         renderState.applyLastModelViewTransformToObject();
 
         particleObject.keyframeLoc(renderState.getFrame());
-        particleObject.keyframeScale(renderState.getFrame());
 
-        DObject frameObject = new DObject(generateMeshForParticle(particle, offset));
-        frameObject.setParent(particleObject);
-        frameObject.layers = 1 << 2;
-        frameObject.id.name = particleObject.id.name + " - Frame " + renderState.getFrame();
-        frameObject.keyframe("hide", 0, renderState.getFrame() - 1, 1f);
-        frameObject.keyframe("hide", 0, renderState.getFrame(), 0f);
-        frameObject.keyframe("hide", 0, renderState.getFrame() + 1, 1f);
+        DMesh mesh = generateMeshForParticle(particle, offset);
+        if (mesh.vertices.isEmpty()) {
+            renderState.pop();
+            return; // no particle to be found?
+        }
+        if (particleObject.mesh == null) {
+            // Some particles start out as single points, so we can never scale those first meshes to other sizes
+            if (mesh.hasZeroLengthEdge(0.1f)) {
+                // therefore we must further delay mesh generation in these cases and assume a current model scale of 0
+                particleObject.scale.set(0, 0, 0);
+            } else {
+                // until we find one proper mesh which we can then use as the "unit" mesh
+                particleObject.type = DObject.Type.OB_MESH;
+                particleObject.mesh = mesh;
+                particleObject.scale.set(1, 1, 1);
+            }
+        } else {
+            // Determine relative scale of current mesh to stored "unit" mesh
+            // Note: currently assumes the same scale on all relevant axes (should be true for most particles?).
+            float unitSize = particleObject.mesh.getSizeX();
+            float currentSize = mesh.getSizeX();
+            float relativeScale = currentSize / unitSize;
+            particleObject.scale.set(relativeScale, relativeScale, relativeScale);
+        }
+        particleObject.keyframeScale(renderState.getFrame());
 
         renderState.pop();
     }
@@ -162,7 +175,6 @@ public class ParticlesExporter implements Exporter {
 
     @Override
     public void postFrame(int frame) throws IOException {
-        if (false) return;
         particleObjects.entrySet().stream()
                 .filter(entry -> !particleObjectsSeen.containsKey(entry.getKey()))
                 .forEach(entry -> entry.getValue().keyframe("hide", 0, renderState.getFrame(), 1f));

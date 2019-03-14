@@ -189,6 +189,32 @@ public class DMesh {
         polys.add(new Poly(lOffset, 4, materialSlot));
     }
 
+    public float getSizeX() {
+        float minX = Float.POSITIVE_INFINITY, maxX = Float.NEGATIVE_INFINITY;
+        for (Vertex vertex : vertices) {
+            if (vertex.pos.x < minX) {
+                minX = vertex.pos.x;
+            }
+            if (vertex.pos.x > maxX) {
+                maxX = vertex.pos.x;
+            }
+        }
+        return maxX - minX;
+    }
+
+    public boolean hasZeroLengthEdge(float delta) {
+        float deltaSquared = delta * delta;
+        Vector3f dst = new Vector3f();
+        for (Edge edge : edges) {
+            Vertex v1 = vertices.get(edge.v1);
+            Vertex v2 = vertices.get(edge.v2);
+            if (Vector3f.sub(v1.pos, v2.pos, dst).lengthSquared() < deltaSquared) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static class Vertex {
         public Vector3f pos;
         public short normX, normY, normZ;
