@@ -23,6 +23,9 @@ buildscript {
     }
 
     dependencies {
+        if (mcVersion >= 10800) {
+            classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2' // Gradle 4+ only
+        }
         classpath 'org.ow2.asm:asm:6.0'
         classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
             // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
@@ -46,6 +49,8 @@ def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mc
 def FG3 = mcVersion >= 11300
 
 if (mcVersion >= 10800) {
+    apply plugin: 'com.github.johnrengelman.shadow'
+
     if (FG3) {
         apply plugin: 'net.minecraftforge.gradle'
         // FIXME use mixin plugin once updated
@@ -150,6 +155,14 @@ configurations {
     // Include dep in fat jar with relocation and minimization
     shadow
     compile.extendsFrom shadow
+    // Like shadow but run the dep through reobfJar (jGui needs this because it references MC)
+    shadowReobf
+    compile.extendsFrom shadowReobf
+    // Combination of shadow and shadowReobf
+    relocate {
+        extendsFrom shadow
+        extendsFrom shadowReobf
+    }
 }
 
 def shadeExclusions = {
@@ -194,7 +207,7 @@ dependencies {
     def jGuiVersion = project.name
     if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
     if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
-    shadow(project(":jGui:$jGuiVersion")){
+    shadowReobf(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
@@ -291,14 +304,11 @@ sourceSets {
     }
 }
 
-if (!FG3) { // FIXME
-def reobfTask = mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf
 task configureRelocation() {
     dependsOn tasks.jar
-    dependsOn configurations.shadow
+    dependsOn configurations.relocate
     doLast {
-        def extraSrg = mcVersion >= 10800 ? reobfTask.extraSrgLines : reobfTask.extraSrg
-        files(configurations.shadow).filter { it.exists() }.collect {
+        def pkgs = files(configurations.relocate).filter { it.exists() }.collect {
             def tree = it.isDirectory() ? fileTree(it) : zipTree(it)
             def pkgs = [].toSet()
             tree.visit { file ->
@@ -310,33 +320,61 @@ task configureRelocation() {
                 }
             }
             pkgs
-        }.flatten().unique().each { pkg ->
-            extraSrg << "PK: $pkg com/replaymod/lib/$pkg".toString()
+        }.flatten().unique()
+        if (mcVersion >= 10800) {
+            pkgs.each { pkg ->
+                def pkgName = pkg.replace('/', '.')
+                shadowJar.relocate pkgName, 'com.replaymod.lib.' + pkgName
+            }
+        } else {
+            def extraSrg = tasks.reobf.extraSrg
+            pkgs.each { pkg ->
+                extraSrg << "PK: $pkg com/replaymod/lib/$pkg".toString()
+            }
         }
     }
 }
-reobfTask.dependsOn configureRelocation
-}
+if (mcVersion >= 10800) {
+    tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
+    task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+        from { tasks.jar.archivePath }
+        manifest.inheritFrom tasks.jar.manifest
 
-if (mcVersion <= 10710) {
-    // Dummy task so "./gradlew reobfJar" also builds 1.7.10
-    task reobfJar() {
-        dependsOn reobf
+        from project.configurations.shade
+        configurations = [project.configurations.shadow]
+        exclude 'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class'
+
+        dependsOn tasks.configureRelocation
+        afterEvaluate { dependsOn tasks.reobfJar }
+
+        minimize {
+            exclude(dependency('.*spongepowered:mixin:.*'))
+        }
+    }
+} else {
+    tasks.reobf.dependsOn tasks.configureRelocation
+
+    // Dummy task so "./gradlew shadowJar" also works on 1.7.10
+    task shadowJar(type: Jar) {
+        from { zipTree(tasks.jar.archivePath) }
+        afterEvaluate { manifest = tasks.jar.manifest }
+
+        dependsOn tasks.reobf
     }
 }
+tasks.assemble.dependsOn tasks.shadowJar
 
+if (mcVersion <= 10710) // anything above uses shadowJar
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     dependsOn configurations.compile
     dependsOn configurations.shade
-    dependsOn configurations.shadow
+    dependsOn configurations.relocate
 
-    if (mcVersion <= 10710) {
-        from project.mixinRefMap
-    }
+    from project.mixinRefMap
 
-    def shade = { files(configurations.shadow + configurations.shade) }
+    def shade = { files(configurations.relocate + configurations.shade) }
 
     def noticeDir = file("$buildDir/NOTICE")
     doFirst {
@@ -358,6 +396,12 @@ jar {
             }
         }
     }
+}
+
+jar {
+    classifier = 'raw'
+
+    from { files(configurations.shadowReobf).collect { it.isDirectory() ? it : zipTree(it) } }
 
     manifest {
         attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
