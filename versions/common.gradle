@@ -347,6 +347,10 @@ if (mcVersion >= 10800) {
         dependsOn tasks.configureRelocation
         afterEvaluate { dependsOn tasks.reobfJar }
 
+        // No need to shadow netty, MC provides it
+        relocate 'com.github.steveice10.netty', 'io.netty'
+        exclude 'com/github/steveice10/netty/**'
+
         minimize {
             exclude(dependency('.*spongepowered:mixin:.*'))
         }
