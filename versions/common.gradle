@@ -144,8 +144,12 @@ repositories {
 }
 
 configurations {
+    // Include dep in fat jar without relocation and, when forge supports it, without exploding (TODO)
     shade
     compile.extendsFrom shade
+    // Include dep in fat jar with relocation and minimization
+    shadow
+    compile.extendsFrom shadow
 }
 
 def shadeExclusions = {
@@ -169,31 +173,33 @@ dependencies {
         annotationProcessor 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
         compileOnly 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
     }
-    compile 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
-    shade 'com.googlecode.mp4parser:isoparser:1.1.7'
-    shade 'org.apache.commons:commons-exec:1.3'
-    shade 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0', shadeExclusions
-    shade 'com.google.api-client:google-api-client-gson:1.20.0', shadeExclusions
-    shade 'com.google.api-client:google-api-client-java6:1.20.0', shadeExclusions
-    shade 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
+    shade('org.spongepowered:mixin:0.7.8-SNAPSHOT'){
+        transitive = false // deps should all be bundled with MC
+    }
+    shadow 'com.googlecode.mp4parser:isoparser:1.1.7'
+    shadow 'org.apache.commons:commons-exec:1.3'
+    shadow 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0', shadeExclusions
+    shadow 'com.google.api-client:google-api-client-gson:1.20.0', shadeExclusions
+    shadow 'com.google.api-client:google-api-client-java6:1.20.0', shadeExclusions
+    shadow 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
 
-    shade 'org.aspectj:aspectjrt:1.8.2'
+    shadow 'org.aspectj:aspectjrt:1.8.2'
 
-    shade 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
+    shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shade "com.github.ReplayMod.ReplayStudio:$studioVersion:c41d016", shadeExclusions
+    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:c41d016", shadeExclusions
 
     def jGuiVersion = project.name
     if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
     if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
-    shade(project(":jGui:$jGuiVersion")){
+    shadow(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
     project(":jGui:$jGuiVersion").afterEvaluate {
-        shade files(project(":jGui:$jGuiVersion").tasks.preshadowJar.archivePath) // include pre-shadowed lwjgl_util
+        shadow files(project(":jGui:$jGuiVersion").tasks.preshadowJar.archivePath) // include pre-shadowed lwjgl_util
     }
 
     if (!gradle.gradleVersion.startsWith('3.')) {
@@ -289,10 +295,10 @@ if (!FG3) { // FIXME
 def reobfTask = mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf
 task configureRelocation() {
     dependsOn tasks.jar
-    dependsOn configurations.shade
+    dependsOn configurations.shadow
     doLast {
         def extraSrg = mcVersion >= 10800 ? reobfTask.extraSrgLines : reobfTask.extraSrg
-        files(configurations.shade).filter { it.exists() }.collect {
+        files(configurations.shadow).filter { it.exists() }.collect {
             def tree = it.isDirectory() ? fileTree(it) : zipTree(it)
             def pkgs = [].toSet()
             tree.visit { file ->
@@ -324,15 +330,13 @@ jar {
 
     dependsOn configurations.compile
     dependsOn configurations.shade
+    dependsOn configurations.shadow
 
     if (mcVersion <= 10710) {
         from project.mixinRefMap
     }
 
-    def shade = {files(
-            configurations.compile.findAll {it.name.startsWith 'mixin-'}
-                    + configurations.shade
-    )}
+    def shade = { files(configurations.shadow + configurations.shade) }
 
     def noticeDir = file("$buildDir/NOTICE")
     doFirst {
