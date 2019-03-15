@@ -59,6 +59,14 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             new GuiDropdownMenu<RenderSettings.RenderMethod>().onSelection(new Consumer<Integer>() {
                 @Override
                 public void consume(Integer old) {
+                    if (renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.BLEND
+                            ^ encodingPresetDropdown.getSelectedValue() == RenderSettings.EncodingPreset.BLEND) {
+                        if (renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.BLEND) {
+                            encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.BLEND);
+                        } else {
+                            encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.MP4_DEFAULT);
+                        }
+                    }
                     updateInputs();
                 }
             }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.RenderMethod.values());
@@ -75,6 +83,10 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 @Override
                 public void consume(Integer old) {
                     RenderSettings.EncodingPreset newPreset = encodingPresetDropdown.getSelectedValue();
+                    if (newPreset == RenderSettings.EncodingPreset.BLEND
+                            && encodingPresetDropdown.getSelectedValue() == RenderSettings.EncodingPreset.BLEND) {
+                        renderMethodDropdown.setSelected(RenderSettings.RenderMethod.BLEND);
+                    }
                     // Update export arguments to match new Preset
                     exportArguments.setText(newPreset.getValue());
                     // If the user hasn't changed the output file by themselves,
@@ -361,6 +373,17 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             injectSphericalMetadata.setDisabled().setTooltip(new GuiTooltip().setColor(Colors.RED)
                     .setI18nText("replaymod.gui.rendersettings.sphericalmetadata.error"));
         }
+
+        // Enable/Disable various options for blend export
+        boolean isBlend = renderMethod == RenderSettings.RenderMethod.BLEND;
+        if (isBlend) {
+            videoWidth.setDisabled();
+            videoHeight.setDisabled();
+        }
+        encodingPresetDropdown.setEnabled(!isBlend);
+        exportCommand.setEnabled(!isBlend);
+        exportArguments.setEnabled(!isBlend);
+        antiAliasingDropdown.setEnabled(!isBlend);
     }
 
     protected String updateResolution() {
@@ -399,6 +422,12 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 return "replaymod.gui.rendersettings.customresolution.warning.yuv420";
             }
         }
+
+        //#if MC<10800
+        //$$ if (method == RenderSettings.RenderMethod.BLEND) {
+        //$$     return "replaymod.gui.rendersettings.no_blend_on_1_7_10";
+        //$$ }
+        //#endif
 
         return null;
     }

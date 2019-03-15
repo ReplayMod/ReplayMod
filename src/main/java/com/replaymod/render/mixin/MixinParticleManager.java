@@ -2,6 +2,8 @@ package com.replaymod.render.mixin;
 
 //#if MC>=10904
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.render.blend.BlendState;
+import com.replaymod.render.blend.exporters.ParticlesExporter;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
@@ -61,6 +63,10 @@ public abstract class MixinParticleManager {
 
             rotYZ = (float) (-rotZ * Math.sin(pitch));
             rotXY = (float) (rotX * Math.sin(pitch));
+        }
+        BlendState blendState = BlendState.getState();
+                if (blendState != null) {
+                blendState.get(ParticlesExporter.class).onRender(particle, partialTicks);
         }
         particle.renderParticle(vertexBuffer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
     }

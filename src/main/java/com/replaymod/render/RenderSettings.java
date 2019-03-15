@@ -28,7 +28,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 @Data
 public class RenderSettings {
     public enum RenderMethod {
-        DEFAULT, STEREOSCOPIC, CUBIC, EQUIRECTANGULAR, ODS;
+        DEFAULT, STEREOSCOPIC, CUBIC, EQUIRECTANGULAR, ODS, BLEND;
 
         @Override
         public String toString() {
@@ -61,6 +61,8 @@ public class RenderSettings {
 
         MKV_LOSSLESS("-an -c:v libx264 -preset ultrafast -qp 0 \"%FILENAME%\"", "mkv"),
 
+        BLEND(null, "blend"),
+
         PNG("\"%FILENAME%-%06d.png\"", "png");
 
         private final String preset;
@@ -80,10 +82,10 @@ public class RenderSettings {
         }
 
         public boolean hasBitrateSetting() {
-            return preset.contains("%BITRATE%");
+            return preset != null && preset.contains("%BITRATE%");
         }
 
-        public boolean isYuv420() { return preset.contains("-pix_fmt yuv420p"); }
+        public boolean isYuv420() { return preset != null && preset.contains("-pix_fmt yuv420p"); }
 
         @Override
         public String toString() {

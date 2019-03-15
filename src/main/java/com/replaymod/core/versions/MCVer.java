@@ -12,6 +12,7 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -31,11 +32,15 @@ import net.minecraftforge.common.MinecraftForge;
 
 //#if MC>=11300
 import net.minecraft.client.MainWindow;
+import net.minecraft.client.renderer.entity.model.ModelBox;
+import net.minecraft.client.renderer.entity.model.ModelRenderer;
 import net.minecraft.client.util.InputMappings;
 import net.minecraft.crash.ReportedException;
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.gui.ScaledResolution;
+//$$ import net.minecraft.client.model.ModelBox;
+//$$ import net.minecraft.client.model.ModelRenderer;
 //$$ import net.minecraft.client.resources.ResourcePackRepository;
 //$$ import net.minecraft.util.ReportedException;
 //$$ import org.apache.logging.log4j.LogManager;
@@ -50,8 +55,10 @@ import net.minecraft.client.renderer.BufferBuilder;
 //#else
 //$$ import net.minecraft.client.renderer.VertexBuffer;
 //#endif
+import net.minecraft.client.particle.Particle;
 import net.minecraft.util.math.MathHelper;
 //#else
+//$$ import net.minecraft.client.particle.EntityFX;
 //#if MC>=10800
 //$$ import net.minecraft.client.renderer.WorldRenderer;
 //#endif
@@ -70,6 +77,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 //#if MC>=10800
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.BooleanState;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.world.WorldType;
 //#if MC>=11300
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -287,6 +296,13 @@ public class MCVer {
     //$$ }
     //#endif
 
+    public static ResourceLocation LOCATION_BLOCKS_TEXTURE
+            //#if MC>=10904
+            = TextureMap.LOCATION_BLOCKS_TEXTURE;
+            //#else
+            //$$ = TextureMap.locationBlocksTexture;
+            //#endif
+
     public static EntityPlayerSP player(Minecraft mc) {
         //#if MC>=11102
         return mc.player;
@@ -339,6 +355,11 @@ public class MCVer {
         //#else
         //$$ return chunk.entityLists;
         //#endif
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<ModelBox> cubeList(ModelRenderer modelRenderer) {
+        return modelRenderer.cubeList;
     }
 
     @SuppressWarnings("unchecked")
@@ -590,6 +611,29 @@ public class MCVer {
         //#endif
     }
 
+    //#if MC>=10800
+    //#if MC>=10904
+    //#if MC>=11200
+    public static BufferBuilder getBuffer(Tessellator tessellator) {
+    //#else
+    //$$ public static VertexBuffer getBuffer(Tessellator tessellator) {
+    //#endif
+    //#else
+    //$$ public static WorldRenderer getBuffer(Tessellator tessellator) {
+    //#endif
+        //#if MC>=10904
+        return Tessellator.getInstance().getBuffer();
+        //#else
+        //$$ return Tessellator.getInstance().getWorldRenderer();
+        //#endif
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<VertexFormatElement> getElements(VertexFormat vertexFormat) {
+        return vertexFormat.getElements();
+    }
+    //#endif
+
     public static Tessellator Tessellator_getInstance() {
         //#if MC>=10800
         return Tessellator.getInstance();
@@ -652,6 +696,30 @@ public class MCVer {
 
     public static float sin(float val) {
         return MathHelper.sin(val);
+    }
+
+    public static double interpPosX() {
+        //#if MC>=10904
+        return Particle.interpPosX;
+        //#else
+        //$$ return EntityFX.interpPosX;
+        //#endif
+    }
+
+    public static double interpPosY() {
+        //#if MC>=10904
+        return Particle.interpPosY;
+        //#else
+        //$$ return EntityFX.interpPosY;
+        //#endif
+    }
+
+    public static double interpPosZ() {
+        //#if MC>=10904
+        return Particle.interpPosZ;
+        //#else
+        //$$ return EntityFX.interpPosZ;
+        //#endif
     }
 
     public static ReportedException newReportedException(CrashReport crashReport) {
