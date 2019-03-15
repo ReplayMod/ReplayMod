@@ -9,9 +9,8 @@ pipeline:
       - curl --fail --create-dirs -o $HOME/.gradle/init.d/mirror.gradle https://maven.johni0702.de/config/gradle
       - git config --global user.email "replaymod@drone" && git config --global user.name "Drone"
       - ./gradlew --old-gradle :1.7.10:setupCIWorkspace :jGui:1.7.10:setupCIWorkspace
-      - ./gradlew --old-gradle :1.7.10:reobfJar
-      - ./gradlew $(bash -c "echo :{1.8,1.8.9,1.9.4,1.10.2,1.11,1.11.2,1.12,1.12.1,1.12.2,1.13.2}:reobfJar") --parallel
-      - mkdir -p build/libs && mv versions/*/build/libs/* build/libs/
+      - ./gradlew --old-gradle :reobfJar
+      - ./gradlew --parallel :reobfJar
   archive:
     image: plugins/s3
     acl: public-read

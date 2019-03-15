@@ -34,6 +34,18 @@ subprojects {
     apply plugin: 'idea'
 }
 
+evaluationDependsOnChildren()
+task shadowJar(type: Copy) {
+    subprojects.forEach {
+        def shadowJar = it.tasks.findByName('shadowJar')
+        if (shadowJar != null && it.name != 'core') {
+            dependsOn shadowJar
+            from shadowJar.archivePath
+        }
+    }
+    into "$buildDir/libs"
+}
+
 def gitDescribe() {
     try {
         def stdout = new ByteArrayOutputStream()
@@ -155,4 +167,4 @@ task doRelease() {
     }
 }
 
-defaultTasks 'build'
+defaultTasks 'shadowJar'
