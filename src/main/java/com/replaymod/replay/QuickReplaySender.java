@@ -211,7 +211,6 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     public void restart() {
         activeThings.clear();
         currentTimeStamp = 0;
-        ctx.fireChannelRead(toMC(new LoginSuccessPacket(new GameProfile(UUID.nameUUIDFromBytes(new byte[0]), "Player")), EnumConnectionState.LOGIN));
         ctx.fireChannelRead(toMC(new ServerRespawnPacket(0, Difficulty.NORMAL, GameMode.SPECTATOR, WorldType.DEFAULT)));
         ctx.fireChannelRead(toMC(new ServerPlayerPositionRotationPacket(0, 0, 0, 0, 0, 0)));
     }
