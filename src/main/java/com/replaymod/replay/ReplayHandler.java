@@ -668,7 +668,7 @@ public class ReplayHandler {
 
     private void skipTeleportInterpolation(Entity entity) {
         //#if MC>=11300
-        if (entity instanceof EntityLivingBase) {
+        if (entity instanceof EntityLivingBase && !(entity instanceof CameraEntity)) {
             EntityLivingBase e = (EntityLivingBase) entity;
             e.setPosition(e.interpTargetX, e.interpTargetY, e.interpTargetZ);
             e.rotationYaw = (float) e.interpTargetYaw;
