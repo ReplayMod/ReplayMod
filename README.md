@@ -82,7 +82,7 @@ Do **NOT** edit any of the code in `versions/$MCVERSION/build/` as it is automat
 
 You can pass the original source code through the preprocessor if you wish to develop/debug with another version of Minecraft:
 ```bash
-./gradle -PmcVersion=10904 :setCoreVersion # switches all sources in src/main to 1.9.4
+./gradle :1.9.4:setCoreVersion # switches all sources in src/main to 1.9.4
 ```
 If you do so, you'll also have to run `./gradlew :core:copySrg :core:setupDecompWorkspace :jGui:core:setupDecompWorkspace`,
 followed by a refresh of the project in your IDE.
@@ -91,7 +91,7 @@ Make sure to switch back to the most recent branch before committing!
 Care should also be taken that switching to a different branch and back doesn't introduce any uncommitted changes (e.g. due to different indention, especially in case of nested conditions).
 
 The `replaymod_at.cfg` file uses the same preprocessor but with different keywords (see already existent examples in that file).
-If required, more file extensions and keywords can be added to the implementation in `versions/preprocessor.gradle`.
+If required, more file extensions and keywords can be added to the upstream implementation or the respective tasks.
 
 ### Versioning
 The ReplayMod uses the versioning scheme outlined [here](http://mcforge.readthedocs.io/en/latest/conventions/versioning/)

@@ -20,6 +20,7 @@ buildscript {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
+        maven { url 'https://jitpack.io' }
     }
 
     dependencies {
@@ -41,12 +42,19 @@ buildscript {
                 mcVersion >= 10710 ? '1.2-SNAPSHOT' :
                                      'invalid'
         )
+        classpath 'com.github.replaymod:preprocessor:3654e32'
     }
 }
+
+import com.replaymod.gradle.preprocess.PreprocessTask
 
 def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
 
 def FG3 = mcVersion >= 11300
+
+def jGuiVersion = project.name
+if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
+if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
 
 if (mcVersion >= 10800) {
     apply plugin: 'com.github.johnrengelman.shadow'
@@ -69,6 +77,8 @@ if (mcVersion >= 10800) {
         mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
     }
 }
+
+apply plugin: 'com.replaymod.preprocess'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -204,9 +214,6 @@ dependencies {
     if (studioVersion == '1.8.9') studioVersion = '1.8'
     shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:04a929c", shadeExclusions
 
-    def jGuiVersion = project.name
-    if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
-    if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
     shadowReobf(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
@@ -243,42 +250,15 @@ if (mcVersion <= 10710) {
 }
 
 if (project.name != 'core') {
-    apply from: '../preprocessor.gradle'
-
-    def preprocessedSrc = 'build/preprocessed/src'
     def preprocessedRes = 'build/preprocessed/res'
     def preprocessedAT = 'build/preprocessed/at.cfg'
-    def originalSrc = '../../src/main/java'
     def originalRes = '../../src/main/resources'
     def originalAT = originalRes + '/META-INF/replaymod_at.cfg'
     def vars = [MC: mcVersion as int]
 
-    sourceSets {
-        main.java.srcDir preprocessedSrc
-        main.resources.srcDir preprocessedRes
-    }
-
-    task preprocessJava {
-        inputs.dir(originalSrc)
-        outputs.dir(preprocessedSrc)
-        doLast {
-            project.convertTree(vars, originalSrc, preprocessedSrc)
-        }
-    }
-
-    task preprocessResources {
-        inputs.dir(originalRes)
-        outputs.dir(preprocessedRes)
-        doLast {
-            project.convertTree(vars, originalRes, preprocessedRes)
-        }
-    }
-
-    compileJava.dependsOn preprocessJava
-    processResources.dependsOn preprocessResources
     if (FG3) {
         // FG3 reads the AT file right after project evaluation, so we need to convert it right now
-        project.convertTree(vars, originalAT, preprocessedAT)
+        PreprocessTask.convertFile(PreprocessTask.CFG_KEYWORDS, vars, file(originalAT), file(preprocessedAT))
         minecraft.accessTransformers << file(preprocessedAT)
     } else {
         (mcVersion >= 10800 ? [deobfMcMCP, deobfMcSRG] : [deobfuscateJar, deobfBinJar]).each { task ->
@@ -286,13 +266,13 @@ if (project.name != 'core') {
         }
         minecraft.accessTransformer preprocessedRes + '/META-INF/replaymod_at.cfg'
     }
+
+    project(":jGui:$jGuiVersion").afterEvaluate { jGui ->
+        project.tasks.setCoreVersion.dependsOn jGui.tasks.setCoreVersion
+    }
 } else {
     if (FG3) {
         minecraft.accessTransformers << file('../../src/main/resources/META-INF/replaymod_at.cfg')
-    }
-    sourceSets {
-        main.java.srcDirs = ['../../src/main/java']
-        main.resources.srcDirs = ['../../src/main/resources']
     }
 }
 sourceSets {
