@@ -7,7 +7,6 @@ import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
-import com.replaymod.replaystudio.us.myles.ViaVersion.util.ReflectionUtil;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
@@ -75,7 +74,7 @@ public class ChunkExporter implements Exporter {
         @SuppressWarnings("unchecked")
         List<ContainerLocalRenderInformation> renderInfos = mc.renderGlobal.renderInfos;
         for (ContainerLocalRenderInformation renderInfo : renderInfos) {
-            RenderChunk renderChunk = ReflectionUtil.get(renderInfo, "renderChunk", RenderChunk.class); // SneakyThrows
+            RenderChunk renderChunk = renderInfo.renderChunk;
             CompiledChunk compiledChunk = renderChunk.getCompiledChunk();
             if (!compiledChunk.isEmpty()) {
                 addChunkUpdate(renderChunk, null);
