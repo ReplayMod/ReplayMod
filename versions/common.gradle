@@ -279,13 +279,6 @@ if (project.name != 'core') {
         minecraft.accessTransformers << file('../../src/main/resources/META-INF/replaymod_at.cfg')
     }
 }
-sourceSets {
-    main {
-        java {
-            exclude 'com/replaymod/restrictions'
-        }
-    }
-}
 
 task configureRelocation() {
     dependsOn tasks.jar
