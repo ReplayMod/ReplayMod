@@ -29,7 +29,7 @@ import net.minecraft.util.SoundEvent;
 //#if MC>=10800
 import net.minecraft.util.math.BlockPos;
 //#else
-//$$ import net.minecraft.util.math.MathHelper;
+//$$ import net.minecraft.util.MathHelper;
 //#endif
 
 import java.util.Objects;
@@ -153,7 +153,7 @@ public class RecordingEventHandler {
                 //$$ // Note: this leaves the lastY value offset by the eye height but because it's only used for relative
                 //$$ //       movement, that doesn't matter.
                 //$$ S18PacketEntityTeleport teleportPacket = new S18PacketEntityTeleport(e.player);
-                //$$ teleportPacket.field_149457_c = MathHelper.floor(e.player.boundingBox.minY * 32);
+                //$$ teleportPacket.field_149457_c = MathHelper.floor_double(e.player.boundingBox.minY * 32);
                 //$$ packet = teleportPacket;
                 //#endif
             } else {

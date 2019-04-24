@@ -24,7 +24,7 @@ buildscript {
     }
 
     dependencies {
-        if (mcVersion >= 10800) {
+        if (!gradle.gradleVersion.startsWith('3.')) {
             classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2' // Gradle 4+ only
         }
         classpath 'org.ow2.asm:asm:6.0'
@@ -42,7 +42,7 @@ buildscript {
                 mcVersion >= 10710 ? '1.2-SNAPSHOT' :
                                      'invalid'
         )
-        classpath 'com.github.replaymod:preprocessor:92151f1'
+        classpath 'com.github.replaymod:preprocessor:03f3f44'
     }
 }
 
@@ -56,9 +56,11 @@ def jGuiVersion = project.name
 if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
 if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
 
-if (mcVersion >= 10800) {
+if (!gradle.gradleVersion.startsWith('3.')) {
     apply plugin: 'com.github.johnrengelman.shadow'
+}
 
+if (mcVersion >= 10800) {
     if (FG3) {
         apply plugin: 'net.minecraftforge.gradle'
         // FIXME use mixin plugin once updated
@@ -267,9 +269,11 @@ if (project.name != 'core') {
         minecraft.accessTransformer preprocessedRes + '/META-INF/replaymod_at.cfg'
     }
 
-    project(":jGui:$jGuiVersion").afterEvaluate { jGui ->
-        project.tasks.setCoreVersion.dependsOn jGui.tasks.setCoreVersion
-    }
+    def jGui = project.evaluationDependsOn(":jGui:$jGuiVersion")
+    // Make sure the corresponding jGui setCoreVersion task runs
+    project.tasks.setCoreVersionJava.dependsOn jGui.tasks.setCoreVersion
+    // and it doesn't run too early (i.e. before we're done with preprocessing)
+    jGui.tasks.setCoreVersionJava.mustRunAfter project.tasks.preprocessJava
 } else {
     if (FG3) {
         minecraft.accessTransformers << file('../../src/main/resources/META-INF/replaymod_at.cfg')
@@ -314,7 +318,7 @@ task configureRelocation() {
         }
     }
 }
-if (mcVersion >= 10800) {
+if (!gradle.gradleVersion.startsWith('3.')) { // Gradle 4 (never used for 1.7.10)
     tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
     task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
         from { tasks.jar.archivePath }
@@ -334,6 +338,12 @@ if (mcVersion >= 10800) {
         minimize {
             exclude(dependency('.*spongepowered:mixin:.*'))
         }
+    }
+} else if (mcVersion >= 10800) {
+    // Neither Gradle 4 nor MC 1.7.10, we do not support building jars in this configuration, it
+    // is only supported to allow the preprocessor to convert the source from 1.8 to 1.7.10
+    task shadowJar() {
+        doFirst { throw new UnsupportedOperationException('1.8+ jars require Gradle 4') }
     }
 } else {
     tasks.reobf.dependsOn tasks.configureRelocation

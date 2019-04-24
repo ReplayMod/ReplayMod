@@ -28,6 +28,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //$$ import cpw.mods.fml.common.eventhandler.EventPriority;
 //$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //$$ import net.minecraftforge.client.event.RenderPlayerEvent;
+//$$ import java.util.stream.Collectors;
 //#endif
 
 import java.io.IOException;
