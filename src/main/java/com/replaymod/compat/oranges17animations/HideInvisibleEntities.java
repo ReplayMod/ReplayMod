@@ -3,15 +3,13 @@ package com.replaymod.compat.oranges17animations;
 import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-//#if MC>=10800
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//#if MC>=11300
+import net.minecraftforge.fml.ModList;
 //#else
-//$$ import cpw.mods.fml.common.Loader;
-//$$ import cpw.mods.fml.common.eventhandler.EventPriority;
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+//$$ import net.minecraftforge.fml.common.Loader;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.*;
@@ -23,13 +21,17 @@ import static com.replaymod.core.versions.MCVer.*;
  * To fix this issue, we simply cancel the RenderLivingEvent.Pre before it gets to ArmorAnimation if the entity is invisible.
  */
 public class HideInvisibleEntities {
-    private final Minecraft mc = Minecraft.getMinecraft();
-    private final boolean modLoaded = Loader.isModLoaded("animations");
+    private final Minecraft mc = Minecraft.getInstance();
+    //#if MC>=11300
+    private final boolean modLoaded = ModList.get().isLoaded("animations");
+    //#else
+    //$$ private final boolean modLoaded = Loader.isModLoaded("animations");
+    //#endif
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void preRenderLiving(RenderLivingEvent.Pre event) {
         if (modLoaded) {
-            if (player(mc) instanceof CameraEntity && getEntity(event).isInvisible()) {
+            if (mc.player instanceof CameraEntity && getEntity(event).isInvisible()) {
                 event.setCanceled(true);
             }
         }

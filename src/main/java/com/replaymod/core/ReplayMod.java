@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.replaymod.compat.ReplayModCompat;
 import com.replaymod.core.gui.GuiBackgroundProcesses;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
@@ -164,6 +165,7 @@ public class ReplayMod implements Module {
         modules.add(new ReplayModSimplePathing(this));
         modules.add(new ReplayModEditor(this));
         modules.add(new ReplayModExtras(this));
+        modules.add(new ReplayModCompat());
 
         //#if MC>=11300
         settingsRegistry.register();
@@ -284,8 +286,9 @@ public class ReplayMod implements Module {
 
         // 1.7.10 crashes when render distance > 16
         //#if MC>=10800
-        //if(!FMLClientHandler.instance().hasOptifine()) FIXME 1.13 update
-        GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
+        if (!MCVer.hasOptifine()) {
+            GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
+        }
         //#endif
 
         testIfMoeshAndExitMinecraft();

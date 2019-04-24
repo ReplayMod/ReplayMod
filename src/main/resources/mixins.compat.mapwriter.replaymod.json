@@ -4,7 +4,9 @@
   "mixins": [],
   "server": [],
   "client": [
-    "MixinMinecraft"
+    //#if MC<11300
+    //$$ "MixinMinecraft"
+    //#endif
   ],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11",

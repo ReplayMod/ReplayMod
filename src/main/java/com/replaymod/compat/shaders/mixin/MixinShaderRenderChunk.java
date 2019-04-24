@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(RenderChunk.class)
 public abstract class MixinShaderRenderChunk {
 
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = Minecraft.getInstance();
 
     /**
      *  Changes the RenderChunk#isPlayerUpdate method that Optifine adds
@@ -22,6 +22,7 @@ public abstract class MixinShaderRenderChunk {
     @Inject(method = "isPlayerUpdate", at = @At("HEAD"), cancellable = true)
     private void replayModCompat_disableIsPlayerUpdate(CallbackInfoReturnable<Boolean> ci) {
         // TODO: Update to 1.12 once optifine is available
+        // TODO: We're on 1.13 now and haven't gotten any 1.12 complaints, so 1.12 is probably working but 1.13?
         if (((EntityRendererHandler.IEntityRenderer) mc.entityRenderer).replayModRender_getHandler() == null) return;
         ci.setReturnValue(true);
     }

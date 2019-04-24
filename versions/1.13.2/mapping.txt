@@ -19,3 +19,5 @@ net.minecraft.client.renderer.ItemRenderer net.minecraft.client.renderer.RenderI
 net.minecraft.world.World getChunk() getChunkFromChunkCoords()
 net.minecraft.util.text.ITextComponent getString() getUnformattedText()
 net.minecraft.network.play.server.SPacketRespawn func_212643_b() getDimensionID()
+net.minecraft.client.renderer.GameRenderer net.minecraft.client.renderer.EntityRenderer
+net.minecraft.client.renderer.WorldRenderer net.minecraft.client.renderer.RenderGlobal

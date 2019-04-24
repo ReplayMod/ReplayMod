@@ -282,7 +282,6 @@ if (project.name != 'core') {
 sourceSets {
     main {
         java {
-            exclude 'com/replaymod/compat'
             exclude 'com/replaymod/restrictions'
         }
     }

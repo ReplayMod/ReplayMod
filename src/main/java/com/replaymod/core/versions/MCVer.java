@@ -32,6 +32,7 @@ import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.gui.ScaledResolution;
 //$$ import net.minecraft.client.resources.ResourcePackRepository;
+//$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //$$ import org.apache.logging.log4j.LogManager;
 //$$ import org.lwjgl.Sys;
 //$$ import java.awt.Desktop;
@@ -493,6 +494,25 @@ public class MCVer {
         //$$ }
         //#endif
     }
+
+    //#if MC>=11300
+    private static Boolean hasOptifine;
+    public static boolean hasOptifine() {
+        if (hasOptifine == null) {
+            try {
+                Class.forName("Config");
+                hasOptifine = true;
+            } catch (ClassNotFoundException e) {
+                hasOptifine = false;
+            }
+        }
+        return hasOptifine;
+    }
+    //#else
+    //$$ public static boolean hasOptifine() {
+    //$$     return FMLClientHandler.instance().hasOptifine();
+    //$$ }
+    //#endif
 
     //#if MC<=10710
     //$$ public static class GlStateManager {

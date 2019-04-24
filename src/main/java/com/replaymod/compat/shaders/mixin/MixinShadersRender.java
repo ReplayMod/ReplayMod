@@ -1,6 +1,6 @@
 package com.replaymod.compat.shaders.mixin;
 
-import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraftforge.client.ForgeHooksClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -16,8 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinShadersRender {
 
     @Inject(method = "renderHand0", at = @At("HEAD"), cancellable = true)
-    private static void replayModCompat_disableRenderHand0(EntityRenderer er, float partialTicks, int renderPass, CallbackInfo ci) {
-        if (ForgeHooksClient.renderFirstPersonHand(er.mc.renderGlobal, partialTicks, renderPass)) {
+    private static void replayModCompat_disableRenderHand0(GameRenderer er, float partialTicks, int renderPass, CallbackInfo ci) {
+        //#if MC>=11300
+        if (ForgeHooksClient.renderFirstPersonHand(er.getMinecraft().renderGlobal, partialTicks)) {
+        //#else
+        //$$ if (ForgeHooksClient.renderFirstPersonHand(er.mc.renderGlobal, partialTicks, renderPass)) {
+        //#endif
             ci.cancel();
         }
     }
