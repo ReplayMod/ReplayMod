@@ -42,7 +42,7 @@ buildscript {
                 mcVersion >= 10710 ? '1.2-SNAPSHOT' :
                                      'invalid'
         )
-        classpath 'com.github.replaymod:preprocessor:03f3f44'
+        classpath 'com.github.replaymod:preprocessor:ba743e3'
     }
 }
 
