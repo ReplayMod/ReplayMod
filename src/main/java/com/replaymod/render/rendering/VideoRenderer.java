@@ -25,6 +25,8 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.crash.ReportedException;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Timer;
 
 //#if MC>=11300
@@ -33,12 +35,6 @@ import org.lwjgl.glfw.GLFW;
 //$$ import net.minecraft.client.gui.ScaledResolution;
 //$$ import org.lwjgl.input.Mouse;
 //$$ import org.lwjgl.opengl.Display;
-//#endif
-
-//#if MC>=10904
-import net.minecraft.util.SoundCategory;
-//#else
-//$$ import net.minecraft.client.audio.SoundCategory;
 //#endif
 
 //#if MC>=10800
@@ -165,7 +161,7 @@ public class VideoRenderer implements RenderInfo {
         renderingPipeline.run();
 
         if (mc.hasCrashed) {
-            throw newReportedException(mc.crashReporter);
+            throw new ReportedException(mc.crashReporter);
         }
 
         if (settings.isInjectSphericalMetadata()) {

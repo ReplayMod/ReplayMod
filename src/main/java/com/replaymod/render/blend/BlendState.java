@@ -12,6 +12,7 @@ import com.replaymod.render.blend.exporters.TileEntityExporter;
 //#endif
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.crash.ReportedException;
 import org.apache.commons.io.output.NullOutputStream;
 import org.blender.utils.BlenderFactory;
 import org.cakelab.blender.io.BlenderFile;
@@ -82,7 +83,7 @@ public class BlendState implements Exporter {
                 CrashReport report = CrashReport.makeCrashReport(e, "Setup of blend exporter");
                 CrashReportCategory category = report.makeCategory("Exporter");
                 addDetail(category, "Exporter", exporter::toString);
-                throw newReportedException(report);
+                throw new ReportedException(report);
             }
         }
     }
@@ -96,7 +97,7 @@ public class BlendState implements Exporter {
                 CrashReport report = CrashReport.makeCrashReport(e, "Tear down of blend exporter");
                 CrashReportCategory category = report.makeCategory("Exporter");
                 addDetail(category, "Exporter", exporter::toString);
-                throw newReportedException(report);
+                throw new ReportedException(report);
             }
         }
 
@@ -134,7 +135,7 @@ public class BlendState implements Exporter {
                 CrashReportCategory category = report.makeCategory("Exporter");
                 addDetail(category, "Exporter", exporter::toString);
                 addDetail(category, "Frame", () -> String.valueOf(frame));
-                throw newReportedException(report);
+                throw new ReportedException(report);
             }
         }
     }
@@ -149,7 +150,7 @@ public class BlendState implements Exporter {
                 CrashReportCategory category = report.makeCategory("Exporter");
                 addDetail(category, "Exporter", exporter::toString);
                 addDetail(category, "Frame", () -> String.valueOf(frame));
-                throw newReportedException(report);
+                throw new ReportedException(report);
             }
         }
 

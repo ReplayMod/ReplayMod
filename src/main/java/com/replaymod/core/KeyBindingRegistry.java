@@ -6,34 +6,21 @@ import com.replaymod.core.versions.MCVer;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.crash.ReportedException;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 //#if MC>=11300
 //#else
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
 
-//#if MC>=10800
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-//#else
-//$$ import cpw.mods.fml.client.registry.ClientRegistry;
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//$$ import cpw.mods.fml.common.gameevent.InputEvent;
-//$$ import cpw.mods.fml.common.gameevent.TickEvent;
-//#endif
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.replaymod.core.versions.MCVer.*;
 
 public class KeyBindingRegistry {
     private Map<String, KeyBinding> keyBindings = new HashMap<String, KeyBinding>();
@@ -81,7 +68,7 @@ public class KeyBindingRegistry {
 
     public void handleRepeatedKeyBindings() {
         for (Map.Entry<KeyBinding, Collection<Runnable>> entry : repeatedKeyBindingHandlers.asMap().entrySet()) {
-            if (isKeyDown(entry.getKey())) {
+            if (entry.getKey().isKeyDown()) {
                 invokeKeyBindingHandlers(entry.getKey(), entry.getValue());
             }
         }
@@ -104,7 +91,7 @@ public class KeyBindingRegistry {
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
                 MCVer.addDetail(category, "Key Binding", keyBinding::toString);
                 MCVer.addDetail(category, "Handler", runnable::toString);
-                throw newReportedException(crashReport);
+                throw new ReportedException(crashReport);
             }
         }
     }
@@ -120,7 +107,7 @@ public class KeyBindingRegistry {
                 CrashReportCategory category = crashReport.makeCategory("Key Binding");
                 MCVer.addDetail(category, "Key Code", () -> "" + keyCode);
                 MCVer.addDetail(category, "Handler", runnable::toString);
-                throw newReportedException(crashReport);
+                throw new ReportedException(crashReport);
             }
         }
     }

@@ -106,7 +106,7 @@ public class BlendMeshBuilder
             throw new IllegalStateException("Not building!");
         } else {
             if (!wellBehaved) {
-                getBuffer(Tessellator.getInstance()).finishDrawing();
+                Tessellator.getInstance().getBuffer().finishDrawing();
             }
 
             //#if MC<10809

@@ -5,21 +5,11 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-//#if MC>=10800
-import net.minecraftforge.fml.common.Mod;
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.Mod;
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//#endif
 
 import java.io.File;
 import java.io.IOException;
@@ -61,17 +51,17 @@ public class ReplayModRender implements Module {
 
     public File getVideoFolder() {
         String path = core.getSettingsRegistry().get(Setting.RENDER_PATH);
-        File folder = new File(path.startsWith("./") ? mcDataDir(core.getMinecraft()) : null, path);
+        File folder = new File(path.startsWith("./") ? core.getMinecraft().gameDir : null, path);
         try {
             FileUtils.forceMkdir(folder);
         } catch (IOException e) {
-            throw newReportedException(CrashReport.makeCrashReport(e, "Cannot create video folder."));
+            throw new ReportedException(CrashReport.makeCrashReport(e, "Cannot create video folder."));
         }
         return folder;
     }
 
     public Path getRenderSettingsPath() {
-        return mcDataDir(core.getMinecraft()).toPath().resolve("config/replaymod-rendersettings.json");
+        return core.getMinecraft().gameDir.toPath().resolve("config/replaymod-rendersettings.json");
     }
 
     public List<RenderJob> getRenderQueue() {

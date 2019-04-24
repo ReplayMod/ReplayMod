@@ -11,6 +11,7 @@ import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -25,7 +26,6 @@ import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiResourceLoadingList;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
-import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
@@ -39,16 +39,11 @@ import lombok.Getter;
 import net.minecraft.client.gui.GuiErrorScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang3.StringUtils;
-
-//#if MC>=11300
-import com.replaymod.core.versions.MCVer.Keyboard;
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#endif
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -61,7 +56,6 @@ import java.util.Date;
 import java.util.List;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
-import static com.replaymod.core.versions.MCVer.*;
 
 public class GuiReplayViewer extends GuiScreen {
     private final ReplayModReplay mod;
@@ -220,7 +214,7 @@ public class GuiReplayViewer extends GuiScreen {
         try {
             list.setFolder(mod.getCore().getReplayFolder());
         } catch (IOException e) {
-            throw newReportedException(CrashReport.makeCrashReport(e, "Getting replay folder"));
+            throw new ReportedException(CrashReport.makeCrashReport(e, "Getting replay folder"));
         }
 
         setTitle(new GuiLabel().setI18nText("replaymod.gui.replayviewer"));

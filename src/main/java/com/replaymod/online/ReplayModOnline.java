@@ -64,7 +64,7 @@ public class ReplayModOnline implements Module {
 
     @Override
     public void initClient() {
-        Path path = MCVer.mcDataDir(MCVer.getMinecraft()).toPath().resolve("config/replaymod-online.token");
+        Path path = MCVer.getMinecraft().gameDir.toPath().resolve("config/replaymod-online.token");
         PlainFileAuthData authData = new PlainFileAuthData(path);
         apiClient = new ApiClient(authData);
         if (Files.notExists(path)) {
@@ -106,7 +106,7 @@ public class ReplayModOnline implements Module {
      */
     private AuthData loadOldAuthData() {
         //#if MC<11300
-        //$$ Path path = MCVer.mcDataDir(MCVer.getMinecraft()).toPath().resolve("config/replaymod-online.cfg");
+        //$$ Path path = MCVer.getMinecraft().mcDataDir.toPath().resolve("config/replaymod-online.cfg");
         //$$ Configuration config = new Configuration(path.toFile());
         //$$ ConfigurationAuthData authData = new ConfigurationAuthData(config);
         //$$ authData.load(new ApiClient(authData));
@@ -139,7 +139,7 @@ public class ReplayModOnline implements Module {
 
     public File getDownloadsFolder() {
         String path = core.getSettingsRegistry().get(Setting.DOWNLOAD_PATH);
-        return new File(path.startsWith("./") ? mcDataDir(getMinecraft()) : null, path);
+        return new File(path.startsWith("./") ? getMinecraft().gameDir : null, path);
     }
 
     public File getDownloadedFile(int id) {

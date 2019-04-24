@@ -24,13 +24,18 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.*;
+import net.minecraft.network.login.server.SPacketLoginSuccess;
 import net.minecraft.network.play.server.*;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -47,24 +52,8 @@ import net.minecraft.world.GameType;
 //#else
 //$$ import net.minecraft.world.WorldSettings.GameType;
 //#endif
-//#if MC>=10904
-import net.minecraft.network.login.server.SPacketLoginSuccess;
-import net.minecraft.util.text.ITextComponent;
-//#else
-//$$ import net.minecraft.network.login.server.S02PacketLoginSuccess;
-//$$ import net.minecraft.util.IChatComponent;
-//#endif
 
-//#if MC>=10800
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//$$ import cpw.mods.fml.common.gameevent.TickEvent;
+//#if MC<10800
 //$$ import org.apache.commons.io.Charsets;
 //#endif
 
@@ -321,8 +310,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         // Entity#addedToChunk is not set and it is therefore not updated every tick.
         // To counteract this, we need to manually update it's position if it hasn't been added
         // to any chunk yet.
-        if (world(mc) != null) {
-            for (EntityPlayer playerEntity : playerEntities(world(mc))) {
+        if (mc.world != null) {
+            for (EntityPlayer playerEntity : playerEntities(mc.world)) {
                 if (!playerEntity.addedToChunk && playerEntity instanceof EntityOtherPlayerMP) {
                     //#if MC>=11300
                     playerEntity.livingTick();
@@ -360,8 +349,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     // If we do not give minecraft time to tick, there will be dead entity artifacts left in the world
                     // Therefore we have to remove all loaded, dead entities manually if we are in sync mode.
                     // We do this after every SpawnX packet and after the destroy entities packet.
-                    if (!asyncMode && world(mc) != null) {
-                        //#if MC>=10904
+                    if (!asyncMode && mc.world != null) {
                         if (p instanceof SPacketSpawnPlayer
                                 || p instanceof SPacketSpawnObject
                                 || p instanceof SPacketSpawnMob
@@ -369,23 +357,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 || p instanceof SPacketSpawnPainting
                                 || p instanceof SPacketSpawnExperienceOrb
                                 || p instanceof SPacketDestroyEntities) {
-                        //#else
-                        //$$ if (p instanceof S0CPacketSpawnPlayer
-                        //$$         || p instanceof S0EPacketSpawnObject
-                        //$$         || p instanceof S0FPacketSpawnMob
-                        //$$         || p instanceof S2CPacketSpawnGlobalEntity
-                        //$$         || p instanceof S10PacketSpawnPainting
-                        //$$         || p instanceof S11PacketSpawnExperienceOrb
-                        //$$         || p instanceof S13PacketDestroyEntities) {
-                        //#endif
-                            World world = world(mc);
+                            World world = mc.world;
                             for (int i = 0; i < world.loadedEntityList.size(); ++i) {
                                 Entity entity = loadedEntityList(world).get(i);
-                                //#if MC>=11300
                                 if (entity.removed) {
-                                //#else
-                                //$$ if (entity.isDead) {
-                                //#endif
                                     int chunkX = entity.chunkCoordX;
                                     int chunkY = entity.chunkCoordZ;
 
@@ -398,11 +373,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                     //$$ if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
                                     //#endif
                                     //#endif
-                                        //#if MC>=11300
                                         world.getChunk(chunkX, chunkY).removeEntity(entity);
-                                        //#else
-                                        //$$ world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);
-                                        //#endif
                                     }
 
                                     world.loadedEntityList.remove(i--);
@@ -425,7 +396,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         ByteBuf bb = Unpooled.wrappedBuffer(bytes);
         PacketBuffer pb = new PacketBuffer(bb);
 
-        int i = readVarInt(pb);
+        int i = pb.readVarInt();
 
         EnumConnectionState state = loginPhase ? EnumConnectionState.LOGIN : EnumConnectionState.PLAY;
         //#if MC>=10800
@@ -444,32 +415,14 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
      * @return The processed packet or {@code null} if no packet shall be sent
      */
     protected Packet processPacket(Packet p) throws Exception {
-        //#if MC>=10904
         if (p instanceof SPacketLoginSuccess) {
-        //#else
-        //$$ if (p instanceof S02PacketLoginSuccess) {
-        //#endif
             loginPhase = false;
             return p;
         }
 
-        //#if MC>=10904
         if (p instanceof SPacketCustomPayload) {
             SPacketCustomPayload packet = (SPacketCustomPayload) p;
-        //#else
-        //$$ if (p instanceof S3FPacketCustomPayload) {
-        //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
-        //#endif
-            //#if MC>=11300
-            ResourceLocation channelName = packet.getChannelName();
-            //#else
-            //#if MC>=10800
-            //$$ String channelName = packet.getChannelName();
-            //#else
-            //$$ String channelName = packet.func_149169_c();
-            //#endif
-            //#endif
-            if (Restrictions.PLUGIN_CHANNEL.equals(channelName)) {
+            if (Restrictions.PLUGIN_CHANNEL.equals(packet.getChannelName())) {
                 final String unknown = replayHandler.getRestrictions().handle(packet);
                 if (unknown == null) {
                     return null;
@@ -494,23 +447,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 }
             }
         }
-        //#if MC>=10904
         if (p instanceof SPacketDisconnect) {
             ITextComponent reason = ((SPacketDisconnect) p).getReason();
-        //#else
-        //$$ if (p instanceof S40PacketDisconnect) {
-            //#if MC>=10809
-            //$$ IChatComponent reason = ((S40PacketDisconnect) p).getReason();
-            //#else
-            //$$ IChatComponent reason = ((S40PacketDisconnect) p).func_149165_c();
-            //#endif
-        //#endif
-            //#if MC>=11300
-            // FIXME or is it getString?
-            String message = reason.getUnformattedComponentText();
-            //#else
-            //$$ String message = reason.getUnformattedText();
-            //#endif
+            String message = reason.getString();
             if ("Please update to view this replay.".equals(message)) {
                 // This version of the mod supports replay restrictions so we are allowed
                 // to remove this packet.
@@ -520,21 +459,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         if(BAD_PACKETS.contains(p.getClass())) return null;
 
-        //#if MC>=10904
         if (p instanceof SPacketCustomPayload) {
             SPacketCustomPayload packet = (SPacketCustomPayload) p;
-        //#else
-        //$$ if (p instanceof S3FPacketCustomPayload) {
-        //$$     S3FPacketCustomPayload packet = (S3FPacketCustomPayload) p;
-        //#endif
-            //#if MC>=10800
             //#if MC>=11300
             ResourceLocation channelName = packet.getChannelName();
             //#else
             //$$ String channelName = packet.getChannelName();
-            //#endif
-            //#else
-            //$$ String channelName = packet.func_149169_c();
             //#endif
             //#if MC>=11300
             if (SPacketCustomPayload.BOOK_OPEN.equals(channelName)) {
@@ -546,19 +476,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //#if MC>=10800
         }
 
-        //#if MC>=10904
         if(p instanceof SPacketResourcePackSend) {
             SPacketResourcePackSend packet = (SPacketResourcePackSend) p;
             String url = packet.getURL();
-        //#else
-        //$$ if(p instanceof S48PacketResourcePackSend) {
-        //$$     S48PacketResourcePackSend packet = (S48PacketResourcePackSend) p;
-            //#if MC>=10809
-            //$$ String url = packet.getURL();
-            //#else
-            //$$ String url = packet.func_179783_a();
-            //#endif
-        //#endif
             if (url.startsWith("replay://")) {
         //#else
         //$$     String url;
@@ -581,19 +501,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
-        //#if MC>=10904
         if(p instanceof SPacketJoinGame) {
             SPacketJoinGame packet = (SPacketJoinGame) p;
             int entId = packet.getPlayerId();
-        //#else
-        //$$ if(p instanceof S01PacketJoinGame) {
-        //$$     S01PacketJoinGame packet = (S01PacketJoinGame) p;
-            //#if MC>=10800
-            //$$ int entId = packet.getEntityId();
-            //#else
-            //$$ int entId = packet.func_149197_c();
-            //#endif
-        //#endif
             allowMovement = true;
             actualID = entId;
             entId = -1789435; // Camera entity id should be negative which is an invalid id and can't be used by servers
@@ -629,22 +539,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
         }
 
-        //#if MC>=10904
         if(p instanceof SPacketRespawn) {
             SPacketRespawn respawn = (SPacketRespawn) p;
-            p = new SPacketRespawn(
-                    //#if MC>=11300
-                    respawn.func_212643_b(),
-                    //#else
-                    //$$ respawn.getDimensionID(),
-                    //#endif
-                    respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
-        //#else
-        //$$ if(p instanceof S07PacketRespawn) {
-        //$$     S07PacketRespawn respawn = (S07PacketRespawn) p;
             //#if MC>=10809
-            //$$ p = new S07PacketRespawn(respawn.getDimensionID(),
-            //$$         respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
+            p = new SPacketRespawn(respawn.func_212643_b(),
+                    respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
             //#else
             //$$ p = new S07PacketRespawn(respawn.func_149082_c(),
             //$$         respawn.func_149081_d(), respawn.func_149080_f(),
@@ -654,18 +553,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //$$ GameType.ADVENTURE);
                     //#endif
             //#endif
-        //#endif
 
             allowMovement = true;
         }
 
-        //#if MC>=10904
         if(p instanceof SPacketPlayerPosLook) {
             final SPacketPlayerPosLook ppl = (SPacketPlayerPosLook) p;
-        //#else
-        //$$ if(p instanceof S08PacketPlayerPosLook) {
-        //$$     final S08PacketPlayerPosLook ppl = (S08PacketPlayerPosLook) p;
-        //#endif
             if(!hasWorldLoaded) hasWorldLoaded = true;
 
             if (mc.currentScreen instanceof GuiDownloadTerrain) {
@@ -680,15 +573,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#if MC>=10800
             //#if MC>=10904
             for (SPacketPlayerPosLook.EnumFlags relative : ppl.getFlags()) {
+            //#else
+            //$$ for (Object relative : ppl.func_179834_f()) {
+            //#endif
                 if (relative == SPacketPlayerPosLook.EnumFlags.X
                         || relative == SPacketPlayerPosLook.EnumFlags.Y
                         || relative == SPacketPlayerPosLook.EnumFlags.Z) {
-            //#else
-            //$$ for (Object relative : ppl.func_179834_f()) {
-            //$$     if (relative == S08PacketPlayerPosLook.EnumFlags.X
-            //$$             || relative == S08PacketPlayerPosLook.EnumFlags.Y
-            //$$             || relative == S08PacketPlayerPosLook.EnumFlags.Z) {
-            //#endif
                     return null; // At least one of the coordinates is relative, so we don't care
                 }
             }
@@ -712,7 +602,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 @Override
                 @SuppressWarnings("unchecked")
                 public void run() {
-                    if (world(mc) == null || !mc.isCallingFromMinecraftThread()) {
+                    if (mc.world == null || !mc.isCallingFromMinecraftThread()) {
                         ReplayMod.instance.runLater(this);
                         return;
                     }
@@ -727,19 +617,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }.run();
         }
 
-        //#if MC>=10904
         if(p instanceof SPacketChangeGameState) {
             SPacketChangeGameState pg = (SPacketChangeGameState)p;
             int reason = pg.getGameState();
-        //#else
-        //$$ if(p instanceof S2BPacketChangeGameState) {
-        //$$     S2BPacketChangeGameState pg = (S2BPacketChangeGameState)p;
-            //#if MC>=10809
-            //$$ int reason = pg.getGameState();
-            //#else
-            //$$ int reason = pg.func_149138_c();
-            //#endif
-        //#endif
 
             // only allow the following packets:
             // 1 - End raining
@@ -753,11 +633,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
-        //#if MC>=10904
         if (p instanceof SPacketChat) {
-        //#else
-        //$$ if (p instanceof S02PacketChat) {
-        //#endif
             if (!ReplayModReplay.instance.getCore().getSettingsRegistry().get(Setting.SHOW_CHAT)) {
                 return null;
             }
@@ -994,23 +870,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     protected Packet processPacketAsync(Packet p) {
         //If hurrying, ignore some packets, except for short durations
         if(desiredTimeStamp - lastTimeStamp > 1000) {
-            //#if MC>=10904
             if(p instanceof SPacketParticles) return null;
 
             if(p instanceof SPacketSpawnObject) {
                 SPacketSpawnObject pso = (SPacketSpawnObject)p;
                 int type = pso.getType();
-            //#else
-            //$$ if(p instanceof S2APacketParticles) return null;
-            //$$
-            //$$ if(p instanceof S0EPacketSpawnObject) {
-            //$$     S0EPacketSpawnObject pso = (S0EPacketSpawnObject)p;
-                //#if MC>=10809
-                //$$ int type = pso.getType();
-                //#else
-                //$$ int type = pso.func_148993_l();
-                //#endif
-            //#endif
                 if(type == 76) { // Firework rocket
                     return null;
                 }
@@ -1123,7 +987,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // Note: This is only half of the truth. Entities may be removed by chunk-unloading, see else-case below.
             // To make things worse, it seems like players were never supposed to be unloaded this way because
             // they will remain glitched in the World#playerEntities list.
-            World world = world(mc);
+            World world = mc.world;
             IChunkProvider chunkProvider = world.getChunkProvider();
             // Get the chunk that will be unloaded
             //#if MC>=11300
@@ -1151,8 +1015,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     }
 
                     // Check whether the entity has left the chunk
-                    int chunkX = floor(entity.posX / 16);
-                    int chunkZ = floor(entity.posZ / 16);
+                    int chunkX = MathHelper.floor(entity.posX / 16);
+                    int chunkZ = MathHelper.floor(entity.posZ / 16);
                     if (entity.chunkCoordX != chunkX || entity.chunkCoordZ != chunkZ) {
                         // Entity has left the chunk
                         chunk.removeEntityAtIndex(entity, entity.chunkCoordY);

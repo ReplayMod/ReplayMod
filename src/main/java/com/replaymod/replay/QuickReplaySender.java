@@ -63,6 +63,7 @@ import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import javax.annotation.Nullable;
@@ -84,12 +85,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
-
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
 
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
@@ -657,12 +652,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
                 byteBuf.skipBytes(8); // Skip packet length & timestamp
 
-                int packetId =
-                        //#if MC>=11102
-                        packetBuf.readVarInt();
-                        //#else
-                        //$$ packetBuf.readVarIntFromBuffer();
-                        //#endif
+                int packetId = packetBuf.readVarInt();
                 Packet<?> mcPacket = state.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
                 mcPacket.readPacketData(packetBuf);
                 return mcPacket;
@@ -696,12 +686,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 byteBuf.writeBytes(in.readBytes(len));
             }
 
-            int packetId =
-                    //#if MC>=11102
-                    packetBuf.readVarInt();
-                    //#else
-                    //$$ packetBuf.readVarIntFromBuffer();
-                    //#endif
+            int packetId = packetBuf.readVarInt();
             Packet<?> mcPacket = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
             mcPacket.readPacketData(packetBuf);
             return mcPacket;

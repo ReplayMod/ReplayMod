@@ -19,7 +19,7 @@ public abstract class MixinGuiSpectator {
     //#endif
     public void isInReplay(int i, CallbackInfo ci) {
         // Prevent spectator gui from opening while in a replay
-        if (player(getMinecraft()) instanceof CameraEntity) {
+        if (getMinecraft().player instanceof CameraEntity) {
             ci.cancel();
         }
     }

@@ -4,6 +4,7 @@ import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.SettingsChangedEvent;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
@@ -19,19 +20,10 @@ import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
 import lombok.Getter;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#if MC>=10800
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#endif
 
 import java.io.IOException;
 import java.util.Collections;
@@ -41,7 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.replaymod.core.versions.MCVer.*;
+import static com.replaymod.core.versions.MCVer.FML_BUS;
 
 public class ReplayModSimplePathing implements Module {
     { instance = this; }
@@ -96,7 +88,7 @@ public class ReplayModSimplePathing implements Module {
                 }
             }
         } catch (IOException e) {
-            throw newReportedException(CrashReport.makeCrashReport(e, "Reading timeline"));
+            throw new ReportedException(CrashReport.makeCrashReport(e, "Reading timeline"));
         }
 
         guiPathing = new GuiPathing(core, this, event.getReplayHandler());
@@ -222,7 +214,7 @@ public class ReplayModSimplePathing implements Module {
             timeline = serialization.deserialize(serialized).get("");
         } catch (Throwable t) {
             CrashReport report = CrashReport.makeCrashReport(t, "Cloning timeline");
-            throw newReportedException(report);
+            throw new ReportedException(report);
         }
 
         int id = lastSaveId.incrementAndGet();

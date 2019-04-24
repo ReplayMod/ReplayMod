@@ -14,22 +14,20 @@ import org.lwjgl.glfw.GLFW;
 //$$ import net.minecraft.client.settings.GameSettings;
 //$$ import net.minecraft.client.settings.KeyBinding;
 //$$ import net.minecraft.crash.CrashReport;
+//$$ import net.minecraft.util.ReportedException;
 //$$ import net.minecraftforge.client.ForgeHooksClient;
 //$$ import net.minecraftforge.common.MinecraftForge;
 //$$ import org.lwjgl.input.Keyboard;
 //$$ import org.lwjgl.input.Mouse;
-//#if MC>=10800
 //$$ import net.minecraftforge.fml.common.FMLCommonHandler;
-//$$
+//#if MC>=10800
 //$$ import java.io.IOException;
 //#else
-//$$ import cpw.mods.fml.common.FMLCommonHandler;
 //$$ import cpw.mods.fml.common.eventhandler.Event;
 //$$ import net.minecraft.client.renderer.entity.RenderManager;
 //$$
 //$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //#endif
-//$$ import static com.replaymod.core.versions.MCVer.newReportedException;
 //#endif
 
 public class InputReplayTimer extends WrappedTimer {
@@ -160,7 +158,7 @@ public class InputReplayTimer extends WrappedTimer {
     //$$     // Still want to be able to create debug crashes ]:D
     //$$     if (mc.debugCrashKeyPressTime > 0) {
     //$$         if (Minecraft.getSystemTime() - mc.debugCrashKeyPressTime >= 6000L) {
-    //$$             throw newReportedException(new CrashReport("Manually triggered debug crash", new Throwable()));
+    //$$             throw new ReportedException(new CrashReport("Manually triggered debug crash", new Throwable()));
     //$$         }
     //$$
     //$$         if (!Keyboard.isKeyDown(Keyboard.KEY_F3) || !Keyboard.isKeyDown(Keyboard.KEY_C)) {

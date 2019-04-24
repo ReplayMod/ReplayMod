@@ -17,25 +17,13 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
-import net.minecraft.client.resources.I18n;
-
-//#if MC>=11300
 import net.minecraft.client.GameSettings;
-//#else
-//$$ import net.minecraft.client.settings.GameSettings;
-//$$ import org.lwjgl.input.Keyboard;
-//#endif
-
-//#if MC>=10800
-//#if MC>=11300
+import net.minecraft.client.resources.I18n;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
 import net.minecraftforge.fml.common.gameevent.InputEvent;
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//$$ import cpw.mods.fml.common.gameevent.InputEvent;
+
+//#if MC<11300
+//$$ import org.lwjgl.input.Keyboard;
 //#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;

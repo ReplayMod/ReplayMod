@@ -22,6 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
@@ -56,22 +57,16 @@ import net.minecraftforge.fml.network.NetworkHooks;
 //$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //$$ import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 //#endif
-import net.minecraft.client.network.NetHandlerLoginClient;
-
-import static net.minecraft.client.renderer.GlStateManager.*;
 //#else
 //$$ import cpw.mods.fml.common.Loader;
 //$$ import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
 //$$ import io.netty.channel.ChannelOutboundHandlerAdapter;
-//$$ import net.minecraft.client.network.NetHandlerLoginClient;
 //$$ import net.minecraft.entity.EntityLivingBase;
 //$$ import net.minecraft.network.EnumConnectionState;
 //$$
 //$$ import java.net.InetSocketAddress;
 //$$ import java.net.SocketAddress;
-//$$
-//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
 //#endif
 
 import javax.annotation.Nonnull;
@@ -79,6 +74,7 @@ import javax.annotation.Nullable;
 
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
+import static net.minecraft.client.renderer.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -185,16 +181,16 @@ public class ReplayHandler {
 
         channel.close().awaitUninterruptibly();
 
-        if (player(mc) instanceof CameraEntity) {
+        if (mc.player instanceof CameraEntity) {
             //#if MC>=11300
-            player(mc).remove();
+            mc.player.remove();
             //#else
-            //$$ player(mc).setDead();
+            //$$ mc.player.setDead();
             //#endif
         }
 
-        if (world(mc) != null) {
-            world(mc).sendQuittingDisconnectingPacket();
+        if (mc.world != null) {
+            mc.world.sendQuittingDisconnectingPacket();
             mc.loadWorld(null);
         }
 
@@ -478,7 +474,7 @@ public class ReplayHandler {
      * @return {@code true} if the camera is the view entity, {@code false} otherwise
      */
     public boolean isCameraView() {
-        return player(mc) instanceof CameraEntity && player(mc) == getRenderViewEntity(mc);
+        return mc.player instanceof CameraEntity && mc.player == getRenderViewEntity(mc);
     }
 
     /**
@@ -486,7 +482,7 @@ public class ReplayHandler {
      * @return The camera entity or {@code null} if it does not yet exist
      */
     public CameraEntity getCameraEntity() {
-        return player(mc) instanceof CameraEntity ? (CameraEntity) player(mc) : null;
+        return mc.player instanceof CameraEntity ? (CameraEntity) mc.player : null;
     }
 
     public UUID getSpectatedUUID() {
@@ -516,7 +512,7 @@ public class ReplayHandler {
             }
 
             // Update all entity positions (especially prev/lastTick values)
-            for (Entity entity : loadedEntityList(world(mc))) {
+            for (Entity entity : loadedEntityList(mc.world)) {
                 skipTeleportInterpolation(entity);
                 entity.lastTickPosX = entity.prevPosX = entity.posX;
                 entity.lastTickPosY = entity.prevPosY = entity.posY;
@@ -540,7 +536,7 @@ public class ReplayHandler {
             quickReplaySender.sendPacketsTill(targetTime);
 
             // Immediately apply player teleport interpolation
-            for (Entity entity : loadedEntityList(world(mc))) {
+            for (Entity entity : loadedEntityList(mc.world)) {
                 skipTeleportInterpolation(entity);
             }
             return;
@@ -580,7 +576,7 @@ public class ReplayHandler {
                     //$$ public void drawScreen(int mouseX, int mouseY, float partialTicks) {
                     //#endif
                         drawBackground(0);
-                        drawCenteredString(getFontRenderer(mc), I18n.format("replaymod.gui.pleasewait"),
+                        drawCenteredString(mc.fontRenderer, I18n.format("replaymod.gui.pleasewait"),
                                 width / 2, height / 2, 0xffffffff);
                     }
                 };
@@ -633,13 +629,13 @@ public class ReplayHandler {
                 replaySender.setAsyncMode(true);
                 replaySender.setReplaySpeed(0);
 
-                getConnection(mc).getNetworkManager()
+                mc.getConnection().getNetworkManager()
                         //#if MC>=11300
                         .tick();
                         //#else
                         //$$ .processReceivedPackets();
                         //#endif
-                for (Entity entity : loadedEntityList(world(mc))) {
+                for (Entity entity : loadedEntityList(mc.world)) {
                     skipTeleportInterpolation(entity);
                     entity.lastTickPosX = entity.prevPosX = entity.posX;
                     entity.lastTickPosY = entity.prevPosY = entity.posY;

@@ -32,7 +32,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -52,7 +51,7 @@ public class PlayerOverview implements Extra {
                 if (module.getReplayHandler() != null) {
                     @SuppressWarnings("unchecked")
                     //#if MC>=10800
-                    List<EntityPlayer> players = world(mod.getMinecraft()).getPlayers(EntityPlayer.class, new Predicate() {
+                    List<EntityPlayer> players = mod.getMinecraft().world.getPlayers(EntityPlayer.class, new Predicate() {
                         @Override
                         public boolean apply(Object input) {
                             return !(input instanceof CameraEntity); // Exclude the camera entity

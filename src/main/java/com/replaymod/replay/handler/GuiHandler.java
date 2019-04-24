@@ -10,16 +10,7 @@ import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiMultiplayer;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.client.event.GuiScreenEvent;
-
-//#if MC>=10800
-//#if MC>=11300
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//#endif
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,7 +61,7 @@ public class GuiHandler {
                     // Replace "Exit Server" button with "Exit Replay" button
                     case BUTTON_EXIT_SERVER:
                         removeButton(event, b);
-                        addButton(event, new GuiButton(BUTTON_EXIT_REPLAY, x(b), y(b), b.width, b.height, I18n.format("replaymod.gui.exit")) {
+                        addButton(event, new GuiButton(BUTTON_EXIT_REPLAY, b.x, b.y, b.width, b.height, I18n.format("replaymod.gui.exit")) {
                             //#if MC>=11300
                             @Override
                             public void onClick(double mouseX, double mouseY) {
@@ -97,14 +88,14 @@ public class GuiHandler {
                 }
             }
             if (achievements != null && stats != null) {
-                moveAllButtonsDirectlyBelowUpwards(buttonList, y(achievements),
-                        x(achievements), x(stats) + stats.width);
+                moveAllButtonsDirectlyBelowUpwards(buttonList, achievements.y,
+                        achievements.x, stats.x + stats.width);
             }
             // In 1.13+ Forge, the Options button shares one row with the Open to LAN button
             //#if MC<11300
             //$$ if (openToLan != null) {
-            //$$     moveAllButtonsDirectlyBelowUpwards(buttonList, y(openToLan),
-            //$$             x(openToLan), x(openToLan) + openToLan.width);
+            //$$     moveAllButtonsDirectlyBelowUpwards(buttonList, openToLan.y,
+            //$$             openToLan.x, openToLan.x + openToLan.width);
             //$$ }
             //#endif
         }
@@ -119,8 +110,8 @@ public class GuiHandler {
      */
     private void moveAllButtonsDirectlyBelowUpwards(List<GuiButton> buttons, int belowY, int xStart, int xEnd) {
         for (GuiButton button : buttons) {
-            if (y(button) >= belowY && x(button) <= xEnd && x(button) + button.width >= xStart) {
-                y(button, y(button) - 24);
+            if (button.y >= belowY && button.x <= xEnd && button.x + button.width >= xStart) {
+                button.y -= 24;
             }
         }
     }

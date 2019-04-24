@@ -4,6 +4,7 @@ import com.replaymod.core.versions.MCVer;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
 
 //#if MC>=11300
 import org.lwjgl.glfw.GLFW;
@@ -15,8 +16,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import static com.replaymod.core.versions.MCVer.newReportedException;
 
 public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
@@ -84,7 +83,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
             consumer.close();
         } catch (Throwable t) {
             CrashReport crashReport = CrashReport.makeCrashReport(t, "Cleaning up rendering pipeline");
-            throw newReportedException(crashReport);
+            throw new ReportedException(crashReport);
         }
     }
 

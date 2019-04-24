@@ -9,6 +9,7 @@ import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraControllerRegistry;
 import com.replaymod.replay.camera.CameraEntity;
@@ -23,12 +24,6 @@ import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-//#if MC>=11300
-import com.replaymod.core.versions.MCVer.Keyboard;
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#endif
 
 import javax.annotation.Nullable;
 import java.io.File;

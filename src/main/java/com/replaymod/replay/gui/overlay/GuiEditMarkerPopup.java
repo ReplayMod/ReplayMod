@@ -10,14 +10,9 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replaystudio.data.Marker;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-
-//#if MC>=11300
-import com.replaymod.core.versions.MCVer.Keyboard;
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#endif
 
 import java.util.function.Consumer;
 

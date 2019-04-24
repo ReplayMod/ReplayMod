@@ -68,7 +68,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         } catch (IOException e) {
             throw new NoFFmpegException(e);
         }
-        File exportLogFile = new File(MCVer.mcDataDir(MCVer.getMinecraft()), "export.log");
+        File exportLogFile = new File(MCVer.getMinecraft().gameDir, "export.log");
         OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream(exportLogFile), ffmpegLog);
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();

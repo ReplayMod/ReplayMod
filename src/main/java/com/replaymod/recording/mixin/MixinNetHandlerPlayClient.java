@@ -12,20 +12,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=10800
-//#if MC>=10904
-import net.minecraft.network.play.server.SPacketPlayerListItem.Action;
-import net.minecraft.network.play.server.SPacketPlayerListItem.AddPlayerData;
-//#else
-//$$ import net.minecraft.network.play.server.S38PacketPlayerListItem.Action;
-//$$ import net.minecraft.network.play.server.S38PacketPlayerListItem.AddPlayerData;
-//#endif
+import net.minecraft.network.play.server.SPacketPlayerListItem;
 import net.minecraft.client.network.NetworkPlayerInfo;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static com.replaymod.core.versions.MCVer.*;
 //#endif
 
 @Mixin(NetHandlerPlayClient.class)
@@ -51,45 +43,27 @@ public abstract class MixinNetHandlerPlayClient {
      */
     //#if MC>=10800
     @Inject(method = "handlePlayerListItem", at=@At("HEAD"))
-    //#if MC>=10809
-    //#if MC>=10904
     public void recordOwnJoin(SPacketPlayerListItem packet, CallbackInfo ci) {
-    //#else
-    //$$ public void recordOwnJoin(S38PacketPlayerListItem packet, CallbackInfo ci) {
-    //#endif
-        if (player(gameController) == null) return;
+        if (gameController.player == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();
-        if (handler != null && packet.getAction() == Action.ADD_PLAYER) {
-            for (AddPlayerData data : packet.getEntries()) {
+        if (handler != null && packet.getAction() == SPacketPlayerListItem.Action.ADD_PLAYER) {
+            //#if MC>=10809
+            List<SPacketPlayerListItem.AddPlayerData> entries = packet.getEntries();
+            //#else
+            //$$ @SuppressWarnings("unchecked")
+            //$$ List<S38PacketPlayerListItem.AddPlayerData> entries = packet.func_179767_a();
+            //#endif
+            for (SPacketPlayerListItem.AddPlayerData data : entries) {
                 if (data.getProfile() == null || data.getProfile().getId() == null) continue;
                 // Only add spawn packet for our own player and only if he isn't known yet
-                if (data.getProfile().getId().equals(player(gameController).getGameProfile().getId())
+                if (data.getProfile().getId().equals(gameController.player.getGameProfile().getId())
                         && !playerInfoMap.containsKey(data.getProfile().getId())) {
                     handler.onPlayerJoin();
                 }
             }
         }
     }
-    //#else
-    //$$ public void recordOwnJoin(S38PacketPlayerListItem packet, CallbackInfo ci) {
-    //$$     if (gameController.thePlayer == null) return;
-    //$$
-    //$$     RecordingEventHandler handler = getRecordingEventHandler();
-    //$$     if (handler != null && packet.func_179768_b() == S38PacketPlayerListItem.Action.ADD_PLAYER) {
-    //$$         @SuppressWarnings("unchecked")
-    //$$         List<S38PacketPlayerListItem.AddPlayerData> dataList = packet.func_179767_a();
-    //$$         for (S38PacketPlayerListItem.AddPlayerData data : dataList) {
-    //$$             if (data.func_179962_a() == null || data.func_179962_a().getId() == null) continue;
-    //$$             // Only add spawn packet for our own player and only if he isn't known yet
-    //$$             if (data.func_179962_a().getId().equals(Minecraft.getMinecraft().thePlayer.getGameProfile().getId())
-    //$$                     && !playerInfoMap.containsKey(data.func_179962_a().getId())) {
-    //$$                 handler.onPlayerJoin();
-    //$$             }
-    //$$         }
-    //$$     }
-    //$$ }
-    //#endif
     //#else
     //$$ @Inject(method = "handleJoinGame", at=@At("RETURN"))
     //$$ public void recordOwnJoin(S01PacketJoinGame packet, CallbackInfo ci) {
@@ -108,11 +82,7 @@ public abstract class MixinNetHandlerPlayClient {
      * @param ci Callback info
      */
     @Inject(method = "handleRespawn", at=@At("RETURN"))
-    //#if MC>=10904
     public void recordOwnRespawn(SPacketRespawn packet, CallbackInfo ci) {
-    //#else
-    //$$ public void recordOwnRespawn(S07PacketRespawn packet, CallbackInfo ci) {
-    //#endif
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null) {
             handler.onPlayerRespawn();

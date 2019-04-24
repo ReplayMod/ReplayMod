@@ -19,6 +19,7 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 
@@ -49,38 +50,29 @@ import net.minecraft.util.text.*;
 //#endif
 
 //#if MC>=10800
-//#if MC>=11300
 import net.minecraft.client.GameSettings;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#endif
+
+//#if MC>=11300
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
 //#else
-//$$ import net.minecraft.client.settings.GameSettings;
-//$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //$$ import net.minecraftforge.fml.common.Loader;
 //$$ import net.minecraftforge.fml.common.Mod.EventHandler;
 //$$ import net.minecraftforge.fml.common.Mod.Instance;
 //$$ import net.minecraftforge.fml.common.ModContainer;
 //$$ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 //$$ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+//#if MC>=10800
+//$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //#else
-//$$ import cpw.mods.fml.common.Loader;
-//$$ import cpw.mods.fml.common.Mod;
-//$$ import cpw.mods.fml.common.Mod.EventHandler;
-//$$ import cpw.mods.fml.common.Mod.Instance;
-//$$ import cpw.mods.fml.common.ModContainer;
-//$$ import cpw.mods.fml.common.event.FMLInitializationEvent;
-//$$ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//$$ import cpw.mods.fml.common.gameevent.TickEvent;
 //$$ import com.replaymod.replay.InputReplayTimer;
 //$$
 //$$ import java.util.ArrayDeque;
 //#endif
+//#endif
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -198,7 +190,7 @@ public class ReplayMod implements Module {
 
     public File getReplayFolder() throws IOException {
         String path = getSettingsRegistry().get(Setting.RECORDING_PATH);
-        File folder = new File(path.startsWith("./") ? mcDataDir(getMinecraft()) : null, path);
+        File folder = new File(path.startsWith("./") ? getMinecraft().gameDir : null, path);
         FileUtils.forceMkdir(folder);
         return folder;
     }

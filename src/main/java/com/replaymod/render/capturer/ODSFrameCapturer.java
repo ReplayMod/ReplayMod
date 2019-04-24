@@ -8,14 +8,11 @@ import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.shader.Program;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
 import net.minecraft.util.ResourceLocation;
 
-//#if MC>=10800
 import static net.minecraft.client.renderer.GlStateManager.*;
-//#else
-//$$ import com.replaymod.render.hooks.GLStateTracker.BooleanState;
-//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
-//#endif
+import static net.minecraft.client.renderer.GlStateManager.BooleanState;
 
 import java.io.IOException;
 
@@ -76,7 +73,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             leftEyeVariable = shaderProgram.getUniformVariable("leftEye");
             directionVariable = shaderProgram.getUniformVariable("direction");
         } catch (Exception e) {
-            throw newReportedException(CrashReport.makeCrashReport(e, "Creating ODS shaders"));
+            throw new ReportedException(CrashReport.makeCrashReport(e, "Creating ODS shaders"));
         }
     }
 

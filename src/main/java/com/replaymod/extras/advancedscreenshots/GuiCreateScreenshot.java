@@ -1,7 +1,6 @@
 package com.replaymod.extras.advancedscreenshots;
 
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.gui.GuiRenderSettings;
 import com.replaymod.replay.ReplayModReplay;
@@ -82,12 +81,12 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
 
     @Override
     protected File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
-        File screenshotFolder = new File(MCVer.mcDataDir(getMinecraft()), "screenshots");
+        File screenshotFolder = new File(getMinecraft().gameDir, "screenshots");
         return ScreenShotHelper.getTimestampedPNGFileForDirectory(screenshotFolder);
     }
 
     @Override
     protected Path getSettingsPath() {
-        return MCVer.mcDataDir(getMinecraft()).toPath().resolve("config/replaymod-screenshotsettings.json");
+        return getMinecraft().gameDir.toPath().resolve("config/replaymod-screenshotsettings.json");
     }
 }

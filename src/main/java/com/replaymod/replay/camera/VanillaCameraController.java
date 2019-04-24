@@ -11,8 +11,6 @@ import net.minecraft.client.GameSettings;
 
 import javax.vecmath.Vector3f;
 
-import static com.replaymod.core.versions.MCVer.*;
-
 /**
  * Camera controller performing vanilla creative-like camera movements.
  */
@@ -47,7 +45,7 @@ public class VanillaCameraController implements CameraController {
         if (partialTicksPassed == 0) return;
         Vector3f direction = new Vector3f(0, 0, 0);
         for (int i = 0; i < 6; i++) { // First, get movement direction depending on keys pressed
-            if (isKeyDown(bindings[i])) {
+            if (bindings[i].isKeyDown()) {
                 direction.add(DIRECTIONS[i]);
             }
         }

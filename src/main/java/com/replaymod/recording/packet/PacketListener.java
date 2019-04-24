@@ -21,6 +21,7 @@ import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.*;
+import net.minecraft.util.text.TextComponentString;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,10 +31,8 @@ import net.minecraft.network.login.server.SPacketLoginSuccess;
 
 //#if MC>=10904
 import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.text.TextComponentString;
 //#else
 //$$ import net.minecraft.entity.DataWatcher;
-//$$ import net.minecraft.util.ChatComponentText;
 //$$
 //$$ import java.util.List;
 //#endif
@@ -125,21 +124,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void save(Packet packet) {
         try {
-            //#if MC>=10904
             if(packet instanceof SPacketSpawnPlayer) {
-                UUID uuid = ((SPacketSpawnPlayer) packet).getUniqueId();
-            //#else
-            //$$ if(packet instanceof S0CPacketSpawnPlayer) {
-                //#if MC>=10809
-                //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).getPlayer();
-                //#else
                 //#if MC>=10800
-                //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).func_179819_c();
+                UUID uuid = ((SPacketSpawnPlayer) packet).getUniqueId();
                 //#else
                 //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).field_148955_b.getId();
                 //#endif
-                //#endif
-            //#endif
                 Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
                 uuids.add(uuid.toString());
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
@@ -238,15 +228,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 //#if MC>=10904
                 if(packet instanceof SPacketCollectItem) {
-                    if(player(mc) != null ||
-                            ((SPacketCollectItem) packet).getEntityID() == player(mc).getEntityId()) {
+                    if(mc.player != null ||
+                            ((SPacketCollectItem) packet).getEntityID() == mc.player.getEntityId()) {
                 //#else
                 //$$ if(packet instanceof S0DPacketCollectItem) {
-                //$$     if(player(mc) != null ||
+                //$$     if(mc.thePlayer != null ||
                             //#if MC>=10809
-                            //$$ ((S0DPacketCollectItem) packet).getEntityID() == player(mc).getEntityId()) {
+                            //$$ ((S0DPacketCollectItem) packet).getEntityID() == mc.thePlayer.getEntityId()) {
                             //#else
-                            //$$ ((S0DPacketCollectItem) packet).func_149353_d() == player(mc).getEntityId()) {
+                            //$$ ((S0DPacketCollectItem) packet).func_149353_d() == mc.thePlayer.getEntityId()) {
                             //#endif
                 //#endif
                         super.channelRead(ctx, msg);
@@ -254,17 +244,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     }
                 }
 
-                //#if MC>=10904
+                //#if MC>=10800
                 if (packet instanceof SPacketResourcePackSend) {
                     save(resourcePackRecorder.handleResourcePack((SPacketResourcePackSend) packet));
                     return;
                 }
-                //#else
-                //#if MC>=10800
-                //$$ if (packet instanceof S48PacketResourcePackSend) {
-                //$$     save(resourcePackRecorder.handleResourcePack((S48PacketResourcePackSend) packet));
-                //$$     return;
-                //$$ }
                 //#else
                 //$$ if (packet instanceof S3FPacketCustomPayload) {
                 //$$     S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
@@ -273,7 +257,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //$$         return;
                 //$$     }
                 //$$ }
-                //#endif
                 //#endif
 
                 //#if MC<11300
@@ -291,22 +274,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 save(packet);
 
-                //#if MC>=10904
                 if (packet instanceof SPacketCustomPayload) {
                     SPacketCustomPayload p = (SPacketCustomPayload) packet;
                     if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
                         packet = new SPacketDisconnect(new TextComponentString("Please update to view this replay."));
-                //#else
-                //$$ if (packet instanceof S3FPacketCustomPayload) {
-                //$$     S3FPacketCustomPayload p = (S3FPacketCustomPayload) packet;
-                    //#if MC>=10800
-                    //$$ String channelName = p.getChannelName();
-                    //#else
-                    //$$ String channelName = p.func_149169_c();
-                    //#endif
-                //$$     if (Restrictions.PLUGIN_CHANNEL.equals(channelName)) {
-                //$$         packet = new S40PacketDisconnect(new ChatComponentText("Please update to view this replay."));
-                //#endif
                         save(packet);
                     }
                 }
@@ -395,7 +366,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         }
         ByteBuf byteBuf = Unpooled.buffer();
         PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
-        writeVarInt(packetBuffer, packetId);
+        packetBuffer.writeVarInt(packetId);
         packet.writePacketData(packetBuffer);
 
         byteBuf.readerIndex(0);

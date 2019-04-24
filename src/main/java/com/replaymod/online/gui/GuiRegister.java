@@ -16,8 +16,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import net.minecraft.client.gui.FontRenderer;
 
-import static com.replaymod.core.versions.MCVer.*;
-
 public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
     public static final int MIN_PW_LENGTH = 5;
     public static final int MAX_PW_LENGTH = 1024;
@@ -57,7 +55,7 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                 pos(cancelButton, width / 2 + 2, 170);
                 pos(statusLabel, width / 2 - statusLabel.getMinSize().getWidth() / 2, 152);
 
-                FontRenderer font = getFontRenderer(getMinecraft());
+                FontRenderer font = getMinecraft().fontRenderer;
                 int lineCount = font.listFormattedStringToWidth(disclaimerLabel.getText(), width - 10).size();
                 Dimension dim = new Dimension(width - 10, font.FONT_HEIGHT * lineCount);
                 disclaimerLabel.setSize(dim);

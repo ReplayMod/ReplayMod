@@ -1,7 +1,6 @@
 package com.replaymod.extras;
 
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -100,7 +99,7 @@ public class OpenEyeExtra implements Extra {
                 GuiPopup popup = new GuiPopup(OfferGui.this);
                 new Thread(() -> {
                     try {
-                        File targetFile = new File(MCVer.mcDataDir(mod.getMinecraft()), "mods/" + ReplayMod.getMinecraftVersion() + "/OpenEye.jar");
+                        File targetFile = new File(mod.getMinecraft().gameDir, "mods/" + ReplayMod.getMinecraftVersion() + "/OpenEye.jar");
                         FileUtils.forceMkdir(targetFile.getParentFile());
 
                         HttpsURLConnection connection = (HttpsURLConnection) new URL(DOWNLOAD_URL).openConnection();

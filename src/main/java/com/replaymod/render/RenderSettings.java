@@ -176,7 +176,7 @@ public class RenderSettings {
         switch (Util.getOSType()) {
             case WINDOWS:
                 // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
-                File inDotMinecraft = new File(MCVer.mcDataDir(MCVer.getMinecraft()), "ffmpeg/bin/ffmpeg.exe");
+                File inDotMinecraft = new File(MCVer.getMinecraft().gameDir, "ffmpeg/bin/ffmpeg.exe");
                 if (inDotMinecraft.exists()) {
                     LOGGER.debug("FFmpeg found in .minecraft/ffmpeg");
                     return inDotMinecraft.getAbsolutePath();

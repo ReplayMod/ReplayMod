@@ -19,11 +19,17 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 //#if MC>=11300
 import net.minecraft.util.math.RayTraceFluidMode;
@@ -43,30 +49,13 @@ import net.minecraft.client.util.RecipeBookClient;
 //#endif
 import net.minecraft.stats.StatisticsManager;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.ITextComponent;
 //#else
 //$$ import net.minecraft.stats.StatFileWriter;
-//$$ import net.minecraft.util.AxisAlignedBB;
-//$$ import net.minecraft.util.IChatComponent;
-//$$ import net.minecraft.util.MovingObjectPosition;
 //#endif
 
 //#if MC>=10800
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#else
-//$$ import net.minecraftforge.fml.common.eventhandler.EventPriority;
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.EventPriority;
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//$$ import cpw.mods.fml.common.gameevent.TickEvent;
 //$$ import net.minecraft.client.entity.EntityClientPlayerMP;
 //$$ import net.minecraft.util.Session;
 //#endif
@@ -245,14 +234,14 @@ public class CameraEntity
             // entity is recreated and we have to spectate a new entity
             UUID spectating = ReplayModReplay.instance.getReplayHandler().getSpectatedUUID();
             if (spectating != null && (view.getUniqueID() != spectating
-                    || world(view) != world(this))
-                    || world(this).getEntityByID(view.getEntityId()) != view) {
+                    || view.world != world)
+                    || world.getEntityByID(view.getEntityId()) != view) {
                 if (spectating == null) {
                     // Entity (non-player) died, stop spectating
                     ReplayModReplay.instance.getReplayHandler().spectateEntity(this);
                     return;
                 }
-                view = world(this).getPlayerEntityByUUID(spectating);
+                view = world.getPlayerEntityByUUID(spectating);
                 if (view != null) {
                     setRenderViewEntity(mc, view);
                 } else {
@@ -271,8 +260,8 @@ public class CameraEntity
     @Override
     public void preparePlayerToSpawn() {
         // Make sure our world is up-to-date in case of world changes
-        if (world(mc) != null) {
-            world(this, world(mc));
+        if (mc.world != null) {
+            world = mc.world;
         }
         super.preparePlayerToSpawn();
     }
@@ -513,10 +502,10 @@ public class CameraEntity
         }
 
         Map<String, KeyBinding> keyBindings = ReplayMod.instance.getKeyBindingRegistry().getKeyBindings();
-        if (isKeyDown(keyBindings.get("replaymod.input.rollclockwise"))) {
+        if (keyBindings.get("replaymod.input.rollclockwise").isKeyDown()) {
             roll += Utils.isCtrlDown() ? 0.2 : 1;
         }
-        if (isKeyDown(keyBindings.get("replaymod.input.rollcounterclockwise"))) {
+        if (keyBindings.get("replaymod.input.rollcounterclockwise").isKeyDown()) {
             roll -= Utils.isCtrlDown() ? 0.2 : 1;
         }
     }
@@ -545,11 +534,7 @@ public class CameraEntity
     }
     //#else
     //$$ @Override
-    //#if MC>=10904
     //$$ public void addChatMessage(ITextComponent message) {
-    //#else
-    //$$ public void addChatMessage(IChatComponent message) {
-    //#endif
     //$$     if (MinecraftForge.EVENT_BUS.post(new ReplayChatMessageEvent(this))) return;
     //$$     super.addChatMessage(message);
     //$$ }
@@ -633,8 +618,8 @@ public class CameraEntity
                     //#endif
 
 
-                    player(mc).renderArmYaw = player(mc).prevRenderArmYaw = player.rotationYaw;
-                    player(mc).renderArmPitch = player(mc).prevRenderArmPitch = player.rotationPitch;
+                    mc.player.renderArmYaw = mc.player.prevRenderArmYaw = player.rotationYaw;
+                    mc.player.renderArmPitch = mc.player.prevRenderArmPitch = player.rotationPitch;
                 }
             }
         }

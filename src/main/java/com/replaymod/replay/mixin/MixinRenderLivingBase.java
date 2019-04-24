@@ -25,7 +25,7 @@ import static com.replaymod.core.versions.MCVer.*;
 public abstract class MixinRenderLivingBase {
     @Inject(method = "canRenderName", at = @At("HEAD"), cancellable = true)
     private void replayModReplay_canRenderInvisibleName(EntityLivingBase entity, CallbackInfoReturnable<Boolean> ci) {
-        EntityPlayer thePlayer = player(getMinecraft());
+        EntityPlayer thePlayer = getMinecraft().player;
         if (thePlayer instanceof CameraEntity && entity.isInvisible()) {
             ci.setReturnValue(false);
         }

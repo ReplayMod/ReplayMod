@@ -13,16 +13,7 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
-
-//#if MC>=10800
-//#if MC>=11300
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//#endif
 
 import static com.replaymod.core.versions.MCVer.getGui;
 

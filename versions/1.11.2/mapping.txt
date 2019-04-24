@@ -1,0 +1,6 @@
+net.minecraft.network.PacketBuffer readVarInt() readVarIntFromBuffer()
+net.minecraft.network.PacketBuffer writeVarInt() writeVarIntToBuffer()
+net.minecraft.util.math.MathHelper floor() floor_double()
+net.minecraft.client.Minecraft player thePlayer
+net.minecraft.client.Minecraft world theWorld
+net.minecraft.entity.Entity world worldObj

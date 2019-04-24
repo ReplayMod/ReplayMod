@@ -4,6 +4,7 @@ import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.handler.GuiHandler;
 import com.replaymod.recording.packet.PacketListener;
@@ -12,24 +13,9 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.util.AttributeKey;
 import net.minecraft.network.NetworkManager;
+import net.minecraftforge.fml.network.NetworkRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-//#if MC>=11300
-import com.replaymod.core.versions.MCVer.Keyboard;
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#endif
-
-//#if MC>=10800
-//#if MC>=11300
-import net.minecraftforge.fml.network.NetworkRegistry;
-//#else
-//$$ import net.minecraftforge.fml.common.network.NetworkRegistry;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.network.NetworkRegistry;
-//#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 

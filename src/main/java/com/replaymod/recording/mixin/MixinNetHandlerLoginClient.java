@@ -14,11 +14,7 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.handler.RecordingEventHandler.RecordingEventSender;
 import net.minecraft.network.login.server.SPacketCustomPayloadLogin;
 //#else
-//#if MC>=10800
 //$$ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-//#else
-//$$ import cpw.mods.fml.common.network.FMLNetworkEvent;
-//#endif
 //#endif
 
 @Mixin(NetHandlerLoginClient.class)

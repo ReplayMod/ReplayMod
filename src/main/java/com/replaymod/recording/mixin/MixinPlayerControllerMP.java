@@ -26,7 +26,7 @@ package com.replaymod.recording.mixin;
 //$$     @Redirect(method = "onPlayerDestroyBlock", at = @At(value = "INVOKE",
 //$$             target = "Lnet/minecraft/world/World;playEvent(ILnet/minecraft/util/math/BlockPos;I)V"))
 //$$     public void replayModRecording_playEvent_fixed(World world, int type, BlockPos pos, int data) {
-//$$         world.playEvent(player(mc), type, pos, data);
+//$$         world.playEvent(mc.player, type, pos, data);
 //$$     }
 //$$ }
 //#endif

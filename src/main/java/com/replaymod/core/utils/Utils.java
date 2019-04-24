@@ -37,7 +37,6 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 
-import static com.replaymod.core.versions.MCVer.getConnection;
 //#else
 //$$ import net.minecraft.client.Minecraft;
 //$$ import net.minecraft.client.entity.AbstractClientPlayer;
@@ -69,7 +68,6 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static com.replaymod.core.versions.MCVer.Minecraft_mcDataDir;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 public class Utils {
@@ -190,7 +188,7 @@ public class Utils {
 
     public static ResourceLocation getResourceLocationForPlayerUUID(UUID uuid) {
         //#if MC>=10800
-        NetworkPlayerInfo info = getConnection(getMinecraft()).getPlayerInfo(uuid);
+        NetworkPlayerInfo info = getMinecraft().getConnection().getPlayerInfo(uuid);
         ResourceLocation skinLocation;
         if (info != null && info.hasLocationSkin()) {
             skinLocation = info.getLocationSkin();
@@ -239,7 +237,7 @@ public class Utils {
         // Try to save the crash report
         if (crashReport.getFile() == null) {
             try {
-                File folder = new File(Minecraft_mcDataDir(getMinecraft()), "crash-reports");
+                File folder = new File(getMinecraft().gameDir, "crash-reports");
                 File file = new File(folder, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
                 logger.debug("Saving crash report to file: {}", file);
                 crashReport.saveToFile(file);

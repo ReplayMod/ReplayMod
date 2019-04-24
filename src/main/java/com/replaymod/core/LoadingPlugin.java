@@ -5,14 +5,11 @@ package com.replaymod.core;
 //$$ import org.spongepowered.asm.launch.MixinBootstrap;
 //$$ import org.spongepowered.asm.mixin.Mixins;
 //$$
-//#if MC>=10800
 //$$ import net.minecraftforge.fml.relauncher.CoreModManager;
 //$$ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-//#else
+//#if MC<10800
 //$$ import com.replaymod.core.asm.GLErrorTransformer;
 //$$ import com.replaymod.core.asm.GLStateTrackerTransformer;
-//$$ import cpw.mods.fml.relauncher.CoreModManager;
-//$$ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 //$$
 //$$ import java.util.ArrayList;
 //$$ import java.util.List;

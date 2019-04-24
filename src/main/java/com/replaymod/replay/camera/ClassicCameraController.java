@@ -34,7 +34,7 @@ public class ClassicCameraController implements CameraController {
         boolean forward = false, backward = false, left = false, right = false, up = false, down = false;
         speedup = false;
         for(KeyBinding kb : getMinecraft().gameSettings.keyBindings) {
-            if(!isKeyDown(kb)) continue;
+            if(!kb.isKeyDown()) continue;
             if(kb.getKeyDescription().equals("key.forward")) {
                 forward = true;
                 speedup = true;

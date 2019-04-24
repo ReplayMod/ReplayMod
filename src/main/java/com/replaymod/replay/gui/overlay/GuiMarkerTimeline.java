@@ -1,6 +1,7 @@
 package com.replaymod.replay.gui.overlay;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.data.Marker;
@@ -14,12 +15,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.client.resources.I18n;
-
-//#if MC>=11300
-import com.replaymod.core.versions.MCVer.Keyboard;
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#endif
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

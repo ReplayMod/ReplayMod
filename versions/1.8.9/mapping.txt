@@ -1,0 +1,8 @@
+net.minecraft.network.play.server.S38PacketPlayerListItem getAction() func_179768_b()
+net.minecraft.network.play.server.S38PacketPlayerListItem.AddPlayerData getProfile() func_179962_a()
+net.minecraft.network.play.server.S48PacketResourcePackSend getURL() func_179783_a()
+net.minecraft.network.play.server.S48PacketResourcePackSend getHash() func_179784_b()
+net.minecraft.network.play.server.S0CPacketSpawnPlayer getPlayer() func_179819_c()
+net.minecraft.network.play.server.S40PacketDisconnect getReason() func_149165_c()
+net.minecraft.network.play.server.S2BPacketChangeGameState getGameState() func_149138_c()
+net.minecraft.network.play.server.S0EPacketSpawnObject getType() func_148993_l()

@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.blend.Util.getGlModelViewMatrix;
 
 public class ParticlesExporter implements Exporter {
@@ -111,9 +110,9 @@ public class ParticlesExporter implements Exporter {
         // renderer translate there again.
         // Instead of actually translating, we just add the translation on the current model-view-matrix.
         Matrix4f modelView = getGlModelViewMatrix();
-        double dx = particle.prevPosX + (particle.posX - particle.prevPosX) * renderPartialTicks - interpPosX();
-        double dy = particle.prevPosY + (particle.posY - particle.prevPosY) * renderPartialTicks - interpPosY();
-        double dz = particle.prevPosZ + (particle.posZ - particle.prevPosZ) * renderPartialTicks - interpPosZ();
+        double dx = particle.prevPosX + (particle.posX - particle.prevPosX) * renderPartialTicks - Particle.interpPosX;
+        double dy = particle.prevPosY + (particle.posY - particle.prevPosY) * renderPartialTicks - Particle.interpPosY;
+        double dz = particle.prevPosZ + (particle.posZ - particle.prevPosZ) * renderPartialTicks - Particle.interpPosZ;
         Vector3f offset = new Vector3f((float) dx, (float) dy, (float) dz);
         Matrix4f.translate(offset, modelView, modelView);
         renderState.pushModelView(modelView);

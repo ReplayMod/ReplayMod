@@ -27,8 +27,6 @@ import net.minecraft.stats.StatisticsManager;
 
 //#if MC>=10800
 import net.minecraft.client.entity.EntityPlayerSP;
-
-import static com.replaymod.core.versions.MCVer.*;
 //#else
 //$$ import net.minecraft.client.entity.EntityClientPlayerMP;
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -90,8 +88,8 @@ public abstract class MixinPlayerControllerMP {
     //$$ @Inject(method = "isSpectator", at=@At("HEAD"), cancellable = true)
     //#endif
     private void replayModReplay_isSpectator(CallbackInfoReturnable<Boolean> ci) {
-        if (player(mc) instanceof CameraEntity) { // this check should in theory not be required
-            ci.setReturnValue(player(mc).isSpectator());
+        if (mc.player instanceof CameraEntity) { // this check should in theory not be required
+            ci.setReturnValue(mc.player.isSpectator());
         }
     }
     //#endif

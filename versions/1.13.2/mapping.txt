@@ -1,0 +1,21 @@
+net.minecraft.client.GameSettings net.minecraft.client.settings.GameSettings
+net.minecraftforge.eventbus.api.SubscribeEvent net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+net.minecraftforge.eventbus.api.EventPriority net.minecraftforge.fml.common.eventhandler.EventPriority
+net.minecraftforge.eventbus.api.Cancelable net.minecraftforge.fml.common.eventhandler.Cancelable
+net.minecraftforge.eventbus.api.Event net.minecraftforge.fml.common.eventhandler.Event
+net.minecraft.client.renderer.entity.model.ModelBox net.minecraft.client.model.ModelBox
+net.minecraft.client.renderer.entity.model.ModelRenderer net.minecraft.client.model.ModelRenderer
+net.minecraft.crash.ReportedException net.minecraft.util.ReportedException
+net.minecraftforge.eventbus.api.IEventBus net.minecraftforge.fml.common.eventhandler.EventBus
+com.replaymod.core.versions.MCVer.Keyboard org.lwjgl.input.Keyboard
+net.minecraft.client.Minecraft gameDir mcDataDir
+net.minecraft.client.Minecraft getInstance() getMinecraft()
+net.minecraft.client.renderer.WorldRenderer net.minecraft.client.renderer.RenderGlobal
+net.minecraft.network.play.server.SPacketEntity.Move net.minecraft.network.play.server.SPacketEntity.S17PacketEntityLookMove
+net.minecraft.entity.Entity isPassenger() isRiding()
+net.minecraft.entity.Entity removed isDead
+net.minecraftforge.fml.network.NetworkRegistry net.minecraftforge.fml.common.network.NetworkRegistry
+net.minecraft.client.renderer.ItemRenderer net.minecraft.client.renderer.RenderItem
+net.minecraft.world.World getChunk() getChunkFromChunkCoords()
+net.minecraft.util.text.ITextComponent getString() getUnformattedText()
+net.minecraft.network.play.server.SPacketRespawn func_212643_b() getDimensionID()

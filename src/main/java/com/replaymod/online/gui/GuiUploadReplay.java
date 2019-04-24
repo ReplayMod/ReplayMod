@@ -35,6 +35,7 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,7 +51,6 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.replaymod.core.versions.MCVer.newReportedException;
 import static java.util.Arrays.stream;
 
 public class GuiUploadReplay extends GuiScreen {
@@ -134,7 +134,7 @@ public class GuiUploadReplay extends GuiScreen {
             metaData = replayFile.getMetaData();
             optThumbnail = replayFile.getThumb();
         } catch (IOException e) {
-            throw newReportedException(CrashReport.makeCrashReport(e, "Read replay file " + file.getName()));
+            throw new ReportedException(CrashReport.makeCrashReport(e, "Read replay file " + file.getName()));
         }
 
         // Apply to gui

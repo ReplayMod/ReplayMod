@@ -13,12 +13,12 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.crash.ReportedException;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
 
 import static com.replaymod.core.versions.MCVer.addDetail;
-import static com.replaymod.core.versions.MCVer.newReportedException;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 public class GuiExportFailed extends GuiScreen {
@@ -34,7 +34,7 @@ public class GuiExportFailed extends GuiScreen {
             CrashReportCategory details = crashReport.makeCategory("Export details");
             addDetail(details, "Settings", settings::toString);
             addDetail(details, "FFmpeg log", e::getLog);
-            throw newReportedException(crashReport);
+            throw new ReportedException(crashReport);
         } else {
             // If they have, ask them whether it was intentional
             GuiExportFailed gui = new GuiExportFailed(e, doRestart);

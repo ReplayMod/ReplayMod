@@ -2,6 +2,7 @@ package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
+import net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -12,17 +13,7 @@ import net.minecraft.util.Util;
 //$$ import net.minecraft.client.Minecraft;
 //#endif
 
-//#if MC>=10800
-import net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer;
-//#else
-//$$ import net.minecraft.client.renderer.tileentity.RenderEndPortal;
-//#endif
-
-//#if MC>=10800
 @Mixin(TileEntityEndPortalRenderer.class)
-//#else
-//$$ @Mixin(RenderEndPortal.class)
-//#endif
 public class MixinTileEntityEndPortalRenderer {
     //#if MC>=11300
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))

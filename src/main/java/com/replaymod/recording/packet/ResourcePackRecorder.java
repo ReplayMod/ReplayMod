@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.resources.I18n;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,17 +21,10 @@ import net.minecraft.client.resources.DownloadingPackFinder;
 //$$ import net.minecraft.util.HttpUtil;
 //#endif
 
-//#if MC>=10904
+//#if MC>=10800
 import net.minecraft.network.play.client.CPacketResourcePackStatus;
 import net.minecraft.network.play.client.CPacketResourcePackStatus.Action;
 import net.minecraft.network.play.server.SPacketResourcePackSend;
-//#else
-//#if MC>=10800
-//$$ import net.minecraft.network.play.client.C19PacketResourcePackStatus;
-//$$ import net.minecraft.network.play.client.C19PacketResourcePackStatus.Action;
-//$$ import net.minecraft.network.play.server.S48PacketResourcePackSend;
-//#else
-//#endif
 //#endif
 
 //#if MC>=10800
@@ -106,7 +100,6 @@ public class ResourcePackRecorder {
     }
 
     //#if MC>=10800
-    //#if MC>=10904
     public CPacketResourcePackStatus makeStatusPacket(String hash, Action action) {
         //#if MC>=11002
         return new CPacketResourcePackStatus(action);
@@ -114,32 +107,18 @@ public class ResourcePackRecorder {
         //$$ return new CPacketResourcePackStatus(hash, action);
         //#endif
     }
-    //#else
-    //$$ public C19PacketResourcePackStatus makeStatusPacket(String hash, Action action) {
-    //$$     return new C19PacketResourcePackStatus(hash, action);
-    //$$ }
-    //#endif
 
 
-    //#if MC>=10904
     public synchronized SPacketResourcePackSend handleResourcePack(SPacketResourcePackSend packet) {
-    //#else
-    //$$ public synchronized S48PacketResourcePackSend handleResourcePack(S48PacketResourcePackSend packet) {
-    //#endif
         final int requestId = nextRequestId++;
-        final NetHandlerPlayClient netHandler = getConnection(mc);
+        final NetHandlerPlayClient netHandler = mc.getConnection();
         final NetworkManager netManager = netHandler.getNetworkManager();
-        //#if MC>=10809
         final String url = packet.getURL();
         final String hash = packet.getHash();
-        //#else
-        //$$ final String url = packet.func_179783_a();
-        //$$ final String hash = packet.func_179784_b();
-        //#endif
 
         if (url.startsWith("level://")) {
             String levelName = url.substring("level://".length());
-            File savesDir = new File(mcDataDir(mc), "saves");
+            File savesDir = new File(mc.gameDir, "saves");
             final File levelDir = new File(savesDir, levelName);
 
             if (levelDir.isFile()) {
@@ -186,30 +165,26 @@ public class ResourcePackRecorder {
                             netManager.sendPacket(makeStatusPacket(hash, Action.DECLINED));
                         }
 
-                        ServerList_saveSingleServer(serverData);
+                        ServerList.saveSingleServer(serverData);
                         mc.displayGuiScreen(null);
                     }
                 }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
             }
         }
 
-        //#if MC>=10904
         return new SPacketResourcePackSend("replay://" + requestId, "");
-        //#else
-        //$$ return new S48PacketResourcePackSend("replay://" + requestId, "");
-        //#endif
     }
 
     private void downloadResourcePackFuture(int requestId, String url, final String hash) {
         Futures.addCallback(downloadResourcePack(requestId, url, hash), new FutureCallback() {
             @Override
             public void onSuccess(Object result) {
-                sendPacket(getConnection(mc), makeStatusPacket(hash, Action.SUCCESSFULLY_LOADED));
+                mc.getConnection().sendPacket(makeStatusPacket(hash, Action.SUCCESSFULLY_LOADED));
             }
 
             @Override
             public void onFailure(@Nonnull Throwable throwable) {
-                sendPacket(getConnection(mc), makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
+                mc.getConnection().sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
             }
         });
     }
