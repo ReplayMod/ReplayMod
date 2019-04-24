@@ -7,7 +7,6 @@ import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DObject;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
 
@@ -36,7 +35,6 @@ public class TileEntityExporter implements Exporter {
     }
 
     @Override
-    @SneakyThrows
     public void setup() throws IOException {
         tileEntitiesObject = new DObject(DObject.Type.OB_EMPTY);
         tileEntitiesObject.id.name = "TileEntities";

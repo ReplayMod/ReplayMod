@@ -58,7 +58,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
@@ -559,7 +558,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             if (replayTime > currentTimeStamp) {
                 activeThings.removeIf(thing -> {
                     if (thing.despawnTime <= replayTime) {
-                        thing.despawn(this, ctx::fireChannelRead);
+                        try {
+                            thing.despawn(this, ctx::fireChannelRead);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         return true;
                     } else {
                         return false;
@@ -568,7 +571,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 thingSpawnsT.subMap(currentTimeStamp, false, replayTime, true).values()
                         .forEach(things -> things.forEach(thing -> {
                             if (thing.despawnTime > replayTime) {
-                                thing.spawn(this, ctx::fireChannelRead);
+                                try {
+                                    thing.spawn(this, ctx::fireChannelRead);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 activeThings.add(thing);
                             }
                         }));
@@ -578,7 +585,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             } else {
                 activeThings.removeIf(thing -> {
                     if (thing.spawnTime > replayTime) {
-                        thing.despawn(this, ctx::fireChannelRead);
+                        try {
+                            thing.despawn(this, ctx::fireChannelRead);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         return true;
                     } else {
                         return false;
@@ -587,7 +598,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 thingDespawnsT.subMap(replayTime, false, currentTimeStamp, true).values()
                         .forEach(things -> things.forEach(thing -> {
                             if (thing.spawnTime <= replayTime) {
-                                thing.spawn(this, ctx::fireChannelRead);
+                                try {
+                                    thing.spawn(this, ctx::fireChannelRead);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 activeThings.add(thing);
                             }
                         }));
@@ -701,8 +716,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
     }
 
-    @SneakyThrows(IOException.class)
-    private static List<Packet<?>> readPacketsFromCache(NetInput in) {
+    private static List<Packet<?>> readPacketsFromCache(NetInput in) throws IOException {
         int size = in.readVarInt();
         List<Packet<?>> packets = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -859,12 +873,12 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             indexDespawnPackets = in.readVarInt();
         }
 
-        public void spawn(QuickReplaySender sender, Consumer<Packet<?>> send) {
+        public void spawn(QuickReplaySender sender, Consumer<Packet<?>> send) throws IOException {
             sender.buf.readerIndex(indexSpawnPackets);
             readPacketsFromCache(sender.bufInput).forEach(send);
         }
 
-        public void despawn(QuickReplaySender sender, Consumer<Packet<?>> send) {
+        public void despawn(QuickReplaySender sender, Consumer<Packet<?>> send) throws IOException {
             sender.buf.readerIndex(indexDespawnPackets);
             readPacketsFromCache(sender.bufInput).forEach(send);
         }
@@ -921,8 +935,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
 
         @Override
-        @SneakyThrows(IOException.class)
-        public void spawn(QuickReplaySender sender, Consumer<Packet<?>> send) {
+        public void spawn(QuickReplaySender sender, Consumer<Packet<?>> send) throws IOException {
             super.spawn(sender, send);
 
             sender.buf.readerIndex(index);
@@ -938,7 +951,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
 
         @Override
-        public void despawn(QuickReplaySender sender, Consumer<Packet<?>> send) {
+        public void despawn(QuickReplaySender sender, Consumer<Packet<?>> send) throws IOException {
             super.despawn(sender, send);
             locations = null;
         }
@@ -1017,8 +1030,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
 
         @Override
-        @SneakyThrows(IOException.class)
-        public void spawn(QuickReplaySender sender, Consumer<Packet<?>> send) {
+        public void spawn(QuickReplaySender sender, Consumer<Packet<?>> send) throws IOException {
             super.spawn(sender, send);
 
             sender.buf.readerIndex(index);
@@ -1042,7 +1054,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
 
         @Override
-        public void despawn(QuickReplaySender sender, Consumer<Packet<?>> send) {
+        public void despawn(QuickReplaySender sender, Consumer<Packet<?>> send) throws IOException {
             super.despawn(sender, send);
 
             blocksT = null;
@@ -1112,8 +1124,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
 
         @Override
-        @SneakyThrows(IOException.class)
-        public void spawn(QuickReplaySender sender, Consumer<Packet<?>> send) {
+        public void spawn(QuickReplaySender sender, Consumer<Packet<?>> send) throws IOException {
             super.spawn(sender, send);
 
             sender.buf.readerIndex(index);
@@ -1124,7 +1135,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
 
         @Override
-        public void despawn(QuickReplaySender sender, Consumer<Packet<?>> send) {
+        public void despawn(QuickReplaySender sender, Consumer<Packet<?>> send) throws IOException {
             super.despawn(sender, send);
 
             rainStrengths = null;

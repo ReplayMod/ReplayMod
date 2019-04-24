@@ -9,7 +9,6 @@ import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
 import com.replaymod.replaystudio.us.myles.ViaVersion.util.ReflectionUtil;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -70,7 +69,6 @@ public class ChunkExporter implements Exporter {
     }
 
     @Override
-    @SneakyThrows
     public void setup() throws IOException {
 
         Minecraft mc = MCVer.getMinecraft();

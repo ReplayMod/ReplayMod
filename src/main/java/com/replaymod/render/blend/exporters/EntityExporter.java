@@ -7,7 +7,6 @@ import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DObject;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -29,8 +28,7 @@ public class EntityExporter implements Exporter {
     }
 
     @Override
-    @SneakyThrows
-    public void setup() throws IOException {
+    public void setup() {
         entitiesObject = new DObject(DObject.Type.OB_EMPTY);
         entitiesObject.id.name = "Entities";
         entitiesObject.layers = 1 << 1;
