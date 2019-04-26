@@ -7,6 +7,8 @@ import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
+import com.replaymod.render.blend.mixin.ContainerLocalRenderInformationAccessor;
+import com.replaymod.render.blend.mixin.WorldRendererAccessor;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
@@ -18,12 +20,6 @@ import net.minecraft.client.renderer.vertex.VertexBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-
-//#if MC>=11300
-import net.minecraft.client.renderer.WorldRenderer.ContainerLocalRenderInformation;
-//#else
-//$$ import net.minecraft.client.renderer.RenderGlobal.ContainerLocalRenderInformation;
-//#endif
 
 //#if MC>=10904
 import net.minecraft.util.BlockRenderLayer;
@@ -72,9 +68,9 @@ public class ChunkExporter implements Exporter {
 
         Minecraft mc = MCVer.getMinecraft();
         @SuppressWarnings("unchecked")
-        List<ContainerLocalRenderInformation> renderInfos = mc.renderGlobal.renderInfos;
-        for (ContainerLocalRenderInformation renderInfo : renderInfos) {
-            RenderChunk renderChunk = renderInfo.renderChunk;
+        List<ContainerLocalRenderInformationAccessor> renderInfos = ((WorldRendererAccessor) mc.renderGlobal).getRenderInfos();
+        for (ContainerLocalRenderInformationAccessor renderInfo : renderInfos) {
+            RenderChunk renderChunk = renderInfo.getRenderChunk();
             CompiledChunk compiledChunk = renderChunk.getCompiledChunk();
             if (!compiledChunk.isEmpty()) {
                 addChunkUpdate(renderChunk, null);

@@ -42,7 +42,7 @@ buildscript {
                 mcVersion >= 10710 ? '1.2-SNAPSHOT' :
                                      'invalid'
         )
-        classpath 'com.github.replaymod:preprocessor:ba743e3'
+        classpath 'com.github.replaymod:preprocessor:30248d0'
     }
 }
 
@@ -157,6 +157,10 @@ repositories {
         name = "SpongePowered Repo"
         url = "http://repo.spongepowered.org/maven/"
     }
+    maven {
+        name = "fabric"
+        url = "https://maven.fabricmc.net/"
+    }
     maven { url 'https://jitpack.io' }
 }
 
@@ -186,6 +190,10 @@ def shadeExclusions = {
 }
 
 dependencies {
+    shadow('net.fabricmc.fabric-api:fabric-lib:0.1.0'){ // for Event, EventFactory, etc.
+        transitive = false
+    }
+    
     if (FG3) {
         minecraft 'net.minecraftforge:forge:' + [
                 11302: '1.13.2-25.0.76',

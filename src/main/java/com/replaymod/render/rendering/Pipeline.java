@@ -1,5 +1,6 @@
 package com.replaymod.render.rendering;
 
+import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.versions.MCVer;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
@@ -57,7 +58,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
         Minecraft mc = MCVer.getMinecraft();
         while (!capturer.isDone() && !Thread.currentThread().isInterrupted()) {
             //#if MC>=11300
-            if (GLFW.glfwWindowShouldClose(mc.mainWindow.getHandle()) || mc.hasCrashed) {
+            if (GLFW.glfwWindowShouldClose(mc.mainWindow.getHandle()) || ((MinecraftAccessor) mc).hasCrashed()) {
             //#else
             //$$ if (Display.isCloseRequested() || mc.hasCrashed) {
             //#endif

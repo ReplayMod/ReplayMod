@@ -2,6 +2,7 @@ package com.replaymod.extras;
 
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.mixin.KeyBindingAccessor;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import de.johni0702.minecraft.gui.GuiRenderer;
@@ -109,7 +110,8 @@ public class HotkeyButtons implements Extra {
                         super.draw(renderer, size, renderInfo);
                     }
                 }.onClick(() -> {
-                    keyBinding.pressTime++;
+                    KeyBindingAccessor acc = (KeyBindingAccessor) keyBinding;
+                    acc.setPressTime(acc.getPressTime() + 1);
                     keyBindingRegistry.handleKeyBindings();
                 });
                 panel.addElements(null, new GuiPanel().setSize(150, 20).setLayout(new HorizontalLayout().setSpacing(2))

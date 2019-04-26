@@ -34,7 +34,7 @@ public class BlendFrameCapturer implements FrameCapturer<RGBFrame> {
         renderInfo.updateForNextFrame();
 
         BlendState.getState().preFrame(framesDone);
-        worldRenderer.renderWorld(MCVer.getMinecraft().timer.renderPartialTicks, null);
+        worldRenderer.renderWorld(MCVer.getRenderPartialTicks(), null);
         BlendState.getState().postFrame(framesDone);
 
         return new RGBFrame(framesDone++, new Dimension(0, 0), ByteBufferPool.allocate(0));

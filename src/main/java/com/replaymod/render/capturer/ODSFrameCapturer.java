@@ -1,9 +1,12 @@
 package com.replaymod.render.capturer;
 
+import com.replaymod.core.utils.EventRegistrations;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
+import com.replaymod.render.hooks.FogStateCallback;
+import com.replaymod.render.hooks.Texture2DStateCallback;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.shader.Program;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -12,11 +15,9 @@ import net.minecraft.crash.ReportedException;
 import net.minecraft.util.ResourceLocation;
 
 import static net.minecraft.client.renderer.GlStateManager.*;
-import static net.minecraft.client.renderer.GlStateManager.BooleanState;
 
 import java.io.IOException;
 
-import static com.replaymod.core.versions.MCVer.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -29,8 +30,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
     private final Program.Uniform directionVariable;
     private final Program.Uniform leftEyeVariable;
 
-    private final BooleanState[] previousStates = new BooleanState[3];
-    private BooleanState previousFogState;
+    private EventRegistrations renderStateEvents;
 
     public ODSFrameCapturer(WorldRenderer worldRenderer, final RenderInfo renderInfo, int frameSize) {
         RenderInfo fakeInfo = new RenderInfo() {
@@ -81,48 +81,32 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         shaderProgram.use();
         setTexture("texture", 0);
         setTexture("lightMap", 1);
-        linkState(0, "textureEnabled");
-        linkState(1, "lightMapEnabled");
-        linkState(2, "hurtTextureEnabled");
-        final Program.Uniform uniform = shaderProgram.getUniformVariable("fogEnabled");
-        previousFogState = fog();
-        uniform.set(previousFogState.currentState);
-        fog(new BooleanState(previousFogState.capability) {
-            { currentState = previousFogState.currentState; }
-            @Override
-            public void setState(boolean state) {
-                super.setState(state);
-                uniform.set(state);
+
+        renderStateEvents = new EventRegistrations();
+        Program.Uniform[] texture2DUniforms = new Program.Uniform[]{
+                shaderProgram.getUniformVariable("textureEnabled"),
+                shaderProgram.getUniformVariable("lightMapEnabled"),
+                shaderProgram.getUniformVariable("hurtTextureEnabled")
+        };
+        renderStateEvents.on(Texture2DStateCallback.EVENT, (id, enabled) -> {
+            if (id > 0 && id < texture2DUniforms.length) {
+                texture2DUniforms[id].set(true);
             }
         });
+        Program.Uniform fogUniform = shaderProgram.getUniformVariable("fogEnabled");
+        renderStateEvents.on(FogStateCallback.EVENT, fogUniform::set);
+
+        renderStateEvents.register();
     }
 
     private void unbindProgram() {
-        for (int i = 0; i < previousStates.length; i++) {
-            previousStates[i].currentState = texture2DState(i).currentState;
-            texture2DState(i, previousStates[i]);
-        }
-        previousFogState.currentState = fog().currentState;
-        fog(previousFogState);
+        renderStateEvents.unregister();
+        renderStateEvents = null;
         shaderProgram.stopUsing();
     }
 
     private void setTexture(String texture, int i) {
         shaderProgram.getUniformVariable(texture).set(i);
-    }
-
-    private void linkState(int id, String var) {
-        final Program.Uniform uniform = shaderProgram.getUniformVariable(var);
-        previousStates[id] = texture2DState(id);
-        uniform.set(previousStates[id].currentState);
-        texture2DState(id, new BooleanState(previousStates[id].capability) {
-            { currentState = previousStates[id].currentState; }
-            @Override
-            public void setState(boolean state) {
-                super.setState(state);
-                uniform.set(state);
-            }
-        });
     }
 
     @Override

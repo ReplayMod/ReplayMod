@@ -5,7 +5,6 @@ import com.replaymod.render.blend.BlendMeshBuilder;
 import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
-import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -13,6 +12,7 @@ import net.minecraftforge.client.model.pipeline.LightUtil;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=11300
+import com.replaymod.render.blend.mixin.ItemRendererAccessor;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 //#else
@@ -113,7 +113,7 @@ public class ItemExporter implements Exporter {
         for (BakedQuad quad : quads) {
             int color = stack != null && quad.hasTintIndex()
                     //#if MC>=11300
-                    ? ((ItemRenderer) renderItem).itemColors.getColor(stack, quad.getTintIndex()) | 0xff000000
+                    ? ((ItemRendererAccessor) renderItem).getItemColors().getColor(stack, quad.getTintIndex()) | 0xff000000
                     //#else
                     //#if MC>=10904
                     //$$ ? ((RenderItem) renderItem).itemColors.getColorFromItemstack(stack, quad.getTintIndex()) | 0xff000000

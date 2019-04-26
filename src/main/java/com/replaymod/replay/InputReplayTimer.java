@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Timer;
 
 //#if MC>=11300
+import com.replaymod.core.versions.MCVer;
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import com.replaymod.replay.events.ReplayDispatchKeypressesEvent;
@@ -60,7 +61,7 @@ public class InputReplayTimer extends WrappedTimer {
             //#if MC>=11300
             if (mc.currentScreen == null || mc.currentScreen.allowUserInput) {
                 GLFW.glfwPollEvents();
-                mc.processKeyBinds();
+                MCVer.processKeyBinds();
             }
             mc.keyboardListener.tick();
             //#else

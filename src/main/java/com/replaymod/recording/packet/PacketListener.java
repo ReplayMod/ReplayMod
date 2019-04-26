@@ -6,6 +6,8 @@ import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.handler.ConnectionEventHandler;
+import com.replaymod.recording.mixin.SPacketSpawnMobAccessor;
+import com.replaymod.recording.mixin.SPacketSpawnPlayerAccessor;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
@@ -301,11 +303,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         //#if MC>=10904
         if (packet instanceof SPacketSpawnMob) {
             SPacketSpawnMob p = (SPacketSpawnMob) packet;
-            if (p.dataManager == null) {
-                p.dataManager = new EntityDataManager(null);
+            SPacketSpawnMobAccessor pa = (SPacketSpawnMobAccessor) p;
+            if (pa.getDataManager() == null) {
+                pa.setDataManager(new EntityDataManager(null));
                 if (p.getDataManagerEntries() != null) {
                     for (EntityDataManager.DataEntry<?> entry : p.getDataManagerEntries()) {
-                        DataManager_set(p.dataManager, entry);
+                        DataManager_set(pa.getDataManager(), entry);
                     }
                 }
             }
@@ -313,11 +316,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
         if (packet instanceof SPacketSpawnPlayer) {
             SPacketSpawnPlayer p = (SPacketSpawnPlayer) packet;
-            if (p.watcher == null) {
-                p.watcher = new EntityDataManager(null);
+            SPacketSpawnPlayerAccessor pa = (SPacketSpawnPlayerAccessor) p;
+            if (pa.getDataManager() == null) {
+                pa.setDataManager(new EntityDataManager(null));
                 if (p.getDataManagerEntries() != null) {
                     for (EntityDataManager.DataEntry<?> entry : p.getDataManagerEntries()) {
-                        DataManager_set(p.watcher, entry);
+                        DataManager_set(pa.getDataManager(), entry);
                     }
                 }
             }

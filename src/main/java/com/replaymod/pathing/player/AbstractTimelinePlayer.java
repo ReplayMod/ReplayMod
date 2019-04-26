@@ -6,12 +6,15 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.Timer;
 
 //#if MC>=10800
 //#if MC>=11300
@@ -78,13 +81,19 @@ public abstract class AbstractTimelinePlayer {
         replayHandler.getReplaySender().setSyncModeAndWait();
         FML_BUS.register(this);
         lastTime = 0;
-        mc.timer = new ReplayTimer(mc.timer);
+
+        MinecraftAccessor mcA = (MinecraftAccessor) mc;
+        ReplayTimer timer = new ReplayTimer(mcA.getTimer());
+        mcA.setTimer(timer);
+
+        //noinspection ConstantConditions
+        TimerAccessor timerA = (TimerAccessor) timer;
         //#if MC>=11200
-        mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
-        mc.timer.renderPartialTicks = mc.timer.elapsedTicks = 0;
+        timerA.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK);
+        timer.renderPartialTicks = timer.elapsedTicks = 0;
         //#else
-        //$$ mc.timer.timerSpeed = 1;
-        //$$ mc.timer.elapsedPartialTicks = mc.timer.elapsedTicks = 0;
+        //$$ timer.timerSpeed = 1;
+        //$$ timer.elapsedPartialTicks = timer.elapsedTicks = 0;
         //#endif
         return future = settableFuture = SettableFuture.create();
     }
@@ -100,7 +109,8 @@ public abstract class AbstractTimelinePlayer {
     @SubscribeEvent
     public void onTick(ReplayTimer.UpdatedEvent event) {
         if (future.isDone()) {
-            mc.timer = ((ReplayTimer) mc.timer).getWrapped();
+            MinecraftAccessor mcA = (MinecraftAccessor) mc;
+            mcA.setTimer(((ReplayTimer) mcA.getTimer()).getWrapped());
             replayHandler.getReplaySender().setReplaySpeed(0);
             replayHandler.getReplaySender().setAsyncMode(true);
             FML_BUS.unregister(this);
@@ -123,9 +133,10 @@ public abstract class AbstractTimelinePlayer {
         float timeInTicks = replayTime / 50f;
         float previousTimeInTicks = lastTime / 50f;
         float passedTicks = timeInTicks - previousTimeInTicks;
-        mc.timer.renderPartialTicks += passedTicks;
-        mc.timer.elapsedTicks = (int) mc.timer.renderPartialTicks;
-        mc.timer.renderPartialTicks -= mc.timer.elapsedTicks;
+        Timer timer = ((MinecraftAccessor) mc).getTimer();
+        timer.renderPartialTicks += passedTicks;
+        timer.elapsedTicks = (int) timer.renderPartialTicks;
+        timer.renderPartialTicks -= timer.elapsedTicks;
 
         lastTime = replayTime;
 

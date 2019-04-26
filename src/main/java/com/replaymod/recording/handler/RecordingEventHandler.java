@@ -1,5 +1,7 @@
 package com.replaymod.recording.handler;
 
+import com.replaymod.recording.mixin.EntityLivingBaseAccessor;
+import com.replaymod.recording.mixin.IntegratedServerAccessor;
 import com.replaymod.recording.packet.PacketListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,7 +17,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 //#if MC>=10904
 //#if MC>=11300
-import net.minecraft.entity.EntityLivingBase;
 //#else
 //$$ import net.minecraft.entity.EntityLiving;
 //#endif
@@ -316,7 +317,7 @@ public class RecordingEventHandler {
                 EntityDataManager dataManager = new EntityDataManager(null);
                 int state = (wasHandActive ? 1 : 0) | (lastActiveHand == EnumHand.OFF_HAND ? 2 : 0);
                 //#if MC>=11300
-                dataManager.register(EntityLivingBase.LIVING_FLAGS, (byte) state);
+                dataManager.register(EntityLivingBaseAccessor.getLivingFlags(), (byte) state);
                 //#else
                 //$$ dataManager.register(EntityLiving.HAND_STATES, (byte) state);
                 //#endif
@@ -436,7 +437,7 @@ public class RecordingEventHandler {
         if (event.phase != TickEvent.Phase.START) return;
         if (mc.isIntegratedServerRunning()) {
             IntegratedServer server =  mc.getIntegratedServer();
-            if (server != null && server.isGamePaused) {
+            if (server != null && ((IntegratedServerAccessor) server).isGamePaused()) {
                 packetListener.setServerWasPaused();
             }
         }

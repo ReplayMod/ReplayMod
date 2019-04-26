@@ -1,6 +1,7 @@
 package com.replaymod.core.versions;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.replaymod.core.mixin.MinecraftAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -48,14 +49,11 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 //#if MC>=10800
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.BooleanState;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.world.WorldType;
 //#else
 //$$ import com.google.common.util.concurrent.Futures;
-//$$ import com.replaymod.render.hooks.GLStateTracker;
-//$$ import com.replaymod.render.hooks.GLStateTracker.BooleanState;
 //$$ import io.netty.handler.codec.DecoderException;
 //$$ import net.minecraft.client.resources.FileResourcePack;
 //$$
@@ -231,63 +229,6 @@ public class MCVer {
         return world.playerEntities;
     }
 
-    public static BooleanState fog() {
-        //#if MC>=11300
-        return GlStateManager.FOG.fog;
-        //#else
-        //#if MC>=10809
-        //$$ return GlStateManager.fogState.fog;
-        //#else
-        //#if MC>=10800
-        //$$ return GlStateManager.fogState.field_179049_a;
-        //#else
-        //$$ return GLStateTracker.getInstance().fog;
-        //#endif
-        //#endif
-        //#endif
-    }
-
-    public static void fog(BooleanState fog) {
-        //#if MC>=11300
-        GlStateManager.FOG.fog = fog;
-        //#else
-        //#if MC>=10809
-        //$$ GlStateManager.fogState.fog = fog;
-        //#else
-        //#if MC>=10800
-        //$$ GlStateManager.fogState.field_179049_a = fog;
-        //#else
-        //$$ GLStateTracker.getInstance().fog = fog;
-        //#endif
-        //#endif
-        //#endif
-    }
-
-    public static BooleanState texture2DState(int index) {
-        //#if MC>=11300
-        return GlStateManager.TEXTURES[index].texture2DState;
-        //#else
-        //#if MC>=10800
-        //$$ return GlStateManager.textureState[index].texture2DState;
-        //#else
-        //$$ return GLStateTracker.getInstance().texture[index];
-        //#endif
-        //#endif
-    }
-
-    public static void texture2DState(int index, BooleanState texture2DState) {
-        //#if MC>=11300
-        GlStateManager.TEXTURES[index].texture2DState = texture2DState;
-        //#else
-        //#if MC>=10800
-        //$$ GlStateManager.textureState[index].texture2DState = texture2DState;
-        //#else
-        //$$ GLStateTracker.getInstance().texture[index] = texture2DState;
-        //#endif
-        //#endif
-    }
-
-
     //#if MC>=11300
     public static MainWindow newScaledResolution(Minecraft mc) {
         return mc.mainWindow;
@@ -440,6 +381,19 @@ public class MCVer {
     public static Minecraft getMinecraft() {
         return Minecraft.getInstance();
     }
+
+    public static float getRenderPartialTicks() {
+        return ((MinecraftAccessor) getMinecraft()).getTimer().renderPartialTicks;
+    }
+
+    //#if MC>=11300
+    public static void processKeyBinds() {
+        ((MinecraftMethodAccessor) getMinecraft()).replayModProcessKeyBinds();
+    }
+    public interface MinecraftMethodAccessor {
+        void replayModProcessKeyBinds();
+    }
+    //#endif
 
     public static long milliTime() {
         //#if MC>=11300

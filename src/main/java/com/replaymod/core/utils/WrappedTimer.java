@@ -1,5 +1,6 @@
 package com.replaymod.core.utils;
 
+import com.replaymod.core.mixin.TimerAccessor;
 import net.minecraft.util.Timer;
 
 public class WrappedTimer extends Timer {
@@ -33,16 +34,19 @@ public class WrappedTimer extends Timer {
     }
 
     protected void copy(Timer from, Timer to) {
+        TimerAccessor fromA = (TimerAccessor) from;
+        TimerAccessor toA = (TimerAccessor) to;
+
         to.elapsedTicks = from.elapsedTicks;
         to.renderPartialTicks = from.renderPartialTicks;
-        to.lastSyncSysClock = from.lastSyncSysClock;
+        toA.setLastSyncSysClock(fromA.getLastSyncSysClock());
         to.elapsedPartialTicks = from.elapsedPartialTicks;
         //#if MC>=11200
-        to.tickLength = from.tickLength;
+        toA.setTickLength(fromA.getTickLength());
         //#else
         //$$ to.ticksPerSecond = from.ticksPerSecond;
         //$$ to.lastHRTime = from.lastHRTime;
-        //$$ to.timerSpeed = from.timerSpeed;
+        //$$ toA.setTimerSpeed(fromA.getTimerSpeed());
         //$$ to.lastSyncHRClock = from.lastSyncHRClock;
         //#if MC>=10809
         //$$ to.counter = from.counter;

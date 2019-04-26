@@ -1,6 +1,7 @@
 //#if MC>=11300
 package com.replaymod.recording.mixin;
 
+import com.replaymod.core.mixin.KeyBindingAccessor;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.extras.advancedscreenshots.AdvancedScreenshots;
 import com.replaymod.replay.ReplayModReplay;
@@ -27,7 +28,8 @@ public abstract class MixinKeyboardListener {
         //       (and therefore before RM's release), this code will have to be removed then and handling code updated
         KeyBinding keyBindChat = MCVer.getMinecraft().gameSettings.keyBindChat;
         if (action == 1 && keyBindChat.matchesKey(key, scanCode)) {
-            keyBindChat.pressTime++;
+            KeyBindingAccessor acc = (KeyBindingAccessor) keyBindChat;
+            acc.setPressTime(acc.getPressTime() + 1);
             BasicEventHooks.fireKeyInput();
             ci.cancel();
         }

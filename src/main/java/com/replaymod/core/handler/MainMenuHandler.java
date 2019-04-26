@@ -1,5 +1,6 @@
 package com.replaymod.core.handler;
 
+import com.replaymod.core.mixin.GuiMainMenuAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
@@ -43,8 +44,9 @@ public class MainMenuHandler {
                 //#endif
             }
             //#if MC>=11300
-            if (realmsOffset != 0 && gui.realmsNotification instanceof GuiScreenRealmsProxy) {
-                gui.realmsNotification = new RealmsNotificationProxy((GuiScreenRealmsProxy) gui.realmsNotification, realmsOffset);
+            GuiMainMenuAccessor guiA = (GuiMainMenuAccessor) gui;
+            if (realmsOffset != 0 && guiA.getRealmsNotification() instanceof GuiScreenRealmsProxy) {
+                guiA.setRealmsNotification(new RealmsNotificationProxy((GuiScreenRealmsProxy) guiA.getRealmsNotification(), realmsOffset));
             }
             //#endif
         }

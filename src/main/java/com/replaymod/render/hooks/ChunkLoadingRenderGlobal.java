@@ -1,22 +1,18 @@
 //#if MC>=10800
 package com.replaymod.render.hooks;
 
+import com.replaymod.render.mixin.ChunkRenderDispatcherAccessor;
+import com.replaymod.render.mixin.WorldRendererAccessor;
 import com.replaymod.render.utils.JailingQueue;
 import net.minecraft.client.renderer.RegionRenderCacheBuilder;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
+import net.minecraft.client.renderer.chunk.ChunkRenderTask;
 import net.minecraft.client.renderer.chunk.ChunkRenderWorker;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
-
-//#if MC>=11300
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.renderer.chunk.ChunkRenderTask;
-//#else
-//$$ import net.minecraft.client.renderer.RenderGlobal;
-//$$ import net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator;
-//#endif
 
 //#if MC>=10904
 import java.util.concurrent.PriorityBlockingQueue;
@@ -52,7 +48,7 @@ public class ChunkLoadingRenderGlobal {
     ) {
         this.hooked = renderGlobal;
 
-        setup(renderGlobal.renderDispatcher);
+        setup(((WorldRendererAccessor) renderGlobal).getRenderDispatcher());
     }
 
     public void updateRenderDispatcher(ChunkRenderDispatcher renderDispatcher) {
@@ -68,25 +64,18 @@ public class ChunkLoadingRenderGlobal {
     private void setup(ChunkRenderDispatcher renderDispatcher) {
         this.renderDispatcher = renderDispatcher;
         this.renderWorker = new CustomChunkRenderWorker(renderDispatcher, new RegionRenderCacheBuilder());
+        ChunkRenderDispatcherAccessor renderDispatcherAcc = (ChunkRenderDispatcherAccessor) renderDispatcher;
 
-        int workerThreads = renderDispatcher.listThreadedWorkers.size();
+        int workerThreads = renderDispatcherAcc.getListThreadedWorkers().size();
         //#if MC>=10904
-        //#if MC>=11300
-        PriorityBlockingQueue<ChunkRenderTask> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
-        //#else
-        //$$ PriorityBlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
-        //#endif
+        PriorityBlockingQueue<ChunkRenderTask> queueChunkUpdates = renderDispatcherAcc.getQueueChunkUpdates();
         //#else
         //$$ BlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
         //#endif
         workerJailingQueue = new JailingQueue<>(queueChunkUpdates);
-        renderDispatcher.queueChunkUpdates = workerJailingQueue;
+        renderDispatcherAcc.setQueueChunkUpdates(workerJailingQueue);
         //#if MC>=10904
-        //#if MC>=11300
         ChunkRenderTask element = new ChunkRenderTask(null, null, 0);
-        //#else
-        //$$ ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null, 0);
-        //#endif
         //#else
         //$$ ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null);
         //#endif
@@ -100,7 +89,7 @@ public class ChunkLoadingRenderGlobal {
         while (renderDispatcher.runChunkUploads(0)) {}
 
         workerJailingQueue.jail(workerThreads);
-        renderDispatcher.queueChunkUpdates = queueChunkUpdates;
+        renderDispatcherAcc.setQueueChunkUpdates(queueChunkUpdates);
 
         try {
             //#if MC>=11300
@@ -116,23 +105,22 @@ public class ChunkLoadingRenderGlobal {
 
     public void updateChunks() {
         while (renderDispatcher.runChunkUploads(0)) {
-            hooked.displayListEntitiesDirty = true;
+            ((WorldRendererAccessor) hooked).setDisplayListEntitiesDirty(true);
         }
 
-        while (!renderDispatcher.queueChunkUpdates.isEmpty()) {
+        //#if MC>=10904
+        PriorityBlockingQueue<ChunkRenderTask> queueChunkUpdates;
+        //#else
+        //$$ BlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates;
+        //#endif
+        queueChunkUpdates = ((ChunkRenderDispatcherAccessor) renderDispatcher).getQueueChunkUpdates();
+        while (!queueChunkUpdates.isEmpty()) {
             try {
-                renderWorker.processTask(
-                        //#if MC<10904
-                        //$$ (ChunkCompileTaskGenerator)
-                        //#endif
-                                renderDispatcher.queueChunkUpdates.poll());
+                renderWorker.processTask(queueChunkUpdates.poll());
             } catch (InterruptedException ignored) { }
         }
 
-        //#if MC<10904
-        //$$ @SuppressWarnings("unchecked")
-        //#endif
-        Iterator<RenderChunk> iterator = hooked.chunksToUpdate.iterator();
+        Iterator<RenderChunk> iterator = ((WorldRendererAccessor) hooked).getChunksToUpdate().iterator();
         while (iterator.hasNext()) {
             RenderChunk renderchunk = iterator.next();
 

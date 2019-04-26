@@ -15,6 +15,7 @@ net.minecraftforge.fml.common.gameevent.TickEvent cpw.mods.fml.common.gameevent.
 net.minecraftforge.fml.relauncher.CoreModManager cpw.mods.fml.relauncher.CoreModManager
 net.minecraftforge.fml.relauncher.IFMLLoadingPlugin cpw.mods.fml.relauncher.IFMLLoadingPlugin
 net.minecraftforge.fml.common.FMLCommonHandler cpw.mods.fml.common.FMLCommonHandler
+net.minecraftforge.fml.client.FMLClientHandler cpw.mods.fml.client.FMLClientHandler
 net.minecraftforge.fml.common.eventhandler.EventBus cpw.mods.fml.common.eventhandler.EventBus
 net.minecraft.client.renderer.GlStateManager com.replaymod.core.versions.MCVer.GlStateManager
 net.minecraft.client.renderer.GlStateManager.BooleanState com.replaymod.render.hooks.GLStateTracker.BooleanState

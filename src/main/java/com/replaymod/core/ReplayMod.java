@@ -7,6 +7,7 @@ import com.replaymod.core.gui.GuiBackgroundProcesses;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
 import com.replaymod.core.handler.MainMenuHandler;
+import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.ReplayModEditor;
 import com.replaymod.extras.ReplayModExtras;
@@ -152,7 +153,7 @@ public class ReplayMod implements Module {
         I18n.setI18n(net.minecraft.client.resources.I18n::format);
 
         //#if MC>=11300
-        DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().resourcePackRepository.addPackFinder(new LangResourcePack.Finder()));
+        DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().getResourcePackList().addPackFinder(new LangResourcePack.Finder()));
         //#endif
 
         // Register all RM modules
@@ -223,7 +224,7 @@ public class ReplayMod implements Module {
             }
         };
         //#if MC>=11300
-        mc.resourcePackRepository.addPackFinder(new IPackFinder() {
+        mc.getResourcePackList().addPackFinder(new IPackFinder() {
             @Override
             public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> map, ResourcePackInfo.IFactory<T> factory) {
                 map.put("jgui", ResourcePackInfo.func_195793_a("jgui", true, () -> jGuiResourcePack, factory, ResourcePackInfo.Priority.BOTTOM));
@@ -352,11 +353,9 @@ public class ReplayMod implements Module {
             return;
         }
         //#if MC>=10800
-        //#if MC<10904
-        //$$ @SuppressWarnings("unchecked")
-        //#endif
-        Queue<FutureTask<?>> tasks = mc.scheduledTasks;
-        synchronized (mc.scheduledTasks) {
+        Queue<FutureTask<?>> tasks = ((MinecraftAccessor) mc).getScheduledTasks();
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (tasks) {
         //#else
         //$$ Queue<ListenableFutureTask<?>> tasks = scheduledTasks;
         //$$ synchronized (scheduledTasks) {

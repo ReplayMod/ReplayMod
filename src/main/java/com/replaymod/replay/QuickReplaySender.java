@@ -1,7 +1,6 @@
 //#if MC>=10904
 package com.replaymod.replay;
 
-import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntry;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntryAction;
 import com.github.steveice10.mc.protocol.data.game.chunk.BlockStorage;
@@ -29,7 +28,6 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerMultiB
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerNotifyClientPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUnloadChunkPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUpdateTimePacket;
-import com.github.steveice10.mc.protocol.packet.login.server.LoginSuccessPacket;
 import com.github.steveice10.mc.protocol.util.NetUtil;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
@@ -44,6 +42,8 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.replaystudio.PacketData;
 import com.replaymod.replaystudio.io.ReplayInputStream;
@@ -222,10 +222,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             }
             this.replaySpeed = factor;
         }
+        TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK / (float) factor;
+        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK / (float) factor);
         //#else
-        //$$ mc.timer.timerSpeed = (float) factor;
+        //$$ timer.setTimerSpeed((float) factor);
         //#endif
     }
 

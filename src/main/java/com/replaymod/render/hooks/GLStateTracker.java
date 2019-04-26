@@ -15,13 +15,6 @@
 //$$     }
 //$$
 //$$     public int activeTexture;
-//$$     public BooleanState fog = new BooleanState(GL11.GL_FOG);
-//$$     public BooleanState[] texture = new BooleanState[32];
-//$$     {
-//$$         for (int i = 0; i < texture.length; i++) {
-//$$             texture[i] = new BooleanState(GL11.GL_TEXTURE_2D);
-//$$         }
-//$$     }
 //$$
 //$$     public void updateActiveTexture(int magic) {
 //$$         this.activeTexture = magic - GL13.GL_TEXTURE0;
@@ -29,25 +22,8 @@
 //$$
 //$$     public void updateEnabledState(int magic, boolean enabled) {
 //$$         switch (magic) {
-//$$             case GL11.GL_FOG: fog.setState(enabled); break;
-//$$             case GL11.GL_TEXTURE_2D: texture[activeTexture].setState(enabled); break;
-//$$         }
-//$$     }
-//$$
-//$$     public static class BooleanState {
-//$$         public int capability;
-//$$         public boolean currentState;
-//$$
-//$$         public BooleanState(int capability) {
-//$$             this.capability = capability;
-//$$         }
-//$$
-//$$         public void setState(boolean enabled) {
-//$$             this.currentState = enabled;
-//$$         }
-//$$
-//$$         public boolean getState() {
-//$$             return currentState;
+//$$             case GL11.GL_FOG: FogStateCallback.EVENT.invoker().fogStateChanged(enabled); break;
+//$$             case GL11.GL_TEXTURE_2D: Texture2DStateCallback.EVENT.invoker().texture2DStateChanged(activeTexture, enabled); break;
 //$$         }
 //$$     }
 //$$

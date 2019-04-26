@@ -3,6 +3,8 @@ package com.replaymod.replay;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
@@ -26,6 +28,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.*;
 import net.minecraft.network.login.server.SPacketLoginSuccess;
 import net.minecraft.network.play.server.*;
+import net.minecraft.util.Timer;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.EnumDifficulty;
@@ -515,7 +518,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
             EnumDifficulty difficulty = packet.getDifficulty();
             //#if MC>=11300
-            int maxPlayers = packet.maxPlayers;
+            int maxPlayers = 0; // literally never used by vanilla (i.e. no accessor)
             //#else
             //$$ int maxPlayers = packet.getMaxPlayers();
             //#endif
@@ -694,10 +697,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     @Override
     public void setReplaySpeed(final double d) {
         if(d != 0) this.replaySpeed = d;
+        TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK / (float) d;
+        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK / (float) d);
         //#else
-        //$$ mc.timer.timerSpeed = (float) d;
+        //$$ timer.setTimerSpeed((float) d);
         //#endif
     }
 

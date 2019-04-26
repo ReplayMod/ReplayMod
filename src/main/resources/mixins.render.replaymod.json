@@ -4,6 +4,13 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=10800
+    "ChunkRenderDispatcherAccessor",
+    //#endif
+    //#if MC>=11400
+    //$$ "MainWindowAccessor",
+    //#endif
+    "WorldRendererAccessor",
     //#if MC>=10904
     "MixinParticleManager",
     //#else
@@ -13,6 +20,9 @@
     "MixinEntityRenderer",
     //#if MC>=11300
     "MixinFogRenderer",
+    //#endif
+    //#if MC>=10800
+    "MixinGlStateManager",
     //#endif
     "MixinFrustum",
     "MixinRender",

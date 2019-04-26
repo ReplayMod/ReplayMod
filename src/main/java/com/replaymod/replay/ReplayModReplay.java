@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.core.versions.MCVer.Keyboard;
@@ -153,8 +154,8 @@ public class ReplayModReplay implements Module {
             }
         });
 
-        Minecraft mc = core.getMinecraft();
-        mc.timer = new InputReplayTimer(mc.timer, this);
+        MinecraftAccessor mc = (MinecraftAccessor) core.getMinecraft();
+        mc.setTimer(new InputReplayTimer(mc.getTimer(), this));
 
         new GuiHandler(this).register();
     }

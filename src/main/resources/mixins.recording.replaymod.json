@@ -4,6 +4,10 @@
   "mixins": [],
   "server": [],
   "client": [
+    "EntityLivingBaseAccessor",
+    "IntegratedServerAccessor",
+    "SPacketSpawnMobAccessor",
+    "SPacketSpawnPlayerAccessor",
     //#if MC>=11300
     "MixinDownloadingPackFinder",
     "MixinKeyboardListener",

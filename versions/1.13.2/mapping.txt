@@ -1,3 +1,5 @@
+net.minecraft.client.renderer.FirstPersonRenderer net.minecraft.client.renderer.ItemRenderer
+net.minecraft.client.renderer.chunk.ChunkRenderTask net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator
 net.minecraft.client.GameSettings net.minecraft.client.settings.GameSettings
 net.minecraftforge.eventbus.api.SubscribeEvent net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 net.minecraftforge.eventbus.api.EventPriority net.minecraftforge.fml.common.eventhandler.EventPriority

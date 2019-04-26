@@ -4,6 +4,8 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.SettableFuture;
+import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.versions.MCVer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,8 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Queue;
+import java.util.concurrent.FutureTask;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -50,7 +54,7 @@ public class NoGuiScreenshot {
                     GlStateManager.enableTexture2D();
 
                     //#if MC>=11300
-                    mc.entityRenderer.renderWorld(mc.timer.renderPartialTicks, System.nanoTime());
+                    mc.entityRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
                     //#else
                     //#if MC>=10809
                     //$$ mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks, System.nanoTime());
@@ -117,8 +121,10 @@ public class NoGuiScreenshot {
         // Make sure we are not somewhere in the middle of the rendering process but always at the beginning
         // of the game loop. We cannot use the addScheduledTask method as it'll run the task if called
         // from the minecraft thread which is exactly what we want to avoid.
-        synchronized (mc.scheduledTasks) {
-            mc.scheduledTasks.add(ListenableFutureTask.create(runnable, null));
+        Queue<FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (scheduledTasks) {
+            scheduledTasks.add(ListenableFutureTask.create(runnable, null));
         }
         return future;
     }

@@ -5,6 +5,15 @@
   "server": [],
   "client": [
     //#if MC>=10800
+    "ContainerLocalRenderInformationAccessor",
+    //#if MC<10904
+    //$$ "EntityAccessor",
+    //#endif
+    //#if MC>=11300
+    "ItemRendererAccessor",
+    //#endif
+    "ParticleAccessor",
+    "WorldRendererAccessor",
     "MixinChunkRenderWorker",
     "MixinEffectRenderer",
     "MixinModelRenderer",

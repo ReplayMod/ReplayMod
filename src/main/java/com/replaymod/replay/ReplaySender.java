@@ -1,5 +1,7 @@
 package com.replaymod.replay;
 
+import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.mixin.TimerAccessor;
 import net.minecraft.client.Minecraft;
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
@@ -13,10 +15,11 @@ public interface ReplaySender {
      */
     public default boolean paused() {
         Minecraft mc = getMinecraft();
+        TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        return mc.timer.tickLength == Float.POSITIVE_INFINITY;
+        return timer.getTickLength() == Float.POSITIVE_INFINITY;
         //#else
-        //$$ return mc.timer.timerSpeed == 0;
+        //$$ return timer.getTimerSpeed() == 0;
         //#endif
     }
 

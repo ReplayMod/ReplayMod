@@ -4,6 +4,7 @@ package com.replaymod.render.mixin;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.exporters.ParticlesExporter;
+import com.replaymod.render.blend.mixin.ParticleAccessor;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
@@ -51,9 +52,10 @@ public abstract class MixinParticleManager {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().entityRenderer).replayModRender_getHandler();
         if (handler != null && handler.omnidirectional) {
             // Align all particles towards the camera
-            double dx = particle.prevPosX + (particle.posX - particle.prevPosX) * partialTicks - view.posX;
-            double dy = particle.prevPosY + (particle.posY - particle.prevPosY) * partialTicks - view.posY;
-            double dz = particle.prevPosZ + (particle.posZ - particle.prevPosZ) * partialTicks - view.posZ;
+            ParticleAccessor acc = (ParticleAccessor) particle;
+            double dx = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * partialTicks - view.posX;
+            double dy = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * partialTicks - view.posY;
+            double dz = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * partialTicks - view.posZ;
             double pitch = -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
             double yaw = -Math.atan2(dx, dz);
 

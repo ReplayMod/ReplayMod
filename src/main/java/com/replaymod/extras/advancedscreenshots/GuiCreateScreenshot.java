@@ -11,11 +11,13 @@ import de.johni0702.minecraft.gui.function.Loadable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ScreenShotHelper;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static com.replaymod.core.utils.Utils.error;
 import static com.replaymod.render.ReplayModRender.LOGGER;
@@ -81,8 +83,15 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
 
     @Override
     protected File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
+        DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
         File screenshotFolder = new File(getMinecraft().gameDir, "screenshots");
-        return ScreenShotHelper.getTimestampedPNGFileForDirectory(screenshotFolder);
+        String baseName = DATE_FORMAT.format(new Date());
+        for (int i = 1; ; i++) {
+            File screenshotFile = new File(screenshotFolder, baseName + (i == 1 ? "" : "_" + i) + ".png");
+            if (!screenshotFile.exists()) {
+                return screenshotFile;
+            }
+        }
     }
 
     @Override

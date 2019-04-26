@@ -11,9 +11,15 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 
+//#if MC>=11300
+import com.replaymod.render.mixin.MainWindowAccessor;
+//#endif
+
 //#if MC>=10800
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 //#endif
+
+import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
 
 @RequiredArgsConstructor
 public class ScreenshotRenderer implements RenderInfo {
@@ -27,8 +33,8 @@ public class ScreenshotRenderer implements RenderInfo {
     public boolean renderScreenshot() throws Throwable {
         try {
             //#if MC>=11300
-            int displayWidthBefore = mc.mainWindow.framebufferWidth;
-            int displayHeightBefore = mc.mainWindow.framebufferHeight;
+            int displayWidthBefore = mc.mainWindow.getFramebufferWidth();
+            int displayHeightBefore = mc.mainWindow.getFramebufferHeight();
             //#else
             //$$ int displayWidthBefore = mc.displayWidth;
             //$$ int displayHeightBefore = mc.displayHeight;
@@ -55,8 +61,10 @@ public class ScreenshotRenderer implements RenderInfo {
 
             mc.gameSettings.hideGUI = hideGUIBefore;
             //#if MC>=11300
-            mc.mainWindow.framebufferWidth = displayWidthBefore;
-            mc.mainWindow.framebufferHeight = displayHeightBefore;
+            //noinspection ConstantConditions
+            MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.mainWindow;
+            acc.setFramebufferWidth(displayWidthBefore);
+            acc.setFramebufferHeight(displayHeightBefore);
             mc.getFramebuffer().createBindFramebuffer(displayWidthBefore, displayHeightBefore);
             //#else
             //$$ mc.resize(displayWidthBefore, displayHeightBefore);
@@ -89,7 +97,7 @@ public class ScreenshotRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         framesDone++;
-        return mc.timer.renderPartialTicks;
+        return getRenderPartialTicks();
     }
 
     @Override

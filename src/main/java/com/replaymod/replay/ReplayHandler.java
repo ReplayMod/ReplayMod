@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.core.utils.WrappedTimer;
@@ -12,6 +14,7 @@ import com.replaymod.replay.camera.SpectatorCameraController;
 import com.replaymod.replay.events.ReplayCloseEvent;
 import com.replaymod.replay.events.ReplayOpenEvent;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
+import com.replaymod.replay.mixin.EntityLivingBaseAccessor;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.util.Location;
@@ -194,10 +197,11 @@ public class ReplayHandler {
             mc.loadWorld(null);
         }
 
+        TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        mc.timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
+        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK);
         //#else
-        //$$ mc.timer.timerSpeed = 1;
+        //$$ timer.setTimerSpeed(1);
         //#endif
         overlay.setVisible(false);
 
@@ -666,9 +670,10 @@ public class ReplayHandler {
         //#if MC>=11300
         if (entity instanceof EntityLivingBase && !(entity instanceof CameraEntity)) {
             EntityLivingBase e = (EntityLivingBase) entity;
-            e.setPosition(e.interpTargetX, e.interpTargetY, e.interpTargetZ);
-            e.rotationYaw = (float) e.interpTargetYaw;
-            e.rotationPitch = (float) e.interpTargetPitch;
+            EntityLivingBaseAccessor ea = (EntityLivingBaseAccessor) e;
+            e.setPosition(ea.getInterpTargetX(), ea.getInterpTargetY(), ea.getInterpTargetZ());
+            e.rotationYaw = (float) ea.getInterpTargetYaw();
+            e.rotationPitch = (float) ea.getInterpTargetPitch();
         }
         //#else
         //$$ if (entity instanceof EntityOtherPlayerMP) {

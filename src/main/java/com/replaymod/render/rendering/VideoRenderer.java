@@ -1,5 +1,7 @@
 package com.replaymod.render.rendering;
 
+import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
@@ -15,6 +17,7 @@ import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.metadata.MetadataInjector;
+import com.replaymod.render.mixin.WorldRendererAccessor;
 import com.replaymod.render.utils.SoundHandler;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
@@ -30,6 +33,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Timer;
 
 //#if MC>=11300
+import com.replaymod.render.mixin.MainWindowAccessor;
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.gui.ScaledResolution;
@@ -49,6 +53,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
@@ -126,7 +131,7 @@ public class VideoRenderer implements RenderInfo {
         // Because this might take some time to prepare we'll render the GUI at least once to not confuse the user
         drawGui();
 
-        Timer timer = mc.timer;
+        Timer timer = ((MinecraftAccessor) mc).getTimer();
 
         // Play up to one second before starting to render
         // This is necessary in order to ensure that all entities have at least two position packets
@@ -142,7 +147,7 @@ public class VideoRenderer implements RenderInfo {
                 int replayTime = videoStart - 1000;
                 //#if MC>=11200
                 timer.renderPartialTicks = 0;
-                timer.tickLength = WrappedTimer.DEFAULT_MS_PER_TICK;
+                ((TimerAccessor) timer).setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK);
                 //#else
                 //$$ timer.elapsedPartialTicks = timer.renderPartialTicks = 0;
                 //$$ timer.timerSpeed = 1;
@@ -156,12 +161,12 @@ public class VideoRenderer implements RenderInfo {
             }
         }
 
-        mc.renderGlobal.renderEntitiesStartupCounter = 0;
+        ((WorldRendererAccessor) mc.renderGlobal).setRenderEntitiesStartupCounter(0);
 
         renderingPipeline.run();
 
-        if (mc.hasCrashed) {
-            throw new ReportedException(mc.crashReporter);
+        if (((MinecraftAccessor) mc).hasCrashed()) {
+            throw new ReportedException(((MinecraftAccessor) mc).getCrashReporter());
         }
 
         if (settings.isInjectSphericalMetadata()) {
@@ -185,10 +190,12 @@ public class VideoRenderer implements RenderInfo {
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
         //#if MC>=11300
-        int displayWidthBefore = mc.mainWindow.framebufferWidth;
-        int displayHeightBefore = mc.mainWindow.framebufferHeight;
-        mc.mainWindow.framebufferWidth = displayWidth;
-        mc.mainWindow.framebufferHeight = displayHeight;
+        int displayWidthBefore = mc.mainWindow.getFramebufferWidth();
+        int displayHeightBefore = mc.mainWindow.getFramebufferHeight();
+        //noinspection ConstantConditions
+        MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.mainWindow;
+        acc.setFramebufferWidth(displayWidth);
+        acc.setFramebufferHeight(displayHeight);
         //#else
         //$$ int displayWidthBefore = mc.displayWidth;
         //$$ int displayHeightBefore = mc.displayHeight;
@@ -201,28 +208,29 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // Updating the timer will cause the timeline player to update the game state
-        mc.timer.updateTimer(
+        Timer timer = ((MinecraftAccessor) mc).getTimer();
+        timer.updateTimer(
                 //#if MC>=11300
                 MCVer.milliTime()
                 //#endif
         );
 
-        int elapsedTicks = mc.timer.elapsedTicks;
+        int elapsedTicks = timer.elapsedTicks;
         while (elapsedTicks-- > 0) {
             tick();
         }
 
         // change Minecraft's display size back
         //#if MC>=11300
-        mc.mainWindow.framebufferWidth = displayWidthBefore;
-        mc.mainWindow.framebufferHeight = displayHeightBefore;
+        acc.setFramebufferWidth(displayWidthBefore);
+        acc.setFramebufferHeight(displayHeightBefore);
         //#else
         //$$ mc.displayWidth = displayWidthBefore;
         //$$ mc.displayHeight = displayHeightBefore;
         //#endif
 
         framesDone++;
-        return mc.timer.renderPartialTicks;
+        return timer.renderPartialTicks;
     }
 
     @Override
@@ -367,17 +375,21 @@ public class VideoRenderer implements RenderInfo {
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
         //#if MC>=11300
         mc.getFramebuffer().createFramebuffer(displayWidth, displayHeight);
-        mc.mainWindow.framebufferWidth = displayWidth;
-        mc.mainWindow.framebufferHeight = displayHeight;
+        //noinspection ConstantConditions
+        MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.mainWindow;
+        acc.setFramebufferWidth(displayWidth);
+        acc.setFramebufferHeight(displayHeight);
         //#else
         //$$ mc.resize(displayWidth, displayHeight);
         //#endif
     }
 
     private void tick() {
-        synchronized (mc.scheduledTasks) {
-            while (!mc.scheduledTasks.isEmpty()) {
-                ((FutureTask) mc.scheduledTasks.poll()).run();
+        Queue<FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (scheduledTasks) {
+            while (!scheduledTasks.isEmpty()) {
+                scheduledTasks.poll().run();
             }
         }
 

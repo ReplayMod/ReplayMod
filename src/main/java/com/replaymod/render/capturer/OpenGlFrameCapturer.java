@@ -16,6 +16,10 @@ import org.lwjgl.opengl.GL12;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+//#if MC>=11300
+import com.replaymod.render.mixin.MainWindowAccessor;
+//#endif
+
 //#if MC>=10800
 import static net.minecraft.client.renderer.GlStateManager.*;
 //#else
@@ -112,8 +116,10 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         if (fb.framebufferWidth != width || fb.framebufferHeight != height) {
             fb.createFramebuffer(width, height);
         }
-        mc.mainWindow.framebufferWidth = width;
-        mc.mainWindow.framebufferHeight = height;
+        //noinspection ConstantConditions
+        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) mc.mainWindow;
+        mainWindow.setFramebufferWidth(width);
+        mainWindow.setFramebufferHeight(height);
         //#else
         //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
         //$$     mc.resize(width, height);

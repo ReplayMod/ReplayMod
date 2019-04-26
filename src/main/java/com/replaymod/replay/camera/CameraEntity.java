@@ -7,6 +7,7 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
 import com.replaymod.replay.events.ReplayChatMessageEvent;
+import com.replaymod.replay.mixin.FirstPersonRendererAccessor;
 import com.replaymod.replaystudio.util.Location;
 import lombok.Getter;
 import lombok.Setter;
@@ -71,6 +72,7 @@ import static com.replaymod.core.versions.MCVer.*;
  * During a replay the player should be an instance of this class.
  * Camera movement is controlled by a separate {@link CameraController}.
  */
+@SuppressWarnings("EntityConstructor")
 public class CameraEntity
         //#if MC>=10800
         extends EntityPlayerSP
@@ -497,7 +499,8 @@ public class CameraEntity
                         //#endif
                         mc.pointedEntity);
                 // Make sure we don't exit right away
-                mc.gameSettings.keyBindSneak.pressTime = 0;
+                //noinspection StatementWithEmptyBody
+                while (mc.gameSettings.keyBindSneak.isPressed());
             }
         }
 
@@ -604,12 +607,13 @@ public class CameraEntity
                     lastHandRendered = player;
 
                     //#if MC>=10904
-                    mc.entityRenderer.itemRenderer.prevEquippedProgressMainHand = 1;
-                    mc.entityRenderer.itemRenderer.prevEquippedProgressOffHand = 1;
-                    mc.entityRenderer.itemRenderer.equippedProgressMainHand = 1;
-                    mc.entityRenderer.itemRenderer.equippedProgressOffHand = 1;
-                    mc.entityRenderer.itemRenderer.itemStackMainHand = player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND);
-                    mc.entityRenderer.itemRenderer.itemStackOffHand = player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND);
+                    FirstPersonRendererAccessor acc = (FirstPersonRendererAccessor) mc.entityRenderer.itemRenderer;
+                    acc.setPrevEquippedProgressMainHand(1);
+                    acc.setPrevEquippedProgressOffHand(1);
+                    acc.setEquippedProgressMainHand(1);
+                    acc.setEquippedProgressOffHand(1);
+                    acc.setItemStackMainHand(player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND));
+                    acc.setItemStackOffHand(player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND));
                     //#else
                     //$$ mc.entityRenderer.itemRenderer.prevEquippedProgress = 1;
                     //$$ mc.entityRenderer.itemRenderer.equippedProgress = 1;

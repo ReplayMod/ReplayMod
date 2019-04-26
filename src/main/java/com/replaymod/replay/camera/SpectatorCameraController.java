@@ -1,6 +1,7 @@
 package com.replaymod.replay.camera;
 
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replay.mixin.EntityPlayerAccessor;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -32,7 +33,8 @@ public class SpectatorCameraController implements CameraController {
         for (KeyBinding binding : Arrays.asList(mc.gameSettings.keyBindAttack, mc.gameSettings.keyBindUseItem,
                 mc.gameSettings.keyBindJump, mc.gameSettings.keyBindSneak, mc.gameSettings.keyBindForward,
                 mc.gameSettings.keyBindBack, mc.gameSettings.keyBindLeft, mc.gameSettings.keyBindRight)) {
-            binding.pressTime = 0;
+            //noinspection StatementWithEmptyBody
+            while (binding.isPressed());
         }
 
         // Prevent mouse movement
@@ -53,9 +55,11 @@ public class SpectatorCameraController implements CameraController {
                 EntityPlayer viewPlayer = (EntityPlayer) view;
                 camera.inventory = viewPlayer.inventory;
                 //#if MC>=10904
-                camera.itemStackMainHand = viewPlayer.itemStackMainHand;
+                EntityPlayerAccessor cameraA = (EntityPlayerAccessor) camera;
+                EntityPlayerAccessor viewPlayerA = (EntityPlayerAccessor) camera;
+                cameraA.setItemStackMainHand(viewPlayerA.getItemStackMainHand());
                 camera.swingingHand = viewPlayer.swingingHand;
-                camera.activeItemStackUseCount = viewPlayer.activeItemStackUseCount;
+                cameraA.setActiveItemStackUseCount(viewPlayerA.getActiveItemStackUseCount());
                 //#else
                 //$$ camera.itemInUse = viewPlayer.itemInUse;
                 //$$ camera.itemInUseCount = viewPlayer.itemInUseCount;

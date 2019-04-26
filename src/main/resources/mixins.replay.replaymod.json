@@ -4,6 +4,9 @@
   "mixins": [],
   "server": [],
   "client": [
+    "EntityLivingBaseAccessor",
+    "EntityPlayerAccessor",
+    "FirstPersonRendererAccessor",
     //#if MC>=10904
     "MixinParticleManager",
     //#endif

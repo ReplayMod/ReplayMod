@@ -7,6 +7,7 @@ import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
+import com.replaymod.render.blend.mixin.ParticleAccessor;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.Minecraft;
@@ -110,9 +111,10 @@ public class ParticlesExporter implements Exporter {
         // renderer translate there again.
         // Instead of actually translating, we just add the translation on the current model-view-matrix.
         Matrix4f modelView = getGlModelViewMatrix();
-        double dx = particle.prevPosX + (particle.posX - particle.prevPosX) * renderPartialTicks - Particle.interpPosX;
-        double dy = particle.prevPosY + (particle.posY - particle.prevPosY) * renderPartialTicks - Particle.interpPosY;
-        double dz = particle.prevPosZ + (particle.posZ - particle.prevPosZ) * renderPartialTicks - Particle.interpPosZ;
+        ParticleAccessor acc = (ParticleAccessor) particle;
+        double dx = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * renderPartialTicks - Particle.interpPosX;
+        double dy = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * renderPartialTicks - Particle.interpPosY;
+        double dz = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * renderPartialTicks - Particle.interpPosZ;
         Vector3f offset = new Vector3f((float) dx, (float) dy, (float) dz);
         Matrix4f.translate(offset, modelView, modelView);
         renderState.pushModelView(modelView);

@@ -8,6 +8,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.lang.reflect.InvocationTargetException;
 
+import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
+
 public class ShaderBeginRender {
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -31,7 +33,7 @@ public class ShaderBeginRender {
             // check if Shaders are enabled
             if (!(boolean) (ShaderReflection.config_isShaders.invoke(null))) return;
 
-            ShaderReflection.shaders_beginRender.invoke(null, mc, mc.timer.renderPartialTicks, 0);
+            ShaderReflection.shaders_beginRender.invoke(null, mc, getRenderPartialTicks(), 0);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
