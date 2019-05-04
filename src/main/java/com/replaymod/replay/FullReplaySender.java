@@ -705,13 +705,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     @SuppressWarnings("unchecked")
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
-        //#if MC>=10904
-        ctx.channel().attr(NetworkManager.PROTOCOL_ATTRIBUTE_KEY).set(EnumConnectionState.PLAY);
-        //#else
-        //#if MC>=10800
-        //$$ ctx.attr(NetworkManager.attrKeyConnectionState).set(EnumConnectionState.PLAY);
-        //#endif
-        //#endif
         super.channelActive(ctx);
     }
 

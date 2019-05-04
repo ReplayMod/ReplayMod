@@ -46,6 +46,11 @@ import net.minecraft.entity.EntityLivingBase;
 //$$ import org.lwjgl.opengl.Display;
 //#endif
 
+//#if MC>=11200
+//#else
+//$$ import io.netty.channel.ChannelOutboundHandlerAdapter;
+//#endif
+
 //#if MC<10904
 //$$ import de.johni0702.minecraft.gui.element.GuiLabel;
 //$$ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
@@ -69,9 +74,7 @@ import net.minecraftforge.fml.network.NetworkHooks;
 //$$ import cpw.mods.fml.common.Loader;
 //$$ import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
-//$$ import io.netty.channel.ChannelOutboundHandlerAdapter;
 //$$ import net.minecraft.entity.EntityLivingBase;
-//$$ import net.minecraft.network.EnumConnectionState;
 //$$
 //$$ import java.net.InetSocketAddress;
 //$$ import java.net.SocketAddress;
@@ -231,40 +234,6 @@ public class ReplayHandler {
                 t.printStackTrace();
             }
         };
-        //#if MC>=11300
-        channel = new EmbeddedChannel();
-
-        channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
-        channel.pipeline().addFirst("ReplayModReplay_quickReplaySender", quickReplaySender);
-        channel.pipeline().addLast("packet_handler", networkManager);
-        channel.pipeline().fireChannelActive();
-
-        networkManager.setNetHandler(new NetHandlerLoginClient(networkManager, mc, null, it -> {}));
-        //#if MC<11400
-        NetworkHooks.registerClientLoginChannel(networkManager);
-        //#endif
-        // FIXME make this work (with vanilla and mods) on all other versions again, now that login phase is included
-        //       probably have to change some of the forge handshake calls
-        //#else
-        //$$ NetHandlerLoginClient netHandlerLoginClient =
-        //$$         new NetHandlerLoginClient(networkManager, mc, null);
-        //$$ networkManager.setNetHandler(netHandlerLoginClient);
-        //$$
-        //#if MC>=11200
-        //$$ channel = new EmbeddedChannel();
-        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
-        //$$ channel.pipeline().addFirst("ReplayModReplay_quickReplaySender", quickReplaySender);
-        //$$ channel.pipeline().addLast("packet_handler", networkManager);
-        //$$ channel.pipeline().fireChannelActive();
-        //#else
-        //$$ channel = new EmbeddedChannel(networkManager);
-        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
-        //#if MC>=10904
-        //$$ channel.pipeline().addFirst("ReplayModReplay_quickReplaySender", quickReplaySender);
-        //#endif
-        //$$ channel.pipeline().fireChannelActive();
-        //#endif
-        //#endif
         //#else
         //$$ NetworkManager networkManager = new NetworkManager(true) {
         //$$     @Override
@@ -285,16 +254,35 @@ public class ReplayHandler {
         //$$         t.printStackTrace();
         //$$     }
         //$$ };
-        //$$ networkManager.setNetHandler(new NetHandlerLoginClient(networkManager, mc, null));
-        //$$
         //$$ mc.displayGuiScreen(new GuiOpeningReplay(networkManager));
-        //$$
+        //#endif
+
+        networkManager.setNetHandler(new NetHandlerLoginClient(
+                networkManager,
+                mc,
+                null
+                //#if MC>=11300
+                , it -> {}
+                //#endif
+        ));
+
+
+        //#if MC>=11200
+        channel = new EmbeddedChannel();
+        //#else
         //$$ ChannelOutboundHandlerAdapter dummyHandler = new ChannelOutboundHandlerAdapter();
         //$$ channel = new EmbeddedChannel(dummyHandler);
         //$$ channel.pipeline().remove(dummyHandler);
-        //$$ channel.pipeline().addFirst("ReplayModReplay_replaySender", fullReplaySender);
-        //$$ channel.pipeline().addAfter("ReplayModReplay_replaySender", "packet_handler", networkManager);
-        //$$ channel.pipeline().fireChannelActive();
+        //#endif
+        //#if MC>=10904
+        channel.pipeline().addLast("ReplayModReplay_quickReplaySender", quickReplaySender);
+        //#endif
+        channel.pipeline().addLast("ReplayModReplay_replaySender", fullReplaySender);
+        channel.pipeline().addLast("packet_handler", networkManager);
+        channel.pipeline().fireChannelActive();
+
+        //#if MC>=11300 && MC<11400
+        NetworkHooks.registerClientLoginChannel(networkManager);
         //#endif
     }
 
