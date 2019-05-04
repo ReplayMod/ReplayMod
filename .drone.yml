@@ -12,6 +12,7 @@ pipeline:
       - ./gradlew :1.8:setCoreVersion
       - ./gradlew --old-gradle :1.7.10:setupCIWorkspace :jGui:1.7.10:setupCIWorkspace
       - ./gradlew --old-gradle :1.7.10:shadowJar
+      - mv versions/1.7.10/build/libs/* build/libs/ && rm build/libs/*-raw.jar
   archive:
     image: plugins/s3
     acl: public-read
