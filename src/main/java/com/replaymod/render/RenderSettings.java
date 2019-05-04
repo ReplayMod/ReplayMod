@@ -57,7 +57,7 @@ public class RenderSettings {
 
         MP4_POTATO("-an -c:v libx264 -preset ultrafast -crf 51 -pix_fmt yuv420p \"%FILENAME%\"", "mp4"),
 
-        WEBM_CUSTOM("-an -c:v libvpx -b:v %BITRATE% \"%FILENAME%\"", "webm"),
+        WEBM_CUSTOM("-an -c:v libvpx -b:v %BITRATE% -pix_fmt yuv420p \"%FILENAME%\"", "webm"),
 
         MKV_LOSSLESS("-an -c:v libx264 -preset ultrafast -qp 0 \"%FILENAME%\"", "mkv"),
 
