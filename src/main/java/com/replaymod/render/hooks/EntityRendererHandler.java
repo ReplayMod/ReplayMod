@@ -8,6 +8,7 @@ import com.replaymod.render.capturer.WorldRenderer;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 
+//#if MC<11400
 //#if MC>=10800
 //#if MC>=11300
 import net.minecraftforge.fml.hooks.BasicEventHooks;
@@ -18,6 +19,7 @@ import net.minecraftforge.fml.hooks.BasicEventHooks;
 //#else
 //$$ import com.replaymod.core.versions.MCVer.GlStateManager;
 //$$ import cpw.mods.fml.common.FMLCommonHandler;
+//#endif
 //#endif
 
 import java.io.IOException;
@@ -49,10 +51,12 @@ public class EntityRendererHandler implements WorldRenderer {
     }
 
     public void renderWorld(float partialTicks, long finishTimeNano) {
+        //#if MC<11400
         //#if MC>=11300
         BasicEventHooks.onRenderTickStart(partialTicks);
         //#else
         //$$ FMLCommonHandler.instance().onRenderTickStart(partialTicks);
+        //#endif
         //#endif
 
         //#if MC>=11300
@@ -71,10 +75,12 @@ public class EntityRendererHandler implements WorldRenderer {
         //#endif
         //#endif
 
+        //#if MC<11400
         //#if MC>=11300
         BasicEventHooks.onRenderTickEnd(partialTicks);
         //#else
         //$$ FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
+        //#endif
         //#endif
     }
 

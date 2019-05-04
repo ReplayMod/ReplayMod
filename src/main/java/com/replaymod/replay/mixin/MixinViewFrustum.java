@@ -10,16 +10,31 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ViewFrustum.class)
 public abstract class MixinViewFrustum {
-    @Redirect(method = "updateChunkPositions", at=@At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/RenderChunk;setPosition(III)V"))
-    private void replayModReplay_updatePositionAndMarkForUpdate(RenderChunk renderChunk, int x, int y, int z) {
+    @Redirect(
+            method = "updateChunkPositions",
+            at = @At(
+                    value = "INVOKE",
+                    //#if MC>=10904
+                    target = "Lnet/minecraft/client/renderer/chunk/RenderChunk;setPosition(III)V"
+                    //#else
+                    //$$ target = "Lnet/minecraft/client/renderer/chunk/RenderChunk;setPosition(Lnet/minecraft/util/BlockPos;)V"
+                    //#endif
+            )
+    )
+    private void replayModReplay_updatePositionAndMarkForUpdate(
+            RenderChunk renderChunk,
+            //#if MC>=10904
+            int x, int y, int z
+            //#else
+            //$$ BlockPos pos
+            //#endif
+    ) {
+        //#if MC>=10904
         BlockPos pos = new BlockPos(x, y, z);
+        //#endif
         if (!pos.equals(renderChunk.getPosition())) {
             //#if MC>=10904
-            //#if MC>=11100
             renderChunk.setPosition(x, y, z);
-            //#else
-            //$$ renderChunk.setOrigin(x, y, z);
-            //#endif
             renderChunk.setNeedsUpdate(false);
             //#else
             //$$ renderChunk.setPosition(pos);

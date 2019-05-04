@@ -1,6 +1,7 @@
 package com.replaymod.replay.gui.overlay;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplaySender;
 import de.johni0702.minecraft.gui.GuiRenderer;
@@ -14,20 +15,22 @@ import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.resources.I18n;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
 
-//#if MC<11300
-//$$ import org.lwjgl.input.Keyboard;
+//#if MC>=11300
+import com.replaymod.core.events.KeyBindingEventCallback;
+import com.replaymod.core.events.KeyEventCallback;
+//#else
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+//$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
 //#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
-import static com.replaymod.core.versions.MCVer.*;
 
 public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
@@ -56,6 +59,8 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
      */
     public final GuiPanel statusIndicatorPanel = new GuiPanel(this).setSize(100, 20)
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(5));
+
+    private final EventHandler eventHandler = new EventHandler();
 
     public GuiReplayOverlay(final ReplayHandler replayHandler) {
         timeline = new GuiMarkerTimeline(replayHandler){
@@ -141,30 +146,12 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     public void setVisible(boolean visible) {
         if (isVisible() != visible) {
             if (visible) {
-                FML_BUS.register(this);
+                eventHandler.register();
             } else {
-                FML_BUS.unregister(this);
+                eventHandler.unregister();
             }
         }
         super.setVisible(visible);
-    }
-
-    @SubscribeEvent
-    public void onKeyInput(InputEvent.KeyInputEvent event) {
-        GameSettings gameSettings = getMinecraft().gameSettings;
-        while (gameSettings.keyBindChat.isPressed() || gameSettings.keyBindCommand.isPressed()) {
-            if (!isMouseVisible()) {
-                setMouseVisible(true);
-            }
-        }
-        /* FIXME
-        if (Keyboard.getEventKeyState()) {
-            // Handle the F1 key binding while the overlay is opened as a gui screen
-            if (isMouseVisible() && Keyboard.getEventKey() == Keyboard.KEY_F1) {
-                gameSettings.hideGUI = !gameSettings.hideGUI;
-            }
-        }
-        */
     }
 
     @Override
@@ -181,5 +168,39 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     @Override
     protected GuiReplayOverlay getThis() {
         return this;
+    }
+
+    private class EventHandler extends EventRegistrations {
+        //#if MC>=11300
+        { on(KeyBindingEventCallback.EVENT, this::onKeyBindingEvent); }
+        private void onKeyBindingEvent() {
+        //#else
+        //$$ @SubscribeEvent
+        //$$ public void onKeyBindingEvent(InputEvent.KeyInputEvent event) {
+        //#endif
+            GameSettings gameSettings = getMinecraft().gameSettings;
+            while (gameSettings.keyBindChat.isPressed() || gameSettings.keyBindCommand.isPressed()) {
+                if (!isMouseVisible()) {
+                    setMouseVisible(true);
+                }
+            }
+        }
+
+        //#if MC>=11300
+        { on(KeyEventCallback.EVENT, (int key, int scanCode, int action, int modifiers) -> onKeyInput(key, action)); }
+        private void onKeyInput(int key, int action) {
+            if (action != 0) return;
+        //#else
+        //$$ @SubscribeEvent
+        //$$ public void onKeyInput(InputEvent.KeyInputEvent event) {
+        //$$     if (!Keyboard.getEventKeyState()) return;
+        //$$     int key = Keyboard.getEventKey();
+        //#endif
+            GameSettings gameSettings = getMinecraft().gameSettings;
+            // Handle the F1 key binding while the overlay is opened as a gui screen
+            if (isMouseVisible() && key == Keyboard.KEY_F1) {
+                gameSettings.hideGUI = !gameSettings.hideGUI;
+            }
+        }
     }
 }

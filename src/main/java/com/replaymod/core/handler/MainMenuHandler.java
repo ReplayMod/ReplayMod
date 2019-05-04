@@ -1,35 +1,50 @@
 package com.replaymod.core.handler;
 
 import com.replaymod.core.mixin.GuiMainMenuAccessor;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiScreenRealmsProxy;
+import org.lwjgl.opengl.GL11;
+
+import java.util.List;
+
+import static com.replaymod.core.versions.MCVer.*;
+
+//#if MC>=11400
+//$$ import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
+//$$ import net.minecraft.client.gui.widget.AbstractButtonWidget;
+//#else
+import net.minecraft.client.gui.GuiButton;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.lwjgl.opengl.GL11;
-
-import static com.replaymod.core.versions.MCVer.*;
+//#endif
 
 /**
  * Moves certain buttons on the main menu upwards so we can inject our own.
  */
-public class MainMenuHandler {
-    public void register() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
+public class MainMenuHandler extends EventRegistrations {
+    //#if MC>=11400
+    //$$ { on(InitScreenCallback.EVENT, this::onInit); }
+    //$$ public void onInit(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    //#else
     @SubscribeEvent
     public void onInit(GuiScreenEvent.InitGuiEvent.Post event) {
         GuiScreen guiScreen = getGui(event);
+        List<GuiButton> buttonList = getButtonList(event);
+    //#endif
         if (guiScreen instanceof GuiMainMenu) {
             GuiMainMenu gui = (GuiMainMenu) guiScreen;
             int realmsOffset = 0;
-            for (GuiButton button : getButtonList(event)) {
+            //#if MC>=11400
+            //$$ for (AbstractButtonWidget button : buttonList) {
+            //#else
+            for (GuiButton button : buttonList) {
+            //#endif
                 // Buttons that aren't in a rectangle directly above our space don't need moving
-                if (button.x + button.width < gui.width / 2 - 100
+                if (button.x + width(button) < gui.width / 2 - 100
                         || button.x > gui.width / 2 + 100
                         || button.y > gui.height / 4 + 10 + 4 * 24) continue;
                 // Move button up to make space for one rows of buttons
@@ -37,10 +52,14 @@ public class MainMenuHandler {
                 int offset = -1 * 24 + 10;
                 button.y += offset;
 
+                //#if MC>=11400
+                //$$ // FIXME looks like the button has moved into the realms lib?
+                //#else
                 //#if MC>=11300
                 if (button.id == 14) {
                     realmsOffset = offset;
                 }
+                //#endif
                 //#endif
             }
             //#if MC>=11300
@@ -58,6 +77,9 @@ public class MainMenuHandler {
         private final int offset;
 
         private RealmsNotificationProxy(GuiScreenRealmsProxy proxy, int offset) {
+            //#if MC>=11400
+            //$$ super(null);
+            //#endif
             this.proxy = proxy;
             this.offset = offset;
         }

@@ -5,12 +5,17 @@ import com.google.common.io.Files;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiYesNo;
-import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.client.resources.I18n;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC>=11400
+//$$ import net.minecraft.text.TranslatableTextComponent;
+//#else
+import net.minecraft.client.gui.GuiYesNoCallback;
+import net.minecraft.client.resources.I18n;
+//#endif
 
 //#if MC>=11300
 import de.johni0702.minecraft.gui.utils.Consumer;
@@ -30,7 +35,11 @@ import net.minecraft.network.play.server.SPacketResourcePackSend;
 //#if MC>=10800
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+//#if MC>=11400
+//$$ import java.util.concurrent.CompletableFuture;
+//#else
 import com.google.common.util.concurrent.ListenableFuture;
+//#endif
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
 //#if MC<11300
@@ -123,17 +132,11 @@ public class ResourcePackRecorder {
 
             if (levelDir.isFile()) {
                 netManager.sendPacket(makeStatusPacket(hash, Action.ACCEPTED));
-                Futures.addCallback(setServerResourcePack(levelDir), new FutureCallback<Object>() {
-                    @Override
-                    public void onSuccess(Object result) {
-                        recordResourcePack(levelDir, requestId);
-                        netManager.sendPacket(makeStatusPacket(hash, Action.SUCCESSFULLY_LOADED));
-                    }
-
-                    @Override
-                    public void onFailure(@Nonnull Throwable throwable) {
-                        netManager.sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
-                    }
+                addCallback(setServerResourcePack(levelDir), result -> {
+                    recordResourcePack(levelDir, requestId);
+                    netManager.sendPacket(makeStatusPacket(hash, Action.SUCCESSFULLY_LOADED));
+                }, throwable -> {
+                    netManager.sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
                 });
             } else {
                 netManager.sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
@@ -147,6 +150,9 @@ public class ResourcePackRecorder {
                 netManager.sendPacket(makeStatusPacket(hash, Action.DECLINED));
             } else {
                 // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
+                //#if MC>=11400
+                //$$ mc.execute(() -> mc.openScreen(new YesNoScreen(result -> {
+                //#else
                 //noinspection Convert2Lambda
                 mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
                     @Override
@@ -155,6 +161,7 @@ public class ResourcePackRecorder {
                     //#else
                     //$$ public void confirmClicked(boolean result, int id) {
                     //#endif
+                //#endif
                         if (serverData != null) {
                             serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
                         }
@@ -168,7 +175,11 @@ public class ResourcePackRecorder {
                         ServerList.saveSingleServer(serverData);
                         mc.displayGuiScreen(null);
                     }
+                //#if MC>=11400
+                //$$ , new TranslatableTextComponent("multiplayer.texturePrompt.line1"), new TranslatableTextComponent("multiplayer.texturePrompt.line2"))));
+                //#else
                 }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
+                //#endif
             }
         }
 
@@ -176,21 +187,19 @@ public class ResourcePackRecorder {
     }
 
     private void downloadResourcePackFuture(int requestId, String url, final String hash) {
-        Futures.addCallback(downloadResourcePack(requestId, url, hash), new FutureCallback() {
-            @Override
-            public void onSuccess(Object result) {
-                mc.getConnection().sendPacket(makeStatusPacket(hash, Action.SUCCESSFULLY_LOADED));
-            }
-
-            @Override
-            public void onFailure(@Nonnull Throwable throwable) {
-                mc.getConnection().sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
-            }
-        });
+        addCallback(downloadResourcePack(requestId, url, hash),
+                result -> mc.getConnection().sendPacket(makeStatusPacket(hash, Action.SUCCESSFULLY_LOADED)),
+                throwable -> mc.getConnection().sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD)));
     }
 
     //#if MC>=11300
-    private ListenableFuture downloadResourcePack(final int requestId, String url, String hash) {
+    private
+    //#if MC>=11400
+    //$$ CompletableFuture<?>
+    //#else
+    ListenableFuture<?>
+    //#endif
+    downloadResourcePack(final int requestId, String url, String hash) {
         DownloadingPackFinder packFinder = mc.getPackFinder();
         ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file, requestId));
         return packFinder.downloadResourcePack(url, hash);

@@ -5,31 +5,34 @@ import com.replaymod.extras.Extra;
 import com.replaymod.render.gui.GuiRenderingDone;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 
-//#if MC>=10800
-//#if MC>=11300
+//#if MC>=11400
+//$$ import de.johni0702.minecraft.gui.versions.callbacks.OpenGuiScreenCallback;
+//$$ import net.minecraft.client.gui.Screen;
+//#else
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 
-public class YoutubeUpload implements Extra {
+public class YoutubeUpload extends EventRegistrations implements Extra {
     @Override
-    public void register(ReplayMod mod) throws Exception {
-        MinecraftForge.EVENT_BUS.register(this);
+    public void register(ReplayMod mod) {
+        register();
     }
 
+    //#if MC>=11400
+    //$$ { on(OpenGuiScreenCallback.EVENT, this::onGuiOpen); }
+    //$$ private void onGuiOpen(Screen vanillaGui) {
+    //#else
     @SubscribeEvent
     public void onGuiOpen(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (GuiScreen.from(getGui(event)) instanceof GuiRenderingDone) {
-            GuiRenderingDone gui = (GuiRenderingDone) GuiScreen.from(getGui(event));
+        net.minecraft.client.gui.GuiScreen vanillaGui = getGui(event);
+    //#endif
+        if (GuiScreen.from(vanillaGui) instanceof GuiRenderingDone) {
+            GuiRenderingDone gui = (GuiRenderingDone) GuiScreen.from(vanillaGui);
             // Check if there already is a youtube button
             if (gui.actionsPanel.getChildren().stream().anyMatch(it -> it instanceof YoutubeButton)) {
                 return; // Button already added

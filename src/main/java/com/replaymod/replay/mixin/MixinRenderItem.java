@@ -16,7 +16,11 @@ import net.minecraft.util.Util;
 @Mixin(ItemRenderer.class)
 public class MixinRenderItem {
     //#if MC>=11300
+    //#if MC>=11400
+    //$$ @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/SystemUtil;getMeasuringTimeMs()J"))
+    //#else
     @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
+    //#endif
     private static long getEnchantmentTime() {
     //#else
     //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))

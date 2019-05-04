@@ -10,7 +10,7 @@ import com.replaymod.online.gui.GuiReplayDownloading;
 import com.replaymod.online.gui.GuiSaveModifiedReplay;
 import com.replaymod.online.handler.GuiHandler;
 import com.replaymod.replay.ReplayModReplay;
-import com.replaymod.replay.events.ReplayCloseEvent;
+import com.replaymod.replay.events.ReplayClosedCallback;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
@@ -18,15 +18,8 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
+//#if MC<11300
 //$$ import net.minecraftforge.common.config.Configuration;
-//#if MC>=10800
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//#endif
 //#endif
 
 import java.io.File;
@@ -87,14 +80,24 @@ public class ReplayModOnline implements Module {
         }
 
         new GuiHandler(this).register();
-        FML_BUS.register(this);
+        ReplayClosedCallback.EVENT.register(replayHandler -> onReplayClosed());
 
         // Initial login prompt
         if (!core.getSettingsRegistry().get(Setting.SKIP_LOGIN_PROMPT)) {
             if (!isLoggedIn()) {
-                core.runLater(() -> {
-                    GuiScreen parent = GuiScreen.wrap(getMinecraft().currentScreen);
-                    new GuiLoginPrompt(apiClient, parent, parent, false).display();
+                core.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        //#if MC>=11400
+                        //$$ if (getMinecraft().overlay != null) {
+                        //$$     // delay until after resources have been loaded
+                        //$$     core.runLater(this);
+                        //$$     return;
+                        //$$ }
+                        //#endif
+                        GuiScreen parent = GuiScreen.wrap(getMinecraft().currentScreen);
+                        new GuiLoginPrompt(apiClient, parent, parent, false).display();
+                    }
                 });
             }
         }
@@ -161,8 +164,7 @@ public class ReplayModOnline implements Module {
         }
     }
 
-    @SubscribeEvent
-    public void onReplayClosed(ReplayCloseEvent.Post event) {
+    private void onReplayClosed() {
         if (currentReplayOutputFile != null) {
             if (currentReplayOutputFile.exists()) { // Replay was modified, ask user for new name
                 new GuiSaveModifiedReplay(currentReplayOutputFile).display();

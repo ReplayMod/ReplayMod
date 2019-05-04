@@ -11,6 +11,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=11400
+//$$ import net.minecraft.client.render.Camera;
+//#endif
+
 //#if MC>=11300
 import net.minecraft.client.renderer.WorldRenderer;
 //#else
@@ -40,11 +44,15 @@ public abstract class MixinRenderGlobal {
 
     @Shadow
     public abstract void setupTerrain(
+            //#if MC>=11400
+            //$$ Camera viewEntity,
+            //#else
             Entity viewEntity,
             //#if MC>=11300
             float partialTicks,
             //#else
             //$$ double partialTicks,
+            //#endif
             //#endif
             ICamera camera,
             int frameCount,
@@ -53,11 +61,15 @@ public abstract class MixinRenderGlobal {
 
     @Inject(method = "setupTerrain", at = @At("HEAD"), cancellable = true)
     private void replayModRender_setupTerrain(
+            //#if MC>=11400
+            //$$ Camera viewEntity,
+            //#else
             Entity viewEntity,
             //#if MC>=11300
             float partialTicks,
             //#else
             //$$ double partialTicks,
+            //#endif
             //#endif
             ICamera camera,
             int frameCount,
@@ -68,11 +80,19 @@ public abstract class MixinRenderGlobal {
             replayModRender_passThroughSetupTerrain = true;
 
             do {
-                setupTerrain(viewEntity, partialTicks, camera, replayModRender_hook.nextFrameId(), playerSpectator);
+                setupTerrain(
+                        viewEntity,
+                        //#if MC<11400
+                        partialTicks,
+                        //#endif
+                        camera,
+                        replayModRender_hook.nextFrameId(),
+                        playerSpectator
+                );
                 replayModRender_hook.updateChunks();
-            } while (displayListEntitiesDirty);
+            } while (this.displayListEntitiesDirty);
 
-            displayListEntitiesDirty = true;
+            this.displayListEntitiesDirty = true;
 
             replayModRender_passThroughSetupTerrain = false;
             ci.cancel();
@@ -96,17 +116,20 @@ public abstract class MixinRenderGlobal {
         }
     }
 
+    // Prior to 1.9.4, MC always uses the same ChunkRenderDispatcher instance
+    //#if MC>=10904
     @Inject(method = "setWorldAndLoadRenderers", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher;stopWorkerThreads()V"))
     private void stopWorkerThreadsAndChunkLoadingRenderGlobal(CallbackInfo ci) {
         if (replayModRender_hook != null) {
             replayModRender_hook.updateRenderDispatcher(null);
         }
     }
+    //#endif
 
     @Inject(method = "loadRenderers", at = @At(value = "RETURN"))
     private void setupChunkLoadingRenderGlobal(CallbackInfo ci) {
         if (replayModRender_hook != null) {
-            replayModRender_hook.updateRenderDispatcher(renderDispatcher);
+            replayModRender_hook.updateRenderDispatcher(this.renderDispatcher);
         }
     }
 }

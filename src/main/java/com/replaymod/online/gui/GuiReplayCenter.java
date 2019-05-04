@@ -5,7 +5,6 @@ import com.google.common.base.Supplier;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.online.ReplayModOnline;
 import com.replaymod.online.api.ApiClient;
@@ -40,6 +39,7 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import org.apache.commons.lang3.StringUtils;
+import net.minecraft.util.text.TextFormatting;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -417,9 +417,9 @@ public class GuiReplayCenter extends GuiScreen {
             this.downloaded = downloaded;
             ReplayMetaData metaData = fileInfo.getMetadata();
 
-            name.setText(ChatFormatting.UNDERLINE + Utils.fileNameToReplayName(fileInfo.getName()));
+            name.setText(TextFormatting.UNDERLINE + Utils.fileNameToReplayName(fileInfo.getName()));
             author.setI18nText("replaymod.gui.center.author",
-                    "" + ChatFormatting.GRAY + ChatFormatting.ITALIC, fileInfo.getOwner());
+                    "" + TextFormatting.GRAY + TextFormatting.ITALIC, fileInfo.getOwner());
             if (StringUtils.isEmpty(metaData.getServerName())) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {
@@ -443,7 +443,7 @@ public class GuiReplayCenter extends GuiScreen {
             favorites.setText("⭑" + fileInfo.getFavorites());
             likes.setText("⬆" + fileInfo.getRatings().getPositive());
             dislikes.setText("⬇" + fileInfo.getRatings().getNegative());
-            category.setText(ChatFormatting.ITALIC + Optional.fromNullable(Category.fromId(fileInfo.getCategory()))
+            category.setText(TextFormatting.ITALIC + Optional.fromNullable(Category.fromId(fileInfo.getCategory()))
                     .or(Category.MISCELLANEOUS).toNiceString());
             addElements(null, durationPanel, downloadsPanel);
 

@@ -9,10 +9,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=11400
+//$$ import net.minecraft.client.render.Camera;
+//#endif
+
 @Mixin(FogRenderer.class)
 public abstract class MixinFogRenderer {
     @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true)
-    private void replayModRender_onSetupFog(int fogDistanceFlag, float partialTicks, CallbackInfo ci) {
+    private void replayModRender_onSetupFog(
+            //#if MC>=11400
+            //$$ Camera camera,
+            //$$ int something,
+            //#else
+            int fogDistanceFlag,
+            float partialTicks,
+            //#endif
+            CallbackInfo ci
+    ) {
         EntityRendererHandler handler =
                 ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().entityRenderer).replayModRender_getHandler();
         if (handler == null) return;

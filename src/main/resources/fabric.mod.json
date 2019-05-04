@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "replaymod",
+  "version": "${version}",
+
+  "name": "Replay Mod",
+  "description": "A Mod which allows you to record, replay and share your Minecraft experience.",
+  "authors": [
+    "CrushedPixel",
+    "johni0702"
+  ],
+  "contact": {
+    "homepage": "https://replaymod.com/",
+    "sources": "https://github.com/ReplayMod/ReplayMod"
+  },
+
+  "license": "GPL-3.0-or-later",
+  "icon": "replaymod_logo.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.replaymod.core.ReplayMod"
+    ]
+  },
+  "mixins": [
+    "mixins.core.replaymod.json",
+    "mixins.extras.playeroverview.replaymod.json",
+    "mixins.recording.replaymod.json",
+    "mixins.render.blend.replaymod.json",
+    "mixins.render.replaymod.json",
+    "mixins.replay.replaymod.json"
+  ],
+
+  "requires": {
+    "fabricloader": ">=0.4.0",
+    "fabric": ">=0.2.0"
+  }
+}

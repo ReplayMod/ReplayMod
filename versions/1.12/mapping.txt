@@ -2,3 +2,6 @@ net.minecraft.client.Minecraft fontRenderer fontRendererObj
 net.minecraft.client.renderer.BufferBuilder net.minecraft.client.renderer.VertexBuffer
 net.minecraft.client.gui.GuiButton x xPosition
 net.minecraft.client.gui.GuiButton y yPosition
+net.minecraft.util.math.Vec3d x xCoord
+net.minecraft.util.math.Vec3d y yCoord
+net.minecraft.util.math.Vec3d z zCoord

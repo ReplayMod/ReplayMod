@@ -4,6 +4,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix3f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Quaternion;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -15,6 +16,10 @@ import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
+
+//#if MC>=11400
+//$$ import net.minecraft.util.math.Vec3d;
+//#endif
 
 public class Util {
     public static BlenderFactory factory() {
@@ -130,6 +135,22 @@ public class Util {
         q.z = tmp;
         q.w = -q.w;
     }
+
+    //#if MC>=10800
+    public static Vector3f getCameraPos() {
+        Minecraft mc = Minecraft.getInstance();
+        //#if MC>=11400
+        //$$ Vec3d pos = mc.getEntityRenderManager().camera.getPos();
+        //$$ return new Vector3f((float) pos.x, (float) pos.y, (float) pos.z);
+        //#else
+        return new Vector3f(
+                (float) -mc.getRenderManager().viewerPosX,
+                (float) -mc.getRenderManager().viewerPosY,
+                (float) -mc.getRenderManager().viewerPosZ
+        );
+        //#endif
+    }
+    //#endif
 
     public static Vector3f rotate(Quaternion rot, Vector3f vec, Vector3f dest) {
         if (dest == null) dest = new Vector3f();

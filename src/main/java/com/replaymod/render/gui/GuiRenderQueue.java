@@ -37,6 +37,10 @@ import java.util.List;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
+//#if MC>=11400
+//$$ import net.minecraft.text.TranslatableTextComponent;
+//#endif
+
 public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
     private final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.renderqueue.title").setColor(Colors.BLACK);
     private final GuiVerticalList list = new GuiVerticalList().setDrawShadow(true).setDrawSlider(true);
@@ -210,8 +214,16 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                 videoRenderer.renderVideo();
             } catch (VideoWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
-                GuiErrorScreen errorScreen = new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"),
-                        I18n.format("replaymod.gui.rendering.error.message"));
+                GuiErrorScreen errorScreen = new GuiErrorScreen(
+                        //#if MC>=11400
+                        //$$ () -> {},
+                        //$$ new TranslatableTextComponent("replaymod.gui.rendering.error.title"),
+                        //$$ new TranslatableTextComponent("replaymod.gui.rendering.error.message")
+                        //#else
+                        I18n.format("replaymod.gui.rendering.error.title"),
+                        I18n.format("replaymod.gui.rendering.error.message")
+                        //#endif
+                );
                 getMinecraft().displayGuiScreen(errorScreen);
                 return;
             } catch (VideoWriter.FFmpegStartupException e) {

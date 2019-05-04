@@ -1,18 +1,18 @@
 package com.replaymod.compat.optifine;
 
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.versions.MCVer;
-import com.replaymod.render.events.ReplayRenderEvent;
+import com.replaymod.render.events.ReplayRenderCallback;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class DisableFastRender {
+public class DisableFastRender extends EventRegistrations {
 
     private final Minecraft mc = Minecraft.getInstance();
 
     private boolean wasFastRender = false;
 
-    @SubscribeEvent
-    public void onRenderBegin(ReplayRenderEvent.Pre event) {
+    { on(ReplayRenderCallback.Pre.EVENT, renderer -> onRenderBegin()); }
+    private void onRenderBegin() {
         if (!MCVer.hasOptifine()) return;
 
         try {
@@ -23,8 +23,8 @@ public class DisableFastRender {
         }
     }
 
-    @SubscribeEvent
-    public void onRenderEnd(ReplayRenderEvent.Post event){
+    { on(ReplayRenderCallback.Post.EVENT, renderer -> onRenderEnd()); }
+    private void onRenderEnd() {
         if (!MCVer.hasOptifine()) return;
 
         try {

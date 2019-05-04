@@ -75,7 +75,14 @@ public class ChunkLoadingRenderGlobal {
         workerJailingQueue = new JailingQueue<>(queueChunkUpdates);
         renderDispatcherAcc.setQueueChunkUpdates(workerJailingQueue);
         //#if MC>=10904
-        ChunkRenderTask element = new ChunkRenderTask(null, null, 0);
+        ChunkRenderTask element = new ChunkRenderTask(
+                null,
+                null,
+                0
+                //#if MC>=11400
+                //$$ , null
+                //#endif
+        );
         //#else
         //$$ ChunkCompileTaskGenerator element = new ChunkCompileTaskGenerator(null, null);
         //#endif

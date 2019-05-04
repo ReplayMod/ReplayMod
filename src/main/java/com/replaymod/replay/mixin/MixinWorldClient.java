@@ -10,6 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(WorldClient.class)
 public abstract class MixinWorldClient {
 
+    // Looks like this has finally been fixed in 1.14 (or been moved somewhere else entirely, guess we'll find out)
+    //#if MC<11400
     /**
      * Fixes a bug in vanilla Minecraft that leaves entities remaining in the entityList even after respawn.
      * The entityList in WorldClient is a Set that assumes that the entity ID of its entities does not change.
@@ -28,4 +30,5 @@ public abstract class MixinWorldClient {
     public void replayModReplay_fix_addEntityToWorld(int entityId, Entity entity, CallbackInfo ci) {
         entity.setEntityId(entityId);
     }
+    //#endif
 }

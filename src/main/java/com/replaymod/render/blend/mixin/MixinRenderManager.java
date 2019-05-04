@@ -19,10 +19,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinRenderManager {
 
     @Inject(
+            //#if MC>=11400
+            //$$ method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V",
+            //#else
             //#if MC>=11300
             method = "renderEntity",
             //#else
             //$$ method = "doRenderEntity",
+            //#endif
             //#endif
             at = @At(value = "INVOKE",
                      target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFF)V"))
@@ -39,10 +43,14 @@ public abstract class MixinRenderManager {
     }
 
     @Inject(
+            //#if MC>=11400
+            //$$ method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V",
+            //#else
             //#if MC>=11300
             method = "renderEntity",
             //#else
             //$$ method = "doRenderEntity",
+            //#endif
             //#endif
             at = @At(value = "INVOKE",
                      target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFF)V",

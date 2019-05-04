@@ -3,7 +3,7 @@ package com.replaymod.extras;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.mixin.KeyBindingAccessor;
-import com.replaymod.replay.events.ReplayOpenEvent;
+import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -17,6 +17,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.resources.I18n;
@@ -26,39 +27,22 @@ import net.minecraft.client.resources.I18n;
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
 
-//#if MC>=10800
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//#endif
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 
-import static com.replaymod.core.versions.MCVer.*;
-
-public class HotkeyButtons implements Extra {
+public class HotkeyButtons extends EventRegistrations implements Extra {
     private ReplayMod mod;
 
     @Override
-    public void register(ReplayMod mod) throws Exception {
+    public void register(ReplayMod mod) {
         this.mod = mod;
 
-        FML_BUS.register(this);
+        register();
     }
 
-    @SubscribeEvent
-    public void postReplayOpen(ReplayOpenEvent.Post event) {
-        GuiReplayOverlay overlay = event.getReplayHandler().getOverlay();
-        new Gui(mod, overlay);
-    }
-
+    { on(ReplayOpenedCallback.EVENT, replayHandler -> new Gui(mod, replayHandler.getOverlay())); }
     public static final class Gui {
         private final GuiTexturedButton toggleButton;
         private final GridLayout panelLayout;

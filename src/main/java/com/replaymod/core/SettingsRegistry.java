@@ -1,12 +1,23 @@
 package com.replaymod.core;
 
-import com.replaymod.core.events.SettingsChangedEvent;
+import com.replaymod.core.events.SettingsChangedCallback;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+//#if MC>=11400
+//$$ import com.google.gson.Gson;
+//$$ import com.google.gson.GsonBuilder;
+//$$ import com.google.gson.JsonElement;
+//$$ import com.google.gson.JsonObject;
+//$$ import com.google.gson.JsonPrimitive;
+//$$ import java.io.IOException;
+//$$ import java.nio.charset.StandardCharsets;
+//$$ import java.nio.file.Files;
+//$$ import java.nio.file.Path;
+//#else
 //#if MC>=11300
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -15,19 +26,63 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 //#else
 //$$ import net.minecraftforge.common.config.Configuration;
 //#endif
+//#endif
 
 import static com.replaymod.core.versions.MCVer.*;
 
 public class SettingsRegistry {
-    private static final Object NULL_OBJECT = new Object();
     private Map<SettingKey<?>, Object> settings = new ConcurrentHashMap<>();
+    //#if MC>=11400
+    //$$ private final Path configFile = getMinecraft().runDirectory.toPath().resolve("configs/replaymod.json");
+    //#else
+    private static final Object NULL_OBJECT = new Object();
     //#if MC>=11300
     private ForgeConfigSpec spec;
     private ModConfig config;
     //#else
     //$$ private Configuration configuration;
     //#endif
+    //#endif
 
+    //#if MC>=11400
+    //$$ public void register() {
+    //$$     String config;
+    //$$     if (Files.exists(configFile)) {
+    //$$         try {
+    //$$             config = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
+    //$$         } catch (IOException e) {
+    //$$             e.printStackTrace();
+    //$$             return;
+    //$$         }
+    //$$     } else {
+    //$$         save();
+    //$$         return;
+    //$$     }
+    //$$     Gson gson = new Gson();
+    //$$     JsonObject root = gson.fromJson(config, JsonObject.class);
+    //$$     for (Map.Entry<SettingKey<?>, Object> entry : settings.entrySet()) {
+    //$$         SettingKey<?> key = entry.getKey();
+    //$$         JsonElement category = root.get(key.getCategory());
+    //$$         if (category != null && category.isJsonObject()) {
+    //$$             JsonElement valueElem = category.getAsJsonObject().get(key.getKey());
+    //$$             if (!valueElem.isJsonPrimitive()) continue;
+    //$$             JsonPrimitive value = valueElem.getAsJsonPrimitive();
+    //$$             if (key.getDefault() instanceof Boolean && value.isBoolean()) {
+    //$$                 entry.setValue(value.getAsBoolean());
+    //$$             }
+    //$$             if (key.getDefault() instanceof Integer && value.isNumber()) {
+    //$$                 entry.setValue(value.getAsNumber().intValue());
+    //$$             }
+    //$$             if (key.getDefault() instanceof Double && value.isNumber()) {
+    //$$                 entry.setValue(value.getAsNumber().doubleValue());
+    //$$             }
+    //$$             if (key.getDefault() instanceof String && value.isString()) {
+    //$$                 entry.setValue(value.getAsString());
+    //$$             }
+    //$$         }
+    //$$     }
+    //$$ }
+    //#else
     //#if MC>=11300
     public void register() {
         if (spec == null) {
@@ -62,6 +117,7 @@ public class SettingsRegistry {
     //$$     }
     //$$ }
     //#endif
+    //#endif
 
     public void register(Class<?> settingsClass) {
         for (Field field : settingsClass.getDeclaredFields()) {
@@ -77,6 +133,9 @@ public class SettingsRegistry {
     }
 
     public void register(SettingKey<?> key) {
+        //#if MC>=11400
+        //$$ settings.put(key, key.getDefault());
+        //#else
         //#if MC>=11300
         if (spec != null) {
             throw new IllegalStateException("Cannot register more settings are spec has been built.");
@@ -101,6 +160,7 @@ public class SettingsRegistry {
         //$$ }
         //$$ settings.put(key, value);
         //#endif
+        //#endif
     }
 
     public Set<SettingKey<?>> getSettings() {
@@ -116,6 +176,7 @@ public class SettingsRegistry {
     }
 
     public <T> void set(SettingKey<T> key, T value) {
+        //#if MC<11400
         //#if MC>=11300
         if (config != null) {
             config.getConfigData().set(key.getCategory() + "." + key.getKey(), value);
@@ -133,17 +194,49 @@ public class SettingsRegistry {
         //$$     throw new IllegalArgumentException("Default type " + key.getDefault().getClass() + " not supported.");
         //$$ }
         //#endif
+        //#endif
         settings.put(key, value);
-        FML_BUS.post(new SettingsChangedEvent(this, key));
+        SettingsChangedCallback.EVENT.invoker().onSettingsChanged(this, key);
     }
 
     public void save() {
+        //#if MC>=11400
+        //$$ JsonObject root = new JsonObject();
+        //$$ for (Map.Entry<SettingKey<?>, Object> entry : settings.entrySet()) {
+        //$$     SettingKey<?> key = entry.getKey();
+        //$$     JsonObject category = root.getAsJsonObject(key.getCategory());
+        //$$     if (category == null) {
+        //$$         category = new JsonObject();
+        //$$         root.add(key.getCategory(), category);
+        //$$     }
+        //$$
+        //$$     Object value = entry.getValue();
+        //$$     if (value instanceof Boolean) {
+        //$$         category.addProperty(key.getKey(), (Boolean) value);
+        //$$     }
+        //$$     if (value instanceof Number) {
+        //$$         category.addProperty(key.getKey(), (Number) value);
+        //$$     }
+        //$$     if (value instanceof String) {
+        //$$         category.addProperty(key.getKey(), (String) value);
+        //$$     }
+        //$$ }
+        //$$ Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        //$$ String config = gson.toJson(gson);
+        //$$ try {
+        //$$     Files.createDirectories(configFile.getParent());
+        //$$     Files.write(configFile, config.getBytes(StandardCharsets.UTF_8));
+        //$$ } catch (IOException e) {
+        //$$     e.printStackTrace();
+        //$$ }
+        //#else
         //#if MC>=11300
         if (config != null) {
             config.save();
         }
         //#else
         //$$ configuration.save();
+        //#endif
         //#endif
     }
 

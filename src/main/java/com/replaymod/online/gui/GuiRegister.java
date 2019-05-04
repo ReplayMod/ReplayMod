@@ -1,6 +1,7 @@
 package com.replaymod.online.gui;
 
 import com.mojang.authlib.exceptions.AuthenticationException;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.online.api.ApiClient;
 import com.replaymod.online.api.ApiException;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
@@ -82,12 +83,7 @@ public class GuiRegister extends AbstractGuiScreen<GuiRegister> {
                             String password = passwordInput.getText();
                             apiClient.register(username, mail, password);
 
-                            getMinecraft().addScheduledTask(new Runnable() {
-                                @Override
-                                public void run() {
-                                    parent.getSuccessScreen().display();
-                                }
-                            });
+                            ReplayMod.instance.runLater(parent.getSuccessScreen()::display);
                         } catch (ApiException ae) {
                             statusLabel.setText(ae.getLocalizedMessage());
                         } catch (AuthenticationException aue) {

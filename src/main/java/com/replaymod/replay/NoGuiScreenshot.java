@@ -2,9 +2,8 @@ package com.replaymod.replay;
 
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.SettableFuture;
-import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,8 +17,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Queue;
-import java.util.concurrent.FutureTask;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -49,7 +46,12 @@ public class NoGuiScreenshot {
 
                     // Render frame without GUI
                     GlStateManager.pushMatrix();
-                    GlStateManager.clear(16640);
+                    GlStateManager.clear(
+                            16640
+                            //#if MC>=11400
+                            //$$ , true
+                            //#endif
+                    );
                     mc.getFramebuffer().bindFramebuffer(true);
                     GlStateManager.enableTexture2D();
 
@@ -84,7 +86,7 @@ public class NoGuiScreenshot {
                 try {
                     //#if MC>=11300
                     ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer(), (msg) ->
-                            mc.addScheduledTask(() -> mc.ingameGUI.getChatGUI().printChatMessage(msg)));
+                            ReplayMod.instance.runLater(() -> mc.ingameGUI.getChatGUI().printChatMessage(msg)));
                     //#else
                     //$$ ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer());
                     //#endif
@@ -121,11 +123,7 @@ public class NoGuiScreenshot {
         // Make sure we are not somewhere in the middle of the rendering process but always at the beginning
         // of the game loop. We cannot use the addScheduledTask method as it'll run the task if called
         // from the minecraft thread which is exactly what we want to avoid.
-        Queue<FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (scheduledTasks) {
-            scheduledTasks.add(ListenableFutureTask.create(runnable, null));
-        }
+        ReplayMod.instance.runLater(runnable);
         return future;
     }
 }

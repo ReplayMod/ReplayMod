@@ -2,27 +2,16 @@ package com.replaymod.simplepathing.preview;
 
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.SettingsRegistry;
-import com.replaymod.core.events.SettingsChangedEvent;
+import com.replaymod.core.events.SettingsChangedCallback;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
-import com.replaymod.replay.events.ReplayCloseEvent;
-import com.replaymod.replay.events.ReplayOpenEvent;
+import com.replaymod.replay.events.ReplayClosedCallback;
+import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.Setting;
 
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#if MC>=10800
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#endif
-
-import static com.replaymod.core.versions.MCVer.*;
-
-public class PathPreview {
+public class PathPreview extends EventRegistrations {
     private final ReplayModSimplePathing mod;
 
     private ReplayHandler replayHandler;
@@ -30,10 +19,22 @@ public class PathPreview {
 
     public PathPreview(ReplayModSimplePathing mod) {
         this.mod = mod;
-    }
 
-    public void register() {
-        FML_BUS.register(this);
+        on(SettingsChangedCallback.EVENT, (registry, key) -> {
+            if (key == Setting.PATH_PREVIEW) {
+                update();
+            }
+        });
+
+        on(ReplayOpenedCallback.EVENT, replayHandler -> {
+            this.replayHandler = replayHandler;
+            update();
+        });
+
+        on(ReplayClosedCallback.EVENT, replayHandler -> {
+            this.replayHandler = null;
+            update();
+        });
     }
 
     public void registerKeyBindings(KeyBindingRegistry registry) {
@@ -42,25 +43,6 @@ public class PathPreview {
             settings.set(Setting.PATH_PREVIEW, !settings.get(Setting.PATH_PREVIEW));
             settings.save();
         });
-    }
-
-    @SubscribeEvent
-    public void onReplayOpen(ReplayOpenEvent.Post event) {
-        replayHandler = event.getReplayHandler();
-        update();
-    }
-
-    @SubscribeEvent
-    public void onReplayClose(ReplayCloseEvent.Pre event) {
-        replayHandler = null;
-        update();
-    }
-
-    @SubscribeEvent
-    public void onSettingsChanged(SettingsChangedEvent event) {
-        if (event.getKey() == Setting.PATH_PREVIEW) {
-            update();
-        }
     }
 
     private void update() {

@@ -13,18 +13,9 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Timer;
-
-//#if MC>=10800
-//#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-//#endif
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -34,7 +25,7 @@ import static com.replaymod.core.versions.MCVer.*;
 /**
  * Plays a timeline.
  */
-public abstract class AbstractTimelinePlayer {
+public abstract class AbstractTimelinePlayer extends EventRegistrations {
     private final Minecraft mc = getMinecraft();
     private final ReplayHandler replayHandler;
     private Timeline timeline;
@@ -79,7 +70,7 @@ public abstract class AbstractTimelinePlayer {
         }
 
         replayHandler.getReplaySender().setSyncModeAndWait();
-        FML_BUS.register(this);
+        register();
         lastTime = 0;
 
         MinecraftAccessor mcA = (MinecraftAccessor) mc;
@@ -106,14 +97,14 @@ public abstract class AbstractTimelinePlayer {
         return future != null && !future.isDone();
     }
 
-    @SubscribeEvent
-    public void onTick(ReplayTimer.UpdatedEvent event) {
+    { on(ReplayTimer.UpdatedCallback.EVENT, this::onTick); }
+    public void onTick() {
         if (future.isDone()) {
             MinecraftAccessor mcA = (MinecraftAccessor) mc;
             mcA.setTimer(((ReplayTimer) mcA.getTimer()).getWrapped());
             replayHandler.getReplaySender().setReplaySpeed(0);
             replayHandler.getReplaySender().setAsyncMode(true);
-            FML_BUS.unregister(this);
+            unregister();
             return;
         }
         long time = getTimePassed();

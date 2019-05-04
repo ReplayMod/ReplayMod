@@ -7,11 +7,13 @@ import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.gui.GuiRecordingControls;
 import com.replaymod.recording.gui.GuiRecordingOverlay;
+import com.replaymod.recording.mixin.NetworkManagerAccessor;
 import com.replaymod.recording.packet.PacketListener;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
+import io.netty.channel.Channel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.NetworkManager;
 import org.apache.logging.log4j.Logger;
@@ -108,7 +110,8 @@ public class ConnectionEventHandler {
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
             packetListener = new PacketListener(core, currentFile.toPath(), replayFile, metaData);
-            networkManager.channel().pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
+            Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
+            channel.pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 
             recordingEventHandler = new RecordingEventHandler(packetListener);
             recordingEventHandler.register();

@@ -17,6 +17,7 @@
     //$$ "MixinEffectRenderer",
     //$$ "MixinRendererLivingEntity",
     //#endif
+    "MixinCamera",
     "MixinEntityRenderer",
     //#if MC>=11300
     "MixinFogRenderer",

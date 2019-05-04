@@ -9,40 +9,36 @@ import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+
+//#if MC>=11400
+//$$ import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
+//$$ import net.minecraft.client.gui.Screen;
+//#else
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
-
-//#if MC>=10800
-//#if MC>=11300
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import static com.replaymod.core.versions.MCVer.getGui;
 //#endif
 
-import static com.replaymod.core.versions.MCVer.getGui;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 
-public class GuiBackgroundProcesses {
+public class GuiBackgroundProcesses extends EventRegistrations {
     private GuiPanel panel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(10));
 
-    public void register() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
-    public void unregister() {
-        MinecraftForge.EVENT_BUS.unregister(this);
-    }
-
+    //#if MC>=11400
+    //$$ { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
+    //$$ private void onGuiInit(Screen guiScreen) {
+    //#else
     @SubscribeEvent
     public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
-        if (getGui(event) != getMinecraft().currentScreen) return; // people tend to construct GuiScreens without opening them
+        net.minecraft.client.gui.GuiScreen guiScreen = getGui(event);
+    //#endif
+        if (guiScreen != getMinecraft().currentScreen) return; // people tend to construct GuiScreens without opening them
 
-        VanillaGuiScreen.setup(getGui(event)).setLayout(new CustomLayout<GuiScreen>() {
+        VanillaGuiScreen.setup(guiScreen).setLayout(new CustomLayout<GuiScreen>() {
             @Override
             protected void layout(GuiScreen container, int width, int height) {
                 pos(panel, width - 5 - width(panel), 5);

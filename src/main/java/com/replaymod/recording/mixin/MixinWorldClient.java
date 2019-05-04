@@ -10,7 +10,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,11 +17,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=11400
+//$$ import net.minecraft.world.chunk.ChunkManager;
+//$$ import net.minecraft.world.dimension.Dimension;
+//$$ import net.minecraft.world.dimension.DimensionType;
+//$$ import java.util.function.BiFunction;
+//#else
+import net.minecraft.world.storage.ISaveHandler;
 //#if MC>=11300
 import net.minecraft.world.dimension.Dimension;
 import net.minecraft.world.storage.WorldSavedDataStorage;
 //#else
 //$$ import net.minecraft.world.WorldProvider;
+//#endif
 //#endif
 
 
@@ -31,6 +38,11 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     @Shadow
     private Minecraft mc;
 
+    //#if MC>=11400
+    //$$ protected MixinWorldClient(LevelProperties levelProperties_1, DimensionType dimensionType_1, BiFunction<World, Dimension, ChunkManager> biFunction_1, Profiler profiler_1, boolean boolean_1) {
+    //$$     super(levelProperties_1, dimensionType_1, biFunction_1, profiler_1, boolean_1);
+    //$$ }
+    //#else
     protected MixinWorldClient(ISaveHandler saveHandlerIn,
                                //#if MC>=11300
                                WorldSavedDataStorage mapStorage,
@@ -48,6 +60,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
                 //#endif
                 info, providerIn, profilerIn, client);
     }
+    //#endif
 
     private RecordingEventHandler replayModRecording_getRecordingEventHandler() {
         return ((RecordingEventHandler.RecordingEventSender) mc.renderGlobal).getRecordingEventHandler();
@@ -57,8 +70,13 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     // but are instead played directly by the client. The server only sends these sounds to
     // other clients so we have to record them manually.
     // E.g. Block place sounds
+    //#if MC>=11400
+    //$$ @Inject(method = "playSound(Lnet/minecraft/entity/player/PlayerEntity;DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FF)V",
+    //$$         at = @At("HEAD"))
+    //#else
     @Inject(method = "playSound(Lnet/minecraft/entity/player/EntityPlayer;DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FF)V",
             at = @At("HEAD"))
+    //#endif
     public void replayModRecording_recordClientSound(EntityPlayer player, double x, double y, double z, SoundEvent sound, SoundCategory category,
                           float volume, float pitch, CallbackInfo ci) {
         if (player == mc.player) {
@@ -70,9 +88,14 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     }
 
     // Same goes for level events (also called effects). E.g. door open, block break, etc.
+    //#if MC>=11400
+    //$$ @Inject(method = "playLevelEvent", at = @At("HEAD"))
+    //$$ private void playLevelEvent (PlayerEntity player, int type, BlockPos pos, int data, CallbackInfo ci) {
+    //#else
     // These are handled in the World class, so we override the method in WorldClient and add our special handling.
     @Override
-    public void playEvent(EntityPlayer player, int type, BlockPos pos, int data) {
+    public void playEvent (EntityPlayer player, int type, BlockPos pos, int data) {
+    //#endif
         if (player == mc.player) {
             // We caused this event, the server won't send it to us
             RecordingEventHandler handler = replayModRecording_getRecordingEventHandler();
@@ -80,7 +103,9 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
                 handler.onClientEffect(type, pos, data);
             }
         }
+        //#if MC<11400
         super.playEvent(player, type, pos, data);
+        //#endif
     }
 }
 //#endif

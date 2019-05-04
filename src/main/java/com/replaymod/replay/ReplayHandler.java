@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.Restrictions;
@@ -11,8 +12,9 @@ import com.replaymod.core.utils.Utils;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.SpectatorCameraController;
-import com.replaymod.replay.events.ReplayCloseEvent;
-import com.replaymod.replay.events.ReplayOpenEvent;
+import com.replaymod.replay.events.ReplayClosedCallback;
+import com.replaymod.replay.events.ReplayClosingCallback;
+import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replay.mixin.EntityLivingBaseAccessor;
 import com.replaymod.replaystudio.data.Marker;
@@ -52,6 +54,8 @@ import net.minecraft.entity.EntityLivingBase;
 
 //#if MC>=10800
 import net.minecraft.network.EnumPacketDirection;
+//#if MC>=11400
+//#else
 //#if MC>=11300
 import net.minecraftforge.fml.network.NetworkHooks;
 //#else
@@ -59,6 +63,7 @@ import net.minecraftforge.fml.network.NetworkHooks;
 //$$ import net.minecraft.client.network.NetHandlerPlayClient;
 //$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //$$ import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
+//#endif
 //#endif
 //#else
 //$$ import cpw.mods.fml.common.Loader;
@@ -127,12 +132,10 @@ public class ReplayHandler {
     private UUID spectating;
 
     public ReplayHandler(ReplayFile replayFile, boolean asyncMode) throws IOException {
-        Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
+        Preconditions.checkState(isOnMainThread(), "Must be called from Minecraft thread.");
         this.replayFile = replayFile;
 
         replayDuration = replayFile.getMetaData().getDuration();
-
-        FML_BUS.post(new ReplayOpenEvent.Pre(this));
 
         markers = replayFile.getMarkers().or(Collections.emptySet());
 
@@ -146,7 +149,7 @@ public class ReplayHandler {
         overlay = new GuiReplayOverlay(this);
         overlay.setVisible(true);
 
-        FML_BUS.post(new ReplayOpenEvent.Post(this));
+        ReplayOpenedCallback.EVENT.invoker().replayOpened(this);
 
         fullReplaySender.setAsyncMode(asyncMode);
     }
@@ -155,7 +158,7 @@ public class ReplayHandler {
         channel.close();
 
         // Force re-creation of camera entity by unloading the previous world
-        mc.addScheduledTask(() -> {
+        ReplayMod.instance.runLater(() -> {
             //#if MC>=11300
             mc.mouseHelper.ungrabMouse();
             //#else
@@ -170,13 +173,15 @@ public class ReplayHandler {
     }
 
     public void endReplay() throws IOException {
-        Preconditions.checkState(mc.isCallingFromMinecraftThread(), "Must be called from Minecraft thread.");
+        Preconditions.checkState(isOnMainThread(), "Must be called from Minecraft thread.");
 
-        FML_BUS.post(new ReplayCloseEvent.Pre(this));
+        ReplayClosingCallback.EVENT.invoker().replayClosing(this);
 
         fullReplaySender.terminateReplay();
         //#if MC>=10904
-        quickReplaySender.unregister();
+        if (quickMode) {
+            quickReplaySender.unregister();
+        }
         //#endif
 
         replayFile.save();
@@ -209,7 +214,7 @@ public class ReplayHandler {
 
         mc.displayGuiScreen(null);
 
-        FML_BUS.post(new ReplayCloseEvent.Post(this));
+        ReplayClosedCallback.EVENT.invoker().replayClosed(this);
     }
 
     private void setup() {
@@ -235,7 +240,9 @@ public class ReplayHandler {
         channel.pipeline().fireChannelActive();
 
         networkManager.setNetHandler(new NetHandlerLoginClient(networkManager, mc, null, it -> {}));
+        //#if MC<11400
         NetworkHooks.registerClientLoginChannel(networkManager);
+        //#endif
         // FIXME make this work (with vanilla and mods) on all other versions again, now that login phase is included
         //       probably have to change some of the forge handshake calls
         //#else
@@ -572,7 +579,11 @@ public class ReplayHandler {
                 replaySender.jumpToTime(targetTime);
             } else { // We either have to restart the replay or send a significant amount of packets
                 // Render our please-wait-screen
-                GuiScreen guiScreen = new GuiScreen() {
+                GuiScreen guiScreen = new GuiScreen(
+                        //#if MC>=11400
+                        //$$ null
+                        //#endif
+                ) {
                     @Override
                     //#if MC>=11300
                     public void render(int mouseX, int mouseY, float partialTicks) {
@@ -590,13 +601,21 @@ public class ReplayHandler {
 
                 // Perform the rendering using OpenGL
                 pushMatrix();
-                clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+                        //#if MC>=11400
+                        //$$ , true
+                        //#endif
+                );
                 enableTexture2D();
                 mc.getFramebuffer().bindFramebuffer(true);
+                //#if MC>=11400
+                //$$ mc.window.method_4493(true);
+                //#else
                 //#if MC>=11300
                 mc.mainWindow.setupOverlayRendering();
                 //#else
                 //$$ mc.entityRenderer.setupOverlayRendering();
+                //#endif
                 //#endif
 
                 //#if MC>=11300

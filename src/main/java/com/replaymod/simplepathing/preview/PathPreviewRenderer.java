@@ -15,25 +15,20 @@ import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
-//#if MC>=10800
-import net.minecraft.client.renderer.GlStateManager;
-//#if MC>=11300
+//#if MC>=11400
+//$$ import com.replaymod.core.events.PostRenderWorldCallback;
+//#else
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import com.replaymod.core.versions.MCVer.GlStateManager;
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
 
 import java.util.Comparator;
@@ -42,7 +37,7 @@ import java.util.Optional;
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.versions.MCVer.*;
 
-public class PathPreviewRenderer {
+public class PathPreviewRenderer extends EventRegistrations {
     private static final ResourceLocation CAMERA_HEAD = new ResourceLocation("replaymod", "camera_head.png");
     private static final Minecraft mc = MCVer.getMinecraft();
 
@@ -58,16 +53,13 @@ public class PathPreviewRenderer {
         this.replayHandler = replayHandler;
     }
 
-    public void register() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
-    public void unregister() {
-        MinecraftForge.EVENT_BUS.unregister(this);
-    }
-
+    //#if MC>=11400
+    //$$ { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
+    //$$ private void renderCameraPath() {
+    //#else
     @SubscribeEvent
     public void renderCameraPath(RenderWorldLastEvent event) {
+    //#endif
         if (!replayHandler.getReplaySender().isAsyncMode() || mc.gameSettings.hideGUI) return;
 
         Entity view = getRenderViewEntity(mc);

@@ -8,8 +8,13 @@ import com.replaymod.render.blend.data.DObject;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.client.model.pipeline.LightUtil;
 import org.lwjgl.opengl.GL11;
+
+//#if MC>=11400
+//$$ import net.minecraft.util.math.Vec3i;
+//#else
+import net.minecraftforge.client.model.pipeline.LightUtil;
+//#endif
 
 //#if MC>=11300
 import com.replaymod.render.blend.mixin.ItemRendererAccessor;
@@ -122,7 +127,14 @@ public class ItemExporter implements Exporter {
                     //#endif
                     //#endif
                     : 0xffffffff;
+            //#if MC>=11400
+            //$$ buffer.putVertexData(quad.getVertexData());
+            //$$ buffer.setQuadColor(color);
+            //$$ Vec3i vec3i_1 = quad.getFace().getVector();
+            //$$ buffer.postNormal(vec3i_1.getX(), vec3i_1.getY(), vec3i_1.getZ());
+            //#else
             LightUtil.renderQuadColor(buffer, quad, color);
+            //#endif
         }
 
     }

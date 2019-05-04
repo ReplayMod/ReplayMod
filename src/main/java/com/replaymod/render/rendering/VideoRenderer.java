@@ -12,7 +12,7 @@ import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
-import com.replaymod.render.events.ReplayRenderEvent;
+import com.replaymod.render.events.ReplayRenderCallback;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
@@ -39,6 +39,7 @@ import org.lwjgl.glfw.GLFW;
 //$$ import net.minecraft.client.gui.ScaledResolution;
 //$$ import org.lwjgl.input.Mouse;
 //$$ import org.lwjgl.opengl.Display;
+//$$ import static com.replaymod.core.versions.MCVer.newScaledResolution;
 //#endif
 
 //#if MC>=10800
@@ -58,7 +59,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import static com.google.common.collect.Iterables.getLast;
-import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -124,7 +124,7 @@ public class VideoRenderer implements RenderInfo {
      * @return {@code true} if rendering was successful, {@code false} if the user aborted rendering (or the window was closed)
      */
     public boolean renderVideo() throws Throwable {
-        FML_BUS.post(new ReplayRenderEvent.Pre(this));
+        ReplayRenderCallback.Pre.EVENT.invoker().beforeRendering(this);
 
         setup();
 
@@ -177,7 +177,7 @@ public class VideoRenderer implements RenderInfo {
 
         finish();
 
-        FML_BUS.post(new ReplayRenderEvent.Post(this));
+        ReplayRenderCallback.Post.EVENT.invoker().afterRendering(this);
 
         if (failureCause != null) {
             throw failureCause;
@@ -319,7 +319,11 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         // Set up our own framebuffer to render the GUI to
-        guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true);
+        guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true
+                //#if MC>=11400
+                //$$ , false
+                //#endif
+        );
     }
 
     private void finish() {
@@ -327,7 +331,7 @@ public class VideoRenderer implements RenderInfo {
             timelinePlayerFuture.cancel(false);
         }
         // Tear down of the timeline player might only happen the next tick after it was cancelled
-        timelinePlayer.onTick(new ReplayTimer.UpdatedEvent());
+        timelinePlayer.onTick();
 
         if (!OpenGlHelper.isFramebufferEnabled()) {
             //#if MC>=11300
@@ -374,7 +378,11 @@ public class VideoRenderer implements RenderInfo {
 
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
         //#if MC>=11300
-        mc.getFramebuffer().createFramebuffer(displayWidth, displayHeight);
+        mc.getFramebuffer().createFramebuffer(displayWidth, displayHeight
+                //#if MC>=11400
+                //$$ , false
+                //#endif
+        );
         //noinspection ConstantConditions
         MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.mainWindow;
         acc.setFramebufferWidth(displayWidth);
@@ -385,6 +393,9 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void tick() {
+        //#if MC>=11400
+        //$$ ((MCVer.MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
+        //#else
         Queue<FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (scheduledTasks) {
@@ -392,6 +403,7 @@ public class VideoRenderer implements RenderInfo {
                 scheduledTasks.poll().run();
             }
         }
+        //#endif
 
         mc.currentScreen = gui.toMinecraft();
         //#if MC>=10800 && MC<11300
@@ -411,19 +423,31 @@ public class VideoRenderer implements RenderInfo {
             if (!settings.isHighPerformance() && displaySizeChanged()) {
                 updateDisplaySize();
                 //#if MC>=11300
-                guiFramebuffer.createBindFramebuffer(mc.mainWindow.getFramebufferWidth(), mc.mainWindow.getFramebufferHeight());
+                guiFramebuffer.createBindFramebuffer(mc.mainWindow.getFramebufferWidth(), mc.mainWindow.getFramebufferHeight()
+                        //#if MC>=11400
+                        //$$ , false
+                        //#endif
+                );
                 //#else
                 //$$ guiFramebuffer.createBindFramebuffer(mc.displayWidth, mc.displayHeight);
                 //#endif
             }
 
             pushMatrix();
-            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+                    //#if MC>=11400
+                    //$$ , false
+                    //#endif
+            );
             enableTexture2D();
             guiFramebuffer.bindFramebuffer(true);
 
             //#if MC>=11300
-            mc.mainWindow.setupOverlayRendering();
+            mc.mainWindow.setupOverlayRendering(
+                    //#if MC>=11400
+                    //$$ false
+                    //#endif
+            );
             //#else
             //$$ mc.entityRenderer.setupOverlayRendering();
             //#endif

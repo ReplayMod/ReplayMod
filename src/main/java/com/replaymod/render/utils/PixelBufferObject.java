@@ -1,7 +1,7 @@
 package com.replaymod.render.utils;
 
 import com.google.common.base.Objects;
-import com.replaymod.core.versions.MCVer;
+import com.replaymod.core.ReplayMod;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 
@@ -224,7 +224,7 @@ public class PixelBufferObject {
         super.finalize();
         if (handle != -1) {
             LogManager.getLogger().warn("PBO garbage collected before deleted!");
-            MCVer.getMinecraft().addScheduledTask(this::delete);
+            ReplayMod.instance.runLater(this::delete);
         }
     }
 }

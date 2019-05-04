@@ -51,9 +51,15 @@ public class TileEntityExporter implements Exporter {
         // We however want our TileEntities object to not move when the viewer does,
         // so we position it at 0/0/0 and instead have the tile entities themselves move more
         Matrix4f.translate(new Vector3f(
+                //#if MC>=11400
+                //$$ (float) -mc.getEntityRenderManager().camera.getPos().x,
+                //$$ (float) -mc.getEntityRenderManager().camera.getPos().y,
+                //$$ (float) -mc.getEntityRenderManager().camera.getPos().z
+                //#else
                 (float) -mc.getRenderManager().viewerPosX,
                 (float) -mc.getRenderManager().viewerPosY,
                 (float) -mc.getRenderManager().viewerPosZ
+                //#endif
         ), modelView, modelView);
         renderState.push(tileEntitiesObject, modelView);
     }

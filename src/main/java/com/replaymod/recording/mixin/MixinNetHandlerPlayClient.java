@@ -58,7 +58,7 @@ public abstract class MixinNetHandlerPlayClient {
                 if (data.getProfile() == null || data.getProfile().getId() == null) continue;
                 // Only add spawn packet for our own player and only if he isn't known yet
                 if (data.getProfile().getId().equals(gameController.player.getGameProfile().getId())
-                        && !playerInfoMap.containsKey(data.getProfile().getId())) {
+                        && !this.playerInfoMap.containsKey(data.getProfile().getId())) {
                     handler.onPlayerJoin();
                 }
             }

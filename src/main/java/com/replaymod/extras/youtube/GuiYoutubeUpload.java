@@ -218,10 +218,14 @@ public class GuiYoutubeUpload extends GuiScreen {
                             try {
                                 Desktop.getDesktop().browse(new URL(url).toURI());
                             } catch(Throwable throwable) {
+                                //#if MC>=11400
+                                //$$ SystemUtil.getOperatingSystem().open(url);
+                                //#else
                                 //#if MC>=11300
                                 Util.getOSType().openURI(url);
                                 //#else
                                 //$$ Sys.openURL(url);
+                                //#endif
                                 //#endif
                             }
                             upload = null;

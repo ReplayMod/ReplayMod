@@ -3,11 +3,14 @@ package com.replaymod.simplepathing;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.events.SettingsChangedEvent;
+import com.replaymod.core.events.SettingsChangedCallback;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.versions.MCVer.Keyboard;
+import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
-import com.replaymod.replay.events.ReplayCloseEvent;
-import com.replaymod.replay.events.ReplayOpenEvent;
+import com.replaymod.replay.events.ReplayClosedCallback;
+import com.replaymod.replay.events.ReplayClosingCallback;
+import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.change.Change;
@@ -21,7 +24,6 @@ import com.replaymod.simplepathing.preview.PathPreview;
 import lombok.Getter;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,9 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.replaymod.core.versions.MCVer.FML_BUS;
-
-public class ReplayModSimplePathing implements Module {
+public class ReplayModSimplePathing extends EventRegistrations implements Module {
     { instance = this; }
     public static ReplayModSimplePathing instance;
 
@@ -50,12 +50,31 @@ public class ReplayModSimplePathing implements Module {
         this.core = core;
 
         core.getSettingsRegistry().register(Setting.class);
+
+        on(SettingsChangedCallback.EVENT, (registry, key) -> {
+            if (key == Setting.DEFAULT_INTERPOLATION) {
+                if (currentTimeline != null && guiPathing != null) {
+                    updateDefaultInterpolatorType();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void register() {
+        super.register();
+        pathPreview.register();
+    }
+
+    @Override
+    public void unregister() {
+        super.unregister();
+        pathPreview.unregister();
     }
 
     @Override
     public void initClient() {
-        FML_BUS.register(this);
-        pathPreview.register();
+        register();
     }
 
     @Override
@@ -75,9 +94,9 @@ public class ReplayModSimplePathing implements Module {
         });
     }
 
-    @SubscribeEvent
-    public void postReplayOpen(ReplayOpenEvent.Post event) {
-        ReplayFile replayFile = event.getReplayHandler().getReplayFile();
+    { on(ReplayOpenedCallback.EVENT, this::onReplayOpened); }
+    private void onReplayOpened(ReplayHandler replayHandler) {
+        ReplayFile replayFile = replayHandler.getReplayFile();
         try {
             synchronized (replayFile) {
                 Timeline timeline = replayFile.getTimelines(new SPTimeline()).get("");
@@ -91,7 +110,7 @@ public class ReplayModSimplePathing implements Module {
             throw new ReportedException(CrashReport.makeCrashReport(e, "Reading timeline"));
         }
 
-        guiPathing = new GuiPathing(core, this, event.getReplayHandler());
+        guiPathing = new GuiPathing(core, this, replayHandler);
 
         saveService = Executors.newSingleThreadExecutor();
         new Runnable() {
@@ -105,8 +124,8 @@ public class ReplayModSimplePathing implements Module {
         }.run();
     }
 
-    @SubscribeEvent
-    public void preReplayClose(ReplayCloseEvent.Pre event) {
+    { on(ReplayClosingCallback.EVENT, replayHandler -> onReplayClosing()); }
+    private void onReplayClosing() {
         saveService.shutdown();
         try {
             saveService.awaitTermination(1, TimeUnit.MINUTES);
@@ -116,20 +135,11 @@ public class ReplayModSimplePathing implements Module {
         saveService = null;
     }
 
-    @SubscribeEvent
-    public void onReplayClose(ReplayCloseEvent.Post event) {
+    { on(ReplayClosedCallback.EVENT, replayHandler -> onReplayClosed()); }
+    private void onReplayClosed() {
         currentTimeline = null;
         guiPathing = null;
         selectedPath = null;
-    }
-
-    @SubscribeEvent
-    public void onSettingsChanged(SettingsChangedEvent event) {
-        if (event.getKey() == Setting.DEFAULT_INTERPOLATION) {
-            if (currentTimeline != null && guiPathing != null) {
-                updateDefaultInterpolatorType();
-            }
-        }
     }
 
     private GuiReplayOverlay getReplayOverlay() {

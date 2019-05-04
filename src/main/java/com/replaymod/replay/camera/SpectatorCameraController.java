@@ -8,8 +8,11 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 
+//#if MC>=11400
+//$$ import net.minecraft.entity.EquipmentSlot;
+//#endif
+
 //#if MC>=11300
-// FIXME
 //#else
 //$$ import org.lwjgl.input.Mouse;
 //#endif
@@ -39,7 +42,7 @@ public class SpectatorCameraController implements CameraController {
 
         // Prevent mouse movement
         //#if MC>=11300
-        // FIXME
+        // No longer needed
         //#else
         //$$ Mouse.updateCursor();
         //#endif
@@ -53,7 +56,11 @@ public class SpectatorCameraController implements CameraController {
             // If it's a player, also 'steal' its inventory so the rendering code knows what item to render
             if (view instanceof EntityPlayer) {
                 EntityPlayer viewPlayer = (EntityPlayer) view;
+                //#if MC>=11400
+                //$$ camera.setEquippedStack(EquipmentSlot.HEAD, viewPlayer.getEquippedStack(EquipmentSlot.HEAD));
+                //#else
                 camera.inventory = viewPlayer.inventory;
+                //#endif
                 //#if MC>=10904
                 EntityPlayerAccessor cameraA = (EntityPlayerAccessor) camera;
                 EntityPlayerAccessor viewPlayerA = (EntityPlayerAccessor) camera;

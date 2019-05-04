@@ -10,11 +10,19 @@ buildscript {
     project.ext.mcVersion = mcVersion
 
     repositories {
+        mavenLocal()
         jcenter()
         mavenCentral()
-        maven {
-            name = "forge"
-            url = "https://files.minecraftforge.net/maven"
+        if (mcVersion >= 11400) {
+            maven {
+                name = "fabric"
+                url = "https://maven.fabricmc.net/"
+            }
+        } else {
+            maven {
+                name = "forge"
+                url = "https://files.minecraftforge.net/maven"
+            }
         }
         maven {
             name = "sonatype"
@@ -27,22 +35,26 @@ buildscript {
         if (!gradle.gradleVersion.startsWith('3.')) {
             classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2' // Gradle 4+ only
         }
-        classpath 'org.ow2.asm:asm:6.0'
-        classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
-            // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
-            // and putting mixin right here will place it before forge in the class loader
-            exclude group: 'org.ow2.asm', module: 'asm-debug-all'
+        if (mcVersion >= 11400) {
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.2-SNAPSHOT'
+        } else {
+            classpath 'org.ow2.asm:asm:6.0'
+            classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
+                // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
+                // and putting mixin right here will place it before forge in the class loader
+                exclude group: 'org.ow2.asm', module: 'asm-debug-all'
+            }
+            classpath 'net.minecraftforge.gradle:ForgeGradle:' + (
+                    mcVersion >= 11300 ? '3.+' :
+                    mcVersion >= 11200 ? '2.3-SNAPSHOT' :
+                    mcVersion >= 10904 ? '2.2-SNAPSHOT' :
+                    mcVersion >= 10809 ? '2.1-SNAPSHOT' :
+                    mcVersion >= 10800 ? '2.0-SNAPSHOT' :
+                    mcVersion >= 10710 ? '1.2-SNAPSHOT' :
+                                         'invalid'
+            )
         }
-        classpath 'net.minecraftforge.gradle:ForgeGradle:' + (
-                mcVersion >= 11300 ? '3.+' :
-                mcVersion >= 11200 ? '2.3-SNAPSHOT' :
-                mcVersion >= 10904 ? '2.2-SNAPSHOT' :
-                mcVersion >= 10809 ? '2.1-SNAPSHOT' :
-                mcVersion >= 10800 ? '2.0-SNAPSHOT' :
-                mcVersion >= 10710 ? '1.2-SNAPSHOT' :
-                                     'invalid'
-        )
-        classpath 'com.github.replaymod:preprocessor:30248d0'
+        classpath 'com.github.replaymod:preprocessor:9d3202c'
     }
 }
 
@@ -50,7 +62,8 @@ import com.replaymod.gradle.preprocess.PreprocessTask
 
 def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
 
-def FG3 = mcVersion >= 11300
+def FG3 = mcVersion >= 11300 && mcVersion < 11400
+def FABRIC = mcVersion >= 11400
 
 def jGuiVersion = project.name
 if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
@@ -61,7 +74,9 @@ if (!gradle.gradleVersion.startsWith('3.')) {
 }
 
 if (mcVersion >= 10800) {
-    if (FG3) {
+    if (FABRIC) {
+        apply plugin: 'fabric-loom'
+    } else if (FG3) {
         apply plugin: 'net.minecraftforge.gradle'
         // FIXME use mixin plugin once updated
         compileJava {
@@ -85,59 +100,63 @@ apply plugin: 'com.replaymod.preprocess'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-afterEvaluate {
-    version = mcVersionStr + '-' + rootProject.version
-}
+version = mcVersionStr + '-' + rootProject.version
 group= "com.replaymod"
 archivesBaseName = "replaymod"
 
-minecraft {
-    if (FG3) {
-        runs {
-            client {
-                workingDirectory rootProject.file('eclipse')
-                property 'forge.logging.console.level', 'info'
-                mods {
-                    replaymod {
-                        source sourceSets.main
+if (FABRIC) {
+    minecraft {
+        refmapName = 'mixins.replaymod.refmap.json'
+    }
+} else {
+    minecraft {
+        if (FG3) {
+            runs {
+                client {
+                    workingDirectory rootProject.file('eclipse')
+                    property 'forge.logging.console.level', 'info'
+                    mods {
+                        replaymod {
+                            source sourceSets.main
+                        }
                     }
                 }
             }
+        } else {
+            if (mcVersion >= 10800) {
+                coreMod = 'com.replaymod.core.LoadingPlugin'
+            }
+            runDir = "../../eclipse"
         }
-    } else {
-        if (mcVersion >= 10800) {
-            coreMod = 'com.replaymod.core.LoadingPlugin'
-        }
-        runDir = "../../eclipse"
-    }
 
-    if (!FG3) {
-        version = [
-                11202: '1.12.2-14.23.0.2486',
-                11201: '1.12.1-14.22.0.2444',
-                11200: '1.12-14.21.1.2387',
-                11102: '1.11.2-13.20.0.2216',
-                11100: '1.11-13.19.1.2188',
-                11002: '1.10.2-12.18.2.2099',
-                10904: '1.9.4-12.17.0.1976',
-                10809: '1.8.9-11.15.1.1722',
-                10800: '1.8-11.14.4.1563',
-                10710: '1.7.10-10.13.4.1558-1.7.10',
+        if (!FG3) {
+            version = [
+                    11202: '1.12.2-14.23.0.2486',
+                    11201: '1.12.1-14.22.0.2444',
+                    11200: '1.12-14.21.1.2387',
+                    11102: '1.11.2-13.20.0.2216',
+                    11100: '1.11-13.19.1.2188',
+                    11002: '1.10.2-12.18.2.2099',
+                    10904: '1.9.4-12.17.0.1976',
+                    10809: '1.8.9-11.15.1.1722',
+                    10800: '1.8-11.14.4.1563',
+                    10710: '1.7.10-10.13.4.1558-1.7.10',
+            ][mcVersion]
+        }
+        mappings = [
+                11302: "snapshot_20180921-1.13",
+                11202: "snapshot_20170615",
+                11201: "snapshot_20170615",
+                11200: "snapshot_20170615",
+                11102: "snapshot_20161220",
+                11100: "snapshot_20161111",
+                11002: "snapshot_20160518",
+                10904: "snapshot_20160518",
+                10809: "stable_22",
+                10800: "snapshot_nodoc_20141130",
+                10710: "stable_12",
         ][mcVersion]
     }
-    mappings = [
-            11302: "snapshot_20180921-1.13",
-            11202: "snapshot_20170615",
-            11201: "snapshot_20170615",
-            11200: "snapshot_20170615",
-            11102: "snapshot_20161220",
-            11100: "snapshot_20161111",
-            11002: "snapshot_20160518",
-            10904: "snapshot_20160518",
-            10809: "stable_22",
-            10800: "snapshot_nodoc_20141130",
-            10710: "stable_12",
-    ][mcVersion]
 }
 
 afterEvaluate {
@@ -153,6 +172,7 @@ afterEvaluate {
 }
 
 repositories {
+    mavenLocal()
     maven {
         name = "SpongePowered Repo"
         url = "http://repo.spongepowered.org/maven/"
@@ -190,24 +210,41 @@ def shadeExclusions = {
 }
 
 dependencies {
-    shadow('net.fabricmc.fabric-api:fabric-lib:0.1.0'){ // for Event, EventFactory, etc.
-        transitive = false
+    if (FABRIC) {
+        minecraft 'com.mojang:minecraft:' + [
+                11400: '1.14'
+        ][mcVersion]
+        mappings 'net.fabricmc:yarn:' + [
+                11400: '1.14+build.1'
+        ][mcVersion]
+        modCompile 'net.fabricmc:fabric-loader:' + [
+                11400: '0.4.2+build.132'
+        ][mcVersion]
+        modCompile 'net.fabricmc:fabric:' + [
+                11400: '0.2.7+build.127'
+        ][mcVersion]
+    } else {
+        shadow('net.fabricmc.fabric-api:fabric-lib:0.1.0') { // for Event, EventFactory, etc.
+            transitive = false
+        }
     }
-    
+
     if (FG3) {
         minecraft 'net.minecraftforge:forge:' + [
                 11302: '1.13.2-25.0.76',
         ][mcVersion]
     }
 
-    // compile 'com.github.SpongePowered:Mixin:404f5da' // 0.7.5-SNAPSHOT
-    // ^ mixin doesn't compile on jitpack, so we'll have to depend on the SNAPSHOT and build it manually for reprod
-    if (!gradle.gradleVersion.startsWith('3.')) {
-        annotationProcessor 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
-        compileOnly 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
-    }
-    shade('org.spongepowered:mixin:0.7.8-SNAPSHOT'){
-        transitive = false // deps should all be bundled with MC
+    if (!FABRIC) {
+        // compile 'com.github.SpongePowered:Mixin:404f5da' // 0.7.5-SNAPSHOT
+        // ^ mixin doesn't compile on jitpack, so we'll have to depend on the SNAPSHOT and build it manually for reprod
+        if (!gradle.gradleVersion.startsWith('3.')) {
+            annotationProcessor 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
+            compileOnly 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
+        }
+        shade('org.spongepowered:mixin:0.7.8-SNAPSHOT') {
+            transitive = false // deps should all be bundled with MC
+        }
     }
     shadow 'com.googlecode.mp4parser:isoparser:1.1.7'
     shadow 'org.apache.commons:commons-exec:1.3'
@@ -215,6 +252,10 @@ dependencies {
     shadow 'com.google.api-client:google-api-client-gson:1.20.0', shadeExclusions
     shadow 'com.google.api-client:google-api-client-java6:1.20.0', shadeExclusions
     shadow 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
+    
+    if (FABRIC) {
+        shadow 'org.apache.maven:maven-artifact:3.6.1'
+    }
 
     shadow 'org.aspectj:aspectjrt:1.8.2'
 
@@ -222,7 +263,7 @@ dependencies {
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:04a929c", shadeExclusions
+    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:6d1ffa9", shadeExclusions
 
     shadowReobf(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
@@ -266,7 +307,9 @@ if (project.name != 'core') {
     def originalAT = originalRes + '/META-INF/replaymod_at.cfg'
     def vars = [MC: mcVersion as int]
 
-    if (FG3) {
+    if (FABRIC) {
+        // Fabric doesn't have ATs, so we've stopped using them on 1.13+
+    } else if (FG3) {
         // FG3 reads the AT file right after project evaluation, so we need to convert it right now
         PreprocessTask.convertFile(PreprocessTask.CFG_KEYWORDS, vars, file(originalAT), file(preprocessedAT))
         minecraft.accessTransformers << file(preprocessedAT)
@@ -322,6 +365,7 @@ if (!gradle.gradleVersion.startsWith('3.')) { // Gradle 4 (never used for 1.7.10
     tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
     task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
         from { tasks.jar.archivePath }
+        afterEvaluate { dependsOn FABRIC ? tasks.remapJar : tasks.reobfJar }
         manifest.inheritFrom tasks.jar.manifest
 
         from project.configurations.shade
@@ -329,7 +373,6 @@ if (!gradle.gradleVersion.startsWith('3.')) { // Gradle 4 (never used for 1.7.10
         exclude 'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class'
 
         dependsOn tasks.configureRelocation
-        afterEvaluate { dependsOn tasks.reobfJar }
 
         // No need to shadow netty, MC provides it
         relocate 'com.github.steveice10.netty', 'io.netty'
@@ -397,12 +440,14 @@ jar {
 
     from { files(configurations.shadowReobf).collect { it.isDirectory() ? it : zipTree(it) } }
 
-    manifest {
-        attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-                'TweakOrder': '0',
-                'FMLCorePluginContainsFMLMod': 'true',
-                'FMLCorePlugin': 'com.replaymod.core.LoadingPlugin',
-                'FMLAT': 'replaymod_at.cfg'
+    if (!FABRIC) {
+        manifest {
+            attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+                    'TweakOrder': '0',
+                    'FMLCorePluginContainsFMLMod': 'true',
+                    'FMLCorePlugin': 'com.replaymod.core.LoadingPlugin',
+                    'FMLAT': 'replaymod_at.cfg'
+        }
     }
 }
 
@@ -412,10 +457,11 @@ processResources
             inputs.property 'version', { project.version }
             inputs.property 'mcversion', { mcVersionStr }
 
-            // replace stuff in mcmod.info (pre 1.13) and mods.toml (1.13+), nothing else
+            // replace stuff in mcmod.info (pre 1.13) and mods.toml (1.13+) and fabric.mod.json, nothing else
             from(sourceSets.main.resources.srcDirs) { spec ->
                 include 'mcmod.info'
                 include 'mods.toml'
+                include 'fabric.mod.json'
 
                 // replace version and mcversion
                 afterEvaluate {
@@ -423,16 +469,26 @@ processResources
                 }
             }
 
-            // copy everything else, thats not the mcmod.info (or mods.toml)
+            // strip comments from (strict) JSON files
+            from(sourceSets.main.resources.srcDirs) {
+                include 'pack.mcmeta'
+                filter { line -> line.trim().startsWith('//') ? '' : line}
+            }
+
+            // copy everything else, thats not the mcmod.info (or mods.toml or fabric.mod.json)
             from(sourceSets.main.resources.srcDirs) {
                 exclude 'mcmod.info'
                 exclude 'mods.toml'
+                exclude 'fabric.mod.json'
+                exclude 'pack.mcmeta'
             }
         }
 
 sourceSets {
-    main {
-        ext.refMap = "mixins.replaymod.refmap.json"
+    if (!FABRIC) {
+        main {
+            ext.refMap = "mixins.replaymod.refmap.json"
+        }
     }
     integrationTest {
         compileClasspath += main.runtimeClasspath + main.output
@@ -443,7 +499,9 @@ sourceSets {
     }
 }
 
-if (FG3) {
+if (FABRIC) {
+    // FIXME
+} else if (FG3) {
     task copySrg(dependsOn: 'createMcpToSrg') {
         doLast {
             def tsrg = file(project.tasks.createMcpToSrg.output).readLines()
@@ -472,7 +530,9 @@ if (FG3) {
     }
 }
 
-if (FG3) {
+if (FABRIC) {
+    // FIXME
+} else if (FG3) {
     // FIXME project.tasks.idea.dependsOn copySrg
     compileJava.dependsOn copySrg // FIXME can probably remove this one once mixingradle is updated
 } else {
@@ -573,11 +633,11 @@ def annotationWorkaround = {
     jar.delete()
     tmp.renameTo(jar)
 }
-if (mcVersion >= 10809 && !FG3) {
+if (mcVersion >= 10809 && !FG3 && !FABRIC) {
     tasks.deobfMcMCP.doLast annotationWorkaround
 }
 
-if (!FG3) { // FIXME
+if (!FG3 && !FABRIC) { // FIXME
 task runIntegrationTest(type: JavaExec, dependsOn: ["makeStart", "jar"]) {
     main = 'GradleStart'
     standardOutput = System.out

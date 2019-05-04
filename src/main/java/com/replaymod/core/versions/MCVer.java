@@ -1,10 +1,11 @@
 package com.replaymod.core.versions;
 
-import com.google.common.util.concurrent.ListenableFuture;
+import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.model.ModelBox;
@@ -12,7 +13,6 @@ import net.minecraft.client.renderer.entity.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
@@ -20,11 +20,22 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+
+//#if MC>=11400
+//$$ import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
+//$$ import net.minecraft.client.gui.widget.AbstractButtonWidget;
+//$$ import java.util.concurrent.CompletableFuture;
+//#else
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+//#endif
 
 //#if MC>=11300
 import net.minecraft.client.MainWindow;
@@ -38,6 +49,12 @@ import org.lwjgl.glfw.GLFW;
 //$$ import org.lwjgl.Sys;
 //$$ import java.awt.Desktop;
 //$$ import java.io.IOException;
+//#endif
+
+//#if MC>=10904
+import com.replaymod.render.blend.mixin.ParticleAccessor;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.util.math.Vec3d;
 //#endif
 
 //#if MC>=10809
@@ -60,21 +77,46 @@ import net.minecraft.world.WorldType;
 //$$ import static org.lwjgl.opengl.GL11.*;
 //#endif
 
+//#if MC>=11400
+//$$ import net.fabricmc.loader.api.FabricLoader;
+//#else
+//#if MC>=11300
+import net.minecraftforge.fml.ModList;
+//#else
+//$$ import net.minecraftforge.fml.common.Loader;
+//#endif
+//#endif
+
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 /**
  * Abstraction over things that have changed between different MC versions.
  */
 public class MCVer {
+    //#if MC<11400
     public static IEventBus FORGE_BUS = MinecraftForge.EVENT_BUS;
     //#if MC>=10809
     public static IEventBus FML_BUS = FORGE_BUS;
     //#else
     //$$ public static EventBus FML_BUS = FMLCommonHandler.instance().bus();
     //#endif
+    //#endif
+
+    public static boolean isModLoaded(String id) {
+        //#if MC>=11400
+        //$$ return FabricLoader.getInstance().isModLoaded(id.toLowerCase());
+        //#else
+        //#if MC>=11300
+        return ModList.get().isLoaded(id.toLowerCase());
+        //#else
+        //$$ return Loader.isModLoaded(id);
+        //#endif
+        //#endif
+    }
 
     public static void addDetail(CrashReportCategory category, String name, Callable<String> callable) {
         //#if MC>=10904
@@ -88,6 +130,33 @@ public class MCVer {
         //#endif
     }
 
+    //#if MC>=11400
+    //$$ public static void width(AbstractButtonWidget button, int value) {
+    //$$     button.setWidth(value);
+    //$$ }
+    //$$
+    //$$ public static int width(AbstractButtonWidget button) {
+    //$$     return button.getWidth();
+    //$$ }
+    //$$
+    //$$ public static int height(AbstractButtonWidget button) {
+    //$$     return ((AbstractButtonWidgetAccessor) button).getHeight();
+    //$$ }
+    //#else
+    public static void width(GuiButton button, int value) {
+        button.width = value;
+    }
+
+    public static int width(GuiButton button) {
+        return button.width;
+    }
+
+    public static int height(GuiButton button) {
+        return button.height;
+    }
+    //#endif
+
+    //#if MC<11400
     public static void addButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
         //#if MC>=11300
         event.addButton(button);
@@ -136,6 +205,7 @@ public class MCVer {
         //$$ return event.entity;
         //#endif
     }
+    //#endif
 
     public static String readString(PacketBuffer buffer, int max) {
         //#if MC>=11102
@@ -153,6 +223,7 @@ public class MCVer {
         //#endif
     }
 
+    //#if MC<11400
     public static RenderGameOverlayEvent.ElementType getType(RenderGameOverlayEvent event) {
         //#if MC>=10904
         return event.getType();
@@ -160,6 +231,7 @@ public class MCVer {
         //$$ return event.type;
         //#endif
     }
+    //#endif
 
     //#if MC>=10800
     public static WorldType WorldType_DEBUG_ALL_BLOCK_STATES
@@ -197,7 +269,7 @@ public class MCVer {
             //$$ = TextureMap.locationBlocksTexture;
             //#endif
 
-    public static Entity getRidingEntity(Entity ridden) {
+    public static Entity getRiddenEntity(Entity ridden) {
         //#if MC>=10904
         return ridden.getRidingEntity();
         //#else
@@ -205,9 +277,12 @@ public class MCVer {
         //#endif
     }
 
-    @SuppressWarnings("unchecked")
-    public static List<Entity> loadedEntityList(World world) {
+    public static Iterable<Entity> loadedEntityList(WorldClient world) {
+        //#if MC>=11400
+        //$$ return world.getEntities();
+        //#else
         return world.loadedEntityList;
+        //#endif
     }
 
     @SuppressWarnings("unchecked")
@@ -226,7 +301,19 @@ public class MCVer {
 
     @SuppressWarnings("unchecked")
     public static List<EntityPlayer> playerEntities(World world) {
+        //#if MC>=11400
+        //$$ return (List) world.getPlayers();
+        //#else
         return world.playerEntities;
+        //#endif
+    }
+
+    public static boolean isOnMainThread() {
+        //#if MC>=11400
+        //$$ return getMinecraft().isOnThread();
+        //#else
+        return getMinecraft().isCallingFromMinecraftThread();
+        //#endif
     }
 
     //#if MC>=11300
@@ -243,7 +330,13 @@ public class MCVer {
     //$$ }
     //#endif
 
-    public static ListenableFuture setServerResourcePack(File file) {
+    public static
+    //#if MC>=11400
+    //$$ CompletableFuture<?>
+    //#else
+    ListenableFuture<?>
+    //#endif
+    setServerResourcePack(File file) {
         //#if MC>=11300
         return getMinecraft().getPackFinder().func_195741_a(file);
         //#else
@@ -264,6 +357,35 @@ public class MCVer {
         //$$ return Futures.immediateFuture(null);
         //#endif
         //#endif
+        //#endif
+    }
+
+    public static <T> void addCallback(
+            //#if MC>=11400
+            //$$ CompletableFuture<T> future,
+            //#else
+            ListenableFuture<T> future,
+            //#endif
+            Consumer<T> success,
+            Consumer<Throwable> failure
+    ) {
+        //#if MC>=11400
+        //$$ future.thenAccept(success).exceptionally(throwable -> {
+        //$$     failure.accept(throwable);
+        //$$     return null;
+        //$$ });
+        //#else
+        Futures.addCallback(future, new FutureCallback<T>() {
+            @Override
+            public void onSuccess(T result) {
+                success.accept(result);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                failure.accept(throwable);
+            }
+        });
         //#endif
     }
 
@@ -386,12 +508,23 @@ public class MCVer {
         return ((MinecraftAccessor) getMinecraft()).getTimer().renderPartialTicks;
     }
 
+    public static void addButton(GuiScreen screen, GuiButton button) {
+        GuiScreenAccessor acc = (GuiScreenAccessor) screen;
+        acc.getButtons().add(button);
+        //#if MC>=11300
+        acc.getChildren().add(button);
+        //#endif
+    }
+
     //#if MC>=11300
     public static void processKeyBinds() {
         ((MinecraftMethodAccessor) getMinecraft()).replayModProcessKeyBinds();
     }
     public interface MinecraftMethodAccessor {
         void replayModProcessKeyBinds();
+        //#if MC>=11400
+        //$$ void replayModExecuteTaskQueue();
+        //#endif
     }
     //#endif
 
@@ -418,6 +551,17 @@ public class MCVer {
     public static float sin(float val) {
         return MathHelper.sin(val);
     }
+
+    //#if MC>=10904
+    // TODO: this can be inlined once https://github.com/SpongePowered/Mixin/issues/305 is fixed
+    public static Vec3d getPosition(Particle particle, float partialTicks) {
+        ParticleAccessor acc = (ParticleAccessor) particle;
+        double x = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * partialTicks;
+        double y = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * partialTicks;
+        double z = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * partialTicks;
+        return new Vec3d(x, y, z);
+    }
+    //#endif
 
     public static void openFile(File file) {
         //#if MC>=11300
@@ -535,7 +679,11 @@ public class MCVer {
         public static final int KEY_Z = GLFW.GLFW_KEY_Z;
 
         public static boolean isKeyDown(int keyCode) {
+            //#if MC>=11400
+            //$$ return InputUtil.isKeyPressed(getMinecraft().window.getHandle(), keyCode);
+            //#else
             return InputMappings.isKeyDown(keyCode);
+            //#endif
         }
     }
     //#endif

@@ -14,8 +14,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinTileEntityRendererDispatcher {
 
     //#if MC>=11300
+    //#if MC>=11400
+    //$$ @Inject(method = "renderEntity(Lnet/minecraft/block/entity/BlockEntity;DDDFIZ)V",
+    //$$         at = @At("HEAD"))
+    //#else
     @Inject(method = "render(Lnet/minecraft/tileentity/TileEntity;DDDFIZ)V",
             at = @At("HEAD"))
+    //#endif
     public void preRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, boolean hasNoBlock, CallbackInfo ci) {
         float alpha = 1;
     //#else
@@ -37,8 +42,13 @@ public abstract class MixinTileEntityRendererDispatcher {
     }
 
     //#if MC>=11300
+    //#if MC>=11400
+    //$$ @Inject(method = "renderEntity(Lnet/minecraft/block/entity/BlockEntity;DDDFIZ)V",
+    //$$         at = @At("RETURN"))
+    //#else
     @Inject(method = "render(Lnet/minecraft/tileentity/TileEntity;DDDFIZ)V",
             at = @At("RETURN"))
+    //#endif
     public void postRender(TileEntity tileEntity, double x, double y, double z, float renderPartialTicks, int destroyStage, boolean hasNoBlock, CallbackInfo ci) {
     //#else
     //#if MC>=11200

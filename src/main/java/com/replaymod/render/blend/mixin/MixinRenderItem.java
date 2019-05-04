@@ -28,6 +28,9 @@ import net.minecraft.client.renderer.model.IBakedModel;
 //$$ @Mixin(RenderItem.class)
 //#endif
 public abstract class MixinRenderItem {
+    //#if MC>=11400
+    //$$ @Inject(method = "renderItemModel", at = @At("HEAD"))
+    //#else
     //#if MC>=11300
     @Inject(method = "renderModel(Lnet/minecraft/client/renderer/model/IBakedModel;Lnet/minecraft/item/ItemStack;)V",
             at = @At("HEAD"))
@@ -38,6 +41,7 @@ public abstract class MixinRenderItem {
     //#else
     //$$ @Inject(method = "renderModel(Lnet/minecraft/client/resources/model/IBakedModel;Lnet/minecraft/item/ItemStack;)V",
     //$$         at = @At("HEAD"))
+    //#endif
     //#endif
     //#endif
     private void onRenderModel(IBakedModel model, ItemStack stack, CallbackInfo ci) {

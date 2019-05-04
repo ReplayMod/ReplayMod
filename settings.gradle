@@ -26,7 +26,8 @@ if (gradle.gradleVersion.startsWith('3.')) {
             '1.8.9',
             '1.9.4',
             '1.12',
-            '1.13.2'
+            '1.13.2',
+            '1.14',
     ]
     replayModVersions += [
             '1.8',
@@ -38,7 +39,8 @@ if (gradle.gradleVersion.startsWith('3.')) {
             '1.12',
             '1.12.1',
             '1.12.2',
-            '1.13.2'
+            '1.13.2',
+            '1.14',
     ]
 }
 

@@ -43,7 +43,12 @@ public class InputReplayTimer extends WrappedTimer {
 
     @Override
     //#if MC>=11300
+    //#if MC>=11400
+    //$$ // FIXME this should be handled by the preprocessor but there seems to be a bug
+    //$$ public void beginRenderTick(long sysClock) {
+    //#else
     public void updateTimer(long sysClock) {
+    //#endif
         super.updateTimer(sysClock);
     //#else
     //$$ public void updateTimer() {

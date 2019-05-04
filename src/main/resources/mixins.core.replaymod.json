@@ -4,11 +4,22 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=11400
+    //$$ "AbstractButtonWidgetAccessor",
+    //$$ "MixinGameRenderer",
+    //$$ "MixinScreen",
+    //$$ "MixinModResourcePackUtil",
+    //$$ "MixinMouseListener",
+    //#endif
+    //#if MC>=11300
+    "MixinKeyboardListener",
+    "MixinMinecraft",
+    //#endif
     "GuiMainMenuAccessor",
+    "GuiScreenAccessor",
     "KeyBindingAccessor",
     "MinecraftAccessor",
-    "TimerAccessor",
-    "MixinMinecraft"
+    "TimerAccessor"
   ],
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.6.11",

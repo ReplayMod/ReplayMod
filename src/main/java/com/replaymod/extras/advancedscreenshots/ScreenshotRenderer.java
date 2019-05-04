@@ -65,7 +65,11 @@ public class ScreenshotRenderer implements RenderInfo {
             MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.mainWindow;
             acc.setFramebufferWidth(displayWidthBefore);
             acc.setFramebufferHeight(displayHeightBefore);
-            mc.getFramebuffer().createBindFramebuffer(displayWidthBefore, displayHeightBefore);
+            mc.getFramebuffer().createBindFramebuffer(displayWidthBefore, displayHeightBefore
+                    //#if MC>=11400
+                    //$$ , false
+                    //#endif
+            );
             //#else
             //$$ mc.resize(displayWidthBefore, displayHeightBefore);
             //#endif

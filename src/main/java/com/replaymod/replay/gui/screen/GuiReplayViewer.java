@@ -5,7 +5,7 @@ import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
-import com.mojang.realmsclient.gui.ChatFormatting;
+import net.minecraft.util.text.TextFormatting;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.gui.GuiReplaySettings;
@@ -37,7 +37,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import lombok.Getter;
 import net.minecraft.client.gui.GuiErrorScreen;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
 import org.apache.commons.io.FileUtils;
@@ -56,6 +55,12 @@ import java.util.Date;
 import java.util.List;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
+
+//#if MC>=11400
+//$$ import net.minecraft.text.TranslatableTextComponent;
+//#else
+import net.minecraft.client.resources.I18n;
+//#endif
 
 public class GuiReplayViewer extends GuiScreen {
     private final ReplayModReplay mod;
@@ -137,8 +142,14 @@ public class GuiReplayViewer extends GuiScreen {
                             // We failed (might also be their OS)
                             e.printStackTrace();
                             getMinecraft().displayGuiScreen(new GuiErrorScreen(
+                                    //#if MC>=11400
+                                    //$$ () -> {},
+                                    //$$ new TranslatableTextComponent("replaymod.gui.viewer.delete.failed1"),
+                                    //$$ new TranslatableTextComponent("replaymod.gui.viewer.delete.failed2")
+                                    //#else
                                     I18n.format("replaymod.gui.viewer.delete.failed1"),
                                     I18n.format("replaymod.gui.viewer.delete.failed2")
+                                    //#endif
                             ));
                             return;
                         }
@@ -159,7 +170,7 @@ public class GuiReplayViewer extends GuiScreen {
             String name = list.getSelected().name.getText();
             GuiYesNoPopup popup = GuiYesNoPopup.open(GuiReplayViewer.this,
                     new GuiLabel().setI18nText("replaymod.gui.viewer.delete.linea").setColor(Colors.BLACK),
-                    new GuiLabel().setI18nText("replaymod.gui.viewer.delete.lineb", name + ChatFormatting.RESET).setColor(Colors.BLACK)
+                    new GuiLabel().setI18nText("replaymod.gui.viewer.delete.lineb", name + TextFormatting.RESET).setColor(Colors.BLACK)
             ).setYesI18nLabel("replaymod.gui.delete").setNoI18nLabel("replaymod.gui.cancel");
             Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
                 @Override
@@ -393,7 +404,7 @@ public class GuiReplayViewer extends GuiScreen {
         public GuiReplayEntry(File file, ReplayMetaData metaData, BufferedImage thumbImage) {
             this.file = file;
 
-            name.setText(ChatFormatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
+            name.setText(TextFormatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
             if (StringUtils.isEmpty(metaData.getServerName())
                     || !ReplayMod.instance.getSettingsRegistry().get(Setting.SHOW_SERVER_IPS)) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);

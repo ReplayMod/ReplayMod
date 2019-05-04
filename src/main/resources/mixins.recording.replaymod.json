@@ -6,11 +6,11 @@
   "client": [
     "EntityLivingBaseAccessor",
     "IntegratedServerAccessor",
+    "NetworkManagerAccessor",
     "SPacketSpawnMobAccessor",
     "SPacketSpawnPlayerAccessor",
     //#if MC>=11300
     "MixinDownloadingPackFinder",
-    "MixinKeyboardListener",
     "MixinMouseHelper",
     //#endif
     //#if MC>=10904

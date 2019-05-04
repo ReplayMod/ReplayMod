@@ -21,9 +21,25 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.apache.commons.io.Charsets;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import org.apache.commons.io.FileUtils;
+
+//#if MC>=11400
+//$$ import com.github.steveice10.mc.protocol.MinecraftConstants;
+//$$ import com.replaymod.core.versions.LangResourcePack;
+//$$ import net.fabricmc.api.ClientModInitializer;
+//$$ import net.fabricmc.loader.api.FabricLoader;
+//$$ import net.minecraft.SharedConstants;
+//$$ import net.minecraft.client.options.GameOption;
+//$$ import net.minecraft.resource.DirectoryResourcePack;
+//$$ import net.minecraft.resource.ResourcePackCreator;
+//$$ import net.minecraft.resource.ResourcePackContainer;
+//#else
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 //#if MC>=11300
 import com.replaymod.core.versions.LangResourcePack;
@@ -41,28 +57,16 @@ import net.minecraftforge.versions.mcp.MCPVersion;
 //$$ import net.minecraftforge.common.config.Configuration;
 //#endif
 
-//#if MC>=10904
-import net.minecraft.util.text.*;
-//#else
-//$$ import net.minecraft.util.ChatComponentText;
-//$$ import net.minecraft.util.ChatComponentTranslation;
-//$$ import net.minecraft.util.ChatStyle;
-//$$ import net.minecraft.util.EnumChatFormatting;
-//$$ import net.minecraft.util.IChatComponent;
-//#endif
-
 //#if MC>=10800
 import net.minecraft.client.GameSettings;
 //#endif
 
 //#if MC>=11300
-import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
 //#else
 //$$ import net.minecraftforge.fml.common.Loader;
 //$$ import net.minecraftforge.fml.common.Mod.EventHandler;
 //$$ import net.minecraftforge.fml.common.Mod.Instance;
-//$$ import net.minecraftforge.fml.common.ModContainer;
 //$$ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 //$$ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 //#if MC>=10800
@@ -75,11 +79,13 @@ import net.minecraftforge.fml.ModList;
 //#endif
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+//#endif
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +94,7 @@ import java.util.concurrent.FutureTask;
 
 import static com.replaymod.core.versions.MCVer.*;
 
+//#if MC<11400
 //#if MC>=11300
 @Mod(ReplayMod.MOD_ID)
 //#else
@@ -102,21 +109,23 @@ import static com.replaymod.core.versions.MCVer.*;
         //#endif
 //$$         guiFactory = "com.replaymod.core.gui.GuiFactory")
 //#endif
-public class ReplayMod implements Module {
-
-    public static ModContainer getContainer() {
-        //#if MC>=11300
-        return ModList.get().getModContainerById(MOD_ID).get();
-        //#else
-        //$$ return Loader.instance().getIndexedModList().get(MOD_ID);
+//#endif
+public class ReplayMod implements
+        //#if MC>=11400
+        //$$ ClientModInitializer,
         //#endif
-    }
+        Module
+{
 
     @Getter(lazy = true)
+    //#if MC>=11400
+    //$$ private static final String minecraftVersion = MinecraftClient.getInstance().getGame().getVersion().getName();
+    //#else
     //#if MC>=11300
     private static final String minecraftVersion = MCPVersion.getMCVersion();
     //#else
     //$$ private static final String minecraftVersion = Loader.MC_VERSION;
+    //#endif
     //#endif
 
     public static final String MOD_ID = "replaymod";
@@ -152,8 +161,25 @@ public class ReplayMod implements Module {
     public ReplayMod() {
         I18n.setI18n(net.minecraft.client.resources.I18n::format);
 
+        //#if MC>=11400
+        //$$ // Check Minecraft protocol version for compatibility
+        //$$ int supportedProtocol = MinecraftConstants.PROTOCOL_VERSION;
+        //$$ int actualProtocol = SharedConstants.getGameVersion().getProtocolVersion();
+        //$$ if (supportedProtocol != actualProtocol) {
+        //$$     throw new UnsupportedOperationException(String.format(
+        //$$             "Unsupported Minecraft version, supporting protocol version %s (%s) but actual version is %s (%s).",
+        //$$             supportedProtocol, MinecraftConstants.GAME_VERSION,
+        //$$             actualProtocol, SharedConstants.getGameVersion().getName()
+        //$$     ));
+        //$$ }
+        //#endif
+
+        //#if MC>=11400
+        //$$ // Not needed on fabric, using MixinModResourcePackUtil instead. Could in theory also use it on 1.13 but it already works as is.
+        //#else
         //#if MC>=11300
         DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().getResourcePackList().addPackFinder(new LangResourcePack.Finder()));
+        //#endif
         //#endif
 
         // Register all RM modules
@@ -198,8 +224,14 @@ public class ReplayMod implements Module {
         return folder;
     }
 
-    //#ifdef DEV_ENV
     static { // Note: even preInit is too late and we'd have to issue another resource reload
+        //#ifdef DEV_ENV
+        //noinspection ConstantConditions
+        if (true) {
+        //#else
+        //$$ //noinspection ConstantConditions
+        //$$ if (false) {
+        //#endif
         @SuppressWarnings("unchecked")
         //#if MC>=11300
         FolderPack jGuiResourcePack = new FolderPack(new File("../jGui/src/main/resources")) {
@@ -217,7 +249,13 @@ public class ReplayMod implements Module {
         //#endif
                 } catch (IOException e) {
                     if ("pack.mcmeta".equals(resourceName)) {
-                        return new ByteArrayInputStream(("{\"pack\": {\"description\": \"dummy pack for jGui resources in dev-env\", \"pack_format\": 1}}").getBytes(Charsets.UTF_8));
+                        //#if MC>=11400
+                        //$$ int version = 4;
+                        //#else
+                        int version = 1;
+                        //#endif
+                        return new ByteArrayInputStream(("{\"pack\": {\"description\": \"dummy pack for jGui resources in dev-env\", \"pack_format\": "
+                                + version + "}}").getBytes(StandardCharsets.UTF_8));
                     }
                     throw e;
                 }
@@ -241,7 +279,7 @@ public class ReplayMod implements Module {
         //$$             return super.getInputStreamByName(resourceName);
         //$$         } catch (IOException e) {
         //$$             if ("pack.mcmeta".equals(resourceName)) {
-        //$$                 return new ByteArrayInputStream(("{\"pack\": {\"description\": \"dummy pack for mod resources in dev-env\", \"pack_format\": 1}}").getBytes(Charsets.UTF_8));
+        //$$                 return new ByteArrayInputStream(("{\"pack\": {\"description\": \"dummy pack for mod resources in dev-env\", \"pack_format\": 1}}").getBytes(StandardCharsets.UTF_8));
         //$$             }
         //$$             throw e;
         //$$         }
@@ -249,9 +287,16 @@ public class ReplayMod implements Module {
         //$$ };
         //$$ defaultResourcePacks.add(mainResourcePack);
         //#endif
-    }
-    //#endif
+    }}
 
+    //#if MC>=11400
+    //$$ @Override
+    //$$ public void onInitializeClient() {
+    //$$     modules.forEach(Module::initCommon);
+    //$$     modules.forEach(Module::initClient);
+    //$$     modules.forEach(m -> m.registerKeyBindings(keyBindingRegistry));
+    //$$ }
+    //#else
     //#if MC>=11300
     {
         FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> modules.forEach(Module::initCommon));
@@ -265,6 +310,7 @@ public class ReplayMod implements Module {
     //$$    modules.forEach(Module::initClient);
     //$$    modules.forEach(m -> m.registerKeyBindings(keyBindingRegistry));
     //$$ }
+    //#endif
     //#endif
 
     @Override
@@ -282,13 +328,17 @@ public class ReplayMod implements Module {
         //$$ FML_BUS.register(this); // For runLater(Runnable)
         //#endif
 
-        FML_BUS.register(keyBindingRegistry);
-        FORGE_BUS.register(backgroundProcesses);
+        backgroundProcesses.register();
+        keyBindingRegistry.register();
 
         // 1.7.10 crashes when render distance > 16
         //#if MC>=10800
         if (!MCVer.hasOptifine()) {
+            //#if MC>=11400
+            //$$ GameOption.RENDER_DISTANCE.setMax(64f);
+            //#else
             GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
+            //#endif
         }
         //#endif
 
@@ -334,8 +384,32 @@ public class ReplayMod implements Module {
      * processed, otherwise a livelock may occur.
      */
     private boolean inRunLater = false;
+    //#if MC>=11400
+    //$$ private boolean inRenderTaskQueue = false;
+    //#endif
 
     public void runLater(Runnable runnable) {
+        //#if MC>=11400
+        //$$ if (mc.isOnThread() && inRunLater && !inRenderTaskQueue) {
+        //$$     ((MinecraftAccessor) mc).getRenderTaskQueue().offer(() -> {
+        //$$         inRenderTaskQueue = true;
+        //$$         try {
+        //$$             runLater(runnable);
+        //$$         } finally {
+        //$$             inRenderTaskQueue = false;
+        //$$         }
+        //$$     });
+        //$$ } else {
+        //$$     mc.method_18858(() -> {
+        //$$         inRunLater = true;
+        //$$         try {
+        //$$             runnable.run();
+        //$$         } finally {
+        //$$             inRunLater = false;
+        //$$         }
+        //$$     });
+        //$$ }
+        //#else
         if (mc.isCallingFromMinecraftThread() && inRunLater) {
             //#if MC>=10800
             FORGE_BUS.register(new Object() {
@@ -369,6 +443,7 @@ public class ReplayMod implements Module {
                 }
             }, null));
         }
+        //#endif
     }
 
     //#if MC<=10710
@@ -403,10 +478,16 @@ public class ReplayMod implements Module {
     //#endif
 
     public String getVersion() {
-        //#if MC>=11300
-        return getContainer().getModInfo().getVersion().toString();
+        //#if MC>=11400
+        //$$ return FabricLoader.getInstance().getModContainer(MOD_ID)
+        //$$         .orElseThrow(IllegalStateException::new)
+        //$$         .getMetadata().getVersion().toString();
         //#else
-        //$$ return getContainer().getVersion();
+        //#if MC>=11300
+        return ModList.get().getModContainerById(MOD_ID).get().getModInfo().getVersion().toString();
+        //#else
+        //$$ return Loader.instance().getIndexedModList().get(MOD_ID).getVersion();
+        //#endif
         //#endif
     }
 

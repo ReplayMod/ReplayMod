@@ -4,12 +4,19 @@ import com.google.common.base.Optional;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.extras.Extra;
+import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.camera.CameraEntity;
-import com.replaymod.replay.events.ReplayCloseEvent;
-import com.replaymod.replay.events.ReplayOpenEvent;
+import com.replaymod.replay.events.ReplayClosedCallback;
+import com.replaymod.replay.events.ReplayOpenedCallback;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+
+//#if MC>=11400
+//$$ import com.replaymod.core.events.PreRenderHandCallback;
+//$$ import java.util.stream.Collectors;
+//#else
 import net.minecraftforge.client.event.RenderHandEvent;
 
 //#if MC>=11300
@@ -30,13 +37,14 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //$$ import net.minecraftforge.client.event.RenderPlayerEvent;
 //$$ import java.util.stream.Collectors;
 //#endif
+//#endif
 
 import java.io.IOException;
 import java.util.*;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-public class PlayerOverview implements Extra {
+public class PlayerOverview extends EventRegistrations implements Extra {
     private ReplayModReplay module;
 
     private final Set<UUID> hiddenPlayers = new HashSet<>();
@@ -50,6 +58,13 @@ public class PlayerOverview implements Extra {
             @Override
             public void run() {
                 if (module.getReplayHandler() != null) {
+                    //#if MC>=11400
+                    //$$ List<PlayerEntity> players = mod.getMinecraft().world.getPlayers()
+                    //$$         .stream()
+                    //$$         .map(it -> (PlayerEntity) it)
+                    //$$         .filter(it -> !(it instanceof CameraEntity))
+                    //$$         .collect(Collectors.toList());
+                    //#else
                     @SuppressWarnings("unchecked")
                     //#if MC>=10800
                     List<EntityPlayer> players = mod.getMinecraft().world.getPlayers(EntityPlayer.class, new Predicate() {
@@ -63,6 +78,7 @@ public class PlayerOverview implements Extra {
                     //$$ players = players.stream()
                     //$$         .filter(it -> !(it instanceof CameraEntity)) // Exclude the camera entity
                     //$$         .collect(Collectors.toList());
+                    //#endif
                     //#endif
                     if (!Utils.isCtrlDown()) {
                         // Hide all players that have an UUID v2 (commonly used for NPCs)
@@ -79,8 +95,12 @@ public class PlayerOverview implements Extra {
             }
         });
 
-        FML_BUS.register(this);
+        ReplayOpenedCallback.EVENT.register(this::onReplayOpen);
+        ReplayClosedCallback.EVENT.register(this::onReplayClose);
+        //#if MC>=11400
+        //#else
         FORGE_BUS.register(this);
+        //#endif
     }
 
     public boolean isHidden(UUID uuid) {
@@ -95,9 +115,8 @@ public class PlayerOverview implements Extra {
         }
     }
 
-    @SubscribeEvent
-    public void onReplayOpen(ReplayOpenEvent.Pre event) throws IOException {
-        Optional<Set<UUID>> savedData = event.getReplayHandler().getReplayFile().getInvisiblePlayers();
+    private void onReplayOpen(ReplayHandler replayHandler) throws IOException {
+        Optional<Set<UUID>> savedData = replayHandler.getReplayFile().getInvisiblePlayers();
         if (savedData.isPresent()) {
             hiddenPlayers.addAll(savedData.get());
             savingEnabled = true;
@@ -106,17 +125,23 @@ public class PlayerOverview implements Extra {
         }
     }
 
-    @SubscribeEvent
-    public void onReplayClose(ReplayCloseEvent.Pre event) throws IOException {
+    private void onReplayClose(ReplayHandler replayHandler) {
         hiddenPlayers.clear();
     }
 
+    //#if MC>=11400
+    //$$ { on(PreRenderHandCallback.EVENT, this::shouldHideHand); }
+    //#else
     @SubscribeEvent
     public void oRenderHand(RenderHandEvent event) {
-        Entity view = getRenderViewEntity(module.getCore().getMinecraft());
-        if (view != null && isHidden(view.getUniqueID())) {
+        if (shouldHideHand()) {
             event.setCanceled(true);
         }
+    }
+    //#endif
+    private boolean shouldHideHand() {
+        Entity view = getRenderViewEntity(module.getCore().getMinecraft());
+        return view != null && isHidden(view.getUniqueID());
     }
 
     // See MixinRender for why this is 1.7.10 only

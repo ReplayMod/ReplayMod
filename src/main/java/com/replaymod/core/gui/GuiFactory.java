@@ -1,3 +1,4 @@
+//#if MC<11400
 package com.replaymod.core.gui;
 
 import com.replaymod.core.ReplayMod;
@@ -59,3 +60,4 @@ public class GuiFactory implements IModGuiFactory {
         return null;
     }
 }
+//#endif

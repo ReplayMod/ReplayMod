@@ -4,22 +4,15 @@ package com.replaymod.core.versions;
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
 import net.minecraft.resources.AbstractResourcePack;
-import net.minecraft.resources.IPackFinder;
-import net.minecraft.resources.IResourcePack;
 import net.minecraft.resources.ResourcePackFileNotFoundException;
-import net.minecraft.resources.ResourcePackInfo;
 import net.minecraft.resources.ResourcePackType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.loading.moddiscovery.ModFile;
-import net.minecraftforge.fml.packs.ModFileResourcePack;
-import net.minecraftforge.fml.packs.ResourcePackLoader;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringBufferInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,8 +26,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+//#if MC>=11400
+//#else
+import net.minecraft.resources.IPackFinder;
+import net.minecraft.resources.ResourcePackInfo;
+import net.minecraftforge.fml.loading.moddiscovery.ModFile;
+import net.minecraftforge.fml.packs.ModFileResourcePack;
+import net.minecraftforge.fml.packs.ResourcePackLoader;
+//#endif
+
 /**
  * Resource pack which on-the-fly converts pre-1.13 language files into 1.13 json format.
+ * Also remaps `replaymod.input.*` bindings to `key.replaymod.*` as convention on Fabric.
  */
 public class LangResourcePack extends AbstractResourcePack {
     private static final Gson GSON = new Gson();
@@ -42,13 +45,24 @@ public class LangResourcePack extends AbstractResourcePack {
     private static final Pattern JSON_FILE_PATTERN = Pattern.compile("^assets/" + ReplayMod.MOD_ID + "/lang/([a-z][a-z])_([a-z][a-z]).json$");
     private static final Pattern LANG_FILE_NAME_PATTERN = Pattern.compile("^([a-z][a-z])_([a-z][a-z]).lang$");
 
-    LangResourcePack() {
+    //#if MC>=11400
+    //$$ public static final String LEGACY_KEY_PREFIX = "replaymod.input.";
+    //$$ private static final String FABRIC_KEY_FORMAT = "key." + ReplayMod.MOD_ID + ".%s";
+    //$$
+    //$$ private final Path basePath;
+    //$$ public LangResourcePack(Path basePath) {
+    //$$     super(new File(NAME));
+    //$$     this.basePath = basePath;
+    //$$ }
+    //#else
+    public LangResourcePack() {
         super(new File(NAME));
     }
 
     private ModFileResourcePack getParent() {
         return ResourcePackLoader.getResourcePackFor(ReplayMod.MOD_ID).orElseThrow(() -> new RuntimeException("Failed to get ReplayMod resource pack!"));
     }
+    //#endif
 
     private String langName(String path) {
         Matcher matcher = JSON_FILE_PATTERN.matcher(path);
@@ -56,14 +70,27 @@ public class LangResourcePack extends AbstractResourcePack {
         return String.format("%s_%s.lang", matcher.group(1), matcher.group(2).toUpperCase());
     }
 
-    private Path langPath(String path) {
+    //#if MC>=11400
+    //$$ private Path baseLangPath() {
+    //$$     return basePath.resolve("assets").resolve(ReplayMod.MOD_ID).resolve("lang");
+    //$$ }
+    //#else
+    private Path baseLangPath() {
         ModFileResourcePack parent = getParent();
         if (parent == null) return null;
         ModFile modFile = parent.getModFile();
+        return modFile.getLocator().findPath(modFile, "assets", ReplayMod.MOD_ID, "lang");
+    }
+    //#endif
 
+    private Path langPath(String path) {
         String langName = langName(path);
         if (langName == null) return null;
-        return modFile.getLocator().findPath(modFile, "assets", ReplayMod.MOD_ID, "lang", langName);
+        Path basePath = baseLangPath();
+        //#if MC<11400
+        if (basePath == null) return null;
+        //#endif
+        return basePath.resolve(langName);
     }
 
     private String convertValue(String value) {
@@ -73,11 +100,11 @@ public class LangResourcePack extends AbstractResourcePack {
     @Override
     protected InputStream getInputStream(String path) throws IOException {
         if ("pack.mcmeta".equals(path)) {
-            return new StringBufferInputStream("{\"pack\": {\"description\": \"ReplayMod language files\", \"pack_format\": 4}}");
+            return new ByteArrayInputStream("{\"pack\": {\"description\": \"ReplayMod language files\", \"pack_format\": 4}}".getBytes(StandardCharsets.UTF_8));
         }
 
         Path langPath = langPath(path);
-        if (langPath == null) throw new ResourcePackFileNotFoundException(file, path);
+        if (langPath == null) throw new ResourcePackFileNotFoundException(this.file, path);
 
         String langFile;
         try (InputStream in = Files.newInputStream(langPath)) {
@@ -91,6 +118,11 @@ public class LangResourcePack extends AbstractResourcePack {
             String key = line.substring(0, i);
             String value = line.substring(i + 1);
             value = convertValue(value);
+            //#if MC>=11400
+            //$$ if (key.startsWith(LEGACY_KEY_PREFIX)) {
+            //$$     key = String.format(FABRIC_KEY_FORMAT, key.substring(LEGACY_KEY_PREFIX.length()));
+            //$$ }
+            //#endif
             properties.put(key, value);
         }
 
@@ -103,22 +135,29 @@ public class LangResourcePack extends AbstractResourcePack {
         return langPath != null && Files.exists(langPath);
     }
 
+
     @Override
     public Collection<ResourceLocation> getAllResourceLocations(ResourcePackType resourcePackType, String path, int maxDepth, Predicate<String> filter) {
         if (resourcePackType == ResourcePackType.CLIENT_RESOURCES && "lang".equals(path)) {
-            IResourcePack parent = getParent();
-            if (parent == null) return Collections.emptyList();
-            return parent.getAllResourceLocations(resourcePackType, path, maxDepth, name -> {
-                Matcher matcher = LANG_FILE_NAME_PATTERN.matcher(name);
-                if (matcher.matches()) {
-                    return filter.test(String.format("%s_%s.json", matcher.group(1), matcher.group(1)));
-                } else {
-                    return false;
-                }
-            }).stream().map(resourceLocation -> {
-                String p = resourceLocation.getPath().substring(0, "assets/lang/xx_XX".length()) + ".json";
-                return new ResourceLocation(resourceLocation.getNamespace(), p);
-            }).collect(Collectors.toList());
+            Path base = baseLangPath();
+            //#if MC<11400
+            if (base == null) return Collections.emptyList();
+            //#endif
+            try {
+                return Files.walk(base, 1)
+                        .skip(1)
+                        .filter(Files::isRegularFile)
+                        .map(Path::getFileName).map(Path::toString)
+                        .map(LANG_FILE_NAME_PATTERN::matcher)
+                        .filter(Matcher::matches)
+                        .map(matcher -> String.format("%s_%s.json", matcher.group(1), matcher.group(1)))
+                        .filter(filter::test)
+                        .map(name -> new ResourceLocation(ReplayMod.MOD_ID, "lang/" + name))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
         } else {
             return Collections.emptyList();
         }
@@ -136,11 +175,14 @@ public class LangResourcePack extends AbstractResourcePack {
     @Override
     public void close() {}
 
+    // Not needed on fabric, using MixinModResourcePackUtil instead.
+    //#if MC<11400
     public static class Finder implements IPackFinder {
         @Override
         public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> packList, ResourcePackInfo.IFactory<T> factory) {
             packList.put(NAME, ResourcePackInfo.func_195793_a(NAME, true, LangResourcePack::new, factory, ResourcePackInfo.Priority.BOTTOM));
         }
     }
+    //#endif
 }
 //#endif

@@ -7,7 +7,6 @@ import com.github.steveice10.mc.protocol.data.game.chunk.BlockStorage;
 import com.github.steveice10.mc.protocol.data.game.chunk.Column;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.Position;
 import com.github.steveice10.mc.protocol.data.game.entity.player.GameMode;
-import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
 import com.github.steveice10.mc.protocol.data.game.world.WorldType;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockChangeRecord;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
@@ -52,6 +51,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import com.replaymod.replaystudio.util.Location;
 import com.replaymod.replaystudio.util.PacketUtils;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
@@ -63,8 +63,16 @@ import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.EnumPacketDirection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
+
+//#if MC>=11400
+//$$ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
+//#else
+import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+
+import static com.replaymod.core.versions.MCVer.FML_BUS;
+//#endif
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -90,7 +98,6 @@ import java.util.zip.Inflater;
 import com.replaymod.core.utils.WrappedTimer;
 //#endif
 
-import static com.replaymod.core.versions.MCVer.FML_BUS;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
@@ -110,6 +117,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     private final ReplayModReplay mod;
     private final ReplayFile replayFile;
+    private final EventHandler eventHandler = new EventHandler();
     private ChannelHandlerContext ctx;
 
     private int currentTimeStamp;
@@ -140,11 +148,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     }
 
     public void register() {
-        FML_BUS.register(this);
+        eventHandler.register();
     }
 
     public void unregister() {
-        FML_BUS.unregister(this);
+        eventHandler.unregister();
     }
 
     @Override
@@ -205,7 +213,14 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     public void restart() {
         activeThings.clear();
         currentTimeStamp = 0;
-        ctx.fireChannelRead(toMC(new ServerRespawnPacket(0, Difficulty.NORMAL, GameMode.SPECTATOR, WorldType.DEFAULT)));
+        ctx.fireChannelRead(toMC(new ServerRespawnPacket(
+                0,
+                //#if MC<11400
+                Difficulty.NORMAL,
+                //#endif
+                GameMode.SPECTATOR,
+                WorldType.DEFAULT
+        )));
         ctx.fireChannelRead(toMC(new ServerPlayerPositionRotationPacket(0, 0, 0, 0, 0, 0)));
     }
 
@@ -262,16 +277,23 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         sendPacketsTill(value);
     }
 
-    @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
-        if (!asyncMode) return;
+    private class EventHandler extends EventRegistrations {
+        //#if MC>=11400
+        //$$ { on(PreTickCallback.EVENT, this::onTick); }
+        //$$ private void onTick() {
+        //#else
+        @SubscribeEvent
+        public void onTick(TickEvent.ClientTickEvent event) {
+            if (event.phase != TickEvent.Phase.START) return;
+        //#endif
+            if (!asyncMode) return;
 
-        long now = System.currentTimeMillis();
-        long realTimePassed = now - lastAsyncUpdateTime;
-        lastAsyncUpdateTime = now;
-        int replayTimePassed = (int) (realTimePassed * replaySpeed);
-        sendPacketsTill(currentTimeStamp + replayTimePassed);
+            long now = System.currentTimeMillis();
+            long realTimePassed = now - lastAsyncUpdateTime;
+            lastAsyncUpdateTime = now;
+            int replayTimePassed = (int) (realTimePassed * replaySpeed);
+            sendPacketsTill(currentTimeStamp + replayTimePassed);
+        }
     }
 
     private boolean tryLoadFromCache(Consumer<Double> progress) throws IOException {

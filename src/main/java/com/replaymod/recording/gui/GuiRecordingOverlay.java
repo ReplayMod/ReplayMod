@@ -1,24 +1,35 @@
 package com.replaymod.recording.gui;
 
 import com.replaymod.core.SettingsRegistry;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.Setting;
+import de.johni0702.minecraft.gui.GuiRenderer;
+import de.johni0702.minecraft.gui.MinecraftGuiRenderer;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
+
+//#if MC>=11400
+//$$ import de.johni0702.minecraft.gui.versions.callbacks.PostRenderHudCallback;
+//#else
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 import static com.replaymod.core.versions.MCVer.*;
-import static net.minecraft.client.renderer.GlStateManager.*;
+
+//#if MC<11300
+//$$ import static net.minecraft.client.renderer.GlStateManager.*;
+//#endif
 
 /**
  * Renders overlay during recording.
  */
-public class GuiRecordingOverlay {
+public class GuiRecordingOverlay extends EventRegistrations {
     private final Minecraft mc;
     private final SettingsRegistry settingsRegistry;
     private final GuiRecordingControls guiControls;
@@ -29,30 +40,26 @@ public class GuiRecordingOverlay {
         this.guiControls = guiControls;
     }
 
-    public void register() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
-    public void unregister() {
-        MinecraftForge.EVENT_BUS.unregister(this);
-    }
-
     /**
      * Render the recording icon and text in the top left corner of the screen.
-     * @param event Rendered post game overlay
      */
+    //#if MC>=11400
+    //$$ { on(PostRenderHudCallback.EVENT, partialTicks -> renderRecordingIndicator()); }
+    //$$ private void renderRecordingIndicator() {
+    //#else
     @SubscribeEvent
     public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
         if (getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
+    //#endif
         if (guiControls.isStopped()) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {
             FontRenderer fontRenderer = mc.fontRenderer;
             String text = guiControls.isPaused() ? I18n.format("replaymod.gui.paused") : I18n.format("replaymod.gui.recording");
             fontRenderer.drawString(text.toUpperCase(), 30, 18 - (fontRenderer.FONT_HEIGHT / 2), 0xffffffff);
             bindTexture(TEXTURE);
-            resetColor();
             enableAlpha();
-            Gui.drawModalRectWithCustomSizedTexture(10, 10, 58, 20, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
+            GuiRenderer renderer = new MinecraftGuiRenderer(MCVer.newScaledResolution(mc));
+            renderer.drawTexturedRect(10, 10, 58, 20, 16, 16, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
         }
     }
 }

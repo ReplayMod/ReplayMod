@@ -1,6 +1,7 @@
 package com.replaymod.extras;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -14,16 +15,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import org.apache.commons.io.FileUtils;
-
-//#if MC>=11300
-import net.minecraftforge.fml.ModList;
-//#else
-//#if MC>=10800
-//$$ import net.minecraftforge.fml.common.Loader;
-//#else
-//$$ import cpw.mods.fml.common.Loader;
-//#endif
-//#endif
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.File;
@@ -45,11 +36,7 @@ public class OpenEyeExtra implements Extra {
     public void register(ReplayMod mod) throws Exception {
         this.mod = mod;
 
-        //#if MC>=11300
-        boolean isOpenEyeLoaded = ModList.get().isLoaded("openeye");
-        //#else
-        //$$ boolean isOpenEyeLoaded = Loader.isModLoaded("OpenEye");
-        //#endif
+        boolean isOpenEyeLoaded = MCVer.isModLoaded("OpenEye");
         if (!isOpenEyeLoaded && mod.getSettingsRegistry().get(Setting.ASK_FOR_OPEN_EYE)) {
             new Thread(() -> {
                 try {

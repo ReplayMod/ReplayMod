@@ -1,5 +1,6 @@
 package com.replaymod.editor.handler;
 
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.editor.ReplayModEditor;
 import com.replaymod.editor.gui.GuiEditReplay;
@@ -8,36 +9,37 @@ import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import net.minecraft.crash.CrashReport;
-import net.minecraftforge.client.event.GuiScreenEvent;
 
-//#if MC>=10800
-//#if MC>=11300
+//#if MC>=11400
+//$$ import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
+//$$ import net.minecraft.client.gui.Screen;
+//$$ import net.minecraft.client.gui.widget.AbstractButtonWidget;
+//$$ import java.util.List;
+//#else
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 //#endif
 
 import java.io.IOException;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-public class GuiHandler {
-    public void register() {
-        FML_BUS.register(this);
-        FORGE_BUS.register(this);
-    }
-
+public class GuiHandler extends EventRegistrations {
+    //#if MC>=11400
+    //$$ { on(InitScreenCallback.EVENT, this::injectIntoReplayViewer); }
+    //$$ public void injectIntoReplayViewer(Screen vanillaGuiScreen, List<AbstractButtonWidget> buttonList) {
+    //#else
     @SubscribeEvent
     public void injectIntoReplayViewer(GuiScreenEvent.InitGuiEvent.Post event) {
-        AbstractGuiScreen guiScreen = GuiScreen.from(getGui(event));
+        net.minecraft.client.gui.GuiScreen vanillaGuiScreen = getGui(event);
+    //#endif
+        AbstractGuiScreen guiScreen = GuiScreen.from(vanillaGuiScreen);
         if (!(guiScreen instanceof GuiReplayViewer)) {
             return;
         }
         final GuiReplayViewer replayViewer = (GuiReplayViewer) guiScreen;
         // Inject Edit button
+        if (!replayViewer.editorButton.getChildren().isEmpty()) return;
         replayViewer.replaySpecificButtons.add(new GuiButton(replayViewer.editorButton).onClick(() -> {
             try {
                 new GuiEditReplay(replayViewer, replayViewer.list.getSelected().file.toPath()) {

@@ -53,7 +53,7 @@ public class BlendMeshBuilder
         this.wellBehaved = wellBehaved;
     }
 
-    public void setOffset(Vector3f offset) {
+    public void setReverseOffset(Vector3f offset) {
         this.offset = offset;
     }
 

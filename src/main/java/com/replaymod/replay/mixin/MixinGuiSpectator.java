@@ -17,7 +17,14 @@ public abstract class MixinGuiSpectator {
     //#else
     //$$ @Inject(method = "func_175260_a", at = @At("HEAD"), cancellable = true)
     //#endif
-    public void isInReplay(int i, CallbackInfo ci) {
+    public void isInReplay(
+            //#if MC>=11400
+            //$$ double i,
+            //#else
+            int i,
+            //#endif
+            CallbackInfo ci
+    ) {
         // Prevent spectator gui from opening while in a replay
         if (getMinecraft().player instanceof CameraEntity) {
             ci.cancel();

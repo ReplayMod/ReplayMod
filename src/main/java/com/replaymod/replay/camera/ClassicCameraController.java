@@ -1,8 +1,7 @@
 package com.replaymod.replay.camera;
 
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.settings.KeyBinding;
-
-import javax.vecmath.Vector3f;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -129,8 +128,7 @@ public class ClassicCameraController implements CameraController {
             return;
         }
 
-        Vector3f movement = new Vector3f(direction);
-        movement.normalize();
+        Vector3f movement = direction.normalise(null);
         double factor = motion * (frac / 1000D);
 
         camera.moveCamera(movement.x * factor, movement.y * factor, movement.z * factor);
@@ -162,8 +160,8 @@ public class ClassicCameraController implements CameraController {
         Vector3f dbf = direction;
 
         if(dirBefore != null) {
-            dirBefore.normalize();
-            dirBefore.add(direction);
+            dirBefore.normalise(dirBefore);
+            Vector3f.add(direction, direction, dirBefore);
             direction = dirBefore;
         }
 

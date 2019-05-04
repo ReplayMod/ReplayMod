@@ -23,10 +23,14 @@ public abstract class MixinRenderManager {
     @Shadow
     private float playerViewY;
 
+    //#if MC>=11400
+    //$$ @Inject(method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V", at = @At("HEAD"))
+    //#else
     //#if MC>=11300
     @Inject(method = "renderEntity", at = @At("HEAD"))
     //#else
     //$$ @Inject(method = "doRenderEntity", at = @At("HEAD"))
+    //#endif
     //#endif
     //#if MC>=10904
     private void replayModRender_reorientForCubicRendering(Entity entity, double dx, double dy, double dz, float iDoNotKnow, float partialTicks, boolean iDoNotCare, CallbackInfo ci) {
@@ -37,8 +41,8 @@ public abstract class MixinRenderManager {
         if (handler != null && handler.omnidirectional) {
             double pitch = -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
             double yaw = -Math.atan2(dx, dz);
-            playerViewX = (float) Math.toDegrees(pitch);
-            playerViewY = (float) Math.toDegrees(yaw);
+            this.playerViewX = (float) Math.toDegrees(pitch);
+            this.playerViewY = (float) Math.toDegrees(yaw);
         }
     }
 }

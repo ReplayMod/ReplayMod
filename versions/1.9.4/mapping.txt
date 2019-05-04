@@ -1,3 +1,10 @@
+net.minecraft.init.MobEffects net.minecraft.potion.Potion
+net.minecraft.init.MobEffects INVISIBILITY invisibility
+net.minecraft.util.text.TextComponentString net.minecraft.util.ChatComponentText
+net.minecraft.util.text.TextComponentTranslation net.minecraft.util.ChatComponentTranslation
+net.minecraft.util.text.Style net.minecraft.util.ChatStyle
+net.minecraft.util.text.TextFormatting net.minecraft.util.EnumChatFormatting
+net.minecraft.util.text.ITextComponent net.minecraft.util.IChatComponent
 net.minecraft.network.datasync.EntityDataManager net.minecraft.entity.DataWatcher
 net.minecraft.client.renderer.VertexBuffer net.minecraft.client.renderer.WorldRenderer
 net.minecraft.client.renderer.Tessellator getBuffer() getWorldRenderer()
@@ -9,8 +16,6 @@ net.minecraft.client.multiplayer.ServerList saveSingleServer() func_147414_b()
 net.minecraft.client.network.NetHandlerPlayClient sendPacket() addToSendQueue()
 net.minecraft.util.math.BlockPos net.minecraft.util.BlockPos
 net.minecraft.client.gui.GuiWorldSelection net.minecraft.client.gui.GuiSelectWorld
-net.minecraft.util.text.TextComponentString net.minecraft.util.ChatComponentText
-net.minecraft.util.text.ITextComponent net.minecraft.util.IChatComponent
 net.minecraft.network.play.server.SPacketSpawnPlayer getUniqueId() getPlayer()
 net.minecraft.util.math.AxisAlignedBB net.minecraft.util.AxisAlignedBB
 net.minecraft.util.math.RayTraceResult net.minecraft.util.MovingObjectPosition

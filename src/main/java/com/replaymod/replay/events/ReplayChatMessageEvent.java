@@ -1,3 +1,4 @@
+//#if MC<11400
 package com.replaymod.replay.events;
 
 import com.replaymod.replay.camera.CameraEntity;
@@ -12,3 +13,4 @@ public class ReplayChatMessageEvent extends Event {
     @Getter
     private final CameraEntity cameraEntity;
 }
+//#endif

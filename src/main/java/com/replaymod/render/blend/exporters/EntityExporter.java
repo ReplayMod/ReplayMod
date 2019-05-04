@@ -11,10 +11,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 
-import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import static com.replaymod.render.blend.Util.getCameraPos;
 import static com.replaymod.render.blend.Util.getGlModelViewMatrix;
 
 public class EntityExporter implements Exporter {
@@ -42,11 +42,7 @@ public class EntityExporter implements Exporter {
         // Entities are rendered relative to the viewer location.
         // We however want our Entities object to not move when the viewer does,
         // so we position it at 0/0/0 and instead have the entities themselves move more
-        Matrix4f.translate(new Vector3f(
-                (float) -mc.getRenderManager().viewerPosX,
-                (float) -mc.getRenderManager().viewerPosY,
-                (float) -mc.getRenderManager().viewerPosZ
-        ), modelView, modelView);
+        Matrix4f.translate(getCameraPos(), modelView, modelView);
         renderState.push(entitiesObject, modelView);
     }
 

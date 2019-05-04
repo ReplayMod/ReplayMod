@@ -1,6 +1,6 @@
 package com.replaymod.online.gui;
 
-import com.mojang.realmsclient.gui.ChatFormatting;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.online.ReplayModOnline;
 import com.replaymod.online.api.ApiClient;
 import com.replaymod.online.api.ApiException;
@@ -10,6 +10,7 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
+import net.minecraft.util.text.TextFormatting;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading
         this.apiClient = mod.getApiClient();
         setTitle(new GuiLabel().setI18nText("replaymod.gui.viewer.download.title"));
         final GuiLabel subTitle = new GuiLabel(this).setI18nText("replaymod.gui.viewer.download.message",
-                ChatFormatting.UNDERLINE + name + ChatFormatting.RESET);
+                TextFormatting.UNDERLINE + name + TextFormatting.RESET);
         setLayout(new CustomLayout<GuiReplayDownloading>() {
             @Override
             protected void layout(GuiReplayDownloading container, int width, int height) {
@@ -53,14 +54,11 @@ public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading
                 try {
                     apiClient.downloadFile(replayId, replayFile, progressBar::setProgress);
                     if (replayFile.exists()) {
-                        getMinecraft().addScheduledTask(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    mod.startReplay(replayId, null, null);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                        ReplayMod.instance.runLater(() -> {
+                            try {
+                                mod.startReplay(replayId, null, null);
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
                         });
                     }

@@ -1,11 +1,13 @@
 package com.replaymod.compat;
 
 import com.replaymod.compat.optifine.DisableFastRender;
-import com.replaymod.compat.oranges17animations.HideInvisibleEntities;
 import com.replaymod.core.Module;
-import net.minecraftforge.eventbus.api.IEventBus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC<11400
+import com.replaymod.compat.oranges17animations.HideInvisibleEntities;
+//#endif
 
 //#if MC<11300
 //$$ import com.replaymod.compat.bettersprinting.DisableBetterSprinting;
@@ -15,19 +17,18 @@ import org.apache.logging.log4j.Logger;
 import com.replaymod.compat.shaders.ShaderBeginRender;
 //#endif
 
-import static com.replaymod.core.versions.MCVer.*;
-
 public class ReplayModCompat implements Module {
     public static Logger LOGGER = LogManager.getLogger();
 
     @Override
     public void initClient() {
-        IEventBus bus = FML_BUS;
         //#if MC>=10800
-        bus.register(new ShaderBeginRender());
+        new ShaderBeginRender().register();
         //#endif
-        bus.register(new DisableFastRender());
-        bus.register(new HideInvisibleEntities());
+        new DisableFastRender().register();
+        //#if MC<11400
+        new HideInvisibleEntities().register();
+        //#endif
         //#if MC<11300
         //$$ DisableBetterSprinting.register();
         //#endif

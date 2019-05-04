@@ -26,6 +26,7 @@ package com.replaymod.core;
 //$$
 //$$     public LoadingPlugin() {
 //$$         MixinBootstrap.init();
+//$$         Mixins.addConfiguration("mixins.core.replaymod.json");
 //$$         Mixins.addConfiguration("mixins.recording.replaymod.json");
 //$$         Mixins.addConfiguration("mixins.render.replaymod.json");
 //$$         Mixins.addConfiguration("mixins.render.blend.replaymod.json");

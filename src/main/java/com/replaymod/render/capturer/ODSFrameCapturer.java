@@ -1,6 +1,6 @@
 package com.replaymod.render.capturer;
 
-import com.replaymod.core.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
@@ -148,7 +148,11 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             pushMatrix();
             frameBuffer().bindFramebuffer(true);
 
-            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+                    //#if MC>=11400
+                    //$$ , false
+                    //#endif
+            );
             enableTexture2D();
 
             directionVariable.set(captureData.ordinal());

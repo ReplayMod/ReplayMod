@@ -1,5 +1,6 @@
 package com.replaymod.online.gui;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.online.api.ApiClient;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiScreen;
@@ -44,12 +45,7 @@ public class GuiLoginPrompt extends AbstractGuiScreen<GuiLoginPrompt> {
                         switch (apiClient.login(username.getText(), password.getText())) {
                             case SUCCESS:
                                 statusLabel.setText("");
-                                getMinecraft().addScheduledTask(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        successScreen.display();
-                                    }
-                                });
+                                ReplayMod.instance.runLater(successScreen::display);
                                 break;
                             case INVALID_DATA:
                                 statusLabel.setI18nText("replaymod.gui.login.incorrect");

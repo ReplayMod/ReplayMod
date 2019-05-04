@@ -1,7 +1,6 @@
 //#if MC>=11300
 package com.replaymod.recording.mixin;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.recording.packet.ResourcePackRecorder;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import net.minecraft.client.resources.DownloadingPackFinder;
@@ -11,6 +10,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.io.File;
+
+//#if MC>=11400
+//$$ import java.util.concurrent.CompletableFuture;
+//#else
+import com.google.common.util.concurrent.ListenableFuture;
+//#endif
 
 @Mixin(DownloadingPackFinder.class)
 public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder.IDownloadingPackFinder {
@@ -22,10 +27,22 @@ public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder
     }
 
     @Shadow
-    public abstract ListenableFuture<Object> func_195741_a(File file);
+    public abstract
+    //#if MC>=11400
+    //$$ CompletableFuture<Object>
+    //#else
+    ListenableFuture<Object>
+    //#endif
+    func_195741_a(File file);
 
+    //#if MC>=11400
+    //$$ @Redirect(method = "download", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resource/ClientResourcePackCreator;loadServerPack(Ljava/io/File;)Ljava/util/concurrent/CompletableFuture;"))
+    //$$ private CompletableFuture<Object>
+    //#else
     @Redirect(method = "downloadResourcePack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/DownloadingPackFinder;func_195741_a(Ljava/io/File;)Lcom/google/common/util/concurrent/ListenableFuture;"))
-    private ListenableFuture<Object> recordDownloadedPack(DownloadingPackFinder downloadingPackFinder, File file) {
+    private ListenableFuture<Object>
+    //#endif
+    recordDownloadedPack(DownloadingPackFinder downloadingPackFinder, File file) {
         if (requestCallback != null) {
             requestCallback.consume(file);
             requestCallback = null;

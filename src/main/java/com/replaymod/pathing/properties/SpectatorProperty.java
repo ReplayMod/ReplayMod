@@ -6,7 +6,6 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.property.AbstractProperty;
 import com.replaymod.replaystudio.pathing.property.PropertyPart;
 import com.replaymod.replaystudio.pathing.property.PropertyParts;
-import lombok.NonNull;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.world.World;
@@ -31,7 +30,7 @@ public class SpectatorProperty extends AbstractProperty<Integer> {
     }
 
     @Override
-    public void applyToGame(Integer value, @NonNull Object replayHandler) {
+    public void applyToGame(Integer value, Object replayHandler) {
         ReplayHandler handler = ((ReplayHandler) replayHandler);
         World world = handler.getCameraEntity().getEntityWorld();
         // Lookup entity by id, returns null if an entity with the id does not exists

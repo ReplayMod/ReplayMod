@@ -51,6 +51,10 @@ import java.util.Map;
 import static com.replaymod.core.utils.Utils.error;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
+//#if MC>=11400
+//$$ import net.minecraft.text.TranslatableTextComponent;
+//#endif
+
 public class GuiRenderSettings extends GuiScreen implements Closeable {
     public final GuiPanel contentPanel = new GuiPanel(this).setBackgroundColor(Colors.DARK_TRANSPARENT);
     public final GuiVerticalList settingsList = new GuiVerticalList(contentPanel).setDrawSlider(true);
@@ -233,8 +237,16 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 videoRenderer.renderVideo();
             } catch (VideoWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
-                GuiErrorScreen errorScreen = new GuiErrorScreen(I18n.format("replaymod.gui.rendering.error.title"),
-                        I18n.format("replaymod.gui.rendering.error.message"));
+                GuiErrorScreen errorScreen = new GuiErrorScreen(
+                        //#if MC>=11400
+                        //$$ () -> {},
+                        //$$ new TranslatableTextComponent("replaymod.gui.rendering.error.title"),
+                        //$$ new TranslatableTextComponent("replaymod.gui.rendering.error.message")
+                        //#else
+                        I18n.format("replaymod.gui.rendering.error.title"),
+                        I18n.format("replaymod.gui.rendering.error.message")
+                        //#endif
+                );
                 getMinecraft().displayGuiScreen(errorScreen);
             } catch (VideoWriter.FFmpegStartupException e) {
                 GuiExportFailed.tryToRecover(e, newSettings -> {

@@ -32,9 +32,9 @@ public abstract class MixinParticleManager {
     @Inject(method = "clearEffects", at = @At("HEAD"))
     public void replayModReplay_clearParticleQueue(World world, CallbackInfo ci) {
         //#if MC>=11300
-        queue.clear();
+        this.queue.clear();
         //#else
-        //$$ queueEntityFX.clear();
+        //$$ this.queueEntityFX.clear();
         //#endif
     }
 }

@@ -12,7 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#if MC>=11300
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.handler.RecordingEventHandler.RecordingEventSender;
+import net.minecraft.network.Packet;
 import net.minecraft.network.login.server.SPacketCustomPayloadLogin;
+import net.minecraft.network.login.server.SPacketLoginSuccess;
 //#else
 //$$ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 //#endif
@@ -29,12 +31,21 @@ public abstract class MixinNetHandlerLoginClient {
 
     //#if MC>=11300
     @Inject(method = "func_209521_a", at=@At("HEAD"))
-    private void replayModRecording_initiateRecording(SPacketCustomPayloadLogin packet, CallbackInfo ci) {
+    private void earlyInitiateRecording(SPacketCustomPayloadLogin packet, CallbackInfo ci) {
+        initiateRecording(packet);
+    }
+
+    @Inject(method = "handleLoginSuccess", at=@At("HEAD"))
+    private void lateInitiateRecording(SPacketLoginSuccess packet, CallbackInfo ci) {
+        initiateRecording(packet);
+    }
+
+    private void initiateRecording(Packet<?> packet) {
         RecordingEventSender eventSender = (RecordingEventSender) MCVer.getMinecraft().renderGlobal;
         if (eventSender.getRecordingEventHandler() != null) {
             return; // already recording
         }
-        ReplayModRecording.instance.initiateRecording(networkManager);
+        ReplayModRecording.instance.initiateRecording(this.networkManager);
         if (eventSender.getRecordingEventHandler() != null) {
             eventSender.getRecordingEventHandler().onPacket(packet);
         }
@@ -48,17 +59,18 @@ public abstract class MixinNetHandlerLoginClient {
     //$$ @Inject(method = "handleLoginSuccess", at=@At("HEAD"))
     //$$ public void replayModRecording_initiateRecording(CallbackInfo cb) {
         //#if MC>=10800
-        //$$ ReplayModRecording.instance.initiateRecording(networkManager);
+        //$$ ReplayModRecording.instance.initiateRecording(this.networkManager);
         //#else
-        //$$ ReplayModRecording.instance.initiateRecording(field_147393_d);
+        //$$ ReplayModRecording.instance.initiateRecording(this.field_147393_d);
         //#endif
     //$$ }
     //#endif
 
-    //#if MC>=11200
+    // Race condition in Forge's networking (not sure if still present in 1.13)
+    //#if MC>=11200 && MC<11400
     @Inject(method = "handleLoginSuccess", at=@At("RETURN"))
     public void replayModRecording_raceConditionWorkAround(CallbackInfo cb) {
-        networkManager.channel().config().setAutoRead(true);
+        ((NetworkManagerAccessor) this.networkManager).getChannel().config().setAutoRead(true);
     }
     //#endif
 }

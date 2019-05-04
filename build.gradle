@@ -31,6 +31,9 @@ if (gitDescribe().endsWith('*')) {
 
 group= "com.replaymod"
 
+// Fabric's remapJar task assumes the compile configuration to exist
+configurations { compile }
+
 subprojects {
     buildscript {
         repositories {
@@ -44,7 +47,7 @@ subprojects {
     apply plugin: 'idea'
 }
 
-evaluationDependsOnChildren()
+//evaluationDependsOnChildren()
 task shadowJar(type: Copy) {
     subprojects.forEach {
         def shadowJar = it.tasks.findByName('shadowJar')

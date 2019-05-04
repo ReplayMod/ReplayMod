@@ -3,10 +3,9 @@ package com.replaymod.render;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.render.utils.RenderJob;
-import com.replaymod.replay.events.ReplayCloseEvent;
+import com.replaymod.replay.events.ReplayClosedCallback;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,12 +40,7 @@ public class ReplayModRender implements Module {
 
     @Override
     public void initClient() {
-        FML_BUS.register(this);
-    }
-
-    @SubscribeEvent
-    public void onReplayClose(ReplayCloseEvent.Post event) {
-        renderQueue.clear();
+        ReplayClosedCallback.EVENT.register(replayHandler -> renderQueue.clear());
     }
 
     public File getVideoFolder() {

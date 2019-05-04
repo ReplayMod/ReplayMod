@@ -89,7 +89,11 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         pushMatrix();
         frameBuffer().bindFramebuffer(true);
 
-        clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+                //#if MC>=11400
+                //$$ , false
+                //#endif
+        );
         enableTexture2D();
 
         worldRenderer.renderWorld(partialTicks, captureData);
@@ -114,7 +118,11 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //#if MC>=11300
         Framebuffer fb = mc.getFramebuffer();
         if (fb.framebufferWidth != width || fb.framebufferHeight != height) {
-            fb.createFramebuffer(width, height);
+            fb.createFramebuffer(width, height
+                    //#if MC>=11400
+                    //$$ , false
+                    //#endif
+            );
         }
         //noinspection ConstantConditions
         MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) mc.mainWindow;

@@ -2,7 +2,6 @@ package com.replaymod.extras.advancedscreenshots;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.extras.Extra;
-import net.minecraftforge.common.MinecraftForge;
 
 //#if MC<11300
 //$$ import com.replaymod.core.versions.MCVer;
@@ -10,6 +9,7 @@ import net.minecraftforge.common.MinecraftForge;
 //$$ import net.minecraft.client.Minecraft;
 //$$ import net.minecraft.client.gui.GuiControls;
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
+//$$ import net.minecraftforge.common.MinecraftForge;
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
 
@@ -29,7 +29,9 @@ public class AdvancedScreenshots implements Extra {
     @Override
     public void register(ReplayMod mod) {
         this.mod = mod;
-        MinecraftForge.EVENT_BUS.register(this);
+        //#if MC<11300
+        //$$ MinecraftForge.EVENT_BUS.register(this);
+        //#endif
     }
 
     //#if MC>=11300

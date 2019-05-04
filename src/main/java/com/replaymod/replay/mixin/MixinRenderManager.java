@@ -1,4 +1,5 @@
-//#if MC>=10800
+// Appears to no longer be needed in 1.14+ (maybe not even 1.13?)
+//#if MC>=10800 && MC<11400
 package com.replaymod.replay.mixin;
 
 import net.minecraft.client.GameSettings;

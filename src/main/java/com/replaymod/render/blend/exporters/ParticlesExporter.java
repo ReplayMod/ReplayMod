@@ -12,6 +12,10 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.Minecraft;
 
+//#if MC>=11400
+//$$ import net.minecraft.util.math.Vec3d;
+//#endif
+
 //#if MC>=10904
 import net.minecraft.client.particle.Particle;
 //#else
@@ -27,6 +31,7 @@ import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import static com.replaymod.render.blend.Util.getCameraPos;
 import static com.replaymod.render.blend.Util.getGlModelViewMatrix;
 
 public class ParticlesExporter implements Exporter {
@@ -74,11 +79,7 @@ public class ParticlesExporter implements Exporter {
         // Particles are rendered relative to the viewer location.
         // We however want our Particles object to not move when the viewer does,
         // so we position it at 0/0/0 and instead have the particles themselves move more
-        Matrix4f.translate(new Vector3f(
-                (float) -mc.getRenderManager().viewerPosX,
-                (float) -mc.getRenderManager().viewerPosY,
-                (float) -mc.getRenderManager().viewerPosZ
-        ), modelView, modelView);
+        Matrix4f.translate(getCameraPos(), modelView, modelView);
         renderState.push(lit ? litParticlesObject : particlesObject, modelView);
     }
 
@@ -158,7 +159,7 @@ public class ParticlesExporter implements Exporter {
     //#endif
         DMesh mesh = new DMesh();
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
-        builder.setOffset(offset);
+        builder.setReverseOffset(offset);
         builder.setWellBehaved(true);
         //#if MC>=10809
         builder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
@@ -166,7 +167,13 @@ public class ParticlesExporter implements Exporter {
         //$$ builder.startDrawingQuads();
         //#endif
         //#if MC>=10809
-        particle.renderParticle(builder, MCVer.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
+        particle.renderParticle(builder,
+                //#if MC>=11400
+                //$$ MCVer.getMinecraft().gameRenderer.getCamera(),
+                //#else
+                MCVer.getMinecraft().getRenderViewEntity(),
+                //#endif
+                0, 1, 1, 0, 0, 0);
         //#else
         //$$ particle.func_180434_a(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
         //#endif

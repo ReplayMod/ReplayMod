@@ -10,14 +10,20 @@ import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.gui.GuiIngameMenu;
+
+//#if MC>=11400
+//$$ import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
+//#else
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import static com.replaymod.core.versions.MCVer.getGui;
+//#endif
 
-public class GuiRecordingControls {
+public class GuiRecordingControls extends EventRegistrations {
     private ReplayMod core;
     private PacketListener packetListener;
     private boolean paused;
@@ -60,20 +66,20 @@ public class GuiRecordingControls {
         updateState();
     }
 
-    public void register() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
-    public void unregister() {
-        MinecraftForge.EVENT_BUS.unregister(this);
-    }
-
+    //#if MC>=11400
+    //$$ { on(InitScreenCallback.EVENT, (screen, buttons) -> {
+    //$$     if (screen instanceof PauseMenuScreen) {
+    //$$         show((PauseMenuScreen) screen);
+    //$$     }
+    //$$ }); }
+    //#else
     @SubscribeEvent
     public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
         if (getGui(event) instanceof GuiIngameMenu) {
             show((GuiIngameMenu) getGui(event));
         }
     }
+    //#endif
 
     private void updateState() {
         buttonPauseResume.setI18nLabel("replaymod.gui.recording." + (paused ? "resume" : "pause"));

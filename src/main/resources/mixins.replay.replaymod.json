@@ -4,6 +4,10 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=11400
+    //$$ "MixinCamera",
+    //$$ "MixinInGameHud",
+    //#endif
     "EntityLivingBaseAccessor",
     "EntityPlayerAccessor",
     "FirstPersonRendererAccessor",
@@ -12,8 +16,13 @@
     //#endif
     //#if MC>=10800
     "MixinGuiSpectator",
+    //#if MC>=11300
+    "MixinKeyboardListener",
+    //#endif
     "MixinRenderArrow",
+    //#if MC<11400
     "MixinRenderManager",
+    //#endif
     "MixinViewFrustum",
     //#endif
     "MixinPlayerControllerMP",

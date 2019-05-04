@@ -31,7 +31,17 @@ public abstract class MixinRenderLivingBase {
         }
     }
 
-    @Redirect(method = "renderModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityLivingBase;isInvisibleToPlayer(Lnet/minecraft/entity/player/EntityPlayer;)Z"))
+    @Redirect(
+            method = "renderModel",
+            at = @At(
+                    value = "INVOKE",
+                    //#if MC>=11400
+                    //$$ target = "Lnet/minecraft/entity/LivingEntity;canSeePlayer(Lnet/minecraft/entity/player/PlayerEntity;)Z"
+                    //#else
+                    target = "Lnet/minecraft/entity/EntityLivingBase;isInvisibleToPlayer(Lnet/minecraft/entity/player/EntityPlayer;)Z"
+                    //#endif
+            )
+    )
     private boolean replayModReplay_shouldInvisibleNotBeRendered(EntityLivingBase entity, EntityPlayer thePlayer) {
         return thePlayer instanceof CameraEntity || entity.isInvisibleToPlayer(thePlayer);
     }
