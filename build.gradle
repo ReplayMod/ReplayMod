@@ -5,6 +5,7 @@ buildscript {
 
     dependencies {
         classpath 'com.google.guava:guava:27.1-jre'
+        classpath 'org.apache.maven:maven-artifact:3.6.1'
     }
 }
 
