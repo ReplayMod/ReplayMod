@@ -62,7 +62,7 @@ public class SpectatorCameraController implements CameraController {
                 camera.inventory = viewPlayer.inventory;
                 //#endif
                 EntityPlayerAccessor cameraA = (EntityPlayerAccessor) camera;
-                EntityPlayerAccessor viewPlayerA = (EntityPlayerAccessor) camera;
+                EntityPlayerAccessor viewPlayerA = (EntityPlayerAccessor) viewPlayer;
                 //#if MC>=10904
                 cameraA.setItemStackMainHand(viewPlayerA.getItemStackMainHand());
                 camera.swingingHand = viewPlayer.swingingHand;
