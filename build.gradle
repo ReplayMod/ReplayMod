@@ -51,11 +51,13 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'idea'
 
-    def shadowJar = it.tasks.findByName('shadowJar')
-    if (shadowJar != null && shadowJar.hasProperty('archivePath') && project.name != 'core') {
-        def rootTask = rootProject.tasks.shadowJar
-        rootTask.dependsOn shadowJar
-        rootTask.from shadowJar.archivePath
+    afterEvaluate {
+        def shadowJar = project.tasks.findByName('shadowJar')
+        if (shadowJar != null && shadowJar.hasProperty('archivePath') && project.name != 'core') {
+            def rootTask = rootProject.tasks.shadowJar
+            rootTask.dependsOn shadowJar
+            rootTask.from shadowJar.archivePath
+        }
     }
 }
 
