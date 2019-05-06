@@ -35,6 +35,10 @@ group= "com.replaymod"
 // Fabric's remapJar task assumes the compile configuration to exist
 configurations { compile }
 
+task shadowJar(type: Copy) {
+    into "$buildDir/libs"
+}
+
 subprojects {
     buildscript {
         repositories {
@@ -46,18 +50,13 @@ subprojects {
     // Workaround for https://discuss.gradle.org/t/idea-plugin-bug/21525
     apply plugin: 'eclipse'
     apply plugin: 'idea'
-}
 
-//evaluationDependsOnChildren()
-task shadowJar(type: Copy) {
-    subprojects.forEach {
-        def shadowJar = it.tasks.findByName('shadowJar')
-        if (shadowJar != null && it.name != 'core') {
-            dependsOn shadowJar
-            from shadowJar.archivePath
-        }
+    def shadowJar = it.tasks.findByName('shadowJar')
+    if (shadowJar != null && shadowJar.hasProperty('archivePath') && project.name != 'core') {
+        def rootTask = rootProject.tasks.shadowJar
+        rootTask.dependsOn shadowJar
+        rootTask.from shadowJar.archivePath
     }
-    into "$buildDir/libs"
 }
 
 def gitDescribe() {
