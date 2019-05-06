@@ -561,59 +561,6 @@ compileJava.doLast {
 }
 */
 
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
-import java.util.zip.ZipOutputStream
-
-import org.objectweb.asm.*
-
-import static org.objectweb.asm.Opcodes.ASM5
-
-// MC binaries were complied with a java version that produces invalid class files under certain circumstances
-// This causes setupCIWorkspace to be insufficient for compiling.
-// Related JDK bug: https://bugs.openjdk.java.net/browse/JDK-8066725
-// As a workaround, to use setupCIWorkspace on Drone, we modify the bin jar in-place and remove all parameter annotations.
-// WARNING: This piece of code ignores any and all gradle conventions and will probably fail horribly when run outside
-// of a single-use environment (e.g. Drone). Use setupDecompWorkspace for normal use.
-def annotationWorkaround = {
-    println "Applying RuntimeInvisibleParameterAnnotations workaround..."
-    File jar = getOutJar()
-    File tmp = new File((File) getTemporaryDir(), "workaround.jar")
-    tmp.withOutputStream {
-        new ZipOutputStream(it).withStream { dst ->
-            new ZipFile(jar).withCloseable { src ->
-                src.entries().each {
-                    if (it.name.startsWith("net/minecraft/") && it.name.endsWith(".class")) {
-                        def cw = new ClassWriter(0)
-                        def cv = new ClassVisitor(ASM5, cw) {
-                            @Override
-                            MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-                                return new MethodVisitor(ASM5, cv.visitMethod(access, name, desc, signature, exceptions)) {
-                                    @Override
-                                    AnnotationVisitor visitParameterAnnotation(int parameter, String pdesc, boolean visible) {
-                                        return null // Strip all parameter annotations
-                                    }
-                                }
-                            }
-                        }
-                        new ClassReader(src.getInputStream(it)).accept(cv, 0)
-                        dst.putNextEntry(new ZipEntry(it.name))
-                        dst.write(cw.toByteArray())
-                    } else {
-                        dst.putNextEntry(it)
-                        dst.write(src.getInputStream(it).bytes)
-                    }
-                }
-            }
-        }
-    }
-    jar.delete()
-    tmp.renameTo(jar)
-}
-if (mcVersion >= 10809 && !FG3 && !FABRIC) {
-    tasks.deobfMcMCP.doLast annotationWorkaround
-}
-
 if (!FG3 && !FABRIC) { // FIXME
 task runIntegrationTest(type: JavaExec, dependsOn: ["makeStart", "jar"]) {
     main = 'GradleStart'
