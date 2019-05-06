@@ -59,6 +59,24 @@ subprojects {
     }
 }
 
+// Workaround specific to CI build to guarantee correct ordering of
+//   ./gradlew --parallel shadowJar :1.8:setCoreVersion
+// TODO properly fix the ordering in preprocessor
+if (project.hasProperty('workAroundBuildOrder')) {
+    evaluationDependsOnChildren()
+    def rmTasks = project(':1.8').tasks
+    def jGuiTasks = project(':jGui:1.8').tasks
+    subprojects.forEach {
+        def shadowTask = it.tasks.findByName('shadowJar')
+        if (shadowTask != null) {
+            rmTasks.setCoreVersionJava.mustRunAfter shadowTask
+            rmTasks.setCoreVersionResources.mustRunAfter shadowTask
+            jGuiTasks.setCoreVersionJava.mustRunAfter shadowTask
+            jGuiTasks.setCoreVersionResources.mustRunAfter shadowTask
+        }
+    }
+}
+
 def gitDescribe() {
     try {
         def stdout = new ByteArrayOutputStream()
