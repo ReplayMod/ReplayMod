@@ -12,5 +12,14 @@ public interface EntityPlayerAccessor extends EntityLivingBaseAccessor {
     ItemStack getItemStackMainHand();
     @Accessor
     void setItemStackMainHand(ItemStack value);
+    //#else
+    //$$ @Accessor
+    //$$ ItemStack getItemInUse();
+    //$$ @Accessor
+    //$$ void setItemInUse(ItemStack value);
+    //$$ @Accessor
+    //$$ int getItemInUseCount();
+    //$$ @Accessor
+    //$$ void setItemInUseCount(int value);
     //#endif
 }

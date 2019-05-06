@@ -16,7 +16,6 @@ import com.replaymod.replay.events.ReplayClosedCallback;
 import com.replaymod.replay.events.ReplayClosingCallback;
 import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
-import com.replaymod.replay.mixin.EntityLivingBaseAccessor;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.util.Location;
@@ -38,9 +37,11 @@ import java.io.IOException;
 import java.util.*;
 
 //#if MC>=11300
+import com.replaymod.replay.mixin.EntityLivingBaseAccessor;
 import net.minecraft.client.MainWindow;
 import net.minecraft.entity.EntityLivingBase;
 //#else
+//$$ import com.replaymod.replay.mixin.EntityOtherPlayerMPAccessor;
 //$$ import net.minecraft.client.entity.EntityOtherPlayerMP;
 //$$ import net.minecraft.client.gui.ScaledResolution;
 //$$ import org.lwjgl.opengl.Display;
@@ -685,9 +686,10 @@ public class ReplayHandler {
         //#else
         //$$ if (entity instanceof EntityOtherPlayerMP) {
         //$$     EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
-        //$$     e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);
-        //$$     e.rotationYaw = (float) e.otherPlayerMPYaw;
-        //$$     e.rotationPitch = (float) e.otherPlayerMPPitch;
+        //$$     EntityOtherPlayerMPAccessor ea = (EntityOtherPlayerMPAccessor) e;
+        //$$     e.setPosition(ea.getOtherPlayerMPX(), ea.getOtherPlayerMPY(), ea.getOtherPlayerMPZ());
+        //$$     e.rotationYaw = (float) ea.getOtherPlayerMPYaw();
+        //$$     e.rotationPitch = (float) ea.getOtherPlayerMPPitch();
         //$$ }
         //#endif
     }

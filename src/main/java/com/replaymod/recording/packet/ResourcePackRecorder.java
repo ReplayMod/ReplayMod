@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
+import net.minecraft.client.resources.DownloadingPackFinder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,12 +18,10 @@ import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.resources.I18n;
 //#endif
 
-//#if MC>=11300
+//#if MC>=10800
 import de.johni0702.minecraft.gui.utils.Consumer;
-import net.minecraft.client.resources.DownloadingPackFinder;
 //#else
 //$$ import net.minecraft.client.gui.GuiScreenWorking;
-//$$ import net.minecraft.client.resources.ResourcePackRepository;
 //$$ import net.minecraft.util.HttpUtil;
 //#endif
 
@@ -33,8 +32,6 @@ import net.minecraft.network.play.server.SPacketResourcePackSend;
 //#endif
 
 //#if MC>=10800
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 //#if MC>=11400
 //$$ import java.util.concurrent.CompletableFuture;
 //#else
@@ -42,12 +39,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 //#endif
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
-//#if MC<11300
-//$$ import org.apache.commons.io.FileUtils;
-//#endif
-
-import javax.annotation.Nonnull;
 //#else
+//$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
 //$$ import net.minecraft.client.multiplayer.ServerData.ServerResourceMode;
 //$$ import net.minecraft.client.multiplayer.ServerList;
 //$$ import net.minecraft.client.resources.FileResourcePack;
@@ -192,7 +185,6 @@ public class ResourcePackRecorder {
                 throwable -> mc.getConnection().sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD)));
     }
 
-    //#if MC>=11300
     private
     //#if MC>=11400
     //$$ CompletableFuture<?>
@@ -208,102 +200,6 @@ public class ResourcePackRecorder {
     public interface IDownloadingPackFinder {
         void setRequestCallback(Consumer<File> callback);
     }
-    //#else
-    //$$ private ListenableFuture downloadResourcePack(final int requestId, String url, String hash) {
-    //$$     final ResourcePackRepository repo = mc.mcResourcePackRepository;
-    //$$     String fileName;
-    //$$     if (hash.matches("^[a-f0-9]{40}$")) {
-    //$$         fileName = hash;
-    //$$     } else {
-    //$$         fileName = url.substring(url.lastIndexOf("/") + 1);
-    //$$
-    //$$         if (fileName.contains("?")) {
-    //$$             fileName = fileName.substring(0, fileName.indexOf("?"));
-    //$$         }
-    //$$
-    //$$         if (!fileName.endsWith(".zip")) {
-    //$$             return Futures.immediateFailedFuture(new IllegalArgumentException("Invalid filename; must end in .zip"));
-    //$$         }
-    //$$
-    //$$         fileName = "legacy_" + fileName.replaceAll("\\W", "");
-    //$$     }
-    //$$
-    //$$     final File file = new File(repo.dirServerResourcepacks, fileName);
-        //#if MC>=10809
-        //$$ repo.lock.lock();
-        //#else
-        //$$ repo.field_177321_h.lock();
-        //#endif
-    //$$     try {
-            //#if MC>=10809
-            //$$ repo.clearResourcePack();
-            //#else
-            //$$ repo.func_148529_f();
-            //#endif
-    //$$
-    //$$         if (file.exists() && hash.length() == 40) {
-    //$$             try {
-    //$$                 String fileHash = Hashing.sha1().hashBytes(Files.toByteArray(file)).toString();
-    //$$                 if (fileHash.equals(hash)) {
-    //$$                     recordResourcePack(file, requestId);
-    //$$                     return setServerResourcePack(file);
-    //$$                 }
-    //$$
-    //$$                 logger.warn("File " + file + " had wrong hash (expected " + hash + ", found " + fileHash + "). Deleting it.");
-    //$$                 FileUtils.deleteQuietly(file);
-    //$$             } catch (IOException ioexception) {
-    //$$                 logger.warn("File " + file + " couldn\'t be hashed. Deleting it.", ioexception);
-    //$$                 FileUtils.deleteQuietly(file);
-    //$$             }
-    //$$         }
-    //$$
-    //$$         final GuiScreenWorking guiScreen = new GuiScreenWorking();
-    //$$         final Minecraft mc = Minecraft.getMinecraft();
-    //$$
-    //$$         Futures.getUnchecked(mc.addScheduledTask(() -> mc.displayGuiScreen(guiScreen)));
-    //$$
-            //#if MC>=10809
-            //#if MC>=11002
-            //#if MC>=11100
-            //$$ Map<String, String> sessionInfo = ResourcePackRepository.getDownloadHeaders();
-            //#else
-            //$$ Map<String, String> sessionInfo = ResourcePackRepository.func_190115_a();
-            //#endif
-            //#else
-            //$$ Map<String, String> sessionInfo = Minecraft.getSessionInfo();
-            //#endif
-            //$$ repo.downloadingPacks = HttpUtil.downloadResourcePack(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
-            //$$ Futures.addCallback(repo.downloadingPacks, new FutureCallback<Object>() {
-            //#else
-            //$$ Map sessionInfo = Minecraft.getSessionInfo();
-            //$$ repo.field_177322_i = HttpUtil.func_180192_a(file, url, sessionInfo, 50 * 1024 * 1024, guiScreen, mc.getProxy());
-            //$$ Futures.addCallback(repo.field_177322_i, new FutureCallback() {
-            //#endif
-    //$$             @Override
-    //$$             public void onSuccess(Object value) {
-    //$$                 recordResourcePack(file, requestId);
-    //$$                 setServerResourcePack(file);
-    //$$             }
-    //$$
-    //$$             @Override
-    //$$             public void onFailure(@Nonnull Throwable throwable) {
-    //$$                 throwable.printStackTrace();
-    //$$             }
-    //$$         });
-            //#if MC>=10809
-            //$$ return repo.downloadingPacks;
-            //#else
-            //$$ return repo.field_177322_i;
-            //#endif
-    //$$     } finally {
-            //#if MC>=10809
-            //$$ repo.lock.unlock();
-            //#else
-            //$$ repo.field_177321_h.unlock();
-            //#endif
-    //$$     }
-    //$$ }
-    //#endif
     //#else
     //$$ public synchronized S3FPacketCustomPayload handleResourcePack(S3FPacketCustomPayload packet) {
     //$$     final int requestId = nextRequestId++;
@@ -338,7 +234,8 @@ public class ResourcePackRecorder {
     //$$ }
     //$$
     //$$ private void downloadResourcePack(final int requestId, String url) {
-    //$$     final ResourcePackRepository repo = mc.mcResourcePackRepository;
+    //$$     final ResourcePackRepository repo = mc.getResourcePackRepository();
+    //$$     final ResourcePackRepositoryAccessor acc = (ResourcePackRepositoryAccessor) repo;
     //$$
     //$$     String fileName = url.substring(url.lastIndexOf("/") + 1);
     //$$
@@ -352,7 +249,7 @@ public class ResourcePackRecorder {
     //$$
     //$$     fileName = fileName.replaceAll("\\W", "");
     //$$
-    //$$     File file = new File(repo.field_148534_e, fileName);
+    //$$     File file = new File(acc.getCacheDir(), fileName);
     //$$
     //$$     HashMap<String, String> hashmap = new HashMap<>();
     //$$     hashmap.put("X-Minecraft-Username", mc.getSession().getUsername());
@@ -362,14 +259,14 @@ public class ResourcePackRecorder {
     //$$     GuiScreenWorking guiScreen = new GuiScreenWorking();
     //$$     Minecraft.getMinecraft().displayGuiScreen(guiScreen);
     //$$     repo.func_148529_f();
-    //$$     repo.field_148533_g = true;
+    //$$     acc.setActive(true);
     //$$     // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
     //$$     //noinspection Convert2Lambda
     //$$     HttpUtil.downloadResourcePack(file, url, new HttpUtil.DownloadListener() {
     //$$         public void onDownloadComplete(File file) {
-    //$$             if (repo.field_148533_g) {
-    //$$                 repo.field_148533_g = false;
-    //$$                 repo.field_148532_f = new FileResourcePack(file);
+    //$$             if (acc.isActive()) {
+    //$$                 acc.setActive(false);
+    //$$                 acc.setPack(new FileResourcePack(file));
     //$$                 Minecraft.getMinecraft().scheduleResourcesRefresh();
     //$$                 recordResourcePack(file, requestId);
     //$$             }

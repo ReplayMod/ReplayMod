@@ -60,7 +60,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
             //#if MC>=11300
             if (GLFW.glfwWindowShouldClose(mc.mainWindow.getHandle()) || ((MinecraftAccessor) mc).hasCrashed()) {
             //#else
-            //$$ if (Display.isCloseRequested() || mc.hasCrashed) {
+            //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).hasCrashed()) {
             //#endif
                 Thread.currentThread().interrupt();
                 return;

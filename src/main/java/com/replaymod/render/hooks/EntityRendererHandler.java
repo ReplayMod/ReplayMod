@@ -9,16 +9,10 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 
 //#if MC<11400
-//#if MC>=10800
 //#if MC>=11300
 import net.minecraftforge.fml.hooks.BasicEventHooks;
 //#else
-//$$ import net.minecraft.client.renderer.GlStateManager;
 //$$ import net.minecraftforge.fml.common.FMLCommonHandler;
-//#endif
-//#else
-//$$ import com.replaymod.core.versions.MCVer.GlStateManager;
-//$$ import cpw.mods.fml.common.FMLCommonHandler;
 //#endif
 //#endif
 
@@ -59,21 +53,7 @@ public class EntityRendererHandler implements WorldRenderer {
         //#endif
         //#endif
 
-        //#if MC>=11300
         mc.entityRenderer.renderWorld(partialTicks, finishTimeNano);
-        //#else
-        //$$ mc.entityRenderer.updateLightmap(partialTicks);
-        //$$
-        //$$ GlStateManager.enableDepth();
-        //$$ GlStateManager.enableAlpha();
-        //$$ GlStateManager.alphaFunc(516, 0.5F);
-        //$$
-        //#if MC>=10800
-        //$$ mc.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
-        //#else
-        //$$ mc.entityRenderer.renderWorld(partialTicks, finishTimeNano);
-        //#endif
-        //#endif
 
         //#if MC<11400
         //#if MC>=11300

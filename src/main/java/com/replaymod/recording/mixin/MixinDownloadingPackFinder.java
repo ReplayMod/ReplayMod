@@ -1,4 +1,4 @@
-//#if MC>=11300
+//#if MC>=10800
 package com.replaymod.recording.mixin;
 
 import com.replaymod.recording.packet.ResourcePackRecorder;
@@ -39,7 +39,11 @@ public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder
     //$$ @Redirect(method = "download", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resource/ClientResourcePackCreator;loadServerPack(Ljava/io/File;)Ljava/util/concurrent/CompletableFuture;"))
     //$$ private CompletableFuture<Object>
     //#else
+    //#if MC>=10800
     @Redirect(method = "downloadResourcePack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/DownloadingPackFinder;func_195741_a(Ljava/io/File;)Lcom/google/common/util/concurrent/ListenableFuture;"))
+    //#else
+    //$$ @Redirect(method = "func_180601_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/ResourcePackRepository;func_177319_a(Ljava/io/File;)Lcom/google/common/util/concurrent/ListenableFuture;"))
+    //#endif
     private ListenableFuture<Object>
     //#endif
     recordDownloadedPack(DownloadingPackFinder downloadingPackFinder, File file) {

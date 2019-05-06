@@ -70,7 +70,7 @@ public class ChunkLoadingRenderGlobal {
         //#if MC>=10904
         PriorityBlockingQueue<ChunkRenderTask> queueChunkUpdates = renderDispatcherAcc.getQueueChunkUpdates();
         //#else
-        //$$ BlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcher.queueChunkUpdates;
+        //$$ BlockingQueue<ChunkCompileTaskGenerator> queueChunkUpdates = renderDispatcherAcc.getQueueChunkUpdates();
         //#endif
         workerJailingQueue = new JailingQueue<>(queueChunkUpdates);
         renderDispatcherAcc.setQueueChunkUpdates(workerJailingQueue);

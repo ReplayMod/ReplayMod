@@ -17,18 +17,19 @@ import net.minecraftforge.client.model.pipeline.LightUtil;
 //#endif
 
 //#if MC>=11300
-import com.replaymod.render.blend.mixin.ItemRendererAccessor;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 //#else
 //$$ import net.minecraft.client.renderer.block.model.BakedQuad;
 //#if MC>=10904
-//$$ import net.minecraft.client.renderer.RenderItem;
 //$$ import net.minecraft.client.renderer.block.model.IBakedModel;
 //#else
-//$$ import net.minecraft.client.renderer.entity.RenderItem;
 //$$ import net.minecraft.client.resources.model.IBakedModel;
 //#endif
+//#endif
+
+//#if MC>=10904
+import com.replaymod.render.blend.mixin.ItemRendererAccessor;
 //#endif
 
 import java.util.List;
@@ -117,14 +118,10 @@ public class ItemExporter implements Exporter {
     private static void renderQuads(Object renderItem, BlendMeshBuilder buffer, List<BakedQuad> quads, ItemStack stack) {
         for (BakedQuad quad : quads) {
             int color = stack != null && quad.hasTintIndex()
-                    //#if MC>=11300
+                    //#if MC>=10904
                     ? ((ItemRendererAccessor) renderItem).getItemColors().getColor(stack, quad.getTintIndex()) | 0xff000000
                     //#else
-                    //#if MC>=10904
-                    //$$ ? ((RenderItem) renderItem).itemColors.getColorFromItemstack(stack, quad.getTintIndex()) | 0xff000000
-                    //#else
                     //$$ ? stack.getItem().getColorFromItemStack(stack, quad.getTintIndex()) | 0xff000000
-                    //#endif
                     //#endif
                     : 0xffffffff;
             //#if MC>=11400

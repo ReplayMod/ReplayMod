@@ -130,7 +130,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //#if MC>=10800
                 UUID uuid = ((SPacketSpawnPlayer) packet).getUniqueId();
                 //#else
-                //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).field_148955_b.getId();
+                //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).func_148948_e().getId();
                 //#endif
                 Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
                 uuids.add(uuid.toString());
@@ -300,16 +300,21 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     @SuppressWarnings("unchecked")
     private byte[] getPacketData(Packet packet) throws Exception {
-        //#if MC>=10904
         if (packet instanceof SPacketSpawnMob) {
             SPacketSpawnMob p = (SPacketSpawnMob) packet;
             SPacketSpawnMobAccessor pa = (SPacketSpawnMobAccessor) p;
             if (pa.getDataManager() == null) {
                 pa.setDataManager(new EntityDataManager(null));
                 if (p.getDataManagerEntries() != null) {
+                    //#if MC>=10904
                     for (EntityDataManager.DataEntry<?> entry : p.getDataManagerEntries()) {
                         DataManager_set(pa.getDataManager(), entry);
                     }
+                    //#else
+                    //$$ for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_149027_c()) {
+                    //$$     pa.getDataManager().addObject(wo.getDataValueId(), wo.getObject());
+                    //$$ }
+                    //#endif
                 }
             }
         }
@@ -320,45 +325,18 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             if (pa.getDataManager() == null) {
                 pa.setDataManager(new EntityDataManager(null));
                 if (p.getDataManagerEntries() != null) {
+                    //#if MC>=10904
                     for (EntityDataManager.DataEntry<?> entry : p.getDataManagerEntries()) {
                         DataManager_set(pa.getDataManager(), entry);
                     }
+                    //#else
+                    //$$ for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_148944_c()) {
+                    //$$     pa.getDataManager().addObject(wo.getDataValueId(), wo.getObject());
+                    //$$ }
+                    //#endif
                 }
             }
         }
-        //#else
-        //$$ if(packet instanceof S0FPacketSpawnMob) {
-        //$$     S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
-        //$$     if (p.field_149043_l == null) {
-        //$$         p.field_149043_l = new DataWatcher(null);
-        //$$         if(p.func_149027_c() != null) {
-        //$$             for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_149027_c()) {
-        //$$                 p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
-        //$$             }
-        //$$         }
-        //$$     }
-        //$$ }
-        //$$
-        //$$ if(packet instanceof S0CPacketSpawnPlayer) {
-        //$$     S0CPacketSpawnPlayer p = (S0CPacketSpawnPlayer) packet;
-            //#if MC>=10809
-            //$$ if (p.watcher == null) {
-            //$$     p.watcher = new DataWatcher(null);
-            //$$     if(p.func_148944_c() != null) {
-            //$$         for(DataWatcher.WatchableObject wo : p.func_148944_c()) {
-            //$$             p.watcher.addObject(wo.getDataValueId(), wo.getObject());
-            //#else
-            //$$ if (p.field_148960_i == null) {
-            //$$     p.field_148960_i = new DataWatcher(null);
-            //$$     if(p.func_148944_c() != null) {
-            //$$         for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_148944_c()) {
-            //$$             p.field_148960_i.addObject(wo.getDataValueId(), wo.getObject());
-            //#endif
-        //$$             }
-        //$$         }
-        //$$     }
-        //$$ }
-        //#endif
 
         //#if MC>=10800
         Integer packetId = connectionState.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);

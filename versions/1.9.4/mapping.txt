@@ -6,6 +6,7 @@ net.minecraft.util.text.Style net.minecraft.util.ChatStyle
 net.minecraft.util.text.TextFormatting net.minecraft.util.EnumChatFormatting
 net.minecraft.util.text.ITextComponent net.minecraft.util.IChatComponent
 net.minecraft.network.datasync.EntityDataManager net.minecraft.entity.DataWatcher
+net.minecraft.network.datasync.EntityDataManager.DataEntry net.minecraft.entity.DataWatcher.WatchableObject
 net.minecraft.client.renderer.VertexBuffer net.minecraft.client.renderer.WorldRenderer
 net.minecraft.client.renderer.Tessellator getBuffer() getWorldRenderer()
 net.minecraft.client.particle.Particle net.minecraft.client.particle.EntityFX
@@ -30,8 +31,11 @@ net.minecraft.network.play.server.SPacketPlayerPosLook net.minecraft.network.pla
 net.minecraft.network.play.server.SPacketPlayerListItem net.minecraft.network.play.server.S38PacketPlayerListItem
 net.minecraft.network.play.server.SPacketRespawn net.minecraft.network.play.server.S07PacketRespawn
 net.minecraft.network.play.server.SPacketSpawnPlayer net.minecraft.network.play.server.S0CPacketSpawnPlayer
+net.minecraft.network.play.server.SPacketSpawnPlayer getDataManagerEntries() func_148944_c()
 net.minecraft.network.play.server.SPacketSpawnObject net.minecraft.network.play.server.S0EPacketSpawnObject
 net.minecraft.network.play.server.SPacketSpawnMob net.minecraft.network.play.server.S0FPacketSpawnMob
+net.minecraft.network.play.server.SPacketSpawnMob dataManager field_149043_l
+net.minecraft.network.play.server.SPacketSpawnMob getDataManagerEntries() func_149027_c()
 net.minecraft.network.play.server.SPacketSpawnGlobalEntity net.minecraft.network.play.server.S2CPacketSpawnGlobalEntity
 net.minecraft.network.play.server.SPacketSpawnPainting net.minecraft.network.play.server.S10PacketSpawnPainting
 net.minecraft.network.play.server.SPacketSpawnExperienceOrb net.minecraft.network.play.server.S11PacketSpawnExperienceOrb

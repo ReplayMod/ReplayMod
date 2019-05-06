@@ -301,34 +301,11 @@ if (mcVersion <= 10710) {
 }
 
 if (project.name != 'core') {
-    def preprocessedRes = 'build/preprocessed/res'
-    def preprocessedAT = 'build/preprocessed/at.cfg'
-    def originalRes = '../../src/main/resources'
-    def originalAT = originalRes + '/META-INF/replaymod_at.cfg'
-    def vars = [MC: mcVersion as int]
-
-    if (FABRIC) {
-        // Fabric doesn't have ATs, so we've stopped using them on 1.13+
-    } else if (FG3) {
-        // FG3 reads the AT file right after project evaluation, so we need to convert it right now
-        PreprocessTask.convertFile(PreprocessTask.CFG_KEYWORDS, vars, file(originalAT), file(preprocessedAT))
-        minecraft.accessTransformers << file(preprocessedAT)
-    } else {
-        (mcVersion >= 10800 ? [deobfMcMCP, deobfMcSRG] : [deobfuscateJar, deobfBinJar]).each { task ->
-            task.dependsOn preprocessResources
-        }
-        minecraft.accessTransformer preprocessedRes + '/META-INF/replaymod_at.cfg'
-    }
-
     def jGui = project.evaluationDependsOn(":jGui:$jGuiVersion")
     // Make sure the corresponding jGui setCoreVersion task runs
     project.tasks.setCoreVersionJava.dependsOn jGui.tasks.setCoreVersion
     // and it doesn't run too early (i.e. before we're done with preprocessing)
     jGui.tasks.setCoreVersionJava.mustRunAfter project.tasks.preprocessJava
-} else {
-    if (FG3) {
-        minecraft.accessTransformers << file('../../src/main/resources/META-INF/replaymod_at.cfg')
-    }
 }
 
 task configureRelocation() {

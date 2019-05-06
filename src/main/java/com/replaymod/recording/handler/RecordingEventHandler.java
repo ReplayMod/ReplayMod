@@ -1,6 +1,5 @@
 package com.replaymod.recording.handler;
 
-import com.replaymod.recording.mixin.EntityLivingBaseAccessor;
 import com.replaymod.recording.mixin.IntegratedServerAccessor;
 import com.replaymod.recording.packet.PacketListener;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
@@ -24,10 +23,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 //#endif
 
 //#if MC>=10904
-//#if MC>=11300
-//#else
-//$$ import net.minecraft.entity.EntityLiving;
-//#endif
+import com.replaymod.recording.mixin.EntityLivingBaseAccessor;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.EnumHand;
@@ -169,8 +165,14 @@ public class RecordingEventHandler extends EventRegistrations {
                 //$$ // Note: this leaves the lastY value offset by the eye height but because it's only used for relative
                 //$$ //       movement, that doesn't matter.
                 //$$ S18PacketEntityTeleport teleportPacket = new S18PacketEntityTeleport(player);
-                //$$ teleportPacket.field_149457_c = MathHelper.floor_double(player.boundingBox.minY * 32);
-                //$$ packet = teleportPacket;
+                //$$ packet = new S18PacketEntityTeleport(
+                //$$         teleportPacket.func_149451_c(),
+                //$$         teleportPacket.func_149449_d(),
+                //$$         MathHelper.floor_double(player.boundingBox.minY * 32),
+                //$$         teleportPacket.func_149446_f(),
+                //$$         teleportPacket.func_149450_g(),
+                //$$         teleportPacket.func_149447_h()
+                //$$ );
                 //#endif
             } else {
                 byte newYaw = (byte) ((int) (player.rotationYaw * 256.0F / 360.0F));
@@ -340,7 +342,7 @@ public class RecordingEventHandler extends EventRegistrations {
                 //#if MC>=11300
                 dataManager.register(EntityLivingBaseAccessor.getLivingFlags(), (byte) state);
                 //#else
-                //$$ dataManager.register(EntityLiving.HAND_STATES, (byte) state);
+                //$$ dataManager.register(EntityLivingBaseAccessor.getLivingFlags(), (byte) state);
                 //#endif
                 packetListener.save(new SPacketEntityMetadata(player.getEntityId(), dataManager, true));
             }

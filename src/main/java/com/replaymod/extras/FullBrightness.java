@@ -42,10 +42,11 @@ public class FullBrightness extends EventRegistrations implements Extra {
             @Override
             public void run() {
                 active = !active;
+                // need to tick once to update lightmap when replay is paused
                 //#if MC>=11300
-                mod.getMinecraft().entityRenderer.tick(); // need to tick once to update lightmap when replay is paused
+                mod.getMinecraft().entityRenderer.tick();
                 //#else
-                //$$ mod.getMinecraft().entityRenderer.lightmapUpdateNeeded = true;
+                //$$ mod.getMinecraft().entityRenderer.updateRenderer();
                 //#endif
                 ReplayHandler replayHandler = module.getReplayHandler();
                 if (replayHandler != null) {

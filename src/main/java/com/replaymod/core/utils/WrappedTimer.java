@@ -44,16 +44,12 @@ public class WrappedTimer extends Timer {
         //#if MC>=11200
         toA.setTickLength(fromA.getTickLength());
         //#else
-        //$$ to.ticksPerSecond = from.ticksPerSecond;
-        //$$ to.lastHRTime = from.lastHRTime;
+        //$$ toA.setTicksPerSecond(fromA.getTicksPerSecond());
+        //$$ toA.setLastHRTime(fromA.getLastHRTime());
         //$$ toA.setTimerSpeed(fromA.getTimerSpeed());
-        //$$ to.lastSyncHRClock = from.lastSyncHRClock;
-        //#if MC>=10809
-        //$$ to.counter = from.counter;
-        //#else
-        //$$ to.field_74285_i = from.field_74285_i;
-        //#endif
-        //$$ to.timeSyncAdjustment = from.timeSyncAdjustment;
+        //$$ toA.setLastSyncHRClock(fromA.getLastSyncHRClock());
+        //$$ toA.setCounter(fromA.getCounter());
+        //$$ toA.setTimeSyncAdjustment(fromA.getTimeSyncAdjustment());
         //#endif
     }
 }

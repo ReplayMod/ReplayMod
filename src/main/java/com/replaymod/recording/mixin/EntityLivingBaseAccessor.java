@@ -6,13 +6,13 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import javax.annotation.Nonnull;
 
-//#if MC>=11300
+//#if MC>=10904
 import net.minecraft.network.datasync.DataParameter;
 //#endif
 
 @Mixin(EntityLivingBase.class)
 public interface EntityLivingBaseAccessor {
-    //#if MC>=11300
+    //#if MC>=10904
     @Accessor("LIVING_FLAGS")
     @Nonnull
     @SuppressWarnings("ConstantConditions")

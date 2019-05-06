@@ -9,6 +9,9 @@
     //$$ "MixinInGameHud",
     //#endif
     "EntityLivingBaseAccessor",
+    //#if MC<11300
+    //$$ "EntityOtherPlayerMPAccessor",
+    //#endif
     "EntityPlayerAccessor",
     "FirstPersonRendererAccessor",
     //#if MC>=10904
@@ -16,15 +19,13 @@
     //#endif
     //#if MC>=10800
     "MixinGuiSpectator",
-    //#if MC>=11300
-    "MixinKeyboardListener",
-    //#endif
     "MixinRenderArrow",
     //#if MC<11400
     "MixinRenderManager",
     //#endif
     "MixinViewFrustum",
     //#endif
+    "MixinKeyboardListener",
     "MixinPlayerControllerMP",
     "MixinRenderItem",
     "MixinRenderLivingBase",

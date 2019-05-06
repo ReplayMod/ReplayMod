@@ -13,8 +13,11 @@
     //#endif
     //#if MC>=11300
     "MixinKeyboardListener",
-    "MixinMinecraft",
     //#endif
+    //#if MC<10800
+    //$$ "ResourcePackRepositoryAccessor",
+    //#endif
+    "MixinMinecraft",
     "GuiMainMenuAccessor",
     "GuiScreenAccessor",
     "KeyBindingAccessor",

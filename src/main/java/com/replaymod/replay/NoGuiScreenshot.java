@@ -59,9 +59,9 @@ public class NoGuiScreenshot {
                     mc.entityRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
                     //#else
                     //#if MC>=10809
-                    //$$ mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks, System.nanoTime());
+                    //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks(), System.nanoTime());
                     //#else
-                    //$$ mc.entityRenderer.updateCameraAndRender(mc.timer.renderPartialTicks);
+                    //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks());
                     //#endif
                     //#endif
 

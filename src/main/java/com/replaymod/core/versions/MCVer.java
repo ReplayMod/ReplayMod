@@ -70,6 +70,7 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.world.WorldType;
 //#else
+//$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
 //$$ import com.google.common.util.concurrent.Futures;
 //$$ import io.netty.handler.codec.DecoderException;
 //$$ import net.minecraft.client.resources.FileResourcePack;
@@ -351,8 +352,9 @@ public class MCVer {
         //#if MC>=10800
         //$$ return repo.func_177319_a(file);
         //#else
-        //$$ repo.field_148533_g = false;
-        //$$ repo.field_148532_f = new FileResourcePack(file);
+        //$$ ResourcePackRepositoryAccessor acc = (ResourcePackRepositoryAccessor) repo;
+        //$$ acc.setActive(false);
+        //$$ acc.setPack(new FileResourcePack(file));
         //$$ Minecraft.getMinecraft().scheduleResourcesRefresh();
         //$$ return Futures.immediateFuture(null);
         //#endif
@@ -520,13 +522,19 @@ public class MCVer {
     public static void processKeyBinds() {
         ((MinecraftMethodAccessor) getMinecraft()).replayModProcessKeyBinds();
     }
+    //#endif
+
     public interface MinecraftMethodAccessor {
+        //#if MC>=11300
         void replayModProcessKeyBinds();
+        //#else
+        //$$ void replayModRunTickMouse();
+        //$$ void replayModRunTickKeyboard();
+        //#endif
         //#if MC>=11400
         //$$ void replayModExecuteTaskQueue();
         //#endif
     }
-    //#endif
 
     public static long milliTime() {
         //#if MC>=11300

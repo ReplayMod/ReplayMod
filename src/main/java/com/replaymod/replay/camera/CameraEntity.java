@@ -701,8 +701,8 @@ public class CameraEntity
                 if (lastHandRendered != player) {
                     lastHandRendered = player;
 
-                    //#if MC>=10904
                     FirstPersonRendererAccessor acc = (FirstPersonRendererAccessor) mc.entityRenderer.itemRenderer;
+                    //#if MC>=10904
                     acc.setPrevEquippedProgressMainHand(1);
                     acc.setPrevEquippedProgressOffHand(1);
                     acc.setEquippedProgressMainHand(1);
@@ -710,10 +710,10 @@ public class CameraEntity
                     acc.setItemStackMainHand(player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND));
                     acc.setItemStackOffHand(player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND));
                     //#else
-                    //$$ mc.entityRenderer.itemRenderer.prevEquippedProgress = 1;
-                    //$$ mc.entityRenderer.itemRenderer.equippedProgress = 1;
-                    //$$ mc.entityRenderer.itemRenderer.itemToRender = player.inventory.getCurrentItem();
-                    //$$ mc.entityRenderer.itemRenderer.equippedItemSlot = player.inventory.currentItem;
+                    //$$ acc.setPrevEquippedProgress(1);
+                    //$$ acc.setEquippedProgress(1);
+                    //$$ acc.setItemToRender(player.inventory.getCurrentItem());
+                    //$$ acc.setEquippedItemSlot(player.inventory.currentItem);
                     //#endif
 
 

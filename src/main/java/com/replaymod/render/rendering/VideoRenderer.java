@@ -74,11 +74,7 @@ public class VideoRenderer implements RenderInfo {
     private int fps;
     private boolean mouseWasGrabbed;
     private boolean debugInfoWasShown;
-    //#if MC>=10904
     private Map<SoundCategory, Float> originalSoundLevels;
-    //#else
-    //$$ private Map originalSoundLevels;
-    //#endif
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
@@ -266,7 +262,6 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         // Mute all sounds except GUI sounds (buttons, etc.)
-        //#if MC>=11300
         originalSoundLevels = new EnumMap<>(SoundCategory.class);
         for (SoundCategory category : SoundCategory.values()) {
             if (category != SoundCategory.MASTER) {
@@ -274,21 +269,6 @@ public class VideoRenderer implements RenderInfo {
                 mc.gameSettings.setSoundLevel(category, 0);
             }
         }
-        //#else
-        //$$ Map<SoundCategory, Float> mutedSounds = new EnumMap<>(SoundCategory.class);
-        //$$ for (SoundCategory category : SoundCategory.values()) {
-        //$$     mutedSounds.put(category, 0f);
-        //$$ }
-        //#if MC>=10904
-        //$$ originalSoundLevels = mc.gameSettings.soundLevels;
-        //$$ mutedSounds.put(SoundCategory.MASTER, originalSoundLevels.get(SoundCategory.MASTER));
-        //$$ mc.gameSettings.soundLevels = mutedSounds;
-        //#else
-        //$$ originalSoundLevels = mc.gameSettings.mapSoundLevels;
-        //$$ mutedSounds.put(SoundCategory.MASTER, (Float) originalSoundLevels.get(SoundCategory.MASTER));
-        //$$ mc.gameSettings.mapSoundLevels = mutedSounds;
-        //#endif
-        //#endif
 
         fps = settings.getFramesPerSecond();
 
@@ -348,17 +328,9 @@ public class VideoRenderer implements RenderInfo {
             //$$ mc.mouseHelper.grabMouseCursor();
             //#endif
         }
-        //#if MC>=10904
-        //#if MC>=11300
         for (Map.Entry<SoundCategory, Float> entry : originalSoundLevels.entrySet()) {
             mc.gameSettings.setSoundLevel(entry.getKey(), entry.getValue());
         }
-        //#else
-        //$$ mc.gameSettings.soundLevels = originalSoundLevels;
-        //#endif
-        //#else
-        //$$ mc.gameSettings.mapSoundLevels = originalSoundLevels;
-        //#endif
         mc.displayGuiScreen(null);
         //#if MC>=10800
         if (chunkLoadingRenderGlobal != null) {

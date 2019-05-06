@@ -20,5 +20,14 @@ public interface FirstPersonRendererAccessor {
     void setEquippedProgressOffHand(float value);
     @Accessor
     void setPrevEquippedProgressOffHand(float value);
+    //#else
+    //$$ @Accessor
+    //$$ void setItemToRender(ItemStack value);
+    //$$ @Accessor
+    //$$ void setEquippedItemSlot(int value);
+    //$$ @Accessor
+    //$$ void setEquippedProgress(float value);
+    //$$ @Accessor
+    //$$ void setPrevEquippedProgress(float value);
     //#endif
 }

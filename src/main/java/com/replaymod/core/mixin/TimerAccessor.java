@@ -21,5 +21,25 @@ public interface TimerAccessor {
     //$$ float getTimerSpeed();
     //$$ @Accessor
     //$$ void setTimerSpeed(float value);
+    //$$ @Accessor
+    //$$ float getTicksPerSecond();
+    //$$ @Accessor
+    //$$ void setTicksPerSecond(float value);
+    //$$ @Accessor
+    //$$ double getLastHRTime();
+    //$$ @Accessor
+    //$$ void setLastHRTime(double value);
+    //$$ @Accessor
+    //$$ long getLastSyncHRClock();
+    //$$ @Accessor
+    //$$ void setLastSyncHRClock(long value);
+    //$$ @Accessor
+    //$$ double getTimeSyncAdjustment();
+    //$$ @Accessor
+    //$$ void setTimeSyncAdjustment(double value);
+    //$$ @Accessor
+    //$$ long getCounter();
+    //$$ @Accessor
+    //$$ void setCounter(long value);
     //#endif
 }

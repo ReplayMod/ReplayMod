@@ -1,3 +1,7 @@
+net.minecraft.entity.EntityLivingBase LIVING_FLAGS HAND_STATES
+net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository
+net.minecraft.client.resources.DownloadingPackFinder func_195741_a() setServerResourcePack()
+net.minecraft.client.renderer.color.ItemColors getColor() getColorFromItemstack()
 net.minecraft.client.renderer.GlStateManager activeTexture activeTextureUnit
 net.minecraft.client.renderer.FirstPersonRenderer net.minecraft.client.renderer.ItemRenderer
 net.minecraft.client.renderer.chunk.ChunkRenderTask net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator
@@ -13,6 +17,7 @@ net.minecraftforge.eventbus.api.IEventBus net.minecraftforge.fml.common.eventhan
 com.replaymod.core.versions.MCVer.Keyboard org.lwjgl.input.Keyboard
 net.minecraft.client.Minecraft gameDir mcDataDir
 net.minecraft.client.Minecraft getInstance() getMinecraft()
+net.minecraft.client.Minecraft getPackFinder() getResourcePackRepository()
 net.minecraft.client.renderer.WorldRenderer net.minecraft.client.renderer.RenderGlobal
 net.minecraft.network.play.server.SPacketEntity.Move net.minecraft.network.play.server.SPacketEntity.S17PacketEntityLookMove
 net.minecraft.entity.Entity isPassenger() isRiding()

@@ -240,7 +240,7 @@ public class ReplayMod implements
                 try {
                     return super.getInputStream(resourceName);
         //#else
-        //$$ List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
+        //$$ List<IResourcePack> defaultResourcePacks = ((MinecraftAccessor) mc).getDefaultResourcePacks();
         //$$ FolderResourcePack jGuiResourcePack = new FolderResourcePack(new File("../jGui/src/main/resources")) {
         //$$     @Override
         //$$     protected InputStream getInputStreamByName(String resourceName) throws IOException {
