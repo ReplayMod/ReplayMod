@@ -106,7 +106,7 @@ public abstract class MixinMinecraft
             //#endif
     //$$         at = @At(value = "INVOKE", target = "Lorg/lwjgl/input/Mouse;getEventDWheel()I", remap = false)
     //$$ )
-    //$$ private static int scroll() {
+    //$$ private int scroll() {
     //$$     int wheel = Mouse.getEventDWheel();
     //$$     InputReplayTimer.handleScroll(wheel);
     //$$     return wheel;
