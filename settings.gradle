@@ -3,46 +3,33 @@ def coreMcVersion = f.exists() ? f.readLines().first() as int : 11302
 
 def jGuiVersions = []
 def replayModVersions = []
-if (gradle.gradleVersion.startsWith('3.')) {
-    if (coreMcVersion <= 10800) { // allow 1.8 only to run The Preprocessor
-        jGuiVersions += ['core']
-        replayModVersions += ['core']
-    }
-    jGuiVersions += [
-            '1.8', // allow 1.8 only to run The Preprocessor
-            '1.7.10',
-    ]
-    replayModVersions += [
-            '1.8', // allow 1.8 only to run The Preprocessor
-            '1.7.10',
-    ]
-} else {
-    if (coreMcVersion > 10710) {
-        jGuiVersions += ['core']
-        replayModVersions += ['core']
-    }
-    jGuiVersions += [
-            '1.8',
-            '1.8.9',
-            '1.9.4',
-            '1.12',
-            '1.13.2',
-            '1.14',
-    ]
-    replayModVersions += [
-            '1.8',
-            '1.8.9',
-            '1.9.4',
-            '1.10.2',
-            '1.11',
-            '1.11.2',
-            '1.12',
-            '1.12.1',
-            '1.12.2',
-            '1.13.2',
-            '1.14',
-    ]
+if (coreMcVersion > 10710) {
+    jGuiVersions += ['core']
+    replayModVersions += ['core']
 }
+jGuiVersions += [
+        '1.7.10',
+        '1.8',
+        '1.8.9',
+        '1.9.4',
+        '1.12',
+        '1.13.2',
+        '1.14',
+]
+replayModVersions += [
+        '1.7.10',
+        '1.8',
+        '1.8.9',
+        '1.9.4',
+        '1.10.2',
+        '1.11',
+        '1.11.2',
+        '1.12',
+        '1.12.1',
+        '1.12.2',
+        '1.13.2',
+        '1.14',
+]
 
 include ':jGui'
 jGuiVersions.each { version ->

@@ -32,12 +32,10 @@ buildscript {
     }
 
     dependencies {
-        if (!gradle.gradleVersion.startsWith('3.')) {
-            classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2' // Gradle 4+ only
-        }
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
         if (mcVersion >= 11400) {
             classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.2-SNAPSHOT'
-        } else {
+        } else if (mcVersion >= 10800) {
             classpath 'org.ow2.asm:asm:6.0'
             classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
                 // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
@@ -50,9 +48,10 @@ buildscript {
                     mcVersion >= 10904 ? '2.2-SNAPSHOT' :
                     mcVersion >= 10809 ? '2.1-SNAPSHOT' :
                     mcVersion >= 10800 ? '2.0-SNAPSHOT' :
-                    mcVersion >= 10710 ? '1.2-SNAPSHOT' :
                                          'invalid'
             )
+        } else {
+            classpath 'com.github.Team-Fruit:ForgeGradle:3be8636'
         }
         classpath 'com.github.replaymod:preprocessor:9d3202c'
     }
@@ -69,9 +68,7 @@ def jGuiVersion = project.name
 if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
 if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
 
-if (!gradle.gradleVersion.startsWith('3.')) {
-    apply plugin: 'com.github.johnrengelman.shadow'
-}
+apply plugin: 'com.github.johnrengelman.shadow'
 
 if (mcVersion >= 10800) {
     if (FABRIC) {
@@ -238,10 +235,8 @@ dependencies {
     if (!FABRIC) {
         // compile 'com.github.SpongePowered:Mixin:404f5da' // 0.7.5-SNAPSHOT
         // ^ mixin doesn't compile on jitpack, so we'll have to depend on the SNAPSHOT and build it manually for reprod
-        if (!gradle.gradleVersion.startsWith('3.')) {
-            annotationProcessor 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
-            compileOnly 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
-        }
+        annotationProcessor 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
+        compileOnly 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
         shade('org.spongepowered:mixin:0.7.8-SNAPSHOT') {
             transitive = false // deps should all be bundled with MC
         }
@@ -273,9 +268,7 @@ dependencies {
         shadow files(project(":jGui:$jGuiVersion").tasks.preshadowJar.archivePath) // include pre-shadowed lwjgl_util
     }
 
-    if (!gradle.gradleVersion.startsWith('3.')) {
-        annotationProcessor 'org.projectlombok:lombok:1.16.6'
-    }
+    annotationProcessor 'org.projectlombok:lombok:1.16.6'
     compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
 
     testCompile 'junit:junit:4.11'
@@ -325,92 +318,34 @@ task configureRelocation() {
             }
             pkgs
         }.flatten().unique()
-        if (mcVersion >= 10800) {
-            pkgs.each { pkg ->
-                def pkgName = pkg.replace('/', '.')
-                shadowJar.relocate pkgName, 'com.replaymod.lib.' + pkgName
-            }
-        } else {
-            def extraSrg = tasks.reobf.extraSrg
-            pkgs.each { pkg ->
-                extraSrg << "PK: $pkg com/replaymod/lib/$pkg".toString()
-            }
+        pkgs.each { pkg ->
+            def pkgName = pkg.replace('/', '.')
+            shadowJar.relocate pkgName, 'com.replaymod.lib.' + pkgName
         }
     }
 }
-if (!gradle.gradleVersion.startsWith('3.')) { // Gradle 4 (never used for 1.7.10)
-    tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
-    task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-        from { tasks.jar.archivePath }
-        afterEvaluate { dependsOn FABRIC ? tasks.remapJar : tasks.reobfJar }
-        manifest.inheritFrom tasks.jar.manifest
 
-        from project.configurations.shade
-        configurations = [project.configurations.shadow]
-        exclude 'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class'
+tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
+task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    from { tasks.jar.archivePath }
+    afterEvaluate { dependsOn FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
+    manifest.inheritFrom tasks.jar.manifest
 
-        dependsOn tasks.configureRelocation
+    from project.configurations.shade
+    configurations = [project.configurations.shadow]
+    exclude 'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class'
 
-        // No need to shadow netty, MC provides it
-        relocate 'com.github.steveice10.netty', 'io.netty'
-        exclude 'com/github/steveice10/netty/**'
+    dependsOn tasks.configureRelocation
 
-        minimize {
-            exclude(dependency('.*spongepowered:mixin:.*'))
-        }
-    }
-} else if (mcVersion >= 10800) {
-    // Neither Gradle 4 nor MC 1.7.10, we do not support building jars in this configuration, it
-    // is only supported to allow the preprocessor to convert the source from 1.8 to 1.7.10
-    task shadowJar() {
-        doFirst { throw new UnsupportedOperationException('1.8+ jars require Gradle 4') }
-    }
-} else {
-    tasks.reobf.dependsOn tasks.configureRelocation
+    // No need to shadow netty, MC provides it
+    relocate 'com.github.steveice10.netty', 'io.netty'
+    exclude 'com/github/steveice10/netty/**'
 
-    // Dummy task so "./gradlew shadowJar" also works on 1.7.10
-    task shadowJar(type: Jar) {
-        from { zipTree(tasks.jar.archivePath) }
-        afterEvaluate { manifest = tasks.jar.manifest }
-
-        dependsOn tasks.reobf
+    minimize {
+        exclude(dependency('.*spongepowered:mixin:.*'))
     }
 }
 tasks.assemble.dependsOn tasks.shadowJar
-
-if (mcVersion <= 10710) // anything above uses shadowJar
-jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    dependsOn configurations.compile
-    dependsOn configurations.shade
-    dependsOn configurations.relocate
-
-    from project.mixinRefMap
-
-    def shade = { files(configurations.relocate + configurations.shade) }
-
-    def noticeDir = file("$buildDir/NOTICE")
-    doFirst {
-        noticeDir.deleteDir()
-        noticeDir.mkdirs()
-        shade().collect { it.isDirectory() ? fileTree(it) : zipTree(it) }.each {
-            it.matching { include '**/NOTICE*' }.each {
-                new File(noticeDir, 'NOTICE.txt') << it.getText('UTF-8') + '\n'
-            }
-        }
-    }
-    from noticeDir
-
-    from ({shade().collect { it.isDirectory() ? it : zipTree(it) }}) {
-        exclude '**/NOTICE*'
-        eachFile {
-            if (getName() == 'LICENSE.txt') {
-                setName(getFile().getParentFile().getName().split('.jar_')[0].tokenize('-')[0] + '-LICENSE.txt')
-            }
-        }
-    }
-}
 
 jar {
     classifier = 'raw'

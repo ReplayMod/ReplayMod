@@ -26,7 +26,7 @@ if (releaseCommit == currentCommit) {
     def diff = command('git', 'log', '--format=oneline', "$releaseCommit..$currentCommit").size()
     version = "$latestVersion-$diff-g${currentCommit.substring(0, 7)}"
 }
-if (gitDescribe().endsWith('*') && !project.hasProperty('ignoreDirty')) {
+if (gitDescribe().endsWith('*')) {
     version = "$version-dirty"
 }
 
@@ -57,24 +57,6 @@ subprojects {
             def rootTask = rootProject.tasks.shadowJar
             rootTask.dependsOn shadowJar
             rootTask.from shadowJar.archivePath
-        }
-    }
-}
-
-// Workaround specific to CI build to guarantee correct ordering of
-//   ./gradlew --parallel shadowJar :1.8:setCoreVersion
-// TODO properly fix the ordering in preprocessor
-if (project.hasProperty('workAroundBuildOrder')) {
-    evaluationDependsOnChildren()
-    def rmTasks = project(':1.8').tasks
-    def jGuiTasks = project(':jGui:1.8').tasks
-    subprojects.forEach {
-        def shadowTask = it.tasks.findByName('shadowJar')
-        if (shadowTask != null) {
-            rmTasks.setCoreVersionJava.mustRunAfter shadowTask
-            rmTasks.setCoreVersionResources.mustRunAfter shadowTask
-            jGuiTasks.setCoreVersionJava.mustRunAfter shadowTask
-            jGuiTasks.setCoreVersionResources.mustRunAfter shadowTask
         }
     }
 }
