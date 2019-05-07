@@ -5,7 +5,7 @@
 //$$ import de.johni0702.minecraft.gui.versions.callbacks.MouseCallback;
 //$$ import net.minecraft.client.Mouse;
 //$$ import net.minecraft.client.gui.Element;
-//$$ import net.minecraft.client.gui.ParentElement;
+//$$ import net.minecraft.client.gui.Screen;
 //$$ import org.spongepowered.asm.mixin.Mixin;
 //$$ import org.spongepowered.asm.mixin.Shadow;
 //$$ import org.spongepowered.asm.mixin.injection.At;
@@ -47,9 +47,9 @@
 //$$
 //$$     @Redirect(
 //$$             method = "onMouseScroll",
-//$$             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/ParentElement;mouseScrolled(DDD)Z")
+//$$             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Screen;mouseScrolled(DDD)Z")
 //$$     )
-//$$     private boolean mouseScroll(ParentElement element, double x, double y, double scroll) {
+//$$     private boolean mouseScroll(Screen element, double x, double y, double scroll) {
 //$$         if (MouseCallback.EVENT.invoker().mouseScroll(x, y, scroll)) {
 //$$             return true;
 //$$         } else {
