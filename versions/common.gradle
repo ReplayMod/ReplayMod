@@ -53,7 +53,7 @@ buildscript {
         } else {
             classpath 'com.github.Team-Fruit:ForgeGradle:3be8636'
         }
-        classpath 'com.github.replaymod:preprocessor:9d3202c'
+        classpath 'com.github.replaymod:preprocessor:6be682c'
     }
 }
 
