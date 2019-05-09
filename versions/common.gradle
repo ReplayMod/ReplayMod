@@ -311,8 +311,16 @@ task configureRelocation() {
             tree.visit { file ->
                 if (!file.directory && file.name.endsWith('.class') && file.path.contains('/')) {
                     def pkg = file.path.substring(0, file.path.lastIndexOf('/'))
-                    if (!pkg.startsWith('com/replaymod') && !pkg.startsWith('javax/')) {
-                        pkgs << pkg
+                    if (pkg.startsWith('com/')) {
+                        if (!pkg.startsWith('com/replaymod')) {
+                            pkgs << pkg.substring(0, pkg.indexOf('/', 4))
+                        }
+                    } else if (pkg.startsWith('org/')) {
+                        if (!pkg.startsWith('org/spongepowered')) {
+                            pkgs << pkg.substring(0, pkg.indexOf('/', 4))
+                        }
+                    } else if (!pkg.startsWith('javax/')) {
+                        pkgs << pkg.substring(0, pkg.indexOf('/'))
                     }
                 }
             }
