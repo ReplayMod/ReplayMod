@@ -1,5 +1,5 @@
 def f = file('versions/core/mcVersion')
-def coreMcVersion = f.exists() ? f.readLines().first() as int : 11302
+def coreMcVersion = f.readLines().first() as int
 
 def jGuiVersions = []
 def replayModVersions = []

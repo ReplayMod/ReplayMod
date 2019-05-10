@@ -5,7 +5,7 @@ buildscript {
         mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}" as int
     } else {
         def f = file('mcVersion')
-        mcVersion = f.exists() ? f.readLines().first() as int : 11302
+        mcVersion = f.readLines().first() as int
     }
     project.ext.mcVersion = mcVersion
 
