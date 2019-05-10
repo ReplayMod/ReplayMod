@@ -1,9 +1,9 @@
 package com.replaymod.core.utils;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.PacketByteBuf;
 //#if MC>=10904
-import net.minecraft.network.play.server.SPacketCustomPayload;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.network.packet.CustomPayloadS2CPacket;
+import net.minecraft.util.Identifier;
 //#else
 //$$ import net.minecraft.network.play.server.S3FPacketCustomPayload;
 //#endif
@@ -20,7 +20,7 @@ import static com.replaymod.core.versions.MCVer.readString;
  */
 public class Restrictions {
     //#if MC>=11300
-    public static final ResourceLocation PLUGIN_CHANNEL = new ResourceLocation("replaymod", "restrict");
+    public static final Identifier PLUGIN_CHANNEL = new Identifier("replaymod", "restrict");
     //#else
     //$$ public static final String PLUGIN_CHANNEL = "Replay|Restrict";
     //#endif
@@ -30,12 +30,12 @@ public class Restrictions {
     private boolean onlyRecordingPlayer;
 
     //#if MC>=10904
-    public String handle(SPacketCustomPayload packet) {
+    public String handle(CustomPayloadS2CPacket packet) {
     //#else
     //$$ public String handle(S3FPacketCustomPayload packet) {
     //#endif
         //#if MC>=10800
-        PacketBuffer buffer = packet.getBufferData();
+        PacketByteBuf buffer = packet.getData();
         //#else
         //$$ PacketBuffer buffer = new PacketBuffer(Unpooled.wrappedBuffer(packet.func_149168_d()));
         //#endif

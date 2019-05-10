@@ -6,11 +6,11 @@ import com.replaymod.render.capturer.CaptureData;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
 import lombok.Getter;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 
 //#if MC<11400
 //#if MC>=11300
-import net.minecraftforge.fml.hooks.BasicEventHooks;
+//$$ import net.minecraftforge.fml.hooks.BasicEventHooks;
 //#else
 //$$ import net.minecraftforge.fml.common.FMLCommonHandler;
 //#endif
@@ -19,7 +19,7 @@ import net.minecraftforge.fml.hooks.BasicEventHooks;
 import java.io.IOException;
 
 public class EntityRendererHandler implements WorldRenderer {
-    public final Minecraft mc = MCVer.getMinecraft();
+    public final MinecraftClient mc = MCVer.getMinecraft();
 
     @Getter
     protected final RenderSettings settings;
@@ -35,7 +35,7 @@ public class EntityRendererHandler implements WorldRenderer {
         this.settings = settings;
         this.renderInfo = renderInfo;
 
-        ((IEntityRenderer) mc.entityRenderer).replayModRender_setHandler(this);
+        ((IEntityRenderer) mc.gameRenderer).replayModRender_setHandler(this);
     }
 
     @Override
@@ -47,17 +47,17 @@ public class EntityRendererHandler implements WorldRenderer {
     public void renderWorld(float partialTicks, long finishTimeNano) {
         //#if MC<11400
         //#if MC>=11300
-        BasicEventHooks.onRenderTickStart(partialTicks);
+        //$$ BasicEventHooks.onRenderTickStart(partialTicks);
         //#else
         //$$ FMLCommonHandler.instance().onRenderTickStart(partialTicks);
         //#endif
         //#endif
 
-        mc.entityRenderer.renderWorld(partialTicks, finishTimeNano);
+        mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
 
         //#if MC<11400
         //#if MC>=11300
-        BasicEventHooks.onRenderTickEnd(partialTicks);
+        //$$ BasicEventHooks.onRenderTickEnd(partialTicks);
         //#else
         //$$ FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
         //#endif
@@ -66,7 +66,7 @@ public class EntityRendererHandler implements WorldRenderer {
 
     @Override
     public void close() throws IOException {
-        ((IEntityRenderer) mc.entityRenderer).replayModRender_setHandler(null);
+        ((IEntityRenderer) mc.gameRenderer).replayModRender_setHandler(null);
     }
 
     @Override

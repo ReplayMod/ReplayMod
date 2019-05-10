@@ -1,16 +1,16 @@
 package com.replaymod.core.utils;
 
 import com.replaymod.replaystudio.data.ModInfo;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 
 //#if MC>=11400
-//$$ import net.fabricmc.loader.api.FabricLoader;
-//$$ import net.fabricmc.loader.api.ModContainer;
-//$$ import net.minecraft.util.registry.Registry;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.util.registry.Registry;
 //#else
 //#if MC>=11200
-import net.minecraftforge.registries.ForgeRegistry;
-import net.minecraftforge.registries.RegistryManager;
+//$$ import net.minecraftforge.registries.ForgeRegistry;
+//$$ import net.minecraftforge.registries.RegistryManager;
 //#else
 //#if MC>=10800
 //$$ import net.minecraftforge.fml.common.registry.GameData;
@@ -19,10 +19,10 @@ import net.minecraftforge.registries.RegistryManager;
 //#endif
 //$$ import java.util.stream.Stream;
 //#endif
-
+//$$
 //#if MC>=10800
 //#if MC>=11300
-import net.minecraftforge.fml.ModList;
+//$$ import net.minecraftforge.fml.ModList;
 //#else
 //$$ import net.minecraftforge.fml.common.Loader;
 //$$ import net.minecraftforge.fml.common.ModContainer;
@@ -42,21 +42,21 @@ public class ModCompat {
     public static Collection<ModInfo> getInstalledNetworkMods() {
         //#if MC>=11300
         //#if MC>=11400
-        //$$ Map<String, ModInfo> modInfoMap = FabricLoader.getInstance().getAllMods().stream()
-        //$$         .map(ModContainer::getMetadata)
-        //$$         .map(m -> new ModInfo(m.getId(), m.getName(), m.getVersion().toString()))
-        //$$         .collect(Collectors.toMap(ModInfo::getId, Function.identity()));
-        //$$ return Registry.REGISTRIES.stream()
-        //$$         .map(Registry::getIds).flatMap(Set::stream)
-        //#else
-        Map<String, ModInfo> modInfoMap = ModList.get().getMods().stream()
-                .map(m -> new ModInfo(m.getModId(), m.getDisplayName(), m.getVersion().toString()))
+        Map<String, ModInfo> modInfoMap = FabricLoader.getInstance().getAllMods().stream()
+                .map(ModContainer::getMetadata)
+                .map(m -> new ModInfo(m.getId(), m.getName(), m.getVersion().toString()))
                 .collect(Collectors.toMap(ModInfo::getId, Function.identity()));
-        return RegistryManager.ACTIVE.takeSnapshot(false).keySet().stream()
-                .map(RegistryManager.ACTIVE::getRegistry)
-                .map(ForgeRegistry::getKeys).flatMap(Set::stream)
+        return Registry.REGISTRIES.stream()
+                .map(Registry::getIds).flatMap(Set::stream)
+        //#else
+        //$$ Map<String, ModInfo> modInfoMap = ModList.get().getMods().stream()
+        //$$         .map(m -> new ModInfo(m.getModId(), m.getDisplayName(), m.getVersion().toString()))
+        //$$         .collect(Collectors.toMap(ModInfo::getId, Function.identity()));
+        //$$ return RegistryManager.ACTIVE.takeSnapshot(false).keySet().stream()
+        //$$         .map(RegistryManager.ACTIVE::getRegistry)
+        //$$         .map(ForgeRegistry::getKeys).flatMap(Set::stream)
         //#endif
-                .map(ResourceLocation::getNamespace).filter(s -> !s.equals("minecraft")).distinct()
+                .map(Identifier::getNamespace).filter(s -> !s.equals("minecraft")).distinct()
                 .map(modInfoMap::get).filter(Objects::nonNull)
                 .collect(Collectors.toList());
         //#else

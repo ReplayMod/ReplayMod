@@ -8,8 +8,8 @@ import com.replaymod.render.blend.data.DObject;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=11300
-import net.minecraft.client.renderer.entity.model.ModelBox;
-import net.minecraft.client.renderer.entity.model.ModelRenderer;
+import net.minecraft.client.model.Box;
+import net.minecraft.client.model.Cuboid;
 //#else
 //$$ import net.minecraft.client.model.ModelBox;
 //$$ import net.minecraft.client.model.ModelRenderer;
@@ -31,7 +31,7 @@ public class ModelRendererExporter implements Exporter {
     public void setup() throws IOException {
     }
 
-    public void preRenderModel(ModelRenderer model, float scale) {
+    public void preRenderModel(Cuboid model, float scale) {
         DObject object = getObjectForModel(model, scale);
         renderState.pushObject(object);
         renderState.pushModelView();
@@ -53,7 +53,7 @@ public class ModelRendererExporter implements Exporter {
         renderState.pop();
     }
 
-    private DObject getObjectForModel(ModelRenderer model, float scale) {
+    private DObject getObjectForModel(Cuboid model, float scale) {
         int frame = renderState.getFrame();
         DObject parent = renderState.peekObject();
         DObject object = null;
@@ -67,17 +67,17 @@ public class ModelRendererExporter implements Exporter {
         }
         if (object == null) {
             object = new ModelBasedDObject(model, scale);
-            object.id.name = model.boxName;
+            object.id.name = model.name;
             object.setParent(parent);
         }
         object.lastFrame = frame;
         return object;
     }
 
-    private static DMesh generateMesh(ModelRenderer model, float scale) {
+    private static DMesh generateMesh(Cuboid model, float scale) {
         DMesh mesh = new DMesh();
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
-        for (ModelBox box : cubeList(model)) {
+        for (Box box : cubeList(model)) {
             box.render(builder, scale);
         }
         builder.maybeFinishDrawing();
@@ -85,17 +85,17 @@ public class ModelRendererExporter implements Exporter {
     }
 
     private static class ModelBasedDObject extends DObject {
-        private final ModelRenderer model;
+        private final Cuboid model;
         private final float scale;
         private boolean valid;
 
-        public ModelBasedDObject(ModelRenderer model, float scale) {
+        public ModelBasedDObject(Cuboid model, float scale) {
             super(generateMesh(model, scale));
             this.model = model;
             this.scale = scale;
         }
 
-        public boolean isBasedOn(ModelRenderer model, float scale) {
+        public boolean isBasedOn(Cuboid model, float scale) {
             return this.model == model && Math.abs(this.scale - scale) < 1e-4;
         }
 

@@ -10,7 +10,7 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.function.Loadable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.util.crash.CrashReport;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -50,7 +50,7 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
         buttonPanel.removeElement(queueButton);
         renderButton.setI18nLabel("replaymod.gui.advancedscreenshots.create").onClick(() -> {
             // Closing this GUI ensures that settings are saved
-            getMinecraft().displayGuiScreen(null);
+            getMinecraft().openScreen(null);
 
             mod.runLater(() -> {
                 try {
@@ -63,7 +63,7 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
                     }
 
                 } catch (Throwable t) {
-                    error(LOGGER, GuiCreateScreenshot.this, CrashReport.makeCrashReport(t, "Rendering video"), () -> {});
+                    error(LOGGER, GuiCreateScreenshot.this, CrashReport.create(t, "Rendering video"), () -> {});
                     display(); // Re-show the render settings gui and the new error popup
                 }
             });
@@ -84,7 +84,7 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
     @Override
     protected File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
         DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
-        File screenshotFolder = new File(getMinecraft().gameDir, "screenshots");
+        File screenshotFolder = new File(getMinecraft().runDirectory, "screenshots");
         String baseName = DATE_FORMAT.format(new Date());
         for (int i = 1; ; i++) {
             File screenshotFile = new File(screenshotFolder, baseName + (i == 1 ? "" : "_" + i) + ".png");
@@ -96,6 +96,6 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
 
     @Override
     protected Path getSettingsPath() {
-        return getMinecraft().gameDir.toPath().resolve("config/replaymod-screenshotsettings.json");
+        return getMinecraft().runDirectory.toPath().resolve("config/replaymod-screenshotsettings.json");
     }
 }

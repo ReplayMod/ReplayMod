@@ -20,7 +20,7 @@ import de.johni0702.minecraft.gui.layout.LayoutData;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resource.language.I18n;
 
 //#if MC>=11300
 //#else
@@ -74,7 +74,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
 
             final KeyBindingRegistry keyBindingRegistry = mod.getKeyBindingRegistry();
             keyBindingRegistry.getKeyBindings().values().stream()
-                    .sorted(Comparator.comparing(it -> I18n.format(it.getKeyDescription())))
+                    .sorted(Comparator.comparing(it -> I18n.translate(it.getId())))
                     .forEachOrdered(keyBinding -> {
                 GuiButton button = new GuiButton(){
                     @Override
@@ -83,7 +83,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                         String keyName = "???";
                         try {
                             //#if MC>=11300
-                            keyName = keyBinding.func_197978_k();
+                            keyName = keyBinding.getLocalizedName();
                             //#else
                             //$$ keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
                             //#endif
@@ -111,7 +111,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                                         return new Dimension(Math.max(10, button.getMinSize().getWidth()) + 10, 20);
                                     }
                                 }).addElements(null, button),
-                                new GuiLabel().setI18nText(keyBinding.getKeyDescription())
+                                new GuiLabel().setI18nText(keyBinding.getId())
                         ));
             });
 

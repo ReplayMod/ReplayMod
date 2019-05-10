@@ -11,9 +11,9 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.crash.ReportedException;
+import net.minecraft.util.crash.CrashReport;
+import net.minecraft.util.crash.CrashReportSection;
+import net.minecraft.util.crash.CrashException;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -30,11 +30,11 @@ public class GuiExportFailed extends GuiScreen {
         // Check whether the user has configured some custom ffmpeg arguments
         if (settings.getEncodingPreset().getValue().equals(settings.getExportArguments())) {
             // If they haven't, then this is probably a faulty ffmpeg installation and there's nothing we can do
-            CrashReport crashReport = CrashReport.makeCrashReport(e, "Exporting video");
-            CrashReportCategory details = crashReport.makeCategory("Export details");
+            CrashReport crashReport = CrashReport.create(e, "Exporting video");
+            CrashReportSection details = crashReport.addElement("Export details");
             addDetail(details, "Settings", settings::toString);
             addDetail(details, "FFmpeg log", e::getLog);
-            throw new ReportedException(crashReport);
+            throw new CrashException(crashReport);
         } else {
             // If they have, ask them whether it was intentional
             GuiExportFailed gui = new GuiExportFailed(e, doRestart);
@@ -106,7 +106,7 @@ public class GuiExportFailed extends GuiScreen {
 
         abortButton.onClick(() -> {
             // Assume they know what they're doing
-            getMinecraft().displayGuiScreen(null);
+            getMinecraft().openScreen(null);
         });
     }
 }

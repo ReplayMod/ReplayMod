@@ -4,8 +4,8 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.capturer.StereoscopicOpenGlFrameCapturer;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerEntity;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,15 +15,15 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11400
-//$$ import net.minecraft.client.render.Camera;
-//$$ import net.minecraft.util.hit.HitResult;
+import net.minecraft.client.render.Camera;
+import net.minecraft.util.hit.HitResult;
 //#endif
 
 //#if MC>=11300
-import net.minecraft.client.GameSettings;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.Matrix4f;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.options.GameOptions;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.util.math.Matrix4f;
+import net.minecraft.client.render.WorldRenderer;
 //#else
 //$$ import com.replaymod.replay.camera.CameraEntity;
 //$$ import net.minecraft.client.renderer.EntityRenderer;
@@ -34,13 +34,13 @@ import net.minecraft.client.renderer.WorldRenderer;
 //#endif
 
 //#if MC>=10904
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.RayTraceContext;
 //#else
 //$$ import net.minecraft.util.MovingObjectPosition;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.client.renderer.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager;
 //#else
 //$$ import net.minecraft.entity.EntityLivingBase;
 //$$ import com.replaymod.core.versions.MCVer.GlStateManager;
@@ -55,7 +55,7 @@ import static com.replaymod.core.versions.MCVer.*;
 //#endif
 public abstract class MixinEntityRenderer implements EntityRendererHandler.IEntityRenderer {
     @Shadow
-    public Minecraft mc;
+    public MinecraftClient client;
 
     private EntityRendererHandler replayModRender_handler;
 
@@ -94,7 +94,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void replayModRender_renderSpectatorHand(
             //#if MC>=11400
-            //$$ Camera camera,
+            Camera camera,
             //#endif
             float partialTicks,
             //#if MC<11300
@@ -129,16 +129,16 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //#endif
 
     //#if MC>=11400
-    //$$ @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;drawHighlightedBlockOutline(Lnet/minecraft/client/render/Camera;Lnet/minecraft/util/hit/HitResult;I)V"))
-    //$$ private void replayModRender_drawSelectionBox(WorldRenderer instance, Camera camera, HitResult hitResult, int something) {
-    //$$     if (replayModRender_handler == null) {
-    //$$         instance.drawHighlightedBlockOutline(camera, hitResult, something);
-    //$$     }
-    //$$ }
+    @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;drawHighlightedBlockOutline(Lnet/minecraft/client/render/Camera;Lnet/minecraft/util/hit/HitResult;I)V"))
+    private void replayModRender_drawSelectionBox(WorldRenderer instance, Camera camera, HitResult hitResult, int something) {
+        if (replayModRender_handler == null) {
+            instance.drawHighlightedBlockOutline(camera, hitResult, something);
+        }
+    }
     //#else
     //#if MC>=11300
-    @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/WorldRenderer;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/RayTraceResult;IF)V"))
-    private void replayModRender_drawSelectionBox(WorldRenderer instance, EntityPlayer player, RayTraceResult rtr, int alwaysZero, float partialTicks) {
+    //$$ @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/WorldRenderer;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/RayTraceResult;IF)V"))
+    //$$ private void replayModRender_drawSelectionBox(WorldRenderer instance, EntityPlayer player, RayTraceResult rtr, int alwaysZero, float partialTicks) {
     //#else
     //#if MC>=10904
     //$$ @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/RayTraceResult;IF)V"))
@@ -152,19 +152,19 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //$$ private void replayModRender_drawSelectionBox(RenderGlobal instance, EntityPlayer player, MovingObjectPosition rtr, int alwaysZero, float partialTicks) {
     //#endif
     //#endif
-        if (replayModRender_handler == null) {
-            instance.drawSelectionBox(player, rtr, alwaysZero, partialTicks);
-        }
-    }
+    //$$     if (replayModRender_handler == null) {
+    //$$         instance.drawSelectionBox(player, rtr, alwaysZero, partialTicks);
+    //$$     }
+    //$$ }
     //#endif
 
     private int orgRenderDistanceChunks;
 
     //#if MC>=11300
     //#if MC>=11400
-    //$$ @Inject(method = "renderCenter", at = @At(value = "JUMP", ordinal = 0))
+    @Inject(method = "renderCenter", at = @At(value = "JUMP", ordinal = 0))
     //#else
-    @Inject(method = "updateCameraAndRender(FJ)V", at = @At(value = "JUMP", ordinal = 0))
+    //$$ @Inject(method = "updateCameraAndRender(FJ)V", at = @At(value = "JUMP", ordinal = 0))
     //#endif
     //#else
     //#if MC>=10800
@@ -176,17 +176,17 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //#endif
     private void replayModRender_beforeRenderSky(CallbackInfo ci) {
         if (replayModRender_handler != null && replayModRender_handler.getSettings().getChromaKeyingColor() != null) {
-            GameSettings settings = MCVer.getMinecraft().gameSettings;
-            orgRenderDistanceChunks = settings.renderDistanceChunks;
-            settings.renderDistanceChunks = 5; // Set render distance to 5 so we're always rendering sky when chroma keying
+            GameOptions settings = MCVer.getMinecraft().options;
+            orgRenderDistanceChunks = settings.viewDistance;
+            settings.viewDistance = 5; // Set render distance to 5 so we're always rendering sky when chroma keying
         }
     }
 
     //#if MC>=11300
     //#if MC>=11400
-    //$$ @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;renderSky(F)V"))
+    @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;renderSky(F)V"))
     //#else
-    @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/WorldRenderer;renderSky(F)V"))
+    //$$ @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/WorldRenderer;renderSky(F)V"))
     //#endif
     private void replayModRender_renderSky(WorldRenderer instance, float partialTicks) {
     //#else
@@ -199,12 +199,12 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //#endif
     //#endif
         if (replayModRender_handler != null && replayModRender_handler.getSettings().getChromaKeyingColor() != null) {
-            MCVer.getMinecraft().gameSettings.renderDistanceChunks = orgRenderDistanceChunks;
+            MCVer.getMinecraft().options.viewDistance = orgRenderDistanceChunks;
             ReadableColor color = replayModRender_handler.getSettings().getChromaKeyingColor();
             GlStateManager.clearColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1);
             GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT
                     //#if MC>=11400
-                    //$$ , false
+                    , false
                     //#endif
             );
         } else {
@@ -225,7 +225,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
      */
 
     //#if MC>=10800
-    @Inject(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 0))
+    @Inject(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 0))
     //#else
     //$$ @Inject(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glLoadIdentity()V", shift = At.Shift.AFTER, ordinal = 0, remap = false))
     //#endif
@@ -246,7 +246,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     }
 
     //#if MC>=10800
-    @Inject(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 1))
+    @Inject(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 1))
     //#else
     //$$ @Inject(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glLoadIdentity()V", shift = At.Shift.AFTER, ordinal = 1, remap = false))
     //#endif
@@ -271,21 +271,21 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
      */
 
     //#if MC>=11300
-    @Redirect(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/Matrix4f;perspective(DFFF)Lnet/minecraft/client/renderer/Matrix4f;"))
+    @Redirect(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
     private Matrix4f replayModRender_perspective$0(double fovY, float aspect, float zNear, float zFar) {
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
     }
 
     //#if MC>=11400
-    //$$ @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
+    @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
     //#else
-    @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/Matrix4f;perspective(DFFF)Lnet/minecraft/client/renderer/Matrix4f;"))
+    //$$ @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/Matrix4f;perspective(DFFF)Lnet/minecraft/client/renderer/Matrix4f;"))
     //#endif
     private Matrix4f replayModRender_perspective$1(double fovY, float aspect, float zNear, float zFar) {
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
     }
 
-    @Redirect(method = "renderCloudsCheck", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/Matrix4f;perspective(DFFF)Lnet/minecraft/client/renderer/Matrix4f;"))
+    @Redirect(method = "renderAboveClouds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
     private Matrix4f replayModRender_perspective$2(double fovY, float aspect, float zNear, float zFar) {
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
     }
@@ -295,7 +295,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             fovY = 90;
             aspect = 1;
         }
-        return Matrix4f.perspective(fovY, aspect, zNear, zFar);
+        return Matrix4f.method_4929(fovY, aspect, zNear, zFar);
     }
     //#else
     //$$ @Redirect(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lorg/lwjgl/util/glu/Project;gluPerspective(FFFF)V", remap = false))

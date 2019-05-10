@@ -1,7 +1,7 @@
 package com.replaymod.render.utils;
 
 import com.replaymod.core.versions.MCVer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
 
 import javax.sound.sampled.AudioInputStream;
@@ -12,7 +12,7 @@ import java.io.InputStream;
 
 public class SoundHandler {
 
-    private final ResourceLocation successSoundLocation = new ResourceLocation("replaymod", "render_success.wav");
+    private final Identifier successSoundLocation = new Identifier("replaymod", "render_success.wav");
 
     public void playRenderSuccessSound() {
         playSound(successSoundLocation);
@@ -22,7 +22,7 @@ public class SoundHandler {
      * Plays a <b>.wav</b> Sound from a ResourceLocation. This method does <b>not</b> respect Game Settings like Audio Volume.
      * @param loc The Sound File's ResourceLocation
      */
-    public void playSound(ResourceLocation loc) {
+    public void playSound(Identifier loc) {
         try {
             InputStream is = MCVer.getMinecraft().getResourceManager().getResource(loc).getInputStream();
             byte[] bytes = IOUtils.toByteArray(is);

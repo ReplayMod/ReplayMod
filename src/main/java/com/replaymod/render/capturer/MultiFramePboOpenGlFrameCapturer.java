@@ -80,9 +80,9 @@ public abstract class MultiFramePboOpenGlFrameCapturer<F extends Frame, D extend
         pbo.bind();
 
         int offset = captureData.ordinal() * getFrameWidth() * getFrameHeight() * 4;
-        frameBuffer().bindFramebuffer(true);
+        frameBuffer().beginWrite(true);
         GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, offset);
-        frameBuffer().unbindFramebuffer();
+        frameBuffer().endWrite();
 
         pbo.unbind();
         return null;

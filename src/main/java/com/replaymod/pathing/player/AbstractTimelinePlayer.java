@@ -14,8 +14,8 @@ import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.Timer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderTickCounter;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -26,7 +26,7 @@ import static com.replaymod.core.versions.MCVer.*;
  * Plays a timeline.
  */
 public abstract class AbstractTimelinePlayer extends EventRegistrations {
-    private final Minecraft mc = getMinecraft();
+    private final MinecraftClient mc = getMinecraft();
     private final ReplayHandler replayHandler;
     private Timeline timeline;
     protected long startOffset;
@@ -81,7 +81,7 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
         TimerAccessor timerA = (TimerAccessor) timer;
         //#if MC>=11200
         timerA.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK);
-        timer.renderPartialTicks = timer.elapsedTicks = 0;
+        timer.tickDelta = timer.ticksThisFrame = 0;
         //#else
         //$$ timer.timerSpeed = 1;
         //$$ timer.elapsedPartialTicks = timer.elapsedTicks = 0;
@@ -124,10 +124,10 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
         float timeInTicks = replayTime / 50f;
         float previousTimeInTicks = lastTime / 50f;
         float passedTicks = timeInTicks - previousTimeInTicks;
-        Timer timer = ((MinecraftAccessor) mc).getTimer();
-        timer.renderPartialTicks += passedTicks;
-        timer.elapsedTicks = (int) timer.renderPartialTicks;
-        timer.renderPartialTicks -= timer.elapsedTicks;
+        RenderTickCounter timer = ((MinecraftAccessor) mc).getTimer();
+        timer.tickDelta += passedTicks;
+        timer.ticksThisFrame = (int) timer.tickDelta;
+        timer.tickDelta -= timer.ticksThisFrame;
 
         lastTime = replayTime;
 

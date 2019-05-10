@@ -29,9 +29,9 @@ import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
 import lombok.Getter;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.crash.ReportedException;
+import net.minecraft.util.crash.CrashReport;
+import net.minecraft.util.crash.CrashReportSection;
+import net.minecraft.util.crash.CrashException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Triple;
@@ -657,10 +657,10 @@ public class SPTimeline implements PathingRegistry {
             jsonWriter.endArray();
             jsonWriter.flush();
         } catch (IOException e) {
-            CrashReport crash = CrashReport.makeCrashReport(e, "Serializing interpolator");
-            CrashReportCategory category = crash.makeCategory("Serializing interpolator");
+            CrashReport crash = CrashReport.create(e, "Serializing interpolator");
+            CrashReportSection category = crash.addElement("Serializing interpolator");
             addDetail(category, "Interpolator", interpolator::toString);
-            throw new ReportedException(crash);
+            throw new CrashException(crash);
         }
 
         return baos.toString();
@@ -672,10 +672,10 @@ public class SPTimeline implements PathingRegistry {
             jsonReader.beginArray();
             return deserializeInterpolator(jsonReader);
         } catch (IOException e) {
-            CrashReport crash = CrashReport.makeCrashReport(e, "De-serializing interpolator");
-            CrashReportCategory category = crash.makeCategory("De-serializing interpolator");
+            CrashReport crash = CrashReport.create(e, "De-serializing interpolator");
+            CrashReportSection category = crash.addElement("De-serializing interpolator");
             addDetail(category, "Interpolator", json::toString);
-            throw new ReportedException(crash);
+            throw new CrashException(crash);
         }
     }
 }

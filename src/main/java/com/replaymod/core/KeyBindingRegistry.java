@@ -4,19 +4,19 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.versions.MCVer;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.crash.ReportedException;
+import net.minecraft.client.options.KeyBinding;
+import net.minecraft.util.crash.CrashReport;
+import net.minecraft.util.crash.CrashReportSection;
+import net.minecraft.util.crash.CrashException;
 
 //#if MC>=11400
-//$$ import com.replaymod.core.versions.LangResourcePack;
-//$$ import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
-//$$ import net.minecraft.client.util.InputUtil;
-//$$ import net.minecraft.util.Identifier;
-//$$ import static com.replaymod.core.ReplayMod.MOD_ID;
+import com.replaymod.core.versions.LangResourcePack;
+import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.Identifier;
+import static com.replaymod.core.ReplayMod.MOD_ID;
 //#else
-import net.minecraftforge.fml.client.registry.ClientRegistry;
+//$$ import net.minecraftforge.fml.client.registry.ClientRegistry;
 //#endif
 
 //#if MC>=11300
@@ -39,7 +39,7 @@ import java.util.Map;
 public class KeyBindingRegistry extends EventRegistrations {
     private static final String CATEGORY = "replaymod.title";
     //#if MC>=11400
-    //$$ static { net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.addCategory(CATEGORY); }
+    static { net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.addCategory(CATEGORY); }
     //#endif
 
     private Map<String, KeyBinding> keyBindings = new HashMap<String, KeyBinding>();
@@ -59,16 +59,16 @@ public class KeyBindingRegistry extends EventRegistrations {
         KeyBinding keyBinding = keyBindings.get(name);
         if (keyBinding == null) {
             //#if MC>=11400
-            //$$ if (keyCode == 0) {
-            //$$     keyCode = -1;
-            //$$ }
-            //$$ Identifier id = new Identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
-            //$$ FabricKeyBinding fabricKeyBinding = FabricKeyBinding.Builder.create(id, InputUtil.Type.KEYSYM, keyCode, CATEGORY).build();
-            //$$ net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.register(fabricKeyBinding);
-            //$$ keyBinding = fabricKeyBinding;
+            if (keyCode == 0) {
+                keyCode = -1;
+            }
+            Identifier id = new Identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
+            FabricKeyBinding fabricKeyBinding = FabricKeyBinding.Builder.create(id, InputUtil.Type.KEYSYM, keyCode, CATEGORY).build();
+            net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.register(fabricKeyBinding);
+            keyBinding = fabricKeyBinding;
             //#else
-            keyBinding = new KeyBinding(name, keyCode, CATEGORY);
-            ClientRegistry.registerKeyBinding(keyBinding);
+            //$$ keyBinding = new KeyBinding(name, keyCode, CATEGORY);
+            //$$ ClientRegistry.registerKeyBinding(keyBinding);
             //#endif
             keyBindings.put(name, keyBinding);
         }
@@ -103,7 +103,7 @@ public class KeyBindingRegistry extends EventRegistrations {
 
     public void handleRepeatedKeyBindings() {
         for (Map.Entry<KeyBinding, Collection<Runnable>> entry : repeatedKeyBindingHandlers.asMap().entrySet()) {
-            if (entry.getKey().isKeyDown()) {
+            if (entry.getKey().isPressed()) {
                 invokeKeyBindingHandlers(entry.getKey(), entry.getValue());
             }
         }
@@ -111,7 +111,7 @@ public class KeyBindingRegistry extends EventRegistrations {
 
     public void handleKeyBindings() {
         for (Map.Entry<KeyBinding, Collection<Runnable>> entry : keyBindingHandlers.asMap().entrySet()) {
-            while (entry.getKey().isPressed()) {
+            while (entry.getKey().wasPressed()) {
                 invokeKeyBindingHandlers(entry.getKey(), entry.getValue());
             }
         }
@@ -122,11 +122,11 @@ public class KeyBindingRegistry extends EventRegistrations {
             try {
                 runnable.run();
             } catch (Throwable cause) {
-                CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Key Binding");
-                CrashReportCategory category = crashReport.makeCategory("Key Binding");
+                CrashReport crashReport = CrashReport.create(cause, "Handling Key Binding");
+                CrashReportSection category = crashReport.addElement("Key Binding");
                 MCVer.addDetail(category, "Key Binding", keyBinding::toString);
                 MCVer.addDetail(category, "Handler", runnable::toString);
-                throw new ReportedException(crashReport);
+                throw new CrashException(crashReport);
             }
         }
     }
@@ -142,11 +142,11 @@ public class KeyBindingRegistry extends EventRegistrations {
             try {
                 runnable.run();
             } catch (Throwable cause) {
-                CrashReport crashReport = CrashReport.makeCrashReport(cause, "Handling Raw Key Binding");
-                CrashReportCategory category = crashReport.makeCategory("Key Binding");
+                CrashReport crashReport = CrashReport.create(cause, "Handling Raw Key Binding");
+                CrashReportSection category = crashReport.addElement("Key Binding");
                 MCVer.addDetail(category, "Key Code", () -> "" + keyCode);
                 MCVer.addDetail(category, "Handler", runnable::toString);
-                throw new ReportedException(crashReport);
+                throw new CrashException(crashReport);
             }
         }
     }

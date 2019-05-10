@@ -86,7 +86,7 @@ public class OpenEyeExtra implements Extra {
                 GuiPopup popup = new GuiPopup(OfferGui.this);
                 new Thread(() -> {
                     try {
-                        File targetFile = new File(mod.getMinecraft().gameDir, "mods/" + ReplayMod.getMinecraftVersion() + "/OpenEye.jar");
+                        File targetFile = new File(mod.getMinecraft().runDirectory, "mods/" + ReplayMod.getMinecraftVersion() + "/OpenEye.jar");
                         FileUtils.forceMkdir(targetFile.getParentFile());
 
                         HttpsURLConnection connection = (HttpsURLConnection) new URL(DOWNLOAD_URL).openConnection();

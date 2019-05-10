@@ -1,32 +1,32 @@
 package com.replaymod.core.mixin;
 
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.List;
 
 //#if MC>=11400
-//$$ import net.minecraft.client.gui.widget.AbstractButtonWidget;
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
 //#else
-import net.minecraft.client.gui.GuiButton;
+//$$ import net.minecraft.client.gui.GuiButton;
 //#endif
 
 //#if MC>=11300
-import net.minecraft.client.gui.IGuiEventListener;
+import net.minecraft.client.gui.Element;
 //#endif
 
-@Mixin(GuiScreen.class)
+@Mixin(Screen.class)
 public interface GuiScreenAccessor {
     @Accessor
     //#if MC>=11400
-    //$$ List<AbstractButtonWidget> getButtons();
+    List<AbstractButtonWidget> getButtons();
     //#else
-    List<GuiButton> getButtons();
+    //$$ List<GuiButton> getButtons();
     //#endif
 
     //#if MC>=11300
     @Accessor
-    List<IGuiEventListener> getChildren();
+    List<Element> getChildren();
     //#endif
 }

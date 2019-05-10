@@ -1,35 +1,35 @@
 //#if MC<11400
-package com.replaymod.core.gui;
-
-import com.replaymod.core.ReplayMod;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-
+//$$ package com.replaymod.core.gui;
+//$$
+//$$ import com.replaymod.core.ReplayMod;
+//$$ import net.minecraft.client.Minecraft;
+//$$ import net.minecraft.client.gui.GuiScreen;
+//$$
 //#if MC>=10800
-import net.minecraftforge.fml.client.IModGuiFactory;
+//$$ import net.minecraftforge.fml.client.IModGuiFactory;
 //#else
 //$$ import cpw.mods.fml.client.IModGuiFactory;
 //#endif
-
-import java.util.Set;
-
-@SuppressWarnings("unused")
-public class GuiFactory implements IModGuiFactory {
-    @Override
-    public void initialize(Minecraft minecraftInstance) {
-
-    }
-
+//$$
+//$$ import java.util.Set;
+//$$
+//$$ @SuppressWarnings("unused")
+//$$ public class GuiFactory implements IModGuiFactory {
+//$$     @Override
+//$$     public void initialize(Minecraft minecraftInstance) {
+//$$
+//$$     }
+//$$
     //#if MC>=11200
-    @Override
-    public boolean hasConfigGui() {
-        return true;
-    }
-
-    @Override
-    public GuiScreen createConfigGui(GuiScreen parentScreen) {
-        return new GuiReplaySettings(parentScreen, ReplayMod.instance.getSettingsRegistry()).toMinecraft();
-    }
+    //$$ @Override
+    //$$ public boolean hasConfigGui() {
+    //$$     return true;
+    //$$ }
+    //$$
+    //$$ @Override
+    //$$ public GuiScreen createConfigGui(GuiScreen parentScreen) {
+    //$$     return new GuiReplaySettings(parentScreen, ReplayMod.instance.getSettingsRegistry()).toMinecraft();
+    //$$ }
     //#else
     //$$ @Override
     //$$ public Class<? extends GuiScreen> mainConfigGuiClass() {
@@ -54,10 +54,10 @@ public class GuiFactory implements IModGuiFactory {
     //$$     }
     //$$ }
     //#endif
-
-    @Override
-    public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
-        return null;
-    }
-}
+//$$
+//$$     @Override
+//$$     public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
+//$$         return null;
+//$$     }
+//$$ }
 //#endif

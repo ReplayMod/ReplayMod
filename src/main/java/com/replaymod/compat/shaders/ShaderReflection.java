@@ -1,7 +1,7 @@
 //#if MC>=10800
 package com.replaymod.compat.shaders;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -37,7 +37,7 @@ public class ShaderReflection {
             shaders_isShadowPass = shadersClass.getDeclaredField("isShadowPass");
             shaders_isShadowPass.setAccessible(true);
 
-            shaders_beginRender = shadersClass.getDeclaredMethod("beginRender", Minecraft.class, float.class, long.class);
+            shaders_beginRender = shadersClass.getDeclaredMethod("beginRender", MinecraftClient.class, float.class, long.class);
             shaders_beginRender.setAccessible(true);
 
             renderGlobal_chunksToUpdateForced = Class.forName("net.minecraft.client.renderer.RenderGlobal")

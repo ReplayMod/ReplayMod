@@ -3,7 +3,7 @@ package com.replaymod.recording.mixin;
 
 import com.replaymod.replay.InputReplayTimer;
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.MouseHelper;
+import net.minecraft.client.Mouse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,22 +11,22 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(MouseHelper.class)
+@Mixin(Mouse.class)
 public abstract class MixinMouseHelper {
     @Shadow
-    private boolean mouseGrabbed;
+    private boolean isCursorLocked;
 
-    @Inject(method = "grabMouse", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "lockCursor", at = @At("HEAD"), cancellable = true)
     private void noGrab(CallbackInfo ci) {
         // Used to be provided by Forge for 1.12.2 and below
         if (Boolean.valueOf(System.getProperty("fml.noGrab", "false"))) {
-            this.mouseGrabbed = true;
+            this.isCursorLocked = true;
             ci.cancel();
         }
     }
 
-    @Inject(method = "scrollCallback",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/entity/EntityPlayerSP;isSpectator()Z"),
+    @Inject(method = "onMouseScroll",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isSpectator()Z"),
             locals = LocalCapture.CAPTURE_FAILHARD,
             cancellable = true)
     private void handleReplayModScroll(
@@ -34,9 +34,9 @@ public abstract class MixinMouseHelper {
             CallbackInfo ci,
             double _l1,
             //#if MC>=11400
-            //$$ float yOffsetAccumulated
+            float yOffsetAccumulated
             //#else
-            double yOffsetAccumulated
+            //$$ double yOffsetAccumulated
             //#endif
     ) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {

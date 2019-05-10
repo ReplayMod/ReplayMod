@@ -8,9 +8,9 @@ import com.replaymod.core.versions.MCVer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.ScreenShotHelper;
+import net.minecraft.client.MinecraftClient;
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.util.ScreenshotUtils;
 import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
@@ -25,7 +25,7 @@ public class NoGuiScreenshot {
     private final int width;
     private final int height;
 
-    public static ListenableFuture<NoGuiScreenshot> take(final Minecraft mc, final int width, final int height) {
+    public static ListenableFuture<NoGuiScreenshot> take(final MinecraftClient mc, final int width, final int height) {
         final SettableFuture<NoGuiScreenshot> future = SettableFuture.create();
         Runnable runnable = new Runnable() {
             @Override
@@ -35,28 +35,28 @@ public class NoGuiScreenshot {
                 }
 
                 //#if MC>=11300
-                int frameWidth = mc.mainWindow.getFramebufferWidth(), frameHeight = mc.mainWindow.getFramebufferHeight();
+                int frameWidth = mc.window.getFramebufferWidth(), frameHeight = mc.window.getFramebufferHeight();
                 //#else
                 //$$ int frameWidth = mc.displayWidth, frameHeight = mc.displayHeight;
                 //#endif
 
-                final boolean guiHidden = mc.gameSettings.hideGUI;
+                final boolean guiHidden = mc.options.hudHidden;
                 try {
-                    mc.gameSettings.hideGUI = true;
+                    mc.options.hudHidden = true;
 
                     // Render frame without GUI
                     GlStateManager.pushMatrix();
                     GlStateManager.clear(
                             16640
                             //#if MC>=11400
-                            //$$ , true
+                            , true
                             //#endif
                     );
-                    mc.getFramebuffer().bindFramebuffer(true);
-                    GlStateManager.enableTexture2D();
+                    mc.getFramebuffer().beginWrite(true);
+                    GlStateManager.enableTexture();
 
                     //#if MC>=11300
-                    mc.entityRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
+                    mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
                     //#else
                     //#if MC>=10809
                     //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks(), System.nanoTime());
@@ -65,17 +65,17 @@ public class NoGuiScreenshot {
                     //#endif
                     //#endif
 
-                    mc.getFramebuffer().unbindFramebuffer();
+                    mc.getFramebuffer().endWrite();
                     GlStateManager.popMatrix();
                     GlStateManager.pushMatrix();
-                    mc.getFramebuffer().framebufferRender(frameWidth, frameHeight);
+                    mc.getFramebuffer().draw(frameWidth, frameHeight);
                     GlStateManager.popMatrix();
                 } catch (Throwable t) {
                     future.setException(t);
                     return;
                 } finally {
                     // Reset GUI settings
-                    mc.gameSettings.hideGUI = guiHidden;
+                    mc.options.hudHidden = guiHidden;
                 }
 
                 // The frame without GUI has been rendered
@@ -85,8 +85,8 @@ public class NoGuiScreenshot {
                 File tmpFolder = Files.createTempDir();
                 try {
                     //#if MC>=11300
-                    ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer(), (msg) ->
-                            ReplayMod.instance.runLater(() -> mc.ingameGUI.getChatGUI().printChatMessage(msg)));
+                    ScreenshotUtils.method_1662(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer(), (msg) ->
+                            ReplayMod.instance.runLater(() -> mc.inGameHud.getChatHud().addMessage(msg)));
                     //#else
                     //$$ ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer());
                     //#endif

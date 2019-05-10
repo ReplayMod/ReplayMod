@@ -19,8 +19,8 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
-import net.minecraft.client.GameSettings;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.options.GameOptions;
+import net.minecraft.client.resource.language.I18n;
 
 //#if MC>=11300
 import com.replaymod.core.events.KeyBindingEventCallback;
@@ -117,7 +117,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             @Override
             public void run() {
                 double speed = getSpeedSliderValue();
-                speedSlider.setText(I18n.format("replaymod.gui.speed") + ": " + speed + "x");
+                speedSlider.setText(I18n.translate("replaymod.gui.speed") + ": " + speed + "x");
                 ReplaySender replaySender = replayHandler.getReplaySender();
                 if (!replaySender.paused()) {
                     replaySender.setReplaySpeed(speed);
@@ -157,7 +157,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
         // Do not render overlay when user pressed F1 and we are not currently in some popup
-        if (getMinecraft().gameSettings.hideGUI && isAllowUserInput()) {
+        if (getMinecraft().options.hudHidden && isAllowUserInput()) {
             // Note that this only applies to when the mouse is visible, otherwise
             // the draw method isn't called in the first place
             return;
@@ -178,8 +178,8 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
         //$$ @SubscribeEvent
         //$$ public void onKeyBindingEvent(InputEvent.KeyInputEvent event) {
         //#endif
-            GameSettings gameSettings = getMinecraft().gameSettings;
-            while (gameSettings.keyBindChat.isPressed() || gameSettings.keyBindCommand.isPressed()) {
+            GameOptions gameSettings = getMinecraft().options;
+            while (gameSettings.keyChat.wasPressed() || gameSettings.keyCommand.wasPressed()) {
                 if (!isMouseVisible()) {
                     setMouseVisible(true);
                 }
@@ -196,10 +196,10 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
         //$$     if (!Keyboard.getEventKeyState()) return;
         //$$     int key = Keyboard.getEventKey();
         //#endif
-            GameSettings gameSettings = getMinecraft().gameSettings;
+            GameOptions gameSettings = getMinecraft().options;
             // Handle the F1 key binding while the overlay is opened as a gui screen
             if (isMouseVisible() && key == Keyboard.KEY_F1) {
-                gameSettings.hideGUI = !gameSettings.hideGUI;
+                gameSettings.hudHidden = !gameSettings.hudHidden;
             }
         }
     }

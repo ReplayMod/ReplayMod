@@ -16,7 +16,7 @@ import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resource.language.I18n;
 
 //#if MC>=11300
 import com.replaymod.core.versions.MCVer.Keyboard;
@@ -61,26 +61,26 @@ public class GuiReplayCenterSearch extends AbstractGuiPopup<GuiReplayCenterSearc
     }).setI18nLabel("replaymod.gui.center.top.search");
     {
         List<String> categories = new ArrayList<>();
-        categories.add(I18n.format("replaymod.gui.center.search.category"));
+        categories.add(I18n.translate("replaymod.gui.center.search.category"));
         for (Category c : Category.values()) {
             categories.add(c.toNiceString());
         }
         category.setValues(categories.toArray(new String[categories.size()]));
 
         List<String> versions = new ArrayList<>();
-        versions.add(I18n.format("replaymod.gui.center.search.version"));
+        versions.add(I18n.translate("replaymod.gui.center.search.version"));
         for (MinecraftVersion v : MinecraftVersion.values()) {
             versions.add(v.toNiceName());
         }
         version.setValues(versions.toArray(new String[versions.size()]));
 
         gameType.setI18nLabel("replaymod.gui.center.search.gametype")
-                .setValues(I18n.format("options.particles.all"),
-                        I18n.format("menu.singleplayer"),
-                        I18n.format("menu.multiplayer"));
+                .setValues(I18n.translate("options.particles.all"),
+                        I18n.translate("menu.singleplayer"),
+                        I18n.translate("menu.multiplayer"));
         sort.setI18nLabel("replaymod.gui.center.search.order")
-                .setValues(I18n.format("replaymod.gui.center.search.order.best"),
-                        I18n.format("replaymod.gui.center.search.order.recent"));
+                .setValues(I18n.translate("replaymod.gui.center.search.order.best"),
+                        I18n.translate("replaymod.gui.center.search.order.recent"));
 
         popup.setLayout(new GridLayout().setColumns(3).setSpacingX(5).setSpacingY(5));
         popup.addElements(null,

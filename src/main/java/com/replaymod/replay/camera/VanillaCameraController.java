@@ -1,11 +1,11 @@
 package com.replaymod.replay.camera;
 
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.options.KeyBinding;
 
 //#if MC>=11300
-import net.minecraft.client.GameSettings;
+import net.minecraft.client.options.GameOptions;
 //#else
 //$$ import net.minecraft.client.settings.GameSettings;
 //#endif
@@ -28,15 +28,15 @@ public class VanillaCameraController implements CameraController {
 
     private int speed;
 
-    public VanillaCameraController(Minecraft mc, CameraEntity camera) {
+    public VanillaCameraController(MinecraftClient mc, CameraEntity camera) {
         this.camera = camera;
-        GameSettings gameSettings = mc.gameSettings;
-        this.bindings[0] = gameSettings.keyBindForward;
-        this.bindings[1] = gameSettings.keyBindBack;
-        this.bindings[2] = gameSettings.keyBindLeft;
-        this.bindings[3] = gameSettings.keyBindRight;
-        this.bindings[4] = gameSettings.keyBindJump;
-        this.bindings[5] = gameSettings.keyBindSneak;
+        GameOptions gameSettings = mc.options;
+        this.bindings[0] = gameSettings.keyForward;
+        this.bindings[1] = gameSettings.keyBack;
+        this.bindings[2] = gameSettings.keyLeft;
+        this.bindings[3] = gameSettings.keyRight;
+        this.bindings[4] = gameSettings.keyJump;
+        this.bindings[5] = gameSettings.keySneak;
     }
 
     @Override
@@ -44,13 +44,13 @@ public class VanillaCameraController implements CameraController {
         if (partialTicksPassed == 0) return;
         Vector3f direction = new Vector3f(0, 0, 0);
         for (int i = 0; i < 6; i++) { // First, get movement direction depending on keys pressed
-            if (bindings[i].isKeyDown()) {
+            if (bindings[i].isPressed()) {
                 Vector3f.add(direction, DIRECTIONS[i], direction);
             }
         }
         if (direction.length() == 0) return;
         direction.normalise(direction); // Normalize, so we don't move quicker if we hold down multiple keys
-        double yawRadians = Math.toRadians(camera.rotationYaw);
+        double yawRadians = Math.toRadians(camera.yaw);
         float yawSin = (float) Math.sin(yawRadians), yawCos = (float) Math.cos(yawRadians);
         // Rotate by yaw
         direction.set(

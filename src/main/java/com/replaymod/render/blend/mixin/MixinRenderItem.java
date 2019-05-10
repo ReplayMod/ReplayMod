@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11300
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.render.model.BakedModel;
 //#else
 //#if MC>=10904
 //$$ import net.minecraft.client.renderer.RenderItem;
@@ -29,11 +29,11 @@ import net.minecraft.client.renderer.model.IBakedModel;
 //#endif
 public abstract class MixinRenderItem {
     //#if MC>=11400
-    //$$ @Inject(method = "renderItemModel", at = @At("HEAD"))
+    @Inject(method = "renderItemModel", at = @At("HEAD"))
     //#else
     //#if MC>=11300
-    @Inject(method = "renderModel(Lnet/minecraft/client/renderer/model/IBakedModel;Lnet/minecraft/item/ItemStack;)V",
-            at = @At("HEAD"))
+    //$$ @Inject(method = "renderModel(Lnet/minecraft/client/renderer/model/IBakedModel;Lnet/minecraft/item/ItemStack;)V",
+    //$$         at = @At("HEAD"))
     //#else
     //#if MC>=10904
     //$$ @Inject(method = "renderModel(Lnet/minecraft/client/renderer/block/model/IBakedModel;Lnet/minecraft/item/ItemStack;)V",
@@ -44,7 +44,7 @@ public abstract class MixinRenderItem {
     //#endif
     //#endif
     //#endif
-    private void onRenderModel(IBakedModel model, ItemStack stack, CallbackInfo ci) {
+    private void onRenderModel(BakedModel model, ItemStack stack, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
             blendState.get(ItemExporter.class).onRender(this, model, stack);

@@ -6,14 +6,14 @@ import com.replaymod.render.blend.data.DMesh;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.ReadableVector3f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormatElement;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=10904
 //#if MC>=11200
-import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.render.BufferBuilder;
 //#else
 //$$ import net.minecraft.client.renderer.VertexBuffer;
 //#endif
@@ -68,7 +68,7 @@ public class BlendMeshBuilder
                 // Someone probably finished drawing with the global instance instead of this one,
                 // let's just assume that what's happened and finish our last draw by ourselves
                 // (might miss correct texture though)
-                super.finishDrawing();
+                super.end();
                 addBufferToMesh();
             } else {
                 throw new IllegalStateException("Already drawing!");
@@ -91,14 +91,14 @@ public class BlendMeshBuilder
     public void maybeFinishDrawing() {
         if (isDrawing) {
             isDrawing = false;
-            super.finishDrawing();
+            super.end();
             addBufferToMesh();
         }
     }
 
     @Override
     //#if MC>=10809
-    public void finishDrawing() {
+    public void end() {
     //#else
     //$$ public int finishDrawing() {
     //#endif
@@ -106,13 +106,13 @@ public class BlendMeshBuilder
             throw new IllegalStateException("Not building!");
         } else {
             if (!wellBehaved) {
-                Tessellator.getInstance().getBuffer().finishDrawing();
+                Tessellator.getInstance().getBufferBuilder().end();
             }
 
             //#if MC<10809
             //$$ int ret =
             //#endif
-            super.finishDrawing();
+            super.end();
 
             addBufferToMesh();
 
@@ -140,7 +140,7 @@ public class BlendMeshBuilder
 
     public static DMesh addBufferToMesh(ByteBuffer buffer, int mode, VertexFormat vertexFormat, DMesh mesh, ReadableVector3f vertOffset) {
         //#if MC>=11300
-        int vertexCount = buffer.remaining() / vertexFormat.getSize();
+        int vertexCount = buffer.remaining() / vertexFormat.getVertexSize();
         //#else
         //$$ int vertexCount = buffer.remaining() / vertexFormat.getNextOffset();
         //#endif
@@ -160,26 +160,26 @@ public class BlendMeshBuilder
         int index = 0;
         for (VertexFormatElement element : getElements(vertexFormat)) {
             //#if MC>=10809
-            int offset = vertexFormat.getOffset(index);
+            int offset = vertexFormat.getElementOffset(index);
             //#else
             //$$ int offset = element.getOffset();
             //#endif
-            switch (element.getUsage()) {
+            switch (element.getType()) {
                 case POSITION:
-                    if (element.getType() != VertexFormatElement.EnumType.FLOAT) {
+                    if (element.getFormat() != VertexFormatElement.Format.FLOAT) {
                         throw new UnsupportedOperationException("Only float is supported for position elements!");
                     }
                     posOffset = offset;
                     break;
                 case COLOR:
-                    if (element.getType() != VertexFormatElement.EnumType.UBYTE) {
+                    if (element.getFormat() != VertexFormatElement.Format.UNSIGNED_BYTE) {
                         throw new UnsupportedOperationException("Only unsigned byte is supported for color elements!");
                     }
                     colorOffset = offset;
                     break;
                 case UV:
                     if (element.getIndex() != 0) break;
-                    if (element.getType() != VertexFormatElement.EnumType.FLOAT) {
+                    if (element.getFormat() != VertexFormatElement.Format.FLOAT) {
                         throw new UnsupportedOperationException("Only float is supported for UV elements!");
                     }
                     uvOffset = offset;
@@ -194,7 +194,7 @@ public class BlendMeshBuilder
         List<Vector2f> uvs = new ArrayList<>(vertexCount);
         List<Integer> colors = new ArrayList<>(vertexCount);
         //#if MC>=11300
-        int step = vertexFormat.getSize();
+        int step = vertexFormat.getVertexSize();
         //#else
         //$$ int step = vertexFormat.getNextOffset();
         //#endif

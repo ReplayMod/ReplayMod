@@ -10,10 +10,10 @@ import com.replaymod.render.blend.data.DObject;
 import com.replaymod.render.blend.mixin.ParticleAccessor;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 
 //#if MC>=11400
-//$$ import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3d;
 //#endif
 
 //#if MC>=10904
@@ -24,7 +24,7 @@ import net.minecraft.client.particle.Particle;
 //#endif
 
 //#if MC>=10809
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.render.VertexFormats;
 //#endif
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ import static com.replaymod.render.blend.Util.getCameraPos;
 import static com.replaymod.render.blend.Util.getGlModelViewMatrix;
 
 public class ParticlesExporter implements Exporter {
-    private final Minecraft mc = MCVer.getMinecraft();
+    private final MinecraftClient mc = MCVer.getMinecraft();
     private final RenderState renderState;
     private DObject pointAtObject;
     private DObject particlesObject;
@@ -113,9 +113,9 @@ public class ParticlesExporter implements Exporter {
         // Instead of actually translating, we just add the translation on the current model-view-matrix.
         Matrix4f modelView = getGlModelViewMatrix();
         ParticleAccessor acc = (ParticleAccessor) particle;
-        double dx = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * renderPartialTicks - Particle.interpPosX;
-        double dy = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * renderPartialTicks - Particle.interpPosY;
-        double dz = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * renderPartialTicks - Particle.interpPosZ;
+        double dx = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * renderPartialTicks - Particle.cameraX;
+        double dy = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * renderPartialTicks - Particle.cameraY;
+        double dz = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * renderPartialTicks - Particle.cameraZ;
         Vector3f offset = new Vector3f((float) dx, (float) dy, (float) dz);
         Matrix4f.translate(offset, modelView, modelView);
         renderState.pushModelView(modelView);
@@ -162,22 +162,22 @@ public class ParticlesExporter implements Exporter {
         builder.setReverseOffset(offset);
         builder.setWellBehaved(true);
         //#if MC>=10809
-        builder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+        builder.begin(7, VertexFormats.POSITION_UV_COLOR_LMAP);
         //#else
         //$$ builder.startDrawingQuads();
         //#endif
         //#if MC>=10809
-        particle.renderParticle(builder,
+        particle.buildGeometry(builder,
                 //#if MC>=11400
-                //$$ MCVer.getMinecraft().gameRenderer.getCamera(),
+                MCVer.getMinecraft().gameRenderer.getCamera(),
                 //#else
-                MCVer.getMinecraft().getRenderViewEntity(),
+                //$$ MCVer.getMinecraft().getRenderViewEntity(),
                 //#endif
                 0, 1, 1, 0, 0, 0);
         //#else
         //$$ particle.func_180434_a(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
         //#endif
-        builder.finishDrawing();
+        builder.end();
         return mesh;
     }
 

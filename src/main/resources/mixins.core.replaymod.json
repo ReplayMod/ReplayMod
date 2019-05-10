@@ -5,11 +5,11 @@
   "server": [],
   "client": [
     //#if MC>=11400
-    //$$ "AbstractButtonWidgetAccessor",
-    //$$ "MixinGameRenderer",
-    //$$ "MixinScreen",
-    //$$ "MixinModResourcePackUtil",
-    //$$ "MixinMouseListener",
+    "AbstractButtonWidgetAccessor",
+    "MixinGameRenderer",
+    "MixinScreen",
+    "MixinModResourcePackUtil",
+    "MixinMouseListener",
     //#endif
     //#if MC>=11300
     "MixinKeyboardListener",

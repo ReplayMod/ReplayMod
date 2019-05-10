@@ -58,20 +58,20 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.EnumPacketDirection;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.NetworkState;
+import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.PacketByteBuf;
 
 //#if MC>=11400
-//$$ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
+import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //#else
-import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-
-import static com.replaymod.core.versions.MCVer.FML_BUS;
+//$$ import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
+//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
+//$$
+//$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //#endif
 
 import javax.annotation.Nullable;
@@ -113,7 +113,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private static final String CACHE_INDEX_ENTRY = "quickModeCacheIndex.bin";
     private static final int CACHE_VERSION = 0;
 
-    private final Minecraft mc = getMinecraft();
+    private final MinecraftClient mc = getMinecraft();
 
     private final ReplayModReplay mod;
     private final ReplayFile replayFile;
@@ -216,7 +216,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         ctx.fireChannelRead(toMC(new ServerRespawnPacket(
                 0,
                 //#if MC<11400
-                Difficulty.NORMAL,
+                //$$ Difficulty.NORMAL,
                 //#endif
                 GameMode.SPECTATOR,
                 WorldType.DEFAULT
@@ -279,12 +279,12 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     private class EventHandler extends EventRegistrations {
         //#if MC>=11400
-        //$$ { on(PreTickCallback.EVENT, this::onTick); }
-        //$$ private void onTick() {
+        { on(PreTickCallback.EVENT, this::onTick); }
+        private void onTick() {
         //#else
-        @SubscribeEvent
-        public void onTick(TickEvent.ClientTickEvent event) {
-            if (event.phase != TickEvent.Phase.START) return;
+        //$$ @SubscribeEvent
+        //$$ public void onTick(TickEvent.ClientTickEvent event) {
+        //$$     if (event.phase != TickEvent.Phase.START) return;
         //#endif
             if (!asyncMode) return;
 
@@ -653,16 +653,16 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     private static final ByteBuf byteBuf = Unpooled.buffer();
     private static final ByteBufOutputStream byteBufOut = new ByteBufOutputStream(byteBuf);
-    private static final PacketBuffer packetBuf = new PacketBuffer(byteBuf);
+    private static final PacketByteBuf packetBuf = new PacketByteBuf(byteBuf);
     private static final ReplayOutputStream encoder = new ReplayOutputStream(new ReplayStudio(), byteBufOut);
     private static final Inflater inflater = new Inflater();
     private static final Deflater deflater = new Deflater();
 
     private static Packet<?> toMC(com.github.steveice10.packetlib.packet.Packet packet) {
-        return toMC(packet, EnumConnectionState.PLAY);
+        return toMC(packet, NetworkState.PLAY);
     }
 
-    private static Packet<?> toMC(com.github.steveice10.packetlib.packet.Packet packet, EnumConnectionState state) {
+    private static Packet<?> toMC(com.github.steveice10.packetlib.packet.Packet packet, NetworkState state) {
         // We need to re-encode MCProtocolLib packets, so we can then decode them as NMS packets
         // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
         // to apply ViaVersion (and potentially other magic) to it.
@@ -676,8 +676,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 byteBuf.skipBytes(8); // Skip packet length & timestamp
 
                 int packetId = packetBuf.readVarInt();
-                Packet<?> mcPacket = state.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
-                mcPacket.readPacketData(packetBuf);
+                Packet<?> mcPacket = state.getPacketHandler(NetworkSide.CLIENT, packetId);
+                mcPacket.read(packetBuf);
                 return mcPacket;
             } catch (Exception e) {
                 Utils.throwIfUnchecked(e);
@@ -710,8 +710,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             }
 
             int packetId = packetBuf.readVarInt();
-            Packet<?> mcPacket = EnumConnectionState.PLAY.getPacket(EnumPacketDirection.CLIENTBOUND, packetId);
-            mcPacket.readPacketData(packetBuf);
+            Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENT, packetId);
+            mcPacket.read(packetBuf);
             return mcPacket;
         } catch (Exception e) {
             Utils.throwIfInstanceOf(e, IOException.class);

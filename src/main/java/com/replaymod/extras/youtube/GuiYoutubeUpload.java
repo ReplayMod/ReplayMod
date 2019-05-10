@@ -21,11 +21,11 @@ import de.johni0702.minecraft.gui.popup.GuiFileChooserPopup;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resource.language.I18n;
 import org.apache.commons.io.IOUtils;
 
 //#if MC>=11300
-import net.minecraft.util.Util;
+import net.minecraft.util.SystemUtil;
 //#else
 //$$ import org.lwjgl.Sys;
 //#endif
@@ -83,7 +83,7 @@ public class GuiYoutubeUpload extends GuiScreen {
     public final GuiTextArea descriptionField = new GuiTextArea().setMaxCharCount(Integer.MAX_VALUE)
             .setMaxTextWidth(Integer.MAX_VALUE).setMaxTextHeight(Integer.MAX_VALUE);
     {
-        descriptionField.setText(new String[]{I18n.format("replaymod.gui.videodescription")});
+        descriptionField.setText(new String[]{I18n.translate("replaymod.gui.videodescription")});
     }
 
     public final GuiTextField tagsField = new GuiTextField().setI18nHint("replaymod.gui.videotags");
@@ -219,17 +219,17 @@ public class GuiYoutubeUpload extends GuiScreen {
                                 Desktop.getDesktop().browse(new URL(url).toURI());
                             } catch(Throwable throwable) {
                                 //#if MC>=11400
-                                //$$ SystemUtil.getOperatingSystem().open(url);
+                                SystemUtil.getOperatingSystem().open(url);
                                 //#else
                                 //#if MC>=11300
-                                Util.getOSType().openURI(url);
+                                //$$ Util.getOSType().openURI(url);
                                 //#else
                                 //$$ Sys.openURL(url);
                                 //#endif
                                 //#endif
                             }
                             upload = null;
-                            progressBar.setLabel(I18n.format("replaymod.gui.ytuploadprogress.done", url));
+                            progressBar.setLabel(I18n.translate("replaymod.gui.ytuploadprogress.done", url));
                             setState(false);
                         }
 

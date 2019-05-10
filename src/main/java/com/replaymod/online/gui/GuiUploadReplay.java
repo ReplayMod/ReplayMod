@@ -32,10 +32,10 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.options.KeyBinding;
+import net.minecraft.util.crash.CrashReport;
+import net.minecraft.util.crash.CrashException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,7 +61,7 @@ public class GuiUploadReplay extends GuiScreen {
     public final GuiLabel durationLabel = new GuiLabel();
     public final GuiCheckbox hideServerIP = new GuiCheckbox();
     public final GuiDropdownMenu<Category> category = new GuiDropdownMenu<Category>().setHeight(20)
-            .setValues(Category.values()).setToString(v -> I18n.format("replaymod.category") + ": " + v.toNiceString());
+            .setValues(Category.values()).setToString(v -> I18n.translate("replaymod.category") + ": " + v.toNiceString());
     public final GuiTextField tags = new GuiTextField().setHeight(20).setMaxLength(30)
             .setI18nHint("replaymod.gui.upload.tagshint");
 
@@ -134,7 +134,7 @@ public class GuiUploadReplay extends GuiScreen {
             metaData = replayFile.getMetaData();
             optThumbnail = replayFile.getThumb();
         } catch (IOException e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Read replay file " + file.getName()));
+            throw new CrashException(CrashReport.create(e, "Read replay file " + file.getName()));
         }
 
         // Apply to gui
@@ -152,7 +152,7 @@ public class GuiUploadReplay extends GuiScreen {
             KeyBindingRegistry registry = mod.getCore().getKeyBindingRegistry();
             KeyBinding keyBinding = registry.getKeyBindings().get("replaymod.input.thumbnail");
             //#if MC>=11300
-            String keyName = keyBinding == null ? "???" : keyBinding.func_197978_k();
+            String keyName = keyBinding == null ? "???" : keyBinding.getLocalizedName();
             //#else
             //$$ String keyName = keyBinding == null ? "???" : GameSettings.getKeyDisplayString(keyBinding.getKeyCode());
             //#endif
@@ -216,7 +216,7 @@ public class GuiUploadReplay extends GuiScreen {
                         if (e instanceof ApiException) {
                             message = e.getLocalizedMessage();
                         } else {
-                            message = I18n.format("replaymod.gui.unknownerror");
+                            message = I18n.translate("replaymod.gui.unknownerror");
                         }
                         mod.getCore().runLater(() -> {
                             // Show error popup

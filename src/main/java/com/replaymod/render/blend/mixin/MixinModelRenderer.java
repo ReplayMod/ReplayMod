@@ -9,26 +9,26 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11300
-import net.minecraft.client.renderer.entity.model.ModelRenderer;
+import net.minecraft.client.model.Cuboid;
 //#else
 //$$ import net.minecraft.client.model.ModelRenderer;
 //#endif
 
-@Mixin(ModelRenderer.class)
+@Mixin(Cuboid.class)
 public abstract class MixinModelRenderer {
     @Inject(method = "render", at = @At("HEAD"))
     public void preRender(float scale, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
-            blendState.get(ModelRendererExporter.class).preRenderModel((ModelRenderer)(Object)this, scale);
+            blendState.get(ModelRendererExporter.class).preRenderModel((Cuboid)(Object)this, scale);
         }
     }
 
-    @Inject(method = "renderWithRotation", at = @At("HEAD"))
+    @Inject(method = "method_2852", at = @At("HEAD"))
     public void preRenderWithRotation(float scale, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
-            blendState.get(ModelRendererExporter.class).preRenderModel((ModelRenderer)(Object)this, scale);
+            blendState.get(ModelRendererExporter.class).preRenderModel((Cuboid)(Object)this, scale);
         }
     }
 
@@ -40,7 +40,7 @@ public abstract class MixinModelRenderer {
         }
     }
 
-    @Inject(method = "renderWithRotation", at = @At("RETURN"))
+    @Inject(method = "method_2852", at = @At("RETURN"))
     public void postRenderWithRotation(float scale, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
@@ -50,7 +50,7 @@ public abstract class MixinModelRenderer {
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                     target = "Lnet/minecraft/client/renderer/GlStateManager;callList(I)V"),
+                     target = "Lcom/mojang/blaze3d/platform/GlStateManager;callList(I)V"),
             expect = 3)
     public void onRender(float scale, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
@@ -59,9 +59,9 @@ public abstract class MixinModelRenderer {
         }
     }
 
-    @Inject(method = "renderWithRotation",
+    @Inject(method = "method_2852",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/GlStateManager;callList(I)V"))
+                    target = "Lcom/mojang/blaze3d/platform/GlStateManager;callList(I)V"))
     public void onRenderWithRotation(float scale, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {

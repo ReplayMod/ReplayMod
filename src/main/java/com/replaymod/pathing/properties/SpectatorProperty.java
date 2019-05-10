@@ -7,7 +7,7 @@ import com.replaymod.replaystudio.pathing.property.AbstractProperty;
 import com.replaymod.replaystudio.pathing.property.PropertyPart;
 import com.replaymod.replaystudio.pathing.property.PropertyParts;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.World;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class SpectatorProperty extends AbstractProperty<Integer> {
         ReplayHandler handler = ((ReplayHandler) replayHandler);
         World world = handler.getCameraEntity().getEntityWorld();
         // Lookup entity by id, returns null if an entity with the id does not exists
-        Entity target = world.getEntityByID(value);
+        Entity target = world.getEntityById(value);
         // Spectate entity, when called with null, returns to camera
         //#if MC>=10800
         handler.spectateEntity(target);

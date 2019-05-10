@@ -1,7 +1,7 @@
 package com.replaymod.recording.mixin;
 
 import com.replaymod.recording.handler.RecordingEventHandler;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.render.WorldRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,7 +27,7 @@ public abstract class MixinRenderGlobal implements RecordingEventHandler.Recordi
     }
 
     //#if MC>=10800
-    @Inject(method = "sendBlockBreakProgress", at = @At("HEAD"))
+    @Inject(method = "setBlockBreakingProgress", at = @At("HEAD"))
     //#else
     //$$ @Inject(method = "destroyBlockPartially", at = @At("HEAD"))
     //#endif

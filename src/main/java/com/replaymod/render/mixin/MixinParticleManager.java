@@ -8,27 +8,27 @@ import com.replaymod.render.blend.mixin.ParticleAccessor;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 //#if MC>=11400
-//$$ import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Camera;
 //#else
-import net.minecraft.entity.Entity;
+//$$ import net.minecraft.entity.Entity;
 //#endif
 
 @Mixin(ParticleManager.class)
 public abstract class MixinParticleManager {
     //#if MC>=11200
     //#if MC>=11400
-    //$$ @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/BufferBuilder;Lnet/minecraft/client/render/Camera;FFFFFF)V"))
-    //$$ private void renderNormalParticle(Particle particle, BufferBuilder vertexBuffer, Camera view, float partialTicks,
+    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/BufferBuilder;Lnet/minecraft/client/render/Camera;FFFFFF)V"))
+    private void renderNormalParticle(Particle particle, BufferBuilder vertexBuffer, Camera view, float partialTicks,
     //#else
-    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/BufferBuilder;Lnet/minecraft/entity/Entity;FFFFFF)V"))
-    private void renderNormalParticle(Particle particle, BufferBuilder vertexBuffer, Entity view, float partialTicks,
+    //$$ @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/BufferBuilder;Lnet/minecraft/entity/Entity;FFFFFF)V"))
+    //$$ private void renderNormalParticle(Particle particle, BufferBuilder vertexBuffer, Entity view, float partialTicks,
     //#endif
     //#else
     //$$ @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/VertexBuffer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
@@ -41,33 +41,33 @@ public abstract class MixinParticleManager {
     // Seems to be gone by 1.14
     //#if MC<11400
     //#if MC>=11200
-    @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/BufferBuilder;Lnet/minecraft/entity/Entity;FFFFFF)V"))
-    private void renderLitParticle(Particle particle, BufferBuilder vertexBuffer, Entity view, float partialTicks,
+    //$$ @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/BufferBuilder;Lnet/minecraft/entity/Entity;FFFFFF)V"))
+    //$$ private void renderLitParticle(Particle particle, BufferBuilder vertexBuffer, Entity view, float partialTicks,
     //#else
     //$$ @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;renderParticle(Lnet/minecraft/client/renderer/VertexBuffer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
     //$$ private void renderLitParticle(Particle particle, VertexBuffer vertexBuffer, Entity view, float partialTicks,
     //#endif
-                                 float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
-        renderParticle(particle, vertexBuffer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
-    }
+    //$$                              float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
+    //$$     renderParticle(particle, vertexBuffer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
+    //$$ }
     //#endif
 
     private void renderParticle(Particle particle,
                                 BufferBuilder vertexBuffer,
                                 //#if MC>=11400
-                                //$$ Camera view,
+                                Camera view,
                                 //#else
-                                Entity view,
+                                //$$ Entity view,
                                 //#endif
                                 float partialTicks,
                                 float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
-        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().entityRenderer).replayModRender_getHandler();
+        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
         if (handler != null && handler.omnidirectional) {
             // Align all particles towards the camera
             //#if MC>=11400
-            //$$ Vec3d pos = view.getPos();
+            Vec3d pos = view.getPos();
             //#else
-            Vec3d pos = new Vec3d(view.posX, view.posY, view.posZ);
+            //$$ Vec3d pos = new Vec3d(view.posX, view.posY, view.posZ);
             //#endif
             Vec3d d = MCVer.getPosition(particle, partialTicks).subtract(pos);
             double pitch = -Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z));
@@ -84,7 +84,7 @@ public abstract class MixinParticleManager {
                 if (blendState != null) {
                 blendState.get(ParticlesExporter.class).onRender(particle, partialTicks);
         }
-        particle.renderParticle(vertexBuffer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
+        particle.buildGeometry(vertexBuffer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
     }
 }
 //#endif

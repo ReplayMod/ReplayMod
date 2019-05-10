@@ -81,7 +81,7 @@ public class GuiModCompatWarning extends AbstractGuiScreen<GuiModCompatWarning> 
             }
         }
 
-        cancelButton.onClick(() -> getMinecraft().displayGuiScreen(null));
+        cancelButton.onClick(() -> getMinecraft().openScreen(null));
         loadButton.onClick(() -> {
             try {
                 mod.startReplay(replayFile, false);

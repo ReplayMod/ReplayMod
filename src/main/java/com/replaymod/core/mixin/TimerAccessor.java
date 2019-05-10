@@ -1,20 +1,20 @@
 package com.replaymod.core.mixin;
 
-import net.minecraft.util.Timer;
+import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Timer.class)
+@Mixin(RenderTickCounter.class)
 public interface TimerAccessor {
-    @Accessor
+    @Accessor("prevTimeMillis")
     long getLastSyncSysClock();
-    @Accessor
+    @Accessor("prevTimeMillis")
     void setLastSyncSysClock(long value);
 
     //#if MC>=11200
-    @Accessor
+    @Accessor("timeScale")
     float getTickLength();
-    @Accessor
+    @Accessor("timeScale")
     void setTickLength(float value);
     //#else
     //$$ @Accessor

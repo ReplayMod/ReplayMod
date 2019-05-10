@@ -8,7 +8,7 @@
     "ChunkRenderDispatcherAccessor",
     //#endif
     //#if MC>=11400
-    //$$ "MainWindowAccessor",
+    "MainWindowAccessor",
     //#endif
     "WorldRendererAccessor",
     //#if MC>=10904

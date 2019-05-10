@@ -11,7 +11,7 @@ import com.replaymod.online.AuthenticationHash;
 import com.replaymod.online.api.replay.ReplayModApiMethods;
 import com.replaymod.online.api.replay.SearchQuery;
 import com.replaymod.online.api.replay.holders.*;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -31,7 +31,7 @@ import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
 
 public class ApiClient {
 
-    private static final Minecraft mc = MCVer.getMinecraft();
+    private static final MinecraftClient mc = MCVer.getMinecraft();
     private static final Gson gson = new Gson();
     private static final JsonParser jsonParser = new JsonParser();
 
@@ -101,7 +101,7 @@ public class ApiClient {
         AuthenticationHash hash = new AuthenticationHash();
 
         mc.getSessionService().joinServer(
-                mc.getSession().getProfile(), mc.getSession().getToken(), hash.hash);
+                mc.getSession().getProfile(), mc.getSession().getAccessToken(), hash.hash);
 
         return hash;
     }

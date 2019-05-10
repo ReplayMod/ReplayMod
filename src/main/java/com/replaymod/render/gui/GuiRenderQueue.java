@@ -29,8 +29,8 @@ import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.gui.GuiErrorScreen;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.client.gui.menu.NoticeScreen;
+import net.minecraft.util.crash.CrashReport;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -38,7 +38,7 @@ import java.util.List;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
-//$$ import net.minecraft.text.TranslatableTextComponent;
+import net.minecraft.text.TranslatableTextComponent;
 //#endif
 
 public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
@@ -204,7 +204,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
 
     private void processQueue(Iterable<RenderJob> queue) {
         // Close all GUIs (so settings in GuiRenderSettings are saved)
-        getMinecraft().displayGuiScreen(null);
+        getMinecraft().openScreen(null);
         // Start rendering
         int jobsDone = 0;
         for (RenderJob renderJob : queue) {
@@ -214,17 +214,17 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                 videoRenderer.renderVideo();
             } catch (VideoWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
-                GuiErrorScreen errorScreen = new GuiErrorScreen(
+                NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
-                        //$$ () -> {},
-                        //$$ new TranslatableTextComponent("replaymod.gui.rendering.error.title"),
-                        //$$ new TranslatableTextComponent("replaymod.gui.rendering.error.message")
+                        () -> {},
+                        new TranslatableTextComponent("replaymod.gui.rendering.error.title"),
+                        new TranslatableTextComponent("replaymod.gui.rendering.error.message")
                         //#else
-                        I18n.format("replaymod.gui.rendering.error.title"),
-                        I18n.format("replaymod.gui.rendering.error.message")
+                        //$$ I18n.format("replaymod.gui.rendering.error.title"),
+                        //$$ I18n.format("replaymod.gui.rendering.error.message")
                         //#endif
                 );
-                getMinecraft().displayGuiScreen(errorScreen);
+                getMinecraft().openScreen(errorScreen);
                 return;
             } catch (VideoWriter.FFmpegStartupException e) {
                 int jobsToSkip = jobsDone;
@@ -236,7 +236,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                 });
                 return;
             } catch (Throwable t) {
-                Utils.error(LOGGER, this, CrashReport.makeCrashReport(t, "Rendering video"), () -> {});
+                Utils.error(LOGGER, this, CrashReport.create(t, "Rendering video"), () -> {});
                 container.display(); // Re-show the queue popup and the new error popup
                 return;
             }

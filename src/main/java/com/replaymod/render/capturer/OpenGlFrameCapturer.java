@@ -8,8 +8,8 @@ import com.replaymod.render.utils.ByteBufferPool;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritableDimension;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlFramebuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -21,7 +21,7 @@ import com.replaymod.render.mixin.MainWindowAccessor;
 //#endif
 
 //#if MC>=10800
-import static net.minecraft.client.renderer.GlStateManager.*;
+import static com.mojang.blaze3d.platform.GlStateManager.*;
 //#else
 //$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
 //#endif
@@ -33,9 +33,9 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     protected final WorldRenderer worldRenderer;
     protected final RenderInfo renderInfo;
     protected int framesDone;
-    private Framebuffer frameBuffer;
+    private GlFramebuffer frameBuffer;
 
-    private final Minecraft mc = MCVer.getMinecraft();
+    private final MinecraftClient mc = MCVer.getMinecraft();
 
     public OpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         this.worldRenderer = worldRenderer;
@@ -67,7 +67,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         return renderInfo.getFrameSize().getHeight();
     }
 
-    protected Framebuffer frameBuffer() {
+    protected GlFramebuffer frameBuffer() {
         if (frameBuffer == null) {
             frameBuffer = mc.getFramebuffer();
         }
@@ -87,18 +87,18 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         resize(getFrameWidth(), getFrameHeight());
 
         pushMatrix();
-        frameBuffer().bindFramebuffer(true);
+        frameBuffer().beginWrite(true);
 
         clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                 //#if MC>=11400
-                //$$ , false
+                , false
                 //#endif
         );
-        enableTexture2D();
+        enableTexture();
 
         worldRenderer.renderWorld(partialTicks, captureData);
 
-        frameBuffer().unbindFramebuffer();
+        frameBuffer().endWrite();
         popMatrix();
 
         return captureFrame(frameId, captureData);
@@ -106,9 +106,9 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
 
     protected OpenGlFrame captureFrame(int frameId, D captureData) {
         ByteBuffer buffer = ByteBufferPool.allocate(getFrameWidth() * getFrameHeight() * 4);
-        frameBuffer().bindFramebuffer(true);
+        frameBuffer().beginWrite(true);
         GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, buffer);
-        frameBuffer().unbindFramebuffer();
+        frameBuffer().endWrite();
         buffer.rewind();
 
         return new OpenGlFrame(frameId, new Dimension(getFrameWidth(), getFrameHeight()), buffer);
@@ -116,16 +116,16 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
 
     protected void resize(int width, int height) {
         //#if MC>=11300
-        Framebuffer fb = mc.getFramebuffer();
-        if (fb.framebufferWidth != width || fb.framebufferHeight != height) {
-            fb.createFramebuffer(width, height
+        GlFramebuffer fb = mc.getFramebuffer();
+        if (fb.viewWidth != width || fb.viewHeight != height) {
+            fb.initFbo(width, height
                     //#if MC>=11400
-                    //$$ , false
+                    , false
                     //#endif
             );
         }
         //noinspection ConstantConditions
-        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) mc.mainWindow;
+        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) mc.window;
         mainWindow.setFramebufferWidth(width);
         mainWindow.setFramebufferHeight(height);
         //#else

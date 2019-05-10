@@ -2,9 +2,9 @@ package com.replaymod.recording.mixin;
 
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.handler.RecordingEventHandler;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.network.play.server.*;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.packet.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,9 +16,9 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.ServerPlayerListEn
 import com.github.steveice10.packetlib.io.buffer.ByteBufferNetInput;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.SPacketPlayerListItem;
-import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.util.PacketByteBuf;
+import net.minecraft.client.network.packet.PlayerListS2CPacket;
+import net.minecraft.client.network.PlayerListEntry;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,18 +26,18 @@ import java.util.Map;
 import java.util.UUID;
 //#endif
 
-@Mixin(NetHandlerPlayClient.class)
+@Mixin(ClientPlayNetworkHandler.class)
 public abstract class MixinNetHandlerPlayClient {
 
-    private static Minecraft gameController = MCVer.getMinecraft();
+    private static MinecraftClient gameController = MCVer.getMinecraft();
 
     //#if MC>=10800
     @Shadow
-    private Map<UUID, NetworkPlayerInfo> playerInfoMap;
+    private Map<UUID, PlayerListEntry> playerListEntries;
     //#endif
 
     public RecordingEventHandler getRecordingEventHandler() {
-        return ((RecordingEventHandler.RecordingEventSender) gameController.renderGlobal).getRecordingEventHandler();
+        return ((RecordingEventHandler.RecordingEventSender) gameController.worldRenderer).getRecordingEventHandler();
     }
 
     /**
@@ -48,19 +48,19 @@ public abstract class MixinNetHandlerPlayClient {
      * @param ci Callback info
      */
     //#if MC>=10800
-    @Inject(method = "handlePlayerListItem", at=@At("HEAD"))
-    public void recordOwnJoin(SPacketPlayerListItem packet, CallbackInfo ci) {
+    @Inject(method = "onPlayerList", at=@At("HEAD"))
+    public void recordOwnJoin(PlayerListS2CPacket packet, CallbackInfo ci) {
         if (gameController.player == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();
-        if (handler != null && packet.getAction() == SPacketPlayerListItem.Action.ADD_PLAYER) {
+        if (handler != null && packet.getAction() == PlayerListS2CPacket.Action.ADD) {
             // We cannot reference SPacketPlayerListItem.AddPlayerData directly for complicated (and yet to be
             // resolved) reasons (see https://github.com/MinecraftForge/ForgeGradle/issues/472), so we "simply" convert
             // the back to the MCProtocolLib equivalent and deal with that one.
             ByteBuf byteBuf = Unpooled.buffer();
             ServerPlayerListEntryPacket mcpl = new ServerPlayerListEntryPacket(null, null);
             try {
-                packet.writePacketData(new PacketBuffer(byteBuf));
+                packet.write(new PacketByteBuf(byteBuf));
 
                 byteBuf.readerIndex(0);
                 byte[] array = new byte[byteBuf.readableBytes()];
@@ -77,7 +77,7 @@ public abstract class MixinNetHandlerPlayClient {
                 if (data.getProfile() == null || data.getProfile().getId() == null) continue;
                 // Only add spawn packet for our own player and only if he isn't known yet
                 if (data.getProfile().getId().equals(gameController.player.getGameProfile().getId())
-                        && !this.playerInfoMap.containsKey(data.getProfile().getId())) {
+                        && !this.playerListEntries.containsKey(data.getProfile().getId())) {
                     handler.onPlayerJoin();
                 }
             }
@@ -100,8 +100,8 @@ public abstract class MixinNetHandlerPlayClient {
      * @param packet The packet
      * @param ci Callback info
      */
-    @Inject(method = "handleRespawn", at=@At("RETURN"))
-    public void recordOwnRespawn(SPacketRespawn packet, CallbackInfo ci) {
+    @Inject(method = "onPlayerRespawn", at=@At("RETURN"))
+    public void recordOwnRespawn(PlayerRespawnS2CPacket packet, CallbackInfo ci) {
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null) {
             handler.onPlayerRespawn();

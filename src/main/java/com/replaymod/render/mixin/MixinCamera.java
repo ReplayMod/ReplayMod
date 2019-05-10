@@ -14,20 +14,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import static com.replaymod.core.versions.MCVer.*;
 
 //#if MC>=11400
-//$$ import net.minecraft.client.render.Camera;
-//$$ import net.minecraft.world.BlockView;
+import net.minecraft.client.render.Camera;
+import net.minecraft.world.BlockView;
 //#else
-import net.minecraft.client.renderer.GameRenderer;
+//$$ import net.minecraft.client.renderer.GameRenderer;
 //#endif
 
 //#if MC>=11400
-//$$ @Mixin(value = Camera.class)
+@Mixin(value = Camera.class)
 //#else
-@Mixin(value = GameRenderer.class)
+//$$ @Mixin(value = GameRenderer.class)
 //#endif
 public abstract class MixinCamera {
     private EntityRendererHandler getHandler() {
-        return ((EntityRendererHandler.IEntityRenderer) getMinecraft().entityRenderer).replayModRender_getHandler();
+        return ((EntityRendererHandler.IEntityRenderer) getMinecraft().gameRenderer).replayModRender_getHandler();
     }
 
     private float orgYaw;
@@ -37,16 +37,16 @@ public abstract class MixinCamera {
     private float orgRoll;
 
     //#if MC>=11400
-    //$$ @Inject(method = "update", at = @At("HEAD"))
+    @Inject(method = "update", at = @At("HEAD"))
     //#else
-    @Inject(method = "setupCameraTransform", at = @At("HEAD"))
+    //$$ @Inject(method = "setupCameraTransform", at = @At("HEAD"))
     //#endif
     private void replayModRender_beforeSetupCameraTransform(
             //#if MC>=11400
-            //$$ BlockView blockView,
-            //$$ Entity entity,
-            //$$ boolean thirdPerson,
-            //$$ boolean inverseView,
+            BlockView blockView,
+            Entity entity,
+            boolean thirdPerson,
+            boolean inverseView,
             //#endif
             float partialTicks,
             //#if MC<11300
@@ -56,30 +56,30 @@ public abstract class MixinCamera {
     ) {
         if (getHandler() != null) {
             //#if MC<11400
-            Entity entity = getRenderViewEntity(getMinecraft());
+            //$$ Entity entity = getRenderViewEntity(getMinecraft());
             //#endif
-            orgYaw = entity.rotationYaw;
-            orgPitch = entity.rotationPitch;
-            orgPrevYaw = entity.prevRotationYaw;
-            orgPrevPitch = entity.prevRotationPitch;
+            orgYaw = entity.yaw;
+            orgPitch = entity.pitch;
+            orgPrevYaw = entity.prevYaw;
+            orgPrevPitch = entity.prevPitch;
             orgRoll = entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0;
         }
     //#if MC<11400
-    }
-
-    @Inject(method = "orientCamera", at = @At("HEAD"))
-    private void replayModRender_resetRotationIfNeeded(float partialTicks, CallbackInfo ci) {
+    //$$ }
+    //$$
+    //$$ @Inject(method = "orientCamera", at = @At("HEAD"))
+    //$$ private void replayModRender_resetRotationIfNeeded(float partialTicks, CallbackInfo ci) {
     //#endif
         if (getHandler() != null) {
             //#if MC<11400
-            Entity entity = getRenderViewEntity(getMinecraft());
+            //$$ Entity entity = getRenderViewEntity(getMinecraft());
             //#endif
             RenderSettings settings = getHandler().getSettings();
             if (settings.isStabilizeYaw()) {
-                entity.prevRotationYaw = entity.rotationYaw = 0;
+                entity.prevYaw = entity.yaw = 0;
             }
             if (settings.isStabilizePitch()) {
-                entity.prevRotationPitch = entity.rotationPitch = 0;
+                entity.prevPitch = entity.pitch = 0;
             }
             if (settings.isStabilizeRoll() && entity instanceof CameraEntity) {
                 ((CameraEntity) entity).roll = 0;
@@ -88,16 +88,16 @@ public abstract class MixinCamera {
     }
 
     //#if MC>=11400
-    //$$ @Inject(method = "update", at = @At("RETURN"))
+    @Inject(method = "update", at = @At("RETURN"))
     //#else
-    @Inject(method = "setupCameraTransform", at = @At("RETURN"))
+    //$$ @Inject(method = "setupCameraTransform", at = @At("RETURN"))
     //#endif
     private void replayModRender_afterSetupCameraTransform(
             //#if MC>=11400
-            //$$ BlockView blockView,
-            //$$ Entity entity,
-            //$$ boolean thirdPerson,
-            //$$ boolean inverseView,
+            BlockView blockView,
+            Entity entity,
+            boolean thirdPerson,
+            boolean inverseView,
             //#endif
             float partialTicks,
             //#if MC<11300
@@ -107,12 +107,12 @@ public abstract class MixinCamera {
     ) {
         if (getHandler() != null) {
             //#if MC<11400
-            Entity entity = getRenderViewEntity(getMinecraft());
+            //$$ Entity entity = getRenderViewEntity(getMinecraft());
             //#endif
-            entity.rotationYaw = orgYaw;
-            entity.rotationPitch = orgPitch;
-            entity.prevRotationYaw = orgPrevYaw;
-            entity.prevRotationPitch = orgPrevPitch;
+            entity.yaw = orgYaw;
+            entity.pitch = orgPitch;
+            entity.prevYaw = orgPrevYaw;
+            entity.prevPitch = orgPrevPitch;
             if (entity instanceof CameraEntity) {
                 ((CameraEntity) entity).roll = orgRoll;
             }
@@ -120,16 +120,16 @@ public abstract class MixinCamera {
     }
 
     //#if MC>=11400
-    //$$ @Inject(method = "update", at = @At("HEAD"))
+    @Inject(method = "update", at = @At("HEAD"))
     //#else
-    @Inject(method = "orientCamera", at = @At("HEAD"))
+    //$$ @Inject(method = "orientCamera", at = @At("HEAD"))
     //#endif
     private void replayModRender_setupCubicFrameRotation(
             //#if MC>=11400
-            //$$ BlockView blockView,
-            //$$ Entity entity,
-            //$$ boolean thirdPerson,
-            //$$ boolean inverseView,
+            BlockView blockView,
+            Entity entity,
+            boolean thirdPerson,
+            boolean inverseView,
             //#endif
             float partialTicks,
             CallbackInfo ci

@@ -6,6 +6,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(IntegratedServer.class)
 public interface IntegratedServerAccessor {
-    @Accessor("isGamePaused")
+    @Accessor("field_5524")
     boolean isGamePaused();
 }

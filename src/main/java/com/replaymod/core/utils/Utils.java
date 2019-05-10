@@ -21,9 +21,9 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.versions.MCVer;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.gui.Screen;
+import net.minecraft.util.crash.CrashReport;
+import net.minecraft.util.Identifier;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
@@ -34,8 +34,8 @@ import org.apache.logging.log4j.Logger;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.client.network.NetworkPlayerInfo;
-import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.util.DefaultSkinHelper;
 
 //#else
 //$$ import net.minecraft.client.Minecraft;
@@ -186,14 +186,14 @@ public class Utils {
         }
     }
 
-    public static ResourceLocation getResourceLocationForPlayerUUID(UUID uuid) {
+    public static Identifier getResourceLocationForPlayerUUID(UUID uuid) {
         //#if MC>=10800
-        NetworkPlayerInfo info = getMinecraft().getConnection().getPlayerInfo(uuid);
-        ResourceLocation skinLocation;
-        if (info != null && info.hasLocationSkin()) {
-            skinLocation = info.getLocationSkin();
+        PlayerListEntry info = getMinecraft().getNetworkHandler().getPlayerListEntry(uuid);
+        Identifier skinLocation;
+        if (info != null && info.hasSkinTexture()) {
+            skinLocation = info.getSkinTexture();
         } else {
-            skinLocation = DefaultPlayerSkin.getDefaultSkin(uuid);
+            skinLocation = DefaultSkinHelper.getTexture(uuid);
         }
         return skinLocation;
         //#else
@@ -207,7 +207,7 @@ public class Utils {
 
     public static boolean isCtrlDown() {
         //#if MC>=11300
-        return GuiScreen.isCtrlKeyDown();
+        return Screen.hasControlDown();
         //#else
         //$$ return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
         //#endif
@@ -229,7 +229,7 @@ public class Utils {
 
     public static GuiInfoPopup error(Logger logger, GuiContainer container, CrashReport crashReport, Runnable onClose) {
         // Convert crash report to string
-        String crashReportStr = crashReport.getCompleteReport();
+        String crashReportStr = crashReport.asString();
 
         // Log via logger
         logger.error(crashReportStr);
@@ -237,10 +237,10 @@ public class Utils {
         // Try to save the crash report
         if (crashReport.getFile() == null) {
             try {
-                File folder = new File(getMinecraft().gameDir, "crash-reports");
+                File folder = new File(getMinecraft().runDirectory, "crash-reports");
                 File file = new File(folder, "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-client.txt");
                 logger.debug("Saving crash report to file: {}", file);
-                crashReport.saveToFile(file);
+                crashReport.writeToFile(file);
             } catch (Throwable t) {
                 logger.error("Saving crash report file:", t);
             }

@@ -2,15 +2,15 @@ package com.replaymod.extras.playeroverview.mixin;
 
 import com.replaymod.extras.ReplayModExtras;
 import com.replaymod.extras.playeroverview.PlayerOverview;
-import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 
 //#if MC>=10800
-import net.minecraft.client.renderer.culling.ICamera;
+import net.minecraft.client.render.VisibleRegion;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //#else
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -31,15 +31,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * For 1.7.10, that method doesn't exist, so we use a combination of the event and inject into
  */
-@Mixin(value = Render.class, priority = 1200)
+@Mixin(value = EntityRenderer.class, priority = 1200)
 public abstract class MixinRender {
     //#if MC>=10800
-    @Inject(method = "shouldRender", at=@At("HEAD"), cancellable = true)
-    public void replayModExtras_isPlayerHidden(Entity entity, ICamera camera, double camX, double camY, double camZ, CallbackInfoReturnable<Boolean> ci) {
+    @Inject(method = "isVisible", at=@At("HEAD"), cancellable = true)
+    public void replayModExtras_isPlayerHidden(Entity entity, VisibleRegion camera, double camX, double camY, double camZ, CallbackInfoReturnable<Boolean> ci) {
         ReplayModExtras.instance.get(PlayerOverview.class).ifPresent(playerOverview -> {
-            if (entity instanceof EntityPlayer) {
-                EntityPlayer player = (EntityPlayer) entity;
-                if (playerOverview.isHidden(player.getUniqueID())) {
+            if (entity instanceof PlayerEntity) {
+                PlayerEntity player = (PlayerEntity) entity;
+                if (playerOverview.isHidden(player.getUuid())) {
                     ci.setReturnValue(false);
                 }
             }

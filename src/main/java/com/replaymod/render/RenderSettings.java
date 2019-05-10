@@ -5,8 +5,8 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.Util;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.util.SystemUtil;
 
 import java.io.File;
 import java.util.Arrays;
@@ -32,11 +32,11 @@ public class RenderSettings {
 
         @Override
         public String toString() {
-            return I18n.format("replaymod.gui.rendersettings.renderer." + name().toLowerCase());
+            return I18n.translate("replaymod.gui.rendersettings.renderer." + name().toLowerCase());
         }
 
         public String getDescription() {
-            return I18n.format("replaymod.gui.rendersettings.renderer." + name().toLowerCase() + ".description");
+            return I18n.translate("replaymod.gui.rendersettings.renderer." + name().toLowerCase() + ".description");
         }
 
         public boolean isSpherical() {
@@ -89,7 +89,7 @@ public class RenderSettings {
 
         @Override
         public String toString() {
-            return I18n.format("replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase());
+            return I18n.translate("replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase());
         }
     }
 
@@ -102,7 +102,7 @@ public class RenderSettings {
 
         @Override
         public String toString() {
-            return I18n.format("replaymod.gui.rendersettings.antialiasing." + name().toLowerCase());
+            return I18n.translate("replaymod.gui.rendersettings.antialiasing." + name().toLowerCase());
         }
     }
 
@@ -173,16 +173,16 @@ public class RenderSettings {
     }
 
     private static String findFFmpeg() {
-        switch (Util.getOSType()) {
+        switch (SystemUtil.getOperatingSystem()) {
             case WINDOWS:
                 // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
-                File inDotMinecraft = new File(MCVer.getMinecraft().gameDir, "ffmpeg/bin/ffmpeg.exe");
+                File inDotMinecraft = new File(MCVer.getMinecraft().runDirectory, "ffmpeg/bin/ffmpeg.exe");
                 if (inDotMinecraft.exists()) {
                     LOGGER.debug("FFmpeg found in .minecraft/ffmpeg");
                     return inDotMinecraft.getAbsolutePath();
                 }
                 break;
-            case OSX:
+            case MAC:
                 // The PATH doesn't seem to be set as expected on OSX, therefore we check some common locations ourselves
                 for (String path : new String[]{"/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"}) {
                     File file = new File(path);
@@ -212,7 +212,7 @@ public class RenderSettings {
                     }
                 }
                 break;
-            case LINUX: // Linux users are entrusted to have their PATH configured correctly (most package manager do this)
+            case UNIX: // Linux users are entrusted to have their PATH configured correctly (most package manager do this)
             case SOLARIS: // Never heard of anyone running this mod on Solaris having any problems
             case UNKNOWN: // Unknown OS, just try to use "ffmpeg"
         }

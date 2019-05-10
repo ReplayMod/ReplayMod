@@ -35,7 +35,7 @@ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -221,7 +221,7 @@ public class GuiReplayEditor extends GuiScreen {
                     try {
                         replayFolder = mod.getReplayFolder();
                     } catch (IOException e) {
-                        Utils.error(LOGGER, GuiReplayEditor.this, CrashReport.makeCrashReport(e, "Getting replay folder"), null);
+                        Utils.error(LOGGER, GuiReplayEditor.this, CrashReport.create(e, "Getting replay folder"), null);
                         return;
                     }
                     File targetFile = new File(replayFolder, Utils.replayNameToFileName(name));
@@ -275,7 +275,7 @@ public class GuiReplayEditor extends GuiScreen {
             try {
                 runnable.run();
             } catch (Throwable t) {
-                CrashReport crashReport = CrashReport.makeCrashReport(t, "Editing replay file");
+                CrashReport crashReport = CrashReport.create(t, "Editing replay file");
                 mod.runLater(() -> Utils.error(LOGGER, this, crashReport, popup::close));
                 return;
             }

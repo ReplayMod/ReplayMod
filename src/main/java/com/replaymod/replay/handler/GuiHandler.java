@@ -3,19 +3,19 @@ package com.replaymod.replay.handler;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiIngameMenu;
-import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.client.gui.GuiMultiplayer;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.menu.PauseMenuScreen;
+import net.minecraft.client.gui.MainMenuScreen;
+import net.minecraft.client.gui.menu.MultiplayerScreen;
+import net.minecraft.client.gui.Screen;
+import net.minecraft.client.resource.language.I18n;
 
 //#if MC>=11400
-//$$ import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-//$$ import net.minecraft.client.gui.widget.AbstractButtonWidget;
+import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
 //#else
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$ import net.minecraftforge.client.event.GuiScreenEvent;
+//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#endif
 
 import java.io.IOException;
@@ -37,15 +37,15 @@ public class GuiHandler extends EventRegistrations {
     }
 
     //#if MC>=11400
-    //$$ { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
-    //$$ private void injectIntoIngameMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
+    private void injectIntoIngameMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
     //#else
-    @SubscribeEvent
-    public void injectIntoIngameMenu(GuiScreenEvent.InitGuiEvent.Post event) {
-        GuiScreen guiScreen = getGui(event);
-        List<GuiButton> buttonList = getButtonList(event);
+    //$$ @SubscribeEvent
+    //$$ public void injectIntoIngameMenu(GuiScreenEvent.InitGuiEvent.Post event) {
+    //$$     GuiScreen guiScreen = getGui(event);
+    //$$     List<GuiButton> buttonList = getButtonList(event);
     //#endif
-        if (!(guiScreen instanceof GuiIngameMenu)) {
+        if (!(guiScreen instanceof PauseMenuScreen)) {
             return;
         }
 
@@ -54,19 +54,19 @@ public class GuiHandler extends EventRegistrations {
             mod.getReplayHandler().getReplaySender().setReplaySpeed(0);
 
             //#if MC>=11400
-            //$$ final String BUTTON_OPTIONS = I18n.translate("menu.options");
-            //$$ final String BUTTON_EXIT_SERVER = I18n.translate("menu.disconnect");
-            //$$ final String BUTTON_ADVANCEMENTS = I18n.translate("gui.advancements");
-            //$$ final String BUTTON_STATS = I18n.translate("gui.stats");
-            //$$ final String BUTTON_OPEN_TO_LAN = I18n.translate("menu.shareToLan");
+            final String BUTTON_OPTIONS = I18n.translate("menu.options");
+            final String BUTTON_EXIT_SERVER = I18n.translate("menu.disconnect");
+            final String BUTTON_ADVANCEMENTS = I18n.translate("gui.advancements");
+            final String BUTTON_STATS = I18n.translate("gui.stats");
+            final String BUTTON_OPEN_TO_LAN = I18n.translate("menu.shareToLan");
             //#else
             //#if MC>=11300
-            final int BUTTON_OPTIONS = 0;
+            //$$ final int BUTTON_OPTIONS = 0;
             //#endif
-            final int BUTTON_EXIT_SERVER = 1;
-            final int BUTTON_ADVANCEMENTS = 5;
-            final int BUTTON_STATS = 6;
-            final int BUTTON_OPEN_TO_LAN = 7;
+            //$$ final int BUTTON_EXIT_SERVER = 1;
+            //$$ final int BUTTON_ADVANCEMENTS = 5;
+            //$$ final int BUTTON_STATS = 6;
+            //$$ final int BUTTON_OPEN_TO_LAN = 7;
             //#endif
 
 
@@ -74,17 +74,17 @@ public class GuiHandler extends EventRegistrations {
             //$$ GuiButton openToLan = null;
             //#endif
             //#if MC>=11400
-            //$$ AbstractButtonWidget achievements = null, stats = null;
-            //$$ for(AbstractButtonWidget b : new ArrayList<>(buttonList)) {
+            AbstractButtonWidget achievements = null, stats = null;
+            for(AbstractButtonWidget b : new ArrayList<>(buttonList)) {
             //#else
-            GuiButton achievements = null, stats = null;
-            for(GuiButton b : new ArrayList<>(buttonList)) {
+            //$$ GuiButton achievements = null, stats = null;
+            //$$ for(GuiButton b : new ArrayList<>(buttonList)) {
             //#endif
                 boolean remove = false;
                 //#if MC>=11400
-                //$$ String id = b.getMessage();
+                String id = b.getMessage();
                 //#else
-                Integer id = b.id;
+                //$$ Integer id = b.id;
                 //#endif
                 if (id.equals(BUTTON_EXIT_SERVER)) {
                     // Replace "Exit Server" button with "Exit Replay" button
@@ -96,7 +96,7 @@ public class GuiHandler extends EventRegistrations {
                             b.y,
                             width(b),
                             height(b),
-                            I18n.format("replaymod.gui.exit"),
+                            I18n.translate("replaymod.gui.exit"),
                             this::onButton
                     ));
                 } else if (id.equals(BUTTON_ADVANCEMENTS)) {
@@ -114,9 +114,9 @@ public class GuiHandler extends EventRegistrations {
                 //#if MC>=11300
                 } else if (id.equals(BUTTON_OPTIONS)) {
                     //#if MC>=11400
-                    //$$ width(b, 204);
+                    width(b, 204);
                     //#else
-                    width(b, 200);
+                    //$$ width(b, 200);
                     //#endif
                 //#endif
                 }
@@ -149,9 +149,9 @@ public class GuiHandler extends EventRegistrations {
      */
     private void moveAllButtonsDirectlyBelowUpwards(
             //#if MC>=11400
-            //$$ List<AbstractButtonWidget> buttons,
+            List<AbstractButtonWidget> buttons,
             //#else
-            List<GuiButton> buttons,
+            //$$ List<GuiButton> buttons,
             //#endif
             int belowY,
             int xStart,
@@ -164,14 +164,14 @@ public class GuiHandler extends EventRegistrations {
     }
 
     //#if MC>=11400
-    //$$ { on(InitScreenCallback.EVENT, this::ensureReplayStopped); }
-    //$$ private void ensureReplayStopped(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    { on(InitScreenCallback.EVENT, this::ensureReplayStopped); }
+    private void ensureReplayStopped(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
     //#else
-    @SubscribeEvent
-    public void ensureReplayStopped(GuiScreenEvent.InitGuiEvent event) {
-        GuiScreen guiScreen = getGui(event);
+    //$$ @SubscribeEvent
+    //$$ public void ensureReplayStopped(GuiScreenEvent.InitGuiEvent event) {
+    //$$     GuiScreen guiScreen = getGui(event);
     //#endif
-        if (!(guiScreen instanceof GuiMainMenu || guiScreen instanceof GuiMultiplayer)) {
+        if (!(guiScreen instanceof MainMenuScreen || guiScreen instanceof MultiplayerScreen)) {
             return;
         }
 
@@ -191,24 +191,24 @@ public class GuiHandler extends EventRegistrations {
     }
 
     //#if MC>=11400
-    //$$ { on(InitScreenCallback.EVENT, this::injectIntoMainMenu); }
-    //$$ private void injectIntoMainMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    { on(InitScreenCallback.EVENT, this::injectIntoMainMenu); }
+    private void injectIntoMainMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
     //#else
-    @SubscribeEvent
-    public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
-        GuiScreen guiScreen = getGui(event);
+    //$$ @SubscribeEvent
+    //$$ public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
+    //$$     GuiScreen guiScreen = getGui(event);
     //#endif
-        if (!(guiScreen instanceof GuiMainMenu)) {
+        if (!(guiScreen instanceof MainMenuScreen)) {
             return;
         }
-        GuiButton button = new InjectedButton(
+        ButtonWidget button = new InjectedButton(
                 guiScreen,
                 BUTTON_REPLAY_VIEWER,
                 guiScreen.width / 2 - 100,
                 guiScreen.height / 4 + 10 + 4 * 24,
                 98,
                 20,
-                I18n.format("replaymod.gui.replayviewer"),
+                I18n.translate("replaymod.gui.replayviewer"),
                 this::onButton
         );
         addButton(guiScreen, button);
@@ -216,24 +216,24 @@ public class GuiHandler extends EventRegistrations {
 
     //#if MC>=11300
     private void onButton(InjectedButton button) {
-        GuiScreen guiScreen = button.guiScreen;
+        Screen guiScreen = button.guiScreen;
     //#else
     //$$ @SubscribeEvent
     //$$ public void onButton(GuiScreenEvent.ActionPerformedEvent.Pre event) {
     //$$     GuiScreen guiScreen = getGui(event);
     //$$     GuiButton button = getButton(event);
     //#endif
-        if(!button.enabled) return;
+        if(!button.active) return;
 
-        if (guiScreen instanceof GuiMainMenu) {
+        if (guiScreen instanceof MainMenuScreen) {
             if (button.id == BUTTON_REPLAY_VIEWER) {
                 new GuiReplayViewer(mod).display();
             }
         }
 
-        if (guiScreen instanceof GuiIngameMenu && mod.getReplayHandler() != null) {
+        if (guiScreen instanceof PauseMenuScreen && mod.getReplayHandler() != null) {
             if (button.id == BUTTON_EXIT_REPLAY) {
-                button.enabled = false;
+                button.active = false;
                 try {
                     mod.getReplayHandler().endReplay();
                 } catch (IOException e) {
@@ -243,11 +243,11 @@ public class GuiHandler extends EventRegistrations {
         }
     }
 
-    public static class InjectedButton extends GuiButton {
-        public final GuiScreen guiScreen;
+    public static class InjectedButton extends ButtonWidget {
+        public final Screen guiScreen;
         public final int id;
         private Consumer<InjectedButton> onClick;
-        public InjectedButton(GuiScreen guiScreen, int buttonId, int x, int y, int width, int height, String buttonText,
+        public InjectedButton(Screen guiScreen, int buttonId, int x, int y, int width, int height, String buttonText,
                               //#if MC>=11300
                               Consumer<InjectedButton> onClick
                               //#else
@@ -256,7 +256,7 @@ public class GuiHandler extends EventRegistrations {
         ) {
             super(
                     //#if MC<11400
-                    buttonId,
+                    //$$ buttonId,
                     //#endif
                     x,
                     y,
@@ -264,7 +264,7 @@ public class GuiHandler extends EventRegistrations {
                     height,
                     buttonText
                     //#if MC>=11400
-                    //$$ , self -> onClick.accept((InjectedButton) self)
+                    , self -> onClick.accept((InjectedButton) self)
                     //#endif
             );
             this.guiScreen = guiScreen;
@@ -277,10 +277,10 @@ public class GuiHandler extends EventRegistrations {
         }
 
         //#if MC>=11300 && MC<11400
-        @Override
-        public void onClick(double mouseX, double mouseY) {
-            onClick.accept(this);
-        }
+        //$$ @Override
+        //$$ public void onClick(double mouseX, double mouseY) {
+        //$$     onClick.accept(this);
+        //$$ }
         //#endif
     }
 }

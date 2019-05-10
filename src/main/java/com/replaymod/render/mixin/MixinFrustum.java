@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //#if MC>=10800
-import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.render.Frustum;
 //#else
 //$$ import net.minecraft.client.renderer.culling.Frustrum;
 //#endif
@@ -19,9 +19,9 @@ import net.minecraft.client.renderer.culling.Frustum;
 //$$ @Mixin(Frustrum.class)
 //#endif
 public abstract class MixinFrustum {
-    @Inject(method = "isBoxInFrustum", at = @At("HEAD"), cancellable = true)
-    public void isBoxInFrustum(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, CallbackInfoReturnable<Boolean> ci) {
-        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().entityRenderer).replayModRender_getHandler();
+    @Inject(method = "intersects", at = @At("HEAD"), cancellable = true)
+    public void intersects(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, CallbackInfoReturnable<Boolean> ci) {
+        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
         if (handler != null && handler.omnidirectional && handler.data == null) {
             // Normally the camera is always facing the direction of the omnidirectional image face that is currently
             // getting rendered. With ODS however, the camera is always facing forwards and the turning happens in the

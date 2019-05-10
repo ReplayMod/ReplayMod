@@ -1,6 +1,6 @@
 package com.replaymod.online.api.replay.holders;
 
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resource.language.I18n;
 
 public enum Category {
 
@@ -27,7 +27,7 @@ public enum Category {
     }
 
     public String toNiceString() {
-        return I18n.format(this.name);
+        return I18n.translate(this.name);
     }
 
     public Category next() {

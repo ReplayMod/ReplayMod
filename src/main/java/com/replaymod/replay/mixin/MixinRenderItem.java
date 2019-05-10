@@ -2,13 +2,13 @@ package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraft.client.render.item.ItemRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 //#if MC>=11300
-import net.minecraft.util.Util;
+import net.minecraft.util.SystemUtil;
 //#else
 //$$ import net.minecraft.client.Minecraft;
 //#endif
@@ -17,9 +17,9 @@ import net.minecraft.util.Util;
 public class MixinRenderItem {
     //#if MC>=11300
     //#if MC>=11400
-    //$$ @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/SystemUtil;getMeasuringTimeMs()J"))
+    @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/SystemUtil;getMeasuringTimeMs()J"))
     //#else
-    @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
+    //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
     //#endif
     private static long getEnchantmentTime() {
     //#else
@@ -31,7 +31,7 @@ public class MixinRenderItem {
             return replayHandler.getReplaySender().currentTimeStamp();
         }
         //#if MC>=11300
-        return Util.milliTime();
+        return SystemUtil.getMeasuringTimeMs();
         //#else
         //$$ return Minecraft.getSystemTime();
         //#endif

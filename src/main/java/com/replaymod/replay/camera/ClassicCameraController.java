@@ -1,7 +1,7 @@
 package com.replaymod.replay.camera;
 
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.options.KeyBinding;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -32,34 +32,34 @@ public class ClassicCameraController implements CameraController {
     public void update(float partialTicksPassed) {
         boolean forward = false, backward = false, left = false, right = false, up = false, down = false;
         speedup = false;
-        for(KeyBinding kb : getMinecraft().gameSettings.keyBindings) {
-            if(!kb.isKeyDown()) continue;
-            if(kb.getKeyDescription().equals("key.forward")) {
+        for(KeyBinding kb : getMinecraft().options.keysAll) {
+            if(!kb.isPressed()) continue;
+            if(kb.getId().equals("key.forward")) {
                 forward = true;
                 speedup = true;
             }
 
-            if(kb.getKeyDescription().equals("key.back")) {
+            if(kb.getId().equals("key.back")) {
                 backward = true;
                 speedup = true;
             }
 
-            if(kb.getKeyDescription().equals("key.jump")) {
+            if(kb.getId().equals("key.jump")) {
                 up = true;
                 speedup = true;
             }
 
-            if(kb.getKeyDescription().equals("key.left")) {
+            if(kb.getId().equals("key.left")) {
                 left = true;
                 speedup = true;
             }
 
-            if(kb.getKeyDescription().equals("key.right")) {
+            if(kb.getId().equals("key.right")) {
                 right = true;
                 speedup = true;
             }
 
-            if(kb.getKeyDescription().equals("key.sneak")) {
+            if(kb.getId().equals("key.sneak")) {
                 down = true;
                 speedup = true;
             }
@@ -135,7 +135,7 @@ public class ClassicCameraController implements CameraController {
     }
 
     private void setMovement(MoveDirection dir) {
-        float rotationPitch = camera.rotationPitch, rotationYaw = camera.rotationYaw;
+        float rotationPitch = camera.pitch, rotationYaw = camera.yaw;
         switch(dir) {
             case BACKWARD:
                 direction = this.getVectorForRotation(-rotationPitch, rotationYaw - 180);

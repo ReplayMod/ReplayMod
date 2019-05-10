@@ -1,14 +1,14 @@
 package com.replaymod.core.utils;
 
 import com.replaymod.core.mixin.TimerAccessor;
-import net.minecraft.util.Timer;
+import net.minecraft.client.render.RenderTickCounter;
 
-public class WrappedTimer extends Timer {
+public class WrappedTimer extends RenderTickCounter {
     public static final float DEFAULT_MS_PER_TICK = 1000 / 20;
 
-    protected final Timer wrapped;
+    protected final RenderTickCounter wrapped;
 
-    public WrappedTimer(Timer wrapped) {
+    public WrappedTimer(RenderTickCounter wrapped) {
         //#if MC>=11300
         super(0, 0);
         //#else
@@ -19,13 +19,13 @@ public class WrappedTimer extends Timer {
     }
 
     @Override
-    public void updateTimer(
+    public void beginRenderTick(
             //#if MC>=11300
             long sysClock
             //#endif
     ) {
         copy(this, wrapped);
-        wrapped.updateTimer(
+        wrapped.beginRenderTick(
                 //#if MC>=11300
                 sysClock
                 //#endif
@@ -33,14 +33,14 @@ public class WrappedTimer extends Timer {
         copy(wrapped, this);
     }
 
-    protected void copy(Timer from, Timer to) {
+    protected void copy(RenderTickCounter from, RenderTickCounter to) {
         TimerAccessor fromA = (TimerAccessor) from;
         TimerAccessor toA = (TimerAccessor) to;
 
-        to.elapsedTicks = from.elapsedTicks;
-        to.renderPartialTicks = from.renderPartialTicks;
+        to.ticksThisFrame = from.ticksThisFrame;
+        to.tickDelta = from.tickDelta;
         toA.setLastSyncSysClock(fromA.getLastSyncSysClock());
-        to.elapsedPartialTicks = from.elapsedPartialTicks;
+        to.lastFrameDuration = from.lastFrameDuration;
         //#if MC>=11200
         toA.setTickLength(fromA.getTickLength());
         //#else

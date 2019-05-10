@@ -16,19 +16,19 @@ import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.MinecraftClient;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=11400
-//$$ import com.replaymod.core.events.PostRenderWorldCallback;
+import com.replaymod.core.events.PostRenderWorldCallback;
 //#else
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$ import net.minecraftforge.client.event.RenderWorldLastEvent;
+//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#endif
 
 import java.util.Comparator;
@@ -38,8 +38,8 @@ import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.versions.MCVer.*;
 
 public class PathPreviewRenderer extends EventRegistrations {
-    private static final ResourceLocation CAMERA_HEAD = new ResourceLocation("replaymod", "camera_head.png");
-    private static final Minecraft mc = MCVer.getMinecraft();
+    private static final Identifier CAMERA_HEAD = new Identifier("replaymod", "camera_head.png");
+    private static final MinecraftClient mc = MCVer.getMinecraft();
 
     private static final int SLOW_PATH_COLOR = 0xffcccc;
     private static final int FAST_PATH_COLOR = 0x660000;
@@ -54,13 +54,13 @@ public class PathPreviewRenderer extends EventRegistrations {
     }
 
     //#if MC>=11400
-    //$$ { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
-    //$$ private void renderCameraPath() {
+    { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
+    private void renderCameraPath() {
     //#else
-    @SubscribeEvent
-    public void renderCameraPath(RenderWorldLastEvent event) {
+    //$$ @SubscribeEvent
+    //$$ public void renderCameraPath(RenderWorldLastEvent event) {
     //#endif
-        if (!replayHandler.getReplaySender().isAsyncMode() || mc.gameSettings.hideGUI) return;
+        if (!replayHandler.getReplaySender().isAsyncMode() || mc.options.hudHidden) return;
 
         Entity view = getRenderViewEntity(mc);
         if (view == null) return;
@@ -77,12 +77,12 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         path.update();
 
-        int renderDistance = mc.gameSettings.renderDistanceChunks * 16;
+        int renderDistance = mc.options.viewDistance * 16;
         int renderDistanceSquared = renderDistance * renderDistance;
 
         //#if MC>=10800
         // Eye height is subtracted to make path appear higher (at eye height) than it actually is (at foot height)
-        Triple<Double, Double, Double> viewPos = Triple.of(view.posX, view.posY - view.getEyeHeight(), view.posZ);
+        Triple<Double, Double, Double> viewPos = Triple.of(view.x, view.y - view.getStandingEyeHeight(), view.z);
         //#else
         //$$ Triple<Double, Double, Double> viewPos = Triple.of(view.posX, view.posY, view.posZ);
         //#endif
@@ -180,7 +180,7 @@ public class PathPreviewRenderer extends EventRegistrations {
                 }
             }
         } finally {
-            GlStateManager.popAttrib();
+            GlStateManager.popAttributes();
         }
     }
 
@@ -269,8 +269,8 @@ public class PathPreviewRenderer extends EventRegistrations {
                 pos.getRight() - view.getRight()
         );
         GL11.glNormal3f(0, 1, 0);
-        GL11.glRotatef(-getRenderManager().playerViewY, 0, 1, 0);
-        GL11.glRotatef(getRenderManager().playerViewX, 1, 0, 0);
+        GL11.glRotatef(-getRenderManager().cameraYaw, 0, 1, 0);
+        GL11.glRotatef(getRenderManager().cameraPitch, 1, 0, 0);
 
         Tessellator_getInstance().draw();
 

@@ -2,9 +2,9 @@ package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.camera.CameraEntity;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
-import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,40 +12,40 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //#if MC>=11400
-//$$ import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.world.ClientWorld;
 //#else
-import net.minecraft.world.World;
+//$$ import net.minecraft.world.World;
 //#endif
 
 //#if MC>=11200
 //#if MC>=11300
-import net.minecraft.client.util.RecipeBookClient;
+import net.minecraft.client.recipe.book.ClientRecipeBook;
 //#else
 //$$ import net.minecraft.stats.RecipeBook;
 //#endif
 //#endif
 //#if MC>=10904
-import net.minecraft.stats.StatisticsManager;
+import net.minecraft.stat.StatHandler;
 //#else
 //$$ import net.minecraft.stats.StatFileWriter;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.network.ClientPlayerEntity;
 //#else
 //$$ import net.minecraft.client.entity.EntityClientPlayerMP;
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#endif
 
-@Mixin(PlayerControllerMP.class)
+@Mixin(ClientPlayerInteractionManager.class)
 public abstract class MixinPlayerControllerMP {
 
     @Shadow
-    private Minecraft mc;
+    private MinecraftClient client;
 
     @Shadow
     //#if MC>=10904
-    private NetHandlerPlayClient connection;
+    private ClientPlayNetworkHandler networkHandler;
     //#else
     //$$ private NetHandlerPlayClient netClientHandler;
     //#endif
@@ -54,16 +54,16 @@ public abstract class MixinPlayerControllerMP {
     @Inject(method = "createPlayer", at=@At("HEAD"), cancellable = true)
     private void replayModReplay_createReplayCamera(
             //#if MC>=11400
-            //$$ ClientWorld worldIn,
+            ClientWorld worldIn,
             //#else
-            World worldIn,
+            //$$ World worldIn,
             //#endif
-            StatisticsManager statisticsManager,
-            RecipeBookClient recipeBookClient,
-            CallbackInfoReturnable<EntityPlayerSP> ci
+            StatHandler statisticsManager,
+            ClientRecipeBook recipeBookClient,
+            CallbackInfoReturnable<ClientPlayerEntity> ci
     ) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {
-            ci.setReturnValue(new CameraEntity(this.mc, worldIn, this.connection, statisticsManager, recipeBookClient));
+            ci.setReturnValue(new CameraEntity(this.client, worldIn, this.networkHandler, statisticsManager, recipeBookClient));
     //#else
     //#if MC>=11200
     //$$ @Inject(method = "func_192830_a", at=@At("HEAD"), cancellable = true)
@@ -97,13 +97,13 @@ public abstract class MixinPlayerControllerMP {
 
     //#if MC>=10800
     //#if MC>=11300
-    @Inject(method = "isSpectatorMode", at=@At("HEAD"), cancellable = true)
+    @Inject(method = "isFlyingLocked", at=@At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "isSpectator", at=@At("HEAD"), cancellable = true)
     //#endif
     private void replayModReplay_isSpectator(CallbackInfoReturnable<Boolean> ci) {
-        if (this.mc.player instanceof CameraEntity) { // this check should in theory not be required
-            ci.setReturnValue(this.mc.player.isSpectator());
+        if (this.client.player instanceof CameraEntity) { // this check should in theory not be required
+            ci.setReturnValue(this.client.player.isSpectator());
         }
     }
     //#endif

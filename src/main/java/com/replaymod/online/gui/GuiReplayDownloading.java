@@ -10,7 +10,7 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.TextFormat;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class GuiReplayDownloading extends AbstractGuiScreen<GuiReplayDownloading
         this.apiClient = mod.getApiClient();
         setTitle(new GuiLabel().setI18nText("replaymod.gui.viewer.download.title"));
         final GuiLabel subTitle = new GuiLabel(this).setI18nText("replaymod.gui.viewer.download.message",
-                TextFormatting.UNDERLINE + name + TextFormatting.RESET);
+                TextFormat.UNDERLINE + name + TextFormat.RESET);
         setLayout(new CustomLayout<GuiReplayDownloading>() {
             @Override
             protected void layout(GuiReplayDownloading container, int width, int height) {

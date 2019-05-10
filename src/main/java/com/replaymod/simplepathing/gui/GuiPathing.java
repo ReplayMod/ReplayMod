@@ -49,7 +49,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -110,7 +110,7 @@ public class GuiPathing {
                 String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
                 timeline = serialization.deserialize(serialized).get("");
             } catch (Throwable t) {
-                error(LOGGER, replayHandler.getOverlay(), CrashReport.makeCrashReport(t, "Cloning timeline"), () -> {});
+                error(LOGGER, replayHandler.getOverlay(), CrashReport.create(t, "Cloning timeline"), () -> {});
                 return;
             }
 
@@ -569,7 +569,7 @@ public class GuiPathing {
                 public void onFailure(@Nonnull Throwable t) {
                     String message = "Failed to load entity tracker, pathing will be unavailable.";
                     GuiReplayOverlay overlay = replayHandler.getOverlay();
-                    Utils.error(LOGGER, overlay, CrashReport.makeCrashReport(t, message), popup::close);
+                    Utils.error(LOGGER, overlay, CrashReport.create(t, message), popup::close);
                 }
             });
             return false;
@@ -623,8 +623,8 @@ public class GuiPathing {
                     if (!replayHandler.isCameraView()) {
                         spectatedId = getRenderViewEntity(replayHandler.getOverlay().getMinecraft()).getEntityId();
                     }
-                    timeline.addPositionKeyframe(time, camera.posX, camera.posY, camera.posZ,
-                            camera.rotationYaw, camera.rotationPitch, camera.roll, spectatedId);
+                    timeline.addPositionKeyframe(time, camera.x, camera.y, camera.z,
+                            camera.yaw, camera.pitch, camera.roll, spectatedId);
                     mod.setSelected(path, time);
                 }
                 break;

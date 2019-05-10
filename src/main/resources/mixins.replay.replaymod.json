@@ -5,8 +5,8 @@
   "server": [],
   "client": [
     //#if MC>=11400
-    //$$ "MixinCamera",
-    //$$ "MixinInGameHud",
+    "MixinCamera",
+    "MixinInGameHud",
     //#endif
     "EntityLivingBaseAccessor",
     //#if MC<11300
@@ -21,7 +21,7 @@
     "MixinGuiSpectator",
     "MixinRenderArrow",
     //#if MC<11400
-    "MixinRenderManager",
+    //$$ "MixinRenderManager",
     //#endif
     "MixinViewFrustum",
     //#endif

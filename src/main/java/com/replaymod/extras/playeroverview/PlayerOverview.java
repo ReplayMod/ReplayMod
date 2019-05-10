@@ -11,23 +11,23 @@ import com.replaymod.replay.events.ReplayClosedCallback;
 import com.replaymod.replay.events.ReplayOpenedCallback;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 
 //#if MC>=11400
-//$$ import com.replaymod.core.events.PreRenderHandCallback;
-//$$ import java.util.stream.Collectors;
+import com.replaymod.core.events.PreRenderHandCallback;
+import java.util.stream.Collectors;
 //#else
-import net.minecraftforge.client.event.RenderHandEvent;
-
+//$$ import net.minecraftforge.client.event.RenderHandEvent;
+//$$
 //#if MC>=11300
 //#else
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
-
+//$$
 //#if MC>=10800
-import com.google.common.base.Predicate;
+//$$ import com.google.common.base.Predicate;
 //#if MC>=11300
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#else
 //$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 //#endif
@@ -59,20 +59,20 @@ public class PlayerOverview extends EventRegistrations implements Extra {
             public void run() {
                 if (module.getReplayHandler() != null) {
                     //#if MC>=11400
-                    //$$ List<PlayerEntity> players = mod.getMinecraft().world.getPlayers()
-                    //$$         .stream()
-                    //$$         .map(it -> (PlayerEntity) it)
-                    //$$         .filter(it -> !(it instanceof CameraEntity))
-                    //$$         .collect(Collectors.toList());
+                    List<PlayerEntity> players = mod.getMinecraft().world.getPlayers()
+                            .stream()
+                            .map(it -> (PlayerEntity) it)
+                            .filter(it -> !(it instanceof CameraEntity))
+                            .collect(Collectors.toList());
                     //#else
-                    @SuppressWarnings("unchecked")
+                    //$$ @SuppressWarnings("unchecked")
                     //#if MC>=10800
-                    List<EntityPlayer> players = mod.getMinecraft().world.getPlayers(EntityPlayer.class, new Predicate() {
-                        @Override
-                        public boolean apply(Object input) {
-                            return !(input instanceof CameraEntity); // Exclude the camera entity
-                        }
-                    });
+                    //$$ List<EntityPlayer> players = mod.getMinecraft().world.getPlayers(EntityPlayer.class, new Predicate() {
+                    //$$     @Override
+                    //$$     public boolean apply(Object input) {
+                    //$$         return !(input instanceof CameraEntity); // Exclude the camera entity
+                    //$$     }
+                    //$$ });
                     //#else
                     //$$ List<EntityPlayer> players = mod.getMinecraft().theWorld.playerEntities;
                     //$$ players = players.stream()
@@ -82,7 +82,7 @@ public class PlayerOverview extends EventRegistrations implements Extra {
                     //#endif
                     if (!Utils.isCtrlDown()) {
                         // Hide all players that have an UUID v2 (commonly used for NPCs)
-                        Iterator<EntityPlayer> iter = players.iterator();
+                        Iterator<PlayerEntity> iter = players.iterator();
                         while (iter.hasNext()) {
                             UUID uuid = iter.next().getGameProfile().getId();
                             if (uuid != null && uuid.version() == 2) {
@@ -99,7 +99,7 @@ public class PlayerOverview extends EventRegistrations implements Extra {
         ReplayClosedCallback.EVENT.register(this::onReplayClose);
         //#if MC>=11400
         //#else
-        FORGE_BUS.register(this);
+        //$$ FORGE_BUS.register(this);
         //#endif
     }
 
@@ -130,18 +130,18 @@ public class PlayerOverview extends EventRegistrations implements Extra {
     }
 
     //#if MC>=11400
-    //$$ { on(PreRenderHandCallback.EVENT, this::shouldHideHand); }
+    { on(PreRenderHandCallback.EVENT, this::shouldHideHand); }
     //#else
-    @SubscribeEvent
-    public void oRenderHand(RenderHandEvent event) {
-        if (shouldHideHand()) {
-            event.setCanceled(true);
-        }
-    }
+    //$$ @SubscribeEvent
+    //$$ public void oRenderHand(RenderHandEvent event) {
+    //$$     if (shouldHideHand()) {
+    //$$         event.setCanceled(true);
+    //$$     }
+    //$$ }
     //#endif
     private boolean shouldHideHand() {
         Entity view = getRenderViewEntity(module.getCore().getMinecraft());
-        return view != null && isHidden(view.getUniqueID());
+        return view != null && isHidden(view.getUuid());
     }
 
     // See MixinRender for why this is 1.7.10 only

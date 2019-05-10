@@ -8,7 +8,7 @@ import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.util.crash.CrashReport;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -47,10 +47,10 @@ public class ScreenshotWriter implements FrameConsumer<RGBFrame> {
             ImageIO.write(img, "PNG", outputFile);
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
-            CrashReport report = CrashReport.makeCrashReport(e, "Exporting frame");
-            MCVer.getMinecraft().crashed(report);
+            CrashReport report = CrashReport.create(e, "Exporting frame");
+            MCVer.getMinecraft().setCrashReport(report);
         } catch (Throwable t) {
-            CrashReport report = CrashReport.makeCrashReport(t, "Exporting frame");
+            CrashReport report = CrashReport.create(t, "Exporting frame");
 
             ReplayMod.instance.runLater(() -> Utils.error(ReplayModExtras.LOGGER,
                     ReplayModReplay.instance.getReplayHandler().getOverlay(),

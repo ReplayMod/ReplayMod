@@ -8,8 +8,8 @@ import com.replaymod.render.rendering.Pipelines;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.client.Minecraft;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.crash.CrashReport;
 
 //#if MC>=11300
 import com.replaymod.render.mixin.MainWindowAccessor;
@@ -24,7 +24,7 @@ import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
 @RequiredArgsConstructor
 public class ScreenshotRenderer implements RenderInfo {
 
-    private final Minecraft mc = MCVer.getMinecraft();
+    private final MinecraftClient mc = MCVer.getMinecraft();
 
     private final RenderSettings settings;
 
@@ -33,18 +33,18 @@ public class ScreenshotRenderer implements RenderInfo {
     public boolean renderScreenshot() throws Throwable {
         try {
             //#if MC>=11300
-            int displayWidthBefore = mc.mainWindow.getFramebufferWidth();
-            int displayHeightBefore = mc.mainWindow.getFramebufferHeight();
+            int displayWidthBefore = mc.window.getFramebufferWidth();
+            int displayHeightBefore = mc.window.getFramebufferHeight();
             //#else
             //$$ int displayWidthBefore = mc.displayWidth;
             //$$ int displayHeightBefore = mc.displayHeight;
             //#endif
 
-            boolean hideGUIBefore = mc.gameSettings.hideGUI;
-            mc.gameSettings.hideGUI = true;
+            boolean hideGUIBefore = mc.options.hudHidden;
+            mc.options.hudHidden = true;
 
             //#if MC>=10800
-            ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.renderGlobal);
+            ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.worldRenderer);
             //#endif
 
             if (settings.getRenderMethod() == RenderSettings.RenderMethod.BLEND) {
@@ -59,15 +59,15 @@ public class ScreenshotRenderer implements RenderInfo {
             clrg.uninstall();
             //#endif
 
-            mc.gameSettings.hideGUI = hideGUIBefore;
+            mc.options.hudHidden = hideGUIBefore;
             //#if MC>=11300
             //noinspection ConstantConditions
-            MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.mainWindow;
+            MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.window;
             acc.setFramebufferWidth(displayWidthBefore);
             acc.setFramebufferHeight(displayHeightBefore);
-            mc.getFramebuffer().createBindFramebuffer(displayWidthBefore, displayHeightBefore
+            mc.getFramebuffer().resize(displayWidthBefore, displayHeightBefore
                     //#if MC>=11400
-                    //$$ , false
+                    , false
                     //#endif
             );
             //#else
@@ -76,8 +76,8 @@ public class ScreenshotRenderer implements RenderInfo {
             return true;
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
-            CrashReport report = CrashReport.makeCrashReport(e, "Creating Equirectangular Screenshot");
-            MCVer.getMinecraft().crashed(report);
+            CrashReport report = CrashReport.create(e, "Creating Equirectangular Screenshot");
+            MCVer.getMinecraft().setCrashReport(report);
         }
         return false;
     }

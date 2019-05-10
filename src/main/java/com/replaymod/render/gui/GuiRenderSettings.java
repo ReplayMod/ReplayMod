@@ -32,9 +32,9 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.gui.GuiErrorScreen;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.client.gui.menu.NoticeScreen;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.util.crash.CrashReport;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -52,7 +52,7 @@ import static com.replaymod.core.utils.Utils.error;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
-//$$ import net.minecraft.text.TranslatableTextComponent;
+import net.minecraft.text.TranslatableTextComponent;
 //#endif
 
 public class GuiRenderSettings extends GuiScreen implements Closeable {
@@ -108,7 +108,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     public final GuiSlider frameRateSlider = new GuiSlider().onValueChanged(new Runnable() {
         @Override
         public void run() {
-            frameRateSlider.setText(I18n.format("replaymod.gui.rendersettings.framerate")
+            frameRateSlider.setText(I18n.translate("replaymod.gui.rendersettings.framerate")
                     + ": " + (frameRateSlider.getValue() + 10));
         }
     }).setSize(122, 20).setSteps(110);
@@ -177,7 +177,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             .onValueChanged(new Runnable() {
                 @Override
                 public void run() {
-                    sphericalFovSlider.setText(I18n.format("replaymod.gui.rendersettings.sphericalFov")
+                    sphericalFovSlider.setText(I18n.translate("replaymod.gui.rendersettings.sphericalFov")
                             + ": " + (MIN_SPHERICAL_FOV + sphericalFovSlider.getValue() * SPHERICAL_FOV_STEP_SIZE) + "°");
 
                     updateInputs();
@@ -231,23 +231,23 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         @Override
         public void run() {
             // Closing this GUI ensures that settings are saved
-            getMinecraft().displayGuiScreen(null);
+            getMinecraft().openScreen(null);
             try {
                 VideoRenderer videoRenderer = new VideoRenderer(save(false), replayHandler, timeline);
                 videoRenderer.renderVideo();
             } catch (VideoWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
-                GuiErrorScreen errorScreen = new GuiErrorScreen(
+                NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
-                        //$$ () -> {},
-                        //$$ new TranslatableTextComponent("replaymod.gui.rendering.error.title"),
-                        //$$ new TranslatableTextComponent("replaymod.gui.rendering.error.message")
+                        () -> {},
+                        new TranslatableTextComponent("replaymod.gui.rendering.error.title"),
+                        new TranslatableTextComponent("replaymod.gui.rendering.error.message")
                         //#else
-                        I18n.format("replaymod.gui.rendering.error.title"),
-                        I18n.format("replaymod.gui.rendering.error.message")
+                        //$$ I18n.format("replaymod.gui.rendering.error.title"),
+                        //$$ I18n.format("replaymod.gui.rendering.error.message")
                         //#endif
                 );
-                getMinecraft().displayGuiScreen(errorScreen);
+                getMinecraft().openScreen(errorScreen);
             } catch (VideoWriter.FFmpegStartupException e) {
                 GuiExportFailed.tryToRecover(e, newSettings -> {
                     // Update settings with fixed ffmpeg arguments
@@ -256,7 +256,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                     renderButton.onClick();
                 });
             } catch (Throwable t) {
-                error(LOGGER, GuiRenderSettings.this, CrashReport.makeCrashReport(t, "Rendering video"), () -> {});
+                error(LOGGER, GuiRenderSettings.this, CrashReport.create(t, "Rendering video"), () -> {});
                 display(); // Re-show the render settings gui and the new error popup
             }
         }
@@ -264,7 +264,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     public final GuiButton cancelButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
-            getMinecraft().displayGuiScreen(null);
+            getMinecraft().openScreen(null);
         }
     }).setSize(100, 20).setI18nLabel("replaymod.gui.cancel");
 
@@ -538,7 +538,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 antiAliasingDropdown.getSelectedValue(),
                 exportCommand.getText(),
                 exportArguments.getText(),
-                net.minecraft.client.gui.GuiScreen.isCtrlKeyDown()
+                net.minecraft.client.gui.Screen.hasControlDown()
         );
     }
 

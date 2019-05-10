@@ -11,14 +11,14 @@ import com.replaymod.recording.mixin.NetworkManagerAccessor;
 import com.replaymod.recording.packet.PacketListener;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11400
-//$$ import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 //#else
-import net.minecraftforge.fml.network.NetworkRegistry;
+//$$ import net.minecraftforge.fml.network.NetworkRegistry;
 //#endif
 
 //#if MC>=11300
@@ -68,10 +68,10 @@ public class ReplayModRecording implements Module {
         new GuiHandler(core).register();
 
         //#if MC>=11400
-        //$$ ClientSidePacketRegistry.INSTANCE.register(Restrictions.PLUGIN_CHANNEL, (packetContext, packetByteBuf) -> {});
+        ClientSidePacketRegistry.INSTANCE.register(Restrictions.PLUGIN_CHANNEL, (packetContext, packetByteBuf) -> {});
         //#else
         //#if MC>=11300
-        NetworkRegistry.newEventChannel(Restrictions.PLUGIN_CHANNEL, () -> "0", any -> true, any -> true);
+        //$$ NetworkRegistry.newEventChannel(Restrictions.PLUGIN_CHANNEL, () -> "0", any -> true, any -> true);
         //#else
         //$$ NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
         //#endif
@@ -83,7 +83,7 @@ public class ReplayModRecording implements Module {
     //$$ private static class RestrictionsChannelHandler extends ChannelDuplexHandler {}
     //#endif
 
-    public void initiateRecording(NetworkManager networkManager) {
+    public void initiateRecording(ClientConnection networkManager) {
         Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
         if (channel.pipeline().get("ReplayModReplay_replaySender") != null) return;
         //#if MC>=11300

@@ -3,7 +3,7 @@ package com.replaymod.recording.mixin;
 
 import com.replaymod.recording.packet.ResourcePackRecorder;
 import de.johni0702.minecraft.gui.utils.Consumer;
-import net.minecraft.client.resources.DownloadingPackFinder;
+import net.minecraft.client.resource.ClientResourcePackCreator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //$$ import java.util.Map;
 //#endif
 
-@Mixin(DownloadingPackFinder.class)
+@Mixin(ClientResourcePackCreator.class)
 public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder.IDownloadingPackFinder {
     private Consumer<File> requestCallback;
 
@@ -29,7 +29,7 @@ public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder
     }
 
     //#if MC>=10800
-    @Inject(method = "func_195741_a", at = @At("HEAD"))
+    @Inject(method = "loadServerPack", at = @At("HEAD"))
     private void recordDownloadedPack(File file, CallbackInfoReturnable ci) {
         if (requestCallback != null) {
             requestCallback.consume(file);

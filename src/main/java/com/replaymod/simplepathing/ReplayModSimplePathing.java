@@ -22,8 +22,8 @@ import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
 import lombok.Getter;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
+import net.minecraft.util.crash.CrashReport;
+import net.minecraft.util.crash.CrashException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -107,7 +107,7 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
                 }
             }
         } catch (IOException e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Reading timeline"));
+            throw new CrashException(CrashReport.create(e, "Reading timeline"));
         }
 
         guiPathing = new GuiPathing(core, this, replayHandler);
@@ -223,8 +223,8 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
             timeline = serialization.deserialize(serialized).get("");
         } catch (Throwable t) {
-            CrashReport report = CrashReport.makeCrashReport(t, "Cloning timeline");
-            throw new ReportedException(report);
+            CrashReport report = CrashReport.create(t, "Cloning timeline");
+            throw new CrashException(report);
         }
 
         int id = lastSaveId.incrementAndGet();

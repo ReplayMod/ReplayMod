@@ -4,8 +4,8 @@ import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.events.ReplayClosedCallback;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
+import net.minecraft.util.crash.CrashReport;
+import net.minecraft.util.crash.CrashException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,17 +45,17 @@ public class ReplayModRender implements Module {
 
     public File getVideoFolder() {
         String path = core.getSettingsRegistry().get(Setting.RENDER_PATH);
-        File folder = new File(path.startsWith("./") ? core.getMinecraft().gameDir : null, path);
+        File folder = new File(path.startsWith("./") ? core.getMinecraft().runDirectory : null, path);
         try {
             FileUtils.forceMkdir(folder);
         } catch (IOException e) {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Cannot create video folder."));
+            throw new CrashException(CrashReport.create(e, "Cannot create video folder."));
         }
         return folder;
     }
 
     public Path getRenderSettingsPath() {
-        return core.getMinecraft().gameDir.toPath().resolve("config/replaymod-rendersettings.json");
+        return core.getMinecraft().runDirectory.toPath().resolve("config/replaymod-rendersettings.json");
     }
 
     public List<RenderJob> getRenderQueue() {

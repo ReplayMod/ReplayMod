@@ -14,8 +14,8 @@ import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import io.netty.channel.Channel;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=10800
@@ -40,7 +40,7 @@ public class ConnectionEventHandler {
     private static final String packetHandlerKey = "packet_handler";
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
     private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-    private static final Minecraft mc = getMinecraft();
+    private static final MinecraftClient mc = getMinecraft();
 
     private final Logger logger;
     private final ReplayMod core;
@@ -55,13 +55,13 @@ public class ConnectionEventHandler {
         this.core = core;
     }
 
-    public void onConnectedToServerEvent(NetworkManager networkManager) {
+    public void onConnectedToServerEvent(ClientConnection networkManager) {
         try {
-            boolean local = networkManager.isLocalChannel();
+            boolean local = networkManager.isLocal();
             if (local) {
                 //#if MC>=10800
                 //#if MC>=11300
-                if (mc.getIntegratedServer().getWorld(DimensionType.OVERWORLD).getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
+                if (mc.getServer().getWorld(DimensionType.OVERWORLD).getGeneratorType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
                 //#else
                 //$$ if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
                 //#endif
@@ -82,9 +82,9 @@ public class ConnectionEventHandler {
 
             String worldName;
             if (local) {
-                worldName = mc.getIntegratedServer().getWorldName();
-            } else if (mc.getCurrentServerData() != null) {
-                worldName = mc.getCurrentServerData().serverIP;
+                worldName = mc.getServer().getLevelName();
+            } else if (mc.getCurrentServerEntry() != null) {
+                worldName = mc.getCurrentServerEntry().address;
             //#if MC>=11100
             } else if (mc.isConnectedToRealms()) {
                 // we can't access the server name without tapping too deep in the Realms Library

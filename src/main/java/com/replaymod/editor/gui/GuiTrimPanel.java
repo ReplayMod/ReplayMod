@@ -23,8 +23,8 @@ import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -96,9 +96,9 @@ public class GuiTrimPanel extends GuiPanel {
 
         Function<Marker, String> toString = m -> {
             if (m == NO_MARKER) {
-                return I18n.format("replaymod.gui.editor.trim.marker");
+                return I18n.translate("replaymod.gui.editor.trim.marker");
             } else {
-                return ofNullable(m.getName()).orElse(I18n.format("replaymod.gui.ingame.unnamedmarker"))
+                return ofNullable(m.getName()).orElse(I18n.translate("replaymod.gui.ingame.unnamedmarker"))
                         + " (" + Utils.convertSecondsToShortString(m.getTime() / 1000) + ")";
             }
         };
@@ -112,7 +112,7 @@ public class GuiTrimPanel extends GuiPanel {
             try {
                 folder = gui.getMod().getReplayFolder();
             } catch (IOException e) {
-                Utils.error(LOGGER, gui, CrashReport.makeCrashReport(e, "Getting replay folder"), gui.backButton::onClick);
+                Utils.error(LOGGER, gui, CrashReport.create(e, "Getting replay folder"), gui.backButton::onClick);
                 return;
             }
             GuiReplayViewer.GuiSelectReplayPopup popup = GuiReplayViewer.GuiSelectReplayPopup.openGui(gui, folder);
@@ -128,7 +128,7 @@ public class GuiTrimPanel extends GuiPanel {
 
                 @Override
                 public void onFailure(Throwable t) {
-                    Utils.error(LOGGER, gui, CrashReport.makeCrashReport(t, "Selecting replay"), gui.backButton::onClick);
+                    Utils.error(LOGGER, gui, CrashReport.create(t, "Selecting replay"), gui.backButton::onClick);
                 }
             });
         });
@@ -174,7 +174,7 @@ public class GuiTrimPanel extends GuiPanel {
         File file = inputReplay;
 
         // Update input button label
-        inputReplayButton.setLabel(file == NO_REPLAY ? I18n.format("gui.none") : Utils.fileNameToReplayName(file.getName()));
+        inputReplayButton.setLabel(file == NO_REPLAY ? I18n.translate("gui.none") : Utils.fileNameToReplayName(file.getName()));
 
         // Load markers and meta data from replay file
         ReplayMetaData metaData;
@@ -188,7 +188,7 @@ public class GuiTrimPanel extends GuiPanel {
                 markers = replayFile.getMarkers().or(Collections.emptySet());
                 LOGGER.debug("Loaded {} markers from replay {}", markers.size(), file);
             } catch (Exception e) {
-                Utils.error(LOGGER, gui, CrashReport.makeCrashReport(e, "Reading markers from replay"), null);
+                Utils.error(LOGGER, gui, CrashReport.create(e, "Reading markers from replay"), null);
                 metaData = new ReplayMetaData();
                 markers = Collections.emptySet();
             }

@@ -2,8 +2,8 @@
 package com.replaymod.render.mixin;
 
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
-import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
-import net.minecraft.client.renderer.culling.ICamera;
+import net.minecraft.client.render.chunk.ChunkBatcher;
+import net.minecraft.client.render.VisibleRegion;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,11 +12,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11400
-//$$ import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Camera;
 //#endif
 
 //#if MC>=11300
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.render.WorldRenderer;
 //#else
 //$$ import net.minecraft.client.renderer.RenderGlobal;
 //#endif
@@ -37,41 +37,41 @@ public abstract class MixinRenderGlobal {
     private boolean replayModRender_passThroughSetupTerrain;
 
     @Shadow
-    public boolean displayListEntitiesDirty;
+    public boolean terrainUpdateNecessary;
 
     @Shadow
-    public ChunkRenderDispatcher renderDispatcher;
+    public ChunkBatcher chunkBatcher;
 
     @Shadow
-    public abstract void setupTerrain(
+    public abstract void setUpTerrain(
             //#if MC>=11400
-            //$$ Camera viewEntity,
+            Camera viewEntity,
             //#else
-            Entity viewEntity,
+            //$$ Entity viewEntity,
             //#if MC>=11300
-            float partialTicks,
+            //$$ float partialTicks,
             //#else
             //$$ double partialTicks,
             //#endif
             //#endif
-            ICamera camera,
+            VisibleRegion camera,
             int frameCount,
             boolean playerSpectator
     );
 
-    @Inject(method = "setupTerrain", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "setUpTerrain", at = @At("HEAD"), cancellable = true)
     private void replayModRender_setupTerrain(
             //#if MC>=11400
-            //$$ Camera viewEntity,
+            Camera viewEntity,
             //#else
-            Entity viewEntity,
+            //$$ Entity viewEntity,
             //#if MC>=11300
-            float partialTicks,
+            //$$ float partialTicks,
             //#else
             //$$ double partialTicks,
             //#endif
             //#endif
-            ICamera camera,
+            VisibleRegion camera,
             int frameCount,
             boolean playerSpectator,
             CallbackInfo ci
@@ -80,19 +80,19 @@ public abstract class MixinRenderGlobal {
             replayModRender_passThroughSetupTerrain = true;
 
             do {
-                setupTerrain(
+                setUpTerrain(
                         viewEntity,
                         //#if MC<11400
-                        partialTicks,
+                        //$$ partialTicks,
                         //#endif
                         camera,
                         replayModRender_hook.nextFrameId(),
                         playerSpectator
                 );
                 replayModRender_hook.updateChunks();
-            } while (this.displayListEntitiesDirty);
+            } while (this.terrainUpdateNecessary);
 
-            this.displayListEntitiesDirty = true;
+            this.terrainUpdateNecessary = true;
 
             replayModRender_passThroughSetupTerrain = false;
             ci.cancel();
@@ -118,7 +118,7 @@ public abstract class MixinRenderGlobal {
 
     // Prior to 1.9.4, MC always uses the same ChunkRenderDispatcher instance
     //#if MC>=10904
-    @Inject(method = "setWorldAndLoadRenderers", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher;stopWorkerThreads()V"))
+    @Inject(method = "setWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/chunk/ChunkBatcher;method_3619()V"))
     private void stopWorkerThreadsAndChunkLoadingRenderGlobal(CallbackInfo ci) {
         if (replayModRender_hook != null) {
             replayModRender_hook.updateRenderDispatcher(null);
@@ -126,10 +126,10 @@ public abstract class MixinRenderGlobal {
     }
     //#endif
 
-    @Inject(method = "loadRenderers", at = @At(value = "RETURN"))
+    @Inject(method = "reload", at = @At(value = "RETURN"))
     private void setupChunkLoadingRenderGlobal(CallbackInfo ci) {
         if (replayModRender_hook != null) {
-            replayModRender_hook.updateRenderDispatcher(this.renderDispatcher);
+            replayModRender_hook.updateRenderDispatcher(this.chunkBatcher);
         }
     }
 }

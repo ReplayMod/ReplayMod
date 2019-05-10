@@ -44,7 +44,7 @@ public class GuiSaveModifiedReplay extends GuiScreen {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            getMinecraft().displayGuiScreen(null);
+                            getMinecraft().openScreen(null);
                         }
                     }
 
@@ -59,7 +59,7 @@ public class GuiSaveModifiedReplay extends GuiScreen {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                getMinecraft().displayGuiScreen(null);
+                getMinecraft().openScreen(null);
             }
         }
     }).setSize(147, 20).setI18nLabel("replaymod.gui.replaymodified.yes");
@@ -67,7 +67,7 @@ public class GuiSaveModifiedReplay extends GuiScreen {
         @Override
         public void run() {
             FileUtils.deleteQuietly(file);
-            getMinecraft().displayGuiScreen(null);
+            getMinecraft().openScreen(null);
         }
     }).setSize(147, 20).setI18nLabel("replaymod.gui.replaymodified.no");
 

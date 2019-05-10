@@ -8,18 +8,18 @@ import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiCheckbox;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.client.gui.GuiMultiplayer;
-import net.minecraft.client.gui.GuiWorldSelection;
+import net.minecraft.client.gui.menu.MultiplayerScreen;
+import net.minecraft.client.gui.menu.LevelSelectScreen;
 
 //#if MC>=11400
-//$$ import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-//$$ import net.minecraft.client.gui.Screen;
+import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
+import net.minecraft.client.gui.Screen;
 //#else
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-
-import static com.replaymod.core.versions.MCVer.getGui;
+//$$ import net.minecraftforge.client.event.GuiScreenEvent;
+//$$ import net.minecraftforge.common.MinecraftForge;
+//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$
+//$$ import static com.replaymod.core.versions.MCVer.getGui;
 //#endif
 
 public class GuiHandler extends EventRegistrations {
@@ -31,15 +31,15 @@ public class GuiHandler extends EventRegistrations {
     }
 
     //#if MC>=11400
-    //$$ { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
-    //$$ private void onGuiInit(Screen gui) {
+    { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
+    private void onGuiInit(Screen gui) {
     //#else
-    @SubscribeEvent
-    public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
-        net.minecraft.client.gui.GuiScreen gui = getGui(event);
+    //$$ @SubscribeEvent
+    //$$ public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
+    //$$     net.minecraft.client.gui.GuiScreen gui = getGui(event);
     //#endif
-        if (gui instanceof GuiWorldSelection || gui instanceof GuiMultiplayer) {
-            boolean sp = gui instanceof GuiWorldSelection;
+        if (gui instanceof LevelSelectScreen || gui instanceof MultiplayerScreen) {
+            boolean sp = gui instanceof LevelSelectScreen;
             SettingsRegistry settingsRegistry = mod.getSettingsRegistry();
             Setting<Boolean> setting = sp ? Setting.RECORD_SINGLEPLAYER : Setting.RECORD_SERVER;
 

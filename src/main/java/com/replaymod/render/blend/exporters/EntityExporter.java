@@ -7,9 +7,9 @@ import com.replaymod.render.blend.Exporter;
 import com.replaymod.render.blend.data.DObject;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -18,7 +18,7 @@ import static com.replaymod.render.blend.Util.getCameraPos;
 import static com.replaymod.render.blend.Util.getGlModelViewMatrix;
 
 public class EntityExporter implements Exporter {
-    private final Minecraft mc = MCVer.getMinecraft();
+    private final MinecraftClient mc = MCVer.getMinecraft();
     private final RenderState renderState;
     private DObject entitiesObject;
     private Map<Entity, DObject> entityObjects;
@@ -69,7 +69,7 @@ public class EntityExporter implements Exporter {
         // So, we translate there, then store the model-view-matrix and then translate back to let the
         // renderer translate there again.
         // Instead of actually translating, we just add the translation on the current model-view-matrix.
-        if (!(entity instanceof EntityLivingBase)) { // except for EntityLivingBase which get special (better) treatment
+        if (!(entity instanceof LivingEntity)) { // except for EntityLivingBase which get special (better) treatment
             Matrix4f modelView = getGlModelViewMatrix();
             Matrix4f.translate(new Vector3f((float) dx, (float) dy, (float) dz), modelView, modelView);
             renderState.pushModelView(modelView);

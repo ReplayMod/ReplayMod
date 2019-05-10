@@ -7,8 +7,8 @@ import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.StreamPipe;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.util.crash.CrashReport;
+import net.minecraft.util.crash.CrashReportSection;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -68,7 +68,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         } catch (IOException e) {
             throw new NoFFmpegException(e);
         }
-        File exportLogFile = new File(MCVer.getMinecraft().gameDir, "export.log");
+        File exportLogFile = new File(MCVer.getMinecraft().runDirectory, "export.log");
         OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream(exportLogFile), ffmpegLog);
         new StreamPipe(process.getInputStream(), exportLogOut).start();
         new StreamPipe(process.getErrorStream(), exportLogOut).start();
@@ -122,11 +122,11 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
                 renderer.setFailure(e);
                 return;
             }
-            CrashReport report = CrashReport.makeCrashReport(t, "Exporting frame");
-            CrashReportCategory exportDetails = report.makeCategory("Export details");
+            CrashReport report = CrashReport.create(t, "Exporting frame");
+            CrashReportSection exportDetails = report.addElement("Export details");
             MCVer.addDetail(exportDetails, "Export command", settings::getExportCommand);
             MCVer.addDetail(exportDetails, "Export args", commandArgs::toString);
-            MCVer.getMinecraft().crashed(report);
+            MCVer.getMinecraft().setCrashReport(report);
         }
     }
 

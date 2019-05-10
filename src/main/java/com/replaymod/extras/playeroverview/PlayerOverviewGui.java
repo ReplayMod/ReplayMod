@@ -20,17 +20,17 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
 
 //#if MC>=10904
-import net.minecraft.init.MobEffects;
+import net.minecraft.entity.effect.StatusEffects;
 //#else
 //$$ import net.minecraft.potion.Potion;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.entity.player.EnumPlayerModelParts;
+import net.minecraft.client.render.entity.PlayerModelPart;
 //#endif
 
 import java.util.Collections;
@@ -89,12 +89,12 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
 
     private final PlayerOverview extra;
 
-    public PlayerOverviewGui(final PlayerOverview extra, List<EntityPlayer> players) {
+    public PlayerOverviewGui(final PlayerOverview extra, List<PlayerEntity> players) {
         this.extra = extra;
 
         Collections.sort(players, new PlayerComparator()); // Sort by name, spectators last
-        for (final EntityPlayer p : players) {
-            final ResourceLocation texture = Utils.getResourceLocationForPlayerUUID(p.getUniqueID());
+        for (final PlayerEntity p : players) {
+            final Identifier texture = Utils.getResourceLocationForPlayerUUID(p.getUuid());
             final GuiClickable panel = new GuiClickable().setLayout(new HorizontalLayout().setSpacing(2)).addElements(
                     new HorizontalLayout.Data(0.5), new GuiImage() {
                         @Override
@@ -102,7 +102,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                             renderer.bindTexture(texture);
                             renderer.drawTexturedRect(0, 0, 8, 8, 16, 16, 8, 8, 64, 64);
                             //#if MC>=10809
-                            if (p.isWearing(EnumPlayerModelParts.HAT)) {
+                            if (p.isSkinOverlayVisible(PlayerModelPart.HEAD)) {
                             //#else
                             //#if MC>=10800
                             //$$ if (p.func_175148_a(EnumPlayerModelParts.HAT)) {
@@ -134,10 +134,10 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
             final GuiCheckbox checkbox = new GuiCheckbox() {
                 @Override
                 public GuiCheckbox setChecked(boolean checked) {
-                    extra.setHidden(p.getUniqueID(), !checked);
+                    extra.setHidden(p.getUuid(), !checked);
                     return super.setChecked(checked);
                 }
-            }.setChecked(!extra.isHidden(p.getUniqueID()));
+            }.setChecked(!extra.isHidden(p.getUuid()));
             new GuiPanel(playersScrollable.getListPanel()).setLayout(new CustomLayout<GuiPanel>() {
                 @Override
                 protected void layout(GuiPanel container, int width, int height) {
@@ -167,17 +167,17 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
         extra.saveHiddenPlayers();
     }
 
-    private static boolean isSpectator(EntityPlayer e) {
+    private static boolean isSpectator(PlayerEntity e) {
         //#if MC>=10904
-        return e.isInvisible() && e.getActivePotionEffect(MobEffects.INVISIBILITY) == null;
+        return e.isInvisible() && e.getStatusEffect(StatusEffects.INVISIBILITY) == null;
         //#else
         //$$ return e.isInvisible() && e.getActivePotionEffect(Potion.invisibility) == null;
         //#endif
     }
 
-    private static final class PlayerComparator implements Comparator<EntityPlayer> {
+    private static final class PlayerComparator implements Comparator<PlayerEntity> {
         @Override
-        public int compare(EntityPlayer o1, EntityPlayer o2) {
+        public int compare(PlayerEntity o1, PlayerEntity o2) {
             if (isSpectator(o1) && !isSpectator(o2)) return 1;
             if (isSpectator(o2) && !isSpectator(o1)) return -1;
             //#if MC>=11300

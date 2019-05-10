@@ -17,22 +17,22 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.EnumConnectionState;
+import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.*;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.PacketByteBuf;
+import net.minecraft.client.network.packet.*;
+import net.minecraft.text.StringTextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11300
-import net.minecraft.network.login.server.SPacketLoginSuccess;
+import net.minecraft.client.network.packet.LoginSuccessS2CPacket;
 //#endif
 
 //#if MC>=10904
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.entity.data.DataTracker;
 //#else
 //$$ import net.minecraft.entity.DataWatcher;
 //$$
@@ -40,7 +40,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.network.EnumPacketDirection;
+import net.minecraft.network.NetworkSide;
 //#if MC<11300
 //$$ import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 //#endif
@@ -64,7 +64,7 @@ import static com.replaymod.core.versions.MCVer.*;
 
 public class PacketListener extends ChannelInboundHandlerAdapter {
 
-    private static final Minecraft mc = getMinecraft();
+    private static final MinecraftClient mc = getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
     private final ReplayMod core;
@@ -85,7 +85,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
     //#if MC>=11300
-    private EnumConnectionState connectionState = EnumConnectionState.LOGIN;
+    private NetworkState connectionState = NetworkState.LOGIN;
     //#else
     //$$ private EnumConnectionState connectionState = EnumConnectionState.PLAY;
     //#endif
@@ -126,9 +126,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void save(Packet packet) {
         try {
-            if(packet instanceof SPacketSpawnPlayer) {
+            if(packet instanceof PlayerSpawnS2CPacket) {
                 //#if MC>=10800
-                UUID uuid = ((SPacketSpawnPlayer) packet).getUniqueId();
+                UUID uuid = ((PlayerSpawnS2CPacket) packet).getPlayerUuid();
                 //#else
                 //$$ UUID uuid = ((S0CPacketSpawnPlayer) packet).func_148948_e().getId();
                 //#endif
@@ -164,8 +164,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             });
 
             //#if MC>=11300
-            if (packet instanceof SPacketLoginSuccess) {
-                connectionState = EnumConnectionState.PLAY;
+            if (packet instanceof LoginSuccessS2CPacket) {
+                connectionState = NetworkState.PLAY;
             }
             //#endif
         } catch(Exception e) {
@@ -229,9 +229,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 Packet packet = (Packet) msg;
 
                 //#if MC>=10904
-                if(packet instanceof SPacketCollectItem) {
+                if(packet instanceof ItemPickupAnimationS2CPacket) {
                     if(mc.player != null ||
-                            ((SPacketCollectItem) packet).getEntityID() == mc.player.getEntityId()) {
+                            ((ItemPickupAnimationS2CPacket) packet).getEntityId() == mc.player.getEntityId()) {
                 //#else
                 //$$ if(packet instanceof S0DPacketCollectItem) {
                 //$$     if(mc.thePlayer != null ||
@@ -247,8 +247,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 }
 
                 //#if MC>=10800
-                if (packet instanceof SPacketResourcePackSend) {
-                    save(resourcePackRecorder.handleResourcePack((SPacketResourcePackSend) packet));
+                if (packet instanceof ResourcePackSendS2CPacket) {
+                    save(resourcePackRecorder.handleResourcePack((ResourcePackSendS2CPacket) packet));
                     return;
                 }
                 //#else
@@ -276,10 +276,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 save(packet);
 
-                if (packet instanceof SPacketCustomPayload) {
-                    SPacketCustomPayload p = (SPacketCustomPayload) packet;
-                    if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannelName())) {
-                        packet = new SPacketDisconnect(new TextComponentString("Please update to view this replay."));
+                if (packet instanceof CustomPayloadS2CPacket) {
+                    CustomPayloadS2CPacket p = (CustomPayloadS2CPacket) packet;
+                    if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannel())) {
+                        packet = new DisconnectS2CPacket(new StringTextComponent("Please update to view this replay."));
                         save(packet);
                     }
                 }
@@ -293,21 +293,21 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     //#if MC>=10904
-    private <T> void DataManager_set(EntityDataManager dataManager, EntityDataManager.DataEntry<T> entry) {
-        dataManager.register(entry.getKey(), entry.getValue());
+    private <T> void DataManager_set(DataTracker dataManager, DataTracker.Entry<T> entry) {
+        dataManager.startTracking(entry.getData(), entry.get());
     }
     //#endif
 
     @SuppressWarnings("unchecked")
     private byte[] getPacketData(Packet packet) throws Exception {
-        if (packet instanceof SPacketSpawnMob) {
-            SPacketSpawnMob p = (SPacketSpawnMob) packet;
+        if (packet instanceof MobSpawnS2CPacket) {
+            MobSpawnS2CPacket p = (MobSpawnS2CPacket) packet;
             SPacketSpawnMobAccessor pa = (SPacketSpawnMobAccessor) p;
             if (pa.getDataManager() == null) {
-                pa.setDataManager(new EntityDataManager(null));
-                if (p.getDataManagerEntries() != null) {
+                pa.setDataManager(new DataTracker(null));
+                if (p.getTrackedValues() != null) {
                     //#if MC>=10904
-                    for (EntityDataManager.DataEntry<?> entry : p.getDataManagerEntries()) {
+                    for (DataTracker.Entry<?> entry : p.getTrackedValues()) {
                         DataManager_set(pa.getDataManager(), entry);
                     }
                     //#else
@@ -319,14 +319,14 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             }
         }
 
-        if (packet instanceof SPacketSpawnPlayer) {
-            SPacketSpawnPlayer p = (SPacketSpawnPlayer) packet;
+        if (packet instanceof PlayerSpawnS2CPacket) {
+            PlayerSpawnS2CPacket p = (PlayerSpawnS2CPacket) packet;
             SPacketSpawnPlayerAccessor pa = (SPacketSpawnPlayerAccessor) p;
             if (pa.getDataManager() == null) {
-                pa.setDataManager(new EntityDataManager(null));
-                if (p.getDataManagerEntries() != null) {
+                pa.setDataManager(new DataTracker(null));
+                if (p.getTrackedValues() != null) {
                     //#if MC>=10904
-                    for (EntityDataManager.DataEntry<?> entry : p.getDataManagerEntries()) {
+                    for (DataTracker.Entry<?> entry : p.getTrackedValues()) {
                         DataManager_set(pa.getDataManager(), entry);
                     }
                     //#else
@@ -339,7 +339,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         }
 
         //#if MC>=10800
-        Integer packetId = connectionState.getPacketId(EnumPacketDirection.CLIENTBOUND, packet);
+        Integer packetId = connectionState.getPacketId(NetworkSide.CLIENT, packet);
         //#else
         //$$ Integer packetId = (Integer) connectionState.func_150755_b().inverse().get(packet.getClass());
         //#endif
@@ -347,9 +347,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             throw new IOException("Unknown packet type:" + packet.getClass());
         }
         ByteBuf byteBuf = Unpooled.buffer();
-        PacketBuffer packetBuffer = new PacketBuffer(byteBuf);
+        PacketByteBuf packetBuffer = new PacketByteBuf(byteBuf);
         packetBuffer.writeVarInt(packetId);
-        packet.writePacketData(packetBuffer);
+        packet.write(packetBuffer);
 
         byteBuf.readerIndex(0);
         byte[] array = new byte[byteBuf.readableBytes()];
@@ -369,11 +369,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         Marker marker = new Marker();
         marker.setName(name);
         marker.setTime(timestamp);
-        marker.setX(view.posX);
-        marker.setY(view.posY);
-        marker.setZ(view.posZ);
-        marker.setYaw(view.rotationYaw);
-        marker.setPitch(view.rotationPitch);
+        marker.setX(view.x);
+        marker.setY(view.y);
+        marker.setZ(view.z);
+        marker.setYaw(view.yaw);
+        marker.setPitch(view.pitch);
         // Roll is always 0
         saveService.submit(() -> {
             synchronized (replayFile) {

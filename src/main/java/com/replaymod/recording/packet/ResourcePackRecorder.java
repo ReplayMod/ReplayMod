@@ -3,19 +3,19 @@ package com.replaymod.recording.packet;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiYesNo;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.client.resources.DownloadingPackFinder;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.menu.YesNoScreen;
+import net.minecraft.client.options.ServerEntry;
+import net.minecraft.client.options.ServerList;
+import net.minecraft.client.resource.ClientResourcePackCreator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11400
-//$$ import net.minecraft.text.TranslatableTextComponent;
+import net.minecraft.text.TranslatableTextComponent;
 //#else
-import net.minecraft.client.gui.GuiYesNoCallback;
-import net.minecraft.client.resources.I18n;
+//$$ import net.minecraft.client.gui.GuiYesNoCallback;
+//$$ import net.minecraft.client.resources.I18n;
 //#endif
 
 //#if MC>=10800
@@ -26,19 +26,19 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.network.play.client.CPacketResourcePackStatus;
-import net.minecraft.network.play.client.CPacketResourcePackStatus.Action;
-import net.minecraft.network.play.server.SPacketResourcePackSend;
+import net.minecraft.server.network.packet.ResourcePackStatusC2SPacket;
+import net.minecraft.server.network.packet.ResourcePackStatusC2SPacket.Status;
+import net.minecraft.client.network.packet.ResourcePackSendS2CPacket;
 //#endif
 
 //#if MC>=10800
 //#if MC>=11400
-//$$ import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletableFuture;
 //#else
-import com.google.common.util.concurrent.ListenableFuture;
+//$$ import com.google.common.util.concurrent.ListenableFuture;
 //#endif
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.network.ClientConnection;
 //#else
 //$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
 //$$ import net.minecraft.client.multiplayer.ServerData.ServerResourceMode;
@@ -61,7 +61,7 @@ import static com.replaymod.core.versions.MCVer.*;
  */
 public class ResourcePackRecorder {
     private static final Logger logger = LogManager.getLogger();
-    private static final Minecraft mc = getMinecraft();
+    private static final MinecraftClient mc = getMinecraft();
 
     private final ReplayFile replayFile;
 
@@ -102,99 +102,99 @@ public class ResourcePackRecorder {
     }
 
     //#if MC>=10800
-    public CPacketResourcePackStatus makeStatusPacket(String hash, Action action) {
+    public ResourcePackStatusC2SPacket makeStatusPacket(String hash, Status action) {
         //#if MC>=11002
-        return new CPacketResourcePackStatus(action);
+        return new ResourcePackStatusC2SPacket(action);
         //#else
         //$$ return new CPacketResourcePackStatus(hash, action);
         //#endif
     }
 
 
-    public synchronized SPacketResourcePackSend handleResourcePack(SPacketResourcePackSend packet) {
+    public synchronized ResourcePackSendS2CPacket handleResourcePack(ResourcePackSendS2CPacket packet) {
         final int requestId = nextRequestId++;
-        final NetHandlerPlayClient netHandler = mc.getConnection();
-        final NetworkManager netManager = netHandler.getNetworkManager();
+        final ClientPlayNetworkHandler netHandler = mc.getNetworkHandler();
+        final ClientConnection netManager = netHandler.getClientConnection();
         final String url = packet.getURL();
-        final String hash = packet.getHash();
+        final String hash = packet.getSHA1();
 
         if (url.startsWith("level://")) {
             String levelName = url.substring("level://".length());
-            File savesDir = new File(mc.gameDir, "saves");
+            File savesDir = new File(mc.runDirectory, "saves");
             final File levelDir = new File(savesDir, levelName);
 
             if (levelDir.isFile()) {
-                netManager.sendPacket(makeStatusPacket(hash, Action.ACCEPTED));
+                netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
                 addCallback(setServerResourcePack(levelDir), result -> {
                     recordResourcePack(levelDir, requestId);
-                    netManager.sendPacket(makeStatusPacket(hash, Action.SUCCESSFULLY_LOADED));
+                    netManager.send(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED));
                 }, throwable -> {
-                    netManager.sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
+                    netManager.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD));
                 });
             } else {
-                netManager.sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD));
+                netManager.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD));
             }
         } else {
-            final ServerData serverData = mc.getCurrentServerData();
-            if (serverData != null && serverData.getResourceMode() == ServerData.ServerResourceMode.ENABLED) {
-                netManager.sendPacket(makeStatusPacket(hash, Action.ACCEPTED));
+            final ServerEntry serverData = mc.getCurrentServerEntry();
+            if (serverData != null && serverData.getResourcePack() == ServerEntry.ResourcePackState.ENABLED) {
+                netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
                 downloadResourcePackFuture(requestId, url, hash);
-            } else if (serverData != null && serverData.getResourceMode() != ServerData.ServerResourceMode.PROMPT) {
-                netManager.sendPacket(makeStatusPacket(hash, Action.DECLINED));
+            } else if (serverData != null && serverData.getResourcePack() != ServerEntry.ResourcePackState.PROMPT) {
+                netManager.send(makeStatusPacket(hash, Status.DECLINED));
             } else {
                 // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
                 //#if MC>=11400
-                //$$ mc.execute(() -> mc.openScreen(new YesNoScreen(result -> {
+                mc.execute(() -> mc.openScreen(new YesNoScreen(result -> {
                 //#else
-                //noinspection Convert2Lambda
-                mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
-                    @Override
+                //$$ //noinspection Convert2Lambda
+                //$$ mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
+                //$$     @Override
                     //#if MC>=11300
-                    public void confirmResult(boolean result, int id) {
+                    //$$ public void confirmResult(boolean result, int id) {
                     //#else
                     //$$ public void confirmClicked(boolean result, int id) {
                     //#endif
                 //#endif
                         if (serverData != null) {
-                            serverData.setResourceMode(result ? ServerData.ServerResourceMode.ENABLED : ServerData.ServerResourceMode.DISABLED);
+                            serverData.setResourcePackState(result ? ServerEntry.ResourcePackState.ENABLED : ServerEntry.ResourcePackState.DISABLED);
                         }
                         if (result) {
-                            netManager.sendPacket(makeStatusPacket(hash, Action.ACCEPTED));
+                            netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
                             downloadResourcePackFuture(requestId, url, hash);
                         } else {
-                            netManager.sendPacket(makeStatusPacket(hash, Action.DECLINED));
+                            netManager.send(makeStatusPacket(hash, Status.DECLINED));
                         }
 
-                        ServerList.saveSingleServer(serverData);
-                        mc.displayGuiScreen(null);
+                        ServerList.updateServerListEntry(serverData);
+                        mc.openScreen(null);
                     }
                 //#if MC>=11400
-                //$$ , new TranslatableTextComponent("multiplayer.texturePrompt.line1"), new TranslatableTextComponent("multiplayer.texturePrompt.line2"))));
+                , new TranslatableTextComponent("multiplayer.texturePrompt.line1"), new TranslatableTextComponent("multiplayer.texturePrompt.line2"))));
                 //#else
-                }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
+                //$$ }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
                 //#endif
             }
         }
 
-        return new SPacketResourcePackSend("replay://" + requestId, "");
+        return new ResourcePackSendS2CPacket("replay://" + requestId, "");
     }
 
     private void downloadResourcePackFuture(int requestId, String url, final String hash) {
         addCallback(downloadResourcePack(requestId, url, hash),
-                result -> mc.getConnection().sendPacket(makeStatusPacket(hash, Action.SUCCESSFULLY_LOADED)),
-                throwable -> mc.getConnection().sendPacket(makeStatusPacket(hash, Action.FAILED_DOWNLOAD)));
+                result -> mc.getNetworkHandler().sendPacket(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED)),
+                throwable -> mc.getNetworkHandler().sendPacket(makeStatusPacket(hash, Status.FAILED_DOWNLOAD)));
     }
 
     private
     //#if MC>=11400
-    //$$ CompletableFuture<?>
+    CompletableFuture<?>
     //#else
-    ListenableFuture<?>
+    //$$ ListenableFuture<?>
     //#endif
     downloadResourcePack(final int requestId, String url, String hash) {
-        DownloadingPackFinder packFinder = mc.getPackFinder();
+        ClientResourcePackCreator packFinder = mc.getResourcePackDownloader();
         ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file, requestId));
-        return packFinder.downloadResourcePack(url, hash);
+        return packFinder.download(url, hash);
     }
 
     public interface IDownloadingPackFinder {

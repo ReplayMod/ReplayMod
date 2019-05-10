@@ -1,28 +1,28 @@
 //#if MC>=10800
 package com.replaymod.replay.mixin;
 
-import net.minecraft.client.renderer.ViewFrustum;
-import net.minecraft.client.renderer.chunk.RenderChunk;
+import net.minecraft.client.render.ChunkRenderDispatcher;
+import net.minecraft.client.render.chunk.ChunkRenderer;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(ViewFrustum.class)
+@Mixin(ChunkRenderDispatcher.class)
 public abstract class MixinViewFrustum {
     @Redirect(
-            method = "updateChunkPositions",
+            method = "updateCameraPosition",
             at = @At(
                     value = "INVOKE",
                     //#if MC>=10904
-                    target = "Lnet/minecraft/client/renderer/chunk/RenderChunk;setPosition(III)V"
+                    target = "Lnet/minecraft/client/render/chunk/ChunkRenderer;method_3653(III)V"
                     //#else
                     //$$ target = "Lnet/minecraft/client/renderer/chunk/RenderChunk;setPosition(Lnet/minecraft/util/BlockPos;)V"
                     //#endif
             )
     )
     private void replayModReplay_updatePositionAndMarkForUpdate(
-            RenderChunk renderChunk,
+            ChunkRenderer renderChunk,
             //#if MC>=10904
             int x, int y, int z
             //#else
@@ -32,10 +32,10 @@ public abstract class MixinViewFrustum {
         //#if MC>=10904
         BlockPos pos = new BlockPos(x, y, z);
         //#endif
-        if (!pos.equals(renderChunk.getPosition())) {
+        if (!pos.equals(renderChunk.getOrigin())) {
             //#if MC>=10904
-            renderChunk.setPosition(x, y, z);
-            renderChunk.setNeedsUpdate(false);
+            renderChunk.method_3653(x, y, z);
+            renderChunk.scheduleRender(false);
             //#else
             //$$ renderChunk.setPosition(pos);
             //$$ renderChunk.setNeedsUpdate(true);

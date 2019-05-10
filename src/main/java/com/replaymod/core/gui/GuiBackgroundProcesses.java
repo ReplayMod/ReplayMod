@@ -14,13 +14,13 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 
 //#if MC>=11400
-//$$ import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-//$$ import net.minecraft.client.gui.Screen;
+import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
+import net.minecraft.client.gui.Screen;
 //#else
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import static com.replaymod.core.versions.MCVer.getGui;
+//$$ import net.minecraftforge.client.event.GuiScreenEvent;
+//$$ import net.minecraftforge.common.MinecraftForge;
+//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$ import static com.replaymod.core.versions.MCVer.getGui;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
@@ -29,12 +29,12 @@ public class GuiBackgroundProcesses extends EventRegistrations {
     private GuiPanel panel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(10));
 
     //#if MC>=11400
-    //$$ { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
-    //$$ private void onGuiInit(Screen guiScreen) {
+    { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
+    private void onGuiInit(Screen guiScreen) {
     //#else
-    @SubscribeEvent
-    public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
-        net.minecraft.client.gui.GuiScreen guiScreen = getGui(event);
+    //$$ @SubscribeEvent
+    //$$ public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
+    //$$     net.minecraft.client.gui.GuiScreen guiScreen = getGui(event);
     //#endif
         if (guiScreen != getMinecraft().currentScreen) return; // people tend to construct GuiScreens without opening them
 

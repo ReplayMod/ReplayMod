@@ -22,7 +22,7 @@ import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,11 +64,11 @@ public class ReplayModReplay implements Module {
                     if (camera != null) {
                         Marker marker = new Marker();
                         marker.setTime(replayHandler.getReplaySender().currentTimeStamp());
-                        marker.setX(camera.posX);
-                        marker.setY(camera.posY);
-                        marker.setZ(camera.posZ);
-                        marker.setYaw(camera.rotationYaw);
-                        marker.setPitch(camera.rotationPitch);
+                        marker.setX(camera.x);
+                        marker.setY(camera.y);
+                        marker.setZ(camera.z);
+                        marker.setYaw(camera.yaw);
+                        marker.setPitch(camera.pitch);
                         marker.setRoll(camera.roll);
                         replayHandler.getOverlay().timeline.addMarker(marker);
                     }
@@ -80,7 +80,7 @@ public class ReplayModReplay implements Module {
             @Override
             public void run() {
                 if (replayHandler != null) {
-                    Minecraft mc = MCVer.getMinecraft();
+                    MinecraftClient mc = MCVer.getMinecraft();
                     ListenableFuture<NoGuiScreenshot> future = NoGuiScreenshot.take(mc, 1280, 720);
                     Futures.addCallback(future, new FutureCallback<NoGuiScreenshot>() {
                         @Override

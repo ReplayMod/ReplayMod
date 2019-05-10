@@ -4,7 +4,7 @@ import com.replaymod.render.blend.data.DImage;
 import com.replaymod.render.blend.data.DMaterial;
 import com.replaymod.render.blend.data.DPackedFile;
 import com.replaymod.render.blend.data.DTexture;
-import net.minecraft.client.renderer.GLAllocation;
+import net.minecraft.client.util.GlAllocationUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
@@ -27,7 +27,7 @@ public class BlendMaterials {
             // Read raw image data from GL
             int width = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
             int height = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
-            ByteBuffer buffer = GLAllocation.createDirectByteBuffer(width * height * 4);
+            ByteBuffer buffer = GlAllocationUtils.allocateByteBuffer(width * height * 4);
             GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
             // Convert to BufferedImage

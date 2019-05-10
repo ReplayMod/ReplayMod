@@ -1,6 +1,6 @@
 package com.replaymod.compat.optifine;
 
-import net.minecraft.client.GameSettings;
+import net.minecraft.client.options.GameOptions;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +15,7 @@ public class OptifineReflection {
             // this throws an ignored ClassNotFoundException if Optifine isn't installed
             Class.forName("Config");
 
-            gameSettings_ofFastRender = GameSettings.class.getDeclaredField("ofFastRender");
+            gameSettings_ofFastRender = GameOptions.class.getDeclaredField("ofFastRender");
             gameSettings_ofFastRender.setAccessible(true);
         } catch (ClassNotFoundException ignore) {
             // no optifine installed

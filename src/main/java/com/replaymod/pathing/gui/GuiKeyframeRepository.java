@@ -103,7 +103,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
     public final GuiButton loadButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
-            getMinecraft().displayGuiScreen(null);
+            getMinecraft().openScreen(null);
             try {
                 Timeline timeline = timelines.get(selectedEntry.name);
                 for (Path path : timeline.getPaths()) {

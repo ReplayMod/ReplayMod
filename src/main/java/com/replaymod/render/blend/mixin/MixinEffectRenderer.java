@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11400
-//$$ import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Camera;
 //#else
-import net.minecraft.entity.Entity;
+//$$ import net.minecraft.entity.Entity;
 //#endif
 
 //#if MC>=10904
@@ -30,9 +30,9 @@ public abstract class MixinEffectRenderer {
     @Inject(method = "renderParticles", at = @At("HEAD"))
     private void preRender(
             //#if MC>=11400
-            //$$ Camera view,
+            Camera view,
             //#else
-            Entity view,
+            //$$ Entity view,
             //#endif
             float renderPartialTicks,
             CallbackInfo ci
@@ -46,9 +46,9 @@ public abstract class MixinEffectRenderer {
     @Inject(method = "renderParticles", at = @At("RETURN"))
     private void postRender(
             //#if MC>=11400
-            //$$ Camera view,
+            Camera view,
             //#else
-            Entity view,
+            //$$ Entity view,
             //#endif
             float renderPartialTicks,
             CallbackInfo ci
@@ -60,21 +60,21 @@ public abstract class MixinEffectRenderer {
     }
 
     //#if MC<11400
-    @Inject(method = "renderLitParticles", at = @At("HEAD"))
-    public void preLitRender(Entity view, float renderPartialTicks, CallbackInfo ci) {
-        BlendState blendState = BlendState.getState();
-        if (blendState != null) {
-            blendState.get(ParticlesExporter.class).preParticlesRender(true);
-        }
-    }
-
-    @Inject(method = "renderLitParticles", at = @At("RETURN"))
-    public void postLitRender(Entity view, float renderPartialTicks, CallbackInfo ci) {
-        BlendState blendState = BlendState.getState();
-        if (blendState != null) {
-            blendState.get(ParticlesExporter.class).postParticlesRender();
-        }
-    }
+    //$$ @Inject(method = "renderLitParticles", at = @At("HEAD"))
+    //$$ public void preLitRender(Entity view, float renderPartialTicks, CallbackInfo ci) {
+    //$$     BlendState blendState = BlendState.getState();
+    //$$     if (blendState != null) {
+    //$$         blendState.get(ParticlesExporter.class).preParticlesRender(true);
+    //$$     }
+    //$$ }
+    //$$
+    //$$ @Inject(method = "renderLitParticles", at = @At("RETURN"))
+    //$$ public void postLitRender(Entity view, float renderPartialTicks, CallbackInfo ci) {
+    //$$     BlendState blendState = BlendState.getState();
+    //$$     if (blendState != null) {
+    //$$         blendState.get(ParticlesExporter.class).postParticlesRender();
+    //$$     }
+    //$$ }
     //#endif
 }
 //#endif

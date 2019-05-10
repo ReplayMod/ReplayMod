@@ -22,7 +22,7 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.crash.CrashReport;
+import net.minecraft.util.crash.CrashReport;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -153,13 +153,13 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
                 replayFile.writeMarkers(markers);
                 replayFile.save();
             } catch (IOException e) {
-                Utils.error(ReplayModEditor.LOGGER, this, CrashReport.makeCrashReport(e, "Writing markers"), this::close);
+                Utils.error(ReplayModEditor.LOGGER, this, CrashReport.create(e, "Writing markers"), this::close);
             }
 
             try {
                 MarkerProcessor.apply(inputPath, progressPopup.progressBar::setProgress);
             } catch (IOException e) {
-                Utils.error(ReplayModEditor.LOGGER, this, CrashReport.makeCrashReport(e, "Running marker processor"), this::close);
+                Utils.error(ReplayModEditor.LOGGER, this, CrashReport.create(e, "Running marker processor"), this::close);
             }
 
             ReplayMod.instance.runLater(() -> {

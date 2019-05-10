@@ -39,7 +39,7 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import org.apache.commons.lang3.StringUtils;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.text.TextFormat;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -220,7 +220,7 @@ public class GuiReplayCenter extends GuiScreen {
                 public void onSuccess(Boolean result) {
                     if (result) {
                         apiClient.logout();
-                        getMinecraft().displayGuiScreen(null);
+                        getMinecraft().openScreen(null);
                     }
                 }
 
@@ -235,7 +235,7 @@ public class GuiReplayCenter extends GuiScreen {
     public final GuiButton mainMenuButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            getMinecraft().displayGuiScreen(null);
+            getMinecraft().openScreen(null);
         }
     }).setSize(195, 20).setI18nLabel("replaymod.gui.mainmenu");
 
@@ -417,9 +417,9 @@ public class GuiReplayCenter extends GuiScreen {
             this.downloaded = downloaded;
             ReplayMetaData metaData = fileInfo.getMetadata();
 
-            name.setText(TextFormatting.UNDERLINE + Utils.fileNameToReplayName(fileInfo.getName()));
+            name.setText(TextFormat.UNDERLINE + Utils.fileNameToReplayName(fileInfo.getName()));
             author.setI18nText("replaymod.gui.center.author",
-                    "" + TextFormatting.GRAY + TextFormatting.ITALIC, fileInfo.getOwner());
+                    "" + TextFormat.GRAY + TextFormat.ITALIC, fileInfo.getOwner());
             if (StringUtils.isEmpty(metaData.getServerName())) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {
@@ -443,7 +443,7 @@ public class GuiReplayCenter extends GuiScreen {
             favorites.setText("⭑" + fileInfo.getFavorites());
             likes.setText("⬆" + fileInfo.getRatings().getPositive());
             dislikes.setText("⬇" + fileInfo.getRatings().getNegative());
-            category.setText(TextFormatting.ITALIC + Optional.fromNullable(Category.fromId(fileInfo.getCategory()))
+            category.setText(TextFormat.ITALIC + Optional.fromNullable(Category.fromId(fileInfo.getCategory()))
                     .or(Category.MISCELLANEOUS).toNiceString());
             addElements(null, durationPanel, downloadsPanel);
 

@@ -64,9 +64,9 @@ public class SimplePboOpenGlFrameCapturer extends OpenGlFrameCapturer<OpenGlFram
     protected OpenGlFrame captureFrame(int frameId, CaptureData data) {
         pbo.bind();
 
-        frameBuffer().bindFramebuffer(true);
+        frameBuffer().beginWrite(true);
         GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, 0);
-        frameBuffer().unbindFramebuffer();
+        frameBuffer().endWrite();
 
         pbo.unbind();
         return null;

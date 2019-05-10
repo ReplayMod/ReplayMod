@@ -4,8 +4,8 @@ import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraEntity;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.Timer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderTickCounter;
 
 //#if MC>=11300
 import com.replaymod.core.versions.MCVer;
@@ -32,9 +32,9 @@ import org.lwjgl.glfw.GLFW;
 
 public class InputReplayTimer extends WrappedTimer {
     private final ReplayModReplay mod;
-    private final Minecraft mc;
+    private final MinecraftClient mc;
     
-    public InputReplayTimer(Timer wrapped, ReplayModReplay mod) {
+    public InputReplayTimer(RenderTickCounter wrapped, ReplayModReplay mod) {
         super(wrapped);
         this.mod = mod;
         this.mc = mod.getCore().getMinecraft();
@@ -43,12 +43,12 @@ public class InputReplayTimer extends WrappedTimer {
     @Override
     //#if MC>=11300
     //#if MC>=11400
-    //$$ // FIXME this should be handled by the preprocessor but there seems to be a bug
-    //$$ public void beginRenderTick(long sysClock) {
+    // FIXME this should be handled by the preprocessor but there seems to be a bug
+    public void beginRenderTick(long sysClock) {
     //#else
-    public void updateTimer(long sysClock) {
+    //$$ public void updateTimer(long sysClock) {
     //#endif
-        super.updateTimer(sysClock);
+        super.beginRenderTick(sysClock);
     //#else
     //$$ public void updateTimer() {
     //$$     super.updateTimer();
@@ -63,11 +63,11 @@ public class InputReplayTimer extends WrappedTimer {
         // tick speed may vary or there may not be any ticks at all (when the replay is paused)
         if (mod.getReplayHandler() != null) {
             //#if MC>=11300
-            if (mc.currentScreen == null || mc.currentScreen.allowUserInput) {
+            if (mc.currentScreen == null || mc.currentScreen.passEvents) {
                 GLFW.glfwPollEvents();
                 MCVer.processKeyBinds();
             }
-            mc.keyboardListener.tick();
+            mc.keyboard.pollDebugCrash();
             //#else
             //#if MC>=10904
             //$$ if (mc.currentScreen == null || mc.currentScreen.allowUserInput) {
