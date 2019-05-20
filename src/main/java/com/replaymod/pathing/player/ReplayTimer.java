@@ -1,8 +1,7 @@
 package com.replaymod.pathing.player;
 
 import com.replaymod.core.utils.WrappedTimer;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import de.johni0702.minecraft.gui.utils.Event;
 import net.minecraft.client.render.RenderTickCounter;
 
 /**
@@ -45,12 +44,13 @@ public class ReplayTimer extends WrappedTimer {
     }
 
     public interface UpdatedCallback {
-        Event<UpdatedCallback> EVENT = EventFactory.createArrayBacked(UpdatedCallback.class,
-                (listeners) -> () -> {
+        Event<UpdatedCallback> EVENT = Event.create((listeners) ->
+                () -> {
                     for (UpdatedCallback listener : listeners) {
                         listener.onUpdate();
                     }
-                });
+                }
+        );
         void onUpdate();
     }
 }

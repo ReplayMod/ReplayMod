@@ -4,6 +4,7 @@ import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.events.ReplayClosedCallback;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
 import org.apache.commons.io.FileUtils;
@@ -18,7 +19,7 @@ import java.util.List;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-public class ReplayModRender implements Module {
+public class ReplayModRender extends EventRegistrations implements Module {
     { instance = this; }
     public static ReplayModRender instance;
 
@@ -40,7 +41,9 @@ public class ReplayModRender implements Module {
 
     @Override
     public void initClient() {
-        ReplayClosedCallback.EVENT.register(replayHandler -> renderQueue.clear());
+        on(ReplayClosedCallback.EVENT, replayHandler -> renderQueue.clear());
+
+        register();
     }
 
     public File getVideoFolder() {

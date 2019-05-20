@@ -1,13 +1,11 @@
 //#if MC>=11300
 package com.replaymod.core.events;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import de.johni0702.minecraft.gui.utils.Event;
 
 public interface KeyBindingEventCallback {
-    Event<KeyBindingEventCallback> EVENT = EventFactory.createArrayBacked(
-            KeyBindingEventCallback.class,
-            (listeners) -> () -> {
+    Event<KeyBindingEventCallback> EVENT = Event.create((listeners) ->
+            () -> {
                 for (KeyBindingEventCallback listener : listeners) {
                     listener.onKeybindingEvent();
                 }

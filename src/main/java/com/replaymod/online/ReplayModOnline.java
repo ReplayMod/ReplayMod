@@ -15,6 +15,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.GuiScreen;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +30,7 @@ import java.nio.file.Path;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-public class ReplayModOnline implements Module {
+public class ReplayModOnline extends EventRegistrations implements Module {
     { instance = this; }
     public static ReplayModOnline instance;
 
@@ -80,7 +81,7 @@ public class ReplayModOnline implements Module {
         }
 
         new GuiHandler(this).register();
-        ReplayClosedCallback.EVENT.register(replayHandler -> onReplayClosed());
+        register();
 
         // Initial login prompt
         if (!core.getSettingsRegistry().get(Setting.SKIP_LOGIN_PROMPT)) {
@@ -164,6 +165,7 @@ public class ReplayModOnline implements Module {
         }
     }
 
+    { on(ReplayClosedCallback.EVENT, replayHandler -> onReplayClosed()); }
     private void onReplayClosed() {
         if (currentReplayOutputFile != null) {
             if (currentReplayOutputFile.exists()) { // Replay was modified, ask user for new name

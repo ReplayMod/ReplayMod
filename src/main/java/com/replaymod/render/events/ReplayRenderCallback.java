@@ -1,13 +1,12 @@
 package com.replaymod.render.events;
 
 import com.replaymod.render.rendering.VideoRenderer;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import de.johni0702.minecraft.gui.utils.Event;
 
 public interface ReplayRenderCallback {
     interface Pre {
-        Event<Pre> EVENT = EventFactory.createArrayBacked(Pre.class,
-                (listeners) -> (renderer) -> {
+        Event<Pre> EVENT = Event.create((listeners) ->
+                (renderer) -> {
                     for (Pre listener : listeners) {
                         listener.beforeRendering(renderer);
                     }
@@ -17,8 +16,8 @@ public interface ReplayRenderCallback {
     }
 
     interface Post {
-        Event<Post> EVENT = EventFactory.createArrayBacked(Post.class,
-                (listeners) -> (renderer) -> {
+        Event<Post> EVENT = Event.create((listeners) ->
+                (renderer) -> {
                     for (Post listener : listeners) {
                         listener.afterRendering(renderer);
                     }

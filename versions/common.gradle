@@ -220,10 +220,6 @@ dependencies {
         modCompile 'net.fabricmc:fabric:' + [
                 11400: '0.2.7+build.127'
         ][mcVersion]
-    } else {
-        shadow('net.fabricmc.fabric-api:fabric-lib:0.1.0') { // for Event, EventFactory, etc.
-            transitive = false
-        }
     }
 
     if (FG3) {

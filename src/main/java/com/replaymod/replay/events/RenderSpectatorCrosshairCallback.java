@@ -1,24 +1,21 @@
 //#if MC>=11300
 package com.replaymod.replay.events;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
-import net.fabricmc.fabric.api.util.TriState;
+import de.johni0702.minecraft.gui.utils.Event;
 
 public interface RenderSpectatorCrosshairCallback {
-    Event<RenderSpectatorCrosshairCallback> EVENT = EventFactory.createArrayBacked(
-            RenderSpectatorCrosshairCallback.class,
-            (listeners) -> () -> {
+    Event<RenderSpectatorCrosshairCallback> EVENT = Event.create((listeners) ->
+            () -> {
                 for (RenderSpectatorCrosshairCallback listener : listeners) {
-                    TriState state = listener.shouldRenderSpectatorCrosshair();
-                    if (state != TriState.DEFAULT) {
+                    Boolean state = listener.shouldRenderSpectatorCrosshair();
+                    if (state != null) {
                         return state;
                     }
                 }
-                return TriState.DEFAULT;
+                return null;
             }
     );
 
-    TriState shouldRenderSpectatorCrosshair();
+    Boolean shouldRenderSpectatorCrosshair();
 }
 //#endif

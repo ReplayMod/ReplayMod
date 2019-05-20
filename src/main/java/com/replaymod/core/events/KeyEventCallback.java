@@ -1,13 +1,11 @@
 //#if MC>=11300
 package com.replaymod.core.events;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import de.johni0702.minecraft.gui.utils.Event;
 
 public interface KeyEventCallback {
-    Event<KeyEventCallback> EVENT = EventFactory.createArrayBacked(
-            KeyEventCallback.class,
-            (listeners) -> (key, scanCode, action, modifiers) -> {
+    Event<KeyEventCallback> EVENT = Event.create((listeners) ->
+            (key, scanCode, action, modifiers) -> {
                 for (KeyEventCallback listener : listeners) {
                     listener.onKeyEvent(key, scanCode, action, modifiers);
                 }

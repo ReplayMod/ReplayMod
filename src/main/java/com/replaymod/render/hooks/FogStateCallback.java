@@ -1,16 +1,15 @@
 package com.replaymod.render.hooks;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import de.johni0702.minecraft.gui.utils.Event;
 
 public interface FogStateCallback {
-    Event<FogStateCallback> EVENT = EventFactory.createArrayBacked(FogStateCallback.class,
-            (enabled) -> {},
-            (listeners) -> (enabled) -> {
+    Event<FogStateCallback> EVENT = Event.create((listeners) ->
+            (enabled) -> {
                 for (FogStateCallback listener : listeners) {
                     listener.fogStateChanged(enabled);
                 }
-            });
+            }
+    );
 
     void fogStateChanged(boolean enabled);
 }

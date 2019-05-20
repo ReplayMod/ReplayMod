@@ -639,8 +639,8 @@ public class CameraEntity
 
         //#if MC>=11400
         { on(RenderSpectatorCrosshairCallback.EVENT, this::shouldRenderSpectatorCrosshair); }
-        private TriState shouldRenderSpectatorCrosshair() {
-            return TriState.of(canSpectate(mc.targetedEntity));
+        private Boolean shouldRenderSpectatorCrosshair() {
+            return canSpectate(mc.targetedEntity);
         }
         //#else
         //$$ @SubscribeEvent

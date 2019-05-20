@@ -95,12 +95,7 @@ public class PlayerOverview extends EventRegistrations implements Extra {
             }
         });
 
-        ReplayOpenedCallback.EVENT.register(this::onReplayOpen);
-        ReplayClosedCallback.EVENT.register(this::onReplayClose);
-        //#if MC>=11400
-        //#else
-        //$$ FORGE_BUS.register(this);
-        //#endif
+        register();
     }
 
     public boolean isHidden(UUID uuid) {
@@ -115,6 +110,7 @@ public class PlayerOverview extends EventRegistrations implements Extra {
         }
     }
 
+    { on(ReplayOpenedCallback.EVENT, this::onReplayOpen); }
     private void onReplayOpen(ReplayHandler replayHandler) throws IOException {
         Optional<Set<UUID>> savedData = replayHandler.getReplayFile().getInvisiblePlayers();
         if (savedData.isPresent()) {
@@ -125,6 +121,7 @@ public class PlayerOverview extends EventRegistrations implements Extra {
         }
     }
 
+    { on(ReplayClosedCallback.EVENT, this::onReplayClose); }
     private void onReplayClose(ReplayHandler replayHandler) {
         hiddenPlayers.clear();
     }

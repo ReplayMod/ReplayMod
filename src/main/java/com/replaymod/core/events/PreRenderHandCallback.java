@@ -1,13 +1,11 @@
 //#if MC>=11300
 package com.replaymod.core.events;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import de.johni0702.minecraft.gui.utils.Event;
 
 public interface PreRenderHandCallback {
-    Event<PreRenderHandCallback> EVENT = EventFactory.createArrayBacked(
-            PreRenderHandCallback.class,
-            (listeners) -> () -> {
+    Event<PreRenderHandCallback> EVENT = Event.create((listeners) ->
+            () -> {
                 for (PreRenderHandCallback listener : listeners) {
                     if (listener.preRenderHand()) {
                         return true;

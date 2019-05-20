@@ -1,13 +1,11 @@
 //#if MC>=11300
 package com.replaymod.core.events;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import de.johni0702.minecraft.gui.utils.Event;
 
 public interface PostRenderCallback {
-    Event<PostRenderCallback> EVENT = EventFactory.createArrayBacked(
-            PostRenderCallback.class,
-            (listeners) -> () -> {
+    Event<PostRenderCallback> EVENT = Event.create((listeners) ->
+            () -> {
                 for (PostRenderCallback listener : listeners) {
                     listener.postRender();
                 }

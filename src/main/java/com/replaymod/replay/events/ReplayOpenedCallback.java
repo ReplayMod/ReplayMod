@@ -1,14 +1,13 @@
 package com.replaymod.replay.events;
 
 import com.replaymod.replay.ReplayHandler;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import de.johni0702.minecraft.gui.utils.Event;
 
 import java.io.IOException;
 
 public interface ReplayOpenedCallback {
-    Event<ReplayOpenedCallback> EVENT = EventFactory.createArrayBacked(ReplayOpenedCallback.class,
-            (listeners) -> (replayHandler) -> {
+    Event<ReplayOpenedCallback> EVENT = Event.create((listeners) ->
+            (replayHandler) -> {
                 for (ReplayOpenedCallback listener : listeners) {
                     listener.replayOpened(replayHandler);
                 }
