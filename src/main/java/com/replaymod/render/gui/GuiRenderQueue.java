@@ -29,7 +29,7 @@ import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.gui.menu.NoticeScreen;
+import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
 
 import javax.annotation.Nullable;
@@ -38,7 +38,7 @@ import java.util.List;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
-import net.minecraft.text.TranslatableTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 //#endif
 
 public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
@@ -217,8 +217,8 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
                         () -> {},
-                        new TranslatableTextComponent("replaymod.gui.rendering.error.title"),
-                        new TranslatableTextComponent("replaymod.gui.rendering.error.message")
+                        new TranslatableComponent("replaymod.gui.rendering.error.title"),
+                        new TranslatableComponent("replaymod.gui.rendering.error.message")
                         //#else
                         //$$ I18n.format("replaymod.gui.rendering.error.title"),
                         //$$ I18n.format("replaymod.gui.rendering.error.message")

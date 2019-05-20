@@ -71,7 +71,7 @@ public abstract class UriScheme {
 
     public static UriScheme create() {
         switch (SystemUtil.getOperatingSystem()) {
-            case UNIX:
+            case LINUX:
                 return new LinuxUriScheme();
             case WINDOWS:
                 return new WindowsUriScheme();

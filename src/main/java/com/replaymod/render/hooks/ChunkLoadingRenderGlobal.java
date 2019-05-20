@@ -93,7 +93,7 @@ public class ChunkLoadingRenderGlobal {
 
         // Temporary workaround for dead lock, will be replaced by a new (ShaderMod compatible) mechanism later
         //noinspection StatementWithEmptyBody
-        while (renderDispatcher.method_3631(0)) {}
+        while (renderDispatcher.runTasksSync(0)) {}
 
         workerJailingQueue.jail(workerThreads);
         renderDispatcherAcc.setQueueChunkUpdates(queueChunkUpdates);
@@ -111,7 +111,7 @@ public class ChunkLoadingRenderGlobal {
     }
 
     public void updateChunks() {
-        while (renderDispatcher.method_3631(0)) {
+        while (renderDispatcher.runTasksSync(0)) {
             ((WorldRendererAccessor) hooked).setDisplayListEntitiesDirty(true);
         }
 
@@ -131,10 +131,10 @@ public class ChunkLoadingRenderGlobal {
         while (iterator.hasNext()) {
             ChunkRenderer renderchunk = iterator.next();
 
-            renderDispatcher.method_3627(renderchunk);
+            renderDispatcher.rebuildSync(renderchunk);
 
             //#if MC>=10904
-            renderchunk.method_3662();
+            renderchunk.unscheduleRebuild();
             //#else
             //$$ renderchunk.setNeedsUpdate(false);
             //#endif

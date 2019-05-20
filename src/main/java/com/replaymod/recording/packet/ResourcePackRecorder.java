@@ -4,7 +4,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.menu.YesNoScreen;
+import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.options.ServerEntry;
 import net.minecraft.client.options.ServerList;
 import net.minecraft.client.resource.ClientResourcePackCreator;
@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11400
-import net.minecraft.text.TranslatableTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 //#else
 //$$ import net.minecraft.client.gui.GuiYesNoCallback;
 //$$ import net.minecraft.client.resources.I18n;
@@ -144,7 +144,7 @@ public class ResourcePackRecorder {
             } else {
                 // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
                 //#if MC>=11400
-                mc.execute(() -> mc.openScreen(new YesNoScreen(result -> {
+                mc.execute(() -> mc.openScreen(new ConfirmScreen(result -> {
                 //#else
                 //$$ //noinspection Convert2Lambda
                 //$$ mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
@@ -169,7 +169,7 @@ public class ResourcePackRecorder {
                         mc.openScreen(null);
                     }
                 //#if MC>=11400
-                , new TranslatableTextComponent("multiplayer.texturePrompt.line1"), new TranslatableTextComponent("multiplayer.texturePrompt.line2"))));
+                , new TranslatableComponent("multiplayer.texturePrompt.line1"), new TranslatableComponent("multiplayer.texturePrompt.line2"))));
                 //#else
                 //$$ }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
                 //#endif

@@ -5,7 +5,7 @@ import com.replaymod.core.events.KeyBindingEventCallback;
 import de.johni0702.minecraft.gui.versions.callbacks.MouseCallback;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -47,7 +47,7 @@ public class MixinMouseListener {
 
     @Redirect(
             method = "onMouseScroll",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Screen;mouseScrolled(DDD)Z")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;mouseScrolled(DDD)Z")
     )
     private boolean mouseScroll(Screen element, double x, double y, double scroll) {
         if (MouseCallback.EVENT.invoker().mouseScroll(x, y, scroll)) {

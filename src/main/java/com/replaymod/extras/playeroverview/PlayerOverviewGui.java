@@ -102,7 +102,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                             renderer.bindTexture(texture);
                             renderer.drawTexturedRect(0, 0, 8, 8, 16, 16, 8, 8, 64, 64);
                             //#if MC>=10809
-                            if (p.isSkinOverlayVisible(PlayerModelPart.HEAD)) {
+                            if (p.isSkinOverlayVisible(PlayerModelPart.HAT)) {
                             //#else
                             //#if MC>=10800
                             //$$ if (p.func_175148_a(EnumPlayerModelParts.HAT)) {

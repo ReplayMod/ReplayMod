@@ -21,11 +21,11 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
-import net.minecraft.text.TextComponent;
-import net.minecraft.text.Style;
-import net.minecraft.text.StringTextComponent;
-import net.minecraft.text.TranslatableTextComponent;
-import net.minecraft.text.TextFormat;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.ChatFormat;
 import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
@@ -34,7 +34,7 @@ import com.replaymod.core.versions.LangResourcePack;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.options.GameOption;
+import net.minecraft.client.options.Option;
 import net.minecraft.resource.DirectoryResourcePack;
 import net.minecraft.resource.ResourcePackCreator;
 import net.minecraft.resource.ResourcePackContainer;
@@ -236,9 +236,9 @@ public class ReplayMod implements
         //#if MC>=11300
         DirectoryResourcePack jGuiResourcePack = new DirectoryResourcePack(new File("../jGui/src/main/resources")) {
             @Override
-            protected InputStream openFilename(String resourceName) throws IOException {
+            protected InputStream openFile(String resourceName) throws IOException {
                 try {
-                    return super.openFilename(resourceName);
+                    return super.openFile(resourceName);
         //#else
         //$$ List<IResourcePack> defaultResourcePacks = ((MinecraftAccessor) mc).getDefaultResourcePacks();
         //$$ FolderResourcePack jGuiResourcePack = new FolderResourcePack(new File("../jGui/src/main/resources")) {
@@ -262,10 +262,10 @@ public class ReplayMod implements
             }
         };
         //#if MC>=11300
-        mc.method_1520().addCreator(new ResourcePackCreator() {
+        mc.getResourcePackContainerManager().addCreator(new ResourcePackCreator() {
             @Override
             public <T extends ResourcePackContainer> void registerContainer(Map<String, T> map, ResourcePackContainer.Factory<T> factory) {
-                map.put("jgui", ResourcePackContainer.of("jgui", true, () -> jGuiResourcePack, factory, ResourcePackContainer.SortingDirection.BOTTOM));
+                map.put("jgui", ResourcePackContainer.of("jgui", true, () -> jGuiResourcePack, factory, ResourcePackContainer.InsertionPosition.BOTTOM));
             }
         });
         //#else
@@ -335,7 +335,7 @@ public class ReplayMod implements
         //#if MC>=10800
         if (!MCVer.hasOptifine()) {
             //#if MC>=11400
-            GameOption.RENDER_DISTANCE.setMax(64f);
+            Option.RENDER_DISTANCE.setMax(64f);
             //#else
             //$$ GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
             //#endif
@@ -513,13 +513,13 @@ public class ReplayMod implements
         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
             //#if MC>=10904
-            Style coloredDarkGray = new Style().setColor(TextFormat.DARK_GRAY);
-            Style coloredGold = new Style().setColor(TextFormat.GOLD);
-            TextComponent text = new StringTextComponent("[").setStyle(coloredDarkGray)
-                    .append(new TranslatableTextComponent("replaymod.title").setStyle(coloredGold))
-                    .append(new StringTextComponent("] "))
-                    .append(new TranslatableTextComponent(message, args).setStyle(new Style()
-                            .setColor(warning ? TextFormat.RED : TextFormat.DARK_GREEN)));
+            Style coloredDarkGray = new Style().setColor(ChatFormat.DARK_GRAY);
+            Style coloredGold = new Style().setColor(ChatFormat.GOLD);
+            Component text = new TextComponent("[").setStyle(coloredDarkGray)
+                    .append(new TranslatableComponent("replaymod.title").setStyle(coloredGold))
+                    .append(new TextComponent("] "))
+                    .append(new TranslatableComponent(message, args).setStyle(new Style()
+                            .setColor(warning ? ChatFormat.RED : ChatFormat.DARK_GREEN)));
             //#else
             //$$ ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
             //$$ ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);

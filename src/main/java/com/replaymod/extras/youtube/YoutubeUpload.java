@@ -9,7 +9,7 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.OpenGuiScreenCallback;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 //#else
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;

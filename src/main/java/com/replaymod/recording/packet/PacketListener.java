@@ -23,7 +23,7 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.client.network.packet.*;
-import net.minecraft.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -279,7 +279,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 if (packet instanceof CustomPayloadS2CPacket) {
                     CustomPayloadS2CPacket p = (CustomPayloadS2CPacket) packet;
                     if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannel())) {
-                        packet = new DisconnectS2CPacket(new StringTextComponent("Please update to view this replay."));
+                        packet = new DisconnectS2CPacket(new TextComponent("Please update to view this replay."));
                         save(packet);
                     }
                 }
@@ -339,7 +339,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         }
 
         //#if MC>=10800
-        Integer packetId = connectionState.getPacketId(NetworkSide.CLIENT, packet);
+        Integer packetId = connectionState.getPacketId(NetworkSide.CLIENTBOUND, packet);
         //#else
         //$$ Integer packetId = (Integer) connectionState.func_150755_b().inverse().get(packet.getClass());
         //#endif

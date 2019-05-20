@@ -21,8 +21,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
-import net.minecraft.client.gui.menu.DownloadingTerrainScreen;
-import net.minecraft.client.gui.menu.NoticeScreen;
+import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
+import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.NetworkState;
@@ -31,7 +31,7 @@ import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.client.network.packet.LoginSuccessS2CPacket;
 import net.minecraft.client.network.packet.*;
-import net.minecraft.text.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkProvider;
 import org.apache.commons.io.FileUtils;
@@ -40,7 +40,7 @@ import org.apache.commons.io.IOUtils;
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import net.minecraft.entity.EntityType;
-import net.minecraft.text.TranslatableTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 //#else
 //$$ import net.minecraft.client.resources.I18n;
 //$$ import net.minecraft.entity.Entity;
@@ -343,7 +343,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 for (PlayerEntity playerEntity : playerEntities(mc.world)) {
                     if (!playerEntity.field_6016 && playerEntity instanceof OtherClientPlayerEntity) {
                     //#if MC>=11300
-                    playerEntity.updateState();
+                    playerEntity.tickMovement();
                     //#else
                     //$$ playerEntity.onLivingUpdate();
                     //#endif
@@ -436,7 +436,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         NetworkState state = loginPhase ? NetworkState.LOGIN : NetworkState.PLAY;
         //#if MC>=10800
-        Packet p = state.getPacketHandler(NetworkSide.CLIENT, i);
+        Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i);
         //#else
         //$$ Packet p = Packet.generatePacket(state.func_150755_b(), i);
         //#endif
@@ -475,8 +475,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         mc.openScreen(new NoticeScreen(
                                 //#if MC>=11400
                                 () -> {},
-                                new TranslatableTextComponent("replaymod.error.unknownrestriction1"),
-                                new TranslatableTextComponent("replaymod.error.unknownrestriction2", unknown)
+                                new TranslatableComponent("replaymod.error.unknownrestriction1"),
+                                new TranslatableComponent("replaymod.error.unknownrestriction2", unknown)
                                 //#else
                                 //$$ I18n.format("replaymod.error.unknownrestriction1"),
                                 //$$ I18n.format("replaymod.error.unknownrestriction2", unknown)
@@ -487,7 +487,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
         if (p instanceof DisconnectS2CPacket) {
-            TextComponent reason = ((DisconnectS2CPacket) p).getReason();
+            Component reason = ((DisconnectS2CPacket) p).getReason();
             String message = reason.getString();
             if ("Please update to view this replay.".equals(message)) {
                 // This version of the mod supports replay restrictions so we are allowed

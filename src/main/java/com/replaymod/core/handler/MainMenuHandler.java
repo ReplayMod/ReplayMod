@@ -3,8 +3,8 @@ package com.replaymod.core.handler;
 import com.replaymod.core.mixin.GuiMainMenuAccessor;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.MainMenuScreen;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.realms.RealmsScreenProxy;
 import org.lwjgl.opengl.GL11;
 
@@ -35,8 +35,8 @@ public class MainMenuHandler extends EventRegistrations {
     //$$     GuiScreen guiScreen = getGui(event);
     //$$     List<GuiButton> buttonList = getButtonList(event);
     //#endif
-        if (guiScreen instanceof MainMenuScreen) {
-            MainMenuScreen gui = (MainMenuScreen) guiScreen;
+        if (guiScreen instanceof TitleScreen) {
+            TitleScreen gui = (TitleScreen) guiScreen;
             int realmsOffset = 0;
             //#if MC>=11400
             for (AbstractButtonWidget button : buttonList) {

@@ -30,7 +30,7 @@ public class MixinGameRenderer {
             method = "render",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/Screen;render(IIF)V",
+                    target = "Lnet/minecraft/client/gui/screen/Screen;render(IIF)V",
                     shift = At.Shift.AFTER
             )
     )

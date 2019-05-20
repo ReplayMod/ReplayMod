@@ -19,7 +19,7 @@ import java.util.List;
 
 public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
 
-    public GuiReplaySettings(final net.minecraft.client.gui.Screen parent, final SettingsRegistry settingsRegistry) {
+    public GuiReplaySettings(final net.minecraft.client.gui.screen.Screen parent, final SettingsRegistry settingsRegistry) {
         final GuiButton doneButton = new GuiButton(this).setI18nLabel("gui.done").setSize(200, 20).onClick(new Runnable() {
             @Override
             public void run() {

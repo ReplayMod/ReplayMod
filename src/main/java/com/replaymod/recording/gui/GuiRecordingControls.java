@@ -11,7 +11,7 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.client.gui.menu.PauseMenuScreen;
+import net.minecraft.client.gui.screen.PauseScreen;
 
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
@@ -68,8 +68,8 @@ public class GuiRecordingControls extends EventRegistrations {
 
     //#if MC>=11400
     { on(InitScreenCallback.EVENT, (screen, buttons) -> {
-        if (screen instanceof PauseMenuScreen) {
-            show((PauseMenuScreen) screen);
+        if (screen instanceof PauseScreen) {
+            show((PauseScreen) screen);
         }
     }); }
     //#else
@@ -88,7 +88,7 @@ public class GuiRecordingControls extends EventRegistrations {
         buttonPauseResume.setEnabled(!stopped);
     }
 
-    public void show(PauseMenuScreen gui) {
+    public void show(PauseScreen gui) {
         VanillaGuiScreen.setup(gui).setLayout(new CustomLayout<GuiScreen>() {
             @Override
             protected void layout(GuiScreen container, int width, int height) {

@@ -25,7 +25,7 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
@@ -229,7 +229,7 @@ public class ReplayHandler {
         //#endif
 
         //#if MC>=10800
-        ClientConnection networkManager = new ClientConnection(NetworkSide.CLIENT) {
+        ClientConnection networkManager = new ClientConnection(NetworkSide.CLIENTBOUND) {
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
                 t.printStackTrace();

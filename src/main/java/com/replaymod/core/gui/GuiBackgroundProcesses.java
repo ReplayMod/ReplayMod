@@ -15,7 +15,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 //#else
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
 //$$ import net.minecraftforge.common.MinecraftForge;

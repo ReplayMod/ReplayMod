@@ -10,12 +10,12 @@ import com.replaymod.replay.handler.GuiHandler.InjectedButton;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.MainMenuScreen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.resource.language.I18n;
 
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import java.util.List;
 //#else
@@ -44,7 +44,7 @@ public class GuiHandler extends EventRegistrations {
     //$$ public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
     //$$     final net.minecraft.client.gui.GuiScreen guiScreen = getGui(event);
     //#endif
-        if (!(guiScreen instanceof MainMenuScreen)) {
+        if (!(guiScreen instanceof TitleScreen)) {
             return;
         }
 
@@ -89,7 +89,7 @@ public class GuiHandler extends EventRegistrations {
 
     //#if MC>=11300
     private void onButton(InjectedButton button) {
-        net.minecraft.client.gui.Screen guiScreen = button.guiScreen;
+        net.minecraft.client.gui.screen.Screen guiScreen = button.guiScreen;
     //#else
     //$$ @SubscribeEvent
     //$$ public void onButton(GuiScreenEvent.ActionPerformedEvent.Pre event) {
@@ -98,7 +98,7 @@ public class GuiHandler extends EventRegistrations {
     //#endif
         if(!button.active) return;
 
-        if (guiScreen instanceof MainMenuScreen) {
+        if (guiScreen instanceof TitleScreen) {
             if (button.id == BUTTON_REPLAY_CENTER) {
                 GuiReplayCenter replayCenter = new GuiReplayCenter(mod);
                 if (mod.isLoggedIn()) {

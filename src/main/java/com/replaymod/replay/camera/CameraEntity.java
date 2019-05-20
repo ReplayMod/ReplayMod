@@ -284,12 +284,12 @@ public class CameraEntity
     }
 
     @Override
-    public void method_5823() {
+    public void afterSpawn() {
         // Make sure our world is up-to-date in case of world changes
         if (this.client.world != null) {
             this.world = this.client.world;
         }
-        super.method_5823();
+        super.afterSpawn();
     }
 
     @Override
@@ -428,19 +428,19 @@ public class CameraEntity
 
     //#if MC>=10904
     @Override
-    public float method_7279() {
+    public float getAttackCooldownProgressPerTick() {
         Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof PlayerEntity) {
-            return ((PlayerEntity) view).method_7279();
+            return ((PlayerEntity) view).getAttackCooldownProgressPerTick();
         }
         return 1;
     }
 
     @Override
-    public float method_7261(float adjustTicks) {
+    public float getAttackCooldownProgress(float adjustTicks) {
         Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof PlayerEntity) {
-            return ((PlayerEntity) view).method_7261(adjustTicks);
+            return ((PlayerEntity) view).getAttackCooldownProgress(adjustTicks);
         }
         // Default to 1 as to not render the cooldown indicator (renders for < 1)
         return 1;
@@ -707,8 +707,8 @@ public class CameraEntity
                     acc.setPrevEquippedProgressOffHand(1);
                     acc.setEquippedProgressMainHand(1);
                     acc.setEquippedProgressOffHand(1);
-                    acc.setItemStackMainHand(player.getEquippedStack(EquipmentSlot.HAND_MAIN));
-                    acc.setItemStackOffHand(player.getEquippedStack(EquipmentSlot.HAND_OFF));
+                    acc.setItemStackMainHand(player.getEquippedStack(EquipmentSlot.MAINHAND));
+                    acc.setItemStackOffHand(player.getEquippedStack(EquipmentSlot.OFFHAND));
                     //#else
                     //$$ acc.setPrevEquippedProgress(1);
                     //$$ acc.setEquippedProgress(1);

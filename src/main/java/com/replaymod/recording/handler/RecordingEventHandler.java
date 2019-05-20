@@ -219,7 +219,7 @@ public class RecordingEventHandler extends EventRegistrations {
                 packetListener.save(new EntityAnimationS2CPacket(
                         player,
                         //#if MC>=10904
-                        player.preferredHand == Hand.MAIN ? 0 : 3
+                        player.preferredHand == Hand.MAIN_HAND ? 0 : 3
                         //#else
                         //$$ 0
                         //#endif
@@ -248,14 +248,14 @@ public class RecordingEventHandler extends EventRegistrations {
 
             //Inventory Handling
             //#if MC>=10904
-            if (playerItems[0] != player.getStackInHand(Hand.MAIN)) {
-                playerItems[0] = player.getStackInHand(Hand.MAIN);
-                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.HAND_MAIN, playerItems[0]));
+            if (playerItems[0] != player.getStackInHand(Hand.MAIN_HAND)) {
+                playerItems[0] = player.getStackInHand(Hand.MAIN_HAND);
+                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.MAINHAND, playerItems[0]));
             }
 
-            if (playerItems[1] != player.getStackInHand(Hand.OFF)) {
-                playerItems[1] = player.getStackInHand(Hand.OFF);
-                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.HAND_OFF, playerItems[1]));
+            if (playerItems[1] != player.getStackInHand(Hand.OFF_HAND)) {
+                playerItems[1] = player.getStackInHand(Hand.OFF_HAND);
+                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.OFFHAND, playerItems[1]));
             }
 
             if (playerItems[2] != player.getEquippedStack(EquipmentSlot.FEET)) {
@@ -338,7 +338,7 @@ public class RecordingEventHandler extends EventRegistrations {
                 wasHandActive = player.isUsingItem();
                 lastActiveHand = player.getActiveHand();
                 DataTracker dataManager = new DataTracker(null);
-                int state = (wasHandActive ? 1 : 0) | (lastActiveHand == Hand.OFF ? 2 : 0);
+                int state = (wasHandActive ? 1 : 0) | (lastActiveHand == Hand.OFF_HAND ? 2 : 0);
                 //#if MC>=11300
                 dataManager.startTracking(EntityLivingBaseAccessor.getLivingFlags(), (byte) state);
                 //#else

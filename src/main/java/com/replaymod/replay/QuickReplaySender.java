@@ -676,7 +676,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 byteBuf.skipBytes(8); // Skip packet length & timestamp
 
                 int packetId = packetBuf.readVarInt();
-                Packet<?> mcPacket = state.getPacketHandler(NetworkSide.CLIENT, packetId);
+                Packet<?> mcPacket = state.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
                 mcPacket.read(packetBuf);
                 return mcPacket;
             } catch (Exception e) {
@@ -710,7 +710,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             }
 
             int packetId = packetBuf.readVarInt();
-            Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENT, packetId);
+            Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
             mcPacket.read(packetBuf);
             return mcPacket;
         } catch (Exception e) {

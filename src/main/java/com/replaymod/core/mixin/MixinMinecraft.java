@@ -11,7 +11,7 @@ import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
 import de.johni0702.minecraft.gui.versions.callbacks.OpenGuiScreenCallback;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#else
@@ -71,7 +71,7 @@ public abstract class MixinMinecraft
         PreTickCallback.EVENT.invoker().preTick();
     }
 
-    @Inject(method = "openScreen", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;currentScreen:Lnet/minecraft/client/gui/Screen;"))
+    @Inject(method = "openScreen", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;currentScreen:Lnet/minecraft/client/gui/screen/Screen;"))
     private void openGuiScreen(Screen newGuiScreen, CallbackInfo ci) {
         OpenGuiScreenCallback.EVENT.invoker().openGuiScreen(newGuiScreen);
     }

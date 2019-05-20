@@ -212,7 +212,7 @@ public class RenderSettings {
                     }
                 }
                 break;
-            case UNIX: // Linux users are entrusted to have their PATH configured correctly (most package manager do this)
+            case LINUX: // Linux users are entrusted to have their PATH configured correctly (most package manager do this)
             case SOLARIS: // Never heard of anyone running this mod on Solaris having any problems
             case UNKNOWN: // Unknown OS, just try to use "ffmpeg"
         }

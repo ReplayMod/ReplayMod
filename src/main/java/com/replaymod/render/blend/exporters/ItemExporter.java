@@ -119,7 +119,7 @@ public class ItemExporter implements Exporter {
         for (BakedQuad quad : quads) {
             int color = stack != null && quad.hasColor()
                     //#if MC>=10904
-                    ? ((ItemRendererAccessor) renderItem).getItemColors().getRenderColor(stack, quad.getColorIndex()) | 0xff000000
+                    ? ((ItemRendererAccessor) renderItem).getItemColors().getColorMultiplier(stack, quad.getColorIndex()) | 0xff000000
                     //#else
                     //$$ ? stack.getItem().getColorFromItemStack(stack, quad.getTintIndex()) | 0xff000000
                     //#endif

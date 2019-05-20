@@ -8,12 +8,12 @@ import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiCheckbox;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import net.minecraft.client.gui.menu.MultiplayerScreen;
-import net.minecraft.client.gui.menu.LevelSelectScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 //#else
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
 //$$ import net.minecraftforge.common.MinecraftForge;
@@ -38,8 +38,8 @@ public class GuiHandler extends EventRegistrations {
     //$$ public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
     //$$     net.minecraft.client.gui.GuiScreen gui = getGui(event);
     //#endif
-        if (gui instanceof LevelSelectScreen || gui instanceof MultiplayerScreen) {
-            boolean sp = gui instanceof LevelSelectScreen;
+        if (gui instanceof SelectWorldScreen || gui instanceof MultiplayerScreen) {
+            boolean sp = gui instanceof SelectWorldScreen;
             SettingsRegistry settingsRegistry = mod.getSettingsRegistry();
             Setting<Boolean> setting = sp ? Setting.RECORD_SINGLEPLAYER : Setting.RECORD_SERVER;
 

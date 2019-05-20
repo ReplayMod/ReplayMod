@@ -4,10 +4,10 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.menu.PauseMenuScreen;
-import net.minecraft.client.gui.MainMenuScreen;
-import net.minecraft.client.gui.menu.MultiplayerScreen;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.PauseScreen;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
 
 //#if MC>=11400
@@ -45,7 +45,7 @@ public class GuiHandler extends EventRegistrations {
     //$$     GuiScreen guiScreen = getGui(event);
     //$$     List<GuiButton> buttonList = getButtonList(event);
     //#endif
-        if (!(guiScreen instanceof PauseMenuScreen)) {
+        if (!(guiScreen instanceof PauseScreen)) {
             return;
         }
 
@@ -171,7 +171,7 @@ public class GuiHandler extends EventRegistrations {
     //$$ public void ensureReplayStopped(GuiScreenEvent.InitGuiEvent event) {
     //$$     GuiScreen guiScreen = getGui(event);
     //#endif
-        if (!(guiScreen instanceof MainMenuScreen || guiScreen instanceof MultiplayerScreen)) {
+        if (!(guiScreen instanceof TitleScreen || guiScreen instanceof MultiplayerScreen)) {
             return;
         }
 
@@ -198,7 +198,7 @@ public class GuiHandler extends EventRegistrations {
     //$$ public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
     //$$     GuiScreen guiScreen = getGui(event);
     //#endif
-        if (!(guiScreen instanceof MainMenuScreen)) {
+        if (!(guiScreen instanceof TitleScreen)) {
             return;
         }
         ButtonWidget button = new InjectedButton(
@@ -225,13 +225,13 @@ public class GuiHandler extends EventRegistrations {
     //#endif
         if(!button.active) return;
 
-        if (guiScreen instanceof MainMenuScreen) {
+        if (guiScreen instanceof TitleScreen) {
             if (button.id == BUTTON_REPLAY_VIEWER) {
                 new GuiReplayViewer(mod).display();
             }
         }
 
-        if (guiScreen instanceof PauseMenuScreen && mod.getReplayHandler() != null) {
+        if (guiScreen instanceof PauseScreen && mod.getReplayHandler() != null) {
             if (button.id == BUTTON_EXIT_REPLAY) {
                 button.active = false;
                 try {

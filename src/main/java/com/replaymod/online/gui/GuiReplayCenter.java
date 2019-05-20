@@ -39,7 +39,7 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import org.apache.commons.lang3.StringUtils;
-import net.minecraft.text.TextFormat;
+import net.minecraft.ChatFormat;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -417,9 +417,9 @@ public class GuiReplayCenter extends GuiScreen {
             this.downloaded = downloaded;
             ReplayMetaData metaData = fileInfo.getMetadata();
 
-            name.setText(TextFormat.UNDERLINE + Utils.fileNameToReplayName(fileInfo.getName()));
+            name.setText(ChatFormat.UNDERLINE + Utils.fileNameToReplayName(fileInfo.getName()));
             author.setI18nText("replaymod.gui.center.author",
-                    "" + TextFormat.GRAY + TextFormat.ITALIC, fileInfo.getOwner());
+                    "" + ChatFormat.GRAY + ChatFormat.ITALIC, fileInfo.getOwner());
             if (StringUtils.isEmpty(metaData.getServerName())) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {
@@ -443,7 +443,7 @@ public class GuiReplayCenter extends GuiScreen {
             favorites.setText("⭑" + fileInfo.getFavorites());
             likes.setText("⬆" + fileInfo.getRatings().getPositive());
             dislikes.setText("⬇" + fileInfo.getRatings().getNegative());
-            category.setText(TextFormat.ITALIC + Optional.fromNullable(Category.fromId(fileInfo.getCategory()))
+            category.setText(ChatFormat.ITALIC + Optional.fromNullable(Category.fromId(fileInfo.getCategory()))
                     .or(Category.MISCELLANEOUS).toNiceString());
             addElements(null, durationPanel, downloadsPanel);
 

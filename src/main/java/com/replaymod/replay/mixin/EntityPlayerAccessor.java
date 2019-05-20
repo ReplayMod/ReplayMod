@@ -8,9 +8,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(PlayerEntity.class)
 public interface EntityPlayerAccessor extends EntityLivingBaseAccessor {
     //#if MC>=10904
-    @Accessor("field_7525")
+    @Accessor("selectedItem")
     ItemStack getItemStackMainHand();
-    @Accessor("field_7525")
+    @Accessor("selectedItem")
     void setItemStackMainHand(ItemStack value);
     //#else
     //$$ @Accessor

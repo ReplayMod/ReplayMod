@@ -3,7 +3,7 @@ package com.replaymod.core.versions;
 
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
-import net.minecraft.resource.AbstractFilenameResourcePack;
+import net.minecraft.resource.AbstractFileResourcePack;
 import net.minecraft.resource.ResourceNotFoundException;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * Resource pack which on-the-fly converts pre-1.13 language files into 1.13 json format.
  * Also remaps `replaymod.input.*` bindings to `key.replaymod.*` as convention on Fabric.
  */
-public class LangResourcePack extends AbstractFilenameResourcePack {
+public class LangResourcePack extends AbstractFileResourcePack {
     private static final Gson GSON = new Gson();
     private static final String NAME = "replaymod_lang";
     private static final Pattern JSON_FILE_PATTERN = Pattern.compile("^assets/" + ReplayMod.MOD_ID + "/lang/([a-z][a-z])_([a-z][a-z]).json$");
@@ -98,7 +98,7 @@ public class LangResourcePack extends AbstractFilenameResourcePack {
     }
 
     @Override
-    protected InputStream openFilename(String path) throws IOException {
+    protected InputStream openFile(String path) throws IOException {
         if ("pack.mcmeta".equals(path)) {
             return new ByteArrayInputStream("{\"pack\": {\"description\": \"ReplayMod language files\", \"pack_format\": 4}}".getBytes(StandardCharsets.UTF_8));
         }
@@ -130,7 +130,7 @@ public class LangResourcePack extends AbstractFilenameResourcePack {
     }
 
     @Override
-    protected boolean containsFilename(String path) {
+    protected boolean containsFile(String path) {
         Path langPath = langPath(path);
         return langPath != null && Files.exists(langPath);
     }
@@ -138,7 +138,7 @@ public class LangResourcePack extends AbstractFilenameResourcePack {
 
     @Override
     public Collection<Identifier> findResources(ResourceType resourcePackType, String path, int maxDepth, Predicate<String> filter) {
-        if (resourcePackType == ResourceType.ASSETS && "lang".equals(path)) {
+        if (resourcePackType == ResourceType.CLIENT_RESOURCES && "lang".equals(path)) {
             Path base = baseLangPath();
             //#if MC<11400
             //$$ if (base == null) return Collections.emptyList();
@@ -165,7 +165,7 @@ public class LangResourcePack extends AbstractFilenameResourcePack {
 
     @Override
     public Set<String> getNamespaces(ResourceType resourcePackType) {
-        if (resourcePackType == ResourceType.ASSETS) {
+        if (resourcePackType == ResourceType.CLIENT_RESOURCES) {
             return Collections.singleton("replaymod");
         } else {
             return Collections.emptySet();

@@ -53,7 +53,7 @@ public abstract class MixinNetHandlerPlayClient {
         if (gameController.player == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();
-        if (handler != null && packet.getAction() == PlayerListS2CPacket.Action.ADD) {
+        if (handler != null && packet.getAction() == PlayerListS2CPacket.Action.ADD_PLAYER) {
             // We cannot reference SPacketPlayerListItem.AddPlayerData directly for complicated (and yet to be
             // resolved) reasons (see https://github.com/MinecraftForge/ForgeGradle/issues/472), so we "simply" convert
             // the back to the MCProtocolLib equivalent and deal with that one.

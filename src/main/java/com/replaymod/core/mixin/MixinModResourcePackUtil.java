@@ -20,7 +20,7 @@ import java.util.List;
 public class MixinModResourcePackUtil {
     @Inject(method = "appendModResourcePacks", at = @At("RETURN"), remap = false)
     private static void injectRMLangPack(List<ResourcePack> packList, ResourceType type, CallbackInfo ci) {
-        if (type != ResourceType.ASSETS) return;
+        if (type != ResourceType.CLIENT_RESOURCES) return;
 
         for (int i = 0; i < packList.size(); i++) {
             ResourcePack pack = packList.get(i);

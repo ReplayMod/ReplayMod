@@ -71,7 +71,7 @@ public class ChunkExporter implements Exporter {
         List<ContainerLocalRenderInformationAccessor> renderInfos = ((WorldRendererAccessor) mc.worldRenderer).getRenderInfos();
         for (ContainerLocalRenderInformationAccessor renderInfo : renderInfos) {
             ChunkRenderer renderChunk = renderInfo.getRenderChunk();
-            ChunkRenderData compiledChunk = renderChunk.getChunkRenderData();
+            ChunkRenderData compiledChunk = renderChunk.getData();
             if (!compiledChunk.isEmpty()) {
                 addChunkUpdate(renderChunk, null);
             }

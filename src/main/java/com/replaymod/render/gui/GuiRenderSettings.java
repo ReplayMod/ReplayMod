@@ -32,7 +32,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.gui.menu.NoticeScreen;
+import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 
@@ -52,7 +52,7 @@ import static com.replaymod.core.utils.Utils.error;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
-import net.minecraft.text.TranslatableTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 //#endif
 
 public class GuiRenderSettings extends GuiScreen implements Closeable {
@@ -240,8 +240,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
                         () -> {},
-                        new TranslatableTextComponent("replaymod.gui.rendering.error.title"),
-                        new TranslatableTextComponent("replaymod.gui.rendering.error.message")
+                        new TranslatableComponent("replaymod.gui.rendering.error.title"),
+                        new TranslatableComponent("replaymod.gui.rendering.error.message")
                         //#else
                         //$$ I18n.format("replaymod.gui.rendering.error.title"),
                         //$$ I18n.format("replaymod.gui.rendering.error.message")
@@ -538,7 +538,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 antiAliasingDropdown.getSelectedValue(),
                 exportCommand.getText(),
                 exportArguments.getText(),
-                net.minecraft.client.gui.Screen.hasControlDown()
+                net.minecraft.client.gui.screen.Screen.hasControlDown()
         );
     }
 

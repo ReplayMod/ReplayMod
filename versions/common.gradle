@@ -209,16 +209,16 @@ def shadeExclusions = {
 dependencies {
     if (FABRIC) {
         minecraft 'com.mojang:minecraft:' + [
-                11400: '1.14'
+                11401: '1.14.1'
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
-                11400: '1.14+build.1'
+                11401: '1.14.1+build.10'
         ][mcVersion]
         modCompile 'net.fabricmc:fabric-loader:' + [
-                11400: '0.4.2+build.132'
+                11401: '0.4.7+build.147'
         ][mcVersion]
-        modCompile 'net.fabricmc:fabric:' + [
-                11400: '0.2.7+build.127'
+        modCompile 'net.fabricmc.fabric-api:fabric-api:' + [
+                11401: '0.3.0-pre+build.157'
         ][mcVersion]
     }
 
@@ -254,7 +254,7 @@ dependencies {
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:6d1ffa9", shadeExclusions
+    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:53c6ca4", shadeExclusions
 
     shadowReobf(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those

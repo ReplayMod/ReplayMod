@@ -15,7 +15,7 @@ public abstract class MixinViewFrustum {
             at = @At(
                     value = "INVOKE",
                     //#if MC>=10904
-                    target = "Lnet/minecraft/client/render/chunk/ChunkRenderer;method_3653(III)V"
+                    target = "Lnet/minecraft/client/render/chunk/ChunkRenderer;setOrigin(III)V"
                     //#else
                     //$$ target = "Lnet/minecraft/client/renderer/chunk/RenderChunk;setPosition(Lnet/minecraft/util/BlockPos;)V"
                     //#endif
@@ -34,8 +34,8 @@ public abstract class MixinViewFrustum {
         //#endif
         if (!pos.equals(renderChunk.getOrigin())) {
             //#if MC>=10904
-            renderChunk.method_3653(x, y, z);
-            renderChunk.scheduleRender(false);
+            renderChunk.setOrigin(x, y, z);
+            renderChunk.scheduleRebuild(false);
             //#else
             //$$ renderChunk.setPosition(pos);
             //$$ renderChunk.setNeedsUpdate(true);

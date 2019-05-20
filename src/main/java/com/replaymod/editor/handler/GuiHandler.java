@@ -12,7 +12,7 @@ import net.minecraft.util.crash.CrashReport;
 
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import java.util.List;
 //#else

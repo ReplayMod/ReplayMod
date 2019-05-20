@@ -172,7 +172,7 @@ public class BlendMeshBuilder
                     posOffset = offset;
                     break;
                 case COLOR:
-                    if (element.getFormat() != VertexFormatElement.Format.UNSIGNED_BYTE) {
+                    if (element.getFormat() != VertexFormatElement.Format.UBYTE) {
                         throw new UnsupportedOperationException("Only unsigned byte is supported for color elements!");
                     }
                     colorOffset = offset;

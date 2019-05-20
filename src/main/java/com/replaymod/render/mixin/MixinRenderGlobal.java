@@ -118,7 +118,7 @@ public abstract class MixinRenderGlobal {
 
     // Prior to 1.9.4, MC always uses the same ChunkRenderDispatcher instance
     //#if MC>=10904
-    @Inject(method = "setWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/chunk/ChunkBatcher;method_3619()V"))
+    @Inject(method = "setWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/chunk/ChunkBatcher;stop()V"))
     private void stopWorkerThreadsAndChunkLoadingRenderGlobal(CallbackInfo ci) {
         if (replayModRender_hook != null) {
             replayModRender_hook.updateRenderDispatcher(null);

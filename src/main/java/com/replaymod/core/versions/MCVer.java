@@ -4,7 +4,7 @@ import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.Screen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
