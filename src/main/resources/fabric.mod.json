@@ -24,6 +24,7 @@
     ]
   },
   "mixins": [
+    "mixins.jgui.json",
     "mixins.core.replaymod.json",
     "mixins.extras.playeroverview.replaymod.json",
     "mixins.recording.replaymod.json",

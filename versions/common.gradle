@@ -343,7 +343,14 @@ task configureRelocation() {
 
 tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
 task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    from { tasks.jar.archivePath }
+    from({ zipTree(tasks.jar.archivePath) }) {
+        filesMatching('mixins.jgui.json') {
+            filter { it.replace('de.johni0702', 'com.replaymod.lib.de.johni0702') }
+        }
+        filesMatching('mixins.jgui.refmap.json') {
+            filter { it.replace('de/johni0702', 'com/replaymod/lib/de/johni0702') }
+        }
+    }
     afterEvaluate { dependsOn FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
     manifest.inheritFrom tasks.jar.manifest
 
