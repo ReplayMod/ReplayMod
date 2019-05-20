@@ -70,11 +70,7 @@ public class InputReplayTimer extends WrappedTimer {
             mc.keyboard.pollDebugCrash();
             //#else
             //#if MC>=10904
-            //$$ if (mc.currentScreen == null || mc.currentScreen.allowUserInput) {
-            //$$     ((MCVer.MinecraftMethodAccessor) mc).replayModRunTickMouse();
-            //$$     ((MCVer.MinecraftMethodAccessor) mc).replayModRunTickKeyboard();
-            //$$ } else {
-                //#if MC<11300
+            //$$ if (mc.currentScreen != null) {
                 //#if MC>=10800
                 //$$ try {
                 //$$     mc.currentScreen.handleInput();
@@ -84,7 +80,10 @@ public class InputReplayTimer extends WrappedTimer {
                 //#else
                 //$$ mc.currentScreen.handleInput();
                 //#endif
-                //#endif
+            //$$ }
+            //$$ if (mc.currentScreen == null || mc.currentScreen.allowUserInput) {
+            //$$     ((MCVer.MinecraftMethodAccessor) mc).replayModRunTickMouse();
+            //$$     ((MCVer.MinecraftMethodAccessor) mc).replayModRunTickKeyboard();
             //$$ }
             //#else
             //$$ // 1.8.9 and below has one giant tick function, so we try to only do keyboard & mouse as far as possible
