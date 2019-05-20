@@ -29,7 +29,8 @@ import java.util.UUID;
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class MixinNetHandlerPlayClient {
 
-    private static MinecraftClient gameController = MCVer.getMinecraft();
+    // The stupid name is required as otherwise Mixin treats it as a shadow, seemingly ignoring the lack of @Shadow
+    private static MinecraftClient mcStatic = MCVer.getMinecraft();
 
     //#if MC>=10800
     @Shadow
@@ -37,7 +38,7 @@ public abstract class MixinNetHandlerPlayClient {
     //#endif
 
     public RecordingEventHandler getRecordingEventHandler() {
-        return ((RecordingEventHandler.RecordingEventSender) gameController.worldRenderer).getRecordingEventHandler();
+        return ((RecordingEventHandler.RecordingEventSender) mcStatic.worldRenderer).getRecordingEventHandler();
     }
 
     /**
@@ -50,7 +51,7 @@ public abstract class MixinNetHandlerPlayClient {
     //#if MC>=10800
     @Inject(method = "onPlayerList", at=@At("HEAD"))
     public void recordOwnJoin(PlayerListS2CPacket packet, CallbackInfo ci) {
-        if (gameController.player == null) return;
+        if (mcStatic.player == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null && packet.getAction() == PlayerListS2CPacket.Action.ADD_PLAYER) {
@@ -76,7 +77,7 @@ public abstract class MixinNetHandlerPlayClient {
             for (com.github.steveice10.mc.protocol.data.game.PlayerListEntry data : mcpl.getEntries()) {
                 if (data.getProfile() == null || data.getProfile().getId() == null) continue;
                 // Only add spawn packet for our own player and only if he isn't known yet
-                if (data.getProfile().getId().equals(gameController.player.getGameProfile().getId())
+                if (data.getProfile().getId().equals(mcStatic.player.getGameProfile().getId())
                         && !this.playerListEntries.containsKey(data.getProfile().getId())) {
                     handler.onPlayerJoin();
                 }
