@@ -306,13 +306,25 @@ task configureRelocation() {
             def pkgs = [].toSet()
             tree.visit { file ->
                 if (!file.directory && file.name.endsWith('.class') && file.path.contains('/')) {
-                    def pkg = file.path.substring(0, file.path.lastIndexOf('/'))
+                    def pkg = file.path.substring(0, file.path.lastIndexOf('/')) + '/'
                     if (pkg.startsWith('com/')) {
-                        if (!pkg.startsWith('com/replaymod')) {
+                        if (pkg.startsWith('com/google/')) {
+                            if (!pkg.startsWith('com/google/common')) {
+                                pkgs << pkg.substring(0, pkg.indexOf('/', 'com/google/'.length()))
+                            }
+                        } else if (!pkg.startsWith('com/replaymod')) {
                             pkgs << pkg.substring(0, pkg.indexOf('/', 4))
                         }
                     } else if (pkg.startsWith('org/')) {
-                        if (!pkg.startsWith('org/spongepowered')) {
+                        if (pkg.startsWith('org/apache/')) {
+                            if (pkg.startsWith('org/apache/commons/')) {
+                                if (!pkg.startsWith('org/apache/commons/io')) {
+                                    pkgs << pkg.substring(0, pkg.indexOf('/', 'org/apache/commons/'.length()))
+                                }
+                            } else if (!pkg.startsWith('org/apache/logging')) {
+                                pkgs << pkg.substring(0, pkg.indexOf('/', 'org/apache/'.length()))
+                            }
+                        } else if (!pkg.startsWith('org/spongepowered')) {
                             pkgs << pkg.substring(0, pkg.indexOf('/', 4))
                         }
                     } else if (!pkg.startsWith('javax/')) {
