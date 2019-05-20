@@ -42,7 +42,8 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
                     new GuiLabel().setI18nText("replaymod.gui.restorereplay3"));
         yesButton.onClick(() -> {
             try {
-                ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), null, file);
+                ReplayStudio studio = new ReplayStudio();
+                ReplayFile replayFile = new ZipReplayFile(studio, null, file);
                 // Commit all not-yet-committed files into the main zip file.
                 // If we don't do this, then re-writing packet data below can actually overwrite uncommitted packet data!
                 replayFile.save();
@@ -50,8 +51,8 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
                 if (metaData != null && metaData.getDuration() == 0) {
                     // Try to restore replay duration
                     // We need to re-write the packet data in case there are any incomplete packets dangling at the end
-                    try (ReplayInputStream in = replayFile.getPacketData();
-                         ReplayOutputStream out = replayFile.writePacketData()) {
+                    try (ReplayInputStream in = replayFile.getPacketData(studio, true);
+                         ReplayOutputStream out = replayFile.writePacketData(true)) {
                         PacketData last = null;
                         while ((last = in.readPacket()) != null) {
                             metaData.setDuration((int) last.getTime());

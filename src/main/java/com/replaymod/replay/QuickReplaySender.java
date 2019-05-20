@@ -385,7 +385,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
         double sysTimeStart = System.currentTimeMillis();
         double duration;
-        try (ReplayInputStream in = replayFile.getPacketData(studio);
+        try (ReplayInputStream in = replayFile.getPacketData(studio, false);
              OutputStream cacheOut = replayFile.writeCache(CACHE_ENTRY);
              OutputStream cacheIndexOut = replayFile.writeCache(CACHE_INDEX_ENTRY)) {
             NetOutput out = new StreamNetOutput(cacheOut);

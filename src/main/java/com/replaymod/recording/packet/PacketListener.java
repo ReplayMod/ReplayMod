@@ -102,7 +102,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         this.replayFile = replayFile;
         this.metaData = metaData;
         this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
-        this.packetOutputStream = new DataOutputStream(replayFile.writePacketData());
+        // Note: doesn't actually always include the login phase, see `connectionState` field instead.
+        this.packetOutputStream = new DataOutputStream(replayFile.writePacketData(true));
         this.startTime = metaData.getDate();
 
         saveMetaData();
