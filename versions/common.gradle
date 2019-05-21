@@ -254,7 +254,7 @@ dependencies {
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:53c6ca4", shadeExclusions
+    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:076c41b", shadeExclusions
 
     shadowReobf(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
@@ -314,6 +314,11 @@ task configureRelocation() {
                             }
                         } else if (!pkg.startsWith('com/replaymod')) {
                             pkgs << pkg.substring(0, pkg.indexOf('/', 4))
+                        }
+                    } else if (pkg.startsWith('net/')) {
+                        if (!pkg.startsWith('net/minecraft')
+                                && !pkg.startsWith('net/fabric')) {
+                            pkgs << pkg.substring(0, pkg.indexOf('/', 'net/'.length()))
                         }
                     } else if (pkg.startsWith('org/')) {
                         if (pkg.startsWith('org/apache/')) {
