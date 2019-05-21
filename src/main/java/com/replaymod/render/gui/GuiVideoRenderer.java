@@ -273,24 +273,29 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
                 //#if MC>=11300
                 NativeImage data = previewTexture.getImage();
                 assert data != null;
-                for (int y = 0; y < data.getHeight(); y++) {
-                    for (int x = 0; x < data.getWidth(); x++) {
-                        int r = buffer.get() & 0xff;
-                        int g = buffer.get() & 0xff;
-                        int b = buffer.get() & 0xff;
-                        int value = 0xff << 24 | b << 16 | g << 8 |  r;
-                        data.setPixelRGBA(x, y, value); // actually takes ABGR, not RGBA
-                    }
-                }
                 //#else
                 //$$ int[] data = previewTexture.getTextureData();
-                //$$ // Optifine changes the texture data array to be three times as long (for use by shaders),
-                //$$ // we only want to initialize the first third which is why we use the length of the buffer instead
-                //$$ // of the length of the data array
-                //$$ for (int i = 0; buffer.remaining() > 0; i++) {
-                //$$     data[i] = 0xff << 24 | (buffer.get() & 0xff) << 16 | (buffer.get() & 0xff) << 8 |  (buffer.get() & 0xff);
-                //$$ }
                 //#endif
+                // Note: Optifine changes the texture data array to be three times as long (for use by shaders),
+                //       we only want to initialize the first third and since we use our frame size, not the array size,
+                //       we're good to go.
+                ReadableDimension size = frame.getSize();
+                int width = size.getWidth();
+                for (int y = 0; y < size.getHeight(); y++) {
+                    for (int x = 0; x < width; x++) {
+                        int b = buffer.get() & 0xff;
+                        int g = buffer.get() & 0xff;
+                        int r = buffer.get() & 0xff;
+                        buffer.get(); // alpha
+                        //#if MC>=11300
+                        int value = 0xff << 24 | b << 16 | g << 8 |  r;
+                        data.setPixelRGBA(x, y, value); // actually takes ABGR, not RGBA
+                        //#else
+                        //$$ int value = 0xff << 24 | r << 16 | g << 8 |  b;
+                        //$$ data[y * width + x] = value;
+                        //#endif
+                    }
+                }
                 previewTextureDirty = true;
             }
             buffer.reset();
