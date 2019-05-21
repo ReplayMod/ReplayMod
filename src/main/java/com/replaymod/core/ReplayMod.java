@@ -378,6 +378,18 @@ public class ReplayMod implements
         });
     }
 
+    public void runSync(Runnable runnable) {
+        //#if MC>=11400
+        if (mc.isOnThread()) {
+        //#else
+        //$$ if (mc.isCallingFromMinecraftThread()) {
+        //#endif
+            runnable.run();
+        } else {
+            runLater(runnable);
+        }
+    }
+
     /**
      * Set when the currently running code has been scheduled by runLater.
      * If this is the case, subsequent calls to runLater have to be delayed until all scheduled tasks have been

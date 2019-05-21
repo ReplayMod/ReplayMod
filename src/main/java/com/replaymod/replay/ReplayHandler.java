@@ -162,7 +162,7 @@ public class ReplayHandler {
         channel.close();
 
         // Force re-creation of camera entity by unloading the previous world
-        ReplayMod.instance.runLater(() -> {
+        ReplayMod.instance.runSync(() -> {
             //#if MC>=11300
             mc.mouse.unlockCursor();
             //#else
