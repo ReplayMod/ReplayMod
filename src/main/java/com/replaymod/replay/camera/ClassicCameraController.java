@@ -161,7 +161,7 @@ public class ClassicCameraController implements CameraController {
 
         if(dirBefore != null) {
             dirBefore.normalise(dirBefore);
-            Vector3f.add(direction, direction, dirBefore);
+            Vector3f.add(direction, dirBefore, dirBefore);
             direction = dirBefore;
         }
 
