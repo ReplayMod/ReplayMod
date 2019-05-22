@@ -344,7 +344,7 @@ public class ReplayMod implements
 
         testIfMoeshAndExitMinecraft();
 
-        runLater(() -> {
+        runPostStartup(() -> {
             // Cleanup deleted corrupted replays
             try {
                 File[] files = getReplayFolder().listFiles();
@@ -388,6 +388,27 @@ public class ReplayMod implements
         } else {
             runLater(runnable);
         }
+    }
+
+    /**
+     * Execute the given runnable after game has started (once the overlay has been closed).
+     * Most importantly, it will run after resources (including language keys!) have been loaded.
+     * Below 1.14, this is equivalent to {@link #runLater(Runnable)}.
+     */
+    public void runPostStartup(Runnable runnable) {
+        runLater(new Runnable() {
+            @Override
+            public void run() {
+                //#if MC>=11400
+                if (getMinecraft().overlay != null) {
+                    // delay until after resources have been loaded
+                    runLater(this);
+                    return;
+                }
+                //#endif
+                runnable.run();
+            }
+        });
     }
 
     /**

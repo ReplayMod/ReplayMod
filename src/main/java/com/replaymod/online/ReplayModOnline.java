@@ -86,19 +86,9 @@ public class ReplayModOnline extends EventRegistrations implements Module {
         // Initial login prompt
         if (!core.getSettingsRegistry().get(Setting.SKIP_LOGIN_PROMPT)) {
             if (!isLoggedIn()) {
-                core.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        //#if MC>=11400
-                        if (getMinecraft().overlay != null) {
-                            // delay until after resources have been loaded
-                            core.runLater(this);
-                            return;
-                        }
-                        //#endif
-                        GuiScreen parent = GuiScreen.wrap(getMinecraft().currentScreen);
-                        new GuiLoginPrompt(apiClient, parent, parent, false).display();
-                    }
+                core.runPostStartup(() -> {
+                    GuiScreen parent = GuiScreen.wrap(getMinecraft().currentScreen);
+                    new GuiLoginPrompt(apiClient, parent, parent, false).display();
                 });
             }
         }
