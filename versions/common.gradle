@@ -35,23 +35,15 @@ buildscript {
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
         if (mcVersion >= 11400) {
             classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.2-SNAPSHOT'
-        } else if (mcVersion >= 10800) {
-            classpath 'org.ow2.asm:asm:6.0'
-            classpath('com.github.SpongePowered:MixinGradle:dcfaf61'){ // 0.6
-                // Because forgegradle requires 6.0 (not -debug-all) while mixingradle depends on 5.0
-                // and putting mixin right here will place it before forge in the class loader
-                exclude group: 'org.ow2.asm', module: 'asm-debug-all'
-            }
-            classpath 'net.minecraftforge.gradle:ForgeGradle:' + (
-                    mcVersion >= 11300 ? '3.+' :
-                    mcVersion >= 11200 ? '2.3-SNAPSHOT' :
-                    mcVersion >= 10904 ? '2.2-SNAPSHOT' :
-                    mcVersion >= 10809 ? '2.1-SNAPSHOT' :
-                    mcVersion >= 10800 ? '2.0-SNAPSHOT' :
-                                         'invalid'
-            )
+        } else if (mcVersion >= 11300) {
+            classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
         } else {
-            classpath 'com.github.Team-Fruit:ForgeGradle:3be8636'
+            classpath 'com.github.ReplayMod:ForgeGradle:' + (
+                    mcVersion >= 11200 ? 'd5c13801' : // FG 2.3
+                    mcVersion >= 10904 ? 'bf0ea7b8' : // FG 2.2
+                    mcVersion >= 10800 ? 'ab81684e' : // FG 2.1
+                                         'e93f77b4'   // FG 1.2
+            )
         }
         classpath 'com.github.replaymod:preprocessor:6be682c'
     }
@@ -75,20 +67,25 @@ if (mcVersion >= 10800) {
         apply plugin: 'fabric-loom'
     } else if (FG3) {
         apply plugin: 'net.minecraftforge.gradle'
-        // FIXME use mixin plugin once updated
-        compileJava {
-            options.compilerArgs += ['-AreobfSrgFile=' + new File(project.buildDir, 'mcp-srg.srg').getCanonicalPath()]
-        }
     } else {
         apply plugin: 'net.minecraftforge.gradle.forge'
-        apply plugin: 'org.spongepowered.mixin'
     }
 } else {
     apply plugin: 'forge'
+}
 
+if (!FABRIC) {
     ext {
         mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
         mixinRefMap = new File(project.buildDir, 'tmp/mixins/mixins.replaymod.refmap.json')
+    }
+
+    compileJava {
+        options.compilerArgs += [
+                "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
+                "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}",
+                "-AreobfSrgFile=${project.file('build/mcp-srg.srg').canonicalPath}"
+        ]
     }
 }
 
@@ -381,6 +378,7 @@ jar {
     from { files(configurations.shadowReobf).collect { it.isDirectory() ? it : zipTree(it) } }
 
     if (!FABRIC) {
+        from files(project.mixinRefMap.canonicalPath)
         manifest {
             attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
                     'TweakOrder': '0',
@@ -425,11 +423,6 @@ processResources
         }
 
 sourceSets {
-    if (!FABRIC) {
-        main {
-            ext.refMap = "mixins.replaymod.refmap.json"
-        }
-    }
     integrationTest {
         compileClasspath += main.runtimeClasspath + main.output
         java {
@@ -440,7 +433,7 @@ sourceSets {
 }
 
 if (FABRIC) {
-    // FIXME
+    // not required, fabric manages those by itself just fine
 } else if (FG3) {
     task copySrg(dependsOn: 'createMcpToSrg') {
         doLast {
@@ -463,37 +456,20 @@ if (FABRIC) {
             new File(project.buildDir, 'mcp-srg.srg').write(srg.join('\n'))
         }
     }
+    compileJava.dependsOn copySrg
 } else {
     task copySrg(type: Copy, dependsOn: 'genSrgs') {
         from {project.tasks.genSrgs.mcpToSrg}
         into 'build'
     }
-}
-
-if (FABRIC) {
-    // FIXME
-} else if (FG3) {
-    // FIXME project.tasks.idea.dependsOn copySrg
-    compileJava.dependsOn copySrg // FIXME can probably remove this one once mixingradle is updated
-} else {
-    setupDecompWorkspace.dependsOn copySrg
-    setupDevWorkspace.dependsOn copySrg
-}
-
-if (mcVersion <= 10710) {
-    reobf.doFirst {
-        if (project.mixinSrg.exists()) {
-            addExtraSrgFile project.mixinSrg
-        }
-    }
-
     compileJava.dependsOn copySrg
-    compileJava {
-        options.compilerArgs += [
-                "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
-                "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}",
-                "-AreobfSrgFile=${project.file('build/mcp-srg.srg').canonicalPath}"
-        ]
+}
+
+if (!FABRIC && !FG3) {
+    if (mcVersion <= 10710) {
+        reobf.addExtraSrgFile project.mixinSrg
+    } else {
+        reobfJar.addSecondarySrgFile project.mixinSrg
     }
 }
 
