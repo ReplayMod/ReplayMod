@@ -41,18 +41,16 @@ public class InputReplayTimer extends WrappedTimer {
     }
 
     @Override
-    //#if MC>=11300
-    //#if MC>=11400
-    // FIXME this should be handled by the preprocessor but there seems to be a bug
-    public void beginRenderTick(long sysClock) {
-    //#else
-    //$$ public void updateTimer(long sysClock) {
-    //#endif
-        super.beginRenderTick(sysClock);
-    //#else
-    //$$ public void updateTimer() {
-    //$$     super.updateTimer();
-    //#endif
+    public void beginRenderTick(
+            //#if MC>=11300
+            long sysClock
+            //#endif
+    ) {
+        super.beginRenderTick(
+                //#if MC>=11300
+                sysClock
+                //#endif
+        );
 
         // 1.7.10: We have to run the scheduled executables (ours only) because MC would only run them every tick
         //#if MC<=10710

@@ -45,7 +45,7 @@ buildscript {
                                          'e93f77b4'   // FG 1.2
             )
         }
-        classpath 'com.github.replaymod:preprocessor:6be682c'
+        classpath 'com.github.replaymod:preprocessor:eb4fac9'
     }
 }
 
