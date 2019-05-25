@@ -15,6 +15,7 @@ import static com.replaymod.core.versions.MCVer.*;
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
+import net.minecraft.client.resource.language.I18n;
 //#else
 //$$ import net.minecraft.client.gui.GuiButton;
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
@@ -39,6 +40,7 @@ public class MainMenuHandler extends EventRegistrations {
             TitleScreen gui = (TitleScreen) guiScreen;
             int realmsOffset = 0;
             //#if MC>=11400
+            final String BUTTON_REALMS = I18n.translate("menu.online");
             for (AbstractButtonWidget button : buttonList) {
             //#else
             //$$ for (GuiButton button : buttonList) {
@@ -52,14 +54,14 @@ public class MainMenuHandler extends EventRegistrations {
                 int offset = -1 * 24 + 10;
                 button.y += offset;
 
-                //#if MC>=11400
-                // FIXME looks like the button has moved into the realms lib?
-                //#else
                 //#if MC>=11300
+                //#if MC>=11400
+                if (BUTTON_REALMS.equals(button.getMessage())) {
+                //#else
                 //$$ if (button.id == 14) {
-                //$$     realmsOffset = offset;
-                //$$ }
                 //#endif
+                    realmsOffset = offset;
+                }
                 //#endif
             }
             //#if MC>=11300
