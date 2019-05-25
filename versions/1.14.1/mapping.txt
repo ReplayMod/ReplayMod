@@ -85,6 +85,7 @@ net.minecraft.client.network.ClientPlayerInteractionManager net.minecraft.client
 net.minecraft.client.network.ClientPlayerInteractionManager client mc
 net.minecraft.client.network.ClientPlayerInteractionManager networkHandler connection
 net.minecraft.client.network.ClientPlayerInteractionManager isFlyingLocked() isSpectatorMode()
+net.minecraft.client.network.ClientPlayerInteractionManager getCurrentGameMode() getCurrentGameType()
 com.mojang.blaze3d.platform.GLX net.minecraft.client.renderer.OpenGlHelper
 com.mojang.blaze3d.platform.GLX isUsingFBOs() isFramebufferEnabled()
 net.minecraft.entity.data.TrackedData net.minecraft.network.datasync.DataParameter
