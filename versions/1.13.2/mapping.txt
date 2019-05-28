@@ -1,4 +1,8 @@
+net.minecraft.resources.FolderPack net.minecraft.client.resources.FolderResourcePack
+net.minecraft.resources.AbstractResourcePack getInputStream() getInputStreamByName()
+net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()
 net.minecraft.entity.EntityLivingBase LIVING_FLAGS HAND_STATES
+net.minecraft.entity.EntityLivingBase livingTick() onLivingUpdate()
 net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository
 net.minecraft.client.resources.DownloadingPackFinder func_195741_a() setServerResourcePack()
 net.minecraft.client.renderer.color.ItemColors getColor() getColorFromItemstack()
@@ -20,7 +24,10 @@ net.minecraft.client.Minecraft getInstance() getMinecraft()
 net.minecraft.client.Minecraft getPackFinder() getResourcePackRepository()
 net.minecraft.client.renderer.WorldRenderer net.minecraft.client.renderer.RenderGlobal
 net.minecraft.network.play.server.SPacketEntity.Move net.minecraft.network.play.server.SPacketEntity.S17PacketEntityLookMove
+net.minecraft.entity.Entity setBoundingBox() setEntityBoundingBox()
 net.minecraft.entity.Entity isPassenger() isRiding()
+net.minecraft.entity.Entity tick() onUpdate()
+net.minecraft.entity.Entity remove() setDead()
 net.minecraft.entity.Entity removed isDead
 net.minecraftforge.fml.network.NetworkRegistry net.minecraftforge.fml.common.network.NetworkRegistry
 net.minecraft.client.renderer.ItemRenderer net.minecraft.client.renderer.RenderItem

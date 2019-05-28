@@ -1,11 +1,9 @@
 package com.replaymod.core.utils;
 
+import net.minecraft.client.network.packet.CustomPayloadS2CPacket;
 import net.minecraft.util.PacketByteBuf;
 //#if MC>=10904
-import net.minecraft.client.network.packet.CustomPayloadS2CPacket;
 import net.minecraft.util.Identifier;
-//#else
-//$$ import net.minecraft.network.play.server.S3FPacketCustomPayload;
 //#endif
 
 //#if MC<=10710
@@ -29,11 +27,7 @@ public class Restrictions {
     private boolean onlyFirstPerson;
     private boolean onlyRecordingPlayer;
 
-    //#if MC>=10904
     public String handle(CustomPayloadS2CPacket packet) {
-    //#else
-    //$$ public String handle(S3FPacketCustomPayload packet) {
-    //#endif
         //#if MC>=10800
         PacketByteBuf buffer = packet.getData();
         //#else

@@ -18,12 +18,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
-//#if MC>=10800
 //#if MC>=11300
 import net.minecraft.world.dimension.DimensionType;
 //#endif
 
-import static com.replaymod.core.versions.MCVer.WorldType_DEBUG_ALL_BLOCK_STATES;
+//#if MC>=10800
+import net.minecraft.world.level.LevelGeneratorType;
 //#endif
 
 import java.io.File;
@@ -61,9 +61,9 @@ public class ConnectionEventHandler {
             if (local) {
                 //#if MC>=10800
                 //#if MC>=11300
-                if (mc.getServer().getWorld(DimensionType.OVERWORLD).getGeneratorType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
+                if (mc.getServer().getWorld(DimensionType.OVERWORLD).getGeneratorType() == LevelGeneratorType.DEBUG_ALL_BLOCK_STATES) {
                 //#else
-                //$$ if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType_DEBUG_ALL_BLOCK_STATES) {
+                //$$ if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
                 //#endif
                     logger.info("Debug World recording is not supported.");
                     return;

@@ -1,3 +1,4 @@
+net.minecraft.world.WorldType DEBUG_ALL_BLOCK_STATES DEBUG_WORLD
 net.minecraft.client.resources.ResourcePackRepository setServerResourcePack() setResourcePackInstance()
 net.minecraft.client.Minecraft fontRenderer fontRendererObj
 net.minecraft.client.renderer.BufferBuilder net.minecraft.client.renderer.VertexBuffer

@@ -2,13 +2,8 @@ package com.replaymod.replay.camera;
 
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.options.KeyBinding;
-
-//#if MC>=11300
 import net.minecraft.client.options.GameOptions;
-//#else
-//$$ import net.minecraft.client.settings.GameSettings;
-//#endif
+import net.minecraft.client.options.KeyBinding;
 
 /**
  * Camera controller performing vanilla creative-like camera movements.

@@ -178,21 +178,18 @@ public class RecordingEventHandler extends EventRegistrations {
                 byte newYaw = (byte) ((int) (player.yaw * 256.0F / 360.0F));
                 byte newPitch = (byte) ((int) (player.pitch * 256.0F / 360.0F));
 
-                //#if MC>=10904
                 packet = new EntityS2CPacket.RotateAndMoveRelative(
                         player.getEntityId(),
+                        //#if MC>=10904
                         (short) Math.round(dx * 4096), (short) Math.round(dy * 4096), (short) Math.round(dz * 4096),
-                        newYaw, newPitch, player.onGround
-                );
-                //#else
-                //$$ packet = new S14PacketEntity.S17PacketEntityLookMove(player.getEntityId(),
-                //$$         (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
-                //$$         newYaw, newPitch
-                        //#if MC>=10800
-                        //$$ , player.onGround
+                        //#else
+                        //$$ (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
                         //#endif
-                //$$ );
-                //#endif
+                        newYaw, newPitch
+                        //#if MC>=10800
+                        , player.onGround
+                        //#endif
+                );
             }
 
             packetListener.save(packet);
@@ -339,11 +336,7 @@ public class RecordingEventHandler extends EventRegistrations {
                 lastActiveHand = player.getActiveHand();
                 DataTracker dataManager = new DataTracker(null);
                 int state = (wasHandActive ? 1 : 0) | (lastActiveHand == Hand.OFF_HAND ? 2 : 0);
-                //#if MC>=11300
                 dataManager.startTracking(EntityLivingBaseAccessor.getLivingFlags(), (byte) state);
-                //#else
-                //$$ dataManager.register(EntityLivingBaseAccessor.getLivingFlags(), (byte) state);
-                //#endif
                 packetListener.save(new EntityTrackerUpdateS2CPacket(player.getEntityId(), dataManager, true));
             }
             //#endif

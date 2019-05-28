@@ -10,7 +10,6 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.model.Box;
 import net.minecraft.client.model.Cuboid;
-import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -68,7 +67,6 @@ import net.minecraft.client.render.BufferBuilder;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
-import net.minecraft.world.level.LevelGeneratorType;
 //#else
 //$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
 //$$ import com.google.common.util.concurrent.Futures;
@@ -209,18 +207,14 @@ public class MCVer {
     //#endif
 
     public static String readString(PacketByteBuf buffer, int max) {
-        //#if MC>=11102
-        return buffer.readString(max);
-        //#else
         //#if MC>=10800
-        //$$ return buffer.readStringFromBuffer(max);
+        return buffer.readString(max);
         //#else
         //$$ try {
         //$$     return buffer.readStringFromBuffer(max);
         //$$ } catch (IOException e) {
         //$$     throw new DecoderException(e);
         //$$ }
-        //#endif
         //#endif
     }
 
@@ -232,15 +226,6 @@ public class MCVer {
         //$$ return event.type;
         //#endif
     //$$ }
-    //#endif
-
-    //#if MC>=10800
-    public static LevelGeneratorType WorldType_DEBUG_ALL_BLOCK_STATES
-            //#if MC>=11200
-            = LevelGeneratorType.DEBUG_ALL_BLOCK_STATES;
-            //#else
-            //$$ = WorldType.DEBUG_WORLD;
-            //#endif
     //#endif
 
     //#if MC>=10800
@@ -262,13 +247,6 @@ public class MCVer {
     //$$     mc.renderViewEntity = entity;
     //$$ }
     //#endif
-
-    public static Identifier LOCATION_BLOCKS_TEXTURE
-            //#if MC>=10904
-            = SpriteAtlasTexture.BLOCK_ATLAS_TEX;
-            //#else
-            //$$ = TextureMap.locationBlocksTexture;
-            //#endif
 
     public static Entity getRiddenEntity(Entity ridden) {
         //#if MC>=10904
@@ -342,22 +320,14 @@ public class MCVer {
         return getMinecraft().getResourcePackDownloader().loadServerPack(file);
         //#else
         //$$ ResourcePackRepository repo = getMinecraft().getResourcePackRepository();
-        //#if MC>=10809
-        //#if MC>=11200
-        //$$ return repo.setServerResourcePack(file);
-        //#else
-        //$$ return repo.setResourcePackInstance(file);
-        //#endif
-        //#else
         //#if MC>=10800
-        //$$ return repo.func_177319_a(file);
+        //$$ return repo.setServerResourcePack(file);
         //#else
         //$$ ResourcePackRepositoryAccessor acc = (ResourcePackRepositoryAccessor) repo;
         //$$ acc.setActive(false);
         //$$ acc.setPack(new FileResourcePack(file));
         //$$ Minecraft.getMinecraft().scheduleResourcesRefresh();
         //$$ return Futures.immediateFuture(null);
-        //#endif
         //#endif
         //#endif
     }
@@ -391,91 +361,70 @@ public class MCVer {
         //#endif
     }
 
+    //#if MC>=10800
+    public static BufferBuilder Tessellator_getBufferBuilder() {
+        return Tessellator.getInstance().getBufferBuilder();
+    }
+    //#else
+    //$$ public static Tessellator Tessellator_getBufferBuilder() {
+    //$$     return Tessellator.instance;
+    //$$ }
+    //#endif
+
     public static void BufferBuilder_setTranslation(double x, double y, double z) {
-        //#if MC>=10800
-        Tessellator.getInstance().getBufferBuilder().setOffset(x, y, z);
-        //#else
-        //$$ Tessellator.instance.setTranslation(x, y, z);
-        //#endif
+        Tessellator_getBufferBuilder().setOffset(x, y, z);
     }
 
     public static void BufferBuilder_beginPosCol(int mode) {
-        //#if MC>=10800
-        BufferBuilder bufferBuilder = Tessellator.getInstance().getBufferBuilder();
-        //#if MC>=10809
-        bufferBuilder.begin(mode, VertexFormats.POSITION_COLOR);
-        //#else
-        //$$ bufferBuilder.startDrawing(mode);
-        //#endif
-        //#else
-        //$$ Tessellator.instance.startDrawing(mode);
-        //#endif
+        Tessellator_getBufferBuilder().begin(
+                mode
+                //#if MC>=10809
+                , VertexFormats.POSITION_COLOR
+                //#endif
+        );
     }
 
     public static void BufferBuilder_addPosCol(double x, double y, double z, int r, int g, int b, int a) {
-        //#if MC>=10800
-        BufferBuilder worldRenderer = Tessellator.getInstance().getBufferBuilder();
-        //#else
-        //$$ Tessellator worldRenderer = Tessellator.instance;
-        //#endif
         //#if MC>=10809
-        worldRenderer.vertex(x, y, z).color(r, g, b, a).next();
+        Tessellator_getBufferBuilder().vertex(x, y, z).color(r, g, b, a).next();
         //#else
-        //$$ worldRenderer.setColorRGBA(r, g, b, a);
-        //$$ worldRenderer.addVertex(x, y, z);
+        //$$ Tessellator_getBufferBuilder().setColorRGBA(r, g, b, a);
+        //$$ Tessellator_getBufferBuilder().addVertex(x, y, z);
         //#endif
     }
 
     public static void BufferBuilder_beginPosTex(int mode) {
-        //#if MC>=10800
-        BufferBuilder bufferBuilder = Tessellator.getInstance().getBufferBuilder();
-        //#if MC>=10809
-        bufferBuilder.begin(mode, VertexFormats.POSITION_UV);
-        //#else
-        //$$ bufferBuilder.startDrawing(mode);
-        //#endif
-        //#else
-        //$$ Tessellator.instance.startDrawing(mode);
-        //#endif
+        Tessellator_getBufferBuilder().begin(
+                mode
+                //#if MC>=10809
+                , VertexFormats.POSITION_UV
+                //#endif
+        );
     }
 
     public static void BufferBuilder_addPosTex(double x, double y, double z, double u, double v) {
-        //#if MC>=10800
-        BufferBuilder worldRenderer = Tessellator.getInstance().getBufferBuilder();
-        //#else
-        //$$ Tessellator worldRenderer = Tessellator.instance;
-        //#endif
         //#if MC>=10809
-        worldRenderer.vertex(x, y, z).texture(u, v).next();
+        Tessellator_getBufferBuilder().vertex(x, y, z).texture(u, v).next();
         //#else
-        //$$ worldRenderer.addVertexWithUV(x, y, z, u, v);
+        //$$ Tessellator_getBufferBuilder().addVertexWithUV(x, y, z, u, v);
         //#endif
     }
 
     public static void BufferBuilder_beginPosTexCol(int mode) {
-        //#if MC>=10800
-        BufferBuilder bufferBuilder = Tessellator.getInstance().getBufferBuilder();
-        //#if MC>=10809
-        bufferBuilder.begin(mode, VertexFormats.POSITION_UV_COLOR);
-        //#else
-        //$$ bufferBuilder.startDrawing(mode);
-        //#endif
-        //#else
-        //$$ Tessellator.instance.startDrawing(mode);
-        //#endif
+        Tessellator_getBufferBuilder().begin(
+                mode
+                //#if MC>=10809
+                , VertexFormats.POSITION_UV_COLOR
+                //#endif
+        );
     }
 
     public static void BufferBuilder_addPosTexCol(double x, double y, double z, double u, double v, int r, int g, int b, int a) {
-        //#if MC>=10800
-        BufferBuilder worldRenderer = Tessellator.getInstance().getBufferBuilder();
-        //#else
-        //$$ Tessellator worldRenderer = Tessellator.instance;
-        //#endif
         //#if MC>=10809
-        worldRenderer.vertex(x, y, z).texture(u, v).color(r, g, b, a).next();
+        Tessellator_getBufferBuilder().vertex(x, y, z).texture(u, v).color(r, g, b, a).next();
         //#else
-        //$$ worldRenderer.setColorRGBA(r, g, b, a);
-        //$$ worldRenderer.addVertexWithUV(x, y, z, u, v);
+        //$$ Tessellator_getBufferBuilder().setColorRGBA(r, g, b, a);
+        //$$ Tessellator_getBufferBuilder().addVertexWithUV(x, y, z, u, v);
         //#endif
     }
 
@@ -640,10 +589,8 @@ public class MCVer {
     //#if MC>=11300
     public static void color(float r, float g, float b, float a) { GlStateManager.color4f(r, g, b, a); }
     public static void enableAlpha() { GlStateManager.enableAlphaTest(); }
-    public static void disableAlpha() { GlStateManager.disableAlphaTest(); }
-    public static void tryBlendFuncSeparate(int l, int r, int vl, int vr) { GlStateManager.blendFuncSeparate(l, r, vl, vr); }
-    public static void colorLogicOp(int op) { GlStateManager.logicOp(op); }
 
+    @SuppressWarnings("unused")
     public static abstract class Keyboard {
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
         public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;

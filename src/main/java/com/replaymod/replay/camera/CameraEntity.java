@@ -19,6 +19,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BoundingBox;
 
@@ -28,7 +29,6 @@ import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.tag.Tag;
@@ -65,10 +65,7 @@ import net.minecraft.client.recipe.book.ClientRecipeBook;
 //$$ import net.minecraft.stats.RecipeBook;
 //#endif
 //#endif
-import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Hand;
-//#else
-//$$ import net.minecraft.stats.StatFileWriter;
 //#endif
 
 //#if MC>=10800
@@ -120,32 +117,37 @@ public class CameraEntity
      */
     private final EventHandler eventHandler = new EventHandler();
 
-    //#if MC>=11300
-    //#if MC>=11400
-    public CameraEntity(MinecraftClient mcIn, ClientWorld worldIn, ClientPlayNetworkHandler netHandlerPlayClient, StatHandler statisticsManager, ClientRecipeBook recipeBookClient) {
-    //#else
-    //$$ public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBookClient recipeBookClient) {
-    //#endif
-        super(mcIn, worldIn, netHandlerPlayClient, statisticsManager, recipeBookClient);
-    //#else
-    //#if MC>=11200
-    //$$ public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager, RecipeBook recipeBook) {
-    //$$     super(mcIn, worldIn, netHandlerPlayClient, statisticsManager, recipeBook);
-    //#else
-    //#if MC>=10904
-    //$$ public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatisticsManager statisticsManager) {
-    //$$     super(mcIn, worldIn, netHandlerPlayClient, statisticsManager);
-    //#else
-    //#if MC>=10800
-    //$$ public CameraEntity(Minecraft mcIn, World worldIn, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
-    //$$     super(mcIn, worldIn, netHandlerPlayClient, statFileWriter);
-    //#else
-    //$$ public CameraEntity(Minecraft mcIn, World worldIn, Session session, NetHandlerPlayClient netHandlerPlayClient, StatFileWriter statFileWriter) {
-    //$$     super(mcIn, worldIn, session, netHandlerPlayClient, statFileWriter);
-    //#endif
-    //#endif
-    //#endif
-    //#endif
+    public CameraEntity(
+            MinecraftClient mcIn,
+            //#if MC>=11400
+            ClientWorld worldIn,
+            //#else
+            //$$ World worldIn,
+            //#endif
+            //#if MC<10800
+            //$$ Session session,
+            //#endif
+            ClientPlayNetworkHandler netHandlerPlayClient,
+            StatHandler statisticsManager
+            //#if MC>=11200
+            //#if MC>=11300
+            , ClientRecipeBook recipeBook
+            //#else
+            //$$ , RecipeBook recipeBook
+            //#endif
+            //#endif
+    ) {
+        super(mcIn,
+                worldIn,
+                //#if MC<10800
+                //$$ session,
+                //#endif
+                netHandlerPlayClient,
+                statisticsManager
+                //#if MC>=11200
+                , recipeBook
+                //#endif
+        );
         eventHandler.register();
         if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
             cameraController = ReplayModReplay.instance.createCameraController(this);
@@ -231,11 +233,7 @@ public class CameraEntity
         float height = getHeight();
         //#endif
         //#if MC>=10800
-        //#if MC>=11300
         setBoundingBox(new BoundingBox(
-        //#else
-        //$$ setEntityBoundingBox(new AxisAlignedBB(
-        //#endif
         //#else
         //$$ this.boundingBox.setBB(AxisAlignedBB.getBoundingBox(
         //#endif
@@ -244,11 +242,7 @@ public class CameraEntity
     }
 
     @Override
-    //#if MC>=11300
     public void tick() {
-    //#else
-    //$$ public void onUpdate() {
-    //#endif
         //#if MC>=10800
         Entity view = getRenderViewEntity(this.client);
         //#else
@@ -527,13 +521,8 @@ public class CameraEntity
     //#endif
 
     @Override
-    //#if MC>=11300
     public void remove() {
         super.remove();
-    //#else
-    //$$ public void setDead() {
-    //$$     super.setDead();
-    //#endif
         eventHandler.unregister();
     }
 

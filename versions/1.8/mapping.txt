@@ -10,6 +10,7 @@ net.minecraftforge.fml.common.eventhandler.EventPriority cpw.mods.fml.common.eve
 net.minecraftforge.fml.common.eventhandler.Cancelable cpw.mods.fml.common.eventhandler.Cancelable
 net.minecraftforge.fml.common.eventhandler.Event cpw.mods.fml.common.eventhandler.Event
 net.minecraftforge.fml.client.registry.ClientRegistry cpw.mods.fml.client.registry.ClientRegistry
+net.minecraftforge.fml.common.registry.GameData cpw.mods.fml.common.registry.GameData
 net.minecraftforge.fml.common.gameevent.InputEvent cpw.mods.fml.common.gameevent.InputEvent
 net.minecraftforge.fml.common.gameevent.TickEvent cpw.mods.fml.common.gameevent.TickEvent
 net.minecraftforge.fml.relauncher.CoreModManager cpw.mods.fml.relauncher.CoreModManager
@@ -27,6 +28,7 @@ net.minecraftforge.fml.relauncher.Side cpw.mods.fml.relauncher.Side
 net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent
 net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage cpw.mods.fml.common.network.handshake.FMLHandshakeMessage
 net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage.RegistryData cpw.mods.fml.common.network.handshake.FMLHandshakeMessage.ModIdData
+net.minecraftforge.fml.common.network.internal.FMLProxyPacket cpw.mods.fml.common.network.internal.FMLProxyPacket
 net.minecraftforge.fml.common.network.NetworkRegistry cpw.mods.fml.common.network.NetworkRegistry
 net.minecraftforge.fml.common.gameevent.InputEvent cpw.mods.fml.common.gameevent.InputEvent
 net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer net.minecraft.client.renderer.tileentity.RenderEndPortal

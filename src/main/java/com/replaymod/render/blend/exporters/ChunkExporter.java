@@ -11,6 +11,7 @@ import com.replaymod.render.blend.mixin.ContainerLocalRenderInformationAccessor;
 import com.replaymod.render.blend.mixin.WorldRendererAccessor;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.GlAllocationUtils;
 import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.render.chunk.ChunkRenderData;
@@ -36,8 +37,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.replaymod.core.versions.MCVer.*;
 
 public class ChunkExporter implements Exporter {
     private final Map<BlockPos, DObject> chunkObjects = new HashMap<>();
@@ -165,7 +164,7 @@ public class ChunkExporter implements Exporter {
         GL15.glGetBufferSubData(GLX.GL_ARRAY_BUFFER, 0, byteBuffer);
         vertexBuffer.unbind();
 
-        MCVer.getMinecraft().getTextureManager().bindTexture(LOCATION_BLOCKS_TEXTURE);
+        MCVer.getMinecraft().getTextureManager().bindTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEX);
 
         return BlendMeshBuilder.addBufferToMesh(byteBuffer, GL11.GL_QUADS, VertexFormats.POSITION_COLOR_UV_LMAP, null, null);
     }

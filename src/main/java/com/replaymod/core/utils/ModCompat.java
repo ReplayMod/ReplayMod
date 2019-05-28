@@ -12,24 +12,15 @@ import net.minecraft.util.registry.Registry;
 //$$ import net.minecraftforge.registries.ForgeRegistry;
 //$$ import net.minecraftforge.registries.RegistryManager;
 //#else
-//#if MC>=10800
 //$$ import net.minecraftforge.fml.common.registry.GameData;
-//#else
-//$$ import cpw.mods.fml.common.registry.GameData;
-//#endif
 //$$ import java.util.stream.Stream;
 //#endif
 //$$
-//#if MC>=10800
 //#if MC>=11300
 //$$ import net.minecraftforge.fml.ModList;
 //#else
 //$$ import net.minecraftforge.fml.common.Loader;
 //$$ import net.minecraftforge.fml.common.ModContainer;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.Loader;
-//$$ import cpw.mods.fml.common.ModContainer;
 //#endif
 //#endif
 

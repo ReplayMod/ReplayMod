@@ -103,8 +103,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             AdvancementUpdateS2CPacket.class,
             SelectAdvancementTabS2CPacket.class,
             //#endif
-            //#if MC>=10904
-            // TODO Update possibly more?
+            //#if MC>=10800
+            SetCameraEntityS2CPacket.class,
+            TitleS2CPacket.class,
+            //#endif
             HealthUpdateS2CPacket.class,
             GuiOpenS2CPacket.class,
             GuiCloseS2CPacket.class,
@@ -113,24 +115,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             SignEditorOpenS2CPacket.class,
             StatisticsS2CPacket.class,
             ExperienceBarUpdateS2CPacket.class,
-            SetCameraEntityS2CPacket.class,
-            PlayerAbilitiesS2CPacket.class,
-            TitleS2CPacket.class
-            //#else
-            //#if MC>=10800
-            //$$ S43PacketCamera.class,
-            //$$ S45PacketTitle.class,
-            //#endif
-            //$$ S06PacketUpdateHealth.class,
-            //$$ S2DPacketOpenWindow.class,
-            //$$ S2EPacketCloseWindow.class,
-            //$$ S2FPacketSetSlot.class,
-            //$$ S30PacketWindowItems.class,
-            //$$ S36PacketSignEditorOpen.class,
-            //$$ S37PacketStatistics.class,
-            //$$ S1FPacketSetExperience.class,
-            //$$ S39PacketPlayerAbilities.class
-            //#endif
+            PlayerAbilitiesS2CPacket.class
     );
 
     private static int TP_DISTANCE_LIMIT = 128;
@@ -342,11 +327,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             if (mc.world != null) {
                 for (PlayerEntity playerEntity : playerEntities(mc.world)) {
                     if (!playerEntity.field_6016 && playerEntity instanceof OtherClientPlayerEntity) {
-                    //#if MC>=11300
-                    playerEntity.tickMovement();
-                    //#else
-                    //$$ playerEntity.onLivingUpdate();
-                    //#endif
+                        playerEntity.tickMovement();
                     }
                 }
             }
@@ -644,13 +625,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
 
             if(cent != null) {
-                //#if MC>=10809
                 if(!allowMovement && !((Math.abs(cent.x - ppl.getX()) > TP_DISTANCE_LIMIT) ||
                         (Math.abs(cent.z - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
-                //#else
-                //$$ if(!allowMovement && !((Math.abs(cent.posX - ppl.func_148932_c()) > TP_DISTANCE_LIMIT) ||
-                //$$         (Math.abs(cent.posZ - ppl.func_148933_e()) > TP_DISTANCE_LIMIT))) {
-                //#endif
                     return null;
                 } else {
                     allowMovement = false;
@@ -667,11 +643,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
-                    //#if MC>=10809
                     cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
-                    //#else
-                    //$$ cent.setCameraPosition(ppl.func_148932_c(), ppl.func_148928_d(), ppl.func_148933_e());
-                    //#endif
                 }
             }.run();
         }
@@ -1025,17 +997,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             int x = packet.getX();
             int z = packet.getZ();
         //#else
-        //#if MC>=10809
         //$$ if (p instanceof S21PacketChunkData && ((S21PacketChunkData) p).getExtractedSize() == 0) {
         //$$     S21PacketChunkData packet = (S21PacketChunkData) p;
         //$$     int x = packet.getChunkX();
         //$$     int z = packet.getChunkZ();
-        //#else
-        //$$ if (p instanceof S21PacketChunkData && ((S21PacketChunkData) p).func_149276_g() == 0) {
-        //$$     S21PacketChunkData packet = (S21PacketChunkData) p;
-        //$$     int x = packet.func_149273_e();
-        //$$     int z = packet.func_149271_f();
-        //#endif
         //#endif
             // If the chunk is getting unloaded, we will have to forcefully update the position of all entities
             // within. Otherwise, if there wasn't a game tick recently, there may be entities that have moved

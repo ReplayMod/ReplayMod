@@ -19,6 +19,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.data.DataTracker;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
@@ -29,23 +30,17 @@ import org.apache.logging.log4j.Logger;
 
 //#if MC>=11300
 import net.minecraft.client.network.packet.LoginSuccessS2CPacket;
+//#else
+//$$ import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 //#endif
 
 //#if MC>=10904
-import net.minecraft.entity.data.DataTracker;
 //#else
-//$$ import net.minecraft.entity.DataWatcher;
-//$$
 //$$ import java.util.List;
 //#endif
 
 //#if MC>=10800
 import net.minecraft.network.NetworkSide;
-//#if MC<11300
-//$$ import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
-//#endif
-//#else
-//$$ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 //#endif
 
 import java.io.DataOutputStream;
@@ -235,12 +230,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                             ((ItemPickupAnimationS2CPacket) packet).getEntityId() == mc.player.getEntityId()) {
                 //#else
                 //$$ if(packet instanceof S0DPacketCollectItem) {
-                //$$     if(mc.thePlayer != null ||
-                            //#if MC>=10809
-                            //$$ ((S0DPacketCollectItem) packet).getEntityID() == mc.thePlayer.getEntityId()) {
-                            //#else
-                            //$$ ((S0DPacketCollectItem) packet).func_149353_d() == mc.thePlayer.getEntityId()) {
-                            //#endif
+                //$$     if(mc.thePlayer != null || ((S0DPacketCollectItem) packet).getEntityID() == mc.thePlayer.getEntityId()) {
                 //#endif
                         super.channelRead(ctx, msg);
                         return;

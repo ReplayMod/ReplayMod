@@ -1,7 +1,6 @@
 package com.replaymod.core;
 
 import com.google.common.io.Files;
-import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.compat.ReplayModCompat;
 import com.replaymod.core.gui.GuiBackgroundProcesses;
 import com.replaymod.core.gui.GuiReplaySettings;
@@ -30,7 +29,6 @@ import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
 import com.github.steveice10.mc.protocol.MinecraftConstants;
-import com.replaymod.core.versions.LangResourcePack;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
@@ -39,11 +37,12 @@ import net.minecraft.resource.DirectoryResourcePack;
 import net.minecraft.resource.ResourcePackCreator;
 import net.minecraft.resource.ResourcePackContainer;
 //#else
+//$$ import com.google.common.util.concurrent.ListenableFutureTask;
+//$$ import net.minecraft.resources.FolderPack;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //$$
 //#if MC>=11300
 //$$ import com.replaymod.core.versions.LangResourcePack;
-//$$ import net.minecraft.resources.FolderPack;
 //$$ import net.minecraft.resources.IPackFinder;
 //$$ import net.minecraft.resources.ResourcePackInfo;
 //$$ import net.minecraftforge.fml.DeferredWorkQueue;
@@ -52,7 +51,6 @@ import net.minecraft.resource.ResourcePackContainer;
 //$$ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 //$$ import net.minecraftforge.versions.mcp.MCPVersion;
 //#else
-//$$ import net.minecraft.client.resources.FolderResourcePack;
 //$$ import net.minecraft.client.resources.IResourcePack;
 //$$ import net.minecraftforge.common.config.Configuration;
 //#endif
@@ -232,21 +230,11 @@ public class ReplayMod implements
         //$$ //noinspection ConstantConditions
         //$$ if (false) {
         //#endif
-        @SuppressWarnings("unchecked")
-        //#if MC>=11300
         DirectoryResourcePack jGuiResourcePack = new DirectoryResourcePack(new File("../jGui/src/main/resources")) {
             @Override
             protected InputStream openFile(String resourceName) throws IOException {
                 try {
                     return super.openFile(resourceName);
-        //#else
-        //$$ List<IResourcePack> defaultResourcePacks = ((MinecraftAccessor) mc).getDefaultResourcePacks();
-        //$$ FolderResourcePack jGuiResourcePack = new FolderResourcePack(new File("../jGui/src/main/resources")) {
-        //$$     @Override
-        //$$     protected InputStream getInputStreamByName(String resourceName) throws IOException {
-        //$$         try {
-        //$$             return super.getInputStreamByName(resourceName);
-        //#endif
                 } catch (IOException e) {
                     if ("pack.mcmeta".equals(resourceName)) {
                         //#if MC>=11400
@@ -269,6 +257,8 @@ public class ReplayMod implements
             }
         });
         //#else
+        //$$ @SuppressWarnings("unchecked")
+        //$$ List<IResourcePack> defaultResourcePacks = ((MinecraftAccessor) mc).getDefaultResourcePacks();
         //$$ defaultResourcePacks.add(jGuiResourcePack);
         //#endif
         //#if MC<=10710

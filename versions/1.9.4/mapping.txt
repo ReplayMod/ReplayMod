@@ -1,3 +1,5 @@
+net.minecraft.stats.StatisticsManager net.minecraft.stats.StatFileWriter
+net.minecraft.client.renderer.texture.TextureMap LOCATION_BLOCKS_TEXTURE locationBlocksTexture
 net.minecraft.init.MobEffects net.minecraft.potion.Potion
 net.minecraft.init.MobEffects INVISIBILITY invisibility
 net.minecraft.util.text.TextComponentString net.minecraft.util.ChatComponentText
@@ -40,6 +42,7 @@ net.minecraft.network.play.server.SPacketSpawnGlobalEntity net.minecraft.network
 net.minecraft.network.play.server.SPacketSpawnPainting net.minecraft.network.play.server.S10PacketSpawnPainting
 net.minecraft.network.play.server.SPacketSpawnExperienceOrb net.minecraft.network.play.server.S11PacketSpawnExperienceOrb
 net.minecraft.network.play.server.SPacketDestroyEntities net.minecraft.network.play.server.S13PacketDestroyEntities
+net.minecraft.network.play.server.SPacketEntity net.minecraft.network.play.server.S14PacketEntity
 net.minecraft.network.play.server.SPacketEntityTeleport net.minecraft.network.play.server.S18PacketEntityTeleport
 net.minecraft.network.play.server.SPacketEntityHeadLook net.minecraft.network.play.server.S19PacketEntityHeadLook
 net.minecraft.network.play.server.SPacketEntityVelocity net.minecraft.network.play.server.S12PacketEntityVelocity
@@ -52,4 +55,15 @@ net.minecraft.network.play.client.CPacketResourcePackStatus.Action net.minecraft
 net.minecraft.network.play.server.SPacketResourcePackSend net.minecraft.network.play.server.S48PacketResourcePackSend
 net.minecraft.network.play.server.SPacketCustomPayload net.minecraft.network.play.server.S3FPacketCustomPayload
 net.minecraft.network.play.server.SPacketDisconnect net.minecraft.network.play.server.S40PacketDisconnect
+net.minecraft.network.play.server.SPacketUpdateHealth net.minecraft.network.play.server.S06PacketUpdateHealth
+net.minecraft.network.play.server.SPacketSetSlot net.minecraft.network.play.server.S2FPacketSetSlot
+net.minecraft.network.play.server.SPacketSignEditorOpen net.minecraft.network.play.server.S36PacketSignEditorOpen
+net.minecraft.network.play.server.SPacketSetExperience net.minecraft.network.play.server.S1FPacketSetExperience
+net.minecraft.network.play.server.SPacketCamera net.minecraft.network.play.server.S43PacketCamera
+net.minecraft.network.play.server.SPacketTitle net.minecraft.network.play.server.S45PacketTitle
+net.minecraft.network.play.server.SPacketOpenWindow net.minecraft.network.play.server.S2DPacketOpenWindow
+net.minecraft.network.play.server.SPacketCloseWindow net.minecraft.network.play.server.S2EPacketCloseWindow
+net.minecraft.network.play.server.SPacketWindowItems net.minecraft.network.play.server.S30PacketWindowItems
+net.minecraft.network.play.server.SPacketStatistics net.minecraft.network.play.server.S37PacketStatistics
+net.minecraft.network.play.server.SPacketPlayerAbilities net.minecraft.network.play.server.S39PacketPlayerAbilities
 net.minecraft.network.login.server.SPacketLoginSuccess net.minecraft.network.login.server.S02PacketLoginSuccess
