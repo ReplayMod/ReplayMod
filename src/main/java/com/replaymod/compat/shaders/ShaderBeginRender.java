@@ -44,7 +44,11 @@ public class ShaderBeginRender extends EventRegistrations {
             // check if Shaders are enabled
             if (!(boolean) (ShaderReflection.config_isShaders.invoke(null))) return;
 
-            ShaderReflection.shaders_beginRender.invoke(null, mc, getRenderPartialTicks(), 0);
+            ShaderReflection.shaders_beginRender.invoke(null, mc,
+                    //#if MC>=11400
+                    mc.gameRenderer.getCamera(),
+                    //#endif
+                    getRenderPartialTicks(), 0);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
