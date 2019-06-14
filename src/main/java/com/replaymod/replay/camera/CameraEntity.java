@@ -116,7 +116,7 @@ public class CameraEntity
      * Therefore we cannot register any event handlers directly in the CameraEntity class and
      * instead have this inner class.
      */
-    private final EventHandler eventHandler = new EventHandler();
+    private EventHandler eventHandler = new EventHandler();
 
     public CameraEntity(
             MinecraftClient mcIn,
@@ -525,10 +525,22 @@ public class CameraEntity
     @Override
     public void remove() {
         super.remove();
-        eventHandler.unregister();
+        if (eventHandler != null) {
+            eventHandler.unregister();
+            eventHandler = null;
+        }
     }
 
     private void update() {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.world != this.world) {
+            if (eventHandler != null) {
+                eventHandler.unregister();
+                eventHandler = null;
+            }
+            return;
+        }
+
         long now = System.currentTimeMillis();
         long timePassed = now - lastControllerUpdate;
         cameraController.update(timePassed / 50f);
