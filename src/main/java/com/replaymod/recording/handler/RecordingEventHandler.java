@@ -126,8 +126,8 @@ public class RecordingEventHandler extends EventRegistrations {
         if (mc.player == null) return;
     //#else
     //$$ @SubscribeEvent
-    //$$ public void onPlayerTick(TickEvent.PlayerTickEvent e) {
-    //$$     if(e.player != mc.player) return;
+    //$$ public void onPlayerTick(TickEvent.ClientTickEvent e) {
+    //$$     if(e.phase != TickEvent.Phase.START || mc.player == null) return;
     //#endif
         ClientPlayerEntity player = mc.player;
         try {
@@ -212,7 +212,7 @@ public class RecordingEventHandler extends EventRegistrations {
 
             //Animation Packets
             //Swing Animation
-            if (player.isHandSwinging && player.handSwingTicks == -1) {
+            if (player.isHandSwinging && player.handSwingTicks == 0) {
                 packetListener.save(new EntityAnimationS2CPacket(
                         player,
                         //#if MC>=10904
