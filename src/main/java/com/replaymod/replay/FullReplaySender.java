@@ -308,6 +308,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         }
     }
 
+    //#if MC>=10800
+    private
+    //#else
+    //$$ public // All event handlers need to be public in 1.7.10
+    //#endif
     class EventHandler extends EventRegistrations {
         //#if MC>=11400
         { on(PreTickCallback.EVENT, this::onWorldTick); }
