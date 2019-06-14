@@ -33,7 +33,7 @@ import static com.replaymod.core.versions.MCVer.*;
 public class SettingsRegistry {
     private Map<SettingKey<?>, Object> settings = new ConcurrentHashMap<>();
     //#if MC>=11400
-    private final Path configFile = getMinecraft().runDirectory.toPath().resolve("configs/replaymod.json");
+    private final Path configFile = getMinecraft().runDirectory.toPath().resolve("config/replaymod.json");
     //#else
     //$$ private static final Object NULL_OBJECT = new Object();
     //#if MC>=11300
