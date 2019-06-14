@@ -26,6 +26,8 @@
     //$$ "MixinRenderManager",
     //#endif
     "MixinViewFrustum",
+    //#else
+    //$$ "MixinFMLClientHandler",
     //#endif
     "MixinKeyboardListener",
     "MixinPlayerControllerMP",

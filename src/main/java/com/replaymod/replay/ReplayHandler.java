@@ -642,6 +642,12 @@ public class ReplayHandler {
                 replaySender.setAsyncMode(true);
                 replaySender.setReplaySpeed(0);
 
+                //#if MC<10800
+                //$$ while (mc.currentScreen instanceof GuiOpeningReplay) {
+                //$$     mc.currentScreen.handleInput();
+                //$$ }
+                //#endif
+
                 mc.getNetworkHandler().getClientConnection()
                         //#if MC>=11300
                         .tick();
