@@ -239,7 +239,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 LOGGER.error("Rendering video:", e);
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
-                        () -> {},
+                        GuiRenderSettings.this::display,
                         new TranslatableComponent("replaymod.gui.rendering.error.title"),
                         new TranslatableComponent("replaymod.gui.rendering.error.message")
                         //#else

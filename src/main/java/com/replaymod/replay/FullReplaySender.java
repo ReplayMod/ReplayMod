@@ -460,7 +460,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         }
                         mc.openScreen(new NoticeScreen(
                                 //#if MC>=11400
-                                () -> {},
+                                () -> mc.openScreen(null),
                                 new TranslatableComponent("replaymod.error.unknownrestriction1"),
                                 new TranslatableComponent("replaymod.error.unknownrestriction2", unknown)
                                 //#else

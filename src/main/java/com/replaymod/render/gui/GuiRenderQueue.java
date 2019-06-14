@@ -216,7 +216,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                 LOGGER.error("Rendering video:", e);
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
-                        () -> {},
+                        container::display,
                         new TranslatableComponent("replaymod.gui.rendering.error.title"),
                         new TranslatableComponent("replaymod.gui.rendering.error.message")
                         //#else

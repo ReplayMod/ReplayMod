@@ -143,7 +143,7 @@ public class GuiReplayViewer extends GuiScreen {
                             e.printStackTrace();
                             getMinecraft().openScreen(new NoticeScreen(
                                     //#if MC>=11400
-                                    () -> {},
+                                    GuiReplayViewer.this::display,
                                     new TranslatableComponent("replaymod.gui.viewer.delete.failed1"),
                                     new TranslatableComponent("replaymod.gui.viewer.delete.failed2")
                                     //#else
