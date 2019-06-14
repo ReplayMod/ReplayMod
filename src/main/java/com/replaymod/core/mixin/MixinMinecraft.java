@@ -5,12 +5,12 @@ import net.minecraft.client.MinecraftClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11300
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#else
 //$$ import org.spongepowered.asm.mixin.injection.Redirect;
 //$$ import com.replaymod.replay.InputReplayTimer;
@@ -83,6 +83,18 @@ public abstract class MixinMinecraft
     //$$     } catch (IOException e) {
     //$$         e.printStackTrace();
     //$$     }
+    //$$ }
+    //#else
+    //$$ private boolean earlyReturn;
+    //$$
+    //$$ @Override
+    //$$ public void replayModSetEarlyReturnFromRunTick(boolean earlyReturn) {
+    //$$     this.earlyReturn = earlyReturn;
+    //$$ }
+    //$$
+    //$$ @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;sendClickBlockToController(Z)V"), cancellable = true)
+    //$$ private void doEarlyReturnFromRunTick(CallbackInfo ci) {
+    //$$     if (earlyReturn) ci.cancel();
     //$$ }
     //#endif
     //$$ @Redirect(

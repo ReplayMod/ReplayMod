@@ -477,8 +477,12 @@ public class MCVer {
         //#if MC>=11300
         void replayModProcessKeyBinds();
         //#else
+        //#if MC>=10904
         //$$ void replayModRunTickMouse();
         //$$ void replayModRunTickKeyboard();
+        //#else
+        //$$ void replayModSetEarlyReturnFromRunTick(boolean earlyReturn);
+        //#endif
         //#endif
         //#if MC>=11400
         void replayModExecuteTaskQueue();
