@@ -3,6 +3,7 @@ package com.replaymod.replay.camera;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedCallback;
+import com.replaymod.replay.ReplayHandler;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
@@ -363,7 +364,8 @@ public class CameraEntity
     //#if MC>=10800
     @Override
     public boolean isSpectator() {
-        return ReplayModReplay.instance.getReplayHandler().isCameraView(); // Make sure we're treated as spectator
+        ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
+        return replayHandler == null || replayHandler.isCameraView(); // Make sure we're treated as spectator
     }
     //#endif
 
