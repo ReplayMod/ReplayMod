@@ -202,8 +202,12 @@ public class ReplayHandler {
         }
 
         if (mc.world != null) {
-            mc.world.disconnect();
-            mc.joinWorld(null);
+            //#if MC>=11400
+            mc.disconnect();
+            //#else
+            //$$ mc.world.sendQuittingDisconnectingPacket();
+            //$$ mc.loadWorld(null);
+            //#endif
         }
 
         TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
