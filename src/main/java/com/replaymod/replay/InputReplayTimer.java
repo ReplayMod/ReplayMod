@@ -7,8 +7,11 @@ import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderTickCounter;
 
+//#if MC>=11400
+import com.replaymod.core.ReplayMod;
+//#endif
+
 //#if MC>=11300
-import com.replaymod.core.versions.MCVer;
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.settings.KeyBinding;
@@ -55,6 +58,10 @@ public class InputReplayTimer extends WrappedTimer {
         // 1.7.10: We have to run the scheduled executables (ours only) because MC would only run them every tick
         //#if MC<=10710
         //$$ FML_BUS.post(new RunScheduledTasks());
+        //#endif
+
+        //#if MC>=11400
+        ReplayMod.instance.executor.executeTaskQueue();
         //#endif
 
         // If we are in a replay, we have to manually process key and mouse events as the

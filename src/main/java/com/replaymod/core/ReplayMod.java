@@ -36,6 +36,7 @@ import net.minecraft.client.options.Option;
 import net.minecraft.resource.DirectoryResourcePack;
 import net.minecraft.resource.ResourcePackCreator;
 import net.minecraft.resource.ResourcePackContainer;
+import net.minecraft.util.NonBlockingThreadExecutor;
 //#else
 //$$ import com.google.common.util.concurrent.ListenableFutureTask;
 //$$ import net.minecraft.resources.FolderPack;
@@ -409,6 +410,46 @@ public class ReplayMod implements
     private boolean inRunLater = false;
     //#if MC>=11400
     private boolean inRenderTaskQueue = false;
+    // Starting 1.14 MC clears the queue of scheduled tasks on disconnect.
+    // This works fine for MC since it uses the queue only for packet handling but breaks our assumption that
+    // stuff submitted via runLater is actually always run (e.g. recording might not be fully stopped because parts
+    // of that are run via runLater and stopping the recording happens right around the time MC clears the queue).
+    // Luckily, that's also the version where MC pulled out the executor implementation, so we can just spin up our own.
+    public static class ReplayModExecutor extends NonBlockingThreadExecutor<Runnable> {
+        private final Thread mcThread = Thread.currentThread();
+        // Fail-fast in case we ever switch to async loading and forget to change this
+        { if (!MinecraftClient.getInstance().isOnThread()) throw new RuntimeException(); }
+
+        private ReplayModExecutor(String string_1) {
+            super(string_1);
+        }
+
+        @Override
+        protected Runnable prepareRunnable(Runnable runnable) {
+            return runnable;
+        }
+
+        @Override
+        protected boolean canRun(Runnable runnable) {
+            return true;
+        }
+
+        @Override
+        protected Thread getThread() {
+            return mcThread;
+        }
+
+        @Override
+        public void send(Runnable runnable) {
+            method_18858(runnable);
+        }
+
+        @Override
+        public void executeTaskQueue() {
+            super.executeTaskQueue();
+        }
+    }
+    public final ReplayModExecutor executor = new ReplayModExecutor("Client/ReplayMod");
     //#endif
 
     public void runLater(Runnable runnable) {
@@ -423,7 +464,7 @@ public class ReplayMod implements
                 }
             });
         } else {
-            mc.method_18858(() -> {
+            executor.method_18858(() -> {
                 inRunLater = true;
                 try {
                     runnable.run();
