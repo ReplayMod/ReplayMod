@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
+import com.google.gson.JsonSyntaxException;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
@@ -329,10 +330,19 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         } catch (IOException e) {
             LOGGER.error("Reading render settings:", e);
         }
-        RenderSettings settings = new GsonBuilder()
-                .registerTypeAdapter(RenderSettings.class, (InstanceCreator<RenderSettings>) type -> getDefaultRenderSettings())
-                .registerTypeAdapter(ReadableColor.class, new Gson().getAdapter(Color.class))
-                .create().fromJson(json, RenderSettings.class);
+        RenderSettings settings = null;
+        try {
+            settings = new GsonBuilder()
+                    .registerTypeAdapter(RenderSettings.class, (InstanceCreator<RenderSettings>) type -> getDefaultRenderSettings())
+                    .registerTypeAdapter(ReadableColor.class, new Gson().getAdapter(Color.class))
+                    .create().fromJson(json, RenderSettings.class);
+        } catch (JsonSyntaxException e) {
+            LOGGER.error("Parsing render settings:", e);
+            LOGGER.error("Raw JSON: {}", json);
+        }
+        if (settings == null) {
+            settings = getDefaultRenderSettings();
+        }
         load(settings);
     }
 
