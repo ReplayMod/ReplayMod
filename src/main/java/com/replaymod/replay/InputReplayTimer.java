@@ -96,7 +96,9 @@ public class InputReplayTimer extends WrappedTimer {
             //#else
             //$$ mc.runTick();
             //#endif
-            //$$ mc.theWorld = world;
+            //$$ if (mc.theWorld == null) {
+            //$$     mc.theWorld = world;
+            //$$ }
             //#endif
             //#endif
         }

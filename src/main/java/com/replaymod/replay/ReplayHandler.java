@@ -67,11 +67,11 @@ import net.minecraft.network.NetworkSide;
 //#else
 //$$ import com.mojang.authlib.GameProfile;
 //$$ import net.minecraft.client.network.NetHandlerPlayClient;
-//$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //$$ import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 //#endif
 //#endif
 //#else
+//$$ import cpw.mods.fml.client.FMLClientHandler;
 //$$ import cpw.mods.fml.common.Loader;
 //$$ import cpw.mods.fml.common.network.internal.FMLNetworkHandler;
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
@@ -256,6 +256,7 @@ public class ReplayHandler {
         //$$     }
         //$$ };
         //$$ mc.displayGuiScreen(new GuiOpeningReplay(networkManager));
+        //$$ FMLClientHandler.instance().connectToRealmsServer(null, 0); // just to init the playClientBlock latch
         //#endif
 
         networkManager.setPacketListener(new ClientLoginNetworkHandler(

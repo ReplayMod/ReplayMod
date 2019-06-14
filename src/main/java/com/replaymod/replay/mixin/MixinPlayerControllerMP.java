@@ -120,5 +120,12 @@ public abstract class MixinPlayerControllerMP {
     //$$         ci.cancel();
     //$$     }
     //$$ }
+    //$$
+    //$$ @Inject(method = "resetBlockRemoving", at = @At("HEAD"), cancellable = true)
+    //$$ private void replayModReplay_skipWorldTick(CallbackInfo ci) {
+    //$$     if (this.mc.theWorld == null) {
+    //$$         ci.cancel();
+    //$$     }
+    //$$ }
     //#endif
 }
