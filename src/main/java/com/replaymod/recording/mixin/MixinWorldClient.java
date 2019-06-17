@@ -63,7 +63,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     //#endif
 
     private RecordingEventHandler replayModRecording_getRecordingEventHandler() {
-        return ((RecordingEventHandler.RecordingEventSender) client.worldRenderer).getRecordingEventHandler();
+        return ((RecordingEventHandler.RecordingEventSender) this.client.worldRenderer).getRecordingEventHandler();
     }
 
     // Sounds that are emitted by thePlayer no longer take the long way over the server
@@ -79,7 +79,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     //#endif
     public void replayModRecording_recordClientSound(PlayerEntity player, double x, double y, double z, SoundEvent sound, SoundCategory category,
                           float volume, float pitch, CallbackInfo ci) {
-        if (player == client.player) {
+        if (player == this.client.player) {
             RecordingEventHandler handler = replayModRecording_getRecordingEventHandler();
             if (handler != null) {
                 handler.onClientSound(sound, category, x, y, z, volume, pitch);
@@ -96,7 +96,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     //$$ @Override
     //$$ public void playEvent (EntityPlayer player, int type, BlockPos pos, int data) {
     //#endif
-        if (player == client.player) {
+        if (player == this.client.player) {
             // We caused this event, the server won't send it to us
             RecordingEventHandler handler = replayModRecording_getRecordingEventHandler();
             if (handler != null) {

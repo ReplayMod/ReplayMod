@@ -585,7 +585,7 @@ public class ReplayHandler {
                     //$$ public void drawScreen(int mouseX, int mouseY, float partialTicks) {
                     //#endif
                         renderDirtBackground(0);
-                        drawCenteredString(minecraft.textRenderer, I18n.translate("replaymod.gui.pleasewait"),
+                        drawCenteredString(this.minecraft.textRenderer, I18n.translate("replaymod.gui.pleasewait"),
                                 width / 2, height / 2, 0xffffffff);
                     }
                 };
