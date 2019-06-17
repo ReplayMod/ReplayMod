@@ -158,7 +158,7 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
 
             try {
                 MarkerProcessor.apply(inputPath, progressPopup.progressBar::setProgress);
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 Utils.error(ReplayModEditor.LOGGER, this, CrashReport.create(e, "Running marker processor"), this::close);
             }
 
