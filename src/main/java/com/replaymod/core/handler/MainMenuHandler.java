@@ -48,7 +48,7 @@ public class MainMenuHandler extends EventRegistrations {
                 // Buttons that aren't in a rectangle directly above our space don't need moving
                 if (button.x + width(button) < gui.width / 2 - 100
                         || button.x > gui.width / 2 + 100
-                        || button.y > gui.height / 4 + 10 + 4 * 24) continue;
+                        || button.y > gui.height / 4 + 10 + 4 * 24 + 20) continue;
                 // Move button up to make space for one rows of buttons
                 // and then move back down by 10 to compensate for the space to the exit button that was already there
                 int offset = -1 * 24 + 10;
