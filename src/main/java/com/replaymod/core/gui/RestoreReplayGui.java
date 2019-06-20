@@ -1,7 +1,7 @@
 package com.replaymod.core.gui;
 
 import com.google.common.io.Files;
-import com.replaymod.replaystudio.PacketData;
+import com.google.gson.Gson;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -17,9 +17,14 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+
+import static com.replaymod.replaystudio.util.Utils.readInt;
+import static com.replaymod.replaystudio.util.Utils.writeInt;
 
 public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
 
@@ -53,16 +58,34 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
                     // We need to re-write the packet data in case there are any incomplete packets dangling at the end
                     try (ReplayInputStream in = replayFile.getPacketData(studio, true);
                          ReplayOutputStream out = replayFile.writePacketData(true)) {
-                        PacketData last = null;
-                        while ((last = in.readPacket()) != null) {
-                            metaData.setDuration((int) last.getTime());
-                            out.write(last);
+                        while (true) {
+                            // To prevent failing at un-parsable packets and to support recovery in minimal mode,
+                            // we do not use the ReplayIn/OutputStream methods but instead parse the packets ourselves.
+                            int time = readInt(in);
+                            int length = readInt(in);
+                            if (time == -1 || length == -1) {
+                                break;
+                            }
+                            byte[] buf = new byte[length];
+                            IOUtils.readFully(in, buf);
+
+                            // Fully read, update replay duration
+                            metaData.setDuration(time);
+
+                            // Write packet back into recovered replay
+                            writeInt(out, time);
+                            writeInt(out, length);
+                            out.write(buf);
                         }
                     } catch (Throwable t) {
                         t.printStackTrace();
                     }
                     // Write back the actual duration
-                    replayFile.writeMetaData(metaData);
+                    try (OutputStream out = replayFile.write("metaData.json")) {
+                        metaData.setGenerator(metaData.getGenerator() + "(+ ReplayMod Replay Recovery)");
+                        String json = (new Gson()).toJson(metaData);
+                        out.write(json.getBytes());
+                    }
                 }
                 replayFile.save();
                 replayFile.close();

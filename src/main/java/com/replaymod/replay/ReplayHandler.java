@@ -314,6 +314,7 @@ public class ReplayHandler {
 
     //#if MC>=10904
     public void ensureQuickModeInitialized(Runnable andThen) {
+        if (Utils.ifMinimalModeDoPopup(overlay, () -> {})) return;
         ListenableFuture<Void> future = quickReplaySender.getInitializationPromise();
         if (future == null) {
             InitializingQuickModePopup popup = new InitializingQuickModePopup(overlay);
@@ -365,6 +366,9 @@ public class ReplayHandler {
     }
 
     public void setQuickMode(boolean quickMode) {
+        if (ReplayMod.isMinimalMode()) {
+            throw new UnsupportedOperationException("Quick Mode not supported in minimal mode.");
+        }
         if (quickMode == this.quickMode) return;
         if (quickMode && fullReplaySender.isAsyncMode()) {
             // If this method is called via runLater, then it cannot switch to sync mode by itself as there might be

@@ -5,6 +5,7 @@ import com.google.common.net.PercentEscaper;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.replaymod.core.ReplayMod;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiScrollable;
@@ -26,6 +27,7 @@ import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11300
@@ -34,10 +36,11 @@ import org.apache.logging.log4j.Logger;
 //#endif
 
 //#if MC>=10800
+import com.github.steveice10.mc.protocol.MinecraftConstants;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.DefaultSkinHelper;
-
 //#else
+//$$ import com.github.steveice10.mc.protocol.ProtocolConstants;
 //$$ import net.minecraft.client.Minecraft;
 //$$ import net.minecraft.client.entity.AbstractClientPlayer;
 //$$ import net.minecraft.entity.player.EntityPlayer;
@@ -71,6 +74,7 @@ import java.util.function.Consumer;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 public class Utils {
+    private static Logger LOGGER = LogManager.getLogger();
 
     private static InputStream getResourceAsStream(String path) {
         // FIXME this seems broken in 1.13, hence the workaround. probably want to open an issue with modlauncher (or forge?)
@@ -313,6 +317,64 @@ public class Utils {
             throw (RuntimeException) t;
         } else if (t instanceof Error) {
             throw (Error) t;
+        }
+    }
+
+    public static void denyIfMinimalMode(GuiContainer container, Runnable onPopupClosed, Runnable orElseRun) {
+        if (isNotMinimalModeElsePopup(container, onPopupClosed)) {
+            orElseRun.run();
+        }
+    }
+
+    public static boolean ifMinimalModeDoPopup(GuiContainer container, Runnable onPopupClosed) {
+        return !isNotMinimalModeElsePopup(container, onPopupClosed);
+    }
+
+    public static boolean isNotMinimalModeElsePopup(GuiContainer container, Runnable onPopupClosed) {
+        if (!ReplayMod.isMinimalMode()) {
+            LOGGER.trace("Minimal mode not active, continuing");
+            return true;
+        }
+        LOGGER.trace("Minimal mode active, denying action, opening popup");
+
+        MinimalModeUnsupportedPopup popup = new MinimalModeUnsupportedPopup(container);
+        Futures.addCallback(popup.getFuture(), new FutureCallback<Void>() {
+            @Override
+            public void onSuccess(@Nullable Void result) {
+                LOGGER.trace("Minimal mode popup closed");
+                if (onPopupClosed != null) {
+                    onPopupClosed.run();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                LOGGER.error("During minimal mode popup:", t);
+            }
+        });
+        return false;
+    }
+
+    private static class MinimalModeUnsupportedPopup extends GuiInfoPopup {
+        private MinimalModeUnsupportedPopup(GuiContainer container) {
+            super(container);
+            setBackgroundColor(Colors.DARK_TRANSPARENT);
+
+            getInfo().addElements(new VerticalLayout.Data(0.5),
+                    new GuiLabel()
+                            .setColor(Colors.BLACK)
+                            .setI18nText("replaymod.gui.minimalmode.unsupported"),
+                    new GuiLabel()
+                            .setColor(Colors.BLACK)
+                            .setI18nText("replaymod.gui.minimalmode.supportedversion",
+                                    //#if MC>=10800
+                                    MinecraftConstants.GAME_VERSION
+                                    //#else
+                                    //$$ ProtocolConstants.GAME_VERSION
+                                    //#endif
+                            ));
+
+            open();
         }
     }
 }

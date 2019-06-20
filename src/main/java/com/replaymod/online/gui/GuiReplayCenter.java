@@ -5,6 +5,7 @@ import com.google.common.base.Supplier;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.online.ReplayModOnline;
 import com.replaymod.online.api.ApiClient;
@@ -425,7 +426,7 @@ public class GuiReplayCenter extends GuiScreen {
             } else {
                 server.setText(metaData.getServerName());
             }
-            incompatible = !new ReplayStudio().isCompatible(fileInfo.getMetadata().getFileFormatVersion());
+            incompatible = !ReplayMod.isCompatible(fileInfo.getMetadata().getFileFormatVersion(), -1); // TODO protocol version support on website
             if (incompatible) {
                 version.setText("Minecraft " + fileInfo.getMetadata().getMcVersion());
             }

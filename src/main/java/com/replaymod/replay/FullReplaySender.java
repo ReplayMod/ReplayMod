@@ -83,6 +83,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.replaymod.core.versions.MCVer.*;
+import static com.replaymod.replaystudio.util.Utils.readInt;
 
 /**
  * Sends replay packets to netty channels.
@@ -1102,26 +1103,37 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         private final byte[] bytes;
 
         PacketData(ReplayInputStream in, boolean loginPhase) throws IOException {
-            com.replaymod.replaystudio.PacketData data = in.readPacket();
-            timestamp = (int) data.getTime();
-            // We need to re-encode MCProtocolLib packets, so we can later decode them as NMS packets
-            // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
-            // to apply ViaVersion (and potentially other magic) to it.
-            synchronized (byteBuf) {
-                byteBuf.markReaderIndex(); // Mark the current reader and writer index (should be at start)
-                byteBuf.markWriterIndex();
-
-                try {
-                    (loginPhase ? codecLoginPhase : codecPlayPhase).encode(null, data.getPacket(), byteBuf);
-                } catch (Exception e) {
-                    throw new IOException(e);
+            if (ReplayMod.isMinimalMode()) {
+                // Minimal mode, we can only read our exact protocol version and cannot use ReplayStudio
+                timestamp = readInt(in);
+                int length = readInt(in);
+                if (timestamp == -1 || length == -1) {
+                    throw new EOFException();
                 }
+                bytes = new byte[length];
+                IOUtils.readFully(in, bytes);
+            } else {
+                com.replaymod.replaystudio.PacketData data = in.readPacket();
+                timestamp = (int) data.getTime();
+                // We need to re-encode MCProtocolLib packets, so we can later decode them as NMS packets
+                // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
+                // to apply ViaVersion (and potentially other magic) to it.
+                synchronized (byteBuf) {
+                    byteBuf.markReaderIndex(); // Mark the current reader and writer index (should be at start)
+                    byteBuf.markWriterIndex();
 
-                bytes = new byte[byteBuf.readableBytes()]; // Create bytes array of sufficient size
-                byteBuf.readBytes(bytes); // Read all data into bytes
+                    try {
+                        (loginPhase ? codecLoginPhase : codecPlayPhase).encode(null, data.getPacket(), byteBuf);
+                    } catch (Exception e) {
+                        throw new IOException(e);
+                    }
 
-                byteBuf.resetReaderIndex(); // Reset reader & writer index for next use
-                byteBuf.resetWriterIndex();
+                    bytes = new byte[byteBuf.readableBytes()]; // Create bytes array of sufficient size
+                    byteBuf.readBytes(bytes); // Read all data into bytes
+
+                    byteBuf.resetReaderIndex(); // Reset reader & writer index for next use
+                    byteBuf.resetWriterIndex();
+                }
             }
         }
     }

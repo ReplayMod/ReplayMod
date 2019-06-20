@@ -1,7 +1,9 @@
 package com.replaymod.recording.packet;
 
+import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.recording.Setting;
@@ -45,6 +47,7 @@ import net.minecraft.network.NetworkSide;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -112,7 +115,19 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             }
             try {
                 synchronized (replayFile) {
-                    replayFile.writeMetaData(metaData);
+                    if (ReplayMod.isMinimalMode()) {
+                        metaData.setFileFormat("MCPR");
+                        metaData.setFileFormatVersion(ReplayMetaData.CURRENT_FILE_FORMAT_VERSION);
+                        metaData.setProtocolVersion(MCVer.getProtocolVersion());
+                        metaData.setGenerator("ReplayMod in Minimal Mode");
+
+                        try (OutputStream out = replayFile.write("metaData.json")) {
+                            String json = (new Gson()).toJson(metaData);
+                            out.write(json.getBytes());
+                        }
+                    } else {
+                        replayFile.writeMetaData(metaData);
+                    }
                 }
             } catch (IOException e) {
                 logger.error("Writing metadata:", e);
@@ -197,7 +212,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     replayFile.save();
                     replayFile.close();
 
-                    if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS)) {
+                    if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS) && !ReplayMod.isMinimalMode()) {
                         MarkerProcessor.apply(outputPath, progress -> {});
                     }
                 } catch (IOException e) {

@@ -122,7 +122,7 @@ public class ConnectionEventHandler {
             guiOverlay = new GuiRecordingOverlay(mc, core.getSettingsRegistry(), guiControls);
             guiOverlay.register();
 
-            if (core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING)) {
+            if (core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING) || ReplayMod.isMinimalMode()) {
                 core.printInfoToChat("replaymod.chat.recordingstarted");
             } else {
                 packetListener.addMarker(MarkerProcessor.MARKER_NAME_START_CUT, 0);

@@ -41,6 +41,7 @@ public class GuiHandler extends EventRegistrations {
         // Inject Edit button
         if (!replayViewer.editorButton.getChildren().isEmpty()) return;
         replayViewer.replaySpecificButtons.add(new GuiButton(replayViewer.editorButton).onClick(() -> {
+            if (Utils.ifMinimalModeDoPopup(replayViewer, () -> {})) return;
             try {
                 new GuiEditReplay(replayViewer, replayViewer.list.getSelected().file.toPath()) {
                     @Override

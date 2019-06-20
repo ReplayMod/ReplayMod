@@ -14,6 +14,7 @@ import com.replaymod.online.ReplayModOnline;
 import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replaystudio.studio.ReplayStudio;
 import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.container.GuiScreen;
@@ -157,6 +158,16 @@ public class ReplayMod implements
 
     private final GuiBackgroundProcesses backgroundProcesses = new GuiBackgroundProcesses();
 
+    /**
+     * Whether the current MC version is supported by the embedded ReplayStudio version.
+     * If this is not the case (i.e. if this is variable true), any feature of the RM which depends on the ReplayStudio
+     * lib will be disabled.
+     *
+     * Only supported on Fabric builds, i.e. will always be false / crash the game with Forge/pre-1.14 builds.
+     * (specifically the code below and MCVer#getProtocolVersion make this assumption)
+     */
+    private boolean minimalMode;
+
     public ReplayMod() {
         I18n.setI18n(net.minecraft.client.resource.language.I18n::translate);
 
@@ -164,12 +175,17 @@ public class ReplayMod implements
         // Check Minecraft protocol version for compatibility
         int supportedProtocol = MinecraftConstants.PROTOCOL_VERSION;
         int actualProtocol = SharedConstants.getGameVersion().getProtocolVersion();
-        if (supportedProtocol != actualProtocol) {
-            throw new UnsupportedOperationException(String.format(
-                    "Unsupported Minecraft version, supporting protocol version %s (%s) but actual version is %s (%s).",
-                    supportedProtocol, MinecraftConstants.GAME_VERSION,
-                    actualProtocol, SharedConstants.getGameVersion().getName()
-            ));
+        if (supportedProtocol != actualProtocol && !Boolean.parseBoolean(System.getProperty("replaymod.skipversioncheck", "false"))) {
+            minimalMode = true;
+            // Only allow use of older RM on newer (e.g. snapshot, pre-release) versions.
+            // The other way around is almost certainly user error.
+            if (actualProtocol < supportedProtocol && !Boolean.parseBoolean(System.getProperty("replaymod.allowoldsnapshot", "false"))) {
+                throw new UnsupportedOperationException(String.format(
+                        "Unsupported Minecraft version, supporting protocol version %s (%s) but actual version is %s (%s).",
+                        supportedProtocol, MinecraftConstants.GAME_VERSION,
+                        actualProtocol, SharedConstants.getGameVersion().getName()
+                ));
+            }
         }
         //#endif
 
@@ -601,5 +617,18 @@ public class ReplayMod implements
 
     public GuiBackgroundProcesses getBackgroundProcesses() {
         return backgroundProcesses;
+    }
+
+    // This method is static because it depends solely on the environment, not on the actual RM instance.
+    public static boolean isMinimalMode() {
+        return ReplayMod.instance.minimalMode;
+    }
+
+    public static boolean isCompatible(int fileFormatVersion, int protocolVersion) {
+        if (isMinimalMode()) {
+            return protocolVersion == MCVer.getProtocolVersion();
+        } else {
+            return new ReplayStudio().isCompatible(fileFormatVersion, protocolVersion);
+        }
     }
 }

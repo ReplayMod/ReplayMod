@@ -1,6 +1,7 @@
 package com.replaymod.recording.gui;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.packet.PacketListener;
@@ -32,6 +33,7 @@ public class GuiRecordingControls extends EventRegistrations {
     private GuiPanel panel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(4));
 
     private GuiButton buttonPauseResume = new GuiButton(panel).onClick(() -> {
+        if (Utils.ifMinimalModeDoPopup(panel, () -> {})) return;
         if (paused) {
             packetListener.addMarker(MarkerProcessor.MARKER_NAME_END_CUT);
         } else {
@@ -42,6 +44,7 @@ public class GuiRecordingControls extends EventRegistrations {
     }).setSize(98, 20);
 
     private GuiButton buttonStartStop = new GuiButton(panel).onClick(() -> {
+        if (Utils.ifMinimalModeDoPopup(panel, () -> {})) return;
         if (stopped) {
             paused = false;
             packetListener.addMarker(MarkerProcessor.MARKER_NAME_END_CUT);

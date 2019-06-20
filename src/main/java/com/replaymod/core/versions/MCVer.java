@@ -78,6 +78,7 @@ import net.minecraft.client.render.VertexFormatElement;
 
 //#if MC>=11400
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.SharedConstants;
 //#else
 //#if MC>=11300
 //$$ import net.minecraftforge.fml.ModList;
@@ -114,6 +115,14 @@ public class MCVer {
         //#else
         //$$ return Loader.isModLoaded(id);
         //#endif
+        //#endif
+    }
+
+    public static int getProtocolVersion() {
+        //#if MC>=11400
+        return SharedConstants.getGameVersion().getProtocolVersion();
+        //#else
+        //$$ throw new UnsupportedOperationException("Minimal mode not supported pre-1.14");
         //#endif
     }
 
