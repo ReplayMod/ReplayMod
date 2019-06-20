@@ -37,5 +37,9 @@
   "requires": {
     "fabricloader": ">=0.4.0",
     "fabric": ">=0.2.0"
+  },
+
+  "custom": {
+    "modmenu:clientsideOnly": true
   }
 }
