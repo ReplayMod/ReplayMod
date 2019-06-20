@@ -107,9 +107,7 @@ public class SPTimeline implements PathingRegistry {
         Validate.isTrue(defaultInterpolatorType != InterpolatorType.DEFAULT, "Must not be DEFAULT");
         this.defaultInterpolatorType = Validate.notNull(defaultInterpolatorType);
 
-        if (entityTracker != null) {
-            timeline.pushChange(updateInterpolators());
-        }
+        timeline.pushChange(updateInterpolators());
     }
 
     public Change setDefaultInterpolator(Interpolator interpolator) {
@@ -521,6 +519,9 @@ public class SPTimeline implements PathingRegistry {
     }
 
     private Change updateSpectatorPositions() {
+        if (entityTracker == null) {
+            return CombinedChange.create();
+        }
         List<Change> changes = new ArrayList<>();
         timePath.updateAll();
         for (Keyframe keyframe : positionPath.getKeyframes()) {

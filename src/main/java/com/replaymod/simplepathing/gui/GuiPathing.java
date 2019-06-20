@@ -265,6 +265,8 @@ public class GuiPathing {
     private final ReplayHandler replayHandler;
     private final RealtimeTimelinePlayer player;
 
+    // Whether any error which occured during entity tracker loading has already been shown to the user
+    private boolean errorShown;
     private EntityPositionTracker entityTracker;
     private Consumer<Double> entityTrackerLoadingProgress;
     private SettableFuture<Void> entityTrackerFuture;
@@ -550,7 +552,7 @@ public class GuiPathing {
         scrollbar.setZoom(scrollbar.getZoom() * factor);
     }
 
-    public boolean ensureEntityTracker(Runnable withDelayedTracker) {
+    public boolean loadEntityTracker(Runnable thenRun) {
         if (entityTracker == null) {
             LOGGER.debug("Entity tracker not yet loaded, delaying...");
             LoadEntityTrackerPopup popup = new LoadEntityTrackerPopup(replayHandler.getOverlay());
@@ -562,14 +564,21 @@ public class GuiPathing {
                     if (mod.getCurrentTimeline().getEntityTracker() == null) {
                         mod.getCurrentTimeline().setEntityTracker(entityTracker);
                     }
-                    withDelayedTracker.run();
+                    thenRun.run();
                 }
 
                 @Override
                 public void onFailure(@Nonnull Throwable t) {
-                    String message = "Failed to load entity tracker, pathing will be unavailable.";
-                    GuiReplayOverlay overlay = replayHandler.getOverlay();
-                    Utils.error(LOGGER, overlay, CrashReport.create(t, message), popup::close);
+                    if (errorShown) {
+                        String message = "Failed to load entity tracker, spectator keyframes will be broken.";
+                        GuiReplayOverlay overlay = replayHandler.getOverlay();
+                        Utils.error(LOGGER, overlay, CrashReport.create(t, message), () -> {
+                            popup.close();
+                            thenRun.run();
+                        });
+                    } else {
+                        thenRun.run();
+                    }
                 }
             });
             return false;
@@ -586,7 +595,7 @@ public class GuiPathing {
      */
     private void updateKeyframe(SPPath path) {
         LOGGER.debug("Updating keyframe on path {}" + path);
-        if (!ensureEntityTracker(() -> updateKeyframe(path))) return;
+        if (!loadEntityTracker(() -> updateKeyframe(path))) return;
 
         int time = timeline.getCursorPosition();
         SPTimeline timeline = mod.getCurrentTimeline();
@@ -640,7 +649,7 @@ public class GuiPathing {
     }
 
     public void openEditKeyframePopup(SPPath path, long time) {
-        if (!ensureEntityTracker(() -> openEditKeyframePopup(path, time))) return;
+        if (!loadEntityTracker(() -> openEditKeyframePopup(path, time))) return;
         Keyframe keyframe = mod.getCurrentTimeline().getKeyframe(path, time);
         if (keyframe.getProperties().contains(SpectatorProperty.PROPERTY)) {
             new GuiEditKeyframe.Spectator(this, path, keyframe.getTime()).open();
