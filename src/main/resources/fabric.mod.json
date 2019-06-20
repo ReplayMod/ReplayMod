@@ -21,6 +21,9 @@
   "entrypoints": {
     "client": [
       "com.replaymod.core.ReplayMod"
+    ],
+    "modmenu": [
+      "com.replaymod.core.gui.ModMenuApiImpl"
     ]
   },
   "mixins": [

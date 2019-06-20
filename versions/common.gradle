@@ -261,6 +261,10 @@ dependencies {
         shadow files(project(":jGui:$jGuiVersion").tasks.preshadowJar.archivePath) // include pre-shadowed lwjgl_util
     }
 
+    if (FABRIC) {
+        modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
+    }
+
     annotationProcessor 'org.projectlombok:lombok:1.16.6'
     compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
 
