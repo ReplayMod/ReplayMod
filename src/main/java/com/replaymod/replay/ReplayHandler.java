@@ -168,7 +168,11 @@ public class ReplayHandler {
             //#else
             //$$ mc.setIngameNotInFocus();
             //#endif
-            mc.joinWorld(null);
+            //#if MC>=11400
+            mc.disconnect();
+            //#else
+            //$$ mc.loadWorld(null);
+            //#endif
         });
 
         restrictions = new Restrictions();
