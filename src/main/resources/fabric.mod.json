@@ -15,7 +15,7 @@
   },
 
   "license": "GPL-3.0-or-later",
-  "icon": "replaymod_logo.png",
+  "icon": "assets/replaymod/favicon_logo.png",
 
   "environment": "client",
   "entrypoints": {
