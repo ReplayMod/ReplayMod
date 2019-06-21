@@ -66,7 +66,7 @@ public class InputReplayTimer extends WrappedTimer {
 
         // If we are in a replay, we have to manually process key and mouse events as the
         // tick speed may vary or there may not be any ticks at all (when the replay is paused)
-        if (mod.getReplayHandler() != null) {
+        if (mod.getReplayHandler() != null && mc.world != null && mc.player != null) {
             //#if MC>=11300
             if (mc.currentScreen == null || mc.currentScreen.passEvents) {
                 GLFW.glfwPollEvents();
