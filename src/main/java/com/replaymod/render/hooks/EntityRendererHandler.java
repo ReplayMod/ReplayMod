@@ -8,7 +8,10 @@ import com.replaymod.render.capturer.WorldRenderer;
 import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 
-//#if MC<11400
+//#if MC>=11400
+import com.replaymod.core.events.PostRenderCallback;
+import com.replaymod.core.events.PreRenderCallback;
+//#else
 //#if MC>=11300
 //$$ import net.minecraftforge.fml.hooks.BasicEventHooks;
 //#else
@@ -45,7 +48,9 @@ public class EntityRendererHandler implements WorldRenderer {
     }
 
     public void renderWorld(float partialTicks, long finishTimeNano) {
-        //#if MC<11400
+        //#if MC>=11400
+        PreRenderCallback.EVENT.invoker().preRender();
+        //#else
         //#if MC>=11300
         //$$ BasicEventHooks.onRenderTickStart(partialTicks);
         //#else
@@ -57,7 +62,9 @@ public class EntityRendererHandler implements WorldRenderer {
             mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
         }
 
-        //#if MC<11400
+        //#if MC>=11400
+        PostRenderCallback.EVENT.invoker().postRender();
+        //#else
         //#if MC>=11300
         //$$ BasicEventHooks.onRenderTickEnd(partialTicks);
         //#else
