@@ -2,6 +2,7 @@ package com.replaymod.recording.gui;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.packet.PacketListener;
@@ -92,10 +93,11 @@ public class GuiRecordingControls extends EventRegistrations {
     }
 
     public void show(PauseScreen gui) {
+        int modMenuOffset = MCVer.isModLoaded("modmenu") ? 12 : 0;
         VanillaGuiScreen.setup(gui).setLayout(new CustomLayout<GuiScreen>() {
             @Override
             protected void layout(GuiScreen container, int width, int height) {
-                pos(panel, width / 2 - 100, height / 4 + 128);
+                pos(panel, width / 2 - 100, height / 4 + 128 + modMenuOffset);
             }
         }).addElements(null, panel);
     }
