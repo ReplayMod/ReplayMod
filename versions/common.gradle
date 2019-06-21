@@ -334,7 +334,13 @@ task configureRelocation() {
                             pkgs << pkg.substring(0, pkg.indexOf('/', 4))
                         }
                     } else if (!pkg.startsWith('javax/')) {
-                        pkgs << pkg.substring(0, pkg.indexOf('/'))
+                        // Note: we cannot just use top level packages as those will be too generic and we'll run
+                        // into this long standing bug: https://github.com/johnrengelman/shadow/issues/232
+                        def i = pkg.indexOf('/')
+                        def i2 = pkg.indexOf('/', i + 1)
+                        if (i2 > 0) {
+                            pkgs << pkg.substring(0, i2)
+                        }
                     }
                 }
             }
