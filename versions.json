@@ -21,7 +21,6 @@
         "1.12.1-recommended": "1.12.1-2.1.4",
         "1.12.2-latest": "1.12.2-2.2.0-b2",
         "1.12.2-recommended": "1.12.2-2.1.4",
-        "1.13.2-latest": "1.13.2-2.2.0-b2",
         "1.14.2-latest": "1.14.2-2.2.0-b2"
     },
     "1.7.10": {
@@ -152,10 +151,6 @@
         "1.12.2-2.1.1": "See https://www.replaymod.com/forum/thread/100",
         "1.12.2-2.1.0": "See https://github.com/ReplayMod/ReplayMod/releases/1.12.2-2.1.0",
         "1.12.2-2.0.1-b1": "See https://github.com/ReplayMod/ReplayMod/releases/1.12.2-2.0.1-b1"
-    },
-    "1.13.2": {
-        "1.13.2-2.2.0-b2": "See https://www.replaymod.com/forum/thread/100",
-        "1.13.2-2.2.0-b1": "See https://www.replaymod.com/forum/thread/100"
     },
     "1.14.2": {
         "1.14.2-2.2.0-b2": "See https://www.replaymod.com/forum/thread/100",
