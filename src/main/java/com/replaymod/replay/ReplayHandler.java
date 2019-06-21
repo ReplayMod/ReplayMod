@@ -35,6 +35,8 @@ import net.minecraft.network.ClientConnection;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 //#if MC>=11300
 import com.replaymod.replay.mixin.EntityLivingBaseAccessor;
@@ -162,18 +164,22 @@ public class ReplayHandler {
         channel.close();
 
         // Force re-creation of camera entity by unloading the previous world
-        ReplayMod.instance.runSync(() -> {
-            //#if MC>=11300
-            mc.mouse.unlockCursor();
-            //#else
-            //$$ mc.setIngameNotInFocus();
-            //#endif
-            //#if MC>=11400
-            mc.disconnect();
-            //#else
-            //$$ mc.loadWorld(null);
-            //#endif
-        });
+        try {
+            ReplayMod.instance.runSync(() -> {
+                //#if MC>=11300
+                mc.mouse.unlockCursor();
+                //#else
+                //$$ mc.setIngameNotInFocus();
+                //#endif
+                //#if MC>=11400
+                mc.disconnect();
+                //#else
+                //$$ mc.loadWorld(null);
+                //#endif
+            });
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            LOGGER.error("Failed to properly restart (shutdown) replay:", e);
+        }
 
         restrictions = new Restrictions();
 

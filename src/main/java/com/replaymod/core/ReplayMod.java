@@ -42,6 +42,8 @@ import net.minecraft.util.NonBlockingThreadExecutor;
 //$$ import com.google.common.util.concurrent.ListenableFutureTask;
 //$$ import net.minecraft.resources.FolderPack;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$ import java.util.Queue;
+//$$ import java.util.concurrent.FutureTask;
 //$$
 //#if MC>=11300
 //$$ import com.replaymod.core.versions.LangResourcePack;
@@ -89,8 +91,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static com.replaymod.core.versions.MCVer.*;
 
@@ -385,16 +388,28 @@ public class ReplayMod implements
         });
     }
 
-    public void runSync(Runnable runnable) {
+    /**
+     * Execute the given runnable on the main client thread, returning only after it has been run (or after 30 seconds).
+     */
+    public void runSync(Runnable runnable) throws InterruptedException, ExecutionException, TimeoutException {
         //#if MC>=11400
         if (mc.isOnThread()) {
-        //#else
-        //$$ if (mc.isCallingFromMinecraftThread()) {
-        //#endif
             runnable.run();
         } else {
-            runLater(runnable);
+            executor.executeFuture(() -> {
+                runnable.run();
+                return null;
+            }).get(30, TimeUnit.SECONDS);
         }
+        //#else
+        //$$ if (mc.isCallingFromMinecraftThread()) {
+        //$$     runnable.run();
+        //$$ } else {
+        //$$     FutureTask<Void> future = new FutureTask<>(runnable, null);
+        //$$     runLater(future);
+        //$$     future.get(30, TimeUnit.SECONDS);
+        //$$ }
+        //#endif
     }
 
     /**
