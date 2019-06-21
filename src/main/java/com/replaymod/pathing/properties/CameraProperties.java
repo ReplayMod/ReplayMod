@@ -3,6 +3,7 @@ package com.replaymod.pathing.properties;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.pathing.change.Change;
 import com.replaymod.replaystudio.pathing.property.AbstractProperty;
 import com.replaymod.replaystudio.pathing.property.AbstractPropertyGroup;
@@ -52,7 +53,10 @@ public class CameraProperties extends AbstractPropertyGroup {
         public void applyToGame(Triple<Double, Double, Double> value, @NonNull Object replayHandler) {
             ReplayHandler handler = ((ReplayHandler) replayHandler);
             handler.spectateCamera();
-            handler.getCameraEntity().setCameraPosition(value.getLeft(), value.getMiddle(), value.getRight());
+            CameraEntity cameraEntity = handler.getCameraEntity();
+            if (cameraEntity != null) {
+                cameraEntity.setCameraPosition(value.getLeft(), value.getMiddle(), value.getRight());
+            }
         }
 
         @Override
@@ -90,7 +94,10 @@ public class CameraProperties extends AbstractPropertyGroup {
         public void applyToGame(Triple<Float, Float, Float> value, @NonNull Object replayHandler) {
             ReplayHandler handler = ((ReplayHandler) replayHandler);
             handler.spectateCamera();
-            handler.getCameraEntity().setCameraRotation(value.getLeft(), value.getMiddle(), value.getRight());
+            CameraEntity cameraEntity = handler.getCameraEntity();
+            if (cameraEntity != null) {
+                cameraEntity.setCameraRotation(value.getLeft(), value.getMiddle(), value.getRight());
+            }
         }
 
         @Override

@@ -3,6 +3,7 @@ package com.replaymod.pathing.properties;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.pathing.property.AbstractProperty;
 import com.replaymod.replaystudio.pathing.property.PropertyPart;
 import com.replaymod.replaystudio.pathing.property.PropertyParts;
@@ -32,7 +33,9 @@ public class SpectatorProperty extends AbstractProperty<Integer> {
     @Override
     public void applyToGame(Integer value, Object replayHandler) {
         ReplayHandler handler = ((ReplayHandler) replayHandler);
-        World world = handler.getCameraEntity().getEntityWorld();
+        CameraEntity cameraEntity = handler.getCameraEntity();
+        if (cameraEntity == null) return;
+        World world = cameraEntity.getEntityWorld();
         // Lookup entity by id, returns null if an entity with the id does not exists
         Entity target = world.getEntityById(value);
         // Spectate entity, when called with null, returns to camera
