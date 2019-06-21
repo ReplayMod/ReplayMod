@@ -53,7 +53,9 @@ public class EntityRendererHandler implements WorldRenderer {
         //#endif
         //#endif
 
-        mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
+        if (mc.world != null && mc.player != null) {
+            mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
+        }
 
         //#if MC<11400
         //#if MC>=11300
