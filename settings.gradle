@@ -3,11 +3,8 @@ def coreMcVersion = f.readLines().first() as int
 
 def jGuiVersions = []
 def replayModVersions = []
-if (coreMcVersion > 10710) {
-    jGuiVersions += ['core']
-    replayModVersions += ['core']
-}
 jGuiVersions += [
+        'core',
         '1.7.10',
         '1.8',
         '1.8.9',
@@ -17,6 +14,7 @@ jGuiVersions += [
         '1.14.2',
 ]
 replayModVersions += [
+        'core',
         '1.7.10',
         '1.8',
         '1.8.9',
