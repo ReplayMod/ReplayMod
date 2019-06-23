@@ -608,9 +608,6 @@ public class MCVer {
     //#endif
 
     //#if MC>=11300
-    public static void color(float r, float g, float b, float a) { GlStateManager.color4f(r, g, b, a); }
-    public static void enableAlpha() { GlStateManager.enableAlphaTest(); }
-
     @SuppressWarnings("unused")
     public static abstract class Keyboard {
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;

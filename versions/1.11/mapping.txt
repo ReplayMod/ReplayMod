@@ -1,1 +1,0 @@
-net.minecraft.client.renderer.chunk.RenderChunk setPosition() setOrigin()

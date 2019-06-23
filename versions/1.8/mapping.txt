@@ -20,7 +20,6 @@ net.minecraftforge.fml.client.FMLClientHandler cpw.mods.fml.client.FMLClientHand
 net.minecraftforge.fml.common.eventhandler.EventBus cpw.mods.fml.common.eventhandler.EventBus
 net.minecraft.client.renderer.GlStateManager com.replaymod.core.versions.MCVer.GlStateManager
 net.minecraft.client.renderer.GlStateManager.BooleanState com.replaymod.render.hooks.GLStateTracker.BooleanState
-net.minecraft.client.settings.KeyBinding isKeyDown() getIsKeyPressed()
 net.minecraftforge.fml.common.network.FMLNetworkEvent cpw.mods.fml.common.network.FMLNetworkEvent
 net.minecraftforge.fml.common.network.handshake.FMLHandshakeCodec cpw.mods.fml.common.network.handshake.FMLHandshakeCodec
 net.minecraftforge.fml.common.network.handshake.NetworkDispatcher cpw.mods.fml.common.network.handshake.NetworkDispatcher
@@ -32,5 +31,3 @@ net.minecraftforge.fml.common.network.internal.FMLProxyPacket cpw.mods.fml.commo
 net.minecraftforge.fml.common.network.NetworkRegistry cpw.mods.fml.common.network.NetworkRegistry
 net.minecraftforge.fml.common.gameevent.InputEvent cpw.mods.fml.common.gameevent.InputEvent
 net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer net.minecraft.client.renderer.tileentity.RenderEndPortal
-net.minecraft.network.play.server.S3FPacketCustomPayload getChannelName() func_149169_c()
-net.minecraft.network.play.server.S01PacketJoinGame getEntityId() func_149197_c()

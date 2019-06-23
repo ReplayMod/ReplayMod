@@ -1,12 +1,6 @@
+net.minecraft.resources.AbstractResourcePack net.minecraft.client.resources.AbstractResourcePack
 net.minecraft.resources.FolderPack net.minecraft.client.resources.FolderResourcePack
-net.minecraft.resources.AbstractResourcePack getInputStream() getInputStreamByName()
-net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()
-net.minecraft.entity.EntityLivingBase LIVING_FLAGS HAND_STATES
-net.minecraft.entity.EntityLivingBase livingTick() onLivingUpdate()
 net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository
-net.minecraft.client.resources.DownloadingPackFinder func_195741_a() setServerResourcePack()
-net.minecraft.client.renderer.color.ItemColors getColor() getColorFromItemstack()
-net.minecraft.client.renderer.GlStateManager activeTexture activeTextureUnit
 net.minecraft.client.renderer.FirstPersonRenderer net.minecraft.client.renderer.ItemRenderer
 net.minecraft.client.renderer.chunk.ChunkRenderTask net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator
 net.minecraft.client.GameSettings net.minecraft.client.settings.GameSettings
@@ -19,21 +13,15 @@ net.minecraft.client.renderer.entity.model.ModelRenderer net.minecraft.client.mo
 net.minecraft.crash.ReportedException net.minecraft.util.ReportedException
 net.minecraftforge.eventbus.api.IEventBus net.minecraftforge.fml.common.eventhandler.EventBus
 com.replaymod.core.versions.MCVer.Keyboard org.lwjgl.input.Keyboard
-net.minecraft.client.Minecraft gameDir mcDataDir
-net.minecraft.client.Minecraft getInstance() getMinecraft()
-net.minecraft.client.Minecraft getPackFinder() getResourcePackRepository()
 net.minecraft.client.renderer.WorldRenderer net.minecraft.client.renderer.RenderGlobal
 net.minecraft.network.play.server.SPacketEntity.Move net.minecraft.network.play.server.SPacketEntity.S17PacketEntityLookMove
-net.minecraft.entity.Entity setBoundingBox() setEntityBoundingBox()
-net.minecraft.entity.Entity isPassenger() isRiding()
-net.minecraft.entity.Entity tick() onUpdate()
-net.minecraft.entity.Entity remove() setDead()
-net.minecraft.entity.Entity removed isDead
 net.minecraftforge.fml.network.NetworkRegistry net.minecraftforge.fml.common.network.NetworkRegistry
 net.minecraft.client.renderer.ItemRenderer net.minecraft.client.renderer.RenderItem
-net.minecraft.world.World getChunk() getChunkFromChunkCoords()
-net.minecraft.util.text.ITextComponent getString() getUnformattedText()
-net.minecraft.network.play.server.SPacketRespawn func_212643_b() getDimensionID()
 net.minecraft.client.renderer.GameRenderer net.minecraft.client.renderer.EntityRenderer
 net.minecraft.client.renderer.WorldRenderer net.minecraft.client.renderer.RenderGlobal
-net.minecraft.client.gui.GuiScreen buttons buttonList
+
+net.minecraft.resources.AbstractResourcePack getInputStream() getInputStreamByName()
+net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()
+net.minecraft.util.text.ITextComponent getString() getUnformattedText()
+net.minecraft.network.play.server.SPacketRespawn func_212643_b() getDimensionID()
+net.minecraft.client.Minecraft getPackFinder() getResourcePackRepository()

@@ -21,10 +21,7 @@ import de.johni0702.minecraft.gui.versions.callbacks.PostRenderHudCallback;
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 import static com.replaymod.core.versions.MCVer.*;
-
-//#if MC<11300
-//$$ import static net.minecraft.client.renderer.GlStateManager.*;
-//#endif
+import static com.mojang.blaze3d.platform.GlStateManager.*;
 
 /**
  * Renders overlay during recording.
@@ -57,7 +54,7 @@ public class GuiRecordingOverlay extends EventRegistrations {
             String text = guiControls.isPaused() ? I18n.translate("replaymod.gui.paused") : I18n.translate("replaymod.gui.recording");
             fontRenderer.draw(text.toUpperCase(), 30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff);
             bindTexture(TEXTURE);
-            enableAlpha();
+            enableAlphaTest();
             GuiRenderer renderer = new MinecraftGuiRenderer(MCVer.newScaledResolution(mc));
             renderer.drawTexturedRect(10, 10, 58, 20, 16, 16, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
         }

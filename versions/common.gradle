@@ -36,16 +36,21 @@ buildscript {
         if (mcVersion >= 11400) {
             classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.2-SNAPSHOT'
         } else if (mcVersion >= 11300) {
-            classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+            classpath('net.minecraftforge.gradle:ForgeGradle:3.+'){
+                exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
+            }
         } else {
-            classpath 'com.github.ReplayMod:ForgeGradle:' + (
+            classpath('com.github.ReplayMod:ForgeGradle:' + (
                     mcVersion >= 11200 ? 'd5c13801' : // FG 2.3
                     mcVersion >= 10904 ? 'bf0ea7b8' : // FG 2.2
                     mcVersion >= 10800 ? 'ab81684e' : // FG 2.1
                                          'e93f77b4'   // FG 1.2
-            )
+            )){
+                exclude group: 'net.sf.trove4j', module: 'trove4j' // preprocessor/idea requires more recent one
+                exclude group: 'trove', module: 'trove' // different name same thing
+            }
         }
-        classpath 'com.github.replaymod:preprocessor:eb4fac9'
+        classpath 'com.github.replaymod:preprocessor:8ec3e31'
     }
 }
 
