@@ -6,6 +6,7 @@
   "client": [
     //#if MC>=10800
     "ChunkRenderDispatcherAccessor",
+    "MixinChunkRenderWorker",
     //#endif
     //#if MC>=11400
     "MainWindowAccessor",

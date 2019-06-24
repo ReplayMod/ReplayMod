@@ -53,7 +53,7 @@ import static com.replaymod.core.utils.Utils.error;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.text.TranslatableText;
 //#endif
 
 public class GuiRenderSettings extends GuiScreen implements Closeable {
@@ -241,8 +241,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
                         GuiRenderSettings.this::display,
-                        new TranslatableComponent("replaymod.gui.rendering.error.title"),
-                        new TranslatableComponent("replaymod.gui.rendering.error.message")
+                        new TranslatableText("replaymod.gui.rendering.error.title"),
+                        new TranslatableText("replaymod.gui.rendering.error.message")
                         //#else
                         //$$ I18n.format("replaymod.gui.rendering.error.title"),
                         //$$ I18n.format("replaymod.gui.rendering.error.message")

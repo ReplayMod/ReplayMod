@@ -26,7 +26,7 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.client.network.packet.*;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.text.LiteralText;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -285,7 +285,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 if (packet instanceof CustomPayloadS2CPacket) {
                     CustomPayloadS2CPacket p = (CustomPayloadS2CPacket) packet;
                     if (Restrictions.PLUGIN_CHANNEL.equals(p.getChannel())) {
-                        packet = new DisconnectS2CPacket(new TextComponent("Please update to view this replay."));
+                        packet = new DisconnectS2CPacket(new LiteralText("Please update to view this replay."));
                         save(packet);
                     }
                 }

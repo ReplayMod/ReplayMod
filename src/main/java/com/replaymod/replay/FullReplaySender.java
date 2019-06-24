@@ -31,7 +31,7 @@ import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.client.network.packet.LoginSuccessS2CPacket;
 import net.minecraft.client.network.packet.*;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkProvider;
 import org.apache.commons.io.FileUtils;
@@ -40,7 +40,7 @@ import org.apache.commons.io.IOUtils;
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import net.minecraft.entity.EntityType;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.text.TranslatableText;
 //#else
 //$$ import net.minecraft.client.resources.I18n;
 //$$ import net.minecraft.entity.Entity;
@@ -462,8 +462,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         mc.openScreen(new NoticeScreen(
                                 //#if MC>=11400
                                 () -> mc.openScreen(null),
-                                new TranslatableComponent("replaymod.error.unknownrestriction1"),
-                                new TranslatableComponent("replaymod.error.unknownrestriction2", unknown)
+                                new TranslatableText("replaymod.error.unknownrestriction1"),
+                                new TranslatableText("replaymod.error.unknownrestriction2", unknown)
                                 //#else
                                 //$$ I18n.format("replaymod.error.unknownrestriction1"),
                                 //$$ I18n.format("replaymod.error.unknownrestriction2", unknown)
@@ -474,7 +474,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
         if (p instanceof DisconnectS2CPacket) {
-            Component reason = ((DisconnectS2CPacket) p).getReason();
+            Text reason = ((DisconnectS2CPacket) p).getReason();
             String message = reason.getString();
             if ("Please update to view this replay.".equals(message)) {
                 // This version of the mod supports replay restrictions so we are allowed

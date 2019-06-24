@@ -22,7 +22,7 @@ import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BoundingBox;
+import net.minecraft.util.math.Box;
 
 //#if MC>=11400
 import com.replaymod.core.events.KeyBindingEventCallback;
@@ -234,7 +234,7 @@ public class CameraEntity
         float height = getHeight();
         //#endif
         //#if MC>=10800
-        setBoundingBox(new BoundingBox(
+        setBoundingBox(new Box(
         //#else
         //$$ this.boundingBox.setBB(AxisAlignedBB.getBoundingBox(
         //#endif

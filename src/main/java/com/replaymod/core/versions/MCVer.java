@@ -68,6 +68,7 @@ import net.minecraft.client.render.BufferBuilder;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
+import net.minecraft.client.render.chunk.ChunkRenderTask;
 //#else
 //$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
 //$$ import com.google.common.util.concurrent.Futures;
@@ -505,6 +506,12 @@ public class MCVer {
         void replayModExecuteTaskQueue();
         //#endif
     }
+
+    //#if MC>=10800
+    public interface ChunkRenderWorkerAccessor {
+        void doRunTask(ChunkRenderTask task) throws InterruptedException;
+    }
+    //#endif
 
     public static long milliTime() {
         //#if MC>=11300

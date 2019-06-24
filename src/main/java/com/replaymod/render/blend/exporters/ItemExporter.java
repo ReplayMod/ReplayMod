@@ -70,7 +70,7 @@ public class ItemExporter implements Exporter {
         if (object == null) {
             object = new ItemBasedDObject(renderItem, model, stack);
             //#if MC>=11300
-            object.id.name = stack.getDisplayName().getString();
+            object.id.name = stack.getName().getString();
             //#else
             //$$ object.id.name = stack.getDisplayName();
             //#endif

@@ -5,7 +5,7 @@ import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
-import net.minecraft.ChatFormat;
+import net.minecraft.util.Formatting;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.gui.GuiReplaySettings;
@@ -57,7 +57,7 @@ import java.util.List;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
 //#if MC>=11400
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.text.TranslatableText;
 //#else
 //$$ import net.minecraft.client.resources.I18n;
 //#endif
@@ -144,8 +144,8 @@ public class GuiReplayViewer extends GuiScreen {
                             getMinecraft().openScreen(new NoticeScreen(
                                     //#if MC>=11400
                                     GuiReplayViewer.this::display,
-                                    new TranslatableComponent("replaymod.gui.viewer.delete.failed1"),
-                                    new TranslatableComponent("replaymod.gui.viewer.delete.failed2")
+                                    new TranslatableText("replaymod.gui.viewer.delete.failed1"),
+                                    new TranslatableText("replaymod.gui.viewer.delete.failed2")
                                     //#else
                                     //$$ I18n.format("replaymod.gui.viewer.delete.failed1"),
                                     //$$ I18n.format("replaymod.gui.viewer.delete.failed2")
@@ -170,7 +170,7 @@ public class GuiReplayViewer extends GuiScreen {
             String name = list.getSelected().name.getText();
             GuiYesNoPopup popup = GuiYesNoPopup.open(GuiReplayViewer.this,
                     new GuiLabel().setI18nText("replaymod.gui.viewer.delete.linea").setColor(Colors.BLACK),
-                    new GuiLabel().setI18nText("replaymod.gui.viewer.delete.lineb", name + ChatFormat.RESET).setColor(Colors.BLACK)
+                    new GuiLabel().setI18nText("replaymod.gui.viewer.delete.lineb", name + Formatting.RESET).setColor(Colors.BLACK)
             ).setYesI18nLabel("replaymod.gui.delete").setNoI18nLabel("replaymod.gui.cancel");
             Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
                 @Override
@@ -404,7 +404,7 @@ public class GuiReplayViewer extends GuiScreen {
         public GuiReplayEntry(File file, ReplayMetaData metaData, BufferedImage thumbImage) {
             this.file = file;
 
-            name.setText(ChatFormat.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
+            name.setText(Formatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
             if (StringUtils.isEmpty(metaData.getServerName())
                     || !ReplayMod.instance.getSettingsRegistry().get(Setting.SHOW_SERVER_IPS)) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);

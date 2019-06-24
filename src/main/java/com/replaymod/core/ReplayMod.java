@@ -21,11 +21,11 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.ChatFormat;
+import net.minecraft.text.Text;
+import net.minecraft.text.Style;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
@@ -608,13 +608,13 @@ public class ReplayMod implements
         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
             //#if MC>=10904
-            Style coloredDarkGray = new Style().setColor(ChatFormat.DARK_GRAY);
-            Style coloredGold = new Style().setColor(ChatFormat.GOLD);
-            Component text = new TextComponent("[").setStyle(coloredDarkGray)
-                    .append(new TranslatableComponent("replaymod.title").setStyle(coloredGold))
-                    .append(new TextComponent("] "))
-                    .append(new TranslatableComponent(message, args).setStyle(new Style()
-                            .setColor(warning ? ChatFormat.RED : ChatFormat.DARK_GREEN)));
+            Style coloredDarkGray = new Style().setColor(Formatting.DARK_GRAY);
+            Style coloredGold = new Style().setColor(Formatting.GOLD);
+            Text text = new LiteralText("[").setStyle(coloredDarkGray)
+                    .append(new TranslatableText("replaymod.title").setStyle(coloredGold))
+                    .append(new LiteralText("] "))
+                    .append(new TranslatableText(message, args).setStyle(new Style()
+                            .setColor(warning ? Formatting.RED : Formatting.DARK_GREEN)));
             //#else
             //$$ ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
             //$$ ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);

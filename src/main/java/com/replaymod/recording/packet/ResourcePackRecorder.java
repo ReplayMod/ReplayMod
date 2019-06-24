@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11400
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.text.TranslatableText;
 //#else
 //$$ import net.minecraft.client.gui.GuiYesNoCallback;
 //$$ import net.minecraft.client.resources.I18n;
@@ -165,7 +165,7 @@ public class ResourcePackRecorder {
                         mc.openScreen(null);
                     }
                 //#if MC>=11400
-                , new TranslatableComponent("multiplayer.texturePrompt.line1"), new TranslatableComponent("multiplayer.texturePrompt.line2"))));
+                , new TranslatableText("multiplayer.texturePrompt.line1"), new TranslatableText("multiplayer.texturePrompt.line2"))));
                 //#else
                 //$$ }, I18n.format("multiplayer.texturePrompt.line1"), I18n.format("multiplayer.texturePrompt.line2"), 0)));
                 //#endif

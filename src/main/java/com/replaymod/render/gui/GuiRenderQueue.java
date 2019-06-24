@@ -38,7 +38,7 @@ import java.util.List;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.text.TranslatableText;
 //#endif
 
 public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
@@ -217,8 +217,8 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
                         container::display,
-                        new TranslatableComponent("replaymod.gui.rendering.error.title"),
-                        new TranslatableComponent("replaymod.gui.rendering.error.message")
+                        new TranslatableText("replaymod.gui.rendering.error.title"),
+                        new TranslatableText("replaymod.gui.rendering.error.message")
                         //#else
                         //$$ I18n.format("replaymod.gui.rendering.error.title"),
                         //$$ I18n.format("replaymod.gui.rendering.error.message")

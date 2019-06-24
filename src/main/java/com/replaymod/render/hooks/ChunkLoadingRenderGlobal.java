@@ -35,7 +35,7 @@ public class ChunkLoadingRenderGlobal {
     //#else
     //$$ private JailingQueue<ChunkCompileTaskGenerator> workerJailingQueue;
     //#endif
-    private CustomChunkRenderWorker renderWorker;
+    private ChunkRenderWorkerAccessor renderWorker;
     private int frame;
 
     @SuppressWarnings("unchecked")
@@ -63,7 +63,7 @@ public class ChunkLoadingRenderGlobal {
 
     private void setup(ChunkBatcher renderDispatcher) {
         this.renderDispatcher = renderDispatcher;
-        this.renderWorker = new CustomChunkRenderWorker(renderDispatcher, new BlockLayeredBufferBuilder());
+        this.renderWorker = (ChunkRenderWorkerAccessor) new ChunkRenderWorker(renderDispatcher, new BlockLayeredBufferBuilder());
         ChunkRenderDispatcherAccessor renderDispatcherAcc = (ChunkRenderDispatcherAccessor) renderDispatcher;
 
         int workerThreads = renderDispatcherAcc.getListThreadedWorkers().size();
@@ -123,7 +123,7 @@ public class ChunkLoadingRenderGlobal {
         queueChunkUpdates = ((ChunkRenderDispatcherAccessor) renderDispatcher).getQueueChunkUpdates();
         while (!queueChunkUpdates.isEmpty()) {
             try {
-                renderWorker.runTask(queueChunkUpdates.poll());
+                renderWorker.doRunTask(queueChunkUpdates.poll());
             } catch (InterruptedException ignored) { }
         }
 
@@ -159,26 +159,6 @@ public class ChunkLoadingRenderGlobal {
 
     public int nextFrameId() {
         return frame++;
-    }
-
-    /**
-     * Custom ChunkRenderWorker class providing access to the protected processTask method
-     */
-    private static class CustomChunkRenderWorker extends ChunkRenderWorker {
-        public CustomChunkRenderWorker(ChunkBatcher p_i46202_1_, BlockLayeredBufferBuilder p_i46202_2_) {
-            super(p_i46202_1_, p_i46202_2_);
-        }
-
-        @Override
-        protected void runTask(
-                //#if MC>=11300
-                ChunkRenderTask p_178474_1_
-                //#else
-                //$$ ChunkCompileTaskGenerator p_178474_1_
-                //#endif
-        ) throws InterruptedException {
-            super.runTask(p_178474_1_);
-        }
     }
 }
 //#endif

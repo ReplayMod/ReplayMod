@@ -63,13 +63,15 @@ net.minecraft.client.render.item.ItemRenderer colorMap itemColors
 net.minecraft.client.render.item.ItemRenderer renderGlint() renderEffect()
 net.minecraft.client.color.item.ItemColors net.minecraft.client.renderer.color.ItemColors
 net.minecraft.client.color.item.ItemColors getColorMultiplier() getColor()
+net.minecraft.item.ItemStack getName() getDisplayName()
 net.minecraft.client.gui.Element net.minecraft.client.gui.IGuiEventListener
-net.minecraft.network.chat.Component net.minecraft.util.text.ITextComponent
-net.minecraft.network.chat.Component append() appendSibling()
-net.minecraft.network.chat.Style net.minecraft.util.text.Style
-net.minecraft.network.chat.TextComponent net.minecraft.util.text.TextComponentString
-net.minecraft.network.chat.TranslatableComponent net.minecraft.util.text.TextComponentTranslation
-net.minecraft.ChatFormat net.minecraft.util.text.TextFormatting
+net.minecraft.text.Text net.minecraft.util.text.ITextComponent
+net.minecraft.text.Text append() appendSibling()
+net.minecraft.text.Text asFormattedString() getFormattedText()
+net.minecraft.text.Style net.minecraft.util.text.Style
+net.minecraft.text.LiteralText net.minecraft.util.text.TextComponentString
+net.minecraft.text.TranslatableText net.minecraft.util.text.TextComponentTranslation
+net.minecraft.util.Formatting net.minecraft.util.text.TextFormatting
 net.minecraft.client.render.VisibleRegion net.minecraft.client.renderer.culling.ICamera
 net.minecraft.client.render.entity.LivingEntityRenderer net.minecraft.client.renderer.entity.RenderLivingBase
 net.minecraft.client.render.entity.LivingEntityRenderer method_4055() canRenderName()
@@ -454,7 +456,7 @@ net.minecraft.entity.Entity prevRenderY lastTickPosY
 net.minecraft.entity.Entity prevRenderZ lastTickPosZ
 net.minecraft.world.chunk.WorldChunk net.minecraft.world.chunk.Chunk
 net.minecraft.world.chunk.WorldChunk getEntitySectionArray() getEntityLists()
-net.minecraft.util.math.BoundingBox net.minecraft.util.math.AxisAlignedBB
+net.minecraft.util.math.Box net.minecraft.util.math.AxisAlignedBB
 net.minecraft.world.RayTraceContext net.minecraft.util.math.RayTraceResult
 net.minecraft.entity.EquipmentSlot net.minecraft.inventory.EntityEquipmentSlot
 net.minecraft.stat.StatHandler net.minecraft.stats.StatisticsManager
