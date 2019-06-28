@@ -3,6 +3,7 @@ package com.replaymod.recording.packet;
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.ReplayModRecording;
@@ -13,6 +14,7 @@ import com.replaymod.recording.mixin.SPacketSpawnPlayerAccessor;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
+import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.utils.Colors;
 import io.netty.buffer.ByteBuf;
@@ -27,6 +29,7 @@ import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.client.network.packet.*;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -215,8 +218,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS) && !ReplayMod.isMinimalMode()) {
                         MarkerProcessor.apply(outputPath, progress -> {});
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     logger.error("Saving replay file:", e);
+                    CrashReport crashReport = CrashReport.create(e, "Saving replay file");
+                    core.runLater(() -> Utils.error(logger, VanillaGuiScreen.setup(mc.currentScreen), crashReport, () -> {}));
                 }
             }
 
