@@ -5,7 +5,6 @@ import com.replaymod.core.events.SettingsChangedCallback;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 //#if MC>=11400
 import com.google.gson.Gson;
@@ -31,7 +30,7 @@ import java.nio.file.Path;
 import static com.replaymod.core.versions.MCVer.*;
 
 public class SettingsRegistry {
-    private Map<SettingKey<?>, Object> settings = new ConcurrentHashMap<>();
+    private Map<SettingKey<?>, Object> settings = Collections.synchronizedMap(new LinkedHashMap<>());
     //#if MC>=11400
     private final Path configFile = getMinecraft().runDirectory.toPath().resolve("config/replaymod.json");
     //#else
