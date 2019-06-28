@@ -118,7 +118,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //#if MC>=11300
         GlFramebuffer fb = mc.getFramebuffer();
         if (fb.viewWidth != width || fb.viewHeight != height) {
-            fb.initFbo(width, height
+            fb.resize(width, height
                     //#if MC>=11400
                     , false
                     //#endif

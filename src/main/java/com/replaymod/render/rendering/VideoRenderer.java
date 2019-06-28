@@ -350,7 +350,7 @@ public class VideoRenderer implements RenderInfo {
 
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
         //#if MC>=11300
-        mc.getFramebuffer().initFbo(displayWidth, displayHeight
+        mc.getFramebuffer().resize(displayWidth, displayHeight
                 //#if MC>=11400
                 , false
                 //#endif
