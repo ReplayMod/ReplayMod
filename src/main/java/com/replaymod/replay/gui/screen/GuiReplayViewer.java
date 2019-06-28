@@ -76,8 +76,6 @@ public class GuiReplayViewer extends GuiScreen {
     }).onSelectionDoubleClicked(() -> {
         if (this.loadButton.isEnabled()) {
             this.loadButton.onClick();
-            // Disable load button to prevent the player from opening the replay twice at the same time
-            this.loadButton.setDisabled();
         }
     });
 
@@ -88,6 +86,9 @@ public class GuiReplayViewer extends GuiScreen {
                 mod.startReplay(list.getSelected().file);
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                // Disable load button to prevent the player from opening the replay twice at the same time
+                loadButton.setDisabled();
             }
         }
     }).setSize(150, 20).setI18nLabel("replaymod.gui.load").setDisabled();
