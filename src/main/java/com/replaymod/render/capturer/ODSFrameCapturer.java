@@ -89,7 +89,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
                 shaderProgram.getUniformVariable("hurtTextureEnabled")
         };
         renderStateEvents.on(Texture2DStateCallback.EVENT, (id, enabled) -> {
-            if (id > 0 && id < texture2DUniforms.length) {
+            if (id >= 0 && id < texture2DUniforms.length) {
                 texture2DUniforms[id].set(true);
             }
         });
