@@ -12,6 +12,8 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Consumer;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.resource.language.I18n;
 
@@ -65,8 +67,17 @@ public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
                             selected = j;
                         }
                     }
-                    final GuiDropdownMenu<MultipleChoiceDropdownEntry> menu =
-                            new GuiDropdownMenu<MultipleChoiceDropdownEntry>().setSize(150, 20).setValues(entries);
+                    final GuiDropdownMenu<MultipleChoiceDropdownEntry> menu = new GuiDropdownMenu<MultipleChoiceDropdownEntry>() {
+                        @Override
+                        protected ReadableDimension calcMinSize() {
+                            ReadableDimension size = super.calcMinSize();
+                            if (size.getWidth() > 150) {
+                                return new Dimension(150, size.getHeight());
+                            } else {
+                                return size;
+                            }
+                        }
+                    }.setSize(150, 20).setValues(entries);
                     menu.setSelected(selected).onSelection(new Consumer<Integer>() {
                         @Override
                         public void consume(Integer obj) {
