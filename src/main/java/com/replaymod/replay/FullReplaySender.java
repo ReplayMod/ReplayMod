@@ -98,6 +98,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
             //#if MC>=11400
             OpenWrittenBookS2CPacket.class,
+            OpenContainerPacket.class,
             //#endif
             //#if MC>=11200
             SynchronizeRecipesS2CPacket.class,
