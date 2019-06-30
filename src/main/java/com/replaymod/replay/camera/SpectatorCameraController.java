@@ -58,6 +58,8 @@ public class SpectatorCameraController implements CameraController {
                 PlayerEntity viewPlayer = (PlayerEntity) view;
                 //#if MC>=11400
                 camera.setEquippedStack(EquipmentSlot.HEAD, viewPlayer.getEquippedStack(EquipmentSlot.HEAD));
+                camera.setEquippedStack(EquipmentSlot.MAINHAND, viewPlayer.getEquippedStack(EquipmentSlot.MAINHAND));
+                camera.setEquippedStack(EquipmentSlot.OFFHAND, viewPlayer.getEquippedStack(EquipmentSlot.OFFHAND));
                 //#else
                 //$$ camera.inventory = viewPlayer.inventory;
                 //#endif
