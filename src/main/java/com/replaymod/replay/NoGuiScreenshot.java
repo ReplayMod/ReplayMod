@@ -1,27 +1,27 @@
 package com.replaymod.replay;
 
-import com.google.common.io.Files;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer;
+import de.johni0702.minecraft.gui.versions.Image;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.util.ScreenshotUtils;
-import org.apache.commons.io.FileUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
+//#if MC<11300
+//$$ import com.google.common.io.Files;
+//$$ import org.apache.commons.io.FileUtils;
+//$$ import java.io.File;
+//#endif
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class NoGuiScreenshot {
-    private final BufferedImage image;
+    private final Image image;
     private final int width;
     private final int height;
 
@@ -80,42 +80,37 @@ public class NoGuiScreenshot {
 
                 // The frame without GUI has been rendered
                 // Read it, create the screenshot and finish the future
-                // We're using Minecraft's ScreenShotHelper even though it writes the screenshot to
-                // disk for better maintainability
-                File tmpFolder = Files.createTempDir();
                 try {
                     //#if MC>=11300
-                    ScreenshotUtils.method_1662(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer(), (msg) ->
-                            ReplayMod.instance.runLater(() -> mc.inGameHud.getChatHud().addMessage(msg)));
+                    Image image = new Image(ScreenshotUtils.method_1663(frameWidth, frameHeight, mc.getFramebuffer()));
                     //#else
-                    //$$ ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer());
+                    // We're using Minecraft's ScreenShotHelper even though it writes the screenshot to
+                    // disk for better maintainability
+                    //$$ File tmpFolder = Files.createTempDir();
+                    //$$ Image image;
+                    //$$ try {
+                    //$$     ScreenShotHelper.saveScreenshot(tmpFolder, "tmp", frameWidth, frameHeight, mc.getFramebuffer());
+                    //$$     File screenshotFile = new File(tmpFolder, "screenshots/tmp");
+                    //$$     image = Image.read(screenshotFile.toPath());
+                    //$$ } finally {
+                    //$$     FileUtils.deleteQuietly(tmpFolder);
+                    //$$ }
                     //#endif
-                    File screenshotFile = new File(tmpFolder, "screenshots/tmp");
-                    BufferedImage image = ImageIO.read(screenshotFile);
                     int imageWidth = image.getWidth();
                     int imageHeight = image.getHeight();
 
-                    // First scale
+                    // Scale & crop
                     float scaleFactor = Math.max((float) width / imageWidth, (float) height / imageHeight);
-                    int scaledWidth = (int) (imageWidth * scaleFactor);
-                    int scaledHeight = (int) (imageHeight * scaleFactor);
-                    Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
-
-                    // Then crop
-                    int resultX = (scaledWidth - width) / 2;
-                    int resultY = (scaledHeight - height) / 2;
-                    BufferedImage resultImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-                    Graphics2D graphics = resultImage.createGraphics();
-                    graphics.drawImage(scaledImage, 0, 0, width, height,
-                            resultX, resultY, resultX + width, resultY + height, null);
-                    graphics.dispose();
+                    int croppedWidth = Math.min(Math.max(0, (int) (width / scaleFactor)), imageWidth);
+                    int croppedHeight = Math.min(Math.max(0, (int) (height / scaleFactor)), imageHeight);
+                    int offsetX = (imageWidth - croppedWidth) / 2;
+                    int offsetY = (imageHeight - croppedHeight) / 2;
+                    image = image.scaledSubRect(offsetX, offsetY, croppedWidth, croppedHeight, width, height);
 
                     // Finish
-                    future.set(new NoGuiScreenshot(resultImage, width, height));
+                    future.set(new NoGuiScreenshot(image, width, height));
                 } catch (Throwable t) {
                     future.setException(t);
-                } finally {
-                    FileUtils.deleteQuietly(tmpFolder);
                 }
             }
         };

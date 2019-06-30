@@ -21,6 +21,7 @@ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.versions.Image;
 import de.johni0702.minecraft.gui.versions.MCVer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.crash.CrashReport;
@@ -48,11 +49,9 @@ import net.minecraft.client.util.DefaultSkinHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,14 +88,14 @@ public class Utils {
         //#endif
     }
 
-    public static final BufferedImage DEFAULT_THUMBNAIL;
+    public static final Image DEFAULT_THUMBNAIL;
 
     static {
-        BufferedImage thumbnail;
+        Image thumbnail;
         try {
-            thumbnail = ImageIO.read(getResourceAsStream("/default_thumb.jpg"));
+            thumbnail = Image.read(getResourceAsStream("/default_thumb.jpg"));
         } catch (Exception e) {
-            thumbnail = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
+            thumbnail = new Image(1, 1);
             e.printStackTrace();
         }
         DEFAULT_THUMBNAIL = thumbnail;

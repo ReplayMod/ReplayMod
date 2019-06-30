@@ -4,13 +4,11 @@ import com.replaymod.render.blend.data.DImage;
 import com.replaymod.render.blend.data.DMaterial;
 import com.replaymod.render.blend.data.DPackedFile;
 import com.replaymod.render.blend.data.DTexture;
+import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.client.util.GlAllocationUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,20 +28,22 @@ public class BlendMaterials {
             ByteBuffer buffer = GlAllocationUtils.allocateByteBuffer(width * height * 4);
             GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
-            // Convert to BufferedImage
-            BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-            byte[] data = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
-            for (int i = 0; i < data.length; i += 4) {
-                data[i + 3] = buffer.get();
-                data[i + 2] = buffer.get();
-                data[i + 1] = buffer.get();
-                data[i    ] = buffer.get();
+            // Convert to Image
+            Image bufImage = new Image(width, height);
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int a = buffer.get();
+                    int b = buffer.get();
+                    int g = buffer.get();
+                    int r = buffer.get();
+                    bufImage.setRGBA(x, y, r, b, g, a);
+                }
             }
 
             // Encode as png image
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             try {
-                ImageIO.write(bufferedImage, "png", stream);
+                bufImage.writePNG(stream);
             } catch (IOException e) {
                 throw new RuntimeException(e); // never happens unless ImageIO is bugged
             }

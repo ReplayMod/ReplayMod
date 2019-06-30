@@ -39,10 +39,10 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.versions.Image;
 import org.apache.commons.lang3.StringUtils;
 import net.minecraft.util.Formatting;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -311,19 +311,9 @@ public class GuiReplayCenter extends GuiScreen {
                     if (Thread.interrupted()) return;
                     try {
                         // Make sure that to int[] conversion doesn't have to occur in main thread
-                        final BufferedImage theThumb;
+                        final Image theThumb;
                         if (fileInfo.hasThumbnail()) {
-                            BufferedImage buf = apiClient.downloadThumbnail(fileInfo.getId());
-                            // This is the same way minecraft calls this method, we cache the result and hand
-                            // minecraft a BufferedImage with way simpler logic using the precomputed values
-                            final int[] theIntArray = buf.getRGB(0, 0, buf.getWidth(), buf.getHeight(), null, 0, buf.getWidth());
-                            theThumb = new BufferedImage(buf.getWidth(), buf.getHeight(), BufferedImage.TYPE_INT_ARGB) {
-                                @Override
-                                public int[] getRGB(int startX, int startY, int w, int h, int[] rgbArray, int offset, int scansize) {
-                                    System.arraycopy(theIntArray, 0, rgbArray, 0, theIntArray.length);
-                                    return null; // Minecraft doesn't use the return value
-                                }
-                            };
+                            theThumb = apiClient.downloadThumbnail(fileInfo.getId());
                         } else {
                             theThumb = null;
                         }
@@ -412,7 +402,7 @@ public class GuiReplayCenter extends GuiScreen {
         private final boolean downloaded;
         private final boolean incompatible;
 
-        public GuiReplayEntry(FileInfo fileInfo, BufferedImage thumbImage, int sortId, boolean downloaded) {
+        public GuiReplayEntry(FileInfo fileInfo, Image thumbImage, int sortId, boolean downloaded) {
             this.fileInfo = fileInfo;
             this.sortId = sortId;
             this.downloaded = downloaded;

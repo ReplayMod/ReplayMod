@@ -11,13 +11,12 @@ import com.replaymod.online.AuthenticationHash;
 import com.replaymod.online.api.replay.ReplayModApiMethods;
 import com.replaymod.online.api.replay.SearchQuery;
 import com.replaymod.online.api.replay.holders.*;
+import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.client.MinecraftClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
-import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -133,14 +132,14 @@ public class ApiClient {
         return SimpleApiClient.invokeUrl(builder.toString());
     }
 
-    public BufferedImage downloadThumbnail(int file) throws IOException {
+    public Image downloadThumbnail(int file) throws IOException {
         QueryBuilder builder = new QueryBuilder(ReplayModApiMethods.get_thumbnail);
         builder.put("id", file);
         URL url = new URL(builder.toString());
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setSSLSocketFactory(SSL_SOCKET_FACTORY);
         try (InputStream in = connection.getInputStream()) {
-            return ImageIO.read(in);
+            return Image.read(in);
         }
     }
 

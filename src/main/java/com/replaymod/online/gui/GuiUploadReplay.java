@@ -1,6 +1,5 @@
 package com.replaymod.online.gui;
 
-import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.replaymod.core.KeyBindingRegistry;
@@ -32,6 +31,7 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
+import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.util.crash.CrashReport;
@@ -45,9 +45,10 @@ import org.apache.commons.lang3.StringUtils;
 //#endif
 
 import javax.annotation.Nullable;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -127,12 +128,24 @@ public class GuiUploadReplay extends GuiScreen {
         this.uploader = new FileUploader(mod.getApiClient());
 
         ReplayMetaData metaData;
-        Optional<BufferedImage> optThumbnail;
+        Optional<Image> optThumbnail;
 
         // Read from replay file
         try (ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file)) {
             metaData = replayFile.getMetaData();
-            optThumbnail = replayFile.getThumb();
+            // TODO add a getThumbBytes method to ReplayStudio
+            optThumbnail = Optional.ofNullable(replayFile.get("thumb").orNull()).flatMap(stream -> {
+                try (InputStream in = stream) {
+                    int i = 7;
+                    while (i > 0) {
+                        i -= in.skip(i);
+                    }
+                    return Optional.of(Image.read(in));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return Optional.empty();
+                }
+            });
         } catch (IOException e) {
             throw new CrashException(CrashReport.create(e, "Read replay file " + file.getName()));
         }

@@ -47,7 +47,7 @@ net.minecraft.client.util.Session net.minecraft.util.Session
 net.minecraft.client.util.Session getAccessToken() getToken()
 net.minecraft.server.integrated.IntegratedServer field_5524 isGamePaused
 net.minecraft.client.util.ScreenshotUtils net.minecraft.util.ScreenShotHelper
-net.minecraft.client.util.ScreenshotUtils method_1662() saveScreenshot()
+net.minecraft.client.util.ScreenshotUtils method_1663() createScreenshot()
 net.minecraft.client.render.ChunkRenderDispatcher net.minecraft.client.renderer.ViewFrustum
 net.minecraft.client.render.ChunkRenderDispatcher updateCameraPosition() updateChunkPositions()
 net.minecraft.client.render.block.entity.EndPortalBlockEntityRenderer net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer

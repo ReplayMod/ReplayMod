@@ -27,6 +27,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -87,7 +89,14 @@ public class ReplayModReplay implements Module {
                         public void onSuccess(NoGuiScreenshot result) {
                             try {
                                 core.printInfoToChat("replaymod.chat.savingthumb");
-                                replayHandler.getReplayFile().writeThumb(result.getImage());
+                                @SuppressWarnings("deprecation") // there's no easy way to produce jpg images from NativeImage
+                                BufferedImage image = result.getImage().toBufferedImage();
+                                // Encoding with alpha fails on OpenJDK and produces broken image on Sun JDK.
+                                BufferedImage bgrImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+                                Graphics graphics = bgrImage.getGraphics();
+                                graphics.drawImage(image, 0, 0, null);
+                                graphics.dispose();
+                                replayHandler.getReplayFile().writeThumb(bgrImage);
                                 core.printInfoToChat("replaymod.chat.savedthumb");
                             } catch (IOException e) {
                                 e.printStackTrace();

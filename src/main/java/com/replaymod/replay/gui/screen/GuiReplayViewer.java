@@ -1,10 +1,10 @@
 package com.replaymod.replay.gui.screen;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
+import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.util.Formatting;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
@@ -44,15 +44,16 @@ import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 
@@ -324,28 +325,23 @@ public class GuiReplayViewer extends GuiScreen {
                 for (final File file : files) {
                     if (Thread.interrupted()) break;
                     try (ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file)) {
-                        Optional<BufferedImage> thumb = replayFile.getThumb();
-                        // Make sure that to int[] conversion doesn't have to occur in main thread
-                        final BufferedImage theThumb;
-                        if (thumb.isPresent()) {
-                            BufferedImage buf = thumb.get();
-                            // This is the same way minecraft calls this method, we cache the result and hand
-                            // minecraft a BufferedImage with way simpler logic using the precomputed values
-                            final int[] theIntArray = buf.getRGB(0, 0, buf.getWidth(), buf.getHeight(), null, 0, buf.getWidth());
-                            theThumb = new BufferedImage(buf.getWidth(), buf.getHeight(), BufferedImage.TYPE_INT_ARGB) {
-                                @Override
-                                public int[] getRGB(int startX, int startY, int w, int h, int[] rgbArray, int offset, int scansize) {
-                                    System.arraycopy(theIntArray, 0, rgbArray, 0, theIntArray.length);
-                                    return null; // Minecraft doesn't use the return value
+                        // TODO add a getThumbBytes method to ReplayStudio
+                        final Image thumb = Optional.ofNullable(replayFile.get("thumb").orNull()).flatMap(stream -> {
+                            try (InputStream in = stream) {
+                                int i = 7;
+                                while (i > 0) {
+                                    i -= in.skip(i);
                                 }
-                            };
-                        } else {
-                            theThumb = null;
-                        }
+                                return Optional.of(Image.read(in));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                return Optional.empty();
+                            }
+                        }).orElse(null);
                         final ReplayMetaData metaData = replayFile.getMetaData();
 
                         if (metaData != null) {
-                            results.consume(() -> new GuiReplayEntry(file, metaData, theThumb));
+                            results.consume(() -> new GuiReplayEntry(file, metaData, thumb));
                         }
                     } catch (Exception e) {
                         LOGGER.error("Could not load Replay File {}", file.getName(), e);
@@ -402,7 +398,7 @@ public class GuiReplayViewer extends GuiScreen {
         private final long dateMillis;
         private final boolean incompatible;
 
-        public GuiReplayEntry(File file, ReplayMetaData metaData, BufferedImage thumbImage) {
+        public GuiReplayEntry(File file, ReplayMetaData metaData, Image thumbImage) {
             this.file = file;
 
             name.setText(Formatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));

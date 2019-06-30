@@ -8,10 +8,9 @@ import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.util.crash.CrashReport;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -28,23 +27,20 @@ public class ScreenshotWriter implements FrameConsumer<RGBFrame> {
         // skip the first frame, in which not all chunks are properly loaded
         if (frame.getFrameId() == 0) return;
 
-        try {
-            final ReadableDimension frameSize = frame.getSize();
-
-            BufferedImage img = new BufferedImage(frameSize.getWidth(), frameSize.getHeight(), BufferedImage.TYPE_INT_RGB);
+        final ReadableDimension frameSize = frame.getSize();
+        try (Image img = new Image(frameSize.getWidth(), frameSize.getHeight())) {
             for (int y = 0; y < frameSize.getHeight(); y++) {
                 for (int x = 0; x < frameSize.getWidth(); x++) {
                     byte r = frame.getByteBuffer().get();
                     byte g = frame.getByteBuffer().get();
                     byte b = frame.getByteBuffer().get();
 
-                    int color = ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
-                    img.setRGB(x, y, color);
+                    img.setRGBA(x, y, r, g, b, 0xff);
                 }
             }
 
             outputFile.getParentFile().mkdirs();
-            ImageIO.write(img, "PNG", outputFile);
+            img.writePNG(outputFile);
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
             CrashReport report = CrashReport.create(e, "Exporting frame");

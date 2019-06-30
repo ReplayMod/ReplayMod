@@ -19,6 +19,8 @@ import net.minecraft.util.SystemUtil;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 //#if MC>=11400
 import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
@@ -90,6 +92,7 @@ import net.minecraft.SharedConstants;
 //#endif
 
 import java.io.File;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -99,6 +102,8 @@ import java.util.function.Consumer;
  * Abstraction over things that have changed between different MC versions.
  */
 public class MCVer {
+    private static Logger LOGGER = LogManager.getLogger();
+
     //#if MC<11400
     //$$ public static IEventBus FORGE_BUS = MinecraftForge.EVENT_BUS;
     //#if MC>=10809
@@ -574,6 +579,22 @@ public class MCVer {
         //$$ } catch (Throwable throwable) {
         //$$     // And if all fails, lwjgl
         //$$     Sys.openURL("file://" + path);
+        //$$ }
+        //#endif
+    }
+
+    public static void openURL(URI url) {
+        //#if MC>=11300
+        //#if MC>=11400
+        SystemUtil.getOperatingSystem().open(url);
+        //#else
+        //$$ Util.getOSType().openURI(url);
+        //#endif
+        //#else
+        //$$ try {
+        //$$     Desktop.getDesktop().browse(url);
+        //$$ } catch (Throwable e) {
+        //$$     LOGGER.error("Failed to open URL: ", e);
         //$$ }
         //#endif
     }

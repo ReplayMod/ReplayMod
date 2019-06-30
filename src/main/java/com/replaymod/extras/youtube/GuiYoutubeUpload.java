@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -19,6 +20,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiFileChooserPopup;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.versions.Image;
 import joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.client.resource.language.I18n;
@@ -34,8 +36,6 @@ import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 
+import static com.replaymod.extras.ReplayModExtras.LOGGER;
 import static java.util.Arrays.asList;
 
 @RequiredArgsConstructor
@@ -125,13 +126,13 @@ public class GuiYoutubeUpload extends GuiScreen {
                         public void onSuccess(@Nullable File result) {
                             if (result != null) {
                                 thumbnailButton.setLabel(result.getName());
-                                BufferedImage image;
+                                Image image;
                                 try {
                                     thumbnailImage = IOUtils.toByteArray(new FileInputStream(result));
                                     ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(thumbnailImage));
                                     ImageReader reader = ImageIO.getImageReaders(in).next();
                                     thumbnailFormat = reader.getFormatName().toLowerCase();
-                                    image = ImageIO.read(new ByteArrayInputStream(thumbnailImage));
+                                    image = Image.read(new ByteArrayInputStream(thumbnailImage));
                                 } catch (Throwable t) {
                                     t.printStackTrace();
                                     thumbnailImage = null;
@@ -216,17 +217,9 @@ public class GuiYoutubeUpload extends GuiScreen {
                         public void onSuccess(Video result) {
                             String url = "https://youtu.be/" + result.getId();
                             try {
-                                Desktop.getDesktop().browse(new URL(url).toURI());
+                                MCVer.openURL(new URL(url).toURI());
                             } catch(Throwable throwable) {
-                                //#if MC>=11400
-                                SystemUtil.getOperatingSystem().open(url);
-                                //#else
-                                //#if MC>=11300
-                                //$$ Util.getOSType().openURI(url);
-                                //#else
-                                //$$ Sys.openURL(url);
-                                //#endif
-                                //#endif
+                                LOGGER.error("Failed to open video URL \"{}\":", url, throwable);
                             }
                             upload = null;
                             progressBar.setLabel(I18n.translate("replaymod.gui.ytuploadprogress.done", url));

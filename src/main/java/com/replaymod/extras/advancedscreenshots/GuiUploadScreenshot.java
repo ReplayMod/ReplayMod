@@ -2,6 +2,7 @@ package com.replaymod.extras.advancedscreenshots;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.extras.Setting;
 import com.replaymod.render.RenderSettings;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -14,8 +15,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 
-import java.awt.*;
-import java.io.IOException;
 import java.net.URI;
 
 public class GuiUploadScreenshot extends AbstractGuiPopup<GuiUploadScreenshot> {
@@ -68,22 +67,10 @@ public class GuiUploadScreenshot extends AbstractGuiPopup<GuiUploadScreenshot> {
         }
 
         if (veer) {
-            veerUploadButton.onClick(() -> {
-                try {
-                    Desktop.getDesktop().browse(URI.create("https://veer.tv/upload"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+            veerUploadButton.onClick(() -> MCVer.openURL(URI.create("https://veer.tv/upload")));
         }
 
-        showOnDiskButton.onClick(() -> {
-            try {
-                Desktop.getDesktop().browse(renderSettings.getOutputFile().toURI());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        showOnDiskButton.onClick(() -> MCVer.openFile(renderSettings.getOutputFile().getParentFile()));
 
         closeButton.onClick(() -> {
             if (neverOpenCheckbox.isChecked()) {
