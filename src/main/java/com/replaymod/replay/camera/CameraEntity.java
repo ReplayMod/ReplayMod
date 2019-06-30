@@ -20,6 +20,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
@@ -459,6 +460,13 @@ public class CameraEntity
         }
         return super.isUsingItem();
     }
+
+    //#if MC>=11400
+    @Override
+    protected void onEquipStack(ItemStack itemStack_1) {
+        // Suppress equip sounds
+    }
+    //#endif
 
     //#if MC>=11400
     @Override
