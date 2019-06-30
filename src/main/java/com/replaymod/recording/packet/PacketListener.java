@@ -1,5 +1,6 @@
 package com.replaymod.recording.packet;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
@@ -317,12 +318,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             if (pa.getDataManager() == null) {
                 pa.setDataManager(new DataTracker(null));
                 if (p.getTrackedValues() != null) {
+                    Set<Integer> seen = new HashSet<>();
                     //#if MC>=10904
-                    for (DataTracker.Entry<?> entry : p.getTrackedValues()) {
+                    for (DataTracker.Entry<?> entry : Lists.reverse(p.getTrackedValues())) {
+                        if (!seen.add(entry.getData().getId())) continue;
                         DataManager_set(pa.getDataManager(), entry);
                     }
                     //#else
-                    //$$ for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_149027_c()) {
+                    //$$ for(DataWatcher.WatchableObject wo : Lists.reverse((List<DataWatcher.WatchableObject>) p.func_149027_c())) {
+                    //$$     if (!seen.add(wo.getDataValueId())) continue;
                     //$$     pa.getDataManager().addObject(wo.getDataValueId(), wo.getObject());
                     //$$ }
                     //#endif
@@ -336,12 +340,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             if (pa.getDataManager() == null) {
                 pa.setDataManager(new DataTracker(null));
                 if (p.getTrackedValues() != null) {
+                    Set<Integer> seen = new HashSet<>();
                     //#if MC>=10904
-                    for (DataTracker.Entry<?> entry : p.getTrackedValues()) {
+                    for (DataTracker.Entry<?> entry : Lists.reverse(p.getTrackedValues())) {
+                        if (!seen.add(entry.getData().getId())) continue;
                         DataManager_set(pa.getDataManager(), entry);
                     }
                     //#else
-                    //$$ for(DataWatcher.WatchableObject wo : (List<DataWatcher.WatchableObject>) p.func_148944_c()) {
+                    //$$ for(DataWatcher.WatchableObject wo : Lists.reverse((List<DataWatcher.WatchableObject>) p.func_148944_c())) {
+                    //$$     if (!seen.add(wo.getDataValueId())) continue;
                     //$$     pa.getDataManager().addObject(wo.getDataValueId(), wo.getObject());
                     //$$ }
                     //#endif
