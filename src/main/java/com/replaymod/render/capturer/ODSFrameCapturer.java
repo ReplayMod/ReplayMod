@@ -90,7 +90,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         };
         renderStateEvents.on(Texture2DStateCallback.EVENT, (id, enabled) -> {
             if (id >= 0 && id < texture2DUniforms.length) {
-                texture2DUniforms[id].set(true);
+                texture2DUniforms[id].set(enabled);
             }
         });
         Program.Uniform fogUniform = shaderProgram.getUniformVariable("fogEnabled");
