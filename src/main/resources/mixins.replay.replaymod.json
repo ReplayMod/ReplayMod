@@ -27,6 +27,7 @@
     //#endif
     "MixinViewFrustum",
     //#else
+    //$$ "MixinEntityRenderer",
     //$$ "MixinFMLClientHandler",
     //#endif
     "MixinKeyboardListener",
