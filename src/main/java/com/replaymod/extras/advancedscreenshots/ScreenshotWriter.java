@@ -31,9 +31,10 @@ public class ScreenshotWriter implements FrameConsumer<RGBFrame> {
         try (Image img = new Image(frameSize.getWidth(), frameSize.getHeight())) {
             for (int y = 0; y < frameSize.getHeight(); y++) {
                 for (int x = 0; x < frameSize.getWidth(); x++) {
-                    byte r = frame.getByteBuffer().get();
-                    byte g = frame.getByteBuffer().get();
                     byte b = frame.getByteBuffer().get();
+                    byte g = frame.getByteBuffer().get();
+                    byte r = frame.getByteBuffer().get();
+                    byte a = frame.getByteBuffer().get();
 
                     img.setRGBA(x, y, r, g, b, 0xff);
                 }
