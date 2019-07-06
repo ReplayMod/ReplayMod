@@ -46,7 +46,7 @@ public class MarkerProcessor {
 
     private static boolean hasWork(Path path) throws IOException {
         try (ZipReplayFile inputReplayFile = new ZipReplayFile(new ReplayStudio(), path.toFile())) {
-            return inputReplayFile.getMarkers().or(HashSet::new).stream().anyMatch(m -> m.getName().startsWith("_RM_"));
+            return inputReplayFile.getMarkers().or(HashSet::new).stream().anyMatch(m -> m.getName() != null && m.getName().startsWith("_RM_"));
         }
     }
 
@@ -70,7 +70,7 @@ public class MarkerProcessor {
             List<Marker> markers = inputReplayFile.getMarkers().or(HashSet::new)
                     .stream().sorted(Comparator.comparing(Marker::getTime)).collect(Collectors.toList());
             Iterator<Marker> markerIterator = markers.iterator();
-            boolean anySplit = markers.stream().anyMatch(m -> m.getName().equals(MARKER_NAME_SPLIT));
+            boolean anySplit = markers.stream().anyMatch(m -> MARKER_NAME_SPLIT.equals(m.getName()));
 
             int inputDuration = inputReplayFile.getMetaData().getDuration();
             ReplayInputStream replayInputStream = inputReplayFile.getPacketData(studio, true);
