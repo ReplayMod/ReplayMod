@@ -221,7 +221,7 @@ public class SettingsRegistry {
             }
         }
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String config = gson.toJson(gson);
+        String config = gson.toJson(root);
         try {
             Files.createDirectories(configFile.getParent());
             Files.write(configFile, config.getBytes(StandardCharsets.UTF_8));
