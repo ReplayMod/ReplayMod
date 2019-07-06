@@ -569,13 +569,14 @@ public class GuiPathing {
 
                 @Override
                 public void onFailure(@Nonnull Throwable t) {
-                    if (errorShown) {
+                    if (!errorShown) {
                         String message = "Failed to load entity tracker, spectator keyframes will be broken.";
                         GuiReplayOverlay overlay = replayHandler.getOverlay();
                         Utils.error(LOGGER, overlay, CrashReport.create(t, message), () -> {
                             popup.close();
                             thenRun.run();
                         });
+                        errorShown = true;
                     } else {
                         thenRun.run();
                     }
