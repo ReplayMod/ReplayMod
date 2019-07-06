@@ -387,11 +387,13 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         Marker marker = new Marker();
         marker.setName(name);
         marker.setTime(timestamp);
-        marker.setX(view.x);
-        marker.setY(view.y);
-        marker.setZ(view.z);
-        marker.setYaw(view.yaw);
-        marker.setPitch(view.pitch);
+        if (view != null) {
+            marker.setX(view.x);
+            marker.setY(view.y);
+            marker.setZ(view.z);
+            marker.setYaw(view.yaw);
+            marker.setPitch(view.pitch);
+        }
         // Roll is always 0
         saveService.submit(() -> {
             synchronized (replayFile) {
