@@ -553,7 +553,7 @@ public class GuiPathing {
     }
 
     public boolean loadEntityTracker(Runnable thenRun) {
-        if (entityTracker == null) {
+        if (entityTracker == null && !errorShown) {
             LOGGER.debug("Entity tracker not yet loaded, delaying...");
             LoadEntityTrackerPopup popup = new LoadEntityTrackerPopup(replayHandler.getOverlay());
             entityTrackerLoadingProgress = p -> popup.progressBar.setProgress(p.floatValue());
