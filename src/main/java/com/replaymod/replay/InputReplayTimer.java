@@ -21,6 +21,7 @@ import org.lwjgl.glfw.GLFW;
 //#if MC>=10800
 //$$ import java.io.IOException;
 //#else
+//$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
 //$$ import cpw.mods.fml.common.eventhandler.Event;
 //$$ import net.minecraft.client.renderer.entity.RenderManager;
 //$$
@@ -58,6 +59,13 @@ public class InputReplayTimer extends WrappedTimer {
         // 1.7.10: We have to run the scheduled executables (ours only) because MC would only run them every tick
         //#if MC<=10710
         //$$ FML_BUS.post(new RunScheduledTasks());
+        //$$
+        //$$ // Code below only updates the current screen when a world and player is loaded. This may not be the case for
+        //$$ // the GuiOpeningReplay screen resulting in a livelock.
+        //$$ // To counteract that, we always update that screen (doesn't matter if we do it twice).
+        //$$ if (mc.currentScreen instanceof GuiOpeningReplay) {
+        //$$     mc.currentScreen.handleInput();
+        //$$ }
         //#endif
 
         //#if MC>=11400
