@@ -46,6 +46,7 @@ import org.lwjgl.glfw.GLFW;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import static com.mojang.blaze3d.platform.GlStateManager.*;
 //#else
+//$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
 //$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
 //#endif
 
@@ -80,6 +81,9 @@ public class VideoRenderer implements RenderInfo {
     private Future<Void> timelinePlayerFuture;
     //#if MC>=10800
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
+    //#endif
+    //#if MC<10800
+    //$$ private GuiOpeningReplay guiOpeningReplay;
     //#endif
 
     private int framesDone;
@@ -210,6 +214,12 @@ public class VideoRenderer implements RenderInfo {
                 MCVer.milliTime()
                 //#endif
         );
+
+        //#if MC<10800
+        //$$ if (guiOpeningReplay != null) {
+        //$$     guiOpeningReplay.handleInput();
+        //$$ }
+        //#endif
 
         int elapsedTicks = timer.ticksThisFrame;
         while (elapsedTicks-- > 0) {
@@ -374,6 +384,12 @@ public class VideoRenderer implements RenderInfo {
         //$$     while (!scheduledTasks.isEmpty()) {
         //$$         scheduledTasks.poll().run();
         //$$     }
+        //$$ }
+        //#endif
+
+        //#if MC<10800
+        //$$ if (mc.currentScreen instanceof GuiOpeningReplay) {
+        //$$     guiOpeningReplay = (GuiOpeningReplay) mc.currentScreen;
         //$$ }
         //#endif
 
