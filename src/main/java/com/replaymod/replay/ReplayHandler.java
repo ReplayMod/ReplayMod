@@ -161,25 +161,22 @@ public class ReplayHandler {
     }
 
     void restartedReplay() {
+        Preconditions.checkState(isOnMainThread(), "Must be called from Minecraft thread.");
+
         channel.close();
 
+        //#if MC>=11300
+        mc.mouse.unlockCursor();
+        //#else
+        //$$ mc.setIngameNotInFocus();
+        //#endif
+
         // Force re-creation of camera entity by unloading the previous world
-        try {
-            ReplayMod.instance.runSync(() -> {
-                //#if MC>=11300
-                mc.mouse.unlockCursor();
-                //#else
-                //$$ mc.setIngameNotInFocus();
-                //#endif
-                //#if MC>=11400
-                mc.disconnect();
-                //#else
-                //$$ mc.loadWorld(null);
-                //#endif
-            });
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            LOGGER.error("Failed to properly restart (shutdown) replay:", e);
-        }
+        //#if MC>=11400
+        mc.disconnect();
+        //#else
+        //$$ mc.loadWorld(null);
+        //#endif
 
         restrictions = new Restrictions();
 
@@ -236,6 +233,8 @@ public class ReplayHandler {
     }
 
     private void setup() {
+        Preconditions.checkState(isOnMainThread(), "Must be called from Minecraft thread.");
+
         //#if MC>=11100
         mc.inGameHud.getChatHud().clear(false);
         //#else

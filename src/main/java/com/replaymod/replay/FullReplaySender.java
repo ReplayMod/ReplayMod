@@ -845,11 +845,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         startFromBeginning = false;
                         nextPacket = null;
                         lastPacketSent = System.currentTimeMillis();
-                        replayHandler.restartedReplay();
                         if (replayIn != null) {
                             replayIn.close();
                             replayIn = null;
                         }
+                        ReplayMod.instance.runSync(replayHandler::restartedReplay);
                     }
                 }
             } catch (Exception e) {
