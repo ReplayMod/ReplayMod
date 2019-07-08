@@ -517,7 +517,7 @@ public class ReplayMod implements
             //$$     }
             //$$ });
             //#else
-            //$$ FORGE_BUS.register(new RunLaterHelper(runnable));
+            //$$ FML_BUS.register(new RunLaterHelper(runnable));
             //#endif
         //$$     return;
         //$$ }
