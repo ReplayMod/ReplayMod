@@ -108,7 +108,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
         String langFile;
         try (InputStream in = Files.newInputStream(langPath)) {
-            langFile = IOUtils.toString(in);
+            langFile = IOUtils.toString(in, StandardCharsets.UTF_8);
         }
 
         Map<String, String> properties = new HashMap<>();
