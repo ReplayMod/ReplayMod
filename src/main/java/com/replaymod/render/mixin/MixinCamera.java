@@ -5,6 +5,7 @@ import com.replaymod.render.capturer.CubicOpenGlFrameCapturer;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,6 +37,10 @@ public abstract class MixinCamera {
     private float orgPrevPitch;
     private float orgRoll;
 
+    // Only relevant on 1.13+ (previously MC always used the non-head yaw) and only for LivingEntity view entities.
+    private float orgHeadYaw;
+    private float orgPrevHeadYaw;
+
     //#if MC>=11400
     @Inject(method = "update", at = @At("HEAD"))
     //#else
@@ -63,6 +68,10 @@ public abstract class MixinCamera {
             orgPrevYaw = entity.prevYaw;
             orgPrevPitch = entity.prevPitch;
             orgRoll = entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0;
+            if (entity instanceof LivingEntity) {
+                orgHeadYaw = ((LivingEntity) entity).headYaw;
+                orgPrevHeadYaw = ((LivingEntity) entity).prevHeadYaw;
+            }
         }
     //#if MC<11400
     //$$ }
@@ -77,6 +86,9 @@ public abstract class MixinCamera {
             RenderSettings settings = getHandler().getSettings();
             if (settings.isStabilizeYaw()) {
                 entity.prevYaw = entity.yaw = 0;
+                if (entity instanceof LivingEntity) {
+                    ((LivingEntity) entity).prevHeadYaw = ((LivingEntity) entity).headYaw = 0;
+                }
             }
             if (settings.isStabilizePitch()) {
                 entity.prevPitch = entity.pitch = 0;
@@ -115,6 +127,10 @@ public abstract class MixinCamera {
             entity.prevPitch = orgPrevPitch;
             if (entity instanceof CameraEntity) {
                 ((CameraEntity) entity).roll = orgRoll;
+            }
+            if (entity instanceof LivingEntity) {
+                ((LivingEntity) entity).headYaw = orgHeadYaw;
+                ((LivingEntity) entity).prevHeadYaw = orgPrevHeadYaw;
             }
         }
     }
