@@ -1,6 +1,8 @@
 package com.replaymod.core;
 
 import com.replaymod.core.events.SettingsChangedCallback;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -30,6 +32,7 @@ import java.nio.file.Path;
 import static com.replaymod.core.versions.MCVer.*;
 
 public class SettingsRegistry {
+    private static Logger LOGGER = LogManager.getLogger();
     private Map<SettingKey<?>, Object> settings = Collections.synchronizedMap(new LinkedHashMap<>());
     //#if MC>=11400
     private final Path configFile = getMinecraft().runDirectory.toPath().resolve("config/replaymod.json");
@@ -59,6 +62,11 @@ public class SettingsRegistry {
         }
         Gson gson = new Gson();
         JsonObject root = gson.fromJson(config, JsonObject.class);
+        if (root == null) {
+            LOGGER.error("Config file {} appears corrupted: {}", configFile, config);
+            save();
+            return;
+        }
         for (Map.Entry<SettingKey<?>, Object> entry : settings.entrySet()) {
             SettingKey<?> key = entry.getKey();
             JsonElement category = root.get(key.getCategory());
