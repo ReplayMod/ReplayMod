@@ -46,6 +46,7 @@ import net.minecraft.client.network.packet.LoginSuccessS2CPacket;
 //#endif
 
 //#if MC>=10800
+import net.minecraft.client.network.packet.LoginCompressionS2CPacket;
 import net.minecraft.network.NetworkSide;
 //#endif
 
@@ -152,8 +153,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
                 saveMetaData();
             }
-            //#if MC<10904
+
             //#if MC>=10800
+            if (packet instanceof LoginCompressionS2CPacket) {
+                return; // Replay data is never compressed on the packet level
+            }
+            //#if MC<10904
             //$$ if (packet instanceof S46PacketSetCompressionLevel) {
             //$$     return; // Replay data is never compressed on the packet level
             //$$ }

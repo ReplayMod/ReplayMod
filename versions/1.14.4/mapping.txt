@@ -484,6 +484,7 @@ net.minecraft.client.world.ClientWorld client mc
 net.minecraft.client.world.ClientWorld disconnect() sendQuittingDisconnectingPacket()
 
 net.minecraft.client.network.packet.LoginQueryRequestS2CPacket net.minecraft.network.login.server.SPacketCustomPayloadLogin
+net.minecraft.client.network.packet.LoginCompressionS2CPacket net.minecraft.network.login.server.SPacketEnableCompression
 net.minecraft.client.network.packet.LoginSuccessS2CPacket net.minecraft.network.login.server.SPacketLoginSuccess
 net.minecraft.client.network.packet net.minecraft.network.play.server
 net.minecraft.client.network.packet.GameJoinS2CPacket net.minecraft.network.play.server.SPacketJoinGame

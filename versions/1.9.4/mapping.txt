@@ -55,4 +55,5 @@ net.minecraft.network.play.server.SPacketCloseWindow net.minecraft.network.play.
 net.minecraft.network.play.server.SPacketWindowItems net.minecraft.network.play.server.S30PacketWindowItems
 net.minecraft.network.play.server.SPacketStatistics net.minecraft.network.play.server.S37PacketStatistics
 net.minecraft.network.play.server.SPacketPlayerAbilities net.minecraft.network.play.server.S39PacketPlayerAbilities
+net.minecraft.network.login.server.SPacketEnableCompression net.minecraft.network.login.server.S03PacketEnableCompression
 net.minecraft.network.login.server.SPacketLoginSuccess net.minecraft.network.login.server.S02PacketLoginSuccess
