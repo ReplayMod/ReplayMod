@@ -75,6 +75,7 @@ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //#endif
 
 import javax.annotation.Nullable;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -307,6 +308,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             try (InputStream cacheIn = cacheOpt.get()) {
                 success = loadFromCache(cacheIn, indexIn, progress);
             }
+        } catch (EOFException e) {
+            LOGGER.error("Re-analysing replay due to premature EOF while loading the cache:", e);
         } finally {
             if (!success) {
                 buf = null;
