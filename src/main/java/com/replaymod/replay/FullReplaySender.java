@@ -39,6 +39,7 @@ import org.apache.commons.io.IOUtils;
 
 //#if MC>=11400
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
+import net.minecraft.class_4463;
 import net.minecraft.entity.EntityType;
 import net.minecraft.text.TranslatableText;
 //#else
@@ -96,6 +97,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
+            //#if MC>=11404
+            class_4463.class, // PlayerActionAckPacket
+            //#endif
             //#if MC>=11400
             OpenWrittenBookS2CPacket.class,
             OpenContainerPacket.class,
@@ -333,7 +337,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // to any chunk yet.
             if (mc.world != null) {
                 for (PlayerEntity playerEntity : playerEntities(mc.world)) {
-                    if (!playerEntity.field_6016 && playerEntity instanceof OtherClientPlayerEntity) {
+                    if (!playerEntity.updateNeeded && playerEntity instanceof OtherClientPlayerEntity) {
                         playerEntity.tickMovement();
                     }
                 }
@@ -422,7 +426,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         int i = pb.readVarInt();
 
-        NetworkState state = loginPhase ? NetworkState.LOGIN : NetworkState.PLAY;
+        NetworkState state = loginPhase ? NetworkState.field_11688 : NetworkState.field_11690;
         //#if MC>=10800
         Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i);
         //#else

@@ -4,7 +4,7 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.screen.PauseScreen;
+import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -45,7 +45,7 @@ public class GuiHandler extends EventRegistrations {
     //$$     GuiScreen guiScreen = getGui(event);
     //$$     List<GuiButton> buttonList = getButtonList(event);
     //#endif
-        if (!(guiScreen instanceof PauseScreen)) {
+        if (!(guiScreen instanceof GameMenuScreen)) {
             return;
         }
 
@@ -231,7 +231,7 @@ public class GuiHandler extends EventRegistrations {
             }
         }
 
-        if (guiScreen instanceof PauseScreen && mod.getReplayHandler() != null) {
+        if (guiScreen instanceof GameMenuScreen && mod.getReplayHandler() != null) {
             if (button.id == BUTTON_EXIT_REPLAY) {
                 button.active = false;
                 try {

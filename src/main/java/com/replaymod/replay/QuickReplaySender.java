@@ -659,7 +659,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private static final Deflater deflater = new Deflater();
 
     private static Packet<?> toMC(com.github.steveice10.packetlib.packet.Packet packet) {
-        return toMC(packet, NetworkState.PLAY);
+        return toMC(packet, NetworkState.field_11690);
     }
 
     private static Packet<?> toMC(com.github.steveice10.packetlib.packet.Packet packet, NetworkState state) {
@@ -710,7 +710,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             }
 
             int packetId = packetBuf.readVarInt();
-            Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
+            Packet<?> mcPacket = NetworkState.field_11690.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
             mcPacket.read(packetBuf);
             return mcPacket;
         } catch (Exception e) {

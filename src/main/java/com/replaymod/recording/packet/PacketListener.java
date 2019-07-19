@@ -87,7 +87,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
     //#if MC>=11300
-    private NetworkState connectionState = NetworkState.LOGIN;
+    private NetworkState connectionState = NetworkState.field_11688;
     //#else
     //$$ private EnumConnectionState connectionState = EnumConnectionState.PLAY;
     //#endif
@@ -180,7 +180,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
             //#if MC>=11300
             if (packet instanceof LoginSuccessS2CPacket) {
-                connectionState = NetworkState.PLAY;
+                connectionState = NetworkState.field_11690;
             }
             //#endif
         } catch(Exception e) {

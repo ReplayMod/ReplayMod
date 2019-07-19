@@ -122,7 +122,7 @@ net.minecraft.client.gl.GlFramebuffer endWrite() unbindFramebuffer()
 net.minecraft.client.gl.GlFramebuffer draw() framebufferRender()
 net.minecraft.client.gl.GlFramebuffer resize() createBindFramebuffer()
 net.minecraft.client.gl.GlFramebuffer initFbo() createFramebuffer()
-net.minecraft.client.gui.screen.PauseScreen net.minecraft.client.gui.GuiIngameMenu
+net.minecraft.client.gui.screen.GameMenuScreen net.minecraft.client.gui.GuiIngameMenu
 net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen net.minecraft.client.gui.GuiMultiplayer
 net.minecraft.client.gui.screen.world.SelectWorldScreen net.minecraft.client.gui.GuiWorldSelection
 net.minecraft.entity.data.DataTracker net.minecraft.network.datasync.EntityDataManager
@@ -144,6 +144,8 @@ net.minecraft.resource.ResourcePack getNamespaces() getResourceNamespaces()
 net.minecraft.resource.ResourceType net.minecraft.resources.ResourcePackType
 net.minecraft.network.NetworkSide net.minecraft.network.EnumPacketDirection
 net.minecraft.network.NetworkState net.minecraft.network.EnumConnectionState
+net.minecraft.network.NetworkState field_11688 LOGIN
+net.minecraft.network.NetworkState field_11690 PLAY
 net.minecraft.network.NetworkState getPacketHandler() getPacket()
 net.minecraft.network.Packet read() readPacketData()
 net.minecraft.network.Packet write() writePacketData()
@@ -367,7 +369,8 @@ net.minecraft.util.SystemUtil net.minecraft.util.Util
 net.minecraft.util.SystemUtil getMeasuringTimeMs() milliTime()
 net.minecraft.util.SystemUtil getOperatingSystem() getOSType()
 net.minecraft.util.SystemUtil.OperatingSystem net.minecraft.util.Util.EnumOS
-net.minecraft.util.SystemUtil.OperatingSystem MAC OSX
+net.minecraft.util.SystemUtil.OperatingSystem field_1133 WINDOWS
+net.minecraft.util.SystemUtil.OperatingSystem field_1137 OSX
 net.minecraft.util.SystemUtil.OperatingSystem open() openFile()
 net.minecraft.client.util.InputUtil net.minecraft.client.util.InputMappings
 net.minecraft.client.util.InputUtil isKeyPressed() isKeyDown()
@@ -389,7 +392,7 @@ net.minecraft.client.network.ClientLoginNetworkHandler connection networkManager
 net.minecraft.client.network.ClientLoginNetworkHandler onQueryRequest() func_209521_a()
 net.minecraft.client.network.ClientLoginNetworkHandler onLoginSuccess() handleLoginSuccess()
 net.minecraft.client.network.ClientPlayNetworkHandler net.minecraft.client.network.NetHandlerPlayClient
-net.minecraft.client.network.ClientPlayNetworkHandler getClientConnection() getNetworkManager()
+net.minecraft.client.network.ClientPlayNetworkHandler getConnection() getNetworkManager()
 net.minecraft.client.network.ClientPlayNetworkHandler playerListEntries playerInfoMap
 net.minecraft.client.network.ClientPlayNetworkHandler onPlayerList() handlePlayerListItem()
 net.minecraft.client.network.ClientPlayNetworkHandler onPlayerRespawn() handleRespawn()
@@ -437,7 +440,7 @@ net.minecraft.entity.Entity collides() canBeCollidedWith()
 net.minecraft.entity.Entity spawnSprintingParticles() createRunningParticles()
 net.minecraft.entity.Entity canSeePlayer() isInvisibleToPlayer()
 net.minecraft.entity.Entity getStandingEyeHeight() getEyeHeight()
-net.minecraft.entity.Entity field_6016 addedToChunk
+net.minecraft.entity.Entity updateNeeded addedToChunk
 net.minecraft.entity.Entity chunkX chunkCoordX
 net.minecraft.entity.Entity chunkY chunkCoordY
 net.minecraft.entity.Entity chunkZ chunkCoordZ

@@ -310,8 +310,8 @@ public class CameraEntity
 
     //#if MC>=11400
     @Override
-    public boolean isInFluid(Tag<Fluid> fluid, boolean loadedChunksOnly) {
-        return falseUnlessSpectating(entity -> entity.isInFluid(fluid, loadedChunksOnly));
+    public boolean isInFluid(Tag<Fluid> fluid) {
+        return falseUnlessSpectating(entity -> entity.isInFluid(fluid));
     }
     //#else
     //#if MC>=10800

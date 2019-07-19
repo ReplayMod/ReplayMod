@@ -174,7 +174,7 @@ public class RenderSettings {
 
     private static String findFFmpeg() {
         switch (SystemUtil.getOperatingSystem()) {
-            case WINDOWS:
+            case field_1133:
                 // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
                 File inDotMinecraft = new File(MCVer.getMinecraft().runDirectory, "ffmpeg/bin/ffmpeg.exe");
                 if (inDotMinecraft.exists()) {
@@ -182,7 +182,7 @@ public class RenderSettings {
                     return inDotMinecraft.getAbsolutePath();
                 }
                 break;
-            case MAC:
+            case field_1137:
                 // The PATH doesn't seem to be set as expected on OSX, therefore we check some common locations ourselves
                 for (String path : new String[]{"/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"}) {
                     File file = new File(path);

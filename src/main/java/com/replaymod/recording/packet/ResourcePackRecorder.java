@@ -114,7 +114,7 @@ public class ResourcePackRecorder {
     public synchronized ResourcePackSendS2CPacket handleResourcePack(ResourcePackSendS2CPacket packet) {
         final int requestId = nextRequestId++;
         final ClientPlayNetworkHandler netHandler = mc.getNetworkHandler();
-        final ClientConnection netManager = netHandler.getClientConnection();
+        final ClientConnection netManager = netHandler.getConnection();
         final String url = packet.getURL();
         final String hash = packet.getSHA1();
 

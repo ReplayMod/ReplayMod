@@ -665,7 +665,7 @@ public class ReplayHandler {
                 //$$ }
                 //#endif
 
-                mc.getNetworkHandler().getClientConnection()
+                mc.getNetworkHandler().getConnection()
                         //#if MC>=11300
                         .tick();
                         //#else
