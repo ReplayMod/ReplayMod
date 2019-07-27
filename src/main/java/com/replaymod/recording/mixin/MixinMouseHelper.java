@@ -40,7 +40,7 @@ public abstract class MixinMouseHelper {
             //#endif
     ) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {
-            InputReplayTimer.handleScroll((int) yOffsetAccumulated);
+            InputReplayTimer.handleScroll((int) (yOffsetAccumulated * 120));
             ci.cancel();
         }
     }
