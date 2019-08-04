@@ -233,9 +233,9 @@ dependencies {
     if (!FABRIC) {
         // compile 'com.github.SpongePowered:Mixin:404f5da' // 0.7.5-SNAPSHOT
         // ^ mixin doesn't compile on jitpack, so we'll have to depend on the SNAPSHOT and build it manually for reprod
-        annotationProcessor 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
-        compileOnly 'org.spongepowered:mixin:0.7.8-SNAPSHOT'
-        shade('org.spongepowered:mixin:0.7.8-SNAPSHOT') {
+        annotationProcessor 'org.spongepowered:mixin:0.7.10-SNAPSHOT'
+        compileOnly 'org.spongepowered:mixin:0.7.10-SNAPSHOT'
+        shade('org.spongepowered:mixin:0.7.10-SNAPSHOT') {
             transitive = false // deps should all be bundled with MC
         }
     }
