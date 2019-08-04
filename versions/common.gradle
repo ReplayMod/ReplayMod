@@ -256,7 +256,7 @@ dependencies {
 
     def studioVersion = mcVersionStr
     if (studioVersion == '1.8.9') studioVersion = '1.8'
-    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:be6a680", shadeExclusions
+    shadow "com.github.ReplayMod.ReplayStudio:$studioVersion:e657fe8", shadeExclusions
 
     shadowReobf(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
