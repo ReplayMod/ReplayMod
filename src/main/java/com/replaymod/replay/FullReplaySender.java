@@ -836,6 +836,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 while (paused() && hasWorldLoaded && desiredTimeStamp == -1 && !terminate) {
                                     Thread.sleep(10);
                                 }
+
+                                if (terminate) {
+                                    break REPLAY_LOOP;
+                                }
                                 break;
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -1119,6 +1123,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 IOUtils.readFully(in, bytes);
             } else {
                 com.replaymod.replaystudio.PacketData data = in.readPacket();
+                if (data == null) {
+                    throw new EOFException();
+                }
                 timestamp = (int) data.getTime();
                 // We need to re-encode MCProtocolLib packets, so we can later decode them as NMS packets
                 // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able

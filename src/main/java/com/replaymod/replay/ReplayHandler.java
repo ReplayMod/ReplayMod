@@ -175,6 +175,9 @@ public class ReplayHandler {
         //#if MC>=11400
         mc.disconnect();
         //#else
+        //$$ // We need to re-set the GUI screen because having one with `allowsUserInput = true` active during world
+        //$$ // load (i.e. before player is set) will crash MC...
+        //$$ mc.displayGuiScreen(new GuiScreen() {});
         //$$ mc.loadWorld(null);
         //#endif
 
