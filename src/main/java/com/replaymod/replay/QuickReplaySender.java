@@ -64,14 +64,18 @@ import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //#else
-//$$ import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
+//$$ import net.minecraftforge.event.TickEvent;
 //$$
 //$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
+//#endif
+
+//#if FABRIC>=1
+//#else
+//$$ import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
 //#endif
 
 import javax.annotation.Nullable;
@@ -279,7 +283,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     }
 
     private class EventHandler extends EventRegistrations {
-        //#if MC>=11400
+        //#if FABRIC>=1
         { on(PreTickCallback.EVENT, this::onTick); }
         private void onTick() {
         //#else

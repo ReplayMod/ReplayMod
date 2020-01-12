@@ -10,7 +10,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.resource.language.I18n;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.PostRenderHudCallback;
 //#else
 //$$ import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -40,7 +40,7 @@ public class GuiRecordingOverlay extends EventRegistrations {
     /**
      * Render the recording icon and text in the top left corner of the screen.
      */
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(PostRenderHudCallback.EVENT, partialTicks -> renderRecordingIndicator()); }
     private void renderRecordingIndicator() {
     //#else

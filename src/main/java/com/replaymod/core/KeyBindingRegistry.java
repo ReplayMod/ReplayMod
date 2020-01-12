@@ -9,7 +9,7 @@ import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.crash.CrashException;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import com.replaymod.core.versions.LangResourcePack;
 import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -38,7 +38,7 @@ import java.util.Map;
 
 public class KeyBindingRegistry extends EventRegistrations {
     private static final String CATEGORY = "replaymod.title";
-    //#if MC>=11400
+    //#if FABRIC>=1
     static { net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.addCategory(CATEGORY); }
     //#endif
 
@@ -58,7 +58,7 @@ public class KeyBindingRegistry extends EventRegistrations {
     private KeyBinding registerKeyBinding(String name, int keyCode) {
         KeyBinding keyBinding = keyBindings.get(name);
         if (keyBinding == null) {
-            //#if MC>=11400
+            //#if FABRIC>=1
             if (keyCode == 0) {
                 keyCode = -1;
             }

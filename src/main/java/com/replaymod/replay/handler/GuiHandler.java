@@ -3,19 +3,22 @@ package com.replaymod.replay.handler;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.resource.language.I18n;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
 //#else
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#endif
+
+//#if MC>=11400
+import net.minecraft.client.gui.widget.ButtonWidget;
 //#endif
 
 import java.io.IOException;
@@ -36,14 +39,14 @@ public class GuiHandler extends EventRegistrations {
         this.mod = mod;
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
     private void injectIntoIngameMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
     //#else
     //$$ @SubscribeEvent
     //$$ public void injectIntoIngameMenu(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     GuiScreen guiScreen = getGui(event);
-    //$$     List<GuiButton> buttonList = getButtonList(event);
+    //$$     Screen guiScreen = getGui(event);
+    //$$     List<Widget> buttonList = getButtonList(event);
     //#endif
         if (!(guiScreen instanceof GameMenuScreen)) {
             return;
@@ -163,13 +166,13 @@ public class GuiHandler extends EventRegistrations {
                 .forEach(button -> button.y -= 24);
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::ensureReplayStopped); }
     private void ensureReplayStopped(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
     //#else
     //$$ @SubscribeEvent
     //$$ public void ensureReplayStopped(GuiScreenEvent.InitGuiEvent event) {
-    //$$     GuiScreen guiScreen = getGui(event);
+    //$$     Screen guiScreen = getGui(event);
     //#endif
         if (!(guiScreen instanceof TitleScreen || guiScreen instanceof MultiplayerScreen)) {
             return;
@@ -190,18 +193,18 @@ public class GuiHandler extends EventRegistrations {
         }
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::injectIntoMainMenu); }
     private void injectIntoMainMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
     //#else
     //$$ @SubscribeEvent
     //$$ public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
-    //$$     GuiScreen guiScreen = getGui(event);
+    //$$     Screen guiScreen = getGui(event);
     //#endif
         if (!(guiScreen instanceof TitleScreen)) {
             return;
         }
-        ButtonWidget button = new InjectedButton(
+        InjectedButton button = new InjectedButton(
                 guiScreen,
                 BUTTON_REPLAY_VIEWER,
                 guiScreen.width / 2 - 100,
@@ -243,7 +246,13 @@ public class GuiHandler extends EventRegistrations {
         }
     }
 
-    public static class InjectedButton extends ButtonWidget {
+    public static class InjectedButton extends
+            //#if MC>=11400
+            ButtonWidget
+            //#else
+            //$$ GuiButton
+            //#endif
+    {
         public final Screen guiScreen;
         public final int id;
         private Consumer<InjectedButton> onClick;

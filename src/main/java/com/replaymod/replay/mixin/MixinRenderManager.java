@@ -2,7 +2,7 @@
 //#if MC>=10800 && MC<11400
 //$$ package com.replaymod.replay.mixin;
 //$$
-//$$ import net.minecraft.client.GameSettings;
+//$$ import net.minecraft.client.settings.GameSettings;
 //$$ import net.minecraft.client.gui.FontRenderer;
 //$$ import net.minecraft.client.renderer.entity.RenderManager;
 //$$ import net.minecraft.entity.Entity;

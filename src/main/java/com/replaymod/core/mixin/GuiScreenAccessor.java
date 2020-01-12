@@ -18,10 +18,11 @@ import net.minecraft.client.gui.Element;
 
 @Mixin(Screen.class)
 public interface GuiScreenAccessor {
-    @Accessor
     //#if MC>=11400
+    @Accessor
     List<AbstractButtonWidget> getButtons();
     //#else
+    //$$ @Accessor("buttonList")
     //$$ List<GuiButton> getButtons();
     //#endif
 

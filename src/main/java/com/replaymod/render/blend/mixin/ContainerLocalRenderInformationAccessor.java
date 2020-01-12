@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 //#if MC>=11400
-@Mixin(targets = "net/minecraft/client/render/WorldRenderer/ChunkInfo")
+@Mixin(targets = "net.minecraft.client.render.WorldRenderer$ChunkInfo")
 //#else
 //#if MC>=11300
 //$$ @Mixin(targets = "net/minecraft/client/renderer/WorldRenderer$ContainerLocalRenderInformation")

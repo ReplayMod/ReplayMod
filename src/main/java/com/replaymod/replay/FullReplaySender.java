@@ -29,17 +29,48 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
+import net.minecraft.client.network.packet.ChatMessageS2CPacket;
+import net.minecraft.client.network.packet.CustomPayloadS2CPacket;
+import net.minecraft.client.network.packet.DisconnectS2CPacket;
+import net.minecraft.client.network.packet.EntitiesDestroyS2CPacket;
+import net.minecraft.client.network.packet.EntitySpawnGlobalS2CPacket;
+import net.minecraft.client.network.packet.EntitySpawnS2CPacket;
+import net.minecraft.client.network.packet.ExperienceBarUpdateS2CPacket;
+import net.minecraft.client.network.packet.ExperienceOrbSpawnS2CPacket;
+import net.minecraft.client.network.packet.GameJoinS2CPacket;
+import net.minecraft.client.network.packet.GameStateChangeS2CPacket;
+import net.minecraft.client.network.packet.GuiCloseS2CPacket;
+import net.minecraft.client.network.packet.GuiOpenS2CPacket;
+import net.minecraft.client.network.packet.GuiSlotUpdateS2CPacket;
+import net.minecraft.client.network.packet.GuiUpdateS2CPacket;
+import net.minecraft.client.network.packet.HealthUpdateS2CPacket;
 import net.minecraft.client.network.packet.LoginSuccessS2CPacket;
-import net.minecraft.client.network.packet.*;
+import net.minecraft.client.network.packet.MobSpawnS2CPacket;
+import net.minecraft.client.network.packet.PaintingSpawnS2CPacket;
+import net.minecraft.client.network.packet.ParticleS2CPacket;
+import net.minecraft.client.network.packet.PlayerAbilitiesS2CPacket;
+import net.minecraft.client.network.packet.PlayerPositionLookS2CPacket;
+import net.minecraft.client.network.packet.PlayerRespawnS2CPacket;
+import net.minecraft.client.network.packet.PlayerSpawnS2CPacket;
+import net.minecraft.client.network.packet.SignEditorOpenS2CPacket;
+import net.minecraft.client.network.packet.StatisticsS2CPacket;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
+//#else
+//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$ import net.minecraftforge.event.TickEvent;
+//#endif
+
+//#if MC>=11400
 import net.minecraft.class_4463;
+import net.minecraft.client.network.packet.OpenContainerPacket;
+import net.minecraft.client.network.packet.OpenWrittenBookS2CPacket;
 import net.minecraft.entity.EntityType;
 import net.minecraft.text.TranslatableText;
 //#else
@@ -49,8 +80,6 @@ import net.minecraft.text.TranslatableText;
 //$$ import net.minecraft.world.EnumDifficulty;
 //$$ import net.minecraft.world.WorldType;
 //$$ import net.minecraft.world.chunk.Chunk;
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
 //$$ import java.util.ArrayList;
 //$$ import java.util.Collection;
 //$$ import java.util.Iterator;
@@ -65,6 +94,9 @@ import net.minecraft.util.Identifier;
 
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
+import net.minecraft.client.network.packet.AdvancementUpdateS2CPacket;
+import net.minecraft.client.network.packet.SelectAdvancementTabS2CPacket;
+import net.minecraft.client.network.packet.SynchronizeRecipesS2CPacket;
 //#endif
 //#if MC>=11002
 import net.minecraft.world.GameMode;
@@ -72,7 +104,16 @@ import net.minecraft.world.GameMode;
 //$$ import net.minecraft.world.WorldSettings.GameType;
 //#endif
 
+//#if MC>=10904
+import net.minecraft.client.network.packet.UnloadChunkS2CPacket;
+//#else
+//$$ import net.minecraft.network.play.server.S21PacketChunkData;
+//#endif
+
 //#if MC>=10800
+import net.minecraft.client.network.packet.ResourcePackSendS2CPacket;
+import net.minecraft.client.network.packet.SetCameraEntityS2CPacket;
+import net.minecraft.client.network.packet.TitleS2CPacket;
 import net.minecraft.network.NetworkSide;
 //#else
 //$$ import org.apache.commons.io.Charsets;
@@ -320,7 +361,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     //$$ public // All event handlers need to be public in 1.7.10
     //#endif
     class EventHandler extends EventRegistrations {
-        //#if MC>=11400
+        //#if FABRIC>=1
         { on(PreTickCallback.EVENT, this::onWorldTick); }
         private void onWorldTick() {
         //#else
@@ -387,7 +428,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             //$$ Iterator<Entity> iter = loadedEntityList(world).iterator();
                             //$$ while (iter.hasNext()) {
                             //$$     Entity entity = iter.next();
-                            //$$     if (entity.removed) {
+                            //$$     if (entity.isDead) {
                             //$$         int chunkX = entity.chunkCoordX;
                             //$$         int chunkY = entity.chunkCoordZ;
                             //$$
@@ -400,7 +441,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                     //$$ if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
                                     //#endif
                                     //#endif
-                            //$$             world.getChunk(chunkX, chunkY).removeEntity(entity);
+                            //$$             world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);
                             //$$         }
                             //$$
                             //$$         iter.remove();
@@ -592,7 +633,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             p = new PlayerRespawnS2CPacket(respawn.getDimension(), respawn.getGeneratorType(), GameMode.SPECTATOR);
             //#else
             //#if MC>=10809
-            //$$ p = new SPacketRespawn(respawn.func_212643_b(),
+            //$$ p = new SPacketRespawn(respawn.getDimensionID(),
             //$$         respawn.getDifficulty(), respawn.getWorldType(), GameType.SPECTATOR);
             //#else
             //$$ p = new S07PacketRespawn(respawn.func_149082_c(),
@@ -622,14 +663,21 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             CameraEntity cent = replayHandler.getCameraEntity();
 
             //#if MC>=10800
-            //#if MC>=10904
+            //#if MC>=11400
             for (PlayerPositionLookS2CPacket.Flag relative : ppl.getFlags()) {
-            //#else
-            //$$ for (Object relative : ppl.func_179834_f()) {
-            //#endif
                 if (relative == PlayerPositionLookS2CPacket.Flag.X
                         || relative == PlayerPositionLookS2CPacket.Flag.Y
                         || relative == PlayerPositionLookS2CPacket.Flag.Z) {
+            //#else
+            //#if MC>=10904
+            //$$ for (SPacketPlayerPosLook.EnumFlags relative : ppl.getFlags()) {
+            //#else
+            //$$ for (Object relative : ppl.func_179834_f()) {
+            //#endif
+            //$$     if (relative == SPacketPlayerPosLook.EnumFlags.X
+            //$$             || relative == SPacketPlayerPosLook.EnumFlags.Y
+            //$$             || relative == SPacketPlayerPosLook.EnumFlags.Z) {
+            //#endif
                     return null; // At least one of the coordinates is relative, so we don't care
                 }
             }

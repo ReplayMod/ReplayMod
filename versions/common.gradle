@@ -1,24 +1,20 @@
 buildscript {
     def mcVersion
-    if (project.name != 'core') {
-        def (major, minor, patch) = project.name.tokenize('.')
-        mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}" as int
-    } else {
-        def f = file('mcVersion')
-        mcVersion = f.readLines().first() as int
-    }
+    def (major, minor, patch) = project.name.tokenize('-')[0].tokenize('.')
+    mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}" as int
+    def fabric = mcVersion >= 11400 && !project.name.endsWith("-forge")
     project.ext.mcVersion = mcVersion
+    project.ext.fabric = fabric
 
     repositories {
         mavenLocal()
         jcenter()
         mavenCentral()
-        if (mcVersion >= 11400) {
-            maven {
-                name = "fabric"
-                url = "https://maven.fabricmc.net/"
-            }
-        } else {
+        maven {
+            name = "fabric"
+            url = "https://maven.fabricmc.net/"
+        }
+        if (!fabric) {
             maven {
                 name = "forge"
                 url = "https://files.minecraftforge.net/maven"
@@ -33,7 +29,7 @@ buildscript {
 
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
-        if (mcVersion >= 11400) {
+        if (fabric) {
             classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.2-SNAPSHOT'
         } else if (mcVersion >= 11300) {
             classpath('net.minecraftforge.gradle:ForgeGradle:3.+'){
@@ -50,16 +46,11 @@ buildscript {
                 exclude group: 'trove', module: 'trove' // different name same thing
             }
         }
-        classpath 'com.github.replaymod:preprocessor:8ec3e31'
     }
 }
 
-import com.replaymod.gradle.preprocess.PreprocessTask
-
-def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
-
-def FG3 = mcVersion >= 11300 && mcVersion < 11400
-def FABRIC = mcVersion >= 11400
+def FG3 = !fabric && mcVersion >= 11300
+def FABRIC = fabric
 
 def jGuiVersion = project.name
 if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
@@ -96,8 +87,21 @@ if (!FABRIC) {
 
 apply plugin: 'com.replaymod.preprocess'
 
+preprocess {
+    vars.put("MC", project.mcVersion)
+    vars.put("FABRIC", project.fabric ? 1 : 0)
+}
+
+def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+if (mcVersion >= 11300) {
+    sourceSets {
+        api
+    }
+}
 
 version = mcVersionStr + '-' + rootProject.version
 group= "com.replaymod"
@@ -143,7 +147,7 @@ if (FABRIC) {
             ][mcVersion]
         }
         mappings = [
-                11302: "snapshot_20180921-1.13",
+                11404: "snapshot_20190719-1.14.3",
                 11202: "snapshot_20170615",
                 11201: "snapshot_20170615",
                 11200: "snapshot_20170615",
@@ -226,7 +230,7 @@ dependencies {
 
     if (FG3) {
         minecraft 'net.minecraftforge:forge:' + [
-                11302: '1.13.2-25.0.76',
+                11404: '1.14.4-28.1.113',
         ][mcVersion]
     }
 
@@ -293,14 +297,6 @@ if (mcVersion <= 10710) {
             artifact.classpath += configurations.minecraft + configurations.minecraftDeps
         }
     }
-}
-
-if (project.name != 'core') {
-    def jGui = project.evaluationDependsOn(":jGui:$jGuiVersion")
-    // Make sure the corresponding jGui setCoreVersion task runs
-    project.tasks.setCoreVersionJava.dependsOn jGui.tasks.setCoreVersion
-    // and it doesn't run too early (i.e. before we're done with preprocessing)
-    jGui.tasks.setCoreVersionJava.mustRunAfter project.tasks.preprocessJava
 }
 
 task configureRelocation() {

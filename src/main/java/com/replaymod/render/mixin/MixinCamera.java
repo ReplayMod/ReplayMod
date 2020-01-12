@@ -18,13 +18,13 @@ import static com.replaymod.core.versions.MCVer.*;
 import net.minecraft.client.render.Camera;
 import net.minecraft.world.BlockView;
 //#else
-//$$ import net.minecraft.client.renderer.GameRenderer;
+//$$ import net.minecraft.client.renderer.EntityRenderer;
 //#endif
 
 //#if MC>=11400
 @Mixin(value = Camera.class)
 //#else
-//$$ @Mixin(value = GameRenderer.class)
+//$$ @Mixin(value = EntityRenderer.class)
 //#endif
 public abstract class MixinCamera {
     private EntityRendererHandler getHandler() {

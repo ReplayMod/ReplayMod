@@ -5,25 +5,42 @@ import com.replaymod.recording.packet.PacketListener;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.packet.BlockBreakingProgressS2CPacket;
+import net.minecraft.client.network.packet.EntityAnimationS2CPacket;
+import net.minecraft.client.network.packet.EntityAttachS2CPacket;
+import net.minecraft.client.network.packet.EntityEquipmentUpdateS2CPacket;
+import net.minecraft.client.network.packet.EntityPositionS2CPacket;
+import net.minecraft.client.network.packet.EntityS2CPacket;
+import net.minecraft.client.network.packet.EntitySetHeadYawS2CPacket;
+import net.minecraft.client.network.packet.EntityVelocityUpdateS2CPacket;
+import net.minecraft.client.network.packet.PlayerSpawnS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
-import net.minecraft.client.network.packet.*;
 import net.minecraft.server.integrated.IntegratedServer;
 // FIXME not (yet?) 1.13 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import com.replaymod.core.events.PreRenderCallback;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //#else
+//$$ import net.minecraft.network.play.server.SCollectItemPacket;
 //$$ import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
+//$$ import net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent;
+//$$ import net.minecraftforge.event.TickEvent;
+//#endif
+
+//#if MC>=11400
+//#else
+//$$ import net.minecraft.network.play.server.SPacketUseBed;
 //#endif
 
 //#if MC>=10904
 import com.replaymod.recording.mixin.EntityLivingBaseAccessor;
+import net.minecraft.client.network.packet.EntityTrackerUpdateS2CPacket;
+import net.minecraft.client.network.packet.PlaySoundS2CPacket;
+import net.minecraft.client.network.packet.WorldEventS2CPacket;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.util.Hand;
@@ -120,7 +137,7 @@ public class RecordingEventHandler extends EventRegistrations {
     }
     //#endif
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(PreTickCallback.EVENT, this::onPlayerTick); }
     private void onPlayerTick() {
         if (mc.player == null) return;
@@ -178,7 +195,11 @@ public class RecordingEventHandler extends EventRegistrations {
                 byte newYaw = (byte) ((int) (player.yaw * 256.0F / 360.0F));
                 byte newPitch = (byte) ((int) (player.pitch * 256.0F / 360.0F));
 
+                //#if MC>=11400
                 packet = new EntityS2CPacket.RotateAndMoveRelative(
+                //#else
+                //$$ packet = new SPacketEntity.S17PacketEntityLookMove(
+                //#endif
                         player.getEntityId(),
                         //#if MC>=10904
                         (short) Math.round(dx * 4096), (short) Math.round(dy * 4096), (short) Math.round(dz * 4096),
@@ -346,7 +367,7 @@ public class RecordingEventHandler extends EventRegistrations {
         }
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     // FIXME fabric
     //#else
     //$$ @SubscribeEvent
@@ -356,7 +377,7 @@ public class RecordingEventHandler extends EventRegistrations {
             //#if MC>=11200
             //#if MC>=11300
             //$$ ItemStack stack = event.getStack();
-            //$$ packetListener.save(new SPacketCollectItem(
+            //$$ packetListener.save(new SCollectItemPacket(
             //$$         event.getOriginalEntity().getEntityId(),
             //$$         event.getPlayer().getEntityId(),
             //$$         event.getStack().getCount()
@@ -456,7 +477,7 @@ public class RecordingEventHandler extends EventRegistrations {
         }
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(PreRenderCallback.EVENT, this::checkForGamePaused); }
     private void checkForGamePaused() {
     //#else

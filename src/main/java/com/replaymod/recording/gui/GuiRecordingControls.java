@@ -15,7 +15,7 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 //#else
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
@@ -70,7 +70,7 @@ public class GuiRecordingControls extends EventRegistrations {
         updateState();
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, (screen, buttons) -> {
         if (screen instanceof GameMenuScreen) {
             show((GameMenuScreen) screen);
@@ -79,8 +79,8 @@ public class GuiRecordingControls extends EventRegistrations {
     //#else
     //$$ @SubscribeEvent
     //$$ public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     if (getGui(event) instanceof GuiIngameMenu) {
-    //$$         show((GuiIngameMenu) getGui(event));
+    //$$     if (getGui(event) instanceof IngameMenuScreen) {
+    //$$         show((IngameMenuScreen) getGui(event));
     //$$     }
     //$$ }
     //#endif

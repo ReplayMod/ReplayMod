@@ -166,20 +166,32 @@ public class BlendMeshBuilder
             //#endif
             switch (element.getType()) {
                 case POSITION:
+                    //#if MC>=11400
                     if (element.getFormat() != VertexFormatElement.Format.FLOAT) {
+                    //#else
+                    //$$ if (element.getType() != VertexFormatElement.EnumType.FLOAT) {
+                    //#endif
                         throw new UnsupportedOperationException("Only float is supported for position elements!");
                     }
                     posOffset = offset;
                     break;
                 case COLOR:
+                    //#if MC>=11400
                     if (element.getFormat() != VertexFormatElement.Format.UBYTE) {
+                    //#else
+                    //$$ if (element.getType() != VertexFormatElement.EnumType.UBYTE) {
+                    //#endif
                         throw new UnsupportedOperationException("Only unsigned byte is supported for color elements!");
                     }
                     colorOffset = offset;
                     break;
                 case UV:
                     if (element.getIndex() != 0) break;
+                    //#if MC>=11400
                     if (element.getFormat() != VertexFormatElement.Format.FLOAT) {
+                    //#else
+                    //$$ if (element.getType() != VertexFormatElement.EnumType.UBYTE) {
+                    //#endif
                         throw new UnsupportedOperationException("Only float is supported for UV elements!");
                     }
                     uvOffset = offset;

@@ -11,7 +11,7 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 import net.minecraft.client.gui.screen.Screen;
 //#else
@@ -30,13 +30,13 @@ public class GuiHandler extends EventRegistrations {
         this.mod = mod;
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
     private void onGuiInit(Screen gui) {
     //#else
     //$$ @SubscribeEvent
     //$$ public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     net.minecraft.client.gui.GuiScreen gui = getGui(event);
+    //$$     net.minecraft.client.gui.screen.Screen gui = getGui(event);
     //#endif
         if (gui instanceof SelectWorldScreen || gui instanceof MultiplayerScreen) {
             boolean sp = gui instanceof SelectWorldScreen;

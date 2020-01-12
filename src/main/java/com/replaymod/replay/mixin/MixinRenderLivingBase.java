@@ -23,7 +23,11 @@ import static com.replaymod.core.versions.MCVer.*;
 //$$ @Mixin(RendererLivingEntity.class)
 //#endif
 public abstract class MixinRenderLivingBase {
+    //#if FABRIC>=1
     @Inject(method = "method_4055", at = @At("HEAD"), cancellable = true)
+    //#else
+    //$$ @Inject(method = "canRenderName(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
+    //#endif
     private void replayModReplay_canRenderInvisibleName(LivingEntity entity, CallbackInfoReturnable<Boolean> ci) {
         PlayerEntity thePlayer = getMinecraft().player;
         if (thePlayer instanceof CameraEntity && entity.isInvisible()) {

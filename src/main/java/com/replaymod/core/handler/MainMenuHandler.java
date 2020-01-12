@@ -12,29 +12,33 @@ import java.util.List;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
+//#else
+//$$ import net.minecraftforge.client.event.GuiScreenEvent;
+//$$ import net.minecraftforge.common.MinecraftForge;
+//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
+//#endif
+
+//#if MC>=11400
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.resource.language.I18n;
 //#else
 //$$ import net.minecraft.client.gui.GuiButton;
-//$$ import net.minecraftforge.client.event.GuiScreenEvent;
-//$$ import net.minecraftforge.common.MinecraftForge;
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#endif
 
 /**
  * Moves certain buttons on the main menu upwards so we can inject our own.
  */
 public class MainMenuHandler extends EventRegistrations {
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::onInit); }
     public void onInit(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
     //#else
     //$$ @SubscribeEvent
     //$$ public void onInit(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     GuiScreen guiScreen = getGui(event);
-    //$$     List<GuiButton> buttonList = getButtonList(event);
+    //$$     Screen guiScreen = getGui(event);
+    //$$     List<Widget> buttonList = getButtonList(event);
     //#endif
         if (guiScreen instanceof TitleScreen) {
             TitleScreen gui = (TitleScreen) guiScreen;

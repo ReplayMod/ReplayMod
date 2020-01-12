@@ -4,7 +4,7 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.packet.*;
+import net.minecraft.client.network.packet.PlayerRespawnS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.UUID;
+//#else
+//$$ import net.minecraft.network.play.server.S01PacketJoinGame;
 //#endif
 
 @Mixin(ClientPlayNetworkHandler.class)
@@ -49,7 +51,11 @@ public abstract class MixinNetHandlerPlayClient {
      * @param ci Callback info
      */
     //#if MC>=10800
+    //#if FABRIC>=1
     @Inject(method = "onPlayerList", at=@At("HEAD"))
+    //#else
+    //$$ @Inject(method = "handlePlayerListItem", at=@At("HEAD"))
+    //#endif
     public void recordOwnJoin(PlayerListS2CPacket packet, CallbackInfo ci) {
         if (mcStatic.player == null) return;
 
@@ -101,7 +107,11 @@ public abstract class MixinNetHandlerPlayClient {
      * @param packet The packet
      * @param ci Callback info
      */
+    //#if FABRIC>=1
     @Inject(method = "onPlayerRespawn", at=@At("RETURN"))
+    //#else
+    //$$ @Inject(method = "handleRespawn", at=@At("RETURN"))
+    //#endif
     public void recordOwnRespawn(PlayerRespawnS2CPacket packet, CallbackInfo ci) {
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null) {

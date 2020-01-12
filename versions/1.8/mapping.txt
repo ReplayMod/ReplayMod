@@ -24,6 +24,7 @@ net.minecraftforge.fml.common.network.FMLNetworkEvent cpw.mods.fml.common.networ
 net.minecraftforge.fml.common.network.handshake.FMLHandshakeCodec cpw.mods.fml.common.network.handshake.FMLHandshakeCodec
 net.minecraftforge.fml.common.network.handshake.NetworkDispatcher cpw.mods.fml.common.network.handshake.NetworkDispatcher
 net.minecraftforge.fml.relauncher.Side cpw.mods.fml.relauncher.Side
+net.minecraftforge.fml.common.gameevent.PlayerEvent cpw.mods.fml.common.gameevent.PlayerEvent
 net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent
 net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage cpw.mods.fml.common.network.handshake.FMLHandshakeMessage
 net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage.RegistryData cpw.mods.fml.common.network.handshake.FMLHandshakeMessage.ModIdData
@@ -31,3 +32,5 @@ net.minecraftforge.fml.common.network.internal.FMLProxyPacket cpw.mods.fml.commo
 net.minecraftforge.fml.common.network.NetworkRegistry cpw.mods.fml.common.network.NetworkRegistry
 net.minecraftforge.fml.common.gameevent.InputEvent cpw.mods.fml.common.gameevent.InputEvent
 net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer net.minecraft.client.renderer.tileentity.RenderEndPortal
+net.minecraft.network.play.server.S3FPacketCustomPayload getChannelName() func_149169_c()
+net.minecraft.network.play.server.S01PacketJoinGame getEntityId() func_149197_c()

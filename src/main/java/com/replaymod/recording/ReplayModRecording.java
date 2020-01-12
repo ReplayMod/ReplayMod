@@ -15,7 +15,7 @@ import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 //#else
 //$$ import net.minecraftforge.fml.network.NetworkRegistry;
@@ -67,7 +67,7 @@ public class ReplayModRecording implements Module {
 
         new GuiHandler(core).register();
 
-        //#if MC>=11400
+        //#if FABRIC>=1
         ClientSidePacketRegistry.INSTANCE.register(Restrictions.PLUGIN_CHANNEL, (packetContext, packetByteBuf) -> {});
         //#else
         //#if MC>=11300

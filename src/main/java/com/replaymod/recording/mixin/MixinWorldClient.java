@@ -71,8 +71,13 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     // other clients so we have to record them manually.
     // E.g. Block place sounds
     //#if MC>=11400
+    //#if FABRIC>=1
     @Inject(method = "playSound(Lnet/minecraft/entity/player/PlayerEntity;DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FF)V",
             at = @At("HEAD"))
+    //#else
+    //$$ @Inject(method = "playSound(Lnet/minecraft/entity/player/PlayerEntity;DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FF)V",
+    //$$         at = @At("HEAD"))
+    //#endif
     //#else
     //$$ @Inject(method = "playSound(Lnet/minecraft/entity/player/EntityPlayer;DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FF)V",
     //$$         at = @At("HEAD"))

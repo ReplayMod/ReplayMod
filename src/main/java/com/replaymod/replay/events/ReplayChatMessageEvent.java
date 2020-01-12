@@ -1,4 +1,4 @@
-//#if MC<11400
+//#if FABRIC<=0
 //$$ package com.replaymod.replay.events;
 //$$
 //$$ import com.replaymod.replay.camera.CameraEntity;

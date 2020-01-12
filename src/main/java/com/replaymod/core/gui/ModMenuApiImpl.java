@@ -1,4 +1,4 @@
-//#if MC>=11400
+//#if FABRIC>=1
 package com.replaymod.core.gui;
 
 import com.replaymod.core.ReplayMod;

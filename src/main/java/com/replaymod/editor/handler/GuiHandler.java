@@ -10,7 +10,7 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import net.minecraft.util.crash.CrashReport;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
@@ -25,13 +25,13 @@ import java.io.IOException;
 import static com.replaymod.core.versions.MCVer.*;
 
 public class GuiHandler extends EventRegistrations {
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::injectIntoReplayViewer); }
     public void injectIntoReplayViewer(Screen vanillaGuiScreen, List<AbstractButtonWidget> buttonList) {
     //#else
     //$$ @SubscribeEvent
     //$$ public void injectIntoReplayViewer(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     net.minecraft.client.gui.GuiScreen vanillaGuiScreen = getGui(event);
+    //$$     net.minecraft.client.gui.screen.Screen vanillaGuiScreen = getGui(event);
     //#endif
         AbstractGuiScreen guiScreen = GuiScreen.from(vanillaGuiScreen);
         if (!(guiScreen instanceof GuiReplayViewer)) {

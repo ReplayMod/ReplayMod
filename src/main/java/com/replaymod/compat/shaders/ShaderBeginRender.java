@@ -9,11 +9,11 @@ import java.lang.reflect.InvocationTargetException;
 
 import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import com.replaymod.core.events.PreRenderCallback;
 //#else
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
+//$$ import net.minecraftforge.event.TickEvent;
 //#endif
 
 public class ShaderBeginRender extends EventRegistrations {
@@ -25,7 +25,7 @@ public class ShaderBeginRender extends EventRegistrations {
      *  as this would usually get called by EntityRenderer#renderWorld,
      *  which we're not calling during rendering.
      */
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(PreRenderCallback.EVENT, this::onRenderTickStart); }
     private void onRenderTickStart() {
     //#else

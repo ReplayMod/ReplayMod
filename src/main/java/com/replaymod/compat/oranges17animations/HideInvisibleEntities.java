@@ -5,8 +5,8 @@
 //$$ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 //$$ import net.minecraft.client.Minecraft;
 //$$ import net.minecraftforge.client.event.RenderLivingEvent;
-//$$ import net.minecraftforge.eventbus.api.EventPriority;
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
+//$$ import net.minecraftforge.fml.common.eventhandler.EventPriority;
+//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 //$$
 //$$ import static com.replaymod.core.versions.MCVer.*;
 //$$
@@ -17,7 +17,7 @@
 //$$  * To fix this issue, we simply cancel the RenderLivingEvent.Pre before it gets to ArmorAnimation if the entity is invisible.
 //$$  */
 //$$ public class HideInvisibleEntities extends EventRegistrations {
-//$$     private final Minecraft mc = Minecraft.getInstance();
+//$$     private final Minecraft mc = Minecraft.getMinecraft();
 //$$     private final boolean modLoaded = isModLoaded("animations");
 //$$
 //$$     @SubscribeEvent(priority = EventPriority.HIGH)

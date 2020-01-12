@@ -21,6 +21,7 @@ import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
+import net.minecraft.resource.DirectoryResourcePack;
 import net.minecraft.text.Text;
 import net.minecraft.text.Style;
 import net.minecraft.text.LiteralText;
@@ -30,17 +31,18 @@ import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
 import com.github.steveice10.mc.protocol.MinecraftConstants;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.options.Option;
-import net.minecraft.resource.DirectoryResourcePack;
 import net.minecraft.resource.ResourcePackCreator;
 import net.minecraft.resource.ResourcePackContainer;
 import net.minecraft.util.NonBlockingThreadExecutor;
+//#endif
+
+//#if FABRIC>=1
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 //#else
 //$$ import com.google.common.util.concurrent.ListenableFutureTask;
-//$$ import net.minecraft.resources.FolderPack;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //$$ import java.util.Queue;
 //$$ import java.util.concurrent.FutureTask;
@@ -80,7 +82,9 @@ import net.minecraft.util.NonBlockingThreadExecutor;
 //#endif
 //#endif
 //$$ import net.minecraftforge.fml.common.Mod;
+//#if MC<11400
 //$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
+//#endif
 //#endif
 
 import java.io.ByteArrayInputStream;
@@ -97,7 +101,7 @@ import java.util.concurrent.TimeoutException;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-//#if MC<11400
+//#if FABRIC<=0
 //#if MC>=11300
 //$$ @Mod(ReplayMod.MOD_ID)
 //#else
@@ -114,7 +118,7 @@ import static com.replaymod.core.versions.MCVer.*;
 //#endif
 //#endif
 public class ReplayMod implements
-        //#if MC>=11400
+        //#if FABRIC>=1
         ClientModInitializer,
         //#endif
         Module
@@ -299,7 +303,7 @@ public class ReplayMod implements
         //#endif
     }}
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     @Override
     public void onInitializeClient() {
         modules.forEach(Module::initCommon);
@@ -470,10 +474,12 @@ public class ReplayMod implements
             return mcThread;
         }
 
+        //#if FABRIC>=1
         @Override
         public void send(Runnable runnable) {
             method_18858(runnable);
         }
+        //#endif
 
         @Override
         public void executeTaskQueue() {
@@ -573,7 +579,7 @@ public class ReplayMod implements
     //#endif
 
     public String getVersion() {
-        //#if MC>=11400
+        //#if FABRIC>=1
         return FabricLoader.getInstance().getModContainer(MOD_ID)
                 .orElseThrow(IllegalStateException::new)
                 .getMetadata().getVersion().toString();

@@ -21,7 +21,11 @@ import net.minecraft.client.render.entity.LivingEntityRenderer;
 //$$ @Mixin(RendererLivingEntity.class)
 //#endif
 public abstract class MixinRenderLivingBase {
+    //#if FABRIC>=1
     @Inject(method = "method_4054", at = @At(
+    //#else
+    //$$ @Inject(method = "doRender(Lnet/minecraft/entity/LivingEntity;DDDFF)V", at = @At(
+    //#endif
             value = "INVOKE",
             //#if MC>=10904
             target = "Lnet/minecraft/client/render/entity/LivingEntityRenderer;scaleAndTranslate(Lnet/minecraft/entity/LivingEntity;F)F",

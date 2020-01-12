@@ -24,7 +24,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import com.replaymod.core.events.PostRenderWorldCallback;
 //#else
 //$$ import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -53,7 +53,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         this.replayHandler = replayHandler;
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
     private void renderCameraPath() {
     //#else

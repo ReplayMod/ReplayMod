@@ -25,30 +25,34 @@ import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.tag.Tag;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 //#else
 //$$ import com.replaymod.core.versions.MCVer;
-//$$ import com.replaymod.replay.events.ReplayChatMessageEvent;
-//$$ import net.minecraft.util.math.RayTraceResult;
-//$$ import net.minecraft.util.text.ITextComponent;
-//$$ import net.minecraft.world.World;
 //$$ import net.minecraftforge.client.event.EntityViewRenderEvent;
 //$$ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 //$$ import net.minecraftforge.client.event.RenderHandEvent;
 //$$ import net.minecraftforge.common.MinecraftForge;
 //$$ import net.minecraftforge.eventbus.api.EventPriority;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
+//$$ import net.minecraftforge.event.TickEvent;
+//#endif
+
+//#if MC>=11400
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.tag.Tag;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
+//#else
+//$$ import com.replaymod.replay.events.ReplayChatMessageEvent;
+//$$ import net.minecraft.util.math.RayTraceResult;
+//$$ import net.minecraft.util.text.ITextComponent;
+//$$ import net.minecraft.world.World;
 //$$
 //#if MC>=11300
 //$$ import net.minecraft.util.math.RayTraceFluidMode;
@@ -622,7 +626,7 @@ public class CameraEntity
 
         private EventHandler() {}
 
-        //#if MC>=11400
+        //#if FABRIC>=1
         { on(PreTickCallback.EVENT, this::onPreClientTick); }
         private void onPreClientTick() {
         //#else
@@ -633,7 +637,7 @@ public class CameraEntity
             updateArmYawAndPitch();
         }
 
-        //#if MC>=11400
+        //#if FABRIC>=1
         { on(PreRenderCallback.EVENT, this::onRenderUpdate); }
         private void onRenderUpdate() {
         //#else
@@ -644,11 +648,11 @@ public class CameraEntity
             update();
         }
 
-        //#if MC>=11400
+        //#if FABRIC>=1
         { on(KeyBindingEventCallback.EVENT, CameraEntity.this::handleInputEvents); }
         //#endif
 
-        //#if MC>=11400
+        //#if FABRIC>=1
         { on(RenderSpectatorCrosshairCallback.EVENT, this::shouldRenderSpectatorCrosshair); }
         private Boolean shouldRenderSpectatorCrosshair() {
             return canSpectate(mc.targetedEntity);
@@ -678,7 +682,7 @@ public class CameraEntity
             }
         }
 
-        //#if MC>=11400
+        //#if FABRIC>=1
         { on(PreRenderHandCallback.EVENT, this::onRenderHand); }
         private boolean onRenderHand() {
             // Unless we are spectating another player, don't render our hand
@@ -693,13 +697,13 @@ public class CameraEntity
         //$$ @SubscribeEvent
         //$$ public void onRenderHand(RenderHandEvent event) {
         //$$     // Unless we are spectating another player, don't render our hand
-        //$$     if (getRenderViewEntity(mc) == CameraEntity.this || !(getRenderViewEntity(mc) instanceof EntityPlayer)) {
+        //$$     if (getRenderViewEntity(mc) == CameraEntity.this || !(getRenderViewEntity(mc) instanceof PlayerEntity)) {
         //$$         event.setCanceled(true);
         //$$     }
         //$$ }
         //#endif
 
-        //#if MC>=11400
+        //#if FABRIC>=1
         private void onRenderHandMonitor() {
         //#else
         //$$ @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -753,7 +757,7 @@ public class CameraEntity
 
         private boolean heldItemTooltipsWasTrue;
 
-        //#if MC>=11400
+        //#if FABRIC>=1
         // FIXME fabric
         //#else
         //$$ @SubscribeEvent

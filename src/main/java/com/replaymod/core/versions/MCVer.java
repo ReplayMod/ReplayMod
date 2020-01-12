@@ -3,7 +3,6 @@ package com.replaymod.core.versions;
 import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
@@ -24,14 +23,21 @@ import org.apache.logging.log4j.Logger;
 
 //#if MC>=11400
 import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import java.util.concurrent.CompletableFuture;
 //#else
 //$$ import com.google.common.util.concurrent.FutureCallback;
 //$$ import com.google.common.util.concurrent.Futures;
 //$$ import com.google.common.util.concurrent.ListenableFuture;
-//$$ import net.minecraft.entity.EntityLivingBase;
+//$$ import net.minecraft.client.gui.GuiButton;
+//#endif
+
+//#if FABRIC>=1
+//#else
+//$$ import net.minecraft.entity.LivingEntity;
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
 //$$ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 //$$ import net.minecraftforge.client.event.RenderLivingEvent;
@@ -80,9 +86,8 @@ import net.minecraft.client.render.chunk.ChunkRenderTask;
 //$$ import static org.lwjgl.opengl.GL11.*;
 //#endif
 
-//#if MC>=11400
+//#if FABRIC>=1
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.SharedConstants;
 //#else
 //#if MC>=11300
 //$$ import net.minecraftforge.fml.ModList;
@@ -104,7 +109,7 @@ import java.util.function.Consumer;
 public class MCVer {
     private static Logger LOGGER = LogManager.getLogger();
 
-    //#if MC<11400
+    //#if FABRIC<=0
     //$$ public static IEventBus FORGE_BUS = MinecraftForge.EVENT_BUS;
     //#if MC>=10809
     //$$ public static IEventBus FML_BUS = FORGE_BUS;
@@ -114,7 +119,7 @@ public class MCVer {
     //#endif
 
     public static boolean isModLoaded(String id) {
-        //#if MC>=11400
+        //#if FABRIC>=1
         return FabricLoader.getInstance().isModLoaded(id.toLowerCase());
         //#else
         //#if MC>=11300
@@ -171,7 +176,24 @@ public class MCVer {
     //$$ }
     //#endif
 
-    //#if MC<11400
+    //#if FABRIC<=0
+    //#if MC>=11400
+    //$$ public static void addButton(GuiScreenEvent.InitGuiEvent event, Widget button) {
+    //$$     event.addWidget(button);
+    //$$ }
+    //$$
+    //$$ public static void removeButton(GuiScreenEvent.InitGuiEvent event, Widget button) {
+    //$$     event.removeWidget(button);
+    //$$ }
+    //$$
+    //$$ public static List<Widget> getButtonList(GuiScreenEvent.InitGuiEvent event) {
+    //$$     return event.getWidgetList();
+    //$$ }
+    //$$
+    //$$ public static Widget getButton(GuiScreenEvent.ActionPerformedEvent event) {
+    //$$     return event.getButton();
+    //$$ }
+    //#else
     //$$ public static void addButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
         //#if MC>=11300
         //$$ event.addButton(button);
@@ -204,8 +226,9 @@ public class MCVer {
         //$$ return event.button;
         //#endif
     //$$ }
+    //#endif
     //$$
-    //$$ public static GuiScreen getGui(GuiScreenEvent event) {
+    //$$ public static Screen getGui(GuiScreenEvent event) {
         //#if MC>=10904
         //$$ return event.getGui();
         //#else
@@ -213,7 +236,7 @@ public class MCVer {
         //#endif
     //$$ }
     //$$
-    //$$ public static EntityLivingBase getEntity(RenderLivingEvent event) {
+    //$$ public static LivingEntity getEntity(RenderLivingEvent event) {
         //#if MC>=10904
         //$$ return event.getEntity();
         //#else
@@ -234,7 +257,7 @@ public class MCVer {
         //#endif
     }
 
-    //#if MC<11400
+    //#if FABRIC<=0
     //$$ public static RenderGameOverlayEvent.ElementType getType(RenderGameOverlayEvent event) {
         //#if MC>=10904
         //$$ return event.getType();
@@ -475,7 +498,14 @@ public class MCVer {
         return ((MinecraftAccessor) getMinecraft()).getTimer().tickDelta;
     }
 
-    public static void addButton(Screen screen, ButtonWidget button) {
+    public static void addButton(
+            Screen screen,
+            //#if MC>=11400
+            ButtonWidget button
+            //#else
+            //$$ GuiButton button
+            //#endif
+    ) {
         GuiScreenAccessor acc = (GuiScreenAccessor) screen;
         //#if MC>=11400
         if (screen instanceof TitleScreen && isModLoaded("modmenu")) {
@@ -635,9 +665,8 @@ public class MCVer {
     //$$ }
     //#endif
 
-    //#if MC>=11300
-    @SuppressWarnings("unused")
     public static abstract class Keyboard {
+        //#if MC>=11300
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
         public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
         public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
@@ -678,14 +707,69 @@ public class MCVer {
         public static final int KEY_X = GLFW.GLFW_KEY_X;
         public static final int KEY_Y = GLFW.GLFW_KEY_Y;
         public static final int KEY_Z = GLFW.GLFW_KEY_Z;
+        //#else
+        //$$ public static final int KEY_LCONTROL = org.lwjgl.input.Keyboard.KEY_LCONTROL;
+        //$$ public static final int KEY_LSHIFT = org.lwjgl.input.Keyboard.KEY_LSHIFT;
+        //$$ public static final int KEY_ESCAPE = org.lwjgl.input.Keyboard.KEY_ESCAPE;
+        //$$ public static final int KEY_HOME = org.lwjgl.input.Keyboard.KEY_HOME;
+        //$$ public static final int KEY_END = org.lwjgl.input.Keyboard.KEY_END;
+        //$$ public static final int KEY_UP = org.lwjgl.input.Keyboard.KEY_UP;
+        //$$ public static final int KEY_DOWN = org.lwjgl.input.Keyboard.KEY_DOWN;
+        //$$ public static final int KEY_LEFT = org.lwjgl.input.Keyboard.KEY_LEFT;
+        //$$ public static final int KEY_RIGHT = org.lwjgl.input.Keyboard.KEY_RIGHT;
+        //$$ public static final int KEY_BACK = org.lwjgl.input.Keyboard.KEY_BACK;
+        //$$ public static final int KEY_DELETE = org.lwjgl.input.Keyboard.KEY_DELETE;
+        //$$ public static final int KEY_RETURN = org.lwjgl.input.Keyboard.KEY_RETURN;
+        //$$ public static final int KEY_TAB = org.lwjgl.input.Keyboard.KEY_TAB;
+        //$$ public static final int KEY_F1 = org.lwjgl.input.Keyboard.KEY_F1;
+        //$$ public static final int KEY_A = org.lwjgl.input.Keyboard.KEY_A;
+        //$$ public static final int KEY_B = org.lwjgl.input.Keyboard.KEY_B;
+        //$$ public static final int KEY_C = org.lwjgl.input.Keyboard.KEY_C;
+        //$$ public static final int KEY_D = org.lwjgl.input.Keyboard.KEY_D;
+        //$$ public static final int KEY_E = org.lwjgl.input.Keyboard.KEY_E;
+        //$$ public static final int KEY_F = org.lwjgl.input.Keyboard.KEY_F;
+        //$$ public static final int KEY_G = org.lwjgl.input.Keyboard.KEY_G;
+        //$$ public static final int KEY_H = org.lwjgl.input.Keyboard.KEY_H;
+        //$$ public static final int KEY_I = org.lwjgl.input.Keyboard.KEY_I;
+        //$$ public static final int KEY_J = org.lwjgl.input.Keyboard.KEY_J;
+        //$$ public static final int KEY_K = org.lwjgl.input.Keyboard.KEY_K;
+        //$$ public static final int KEY_L = org.lwjgl.input.Keyboard.KEY_L;
+        //$$ public static final int KEY_M = org.lwjgl.input.Keyboard.KEY_M;
+        //$$ public static final int KEY_N = org.lwjgl.input.Keyboard.KEY_N;
+        //$$ public static final int KEY_O = org.lwjgl.input.Keyboard.KEY_O;
+        //$$ public static final int KEY_P = org.lwjgl.input.Keyboard.KEY_P;
+        //$$ public static final int KEY_Q = org.lwjgl.input.Keyboard.KEY_Q;
+        //$$ public static final int KEY_R = org.lwjgl.input.Keyboard.KEY_R;
+        //$$ public static final int KEY_S = org.lwjgl.input.Keyboard.KEY_S;
+        //$$ public static final int KEY_T = org.lwjgl.input.Keyboard.KEY_T;
+        //$$ public static final int KEY_U = org.lwjgl.input.Keyboard.KEY_U;
+        //$$ public static final int KEY_V = org.lwjgl.input.Keyboard.KEY_V;
+        //$$ public static final int KEY_W = org.lwjgl.input.Keyboard.KEY_W;
+        //$$ public static final int KEY_X = org.lwjgl.input.Keyboard.KEY_X;
+        //$$ public static final int KEY_Y = org.lwjgl.input.Keyboard.KEY_Y;
+        //$$ public static final int KEY_Z = org.lwjgl.input.Keyboard.KEY_Z;
+        //#endif
 
         public static boolean isKeyDown(int keyCode) {
             //#if MC>=11400
             return InputUtil.isKeyPressed(getMinecraft().window.getHandle(), keyCode);
             //#else
+            //#if MC>=11300
             //$$ return InputMappings.isKeyDown(keyCode);
+            //#else
+            //$$ return org.lwjgl.input.Keyboard.isKeyDown(keyCode);
+            //#endif
             //#endif
         }
+
+        //#if MC<11300
+        //$$ public static int getEventKey() {
+        //$$     return org.lwjgl.input.Keyboard.getEventKey();
+        //$$ }
+        //$$
+        //$$ public static boolean getEventKeyState() {
+        //$$     return org.lwjgl.input.Keyboard.getEventKeyState();
+        //$$ }
+        //#endif
     }
-    //#endif
 }

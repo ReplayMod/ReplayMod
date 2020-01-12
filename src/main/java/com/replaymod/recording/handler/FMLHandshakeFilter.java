@@ -18,7 +18,11 @@
 //$$ public class FMLHandshakeFilter extends SimpleChannelInboundHandler<FMLHandshakeMessage> {
 //$$     @Override
 //$$     protected void channelRead0(ChannelHandlerContext ctx, FMLHandshakeMessage msg) throws Exception {
-//$$         if (!(msg instanceof FMLHandshakeMessage.RegistryData)) {
+        //#if MC>=10800
+        //$$ if (!(msg instanceof FMLHandshakeMessage.RegistryData)) {
+        //#else
+        //$$ if (!(msg instanceof FMLHandshakeMessage.ModIdData)) {
+        //#endif
 //$$             // Pass on everything but RegistryData messages
 //$$             ctx.fireChannelRead(msg);
 //$$         }

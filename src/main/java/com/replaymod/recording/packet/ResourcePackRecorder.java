@@ -149,7 +149,7 @@ public class ResourcePackRecorder {
                 //$$ //noinspection Convert2Lambda
                 //$$ mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback() {
                 //$$     @Override
-                //$$     public void confirmResult(boolean result, int id) {
+                //$$     public void confirmClicked(boolean result, int id) {
                 //#endif
                         if (serverData != null) {
                             serverData.setResourcePackState(result ? ServerEntry.ResourcePackState.ENABLED : ServerEntry.ResourcePackState.DISABLED);

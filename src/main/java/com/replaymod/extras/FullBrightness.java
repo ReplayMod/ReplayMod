@@ -12,12 +12,12 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.events.PostRenderCallback;
 //#else
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
+//$$ import net.minecraftforge.event.TickEvent;
 //#endif
 
 public class FullBrightness extends EventRegistrations implements Extra {
@@ -58,7 +58,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
         register();
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(PreRenderCallback.EVENT, this::preRender); }
     private void preRender() {
     //#else
@@ -72,7 +72,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
         }
     }
 
-    //#if MC>=11400
+    //#if FABRIC>=1
     { on(PostRenderCallback.EVENT, this::postRender); }
     private void postRender() {
     //#else

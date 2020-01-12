@@ -3,7 +3,7 @@ package com.replaymod.core.utils;
 import com.replaymod.replaystudio.data.ModInfo;
 import net.minecraft.util.Identifier;
 
-//#if MC>=11400
+//#if FABRIC>=1
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.util.registry.Registry;
@@ -32,7 +32,7 @@ public class ModCompat {
     @SuppressWarnings("unchecked")
     public static Collection<ModInfo> getInstalledNetworkMods() {
         //#if MC>=11300
-        //#if MC>=11400
+        //#if FABRIC>=1
         Map<String, ModInfo> modInfoMap = FabricLoader.getInstance().getAllMods().stream()
                 .map(ModContainer::getMetadata)
                 .map(m -> new ModInfo(m.getId(), m.getName(), m.getVersion().toString()))

@@ -23,12 +23,16 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.packet.CustomPayloadS2CPacket;
+import net.minecraft.client.network.packet.DisconnectS2CPacket;
+import net.minecraft.client.network.packet.ItemPickupAnimationS2CPacket;
+import net.minecraft.client.network.packet.MobSpawnS2CPacket;
+import net.minecraft.client.network.packet.PlayerSpawnS2CPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
-import net.minecraft.client.network.packet.*;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
@@ -46,7 +50,11 @@ import net.minecraft.client.network.packet.LoginSuccessS2CPacket;
 //#endif
 
 //#if MC>=10800
+//#if MC<10904
+//$$ import net.minecraft.network.play.server.S46PacketSetCompressionLevel;
+//#endif
 import net.minecraft.client.network.packet.LoginCompressionS2CPacket;
+import net.minecraft.client.network.packet.ResourcePackSendS2CPacket;
 import net.minecraft.network.NetworkSide;
 //#endif
 
