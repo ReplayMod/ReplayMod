@@ -2,6 +2,9 @@ package com.replaymod.core.versions;
 
 import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
+import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
+import com.replaymod.replaystudio.us.myles.ViaVersion.packets.State;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.world.ClientWorld;
@@ -27,6 +30,8 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
+
+import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 //#else
 //$$ import com.google.common.util.concurrent.FutureCallback;
@@ -76,7 +81,9 @@ import net.minecraft.client.render.BufferBuilder;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
+//#if MC<11500
 import net.minecraft.client.render.chunk.ChunkRenderTask;
+//#endif
 //#else
 //$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
 //$$ import com.google.common.util.concurrent.Futures;
@@ -134,8 +141,16 @@ public class MCVer {
         //#if MC>=11400
         return SharedConstants.getGameVersion().getProtocolVersion();
         //#else
+        // FIXME
         //$$ throw new UnsupportedOperationException("Minimal mode not supported pre-1.14");
         //#endif
+    }
+
+    public static PacketTypeRegistry getPacketTypeRegistry(boolean loginPhase) {
+        return PacketTypeRegistry.get(
+                ProtocolVersion.getProtocol(getProtocolVersion()),
+                loginPhase ? State.LOGIN : State.PLAY
+        );
     }
 
     public static void addDetail(CrashReportSection category, String name, Callable<String> callable) {
@@ -147,6 +162,40 @@ public class MCVer {
         //#endif
         //#else
         //$$ category.addCrashSectionCallable(name, callable);
+        //#endif
+    }
+
+    public static double Entity_getX(Entity entity) {
+        //#if MC>=11500
+        //$$ return entity.getX();
+        //#else
+        return entity.x;
+        //#endif
+    }
+
+    public static double Entity_getY(Entity entity) {
+        //#if MC>=11500
+        //$$ return entity.getY();
+        //#else
+        return entity.y;
+        //#endif
+    }
+
+    public static double Entity_getZ(Entity entity) {
+        //#if MC>=11500
+        //$$ return entity.getZ();
+        //#else
+        return entity.z;
+        //#endif
+    }
+
+    public static void Entity_setPos(Entity entity, double x, double y, double z) {
+        //#if MC>=11500
+        //$$ entity.setPos(x, y, z);
+        //#else
+        entity.x = x;
+        entity.y = y;
+        entity.z = z;
         //#endif
     }
 
@@ -314,7 +363,11 @@ public class MCVer {
 
     @SuppressWarnings("unchecked")
     public static List<Box> cubeList(Cuboid modelRenderer) {
+        //#if MC>=11400
+        //$$ return new ArrayList<>(); // FIXME 1.15
+        //#else
         return modelRenderer.boxes;
+        //#endif
     }
 
     @SuppressWarnings("unchecked")
@@ -335,8 +388,18 @@ public class MCVer {
     }
 
     //#if MC>=11300
-    public static Window newScaledResolution(MinecraftClient mc) {
+    public static Window getWindow(MinecraftClient mc) {
+        //#if MC>=11500
+        //$$ return mc.getWindow();
+        //#else
         return mc.window;
+        //#endif
+    }
+    //#endif
+
+    //#if MC>=11300
+    public static Window newScaledResolution(MinecraftClient mc) {
+        return getWindow(mc);
     }
     //#else
     //$$ public static ScaledResolution newScaledResolution(Minecraft mc) {
@@ -410,10 +473,6 @@ public class MCVer {
     //$$ }
     //#endif
 
-    public static void BufferBuilder_setTranslation(double x, double y, double z) {
-        Tessellator_getBufferBuilder().setOffset(x, y, z);
-    }
-
     public static void BufferBuilder_beginPosCol(int mode) {
         Tessellator_getBufferBuilder().begin(
                 mode
@@ -441,7 +500,7 @@ public class MCVer {
         );
     }
 
-    public static void BufferBuilder_addPosTex(double x, double y, double z, double u, double v) {
+    public static void BufferBuilder_addPosTex(double x, double y, double z, float u, float v) {
         //#if MC>=10809
         Tessellator_getBufferBuilder().vertex(x, y, z).texture(u, v).next();
         //#else
@@ -458,7 +517,7 @@ public class MCVer {
         );
     }
 
-    public static void BufferBuilder_addPosTexCol(double x, double y, double z, double u, double v, int r, int g, int b, int a) {
+    public static void BufferBuilder_addPosTexCol(double x, double y, double z, float u, float v, int r, int g, int b, int a) {
         //#if MC>=10809
         Tessellator_getBufferBuilder().vertex(x, y, z).texture(u, v).color(r, g, b, a).next();
         //#else
@@ -542,7 +601,7 @@ public class MCVer {
         //#endif
     }
 
-    //#if MC>=10800
+    //#if MC>=10800 && MC<11500
     public interface ChunkRenderWorkerAccessor {
         void doRunTask(ChunkRenderTask task) throws InterruptedException;
     }
@@ -557,10 +616,14 @@ public class MCVer {
     }
 
     public static void bindTexture(Identifier texture) {
+        //#if MC>=11500
+        //$$ getMinecraft().getTextureManager().bindTexture(texture);
+        //#else
         //#if MC>=11300
         getMinecraft().getTextureManager().bindTexture(texture);
         //#else
         //$$ getMinecraft().renderEngine.bindTexture(texture);
+        //#endif
         //#endif
     }
 
@@ -751,6 +814,9 @@ public class MCVer {
         //#endif
 
         public static boolean isKeyDown(int keyCode) {
+            //#if MC>=11500
+            //$$ return InputUtil.isKeyPressed(getMinecraft().getWindow().getHandle(), keyCode);
+            //#else
             //#if MC>=11400
             return InputUtil.isKeyPressed(getMinecraft().window.getHandle(), keyCode);
             //#else
@@ -758,6 +824,7 @@ public class MCVer {
             //$$ return InputMappings.isKeyDown(keyCode);
             //#else
             //$$ return org.lwjgl.input.Keyboard.isKeyDown(keyCode);
+            //#endif
             //#endif
             //#endif
         }

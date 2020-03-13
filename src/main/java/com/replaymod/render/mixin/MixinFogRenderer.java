@@ -16,16 +16,11 @@ import net.minecraft.client.render.Camera;
 @Mixin(BackgroundRenderer.class)
 public abstract class MixinFogRenderer {
     @Inject(method = "applyFog", at = @At("HEAD"), cancellable = true)
-    private void replayModRender_onSetupFog(
-            //#if MC>=11400
-            Camera camera,
-            int something,
-            //#else
-            //$$ int fogDistanceFlag,
-            //$$ float partialTicks,
-            //#endif
-            CallbackInfo ci
-    ) {
+    private
+    //#if MC>=11500
+    //$$ static
+    //#endif
+    void replayModRender_onSetupFog(CallbackInfo ci) {
         EntityRendererHandler handler =
                 ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
         if (handler == null) return;

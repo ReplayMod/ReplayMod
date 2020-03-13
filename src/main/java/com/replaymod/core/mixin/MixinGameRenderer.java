@@ -10,6 +10,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=11500
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//#endif
+
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
     @Inject(
@@ -19,12 +23,24 @@ public class MixinGameRenderer {
                     target = "Lnet/minecraft/client/render/GameRenderer;renderHand:Z"
             )
     )
-    private void postRenderWorld(float partialTicks, long nanoTime, CallbackInfo ci) {
+    private void postRenderWorld(
+            float partialTicks,
+            long nanoTime,
+            //#if MC>=11500
+            //$$ MatrixStack matrixStack,
+            //#endif
+            CallbackInfo ci) {
         PostRenderWorldCallback.EVENT.invoker().postRenderWorld();
     }
 
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
-    private void preRenderHand(Camera camera, float partialTicks, CallbackInfo ci) {
+    private void preRenderHand(
+            //#if MC>=11500
+            //$$ MatrixStack matrixStack,
+            //#endif
+            Camera camera,
+            float partialTicks,
+            CallbackInfo ci) {
         if (PreRenderHandCallback.EVENT.invoker().preRenderHand()) {
             ci.cancel();
         }

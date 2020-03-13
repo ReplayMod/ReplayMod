@@ -1,5 +1,6 @@
 package com.replaymod.editor.gui;
 
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replaystudio.PacketData;
 import com.replaymod.replaystudio.Studio;
 import com.replaymod.replaystudio.data.Marker;
@@ -7,6 +8,7 @@ import com.replaymod.replaystudio.filter.SquashFilter;
 import com.replaymod.replaystudio.filter.StreamFilter;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
+import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.stream.IteratorStream;
@@ -58,6 +60,7 @@ public class MarkerProcessor {
         String replayName = FilenameUtils.getBaseName(path.getFileName().toString());
         int splitCounter = 0;
 
+        PacketTypeRegistry registry = MCVer.getPacketTypeRegistry(true);
         Studio studio = new ReplayStudio();
         SquashFilter squashFilter = new SquashFilter();
         squashFilter.init(studio, null);
@@ -73,7 +76,7 @@ public class MarkerProcessor {
             boolean anySplit = markers.stream().anyMatch(m -> MARKER_NAME_SPLIT.equals(m.getName()));
 
             int inputDuration = inputReplayFile.getMetaData().getDuration();
-            ReplayInputStream replayInputStream = inputReplayFile.getPacketData(studio, true);
+            ReplayInputStream replayInputStream = inputReplayFile.getPacketData(registry);
             int timeOffset = 0;
             SquashFilter cutFilter = null;
             int startCutOffset = 0;
@@ -88,7 +91,7 @@ public class MarkerProcessor {
                     ReplayMetaData metaData = inputReplayFile.getMetaData();
                     metaData.setDate(metaData.getDate() + timeOffset);
 
-                    try (ReplayOutputStream replayOutputStream = outputReplayFile.writePacketData(true)) {
+                    try (ReplayOutputStream replayOutputStream = outputReplayFile.writePacketData()) {
                         if (cutFilter != null) {
                             cutFilter = squashFilter;
                         } else if (splitCounter > 0) {
@@ -153,7 +156,7 @@ public class MarkerProcessor {
                     }
 
                     metaData.setDuration((int) duration);
-                    outputReplayFile.writeMetaData(metaData);
+                    outputReplayFile.writeMetaData(registry, metaData);
 
                     outputReplayFile.writeMarkers(outputMarkers);
 

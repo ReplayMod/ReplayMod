@@ -1,4 +1,5 @@
-//#if MC>=10800
+// FIXME 1.15
+//#if MC>=10800 && MC<11500
 package com.replaymod.render.blend.mixin;
 
 import com.replaymod.render.blend.BlendState;

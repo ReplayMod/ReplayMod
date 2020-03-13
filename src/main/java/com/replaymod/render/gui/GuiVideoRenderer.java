@@ -244,7 +244,7 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
             previewTextureDirty = false;
         }
 
-        guiRenderer.bindTexture(previewTexture);
+        guiRenderer.bindTexture(previewTexture.getGlId());
         renderPreviewTexture(guiRenderer, size, videoWidth, videoHeight);
     }
 

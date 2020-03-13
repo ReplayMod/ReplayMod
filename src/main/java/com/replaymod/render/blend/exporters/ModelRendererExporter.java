@@ -67,7 +67,11 @@ public class ModelRendererExporter implements Exporter {
         }
         if (object == null) {
             object = new ModelBasedDObject(model, scale);
+            //#if MC>=11500
+            //$$ object.id.name = "???"; // FIXME 1.15 can we somehow nicely derive this?
+            //#else
             object.id.name = model.name;
+            //#endif
             object.setParent(parent);
         }
         object.lastFrame = frame;
@@ -78,7 +82,11 @@ public class ModelRendererExporter implements Exporter {
         DMesh mesh = new DMesh();
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
         for (Box box : cubeList(model)) {
+            //#if MC>=11500
+            //$$ // FIXME 1.15
+            //#else
             box.render(builder, scale);
+            //#endif
         }
         builder.maybeFinishDrawing();
         return mesh;

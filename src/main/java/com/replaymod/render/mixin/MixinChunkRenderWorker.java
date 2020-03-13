@@ -1,6 +1,6 @@
 package com.replaymod.render.mixin;
 
-//#if MC>=10800
+//#if MC>=10800 && MC<11500
 
 import com.replaymod.core.versions.MCVer;
 import net.minecraft.client.render.chunk.ChunkRenderTask;

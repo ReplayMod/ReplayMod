@@ -9,6 +9,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 
+//#if MC>=11500
+//$$ import net.minecraft.client.render.VertexConsumerProvider;
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//#endif
+
 //#if MC>=10904
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //#else
@@ -19,6 +24,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinRenderManager {
 
     @Inject(
+            //#if MC>=11500
+            //$$ method = "render",
+            //#else
             //#if MC>=11400
             method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V",
             //#else
@@ -28,9 +36,17 @@ public abstract class MixinRenderManager {
             //$$ method = "doRenderEntity",
             //#endif
             //#endif
+            //#endif
             at = @At(value = "INVOKE",
                      target = "Lnet/minecraft/client/render/entity/EntityRenderer;render(Lnet/minecraft/entity/Entity;DDDFF)V"))
-    public void preRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks, boolean box,
+    public void preRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks,
+                          //#if MC>=11500
+                          //$$ MatrixStack matrixStack,
+                          //$$ VertexConsumerProvider vertexConsumerProvider,
+                          //$$ int int_1,
+                          //#else
+                          boolean box,
+                          //#endif
                           //#if MC>=10904
                           CallbackInfo ci) {
                           //#else
@@ -43,6 +59,9 @@ public abstract class MixinRenderManager {
     }
 
     @Inject(
+            //#if MC>=11500
+            //$$ method = "render",
+            //#else
             //#if MC>=11400
             method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V",
             //#else
@@ -52,10 +71,18 @@ public abstract class MixinRenderManager {
             //$$ method = "doRenderEntity",
             //#endif
             //#endif
+            //#endif
             at = @At(value = "INVOKE",
                      target = "Lnet/minecraft/client/render/entity/EntityRenderer;render(Lnet/minecraft/entity/Entity;DDDFF)V",
                      shift = At.Shift.AFTER))
-    public void postRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks, boolean box,
+    public void postRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks,
+                           //#if MC>=11500
+                           //$$ MatrixStack matrixStack,
+                           //$$ VertexConsumerProvider vertexConsumerProvider,
+                           //$$ int int_1,
+                           //#else
+                           boolean box,
+                           //#endif
                            //#if MC>=10904
                            CallbackInfo ci) {
                            //#else

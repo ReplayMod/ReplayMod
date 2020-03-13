@@ -169,7 +169,7 @@ public class CameraEntity
      * @param z Delta in Z direction
      */
     public void moveCamera(double x, double y, double z) {
-        setCameraPosition(this.x + x, this.y + y, this.z + z);
+        setCameraPosition(Entity_getX(this) + x, Entity_getY(this) + y, Entity_getZ(this) + z);
     }
 
     /**
@@ -179,9 +179,10 @@ public class CameraEntity
      * @param z Z coordinate
      */
     public void setCameraPosition(double x, double y, double z) {
-        this.prevRenderX = this.prevX = this.x = x;
-        this.prevRenderY = this.prevY = this.y = y;
-        this.prevRenderZ = this.prevZ = this.z = z;
+        this.prevRenderX = this.prevX = x;
+        this.prevRenderY = this.prevY = y;
+        this.prevRenderZ = this.prevZ = z;
+        Entity_setPos(this, x, y, z);
         updateBoundingBox();
     }
 
@@ -222,9 +223,7 @@ public class CameraEntity
         this.prevZ = to.prevZ;
         this.prevYaw = to.prevYaw;
         this.prevPitch = to.prevPitch;
-        this.x = to.x;
-        this.y = to.y + yOffset;
-        this.z = to.z;
+        Entity_setPos(this, Entity_getX(to), Entity_getY(to), Entity_getZ(to));
         this.yaw = to.yaw;
         this.pitch = to.pitch;
         this.prevRenderX = to.prevRenderX;
@@ -243,8 +242,8 @@ public class CameraEntity
         //#else
         //$$ this.boundingBox.setBB(AxisAlignedBB.getBoundingBox(
         //#endif
-                this.x - width / 2, this.y, this.z - width / 2,
-                this.x + width / 2, this.y + height, this.z + width / 2));
+                Entity_getX(this) - width / 2, Entity_getY(this), Entity_getZ(this) - width / 2,
+                Entity_getX(this) + width / 2, Entity_getY(this) + height, Entity_getZ(this) + width / 2));
     }
 
     @Override

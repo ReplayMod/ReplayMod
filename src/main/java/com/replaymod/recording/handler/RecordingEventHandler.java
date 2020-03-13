@@ -152,9 +152,9 @@ public class RecordingEventHandler extends EventRegistrations {
             boolean force = false;
             if(lastX == null || lastY == null || lastZ == null) {
                 force = true;
-                lastX = player.x;
-                lastY = player.y;
-                lastZ = player.z;
+                lastX = Entity_getX(player);
+                lastY = Entity_getY(player);
+                lastZ = Entity_getZ(player);
             }
 
             ticksSinceLastCorrection++;
@@ -163,13 +163,13 @@ public class RecordingEventHandler extends EventRegistrations {
                 force = true;
             }
 
-            double dx = player.x - lastX;
-            double dy = player.y - lastY;
-            double dz = player.z - lastZ;
+            double dx = Entity_getX(player) - lastX;
+            double dy = Entity_getY(player) - lastY;
+            double dz = Entity_getZ(player) - lastZ;
 
-            lastX = player.x;
-            lastY = player.y;
-            lastZ = player.z;
+            lastX = Entity_getX(player);
+            lastY = Entity_getY(player);
+            lastZ = Entity_getZ(player);
 
             Packet packet;
             if (force || Math.abs(dx) > 8.0 || Math.abs(dy) > 8.0 || Math.abs(dz) > 8.0) {

@@ -15,10 +15,14 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 //#endif
 //#endif
 public interface ContainerLocalRenderInformationAccessor {
+    //#if MC>=11500
+    //$$ @Accessor("chunk")
+    //#else
     //#if MC>=11400
     @Accessor("renderer")
     //#else
     //$$ @Accessor
+    //#endif
     //#endif
     ChunkRenderer getRenderChunk();
 }

@@ -1,4 +1,5 @@
-//#if MC>=10800
+// FIXME 1.15 chunk rendering has changed significantly, ignoring this feature for now
+//#if MC>=10800 && MC<11500
 package com.replaymod.render.hooks;
 
 import com.replaymod.render.mixin.ChunkRenderDispatcherAccessor;

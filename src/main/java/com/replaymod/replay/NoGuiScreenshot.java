@@ -12,6 +12,14 @@ import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.util.ScreenshotUtils;
 
+//#if MC>=11500
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//#endif
+
+//#if MC>=11300
+import static com.replaymod.core.versions.MCVer.getWindow;
+//#endif
+
 //#if MC<11300
 //$$ import com.google.common.io.Files;
 //$$ import org.apache.commons.io.FileUtils;
@@ -35,7 +43,7 @@ public class NoGuiScreenshot {
                 }
 
                 //#if MC>=11300
-                int frameWidth = mc.window.getFramebufferWidth(), frameHeight = mc.window.getFramebufferHeight();
+                int frameWidth = getWindow(mc).getFramebufferWidth(), frameHeight = getWindow(mc).getFramebufferHeight();
                 //#else
                 //$$ int frameWidth = mc.displayWidth, frameHeight = mc.displayHeight;
                 //#endif
@@ -56,7 +64,13 @@ public class NoGuiScreenshot {
                     GlStateManager.enableTexture();
 
                     //#if MC>=11300
-                    mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
+                    mc.gameRenderer.renderWorld(
+                            MCVer.getRenderPartialTicks(),
+                            System.nanoTime()
+                            //#if MC>=11500
+                            //$$ , new MatrixStack()
+                            //#endif
+                    );
                     //#else
                     //#if MC>=10809
                     //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks(), System.nanoTime());

@@ -8,6 +8,10 @@ import com.replaymod.render.capturer.WorldRenderer;
 import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 
+//#if MC>=11500
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//#endif
+
 //#if MC>=11400
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
@@ -59,7 +63,13 @@ public class EntityRendererHandler implements WorldRenderer {
         //#endif
 
         if (mc.world != null && mc.player != null) {
-            mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
+            mc.gameRenderer.renderWorld(
+                    partialTicks,
+                    finishTimeNano
+                    //#if MC>=11500
+                    //$$ , new MatrixStack()
+                    //#endif
+            );
         }
 
         //#if MC>=11400

@@ -1,5 +1,7 @@
 package com.replaymod.replay;
 
+import com.github.steveice10.packetlib.io.NetOutput;
+import com.github.steveice10.packetlib.tcp.io.ByteBufNetOutput;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 import com.replaymod.core.ReplayMod;
@@ -9,9 +11,6 @@ import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
-import com.replaymod.replaystudio.studio.protocol.StudioCodec;
-import com.replaymod.replaystudio.studio.protocol.StudioSession;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -26,7 +25,6 @@ import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.NetworkState;
-import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.client.network.packet.ChatMessageS2CPacket;
@@ -586,12 +584,18 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             p = new GameJoinS2CPacket(
                     entId,
                     GameMode.SPECTATOR,
+                    //#if MC>=11500
+                    //$$ packet.getSeed(),
+                    //#endif
                     false,
                     packet.getDimension(),
                     0, // max players (has no getter -> never actually used)
                     packet.getGeneratorType(),
                     packet.getChunkLoadDistance(),
                     packet.hasReducedDebugInfo()
+                    //#if MC>=11500
+                    //$$ , packet.showsDeathScreen()
+                    //#endif
             );
             //#else
             //#if MC>=10800
@@ -630,7 +634,14 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         if(p instanceof PlayerRespawnS2CPacket) {
             PlayerRespawnS2CPacket respawn = (PlayerRespawnS2CPacket) p;
             //#if MC>=11400
-            p = new PlayerRespawnS2CPacket(respawn.getDimension(), respawn.getGeneratorType(), GameMode.SPECTATOR);
+            p = new PlayerRespawnS2CPacket(
+                    respawn.getDimension(),
+                    //#if MC>=11500
+                    //$$ respawn.method_22425(),
+                    //#endif
+                    respawn.getGeneratorType(),
+                    GameMode.SPECTATOR
+            );
             //#else
             //#if MC>=10809
             //$$ p = new SPacketRespawn(respawn.getDimensionID(),
@@ -684,8 +695,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
 
             if(cent != null) {
-                if(!allowMovement && !((Math.abs(cent.x - ppl.getX()) > TP_DISTANCE_LIMIT) ||
-                        (Math.abs(cent.z - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                if(!allowMovement && !((Math.abs(Entity_getX(cent) - ppl.getX()) > TP_DISTANCE_LIMIT) ||
+                        (Math.abs(Entity_getZ(cent) - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
                     return null;
                 } else {
                     allowMovement = false;
@@ -813,7 +824,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 while (!terminate) {
                     synchronized (FullReplaySender.this) {
                         if (replayIn == null) {
-                            replayIn = replayFile.getPacketData(new ReplayStudio(), true);
+                            replayIn = replayFile.getPacketData(getPacketTypeRegistry(true));
                         }
                         // Packet loop
                         while (true) {
@@ -1010,7 +1021,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 }
 
                 if (replayIn == null) {
-                    replayIn = replayFile.getPacketData(new ReplayStudio(), true);
+                    replayIn = replayFile.getPacketData(getPacketTypeRegistry(true));
                 }
 
                 while (true) { // Send packets
@@ -1153,8 +1164,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
     private static final class PacketData {
         private static final com.github.steveice10.netty.buffer.ByteBuf byteBuf = com.github.steveice10.netty.buffer.Unpooled.buffer();
-        private static final StudioCodec codecLoginPhase = new StudioCodec(new StudioSession(new ReplayStudio(), false, true));
-        private static final StudioCodec codecPlayPhase = new StudioCodec(new StudioSession(new ReplayStudio(), false, false));
+        private static final NetOutput netOutput = new ByteBufNetOutput(byteBuf);
 
         private final int timestamp;
         private final byte[] bytes;
@@ -1175,25 +1185,25 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     throw new EOFException();
                 }
                 timestamp = (int) data.getTime();
-                // We need to re-encode MCProtocolLib packets, so we can later decode them as NMS packets
+                com.replaymod.replaystudio.protocol.Packet packet = data.getPacket();
+                // We need to re-encode ReplayStudio packets, so we can later decode them as NMS packets
                 // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
                 // to apply ViaVersion (and potentially other magic) to it.
                 synchronized (byteBuf) {
                     byteBuf.markReaderIndex(); // Mark the current reader and writer index (should be at start)
                     byteBuf.markWriterIndex();
 
-                    try {
-                        (loginPhase ? codecLoginPhase : codecPlayPhase).encode(null, data.getPacket(), byteBuf);
-                    } catch (Exception e) {
-                        throw new IOException(e);
-                    }
-
-                    bytes = new byte[byteBuf.readableBytes()]; // Create bytes array of sufficient size
-                    byteBuf.readBytes(bytes); // Read all data into bytes
+                    netOutput.writeVarInt(packet.getId());
+                    int idSize = byteBuf.readableBytes();
+                    int contentSize = packet.getBuf().readableBytes();
+                    bytes = new byte[idSize + contentSize]; // Create bytes array of sufficient size
+                    byteBuf.readBytes(bytes, 0, idSize);
+                    packet.getBuf().readBytes(bytes, idSize, contentSize);
 
                     byteBuf.resetReaderIndex(); // Reset reader & writer index for next use
                     byteBuf.resetWriterIndex();
                 }
+                packet.getBuf().release();
             }
         }
     }

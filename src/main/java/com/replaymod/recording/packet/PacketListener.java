@@ -114,7 +114,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         this.metaData = metaData;
         this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
         // Note: doesn't actually always include the login phase, see `connectionState` field instead.
-        this.packetOutputStream = new DataOutputStream(replayFile.writePacketData(true));
+        this.packetOutputStream = new DataOutputStream(replayFile.writePacketData());
         this.startTime = metaData.getDate();
 
         saveMetaData();
@@ -139,7 +139,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                             out.write(json.getBytes());
                         }
                     } else {
-                        replayFile.writeMetaData(metaData);
+                        replayFile.writeMetaData(MCVer.getPacketTypeRegistry(true), metaData);
                     }
                 }
             } catch (IOException e) {
@@ -325,6 +325,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     @SuppressWarnings("unchecked")
     private byte[] getPacketData(Packet packet) throws Exception {
+        //#if MC<11500
         if (packet instanceof MobSpawnS2CPacket) {
             MobSpawnS2CPacket p = (MobSpawnS2CPacket) packet;
             SPacketSpawnMobAccessor pa = (SPacketSpawnMobAccessor) p;
@@ -368,6 +369,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 }
             }
         }
+        //#endif
 
         //#if MC>=10800
         Integer packetId = connectionState.getPacketId(NetworkSide.CLIENTBOUND, packet);
@@ -401,9 +403,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         marker.setName(name);
         marker.setTime(timestamp);
         if (view != null) {
-            marker.setX(view.x);
-            marker.setY(view.y);
-            marker.setZ(view.z);
+            marker.setX(Entity_getX(view));
+            marker.setY(Entity_getY(view));
+            marker.setZ(Entity_getZ(view));
             marker.setYaw(view.yaw);
             marker.setPitch(view.pitch);
         }

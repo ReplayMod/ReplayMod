@@ -32,9 +32,6 @@ public interface MinecraftAccessor {
     //$$ Queue<FutureTask<?>> getScheduledTasks();
     //#endif
 
-    @Accessor("crashed")
-    boolean hasCrashed();
-
     @Accessor("crashReport")
     CrashReport getCrashReporter();
 

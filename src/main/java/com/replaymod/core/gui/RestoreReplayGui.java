@@ -2,6 +2,7 @@ package com.replaymod.core.gui;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -56,8 +57,8 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
                 if (metaData != null && metaData.getDuration() == 0) {
                     // Try to restore replay duration
                     // We need to re-write the packet data in case there are any incomplete packets dangling at the end
-                    try (ReplayInputStream in = replayFile.getPacketData(studio, true);
-                         ReplayOutputStream out = replayFile.writePacketData(true)) {
+                    try (ReplayInputStream in = replayFile.getPacketData(MCVer.getPacketTypeRegistry(true));
+                         ReplayOutputStream out = replayFile.writePacketData()) {
                         while (true) {
                             // To prevent failing at un-parsable packets and to support recovery in minimal mode,
                             // we do not use the ReplayIn/OutputStream methods but instead parse the packets ourselves.

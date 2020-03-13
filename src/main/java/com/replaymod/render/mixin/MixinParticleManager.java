@@ -1,6 +1,7 @@
 package com.replaymod.render.mixin;
 
-//#if MC>=10904
+// FIXME 1.15 seems like the way orientation is passed to particles has changed significantly
+//#if MC>=10904 && MC<11500
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.exporters.ParticlesExporter;

@@ -13,9 +13,10 @@ import net.minecraft.util.crash.CrashReport;
 
 //#if MC>=11300
 import com.replaymod.render.mixin.MainWindowAccessor;
+import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
 
-//#if MC>=10800
+//#if MC>=10800 && MC<11500
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 //#endif
 
@@ -33,8 +34,8 @@ public class ScreenshotRenderer implements RenderInfo {
     public boolean renderScreenshot() throws Throwable {
         try {
             //#if MC>=11300
-            int displayWidthBefore = mc.window.getFramebufferWidth();
-            int displayHeightBefore = mc.window.getFramebufferHeight();
+            int displayWidthBefore = getWindow(mc).getFramebufferWidth();
+            int displayHeightBefore = getWindow(mc).getFramebufferHeight();
             //#else
             //$$ int displayWidthBefore = mc.displayWidth;
             //$$ int displayHeightBefore = mc.displayHeight;
@@ -43,7 +44,7 @@ public class ScreenshotRenderer implements RenderInfo {
             boolean hideGUIBefore = mc.options.hudHidden;
             mc.options.hudHidden = true;
 
-            //#if MC>=10800
+            //#if MC>=10800 && MC<11500
             ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.worldRenderer);
             //#endif
 
@@ -55,14 +56,14 @@ public class ScreenshotRenderer implements RenderInfo {
                         new ScreenshotWriter(settings.getOutputFile())).run();
             }
 
-            //#if MC>=10800
+            //#if MC>=10800 && MC<11500
             clrg.uninstall();
             //#endif
 
             mc.options.hudHidden = hideGUIBefore;
             //#if MC>=11300
             //noinspection ConstantConditions
-            MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.window;
+            MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
             acc.setFramebufferWidth(displayWidthBefore);
             acc.setFramebufferHeight(displayHeightBefore);
             mc.getFramebuffer().resize(displayWidthBefore, displayHeightBefore

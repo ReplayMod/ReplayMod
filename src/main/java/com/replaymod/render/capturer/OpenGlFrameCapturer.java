@@ -18,6 +18,7 @@ import java.nio.ByteBuffer;
 
 //#if MC>=11300
 import com.replaymod.render.mixin.MainWindowAccessor;
+import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
 
 //#if MC>=10800
@@ -125,7 +126,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
             );
         }
         //noinspection ConstantConditions
-        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) mc.window;
+        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) getWindow(mc);
         mainWindow.setFramebufferWidth(width);
         mainWindow.setFramebufferHeight(height);
         //#else

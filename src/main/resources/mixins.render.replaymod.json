@@ -4,7 +4,11 @@
   "mixins": [],
   "server": [],
   "client": [
-    //#if MC>=10800
+    "Mixin_ChromaKeyColorSky",
+    "Mixin_ChromaKeyForceSky",
+    "Mixin_CubicRotation",
+    "Mixin_SkipBlockOutlinesDuringRender",
+    //#if MC>=10800 && MC<11500
     "ChunkRenderDispatcherAccessor",
     "MixinChunkRenderWorker",
     //#endif
@@ -13,7 +17,9 @@
     //#endif
     "WorldRendererAccessor",
     //#if MC>=10904
+    //#if MC<11500
     "MixinParticleManager",
+    //#endif
     //#else
     //$$ "MixinEffectRenderer",
     //$$ "MixinRendererLivingEntity",
@@ -29,7 +35,9 @@
     "MixinFrustum",
     "MixinRender",
     //#if MC>=10800
+    //#if MC<11500
     "MixinRenderGlobal",
+    //#endif
     //#else
     //$$ "MixinOpenGlHelper",
     //#endif

@@ -82,7 +82,7 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         //#if MC>=10800
         // Eye height is subtracted to make path appear higher (at eye height) than it actually is (at foot height)
-        Triple<Double, Double, Double> viewPos = Triple.of(view.x, view.y - view.getStandingEyeHeight(), view.z);
+        Triple<Double, Double, Double> viewPos = Triple.of(Entity_getX(view), Entity_getY(view) - view.getStandingEyeHeight(), Entity_getZ(view));
         //#else
         //$$ Triple<Double, Double, Double> viewPos = Triple.of(view.posX, view.posY, view.posZ);
         //#endif
@@ -208,17 +208,21 @@ public class PathPreviewRenderer extends EventRegistrations {
         if (distanceSquared(view, pos1) > renderDistanceSquared) return;
         if (distanceSquared(view, pos2) > renderDistanceSquared) return;
 
-        BufferBuilder_setTranslation(-view.getLeft(), -view.getMiddle(), -view.getRight());
-
         BufferBuilder_beginPosCol(GL11.GL_LINES);
 
-        BufferBuilder_addPosCol(pos1.getLeft(), pos1.getMiddle(), pos1.getRight(),
+        BufferBuilder_addPosCol(
+                pos1.getLeft() - view.getLeft(),
+                pos1.getMiddle() - view.getMiddle(),
+                pos1.getRight() - view.getRight(),
                 color >> 16 & 0xff,
                 color >> 8 & 0xff,
                 color & 0xff,
                 255
         );
-        BufferBuilder_addPosCol(pos2.getLeft(), pos2.getMiddle(), pos2.getRight(),
+        BufferBuilder_addPosCol(
+                pos2.getLeft() - view.getLeft(),
+                pos2.getMiddle() - view.getMiddle(),
+                pos2.getRight() - view.getRight(),
                 color >> 16 & 0xff,
                 color >> 8 & 0xff,
                 color & 0xff,
@@ -227,13 +231,11 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         GL11.glLineWidth(3);
         Tessellator_getInstance().draw();
-        BufferBuilder_setTranslation(0, 0, 0);
     }
 
     private void drawPoint(Triple<Double, Double, Double> view,
                            Triple<Double, Double, Double> pos,
                            Keyframe keyframe) {
-        BufferBuilder_setTranslation(0, 0, 0);
 
         MCVer.bindTexture(TEXTURE);
 
@@ -269,8 +271,13 @@ public class PathPreviewRenderer extends EventRegistrations {
                 pos.getRight() - view.getRight()
         );
         GL11.glNormal3f(0, 1, 0);
+        //#if MC>=11500
+        //$$ GL11.glRotatef(-getRenderManager().camera.getYaw(), 0, 1, 0);
+        //$$ GL11.glRotatef(getRenderManager().camera.getPitch(), 1, 0, 0);
+        //#else
         GL11.glRotatef(-getRenderManager().cameraYaw, 0, 1, 0);
         GL11.glRotatef(getRenderManager().cameraPitch, 1, 0, 0);
+        //#endif
 
         Tessellator_getInstance().draw();
 
@@ -280,7 +287,6 @@ public class PathPreviewRenderer extends EventRegistrations {
     private void drawCamera(Triple<Double, Double, Double> view,
                             Triple<Double, Double, Double> pos,
                             Triple<Float, Float, Float> rot) {
-        BufferBuilder_setTranslation(0, 0, 0);
 
         MCVer.bindTexture(CAMERA_HEAD);
 

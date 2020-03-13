@@ -201,7 +201,7 @@ public class GuiUploadReplay extends GuiScreen {
                             try (ReplayFile replay = new ZipReplayFile(new ReplayStudio(), file)) {
                                 ReplayMetaData newMetaData = new ReplayMetaData(metaData);
                                 newMetaData.setServerName(null);
-                                replay.writeMetaData(newMetaData);
+                                replay.writeMetaData(null, newMetaData);
                                 replay.saveTo(tmp);
                             }
 

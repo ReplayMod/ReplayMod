@@ -113,9 +113,16 @@ public class ParticlesExporter implements Exporter {
         // Instead of actually translating, we just add the translation on the current model-view-matrix.
         Matrix4f modelView = getGlModelViewMatrix();
         ParticleAccessor acc = (ParticleAccessor) particle;
-        double dx = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * renderPartialTicks - Particle.cameraX;
-        double dy = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * renderPartialTicks - Particle.cameraY;
-        double dz = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * renderPartialTicks - Particle.cameraZ;
+        double dx = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * renderPartialTicks;
+        double dy = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * renderPartialTicks;
+        double dz = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * renderPartialTicks;
+        //#if MC>=11500
+        //$$ // FIXME 1.15 is this still required?
+        //#else
+        dx -= Particle.cameraX;
+        dy -= Particle.cameraY;
+        dz -= Particle.cameraZ;
+        //#endif
         Vector3f offset = new Vector3f((float) dx, (float) dy, (float) dz);
         Matrix4f.translate(offset, modelView, modelView);
         renderState.pushModelView(modelView);
@@ -173,7 +180,11 @@ public class ParticlesExporter implements Exporter {
                 //#else
                 //$$ MCVer.getMinecraft().getRenderViewEntity(),
                 //#endif
-                0, 1, 1, 0, 0, 0);
+                0
+                //#if MC<11500
+                , 1, 1, 0, 0, 0
+                //#endif
+        );
         //#else
         //$$ particle.func_180434_a(builder, Minecraft.getMinecraft().getRenderViewEntity(), 0, 1, 1, 0, 0, 0);
         //#endif

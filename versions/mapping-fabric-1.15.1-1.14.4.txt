@@ -1,0 +1,28 @@
+net.minecraft.client.model.ModelPart.Cuboid net.minecraft.client.model.Box
+net.minecraft.client.render.chunk.ChunkBuilder net.minecraft.client.render.chunk.ChunkRenderWorker
+net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk net.minecraft.client.render.chunk.ChunkRenderer
+net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk.Task net.minecraft.client.render.chunk.ChunkRenderTask
+net.minecraft.client.network.packet.PlayerActionResponseS2CPacket net.minecraft.class_4463
+net.minecraft.network.NetworkState LOGIN field_11688
+net.minecraft.network.NetworkState PLAY field_11690
+net.fabricmc.fabric.impl.resource.loader.ModResourcePackUtil net.fabricmc.fabric.impl.resources.ModResourcePackUtil
+net.minecraft.client.render.entity.EntityRenderer shouldRender() isVisible()
+net.minecraft.client.render.Frustum net.minecraft.client.render.VisibleRegion
+net.minecraft.client.render.GameRenderer renderWorld() renderCenter()
+net.minecraft.entity.LivingEntity serverX field_6224
+net.minecraft.entity.LivingEntity serverY field_6245
+net.minecraft.entity.LivingEntity serverZ field_6263
+net.minecraft.entity.LivingEntity serverYaw field_6284
+net.minecraft.entity.LivingEntity serverPitch field_6221
+net.minecraft.client.render.WorldRenderer drawBlockOutline() drawHighlightedBlockOutline()
+net.minecraft.client.render.GameRenderer method_22973() applyCameraTransformations()
+net.minecraft.client.util.math.Matrix4f viewboxMatrix() method_4929()
+net.minecraft.util.ThreadExecutor send() method_18858()
+net.minecraft.util.ThreadExecutor createTask() prepareRunnable()
+net.minecraft.util.ThreadExecutor canExecute() canRun()
+net.minecraft.util.ThreadExecutor runTasks() executeTaskQueue()
+net.minecraft.util.ThreadExecutor submit() executeFuture()
+net.minecraft.client.util.Window method_4493()
+net.minecraft.util.SystemUtil.OperatingSystem WINDOWS field_1133
+net.minecraft.util.SystemUtil.OperatingSystem OSX field_1137
+net.minecraft.client.util.ScreenshotUtils takeScreenshot() method_1663()

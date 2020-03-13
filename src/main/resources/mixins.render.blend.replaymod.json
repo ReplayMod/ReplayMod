@@ -5,6 +5,13 @@
   "server": [],
   "client": [
     //#if MC>=10800
+    //#if MC<11500
+    "WorldRendererAccessor",
+    "MixinChunkRenderWorker",
+    "MixinEffectRenderer",
+    "MixinModelRenderer",
+    "MixinTileEntityRendererDispatcher",
+    //#endif
     "ContainerLocalRenderInformationAccessor",
     //#if MC<10904
     //$$ "EntityAccessor",
@@ -13,15 +20,10 @@
     "ItemRendererAccessor",
     //#endif
     "ParticleAccessor",
-    "WorldRendererAccessor",
-    "MixinChunkRenderWorker",
-    "MixinEffectRenderer",
-    "MixinModelRenderer",
     "MixinRenderGlobal",
     "MixinRenderItem",
     "MixinRenderLivingBase",
-    "MixinRenderManager",
-    "MixinTileEntityRendererDispatcher"
+    "MixinRenderManager"
     //#endif
   ],
   "compatibilityLevel": "JAVA_8",

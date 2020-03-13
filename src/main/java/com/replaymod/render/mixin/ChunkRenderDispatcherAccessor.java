@@ -1,4 +1,4 @@
-//#if MC>=10800
+//#if MC>=10800 && MC<11500
 package com.replaymod.render.mixin;
 
 import net.minecraft.client.render.chunk.ChunkBatcher;

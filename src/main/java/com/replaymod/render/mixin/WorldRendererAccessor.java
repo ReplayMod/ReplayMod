@@ -13,6 +13,7 @@ import net.minecraft.client.render.chunk.ChunkRenderer;
 
 @Mixin(WorldRenderer.class)
 public interface WorldRendererAccessor {
+    //#if MC<11500
     @Accessor("field_4076")
     void setRenderEntitiesStartupCounter(int value);
 
@@ -25,5 +26,6 @@ public interface WorldRendererAccessor {
 
     @Accessor("chunkRenderers")
     Set<ChunkRenderer> getChunksToUpdate();
+    //#endif
     //#endif
 }

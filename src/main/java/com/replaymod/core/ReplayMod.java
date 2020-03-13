@@ -15,7 +15,9 @@ import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
 import com.replaymod.replaystudio.util.I18n;
+import com.replaymod.replaystudio.viaversion.ViaVersionPacketConverter;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import lombok.Getter;
@@ -30,8 +32,6 @@ import net.minecraft.util.Formatting;
 import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
-import com.github.steveice10.mc.protocol.MinecraftConstants;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.options.Option;
 import net.minecraft.resource.ResourcePackCreator;
 import net.minecraft.resource.ResourcePackContainer;
@@ -98,8 +98,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import static com.replaymod.core.versions.MCVer.*;
 
 //#if FABRIC<=0
 //#if MC>=11300
@@ -180,19 +178,8 @@ public class ReplayMod implements
 
         //#if MC>=11400
         // Check Minecraft protocol version for compatibility
-        int supportedProtocol = MinecraftConstants.PROTOCOL_VERSION;
-        int actualProtocol = SharedConstants.getGameVersion().getProtocolVersion();
-        if (supportedProtocol != actualProtocol && !Boolean.parseBoolean(System.getProperty("replaymod.skipversioncheck", "false"))) {
+        if (!ProtocolVersion.isRegistered(MCVer.getProtocolVersion()) && !Boolean.parseBoolean(System.getProperty("replaymod.skipversioncheck", "false"))) {
             minimalMode = true;
-            // Only allow use of older RM on newer (e.g. snapshot, pre-release) versions.
-            // The other way around is almost certainly user error.
-            if (actualProtocol < supportedProtocol && !Boolean.parseBoolean(System.getProperty("replaymod.allowoldsnapshot", "false"))) {
-                throw new UnsupportedOperationException(String.format(
-                        "Unsupported Minecraft version, supporting protocol version %s (%s) but actual version is %s (%s).",
-                        supportedProtocol, MinecraftConstants.GAME_VERSION,
-                        actualProtocol, SharedConstants.getGameVersion().getName()
-                ));
-            }
         }
         //#endif
 
@@ -453,7 +440,10 @@ public class ReplayMod implements
     public static class ReplayModExecutor extends NonBlockingThreadExecutor<Runnable> {
         private final Thread mcThread = Thread.currentThread();
         // Fail-fast in case we ever switch to async loading and forget to change this
+        // (except for fabric 1.15+ because it loads the mod before the client thread is set)
+        //#if FABRIC<1 || MC<11500
         { if (!MinecraftClient.getInstance().isOnThread()) throw new RuntimeException(); }
+        //#endif
 
         private ReplayModExecutor(String string_1) {
             super(string_1);
@@ -474,7 +464,7 @@ public class ReplayMod implements
             return mcThread;
         }
 
-        //#if FABRIC>=1
+        //#if FABRIC>=1 && MC<11500
         @Override
         public void send(Runnable runnable) {
             method_18858(runnable);
@@ -649,7 +639,7 @@ public class ReplayMod implements
         if (isMinimalMode()) {
             return protocolVersion == MCVer.getProtocolVersion();
         } else {
-            return new ReplayStudio().isCompatible(fileFormatVersion, protocolVersion);
+            return new ReplayStudio().isCompatible(fileFormatVersion, protocolVersion, MCVer.getProtocolVersion());
         }
     }
 }

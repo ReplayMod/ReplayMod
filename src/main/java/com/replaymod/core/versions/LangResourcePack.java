@@ -137,7 +137,15 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
 
     @Override
-    public Collection<Identifier> findResources(ResourceType resourcePackType, String path, int maxDepth, Predicate<String> filter) {
+    public Collection<Identifier> findResources(
+            ResourceType resourcePackType,
+            //#if MC>=11500
+            //$$ String namespace,
+            //#endif
+            String path,
+            int maxDepth,
+            Predicate<String> filter
+    ) {
         if (resourcePackType == ResourceType.CLIENT_RESOURCES && "lang".equals(path)) {
             Path base = baseLangPath();
             //#if MC<11400

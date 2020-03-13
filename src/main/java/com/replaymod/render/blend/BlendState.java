@@ -3,7 +3,10 @@ package com.replaymod.render.blend;
 import com.replaymod.render.blend.data.DScene;
 import com.replaymod.render.blend.data.Serializer;
 //#if MC>=10800
+// FIXME 1.15
+//#if MC<11500
 import com.replaymod.render.blend.exporters.ChunkExporter;
+//#endif
 import com.replaymod.render.blend.exporters.EntityExporter;
 import com.replaymod.render.blend.exporters.ItemExporter;
 import com.replaymod.render.blend.exporters.ParticlesExporter;
@@ -53,7 +56,10 @@ public class BlendState implements Exporter {
         //#if MC>=10800
         RenderState renderState = new RenderState(this);
         register(renderState);
+        // FIXME 1.15
+        //#if MC<11500
         register(new ChunkExporter());
+        //#endif
         register(new EntityExporter(renderState));
         register(new TileEntityExporter(renderState));
         register(new ParticlesExporter(renderState));

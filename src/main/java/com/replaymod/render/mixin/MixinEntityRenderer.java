@@ -3,7 +3,6 @@ package com.replaymod.render.mixin;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.capturer.StereoscopicOpenGlFrameCapturer;
 import com.replaymod.render.hooks.EntityRendererHandler;
-import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import org.lwjgl.opengl.GL11;
@@ -13,6 +12,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=11500
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+//#endif
 
 //#if MC>=11400
 import net.minecraft.client.render.Camera;
@@ -93,6 +97,9 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
 
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void replayModRender_renderSpectatorHand(
+            //#if MC>=11500
+            //$$ MatrixStack matrixStack,
+            //#endif
             //#if MC>=11400
             Camera camera,
             //#endif
@@ -128,102 +135,27 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //$$ public abstract void renderHand(float partialTicks, int renderPass);
     //#endif
 
-    //#if MC>=11400
-    @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;drawHighlightedBlockOutline(Lnet/minecraft/client/render/Camera;Lnet/minecraft/util/hit/HitResult;I)V"))
-    private void replayModRender_drawSelectionBox(WorldRenderer instance, Camera camera, HitResult hitResult, int something) {
-        if (replayModRender_handler == null) {
-            instance.drawHighlightedBlockOutline(camera, hitResult, something);
-        }
-    }
-    //#else
-    //#if MC>=11300
-    //$$ @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/WorldRenderer;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/RayTraceResult;IF)V"))
-    //$$ private void replayModRender_drawSelectionBox(WorldRenderer instance, EntityPlayer player, RayTraceResult rtr, int alwaysZero, float partialTicks) {
-    //#else
-    //#if MC>=10904
-    //$$ @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/RayTraceResult;IF)V"))
-    //$$ private void replayModRender_drawSelectionBox(RenderGlobal instance, EntityPlayer player, RayTraceResult rtr, int alwaysZero, float partialTicks) {
-    //#else
-    //#if MC>=10800
-    //$$ @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;IF)V"))
-    //#else
-    //$$ @Redirect(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;drawSelectionBox(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;IF)V"))
-    //#endif
-    //$$ private void replayModRender_drawSelectionBox(RenderGlobal instance, EntityPlayer player, MovingObjectPosition rtr, int alwaysZero, float partialTicks) {
-    //#endif
-    //#endif
-    //$$     if (replayModRender_handler == null) {
-    //$$         instance.drawSelectionBox(player, rtr, alwaysZero, partialTicks);
-    //$$     }
-    //$$ }
-    //#endif
-
-    private int orgRenderDistanceChunks;
-
-    //#if MC>=11300
-    //#if MC>=11400
-    @Inject(method = "renderCenter", at = @At(value = "JUMP", ordinal = 0))
-    //#else
-    //$$ @Inject(method = "updateCameraAndRender(FJ)V", at = @At(value = "JUMP", ordinal = 0))
-    //#endif
-    //#else
-    //#if MC>=10800
-    //$$ @Inject(method = "renderWorldPass", at = @At(value = "JUMP", ordinal = 0))
-    //#else
-    //$$ @Inject(method = "renderWorld", at = @At(value = "INVOKE", ordinal = 0, shift = At.Shift.AFTER,
-    //$$         target = "Lnet/minecraft/client/renderer/culling/ClippingHelperImpl;getInstance()Lnet/minecraft/client/renderer/culling/ClippingHelper;"))
-    //#endif
-    //#endif
-    private void replayModRender_beforeRenderSky(CallbackInfo ci) {
-        if (replayModRender_handler != null && replayModRender_handler.getSettings().getChromaKeyingColor() != null) {
-            GameOptions settings = MCVer.getMinecraft().options;
-            orgRenderDistanceChunks = settings.viewDistance;
-            settings.viewDistance = 5; // Set render distance to 5 so we're always rendering sky when chroma keying
-        }
-    }
-
-    //#if MC>=11300
-    //#if MC>=11400
-    @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;renderSky(F)V"))
-    //#else
-    //$$ @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/WorldRenderer;renderSky(F)V"))
-    //#endif
-    private void replayModRender_renderSky(WorldRenderer instance, float partialTicks) {
-    //#else
-    //#if MC>=10800
-    //$$ @Redirect(method = "renderWorldPass", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;renderSky(FI)V"))
-    //$$ private void replayModRender_renderSky(RenderGlobal instance, float partialTicks, int renderPass) {
-    //#else
-    //$$ @Redirect(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderGlobal;renderSky(F)V"))
-    //$$ private void replayModRender_renderSky(RenderGlobal instance, float partialTicks) {
-    //#endif
-    //#endif
-        if (replayModRender_handler != null && replayModRender_handler.getSettings().getChromaKeyingColor() != null) {
-            MCVer.getMinecraft().options.viewDistance = orgRenderDistanceChunks;
-            ReadableColor color = replayModRender_handler.getSettings().getChromaKeyingColor();
-            GlStateManager.clearColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1);
-            GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT
-                    //#if MC>=11400
-                    , false
-                    //#endif
-            );
-        } else {
-            //#if MC>=11300
-            instance.renderSky(partialTicks);
-            //#else
-            //#if MC>=10800
-            //$$ instance.renderSky(partialTicks, renderPass);
-            //#else
-            //$$ instance.renderSky(partialTicks);
-            //#endif
-            //#endif
-        }
-    }
-
     /*
      *   Stereoscopic Renderer
      */
 
+    //#if MC>=11500
+    //$$ @Inject(method = "method_22973", at = @At("RETURN"), cancellable = true)
+    //$$ private void replayModRender_setupStereoscopicProjection(CallbackInfoReturnable<Matrix4f> ci) {
+    //$$     if (replayModRender_getHandler() != null) {
+    //$$         Matrix4f offset;
+    //$$         if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
+    //$$             offset = Matrix4f.translate(0.07f, 0, 0);
+    //$$         } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
+    //$$             offset = Matrix4f.translate(-0.07f, 0, 0);
+    //$$         } else {
+    //$$             return;
+    //$$         }
+    //$$         offset.multiply(ci.getReturnValue());
+    //$$         ci.setReturnValue(offset);
+    //$$     }
+    //$$ }
+    //#else
     //#if MC>=10800
     @Inject(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 0))
     //#else
@@ -244,7 +176,20 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             }
         }
     }
+    //#endif
 
+    //#if MC>=11500
+    //$$ @Inject(method = "renderWorld", at = @At("HEAD"))
+    //$$ private void replayModRender_setupStereoscopicProjection(float partialTicks, long frameStartNano, MatrixStack matrixStack, CallbackInfo ci) {
+    //$$     if (replayModRender_getHandler() != null) {
+    //$$         if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
+    //$$             matrixStack.translate(0.1, 0, 0);
+    //$$         } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
+    //$$             matrixStack.translate(-0.1, 0, 0);
+    //$$         }
+    //$$     }
+    //$$ }
+    //#else
     //#if MC>=10800
     @Inject(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 1))
     //#else
@@ -265,6 +210,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             }
         }
     }
+    //#endif
 
     /*
      *   Cubic Renderer
@@ -276,6 +222,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
     }
 
+    //#if MC<11500
     //#if MC>=11400
     @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
     //#else
@@ -289,6 +236,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     private Matrix4f replayModRender_perspective$2(double fovY, float aspect, float zNear, float zFar) {
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
     }
+    //#endif
 
     private Matrix4f replayModRender_perspective(float fovY, float aspect, float zNear, float zFar) {
         if (replayModRender_getHandler() != null && replayModRender_getHandler().omnidirectional) {

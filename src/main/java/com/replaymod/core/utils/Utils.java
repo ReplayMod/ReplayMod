@@ -1,11 +1,13 @@
 package com.replaymod.core.utils;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import com.google.common.net.PercentEscaper;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiScrollable;
@@ -37,11 +39,9 @@ import org.apache.logging.log4j.Logger;
 //#endif
 
 //#if MC>=10800
-import com.github.steveice10.mc.protocol.MinecraftConstants;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.DefaultSkinHelper;
 //#else
-//$$ import com.github.steveice10.mc.protocol.ProtocolConstants;
 //$$ import net.minecraft.client.Minecraft;
 //$$ import net.minecraft.client.entity.AbstractClientPlayer;
 //$$ import net.minecraft.entity.player.EntityPlayer;
@@ -366,11 +366,9 @@ public class Utils {
                     new GuiLabel()
                             .setColor(Colors.BLACK)
                             .setI18nText("replaymod.gui.minimalmode.supportedversion",
-                                    //#if MC>=10800
-                                    MinecraftConstants.GAME_VERSION
-                                    //#else
-                                    //$$ ProtocolConstants.GAME_VERSION
-                                    //#endif
+                                    ProtocolVersion.v1_7_6.getName()
+                                            + " - "
+                                            + Iterables.getLast(ProtocolVersion.getProtocols()).getName()
                             ));
 
             open();

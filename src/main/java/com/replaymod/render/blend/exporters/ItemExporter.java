@@ -124,6 +124,9 @@ public class ItemExporter implements Exporter {
                     //$$ ? stack.getItem().getColorFromItemStack(stack, quad.getTintIndex()) | 0xff000000
                     //#endif
                     : 0xffffffff;
+            //#if MC>=11500
+            //$$ // FIXME 1.15
+            //#else
             //#if MC>=11400
             buffer.putVertexData(quad.getVertexData());
             buffer.setQuadColor(color);
@@ -131,6 +134,7 @@ public class ItemExporter implements Exporter {
             buffer.postNormal(vec3i_1.getX(), vec3i_1.getY(), vec3i_1.getZ());
             //#else
             //$$ LightUtil.renderQuadColor(buffer, quad, color);
+            //#endif
             //#endif
         }
 

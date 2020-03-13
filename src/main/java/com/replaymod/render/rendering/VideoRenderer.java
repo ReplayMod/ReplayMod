@@ -32,6 +32,12 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
 
+//#if MC>=11500
+//$$ import com.mojang.blaze3d.systems.RenderSystem;
+//$$ import net.minecraft.client.util.Window;
+//$$ import org.lwjgl.opengl.GL11;
+//#endif
+
 //#if MC>=11300
 import com.replaymod.render.mixin.MainWindowAccessor;
 import org.lwjgl.glfw.GLFW;
@@ -43,7 +49,9 @@ import org.lwjgl.glfw.GLFW;
 //#endif
 
 //#if MC>=10800
+//#if MC<11500
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+//#endif
 import static com.mojang.blaze3d.platform.GlStateManager.*;
 //#else
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
@@ -60,6 +68,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import static com.google.common.collect.Iterables.getLast;
+import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -79,7 +88,7 @@ public class VideoRenderer implements RenderInfo {
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
-    //#if MC>=10800
+    //#if MC>=10800 && MC<11500
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
     //#endif
     //#if MC<10800
@@ -161,11 +170,13 @@ public class VideoRenderer implements RenderInfo {
             }
         }
 
+        //#if MC<11500
         ((WorldRendererAccessor) mc.worldRenderer).setRenderEntitiesStartupCounter(0);
+        //#endif
 
         renderingPipeline.run();
 
-        if (((MinecraftAccessor) mc).hasCrashed()) {
+        if (((MinecraftAccessor) mc).getCrashReporter() != null) {
             throw new CrashException(((MinecraftAccessor) mc).getCrashReporter());
         }
 
@@ -190,10 +201,10 @@ public class VideoRenderer implements RenderInfo {
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
         //#if MC>=11300
-        int displayWidthBefore = mc.window.getFramebufferWidth();
-        int displayHeightBefore = mc.window.getFramebufferHeight();
+        int displayWidthBefore = getWindow(mc).getFramebufferWidth();
+        int displayHeightBefore = getWindow(mc).getFramebufferHeight();
         //noinspection ConstantConditions
-        MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.window;
+        MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
         acc.setFramebufferWidth(displayWidth);
         acc.setFramebufferHeight(displayHeight);
         //#else
@@ -248,13 +259,16 @@ public class VideoRenderer implements RenderInfo {
         timelinePlayer = new TimelinePlayer(replayHandler);
         timelinePlayerFuture = timelinePlayer.start(timeline);
 
+        // FBOs are always used in 1.14+
+        //#if MC<11400
         if (!GLX.isUsingFBOs()) {
             //#if MC>=11300
-            GLFW.glfwSetWindowAttrib(mc.window.getHandle(), GLFW.GLFW_RESIZABLE, 1);
+            GLFW.glfwSetWindowAttrib(getWindow(mc).getHandle(), GLFW.GLFW_RESIZABLE, 1);
             //#else
             //$$ Display.setResizable(false);
             //#endif
         }
+        //#endif
         if (mc.options.debugEnabled) {
             debugInfoWasShown = true;
             mc.options.debugEnabled = false;
@@ -304,7 +318,7 @@ public class VideoRenderer implements RenderInfo {
         //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
         //#endif
 
-        //#if MC>=10800
+        //#if MC>=10800 && MC<11500
         chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.worldRenderer);
         //#endif
 
@@ -323,13 +337,16 @@ public class VideoRenderer implements RenderInfo {
         // Tear down of the timeline player might only happen the next tick after it was cancelled
         timelinePlayer.onTick();
 
+        // FBOs are always used in 1.14+
+        //#if MC<11400
         if (!GLX.isUsingFBOs()) {
             //#if MC>=11300
-            GLFW.glfwSetWindowAttrib(mc.window.getHandle(), GLFW.GLFW_RESIZABLE, 0);
+            GLFW.glfwSetWindowAttrib(getWindow(mc).getHandle(), GLFW.GLFW_RESIZABLE, 0);
             //#else
             //$$ Display.setResizable(true);
             //#endif
         }
+        //#endif
         mc.options.debugEnabled = debugInfoWasShown;
         if (mouseWasGrabbed) {
             //#if MC>=11300
@@ -342,7 +359,7 @@ public class VideoRenderer implements RenderInfo {
             mc.options.setSoundVolume(entry.getKey(), entry.getValue());
         }
         mc.openScreen(null);
-        //#if MC>=10800
+        //#if MC>=10800 && MC<11500
         if (chunkLoadingRenderGlobal != null) {
             chunkLoadingRenderGlobal.uninstall();
         }
@@ -366,7 +383,7 @@ public class VideoRenderer implements RenderInfo {
                 //#endif
         );
         //noinspection ConstantConditions
-        MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.window;
+        MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
         acc.setFramebufferWidth(displayWidth);
         acc.setFramebufferHeight(displayHeight);
         //#else
@@ -411,7 +428,7 @@ public class VideoRenderer implements RenderInfo {
             if (!settings.isHighPerformance() && displaySizeChanged()) {
                 updateDisplaySize();
                 //#if MC>=11300
-                guiFramebuffer.resize(mc.window.getFramebufferWidth(), mc.window.getFramebufferHeight()
+                guiFramebuffer.resize(getWindow(mc).getFramebufferWidth(), getWindow(mc).getFramebufferHeight()
                         //#if MC>=11400
                         , false
                         //#endif
@@ -430,8 +447,18 @@ public class VideoRenderer implements RenderInfo {
             enableTexture();
             guiFramebuffer.beginWrite(true);
 
+            //#if MC>=11500
+            //$$ Window window = getWindow(mc);
+            //$$ RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+            //$$ RenderSystem.matrixMode(GL11.GL_PROJECTION);
+            //$$ RenderSystem.loadIdentity();
+            //$$ RenderSystem.ortho(0, window.getFramebufferWidth() / window.getScaleFactor(), window.getFramebufferHeight() / window.getScaleFactor(), 0, 1000, 3000);
+            //$$ RenderSystem.matrixMode(GL11.GL_MODELVIEW);
+            //$$ RenderSystem.loadIdentity();
+            //$$ RenderSystem.translatef(0, 0, -2000);
+            //#else
             //#if MC>=11300
-            mc.window.method_4493(
+            getWindow(mc).method_4493(
                     //#if MC>=11400
                     false
                     //#endif
@@ -439,9 +466,10 @@ public class VideoRenderer implements RenderInfo {
             //#else
             //$$ mc.entityRenderer.setupOverlayRendering();
             //#endif
+            //#endif
 
             //#if MC>=11300
-            gui.toMinecraft().init(mc, mc.window.getScaledWidth(), mc.window.getScaledHeight());
+            gui.toMinecraft().init(mc, getWindow(mc).getScaledWidth(), getWindow(mc).getScaledHeight());
             //#else
             //$$ ScaledResolution scaled = newScaledResolution(mc);
             //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
@@ -482,8 +510,11 @@ public class VideoRenderer implements RenderInfo {
             guiFramebuffer.draw(displayWidth, displayHeight);
             popMatrix();
 
+            //#if MC>=11500
+            //$$ getWindow(mc).swapBuffers();
+            //#else
             //#if MC>=11300
-            mc.window.setFullscreen(false);
+            getWindow(mc).setFullscreen(false);
             //#else
             //$$ // if not in high performance mode, update the gui size if screen size changed
             //$$ // otherwise just swap the progress gui to screen
@@ -496,6 +527,7 @@ public class VideoRenderer implements RenderInfo {
                 //$$ mc.resetSize();
                 //#endif
             //$$ }
+            //#endif
             //#endif
             //#if MC>=11300
             if (mc.mouse.isCursorLocked()) {
@@ -519,7 +551,7 @@ public class VideoRenderer implements RenderInfo {
 
     private boolean displaySizeChanged() {
         //#if MC>=11300
-        return displayWidth != mc.window.getWidth() || displayHeight != mc.window.getHeight();
+        return displayWidth != getWindow(mc).getWidth() || displayHeight != getWindow(mc).getHeight();
         //#else
         //$$ return displayWidth != Display.getWidth() || displayHeight != Display.getHeight();
         //#endif
@@ -527,8 +559,8 @@ public class VideoRenderer implements RenderInfo {
 
     private void updateDisplaySize() {
         //#if MC>=11300
-        displayWidth = mc.window.getWidth();
-        displayHeight = mc.window.getHeight();
+        displayWidth = getWindow(mc).getWidth();
+        displayHeight = getWindow(mc).getHeight();
         //#else
         //$$ displayWidth = Display.getWidth();
         //$$ displayHeight = Display.getHeight();

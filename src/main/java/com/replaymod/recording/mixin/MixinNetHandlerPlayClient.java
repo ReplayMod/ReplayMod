@@ -12,8 +12,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=10800
-import com.github.steveice10.mc.protocol.packet.ingame.server.ServerPlayerListEntryPacket;
-import com.github.steveice10.packetlib.io.buffer.ByteBufferNetInput;
+import com.replaymod.replaystudio.protocol.Packet;
+import com.replaymod.replaystudio.protocol.PacketType;
+import com.replaymod.replaystudio.protocol.packets.PacketPlayerListEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.util.PacketByteBuf;
@@ -21,7 +22,6 @@ import net.minecraft.client.network.packet.PlayerListS2CPacket;
 import net.minecraft.client.network.PlayerListEntry;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.UUID;
 //#else
@@ -62,10 +62,9 @@ public abstract class MixinNetHandlerPlayClient {
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null && packet.getAction() == PlayerListS2CPacket.Action.ADD_PLAYER) {
             // We cannot reference SPacketPlayerListItem.AddPlayerData directly for complicated (and yet to be
-            // resolved) reasons (see https://github.com/MinecraftForge/ForgeGradle/issues/472), so we "simply" convert
-            // the back to the MCProtocolLib equivalent and deal with that one.
+            // resolved) reasons (see https://github.com/MinecraftForge/ForgeGradle/issues/472), so we use ReplayStudio
+            // to parse it instead.
             ByteBuf byteBuf = Unpooled.buffer();
-            ServerPlayerListEntryPacket mcpl = new ServerPlayerListEntryPacket(null, null);
             try {
                 packet.write(new PacketByteBuf(byteBuf));
 
@@ -73,20 +72,21 @@ public abstract class MixinNetHandlerPlayClient {
                 byte[] array = new byte[byteBuf.readableBytes()];
                 byteBuf.readBytes(array);
 
-                mcpl.read(new ByteBufferNetInput(ByteBuffer.wrap(array)));
+                for (PacketPlayerListEntry data : PacketPlayerListEntry.read(new Packet(
+                        MCVer.getPacketTypeRegistry(false), 0, PacketType.PlayerListEntry,
+                        com.github.steveice10.netty.buffer.Unpooled.wrappedBuffer(array)
+                ))) {
+                    if (data.getUuid() == null) continue;
+                    // Only add spawn packet for our own player and only if he isn't known yet
+                    if (data.getUuid().equals(mcStatic.player.getGameProfile().getId())
+                            && !this.playerListEntries.containsKey(data.getUuid())) {
+                        handler.onPlayerJoin();
+                    }
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e); // we just parsed this?
             } finally {
                 byteBuf.release();
-            }
-
-            for (com.github.steveice10.mc.protocol.data.game.PlayerListEntry data : mcpl.getEntries()) {
-                if (data.getProfile() == null || data.getProfile().getId() == null) continue;
-                // Only add spawn packet for our own player and only if he isn't known yet
-                if (data.getProfile().getId().equals(mcStatic.player.getGameProfile().getId())
-                        && !this.playerListEntries.containsKey(data.getProfile().getId())) {
-                    handler.onPlayerJoin();
-                }
             }
         }
     }

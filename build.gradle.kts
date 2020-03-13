@@ -174,18 +174,20 @@ val doRelease by tasks.registering {
 defaultTasks("shadowJar")
 
 preprocess {
-    "1.14.4"(11404, "yarn") {
-        "1.14.4-forge"(11404, "srg", file("versions/mapping-1.14.4-fabric-forge.txt")) {
-            "1.12.2"(11202, "srg", file("versions/1.14.4-forge/mapping.txt")) {
-                "1.12.1"(11201, "srg") {
-                    "1.12"(11200, "srg") {
-                        "1.11.2"(11102, "srg", file("versions/1.12/mapping.txt")) {
-                            "1.11"(11100, "srg", file("versions/1.11.2/mapping.txt")) {
-                                "1.10.2"(11002, "srg", file("versions/1.11/mapping.txt")) {
-                                    "1.9.4"(10904, "srg") {
-                                        "1.8.9"(10809, "srg", file("versions/1.9.4/mapping.txt")) {
-                                            "1.8"(10800, "srg", file("versions/1.8.9/mapping.txt")) {
-                                                "1.7.10"(10710, "srg", file("versions/1.8/mapping.txt"))
+    "1.15.1"(11501, "yarn") {
+        "1.14.4"(11404, "yarn", file("versions/mapping-fabric-1.15.1-1.14.4.txt")) {
+            "1.14.4-forge"(11404, "srg", file("versions/mapping-1.14.4-fabric-forge.txt")) {
+                "1.12.2"(11202, "srg", file("versions/1.14.4-forge/mapping.txt")) {
+                    "1.12.1"(11201, "srg") {
+                        "1.12"(11200, "srg") {
+                            "1.11.2"(11102, "srg", file("versions/1.12/mapping.txt")) {
+                                "1.11"(11100, "srg", file("versions/1.11.2/mapping.txt")) {
+                                    "1.10.2"(11002, "srg", file("versions/1.11/mapping.txt")) {
+                                        "1.9.4"(10904, "srg") {
+                                            "1.8.9"(10809, "srg", file("versions/1.9.4/mapping.txt")) {
+                                                "1.8"(10800, "srg", file("versions/1.8.9/mapping.txt")) {
+                                                    "1.7.10"(10710, "srg", file("versions/1.8/mapping.txt"))
+                                                }
                                             }
                                         }
                                     }

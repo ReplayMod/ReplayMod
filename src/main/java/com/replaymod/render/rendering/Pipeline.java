@@ -18,6 +18,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static com.replaymod.core.versions.MCVer.getWindow;
+
 public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
     private final FrameCapturer<R> capturer;
@@ -58,9 +60,9 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
         MinecraftClient mc = MCVer.getMinecraft();
         while (!capturer.isDone() && !Thread.currentThread().isInterrupted()) {
             //#if MC>=11300
-            if (GLFW.glfwWindowShouldClose(mc.window.getHandle()) || ((MinecraftAccessor) mc).hasCrashed()) {
+            if (GLFW.glfwWindowShouldClose(getWindow(mc).getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
             //#else
-            //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).hasCrashed()) {
+            //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
             //#endif
                 Thread.currentThread().interrupt();
                 return;

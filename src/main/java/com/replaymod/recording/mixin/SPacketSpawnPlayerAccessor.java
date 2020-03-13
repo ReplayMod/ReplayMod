@@ -7,8 +7,10 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(PlayerSpawnS2CPacket.class)
 public interface SPacketSpawnPlayerAccessor {
+    //#if MC<11500
     @Accessor("dataTracker")
     DataTracker getDataManager();
     @Accessor("dataTracker")
     void setDataManager(DataTracker value);
+    //#endif
 }
