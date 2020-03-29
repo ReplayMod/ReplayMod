@@ -98,7 +98,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 //#else
                 Packet<?> mcPacket;
                 try {
-                    mcPacket = NetworkState.field_11690.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
+                    mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
                 } catch (IllegalAccessException | InstantiationException e) {
                     throw new IOException(e);
                 }

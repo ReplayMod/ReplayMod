@@ -73,17 +73,10 @@ public abstract class UriScheme {
         switch (SystemUtil.getOperatingSystem()) {
             case LINUX:
                 return new LinuxUriScheme();
-            //#if MC>=11500
-            //$$ case WINDOWS:
-            //$$     return new WindowsUriScheme();
-            //$$ case OSX:
-            //$$     return new OSXUriScheme();
-            //#else
-            case field_1133:
+            case WINDOWS:
                 return new WindowsUriScheme();
-            case field_1137:
+            case OSX:
                 return new OSXUriScheme();
-            //#endif
             case SOLARIS:
             case UNKNOWN:
             default:

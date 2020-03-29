@@ -465,7 +465,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         int i = pb.readVarInt();
 
-        NetworkState state = loginPhase ? NetworkState.field_11688 : NetworkState.field_11690;
+        NetworkState state = loginPhase ? NetworkState.LOGIN : NetworkState.PLAY;
         //#if MC>=10800
         Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i);
         //#else

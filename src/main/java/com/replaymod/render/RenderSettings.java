@@ -174,12 +174,7 @@ public class RenderSettings {
 
     private static String findFFmpeg() {
         switch (SystemUtil.getOperatingSystem()) {
-            // TODO not sure why remap fails to remap this (even when manually added to mappings)
-            //#if MC>=11500
-            //$$ case WINDOWS:
-            //#else
-            case field_1133:
-            //#endif
+            case WINDOWS:
                 // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
                 File inDotMinecraft = new File(MCVer.getMinecraft().runDirectory, "ffmpeg/bin/ffmpeg.exe");
                 if (inDotMinecraft.exists()) {
@@ -187,12 +182,7 @@ public class RenderSettings {
                     return inDotMinecraft.getAbsolutePath();
                 }
                 break;
-            // TODO not sure why remap fails to remap this (even when manually added to mappings)
-            //#if MC>=11500
-            //$$ case OSX:
-            //#else
-            case field_1137:
-            //#endif
+            case OSX:
                 // The PATH doesn't seem to be set as expected on OSX, therefore we check some common locations ourselves
                 for (String path : new String[]{"/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"}) {
                     File file = new File(path);
