@@ -18,7 +18,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+//#if MC>=11400
 import static com.replaymod.core.versions.MCVer.getWindow;
+//#endif
 
 public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 

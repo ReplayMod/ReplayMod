@@ -39,10 +39,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.function.Consumer;
 
+//#if MC>=11400
+import net.minecraft.world.dimension.DimensionType;
+//#else
+//$$ import net.minecraft.world.EnumDifficulty;
+//#endif
+
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
 import net.minecraft.world.GameMode;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.level.LevelGeneratorType;
 //#endif
 
@@ -180,12 +185,16 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     public void restart() {
         replay.reset();
         ctx.fireChannelRead(new PlayerRespawnS2CPacket(
+                //#if MC>=11400
                 DimensionType.OVERWORLD,
+                //#else
+                //$$ 0,
+                //#endif
                 //#if MC>=11500
                 //$$ 0,
                 //#endif
                 //#if MC<11400
-                //$$ Difficulty.NORMAL,
+                //$$ EnumDifficulty.NORMAL,
                 //#endif
                 LevelGeneratorType.DEFAULT,
                 GameMode.SPECTATOR

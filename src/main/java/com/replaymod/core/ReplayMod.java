@@ -73,6 +73,7 @@ import net.fabricmc.loader.api.FabricLoader;
 //$$ import net.minecraftforge.fml.common.Mod.Instance;
 //$$ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 //$$ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+//$$ import static com.replaymod.core.versions.MCVer.FORGE_BUS;
 //#if MC>=10800
 //$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //#else

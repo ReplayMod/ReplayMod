@@ -261,13 +261,9 @@ public class VideoRenderer implements RenderInfo {
 
         // FBOs are always used in 1.14+
         //#if MC<11400
-        if (!GLX.isUsingFBOs()) {
-            //#if MC>=11300
-            GLFW.glfwSetWindowAttrib(getWindow(mc).getHandle(), GLFW.GLFW_RESIZABLE, 1);
-            //#else
-            //$$ Display.setResizable(false);
-            //#endif
-        }
+        //$$ if (!OpenGlHelper.isFramebufferEnabled()) {
+        //$$     Display.setResizable(false);
+        //$$ }
         //#endif
         if (mc.options.debugEnabled) {
             debugInfoWasShown = true;
@@ -339,13 +335,9 @@ public class VideoRenderer implements RenderInfo {
 
         // FBOs are always used in 1.14+
         //#if MC<11400
-        if (!GLX.isUsingFBOs()) {
-            //#if MC>=11300
-            GLFW.glfwSetWindowAttrib(getWindow(mc).getHandle(), GLFW.GLFW_RESIZABLE, 0);
-            //#else
-            //$$ Display.setResizable(true);
-            //#endif
-        }
+        //$$ if (!OpenGlHelper.isFramebufferEnabled()) {
+        //$$     Display.setResizable(true);
+        //$$ }
         //#endif
         mc.options.debugEnabled = debugInfoWasShown;
         if (mouseWasGrabbed) {

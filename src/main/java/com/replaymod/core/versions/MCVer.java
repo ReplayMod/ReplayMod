@@ -363,7 +363,7 @@ public class MCVer {
 
     @SuppressWarnings("unchecked")
     public static List<Box> cubeList(Cuboid modelRenderer) {
-        //#if MC>=11400
+        //#if MC>=11500
         //$$ return new ArrayList<>(); // FIXME 1.15
         //#else
         return modelRenderer.boxes;
