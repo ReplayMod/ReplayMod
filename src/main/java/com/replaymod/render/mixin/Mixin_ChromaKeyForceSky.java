@@ -33,7 +33,7 @@ public abstract class Mixin_ChromaKeyForceSky {
     @ModifyConstant(method = "renderCenter", constant = @Constant(intValue = 4))
     //#endif
     private int forceSkyWhenChromaKeying(int value) {
-        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) client.gameRenderer).replayModRender_getHandler();
+        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) this.client.gameRenderer).replayModRender_getHandler();
         if (handler != null) {
             ReadableColor color = handler.getSettings().getChromaKeyingColor();
             if (color != null) {

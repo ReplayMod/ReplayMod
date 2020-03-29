@@ -22,7 +22,7 @@ public abstract class Mixin_ChromaKeyColorSky {
 
     @Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
     private void chromaKeyingSky(CallbackInfo ci) {
-        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) client.gameRenderer).replayModRender_getHandler();
+        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) this.client.gameRenderer).replayModRender_getHandler();
         if (handler != null) {
             ReadableColor color = handler.getSettings().getChromaKeyingColor();
             if (color != null) {

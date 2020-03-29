@@ -16,7 +16,7 @@ public abstract class Mixin_SkipBlockOutlinesDuringRender {
 
     @Inject(method = "drawHighlightedBlockOutline", at = @At("HEAD"), cancellable = true)
     private void replayModRender_drawSelectionBox(CallbackInfo ci) {
-        if (((EntityRendererHandler.IEntityRenderer) client.gameRenderer).replayModRender_getHandler() != null) {
+        if (((EntityRendererHandler.IEntityRenderer) this.client.gameRenderer).replayModRender_getHandler() != null) {
             ci.cancel();
         }
     }
