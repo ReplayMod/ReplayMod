@@ -78,7 +78,7 @@ public abstract class Mixin_CubicRotation {
                     y = 1;
                     break;
             }
-            //#if MC>=11400
+            //#if MC>=11500
             //$$ matrixStack.multiply(new Vector3f(x, y, 0).getDegreesQuaternion(angle));
             //#else
             GL11.glRotatef(angle, x, y, 0);

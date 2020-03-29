@@ -34,11 +34,6 @@ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //#endif
 
-//#if FABRIC>=1
-//#else
-//$$ import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
-//#endif
-
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
