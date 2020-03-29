@@ -262,7 +262,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.replaymod.replaystudio:ReplayStudio:120feb9", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:120feb9", shadeExclusions
 
     shadowReobf(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
