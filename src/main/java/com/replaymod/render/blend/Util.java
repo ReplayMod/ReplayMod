@@ -42,7 +42,7 @@ public class Util {
     private static FloatBuffer floatBuffer = GlAllocationUtils.allocateFloatBuffer(16);
     public static Matrix4f getGlMatrix(int matrix) {
         floatBuffer.clear();
-        //#if MC>=11300
+        //#if MC>=11400
         GL11.glGetFloatv(matrix, floatBuffer);
         //#else
         //$$ GL11.glGetFloat(matrix, floatBuffer);
@@ -184,7 +184,7 @@ public class Util {
 
     public static String getTileEntityId(BlockEntity tileEntity) {
         CompoundTag nbt = new CompoundTag();
-        //#if MC>=11300
+        //#if MC>=11400
         tileEntity.toTag(nbt);
         //#else
         //$$ tileEntity.writeToNBT(nbt);

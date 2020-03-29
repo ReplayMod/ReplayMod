@@ -12,7 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.EquipmentSlot;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 //#else
 //$$ import org.lwjgl.input.Mouse;
 //#endif
@@ -41,7 +41,7 @@ public class SpectatorCameraController implements CameraController {
         }
 
         // Prevent mouse movement
-        //#if MC>=11300
+        //#if MC>=11400
         // No longer needed
         //#else
         //$$ Mouse.updateCursor();

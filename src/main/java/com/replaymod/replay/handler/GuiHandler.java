@@ -63,7 +63,7 @@ public class GuiHandler extends EventRegistrations {
             final String BUTTON_STATS = I18n.translate("gui.stats");
             final String BUTTON_OPEN_TO_LAN = I18n.translate("menu.shareToLan");
             //#else
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ final int BUTTON_OPTIONS = 0;
             //#endif
             //$$ final int BUTTON_EXIT_SERVER = 1;
@@ -73,7 +73,7 @@ public class GuiHandler extends EventRegistrations {
             //#endif
 
 
-            //#if MC<11300
+            //#if MC<11400
             //$$ GuiButton openToLan = null;
             //#endif
             //#if MC>=11400
@@ -111,10 +111,10 @@ public class GuiHandler extends EventRegistrations {
                     stats = b;
                 } else if (id.equals(BUTTON_OPEN_TO_LAN)) {
                     remove = true;
-                    //#if MC<11300
+                    //#if MC<11400
                     //$$ openToLan = b;
                     //#endif
-                //#if MC>=11300
+                //#if MC>=11400
                 } else if (id.equals(BUTTON_OPTIONS)) {
                     //#if MC>=11400
                     width(b, 204);
@@ -134,7 +134,7 @@ public class GuiHandler extends EventRegistrations {
                         achievements.x, stats.x + width(stats));
             }
             // In 1.13+ Forge, the Options button shares one row with the Open to LAN button
-            //#if MC<11300
+            //#if MC<11400
             //$$ if (openToLan != null) {
             //$$     moveAllButtonsDirectlyBelowUpwards(buttonList, openToLan.y,
             //$$             openToLan.x, openToLan.x + openToLan.width);
@@ -217,7 +217,7 @@ public class GuiHandler extends EventRegistrations {
         addButton(guiScreen, button);
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     private void onButton(InjectedButton button) {
         Screen guiScreen = button.guiScreen;
     //#else
@@ -257,7 +257,7 @@ public class GuiHandler extends EventRegistrations {
         public final int id;
         private Consumer<InjectedButton> onClick;
         public InjectedButton(Screen guiScreen, int buttonId, int x, int y, int width, int height, String buttonText,
-                              //#if MC>=11300
+                              //#if MC>=11400
                               Consumer<InjectedButton> onClick
                               //#else
                               //$$ Consumer<GuiScreenEvent.ActionPerformedEvent.Pre> onClick
@@ -278,14 +278,14 @@ public class GuiHandler extends EventRegistrations {
             );
             this.guiScreen = guiScreen;
             this.id = buttonId;
-            //#if MC>=11300
+            //#if MC>=11400
             this.onClick = onClick;
             //#else
             //$$ this.onClick = null;
             //#endif
         }
 
-        //#if MC>=11300 && MC<11400
+        //#if MC>=11400 && MC<11400
         //$$ @Override
         //$$ public void onClick(double mouseX, double mouseY) {
         //$$     onClick.accept(this);

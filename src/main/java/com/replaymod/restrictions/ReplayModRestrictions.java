@@ -2,7 +2,7 @@
 // Especially because it's non-trivial with forge's network changes.
 // PRs welcome. Ping me if you actually used this.
 
-//#if MC<11300
+//#if MC<11400
 //$$ package com.replaymod.restrictions;
 //$$
 //$$ import com.replaymod.core.SettingsRegistry;

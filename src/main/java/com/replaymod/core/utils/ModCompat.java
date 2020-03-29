@@ -16,7 +16,7 @@ import net.minecraft.util.registry.Registry;
 //$$ import java.util.stream.Stream;
 //#endif
 //$$
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraftforge.fml.ModList;
 //#else
 //$$ import net.minecraftforge.fml.common.Loader;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class ModCompat {
     @SuppressWarnings("unchecked")
     public static Collection<ModInfo> getInstalledNetworkMods() {
-        //#if MC>=11300
+        //#if MC>=11400
         //#if FABRIC>=1
         Map<String, ModInfo> modInfoMap = FabricLoader.getInstance().getAllMods().stream()
                 .map(ModContainer::getMetadata)

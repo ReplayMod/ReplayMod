@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.render.chunk.ChunkRenderTask;
 //#else
 //$$ import net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator;
@@ -20,7 +20,7 @@ import net.minecraft.client.render.chunk.ChunkRenderTask;
 public abstract class MixinChunkRenderWorker {
 
     @Inject(method = "runTask", at = @At("RETURN"))
-    //#if MC>=11300
+    //#if MC>=11400
     public void afterChunkUpdate(ChunkRenderTask task, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {

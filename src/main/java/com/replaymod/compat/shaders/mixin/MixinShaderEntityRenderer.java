@@ -16,7 +16,7 @@ public abstract class MixinShaderEntityRenderer {
     //#if MC>=11400
     @Inject(method = "renderCenter", at = @At("HEAD"))
     //#else
-    //#if MC>=11300
+    //#if MC>=11400
     //$$ @Inject(method = "updateCameraAndRender(FJ)V", at = @At("HEAD"))
     //#else
     //$$ @Inject(method = "renderWorldPass", at = @At("HEAD"))

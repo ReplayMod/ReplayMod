@@ -9,7 +9,7 @@ public class WrappedTimer extends RenderTickCounter {
     protected final RenderTickCounter wrapped;
 
     public WrappedTimer(RenderTickCounter wrapped) {
-        //#if MC>=11300
+        //#if MC>=11400
         super(0, 0);
         //#else
         //$$ super(0);
@@ -20,13 +20,13 @@ public class WrappedTimer extends RenderTickCounter {
 
     @Override
     public void beginRenderTick(
-            //#if MC>=11300
+            //#if MC>=11400
             long sysClock
             //#endif
     ) {
         copy(this, wrapped);
         wrapped.beginRenderTick(
-                //#if MC>=11300
+                //#if MC>=11400
                 sysClock
                 //#endif
         );

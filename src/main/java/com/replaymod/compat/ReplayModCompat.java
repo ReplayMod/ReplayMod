@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 //$$ import com.replaymod.compat.oranges17animations.HideInvisibleEntities;
 //#endif
 
-//#if MC<11300
+//#if MC<11400
 //$$ import com.replaymod.compat.bettersprinting.DisableBetterSprinting;
 //#endif
 
@@ -29,7 +29,7 @@ public class ReplayModCompat implements Module {
         //#if MC<11400
         //$$ new HideInvisibleEntities().register();
         //#endif
-        //#if MC<11300
+        //#if MC<11400
         //$$ DisableBetterSprinting.register();
         //#endif
     }

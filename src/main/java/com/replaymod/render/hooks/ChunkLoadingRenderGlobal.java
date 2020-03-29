@@ -25,13 +25,13 @@ import static com.replaymod.core.versions.MCVer.*;
 
 public class ChunkLoadingRenderGlobal {
 
-    //#if MC>=11300
+    //#if MC>=11400
     private final WorldRenderer hooked;
     //#else
     //$$ private final RenderGlobal hooked;
     //#endif
     private ChunkBatcher renderDispatcher;
-    //#if MC>=11300
+    //#if MC>=11400
     private JailingQueue<ChunkRenderTask> workerJailingQueue;
     //#else
     //$$ private JailingQueue<ChunkCompileTaskGenerator> workerJailingQueue;
@@ -41,7 +41,7 @@ public class ChunkLoadingRenderGlobal {
 
     @SuppressWarnings("unchecked")
     public ChunkLoadingRenderGlobal(
-            //#if MC>=11300
+            //#if MC>=11400
             WorldRenderer renderGlobal
             //#else
             //$$ RenderGlobal renderGlobal
@@ -100,7 +100,7 @@ public class ChunkLoadingRenderGlobal {
         renderDispatcherAcc.setQueueChunkUpdates(queueChunkUpdates);
 
         try {
-            //#if MC>=11300
+            //#if MC>=11400
             Field hookField = WorldRenderer.class.getField("replayModRender_hook");
             //#else
             //$$ Field hookField = RenderGlobal.class.getField("replayModRender_hook");
@@ -147,7 +147,7 @@ public class ChunkLoadingRenderGlobal {
         workerJailingQueue.freeAll();
 
         try {
-            //#if MC>=11300
+            //#if MC>=11400
             Field hookField = WorldRenderer.class.getField("replayModRender_hook");
             //#else
             //$$ Field hookField = RenderGlobal.class.getField("replayModRender_hook");

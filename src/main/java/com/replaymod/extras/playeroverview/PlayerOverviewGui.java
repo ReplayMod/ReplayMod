@@ -115,7 +115,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                         }
                     }.setSize(16, 16),
                     new GuiLabel().setText(
-                            //#if MC>=11300
+                            //#if MC>=11400
                             p.getName().asFormattedString()
                             //#else
                             //#if MC>=10800
@@ -180,7 +180,7 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
         public int compare(PlayerEntity o1, PlayerEntity o2) {
             if (isSpectator(o1) && !isSpectator(o2)) return 1;
             if (isSpectator(o2) && !isSpectator(o1)) return -1;
-            //#if MC>=11300
+            //#if MC>=11400
             return o1.getName().asFormattedString().compareToIgnoreCase(o2.getName().asFormattedString());
             //#else
             //#if MC>=10800

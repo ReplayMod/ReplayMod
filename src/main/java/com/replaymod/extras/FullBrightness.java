@@ -27,7 +27,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
 
     private MinecraftClient mc;
     private boolean active;
-    //#if MC>=11300
+    //#if MC>=11400
     private double originalGamma;
     //#else
     //$$ private float originalGamma;
@@ -43,7 +43,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
             public void run() {
                 active = !active;
                 // need to tick once to update lightmap when replay is paused
-                //#if MC>=11300
+                //#if MC>=11400
                 mod.getMinecraft().gameRenderer.tick();
                 //#else
                 //$$ mod.getMinecraft().entityRenderer.updateRenderer();

@@ -87,7 +87,7 @@ public abstract class Mixin_CubicRotation {
         //#if MC<11500
         if (getHandler() != null && getHandler().omnidirectional) {
             // Minecraft goes back a little so we have to revert that
-            //#if MC>=11300
+            //#if MC>=11400
             GL11.glTranslatef(0.0F, 0.0F, -0.05F);
             //#else
             //$$ GL11.glTranslatef(0.0F, 0.0F, 0.1F);

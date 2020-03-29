@@ -17,7 +17,7 @@ import static com.replaymod.core.versions.MCVer.readString;
  * @see <a href="https://gist.github.com/Johni0702/2547c463e51f65f312cb">Replay Restrictions Gist</a>
  */
 public class Restrictions {
-    //#if MC>=11300
+    //#if MC>=11400
     public static final Identifier PLUGIN_CHANNEL = new Identifier("replaymod", "restrict");
     //#else
     //$$ public static final String PLUGIN_CHANNEL = "Replay|Restrict";

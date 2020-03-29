@@ -30,7 +30,7 @@ public abstract class MixinRenderManager {
             //#if MC>=11400
             method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V",
             //#else
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ method = "renderEntity",
             //#else
             //$$ method = "doRenderEntity",
@@ -65,7 +65,7 @@ public abstract class MixinRenderManager {
             //#if MC>=11400
             method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V",
             //#else
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ method = "renderEntity",
             //#else
             //$$ method = "doRenderEntity",

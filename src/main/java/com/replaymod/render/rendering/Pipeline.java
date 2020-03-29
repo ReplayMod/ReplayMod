@@ -7,7 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
 
-//#if MC>=11300
+//#if MC>=11400
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import org.lwjgl.opengl.Display;
@@ -61,7 +61,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
         MinecraftClient mc = MCVer.getMinecraft();
         while (!capturer.isDone() && !Thread.currentThread().isInterrupted()) {
-            //#if MC>=11300
+            //#if MC>=11400
             if (GLFW.glfwWindowShouldClose(getWindow(mc).getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
             //#else
             //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {

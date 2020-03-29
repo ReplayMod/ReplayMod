@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(BlockEntityRenderDispatcher.class)
 public abstract class MixinTileEntityRendererDispatcher {
 
-    //#if MC>=11300
+    //#if MC>=11400
     //#if MC>=11400
     @Inject(method = "renderEntity(Lnet/minecraft/block/entity/BlockEntity;DDDFIZ)V",
             at = @At("HEAD"))
@@ -42,7 +42,7 @@ public abstract class MixinTileEntityRendererDispatcher {
         }
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     //#if MC>=11400
     @Inject(method = "renderEntity(Lnet/minecraft/block/entity/BlockEntity;DDDFIZ)V",
             at = @At("RETURN"))

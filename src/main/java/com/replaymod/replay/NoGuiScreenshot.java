@@ -16,11 +16,11 @@ import net.minecraft.client.util.ScreenshotUtils;
 //$$ import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
 
-//#if MC<11300
+//#if MC<11400
 //$$ import com.google.common.io.Files;
 //$$ import org.apache.commons.io.FileUtils;
 //$$ import java.io.File;
@@ -42,7 +42,7 @@ public class NoGuiScreenshot {
                     return;
                 }
 
-                //#if MC>=11300
+                //#if MC>=11400
                 int frameWidth = getWindow(mc).getFramebufferWidth(), frameHeight = getWindow(mc).getFramebufferHeight();
                 //#else
                 //$$ int frameWidth = mc.displayWidth, frameHeight = mc.displayHeight;
@@ -63,7 +63,7 @@ public class NoGuiScreenshot {
                     mc.getFramebuffer().beginWrite(true);
                     GlStateManager.enableTexture();
 
-                    //#if MC>=11300
+                    //#if MC>=11400
                     mc.gameRenderer.renderWorld(
                             MCVer.getRenderPartialTicks(),
                             System.nanoTime()
@@ -95,7 +95,7 @@ public class NoGuiScreenshot {
                 // The frame without GUI has been rendered
                 // Read it, create the screenshot and finish the future
                 try {
-                    //#if MC>=11300
+                    //#if MC>=11400
                     Image image = new Image(ScreenshotUtils.method_1663(frameWidth, frameHeight, mc.getFramebuffer()));
                     //#else
                     // We're using Minecraft's ScreenShotHelper even though it writes the screenshot to

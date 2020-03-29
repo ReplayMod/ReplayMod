@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.client.resource.language.I18n;
 import org.apache.commons.io.IOUtils;
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.util.SystemUtil;
 //#else
 //$$ import org.lwjgl.Sys;

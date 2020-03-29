@@ -37,7 +37,7 @@ public abstract class MixinRenderManager {
     //#if MC>=11400
     @Inject(method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V", at = @At("HEAD"))
     //#else
-    //#if MC>=11300
+    //#if MC>=11400
     //$$ @Inject(method = "renderEntity", at = @At("HEAD"))
     //#else
     //$$ @Inject(method = "doRenderEntity", at = @At("HEAD"))

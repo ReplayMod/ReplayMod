@@ -148,7 +148,7 @@ public class BlendMeshBuilder
     }
 
     public static DMesh addBufferToMesh(ByteBuffer buffer, int mode, VertexFormat vertexFormat, DMesh mesh, ReadableVector3f vertOffset) {
-        //#if MC>=11300
+        //#if MC>=11400
         int vertexCount = buffer.remaining() / vertexFormat.getVertexSize();
         //#else
         //$$ int vertexCount = buffer.remaining() / vertexFormat.getNextOffset();
@@ -222,7 +222,7 @@ public class BlendMeshBuilder
         List<DMesh.Vertex> vertices = new ArrayList<>(vertexCount);
         List<Vector2f> uvs = new ArrayList<>(vertexCount);
         List<Integer> colors = new ArrayList<>(vertexCount);
-        //#if MC>=11300
+        //#if MC>=11400
         int step = vertexFormat.getVertexSize();
         //#else
         //$$ int step = vertexFormat.getNextOffset();

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.handler.RecordingEventHandler.RecordingEventSender;
 import net.minecraft.network.Packet;
@@ -29,7 +29,7 @@ public abstract class MixinNetHandlerLoginClient {
     //$$ private NetworkManager field_147393_d;
     //#endif
 
-    //#if MC>=11300
+    //#if MC>=11400
     @Inject(method = "onQueryRequest", at=@At("HEAD"))
     private void earlyInitiateRecording(LoginQueryRequestS2CPacket packet, CallbackInfo ci) {
         initiateRecording(packet);

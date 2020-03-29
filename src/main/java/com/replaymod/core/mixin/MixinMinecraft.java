@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
 //#else
@@ -33,7 +33,7 @@ public abstract class MixinMinecraft
     public MixinMinecraft(String string_1) { super(string_1); }
     //#endif
 
-    //#if MC>=11300
+    //#if MC>=11400
     @Shadow protected abstract void handleInputEvents();
 
     @Override

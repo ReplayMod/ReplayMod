@@ -21,7 +21,7 @@ import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.Identifier;
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.texture.NativeImage;
 //#endif
 
@@ -232,7 +232,7 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
         final int videoHeight = videoSize.getHeight();
 
         if (previewTexture == null) {
-            //#if MC>=11300
+            //#if MC>=11400
             previewTexture = new NativeImageBackedTexture(videoWidth, videoHeight, true);
             //#else
             //$$ previewTexture = new DynamicTexture(videoWidth, videoHeight);
@@ -270,7 +270,7 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
             ByteBuffer buffer = frame.getByteBuffer();
             buffer.mark();
             synchronized (this) {
-                //#if MC>=11300
+                //#if MC>=11400
                 NativeImage data = previewTexture.getImage();
                 assert data != null;
                 //#else
@@ -287,7 +287,7 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
                         int g = buffer.get() & 0xff;
                         int r = buffer.get() & 0xff;
                         buffer.get(); // alpha
-                        //#if MC>=11300
+                        //#if MC>=11400
                         int value = 0xff << 24 | b << 16 | g << 8 |  r;
                         data.setPixelRGBA(x, y, value); // actually takes ABGR, not RGBA
                         //#else

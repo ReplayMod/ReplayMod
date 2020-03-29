@@ -52,7 +52,7 @@ public abstract class MixinCamera {
             boolean inverseView,
             //#endif
             float partialTicks,
-            //#if MC<11300
+            //#if MC<11400
             //$$ int renderPass,
             //#endif
             CallbackInfo ci
@@ -110,7 +110,7 @@ public abstract class MixinCamera {
             boolean inverseView,
             //#endif
             float partialTicks,
-            //#if MC<11300
+            //#if MC<11400
             //$$ int renderPass,
             //#endif
             CallbackInfo ci

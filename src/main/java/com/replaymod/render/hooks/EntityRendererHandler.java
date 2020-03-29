@@ -16,7 +16,7 @@ import net.minecraft.client.MinecraftClient;
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
 //#else
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraftforge.fml.hooks.BasicEventHooks;
 //#else
 //$$ import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -55,7 +55,7 @@ public class EntityRendererHandler implements WorldRenderer {
         //#if MC>=11400
         PreRenderCallback.EVENT.invoker().preRender();
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ BasicEventHooks.onRenderTickStart(partialTicks);
         //#else
         //$$ FMLCommonHandler.instance().onRenderTickStart(partialTicks);
@@ -75,7 +75,7 @@ public class EntityRendererHandler implements WorldRenderer {
         //#if MC>=11400
         PostRenderCallback.EVENT.invoker().postRender();
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ BasicEventHooks.onRenderTickEnd(partialTicks);
         //#else
         //$$ FMLCommonHandler.instance().onRenderTickEnd(partialTicks);

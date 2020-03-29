@@ -83,7 +83,7 @@ import net.minecraft.text.TranslatableText;
 //$$ import java.util.Iterator;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.util.Identifier;
 //#if MC<11400
 //$$ import net.minecraft.world.dimension.DimensionType;
@@ -430,7 +430,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             //$$         int chunkX = entity.chunkCoordX;
                             //$$         int chunkY = entity.chunkCoordZ;
                             //$$
-                                    //#if MC>=11300
+                                    //#if MC>=11400
                                     //$$ if (entity.addedToChunk && world.getChunkProvider().provideChunk(chunkX, chunkY, false, false) != null) {
                                     //#else
                                     //#if MC>=10904
@@ -531,14 +531,14 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         if (p instanceof CustomPayloadS2CPacket) {
             CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) p;
-            //#if MC>=11300
+            //#if MC>=11400
             Identifier channelName = packet.getChannel();
             //#else
             //$$ String channelName = packet.getChannelName();
             //#endif
             // On 1.14+ there's a dedicated OpenWrittenBookS2CPacket now
             //#if MC<11400
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ if (SPacketCustomPayload.BOOK_OPEN.equals(channelName)) {
             //#else
             //$$ if ("MC|BOpen".equals(channelName)) {
@@ -599,13 +599,13 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             );
             //#else
             //#if MC>=10800
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ DimensionType dimension = packet.func_212642_e();
             //#else
             //$$ int dimension = packet.getDimension();
             //#endif
             //$$ EnumDifficulty difficulty = packet.getDifficulty();
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ int maxPlayers = 0; // literally never used by vanilla (i.e. no accessor)
             //#else
             //$$ int maxPlayers = packet.getMaxPlayers();
@@ -1089,7 +1089,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#if MC>=11400
             // FIXME fabric
             //#else
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ Chunk chunk = chunkProvider.provideChunk(x, z, false, false);
             //#else
             //$$ Chunk chunk = chunkProvider.provideChunk(x, z);
@@ -1106,7 +1106,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //$$         // Needs to be called at least 4 times thanks to
             //$$         // EntityOtherPlayerMP#otherPlayerMPPosRotationIncrements (max vanilla value is 3)
             //$$         for (int i = 0; i < 4; i++) {
-                        //#if MC>=11300
+                        //#if MC>=11400
                         //$$ entity.tick();
                         //#else
                         //$$ entity.onUpdate();
@@ -1119,7 +1119,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //$$         if (entity.chunkCoordX != chunkX || entity.chunkCoordZ != chunkZ) {
             //$$             // Entity has left the chunk
             //$$             chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
-                        //#if MC>=11300
+                        //#if MC>=11400
                         //$$ Chunk newChunk = chunkProvider.provideChunk(chunkX, chunkZ, false, false);
                         //#else
                         //#if MC>=10904

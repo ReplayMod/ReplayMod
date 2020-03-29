@@ -26,7 +26,7 @@ public abstract class MixinShadersRender {
         //#if MC>=11400
         if (PreRenderHandCallback.EVENT.invoker().preRenderHand()) {
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ if (ForgeHooksClient.renderFirstPersonHand(MCVer.getMinecraft().renderGlobal, partialTicks)) {
         //#else
         //$$ if (ForgeHooksClient.renderFirstPersonHand(MCVer.getMinecraft().renderGlobal, partialTicks, renderPass)) {

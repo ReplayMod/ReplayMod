@@ -39,7 +39,7 @@ import net.minecraft.util.crash.CrashException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-//#if MC>=11300
+//#if MC>=11400
 //#else
 //$$ import net.minecraft.client.settings.GameSettings;
 //#endif
@@ -164,7 +164,7 @@ public class GuiUploadReplay extends GuiScreen {
             // Get name of key used for thumbnail creation
             KeyBindingRegistry registry = mod.getCore().getKeyBindingRegistry();
             KeyBinding keyBinding = registry.getKeyBindings().get("replaymod.input.thumbnail");
-            //#if MC>=11300
+            //#if MC>=11400
             String keyName = keyBinding == null ? "???" : keyBinding.getLocalizedName();
             //#else
             //$$ String keyName = keyBinding == null ? "???" : GameSettings.getKeyDisplayString(keyBinding.getKeyCode());

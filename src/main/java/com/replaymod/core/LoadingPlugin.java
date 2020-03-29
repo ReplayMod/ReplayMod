@@ -1,6 +1,6 @@
 package com.replaymod.core;
 
-//#if MC<11300
+//#if MC<11400
 //$$ import org.apache.logging.log4j.LogManager;
 //$$ import org.spongepowered.asm.launch.MixinBootstrap;
 //$$ import org.spongepowered.asm.mixin.Mixins;

@@ -18,7 +18,7 @@ import net.minecraft.client.world.ClientWorld;
 //#endif
 
 //#if MC>=11200
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.recipe.book.ClientRecipeBook;
 //#else
 //$$ import net.minecraft.stats.RecipeBook;
@@ -50,7 +50,7 @@ public abstract class MixinPlayerControllerMP {
     //$$ private NetHandlerPlayClient netClientHandler;
     //#endif
 
-    //#if MC>=11300
+    //#if MC>=11400
     @Inject(method = "createPlayer", at=@At("HEAD"), cancellable = true)
     private void replayModReplay_createReplayCamera(
             //#if MC>=11400
@@ -96,7 +96,7 @@ public abstract class MixinPlayerControllerMP {
     }
 
     //#if MC>=10800
-    //#if MC>=11300
+    //#if MC>=11400
     @Inject(method = "isFlyingLocked", at=@At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "isSpectator", at=@At("HEAD"), cancellable = true)

@@ -22,7 +22,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.resource.language.I18n;
 
-//#if MC>=11300
+//#if MC>=11400
 //#else
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
@@ -82,7 +82,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                         // There doesn't seem to be an KeyBindingUpdate event, so we'll just update it every time
                         String keyName = "???";
                         try {
-                            //#if MC>=11300
+                            //#if MC>=11400
                             keyName = keyBinding.getLocalizedName();
                             //#else
                             //$$ keyName = Keyboard.getKeyName(keyBinding.getKeyCode());

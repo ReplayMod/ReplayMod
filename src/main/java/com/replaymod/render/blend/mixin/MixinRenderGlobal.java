@@ -16,13 +16,13 @@ import net.minecraft.client.render.Camera;
 //$$ import net.minecraft.entity.Entity;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.render.WorldRenderer;
 //#else
 //$$ import net.minecraft.client.renderer.RenderGlobal;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 @Mixin(WorldRenderer.class)
 //#else
 //$$ @Mixin(RenderGlobal.class)
@@ -74,7 +74,7 @@ public abstract class MixinRenderGlobal {
 
     @Inject(method = "renderEntities", at = @At(
             value = "INVOKE",
-            //#if MC>=11300
+            //#if MC>=11400
             target = "Lnet/minecraft/client/render/block/entity/BlockEntityRenderDispatcher;render(Lnet/minecraft/block/entity/BlockEntity;FI)V"
             //#else
             //$$ target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;renderTileEntity(Lnet/minecraft/tileentity/TileEntity;FI)V"
@@ -95,7 +95,7 @@ public abstract class MixinRenderGlobal {
 
     @Inject(method = "renderEntities", at = @At(
             value = "INVOKE",
-            //#if MC>=11300
+            //#if MC>=11400
             target = "Lnet/minecraft/client/render/block/entity/BlockEntityRenderDispatcher;render(Lnet/minecraft/block/entity/BlockEntity;FI)V",
             //#else
             //$$ target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;renderTileEntity(Lnet/minecraft/tileentity/TileEntity;FI)V",

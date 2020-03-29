@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 //#else
 //$$ import net.minecraftforge.client.event.RenderHandEvent;
 //$$
-//#if MC>=11300
+//#if MC>=11400
 //#else
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
 //$$
 //#if MC>=10800
 //$$ import com.google.common.base.Predicate;
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#else
 //$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;

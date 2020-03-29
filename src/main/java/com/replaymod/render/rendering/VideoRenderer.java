@@ -38,7 +38,7 @@ import net.minecraft.client.render.RenderTickCounter;
 //$$ import org.lwjgl.opengl.GL11;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.render.mixin.MainWindowAccessor;
 import org.lwjgl.glfw.GLFW;
 //#else
@@ -200,7 +200,7 @@ public class VideoRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
-        //#if MC>=11300
+        //#if MC>=11400
         int displayWidthBefore = getWindow(mc).getFramebufferWidth();
         int displayHeightBefore = getWindow(mc).getFramebufferHeight();
         //noinspection ConstantConditions
@@ -221,7 +221,7 @@ public class VideoRenderer implements RenderInfo {
         // Updating the timer will cause the timeline player to update the game state
         RenderTickCounter timer = ((MinecraftAccessor) mc).getTimer();
         timer.beginRenderTick(
-                //#if MC>=11300
+                //#if MC>=11400
                 MCVer.milliTime()
                 //#endif
         );
@@ -238,7 +238,7 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // change Minecraft's display size back
-        //#if MC>=11300
+        //#if MC>=11400
         acc.setFramebufferWidth(displayWidthBefore);
         acc.setFramebufferHeight(displayHeightBefore);
         //#else
@@ -269,7 +269,7 @@ public class VideoRenderer implements RenderInfo {
             debugInfoWasShown = true;
             mc.options.debugEnabled = false;
         }
-        //#if MC>=11300
+        //#if MC>=11400
         if (mc.mouse.isCursorLocked()) {
             mouseWasGrabbed = true;
         }
@@ -341,7 +341,7 @@ public class VideoRenderer implements RenderInfo {
         //#endif
         mc.options.debugEnabled = debugInfoWasShown;
         if (mouseWasGrabbed) {
-            //#if MC>=11300
+            //#if MC>=11400
             mc.mouse.lockCursor();
             //#else
             //$$ mc.mouseHelper.grabMouseCursor();
@@ -368,7 +368,7 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
-        //#if MC>=11300
+        //#if MC>=11400
         mc.getFramebuffer().resize(displayWidth, displayHeight
                 //#if MC>=11400
                 , false
@@ -403,7 +403,7 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         mc.currentScreen = gui.toMinecraft();
-        //#if MC>=10800 && MC<11300
+        //#if MC>=10800 && MC<11400
         //$$ try {
         //$$     mc.runTick();
         //$$ } catch (IOException e) {
@@ -419,7 +419,7 @@ public class VideoRenderer implements RenderInfo {
             // Resize the GUI framebuffer if the display size changed
             if (!settings.isHighPerformance() && displaySizeChanged()) {
                 updateDisplaySize();
-                //#if MC>=11300
+                //#if MC>=11400
                 guiFramebuffer.resize(getWindow(mc).getFramebufferWidth(), getWindow(mc).getFramebufferHeight()
                         //#if MC>=11400
                         , false
@@ -449,7 +449,7 @@ public class VideoRenderer implements RenderInfo {
             //$$ RenderSystem.loadIdentity();
             //$$ RenderSystem.translatef(0, 0, -2000);
             //#else
-            //#if MC>=11300
+            //#if MC>=11400
             getWindow(mc).method_4493(
                     //#if MC>=11400
                     false
@@ -460,7 +460,7 @@ public class VideoRenderer implements RenderInfo {
             //#endif
             //#endif
 
-            //#if MC>=11300
+            //#if MC>=11400
             gui.toMinecraft().init(mc, getWindow(mc).getScaledWidth(), getWindow(mc).getScaledHeight());
             //#else
             //$$ ScaledResolution scaled = newScaledResolution(mc);
@@ -468,7 +468,7 @@ public class VideoRenderer implements RenderInfo {
             //#endif
 
             // Events are polled on 1.13+ in mainWindow.update which is called later
-            //#if MC<11300
+            //#if MC<11400
             //#if MC>=10800
             //$$ try {
             //$$     gui.toMinecraft().handleInput();
@@ -482,7 +482,7 @@ public class VideoRenderer implements RenderInfo {
             //#endif
             //#endif
 
-            //#if MC>=11300
+            //#if MC>=11400
             int mouseX = (int) mc.mouse.getX();
             int mouseY = (int) mc.mouse.getY();
 
@@ -505,7 +505,7 @@ public class VideoRenderer implements RenderInfo {
             //#if MC>=11500
             //$$ getWindow(mc).swapBuffers();
             //#else
-            //#if MC>=11300
+            //#if MC>=11400
             getWindow(mc).setFullscreen(false);
             //#else
             //$$ // if not in high performance mode, update the gui size if screen size changed
@@ -521,7 +521,7 @@ public class VideoRenderer implements RenderInfo {
             //$$ }
             //#endif
             //#endif
-            //#if MC>=11300
+            //#if MC>=11400
             if (mc.mouse.isCursorLocked()) {
                 mc.mouse.unlockCursor();
             }
@@ -542,7 +542,7 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private boolean displaySizeChanged() {
-        //#if MC>=11300
+        //#if MC>=11400
         return displayWidth != getWindow(mc).getWidth() || displayHeight != getWindow(mc).getHeight();
         //#else
         //$$ return displayWidth != Display.getWidth() || displayHeight != Display.getHeight();
@@ -550,7 +550,7 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void updateDisplaySize() {
-        //#if MC>=11300
+        //#if MC>=11400
         displayWidth = getWindow(mc).getWidth();
         displayHeight = getWindow(mc).getHeight();
         //#else

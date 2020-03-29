@@ -41,7 +41,7 @@ import java.util.*;
 //$$ import org.lwjgl.opengl.GL11;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.replay.mixin.EntityLivingBaseAccessor;
 import net.minecraft.client.util.Window;
 import net.minecraft.entity.LivingEntity;
@@ -67,7 +67,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.NetworkSide;
 //#if MC>=11400
 //#else
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraftforge.fml.network.NetworkHooks;
 //#else
 //$$ import com.mojang.authlib.GameProfile;
@@ -168,7 +168,7 @@ public class ReplayHandler {
 
         channel.close();
 
-        //#if MC>=11300
+        //#if MC>=11400
         mc.mouse.unlockCursor();
         //#else
         //$$ mc.setIngameNotInFocus();
@@ -207,7 +207,7 @@ public class ReplayHandler {
         channel.close().awaitUninterruptibly();
 
         if (mc.player instanceof CameraEntity) {
-            //#if MC>=11300
+            //#if MC>=11400
             mc.player.remove();
             //#else
             //$$ mc.player.setDead();
@@ -282,7 +282,7 @@ public class ReplayHandler {
                 networkManager,
                 mc,
                 null
-                //#if MC>=11300
+                //#if MC>=11400
                 , it -> {}
                 //#endif
         ));
@@ -302,7 +302,7 @@ public class ReplayHandler {
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
 
-        //#if MC>=11300 && MC<11400
+        //#if MC>=11400 && MC<11400
         //$$ NetworkHooks.registerClientLoginChannel(networkManager);
         //#endif
     }
@@ -546,7 +546,7 @@ public class ReplayHandler {
             }
 
             // Run previous tick
-            //#if MC>=11300
+            //#if MC>=11400
             mc.tick();
             //#else
             //$$ try {
@@ -598,7 +598,7 @@ public class ReplayHandler {
                         //#endif
                 ) {
                     @Override
-                    //#if MC>=11300
+                    //#if MC>=11400
                     public void render(int mouseX, int mouseY, float partialTicks) {
                     //#else
                     //$$ public void drawScreen(int mouseX, int mouseY, float partialTicks) {
@@ -634,7 +634,7 @@ public class ReplayHandler {
                 //#if MC>=11400
                 getWindow(mc).method_4493(true);
                 //#else
-                //#if MC>=11300
+                //#if MC>=11400
                 //$$ mc.mainWindow.setupOverlayRendering();
                 //#else
                 //$$ mc.entityRenderer.setupOverlayRendering();
@@ -642,14 +642,14 @@ public class ReplayHandler {
                 //#endif
                 //#endif
 
-                //#if MC>=11300
+                //#if MC>=11400
                 Window
                 //#else
                 //$$ ScaledResolution
                 //#endif
                         resolution = newScaledResolution(mc);
                 guiScreen.init(mc, resolution.getScaledWidth(), resolution.getScaledHeight());
-                //#if MC>=11300
+                //#if MC>=11400
                 guiScreen.render(0, 0, 0);
                 //#else
                 //$$ guiScreen.drawScreen(0, 0, 0);
@@ -658,7 +658,7 @@ public class ReplayHandler {
                 mc.getFramebuffer().endWrite();
                 popMatrix();
                 pushMatrix();
-                //#if MC>=11300
+                //#if MC>=11400
                 mc.getFramebuffer().draw(getWindow(mc).getFramebufferWidth(), getWindow(mc).getFramebufferHeight());
                 //#else
                 //$$ mc.getFramebuffer().framebufferRender(mc.displayWidth, mc.displayHeight);
@@ -668,7 +668,7 @@ public class ReplayHandler {
                 //#if MC>=11500
                 //$$ getWindow(mc).swapBuffers();
                 //#else
-                //#if MC>=11300
+                //#if MC>=11400
                 getWindow(mc).setFullscreen(true);
                 //#else
                 //$$ Display.update();
@@ -687,7 +687,7 @@ public class ReplayHandler {
                 //#endif
 
                 mc.getNetworkHandler().getConnection()
-                        //#if MC>=11300
+                        //#if MC>=11400
                         .tick();
                         //#else
                         //$$ .processReceivedPackets();
@@ -700,7 +700,7 @@ public class ReplayHandler {
                     entity.prevYaw = entity.yaw;
                     entity.prevPitch = entity.pitch;
                 }
-                //#if MC>=10800 && MC<11300
+                //#if MC>=10800 && MC<11400
                 //$$ try {
                 //$$     mc.runTick();
                 //$$ } catch (IOException e) {
@@ -720,7 +720,7 @@ public class ReplayHandler {
     }
 
     private void skipTeleportInterpolation(Entity entity) {
-        //#if MC>=11300
+        //#if MC>=11400
         if (entity instanceof LivingEntity && !(entity instanceof CameraEntity)) {
             LivingEntity e = (LivingEntity) entity;
             EntityLivingBaseAccessor ea = (EntityLivingBaseAccessor) e;

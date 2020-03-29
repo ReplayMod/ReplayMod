@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.model.Cuboid;
 //#else
 //$$ import net.minecraft.client.model.ModelRenderer;

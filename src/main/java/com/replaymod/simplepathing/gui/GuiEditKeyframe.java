@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Map;
 import java.util.Optional;
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.core.versions.MCVer.Keyboard;
 //#else
 //$$ import org.lwjgl.input.Keyboard;

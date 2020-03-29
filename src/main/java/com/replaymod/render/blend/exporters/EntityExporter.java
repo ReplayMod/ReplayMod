@@ -55,7 +55,7 @@ public class EntityExporter implements Exporter {
         if (entityObject == null) {
             entityObject = new DObject(DObject.Type.OB_EMPTY);
             entityObject.setParent(renderState.peekObject());
-            //#if MC>=11300
+            //#if MC>=11400
             entityObject.id.name = entity.getName().getString();
             //#else
             //$$ entityObject.id.name = entity.getName();

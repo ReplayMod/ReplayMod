@@ -53,7 +53,7 @@ import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//#if MC>=11300
+//#if MC>=11400
 //#else
 //$$ import org.lwjgl.input.Keyboard;
 //#if MC>=10800

@@ -15,7 +15,7 @@ import java.util.Optional;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
-//#if MC>=11300
+//#if MC>=11400
 import org.apache.maven.artifact.versioning.ComparableVersion;
 //#else
 //#if MC>=10800

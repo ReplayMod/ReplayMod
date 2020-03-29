@@ -16,7 +16,7 @@ import org.lwjgl.opengl.GL12;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.render.mixin.MainWindowAccessor;
 import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
@@ -116,7 +116,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     }
 
     protected void resize(int width, int height) {
-        //#if MC>=11300
+        //#if MC>=11400
         GlFramebuffer fb = mc.getFramebuffer();
         if (fb.viewWidth != width || fb.viewHeight != height) {
             fb.resize(width, height

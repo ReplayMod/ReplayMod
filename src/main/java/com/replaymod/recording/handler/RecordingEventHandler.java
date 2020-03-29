@@ -93,7 +93,7 @@ public class RecordingEventHandler extends EventRegistrations {
         }
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     public void onPacket(Packet<?> packet) {
         packetListener.save(packet);
     }
@@ -375,7 +375,7 @@ public class RecordingEventHandler extends EventRegistrations {
     //$$     try {
             //#if MC>=11100
             //#if MC>=11200
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ ItemStack stack = event.getStack();
             //$$ packetListener.save(new SCollectItemPacket(
             //$$         event.getOriginalEntity().getEntityId(),

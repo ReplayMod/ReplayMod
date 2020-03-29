@@ -9,7 +9,7 @@
     "MixinInGameHud",
     //#endif
     "EntityLivingBaseAccessor",
-    //#if MC>=11300
+    //#if MC>=11400
     "MixinGameRenderer",
     //#else
     //$$ "EntityOtherPlayerMPAccessor",

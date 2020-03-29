@@ -7,7 +7,7 @@ import com.replaymod.render.blend.data.DMesh;
 import com.replaymod.render.blend.data.DObject;
 import org.lwjgl.opengl.GL11;
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.model.Box;
 import net.minecraft.client.model.Cuboid;
 //#else

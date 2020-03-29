@@ -47,7 +47,7 @@ import net.fabricmc.loader.api.FabricLoader;
 //$$ import java.util.Queue;
 //$$ import java.util.concurrent.FutureTask;
 //$$
-//#if MC>=11300
+//#if MC>=11400
 //$$ import com.replaymod.core.versions.LangResourcePack;
 //$$ import net.minecraft.resources.IPackFinder;
 //$$ import net.minecraft.resources.ResourcePackInfo;
@@ -65,7 +65,7 @@ import net.fabricmc.loader.api.FabricLoader;
 //$$ import net.minecraft.client.GameSettings;
 //#endif
 //$$
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraftforge.fml.ModList;
 //#else
 //$$ import net.minecraftforge.fml.common.Loader;
@@ -101,7 +101,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 //#if FABRIC<=0
-//#if MC>=11300
+//#if MC>=11400
 //$$ @Mod(ReplayMod.MOD_ID)
 //#else
 //$$ @Mod(modid = ReplayMod.MOD_ID,
@@ -127,7 +127,7 @@ public class ReplayMod implements
     //#if MC>=11400
     private static final String minecraftVersion = MinecraftClient.getInstance().getGame().getVersion().getName();
     //#else
-    //#if MC>=11300
+    //#if MC>=11400
     //$$ private static final String minecraftVersion = MCPVersion.getMCVersion();
     //#else
     //$$ private static final String minecraftVersion = Loader.MC_VERSION;
@@ -141,7 +141,7 @@ public class ReplayMod implements
 
     private static final MinecraftClient mc = MCVer.getMinecraft();
 
-    //#if MC<11300
+    //#if MC<11400
     //$$ @Deprecated
     //$$ public static Configuration config;
     //#endif
@@ -153,7 +153,7 @@ public class ReplayMod implements
     }
 
     // The instance of your mod that Forge uses.
-    //#if MC>=11300
+    //#if MC>=11400
     { instance = this; }
     //#else
     //$$ @Instance(MOD_ID)
@@ -187,7 +187,7 @@ public class ReplayMod implements
         //#if MC>=11400
         // Not needed on fabric, using MixinModResourcePackUtil instead. Could in theory also use it on 1.13 but it already works as is.
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().getResourcePackList().addPackFinder(new LangResourcePack.Finder()));
         //#endif
         //#endif
@@ -204,12 +204,12 @@ public class ReplayMod implements
         modules.add(new ReplayModExtras(this));
         modules.add(new ReplayModCompat());
 
-        //#if MC>=11300
+        //#if MC>=11400
         settingsRegistry.register();
         //#endif
     }
 
-    //#if MC<=11300
+    //#if MC<=11400
     //$$ @EventHandler
     //$$ public void init(FMLPreInitializationEvent event) {
     //$$     config = new Configuration(event.getSuggestedConfigurationFile());
@@ -261,7 +261,7 @@ public class ReplayMod implements
                 }
             }
         };
-        //#if MC>=11300
+        //#if MC>=11400
         mc.getResourcePackContainerManager().addCreator(new ResourcePackCreator() {
             @Override
             public <T extends ResourcePackContainer> void registerContainer(Map<String, T> map, ResourcePackContainer.Factory<T> factory) {
@@ -299,7 +299,7 @@ public class ReplayMod implements
         modules.forEach(m -> m.registerKeyBindings(keyBindingRegistry));
     }
     //#else
-    //#if MC>=11300
+    //#if MC>=11400
     //$$ {
     //$$     FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent event) -> modules.forEach(Module::initCommon));
     //$$     FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLClientSetupEvent event) -> modules.forEach(Module::initClient));
@@ -575,7 +575,7 @@ public class ReplayMod implements
                 .orElseThrow(IllegalStateException::new)
                 .getMetadata().getVersion().toString();
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ return ModList.get().getModContainerById(MOD_ID).get().getModInfo().getVersion().toString();
         //#else
         //$$ return Loader.instance().getIndexedModList().get(MOD_ID).getVersion();

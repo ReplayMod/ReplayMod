@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.render.Camera;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.render.WorldRenderer;
 //#else
 //$$ import net.minecraft.client.renderer.RenderGlobal;
@@ -27,7 +27,7 @@ import net.minecraft.client.render.WorldRenderer;
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 @Mixin(WorldRenderer.class)
 //#else
 //$$ @Mixin(RenderGlobal.class)
@@ -48,7 +48,7 @@ public abstract class MixinRenderGlobal {
             Camera viewEntity,
             //#else
             //$$ Entity viewEntity,
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ float partialTicks,
             //#else
             //$$ double partialTicks,
@@ -65,7 +65,7 @@ public abstract class MixinRenderGlobal {
             Camera viewEntity,
             //#else
             //$$ Entity viewEntity,
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ float partialTicks,
             //#else
             //$$ double partialTicks,

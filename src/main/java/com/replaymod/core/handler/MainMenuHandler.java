@@ -58,7 +58,7 @@ public class MainMenuHandler extends EventRegistrations {
                 int offset = -1 * 24 + 10;
                 button.y += offset;
 
-                //#if MC>=11300
+                //#if MC>=11400
                 //#if MC>=11400
                 if (BUTTON_REALMS.equals(button.getMessage())) {
                 //#else
@@ -68,7 +68,7 @@ public class MainMenuHandler extends EventRegistrations {
                 }
                 //#endif
             }
-            //#if MC>=11300
+            //#if MC>=11400
             GuiMainMenuAccessor guiA = (GuiMainMenuAccessor) gui;
             if (realmsOffset != 0 && guiA.getRealmsNotification() instanceof RealmsScreenProxy) {
                 guiA.setRealmsNotification(new RealmsNotificationProxy((RealmsScreenProxy) guiA.getRealmsNotification(), realmsOffset));
@@ -77,7 +77,7 @@ public class MainMenuHandler extends EventRegistrations {
         }
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     private static class RealmsNotificationProxy extends Screen {
         private final RealmsScreenProxy proxy;
         private final int offset;

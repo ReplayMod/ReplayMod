@@ -23,7 +23,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.util.hit.HitResult;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.Matrix4f;
@@ -52,7 +52,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-//#if MC>=11300
+//#if MC>=11400
 @Mixin(value = GameRenderer.class)
 //#else
 //$$ @Mixin(value = EntityRenderer.class)
@@ -85,7 +85,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //#endif
 
     // Moved to MixinFogRenderer in 1.13
-    //#if MC<11300
+    //#if MC<11400
     //$$ @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true)
     //$$ private void replayModRender_onSetupFog(int fogDistanceFlag, float partialTicks, CallbackInfo ci) {
     //$$     if (replayModRender_handler == null) return;
@@ -104,7 +104,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             Camera camera,
             //#endif
             float partialTicks,
-            //#if MC<11300
+            //#if MC<11400
             //$$ int renderPass,
             //#endif
             CallbackInfo ci
@@ -113,7 +113,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             if (replayModRender_handler.omnidirectional) {
                 // No spectator hands during 360° view, we wouldn't even know where to put it
                 ci.cancel();
-            //#if MC>=11300
+            //#if MC>=11400
             }
             //#else
             //$$ } else {
@@ -130,7 +130,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
         }
     }
 
-    //#if MC<11300
+    //#if MC<11400
     //$$ @Shadow
     //$$ public abstract void renderHand(float partialTicks, int renderPass);
     //#endif
@@ -163,7 +163,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //#endif
     private void replayModRender_setupStereoscopicProjection(
             float partialTicks,
-            //#if MC<11300
+            //#if MC<11400
             //$$ int renderPass,
             //#endif
             CallbackInfo ci
@@ -197,7 +197,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //#endif
     private void replayModRender_setupStereoscopicModelView(
             float partialTicks,
-            //#if MC<11300
+            //#if MC<11400
             //$$ int renderPass,
             //#endif
             CallbackInfo ci
@@ -216,7 +216,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
      *   Cubic Renderer
      */
 
-    //#if MC>=11300
+    //#if MC>=11400
     @Redirect(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
     private Matrix4f replayModRender_perspective$0(double fovY, float aspect, float zNear, float zFar) {
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);

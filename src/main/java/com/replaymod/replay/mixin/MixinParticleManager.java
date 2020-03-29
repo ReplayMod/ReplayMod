@@ -15,7 +15,7 @@ import java.util.Queue;
 @Mixin(ParticleManager.class)
 public abstract class MixinParticleManager {
     @Shadow
-    //#if MC>=11300
+    //#if MC>=11400
     private Queue<Particle> newParticles;
     //#else
     //$$ private Queue<Particle> queueEntityFX;
@@ -31,7 +31,7 @@ public abstract class MixinParticleManager {
      */
     @Inject(method = "setWorld", at = @At("HEAD"))
     public void replayModReplay_clearParticleQueue(World world, CallbackInfo ci) {
-        //#if MC>=11300
+        //#if MC>=11400
         this.newParticles.clear();
         //#else
         //$$ this.queueEntityFX.clear();

@@ -12,7 +12,7 @@ import java.util.Queue;
 //$$ import java.util.concurrent.FutureTask;
 //#endif
 
-//#if MC<11300
+//#if MC<11400
 //$$ import net.minecraft.client.resources.IResourcePack;
 //$$ import java.util.List;
 //#endif
@@ -35,7 +35,7 @@ public interface MinecraftAccessor {
     @Accessor("crashReport")
     CrashReport getCrashReporter();
 
-    //#if MC<11300
+    //#if MC<11400
     //$$ @Accessor
     //$$ List<IResourcePack> getDefaultResourcePacks();
     //#endif

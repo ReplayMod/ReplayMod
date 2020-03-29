@@ -26,7 +26,7 @@
     //#endif
     "MixinCamera",
     "MixinEntityRenderer",
-    //#if MC>=11300
+    //#if MC>=11400
     "MixinFogRenderer",
     //#endif
     //#if MC>=10800

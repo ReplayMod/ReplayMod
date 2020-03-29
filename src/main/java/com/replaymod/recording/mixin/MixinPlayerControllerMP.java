@@ -1,6 +1,6 @@
 package com.replaymod.recording.mixin;
 
-//#if MC>=10904 && MC<11300
+//#if MC>=10904 && MC<11400
 //$$ import com.replaymod.recording.handler.RecordingEventHandler;
 //$$ import net.minecraft.client.Minecraft;
 //$$ import net.minecraft.client.multiplayer.PlayerControllerMP;

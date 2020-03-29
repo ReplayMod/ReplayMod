@@ -9,7 +9,7 @@
     "MixinGameRenderer",
     "MixinModResourcePackUtil",
     //#endif
-    //#if MC>=11300
+    //#if MC>=11400
     "MixinKeyboardListener",
     //#endif
     //#if MC<10800

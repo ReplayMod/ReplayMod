@@ -12,7 +12,7 @@ import net.minecraft.client.gui.widget.AbstractButtonWidget;
 //$$ import net.minecraft.client.gui.GuiButton;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.gui.Element;
 //#endif
 
@@ -26,7 +26,7 @@ public interface GuiScreenAccessor {
     //$$ List<GuiButton> getButtons();
     //#endif
 
-    //#if MC>=11300
+    //#if MC>=11400
     @Accessor
     List<Element> getChildren();
     //#endif

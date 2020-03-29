@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 //#else
@@ -22,7 +22,7 @@ import net.minecraft.client.render.model.BakedModel;
 //#endif
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 @Mixin(ItemRenderer.class)
 //#else
 //$$ @Mixin(RenderItem.class)
@@ -31,7 +31,7 @@ public abstract class MixinRenderItem {
     //#if MC>=11400
     @Inject(method = "renderItemModel", at = @At("HEAD"))
     //#else
-    //#if MC>=11300
+    //#if MC>=11400
     //$$ @Inject(method = "renderModel(Lnet/minecraft/client/renderer/model/IBakedModel;Lnet/minecraft/item/ItemStack;)V",
     //$$         at = @At("HEAD"))
     //#else

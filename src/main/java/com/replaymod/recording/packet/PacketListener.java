@@ -38,7 +38,7 @@ import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.network.packet.LoginSuccessS2CPacket;
 //#else
 //$$ import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
@@ -95,7 +95,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private long lastSentPacket;
     private long timePassedWhilePaused;
     private volatile boolean serverWasPaused;
-    //#if MC>=11300
+    //#if MC>=11400
     private NetworkState connectionState = NetworkState.LOGIN;
     //#else
     //$$ private EnumConnectionState connectionState = EnumConnectionState.PLAY;
@@ -191,7 +191,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 }
             });
 
-            //#if MC>=11300
+            //#if MC>=11400
             if (packet instanceof LoginSuccessS2CPacket) {
                 connectionState = NetworkState.PLAY;
             }
@@ -286,7 +286,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //$$ }
                 //#endif
 
-                //#if MC<11300
+                //#if MC<11400
                 //$$ if (packet instanceof FMLProxyPacket) {
                 //$$     // This packet requires special handling
                     //#if MC>=10800

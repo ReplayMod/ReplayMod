@@ -33,7 +33,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//#if MC>=11300
+//#if MC>=11400
 //#else
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
@@ -209,7 +209,7 @@ public class Utils {
     }
 
     public static boolean isCtrlDown() {
-        //#if MC>=11300
+        //#if MC>=11400
         return Screen.hasControlDown();
         //#else
         //$$ return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);

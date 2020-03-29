@@ -22,7 +22,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.resource.language.I18n;
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.KeyEventCallback;
 //#else
@@ -176,7 +176,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     //$$ public // All event handlers need to be public in 1.7.10
     //#endif
     class EventHandler extends EventRegistrations {
-        //#if MC>=11300
+        //#if MC>=11400
         { on(KeyBindingEventCallback.EVENT, this::onKeyBindingEvent); }
         private void onKeyBindingEvent() {
         //#else
@@ -191,7 +191,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             }
         }
 
-        //#if MC>=11300
+        //#if MC>=11400
         { on(KeyEventCallback.EVENT, (int key, int scanCode, int action, int modifiers) -> onKeyInput(key, action)); }
         private void onKeyInput(int key, int action) {
             if (action != 0) return;

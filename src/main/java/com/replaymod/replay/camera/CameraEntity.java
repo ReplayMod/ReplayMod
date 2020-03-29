@@ -54,7 +54,7 @@ import net.minecraft.util.hit.HitResult;
 //$$ import net.minecraft.util.text.ITextComponent;
 //$$ import net.minecraft.world.World;
 //$$
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraft.util.math.RayTraceFluidMode;
 //#else
 //$$ import net.minecraft.block.material.Material;
@@ -65,7 +65,7 @@ import net.minecraft.util.hit.HitResult;
 //#if MC>=10904
 import net.minecraft.entity.EquipmentSlot;
 //#if MC>=11200
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.recipe.book.ClientRecipeBook;
 //#else
 //$$ import net.minecraft.stats.RecipeBook;
@@ -136,7 +136,7 @@ public class CameraEntity
             ClientPlayNetworkHandler netHandlerPlayClient,
             StatHandler statisticsManager
             //#if MC>=11200
-            //#if MC>=11300
+            //#if MC>=11400
             , ClientRecipeBook recipeBook
             //#else
             //$$ , RecipeBook recipeBook
@@ -304,7 +304,7 @@ public class CameraEntity
         return falseUnlessSpectating(Entity::isInsideWall); // Make sure no suffocation overlay is rendered
     }
 
-    //#if MC<11300
+    //#if MC<11400
     //$$ @Override
     //$$ public boolean isInsideOfMaterial(Material materialIn) {
     //$$     return falseUnlessSpectating(e -> e.isInsideOfMaterial(materialIn)); // Make sure no overlays are rendered
@@ -485,7 +485,7 @@ public class CameraEntity
         return result;
     }
     //#else
-    //#if MC>=11300
+    //#if MC>=11400
     //$$ @Override
     //$$ public RayTraceResult rayTrace(double blockReachDistance, float partialTicks, RayTraceFluidMode p_174822_4_) {
     //$$     RayTraceResult pos = super.rayTrace(blockReachDistance, partialTicks, p_174822_4_);
@@ -525,7 +525,7 @@ public class CameraEntity
     //$$ }
     //#endif
 
-    //#if MC<11300
+    //#if MC<11400
     //$$ @Override
     //$$ public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
     //$$     // Do not open any block GUIs for the camera entities

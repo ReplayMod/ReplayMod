@@ -50,7 +50,7 @@ import java.util.concurrent.CompletableFuture;
 //$$ import net.minecraftforge.eventbus.api.IEventBus;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
@@ -96,7 +96,7 @@ import net.minecraft.client.render.chunk.ChunkRenderTask;
 //#if FABRIC>=1
 import net.fabricmc.loader.api.FabricLoader;
 //#else
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraftforge.fml.ModList;
 //#else
 //$$ import net.minecraftforge.fml.common.Loader;
@@ -129,7 +129,7 @@ public class MCVer {
         //#if FABRIC>=1
         return FabricLoader.getInstance().isModLoaded(id.toLowerCase());
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ return ModList.get().isLoaded(id.toLowerCase());
         //#else
         //$$ return Loader.isModLoaded(id);
@@ -244,7 +244,7 @@ public class MCVer {
     //$$ }
     //#else
     //$$ public static void addButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ event.addButton(button);
         //#else
         //$$ getButtonList(event).add(button);
@@ -252,7 +252,7 @@ public class MCVer {
     //$$ }
     //$$
     //$$ public static void removeButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ event.removeButton(button);
         //#else
         //$$ getButtonList(event).remove(button);
@@ -387,7 +387,7 @@ public class MCVer {
         //#endif
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     public static Window getWindow(MinecraftClient mc) {
         //#if MC>=11500
         //$$ return mc.getWindow();
@@ -397,7 +397,7 @@ public class MCVer {
     }
     //#endif
 
-    //#if MC>=11300
+    //#if MC>=11400
     public static Window newScaledResolution(MinecraftClient mc) {
         return getWindow(mc);
     }
@@ -418,7 +418,7 @@ public class MCVer {
     //$$ ListenableFuture<?>
     //#endif
     setServerResourcePack(File file) {
-        //#if MC>=11300
+        //#if MC>=11400
         return getMinecraft().getResourcePackDownloader().loadServerPack(file);
         //#else
         //$$ ResourcePackRepository repo = getMinecraft().getResourcePackRepository();
@@ -574,19 +574,19 @@ public class MCVer {
         }
         //#endif
         acc.getButtons().add(button);
-        //#if MC>=11300
+        //#if MC>=11400
         acc.getChildren().add(button);
         //#endif
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     public static void processKeyBinds() {
         ((MinecraftMethodAccessor) getMinecraft()).replayModProcessKeyBinds();
     }
     //#endif
 
     public interface MinecraftMethodAccessor {
-        //#if MC>=11300
+        //#if MC>=11400
         void replayModProcessKeyBinds();
         //#else
         //#if MC>=10904
@@ -608,7 +608,7 @@ public class MCVer {
     //#endif
 
     public static long milliTime() {
-        //#if MC>=11300
+        //#if MC>=11400
         return SystemUtil.getMeasuringTimeMs();
         //#else
         //$$ return Minecraft.getSystemTime();
@@ -619,7 +619,7 @@ public class MCVer {
         //#if MC>=11500
         //$$ getMinecraft().getTextureManager().bindTexture(texture);
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         getMinecraft().getTextureManager().bindTexture(texture);
         //#else
         //$$ getMinecraft().renderEngine.bindTexture(texture);
@@ -647,7 +647,7 @@ public class MCVer {
     //#endif
 
     public static void openFile(File file) {
-        //#if MC>=11300
+        //#if MC>=11400
         SystemUtil.getOperatingSystem().open(file);
         //#else
         //$$ String path = file.getAbsolutePath();
@@ -677,7 +677,7 @@ public class MCVer {
     }
 
     public static void openURL(URI url) {
-        //#if MC>=11300
+        //#if MC>=11400
         //#if MC>=11400
         SystemUtil.getOperatingSystem().open(url);
         //#else
@@ -692,7 +692,7 @@ public class MCVer {
         //#endif
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     private static Boolean hasOptifine;
     public static boolean hasOptifine() {
         if (hasOptifine == null) {
@@ -729,7 +729,7 @@ public class MCVer {
     //#endif
 
     public static abstract class Keyboard {
-        //#if MC>=11300
+        //#if MC>=11400
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
         public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
         public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
@@ -820,7 +820,7 @@ public class MCVer {
             //#if MC>=11400
             return InputUtil.isKeyPressed(getMinecraft().window.getHandle(), keyCode);
             //#else
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ return InputMappings.isKeyDown(keyCode);
             //#else
             //$$ return org.lwjgl.input.Keyboard.isKeyDown(keyCode);
@@ -829,7 +829,7 @@ public class MCVer {
             //#endif
         }
 
-        //#if MC<11300
+        //#if MC<11400
         //$$ public static int getEventKey() {
         //$$     return org.lwjgl.input.Keyboard.getEventKey();
         //$$ }

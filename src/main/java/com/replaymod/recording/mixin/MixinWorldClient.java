@@ -24,7 +24,7 @@ import net.minecraft.world.dimension.DimensionType;
 import java.util.function.BiFunction;
 //#else
 //$$ import net.minecraft.world.storage.ISaveHandler;
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraft.world.dimension.Dimension;
 //$$ import net.minecraft.world.storage.WorldSavedDataStorage;
 //#else
@@ -44,18 +44,18 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     }
     //#else
     //$$ protected MixinWorldClient(ISaveHandler saveHandlerIn,
-                               //#if MC>=11300
+                               //#if MC>=11400
                                //$$ WorldSavedDataStorage mapStorage,
                                //#endif
     //$$                            WorldInfo info,
-                               //#if MC>=11300
+                               //#if MC>=11400
                                //$$ Dimension providerIn,
                                //#else
                                //$$ WorldProvider providerIn,
                                //#endif
     //$$                            Profiler profilerIn, boolean client) {
     //$$     super(saveHandlerIn,
-                //#if MC>=11300
+                //#if MC>=11400
                 //$$ mapStorage,
                 //#endif
     //$$             info, providerIn, profilerIn, client);

@@ -32,7 +32,7 @@ public abstract class MixinShaderRenderGlobal {
             Camera viewEntity,
             //#else
             //$$ Entity viewEntity,
-            //#if MC>=11300
+            //#if MC>=11400
             //$$ float partialTicks,
             //#else
             //$$ double partialTicks,

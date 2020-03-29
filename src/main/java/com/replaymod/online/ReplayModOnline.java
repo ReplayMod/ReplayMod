@@ -19,7 +19,7 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//#if MC<11300
+//#if MC<11400
 //$$ import net.minecraftforge.common.config.Configuration;
 //#endif
 
@@ -99,7 +99,7 @@ public class ReplayModOnline extends EventRegistrations implements Module {
      * Always returns null on 1.13+ where the Configuration system has been removed.
      */
     private AuthData loadOldAuthData() {
-        //#if MC<11300
+        //#if MC<11400
         //$$ Path path = MCVer.getMinecraft().mcDataDir.toPath().resolve("config/replaymod-online.cfg");
         //$$ Configuration config = new Configuration(path.toFile());
         //$$ ConfigurationAuthData authData = new ConfigurationAuthData(config);

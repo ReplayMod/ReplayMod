@@ -21,7 +21,7 @@ import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 //$$ import net.minecraftforge.fml.network.NetworkRegistry;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 //#else
 //$$ import io.netty.channel.ChannelDuplexHandler;
 //$$ import io.netty.channel.ChannelHandler;
@@ -30,7 +30,7 @@ import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 public class ReplayModRecording implements Module {
 
     private static final Logger LOGGER = LogManager.getLogger();
-    //#if MC>=11300
+    //#if MC>=11400
     private static final AttributeKey<Void> ATTR_CHECKED = AttributeKey.newInstance("ReplayModRecording_checked");
     //#endif
 
@@ -70,7 +70,7 @@ public class ReplayModRecording implements Module {
         //#if FABRIC>=1
         ClientSidePacketRegistry.INSTANCE.register(Restrictions.PLUGIN_CHANNEL, (packetContext, packetByteBuf) -> {});
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ NetworkRegistry.newEventChannel(Restrictions.PLUGIN_CHANNEL, () -> "0", any -> true, any -> true);
         //#else
         //$$ NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
@@ -78,7 +78,7 @@ public class ReplayModRecording implements Module {
         //#endif
     }
 
-    //#if MC<11300
+    //#if MC<11400
     //$$ @ChannelHandler.Sharable
     //$$ private static class RestrictionsChannelHandler extends ChannelDuplexHandler {}
     //#endif
@@ -86,7 +86,7 @@ public class ReplayModRecording implements Module {
     public void initiateRecording(ClientConnection networkManager) {
         Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
         if (channel.pipeline().get("ReplayModReplay_replaySender") != null) return;
-        //#if MC>=11300
+        //#if MC>=11400
         if (channel.hasAttr(ATTR_CHECKED)) return;
         channel.attr(ATTR_CHECKED).set(null);
         //#endif

@@ -1,4 +1,4 @@
-//#if MC<11300
+//#if MC<11400
 //$$ package com.replaymod.compat.bettersprinting;
 //$$
 //$$ import com.replaymod.replay.ReplayModReplay;

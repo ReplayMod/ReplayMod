@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashReport;
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.render.mixin.MainWindowAccessor;
 import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
@@ -33,7 +33,7 @@ public class ScreenshotRenderer implements RenderInfo {
 
     public boolean renderScreenshot() throws Throwable {
         try {
-            //#if MC>=11300
+            //#if MC>=11400
             int displayWidthBefore = getWindow(mc).getFramebufferWidth();
             int displayHeightBefore = getWindow(mc).getFramebufferHeight();
             //#else
@@ -61,7 +61,7 @@ public class ScreenshotRenderer implements RenderInfo {
             //#endif
 
             mc.options.hudHidden = hideGUIBefore;
-            //#if MC>=11300
+            //#if MC>=11400
             //noinspection ConstantConditions
             MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
             acc.setFramebufferWidth(displayWidthBefore);

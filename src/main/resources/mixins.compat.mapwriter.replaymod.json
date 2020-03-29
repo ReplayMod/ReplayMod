@@ -4,7 +4,7 @@
   "mixins": [],
   "server": [],
   "client": [
-    //#if MC<11300
+    //#if MC<11400
     //$$ "MixinMinecraft"
     //#endif
   ],

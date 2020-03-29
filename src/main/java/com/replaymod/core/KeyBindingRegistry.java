@@ -19,7 +19,7 @@ import static com.replaymod.core.ReplayMod.MOD_ID;
 //$$ import net.minecraftforge.fml.client.registry.ClientRegistry;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.KeyEventCallback;
 import com.replaymod.core.events.PreRenderCallback;
@@ -83,7 +83,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         return Collections.unmodifiableMap(keyBindings);
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     { on(KeyBindingEventCallback.EVENT, this::handleKeyBindings); }
     { on(KeyEventCallback.EVENT, (keyCode, scanCode, action, modifiers) -> handleRaw(keyCode, action)); }
     { on(PreRenderCallback.EVENT, this::handleRepeatedKeyBindings); }
@@ -131,7 +131,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         }
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     private void handleRaw(int keyCode, int action) {
         if (action != 0) return;
     //#else

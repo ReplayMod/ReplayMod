@@ -86,7 +86,7 @@ public class GuiHandler extends EventRegistrations {
         }).setSize(73, 20).setI18nLabel("replaymod.gui.upload").setDisabled());
     }
 
-    //#if MC>=11300
+    //#if MC>=11400
     private void onButton(InjectedButton button) {
         net.minecraft.client.gui.screen.Screen guiScreen = button.guiScreen;
     //#else

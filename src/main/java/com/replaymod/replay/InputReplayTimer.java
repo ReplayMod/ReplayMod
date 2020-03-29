@@ -11,7 +11,7 @@ import net.minecraft.client.render.RenderTickCounter;
 import com.replaymod.core.ReplayMod;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraft.client.settings.KeyBinding;
@@ -46,12 +46,12 @@ public class InputReplayTimer extends WrappedTimer {
 
     @Override
     public void beginRenderTick(
-            //#if MC>=11300
+            //#if MC>=11400
             long sysClock
             //#endif
     ) {
         super.beginRenderTick(
-                //#if MC>=11300
+                //#if MC>=11400
                 sysClock
                 //#endif
         );
@@ -75,7 +75,7 @@ public class InputReplayTimer extends WrappedTimer {
         // If we are in a replay, we have to manually process key and mouse events as the
         // tick speed may vary or there may not be any ticks at all (when the replay is paused)
         if (mod.getReplayHandler() != null && mc.world != null && mc.player != null) {
-            //#if MC>=11300
+            //#if MC>=11400
             if (mc.currentScreen == null || mc.currentScreen.passEvents) {
                 GLFW.glfwPollEvents();
                 MCVer.processKeyBinds();

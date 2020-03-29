@@ -16,7 +16,7 @@ import net.minecraft.util.math.Vec3i;
 //$$ import net.minecraftforge.client.model.pipeline.LightUtil;
 //#endif
 
-//#if MC>=11300
+//#if MC>=11400
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.render.model.BakedModel;
 //#else
@@ -69,7 +69,7 @@ public class ItemExporter implements Exporter {
         }
         if (object == null) {
             object = new ItemBasedDObject(renderItem, model, stack);
-            //#if MC>=11300
+            //#if MC>=11400
             object.id.name = stack.getName().getString();
             //#else
             //$$ object.id.name = stack.getDisplayName();
@@ -92,7 +92,7 @@ public class ItemExporter implements Exporter {
         //$$ builder.setVertexFormat(DefaultVertexFormats.ITEM);
         //#endif
 
-        //#if MC>=11300
+        //#if MC>=11400
         for (Direction face : Direction.values()) {
             renderQuads(renderItem, builder, model.getQuads(null, face, new Random()), stack);
         }

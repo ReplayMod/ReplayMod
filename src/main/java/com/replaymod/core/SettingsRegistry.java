@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 //#else
-//#if MC>=11300
+//#if MC>=11400
 //$$ import net.minecraftforge.common.ForgeConfigSpec;
 //$$ import net.minecraftforge.fml.ModLoadingContext;
 //$$ import net.minecraftforge.fml.config.ModConfig;
@@ -38,7 +38,7 @@ public class SettingsRegistry {
     private final Path configFile = getMinecraft().runDirectory.toPath().resolve("config/replaymod.json");
     //#else
     //$$ private static final Object NULL_OBJECT = new Object();
-    //#if MC>=11300
+    //#if MC>=11400
     //$$ private ForgeConfigSpec spec;
     //$$ private ModConfig config;
     //#else
@@ -90,7 +90,7 @@ public class SettingsRegistry {
         }
     }
     //#else
-    //#if MC>=11300
+    //#if MC>=11400
     //$$ public void register() {
     //$$     if (spec == null) {
     //$$         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -143,7 +143,7 @@ public class SettingsRegistry {
         //#if MC>=11400
         settings.put(key, key.getDefault());
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ if (spec != null) {
         //$$     throw new IllegalStateException("Cannot register more settings are spec has been built.");
         //$$ }
@@ -184,7 +184,7 @@ public class SettingsRegistry {
 
     public <T> void set(SettingKey<T> key, T value) {
         //#if MC<11400
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ if (config != null) {
         //$$     config.getConfigData().set(key.getCategory() + "." + key.getKey(), value);
         //$$ }
@@ -237,7 +237,7 @@ public class SettingsRegistry {
             e.printStackTrace();
         }
         //#else
-        //#if MC>=11300
+        //#if MC>=11400
         //$$ if (config != null) {
         //$$     config.save();
         //$$ }

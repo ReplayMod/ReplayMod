@@ -18,7 +18,7 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.client.resource.language.I18n;
 
-//#if MC>=11300
+//#if MC>=11400
 import com.replaymod.core.versions.MCVer.Keyboard;
 //#else
 //$$ import org.lwjgl.input.Keyboard;

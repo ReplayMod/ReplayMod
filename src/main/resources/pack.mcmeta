@@ -1,7 +1,7 @@
 {
     "pack": {
         "description": "ReplayMod resources",
-        //#if MC>=11300
+        //#if MC>=11400
         "pack_format": 4
         //#else
         //#if MC>=11002
