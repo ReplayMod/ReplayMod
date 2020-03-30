@@ -27,7 +27,7 @@ public abstract class MixinRenderManager {
             //#if MC>=11500
             //$$ method = "render",
             //#else
-            //#if MC>=11400
+            //#if MC>=11400 && FABRIC>=1
             method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V",
             //#else
             //#if MC>=11400

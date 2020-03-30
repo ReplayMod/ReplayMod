@@ -31,10 +31,10 @@ public abstract class MixinRenderManager {
     @Shadow private float cameraYaw;
     //#endif
 
-    //#if MC>=11400
+    //#if MC>=11500
     //$$ @Inject(method = "render", at = @At("HEAD"))
     //#else
-    //#if MC>=11400
+    //#if MC>=11400 && FABRIC>=1
     @Inject(method = "render(Lnet/minecraft/entity/Entity;DDDFFZ)V", at = @At("HEAD"))
     //#else
     //#if MC>=11400

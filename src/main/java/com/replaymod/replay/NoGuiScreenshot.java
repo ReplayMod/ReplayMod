@@ -98,8 +98,8 @@ public class NoGuiScreenshot {
                     //#if MC>=11400
                     Image image = new Image(ScreenshotUtils.method_1663(frameWidth, frameHeight, mc.getFramebuffer()));
                     //#else
-                    // We're using Minecraft's ScreenShotHelper even though it writes the screenshot to
-                    // disk for better maintainability
+                    //$$ // We're using Minecraft's ScreenShotHelper even though it writes the screenshot to
+                    //$$ // disk for better maintainability
                     //$$ File tmpFolder = Files.createTempDir();
                     //$$ Image image;
                     //$$ try {
