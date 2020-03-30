@@ -24,6 +24,8 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
+import net.minecraft.world.GameMode;
+import net.minecraft.world.level.LevelGeneratorType;
 
 //#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
@@ -47,8 +49,6 @@ import net.minecraft.world.dimension.DimensionType;
 
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.level.LevelGeneratorType;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
