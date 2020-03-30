@@ -110,7 +110,7 @@ public class BlendMeshBuilder
             throw new IllegalStateException("Not building!");
         } else {
             if (!wellBehaved) {
-                Tessellator.getInstance().getBufferBuilder().end();
+                Tessellator.getInstance().getBuffer().end();
             }
 
             //#if MC<10809
@@ -168,7 +168,7 @@ public class BlendMeshBuilder
         int posOffset = -1, colorOffset = -1, uvOffset = -1;
         int index = 0;
         //#if MC>=11500
-        int elementOffset = 0;
+        //$$ int elementOffset = 0;
         //#endif
         for (VertexFormatElement element : getElements(vertexFormat)) {
             //#if MC>=11500

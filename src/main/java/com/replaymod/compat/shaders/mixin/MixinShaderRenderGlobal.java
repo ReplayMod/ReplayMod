@@ -24,7 +24,7 @@ public abstract class MixinShaderRenderGlobal {
     private final MinecraftClient mc = MinecraftClient.getInstance();
 
     @Shadow
-    public boolean terrainUpdateNecessary;
+    public boolean needsTerrainUpdate;
 
     @Inject(method = "setUpTerrain", at = @At("HEAD"), cancellable = true)
     public void replayModCompat_setupTerrain(
@@ -51,7 +51,7 @@ public abstract class MixinShaderRenderGlobal {
         // set it to false manually to exit the loop imposed by MixinRenderGlobal#replayModRender_setupTerrain.
         try {
             if ((boolean) ShaderReflection.shaders_isShadowPass.get(null) == true) {
-                this.terrainUpdateNecessary = false;
+                this.needsTerrainUpdate = false;
             }
         } catch (IllegalAccessException ignore) {}
 

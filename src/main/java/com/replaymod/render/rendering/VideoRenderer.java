@@ -27,7 +27,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GLX;
-import net.minecraft.client.gl.GlFramebuffer;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
@@ -103,7 +103,7 @@ public class VideoRenderer implements RenderInfo {
     private boolean cancelled;
     private volatile Throwable failureCause;
 
-    private GlFramebuffer guiFramebuffer;
+    private Framebuffer guiFramebuffer;
     private int displayWidth, displayHeight;
 
     public VideoRenderer(RenderSettings settings, ReplayHandler replayHandler, Timeline timeline) throws IOException {
@@ -319,7 +319,7 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         // Set up our own framebuffer to render the GUI to
-        guiFramebuffer = new GlFramebuffer(displayWidth, displayHeight, true
+        guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true
                 //#if MC>=11400
                 , false
                 //#endif

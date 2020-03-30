@@ -28,7 +28,7 @@ public abstract class MixinKeyboardListener {
             at = @At(
                     value = "INVOKE",
                     //#if MC>=11400
-                    target = "Lnet/minecraft/client/util/ScreenshotUtils;method_1659(Ljava/io/File;IILnet/minecraft/client/gl/GlFramebuffer;Ljava/util/function/Consumer;)V"
+                    target = "Lnet/minecraft/client/util/ScreenshotUtils;method_1659(Ljava/io/File;IILnet/minecraft/client/gl/Framebuffer;Ljava/util/function/Consumer;)V"
                     //#else
                     //#if MC>=11400
                     //$$ target = "Lnet/minecraft/util/ScreenShotHelper;saveScreenshot(Ljava/io/File;IILnet/minecraft/client/shader/Framebuffer;Ljava/util/function/Consumer;)V"

@@ -1,6 +1,6 @@
 package com.replaymod.extras.urischeme;
 
-import net.minecraft.util.SystemUtil;
+import net.minecraft.util.Util;
 
 import javax.swing.*;
 import java.io.*;
@@ -70,7 +70,7 @@ public abstract class UriScheme {
     }
 
     public static UriScheme create() {
-        switch (SystemUtil.getOperatingSystem()) {
+        switch (Util.getOperatingSystem()) {
             case LINUX:
                 return new LinuxUriScheme();
             case WINDOWS:

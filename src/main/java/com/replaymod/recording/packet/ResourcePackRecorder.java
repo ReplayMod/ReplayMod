@@ -5,9 +5,9 @@ import com.google.common.io.Files;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.options.ServerEntry;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.options.ServerList;
-import net.minecraft.client.resource.ClientResourcePackCreator;
+import net.minecraft.client.resource.ClientBuiltinResourcePackProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,9 +26,9 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 //#endif
 
 //#if MC>=10800
-import net.minecraft.server.network.packet.ResourcePackStatusC2SPacket;
-import net.minecraft.server.network.packet.ResourcePackStatusC2SPacket.Status;
-import net.minecraft.client.network.packet.ResourcePackSendS2CPacket;
+import net.minecraft.network.packet.c2s.play.ResourcePackStatusC2SPacket;
+import net.minecraft.network.packet.c2s.play.ResourcePackStatusC2SPacket.Status;
+import net.minecraft.network.packet.s2c.play.ResourcePackSendS2CPacket;
 //#endif
 
 //#if MC>=10800
@@ -135,11 +135,11 @@ public class ResourcePackRecorder {
                 netManager.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD));
             }
         } else {
-            final ServerEntry serverData = mc.getCurrentServerEntry();
-            if (serverData != null && serverData.getResourcePack() == ServerEntry.ResourcePackState.ENABLED) {
+            final ServerInfo serverData = mc.getCurrentServerEntry();
+            if (serverData != null && serverData.getResourcePack() == ServerInfo.ResourcePackState.ENABLED) {
                 netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
                 downloadResourcePackFuture(requestId, url, hash);
-            } else if (serverData != null && serverData.getResourcePack() != ServerEntry.ResourcePackState.PROMPT) {
+            } else if (serverData != null && serverData.getResourcePack() != ServerInfo.ResourcePackState.PROMPT) {
                 netManager.send(makeStatusPacket(hash, Status.DECLINED));
             } else {
                 // Lambdas MUST NOT be used with methods that need re-obfuscation in FG prior to 2.2 (will result in AbstractMethodError)
@@ -152,7 +152,7 @@ public class ResourcePackRecorder {
                 //$$     public void confirmClicked(boolean result, int id) {
                 //#endif
                         if (serverData != null) {
-                            serverData.setResourcePackState(result ? ServerEntry.ResourcePackState.ENABLED : ServerEntry.ResourcePackState.DISABLED);
+                            serverData.setResourcePackState(result ? ServerInfo.ResourcePackState.ENABLED : ServerInfo.ResourcePackState.DISABLED);
                         }
                         if (result) {
                             netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
@@ -188,7 +188,7 @@ public class ResourcePackRecorder {
     //$$ ListenableFuture<?>
     //#endif
     downloadResourcePack(final int requestId, String url, String hash) {
-        ClientResourcePackCreator packFinder = mc.getResourcePackDownloader();
+        ClientBuiltinResourcePackProvider packFinder = mc.getResourcePackDownloader();
         ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file, requestId));
         return packFinder.download(url, hash);
     }

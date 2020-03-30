@@ -10,18 +10,18 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11400
-import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.ModelPart;
 //#else
 //$$ import net.minecraft.client.model.ModelRenderer;
 //#endif
 
-@Mixin(Cuboid.class)
+@Mixin(ModelPart.class)
 public abstract class MixinModelRenderer {
     @Inject(method = "render", at = @At("HEAD"))
     public void preRender(float scale, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
-            blendState.get(ModelRendererExporter.class).preRenderModel((Cuboid)(Object)this, scale);
+            blendState.get(ModelRendererExporter.class).preRenderModel((ModelPart)(Object)this, scale);
         }
     }
 
@@ -29,7 +29,7 @@ public abstract class MixinModelRenderer {
     public void preRenderWithRotation(float scale, CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
-            blendState.get(ModelRendererExporter.class).preRenderModel((Cuboid)(Object)this, scale);
+            blendState.get(ModelRendererExporter.class).preRenderModel((ModelPart)(Object)this, scale);
         }
     }
 

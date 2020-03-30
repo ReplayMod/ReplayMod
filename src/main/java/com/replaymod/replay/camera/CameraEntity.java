@@ -179,9 +179,9 @@ public class CameraEntity
      * @param z Z coordinate
      */
     public void setCameraPosition(double x, double y, double z) {
-        this.prevRenderX = this.prevX = x;
-        this.prevRenderY = this.prevY = y;
-        this.prevRenderZ = this.prevZ = z;
+        this.lastRenderX = this.prevX = x;
+        this.lastRenderY = this.prevY = y;
+        this.lastRenderZ = this.prevZ = z;
         Entity_setPos(this, x, y, z);
         updateBoundingBox();
     }
@@ -226,9 +226,9 @@ public class CameraEntity
         Entity_setPos(this, Entity_getX(to), Entity_getY(to), Entity_getZ(to));
         this.yaw = to.yaw;
         this.pitch = to.pitch;
-        this.prevRenderX = to.prevRenderX;
-        this.prevRenderY = to.prevRenderY + yOffset;
-        this.prevRenderZ = to.prevRenderZ;
+        this.lastRenderX = to.lastRenderX;
+        this.lastRenderY = to.lastRenderY + yOffset;
+        this.lastRenderZ = to.lastRenderZ;
         updateBoundingBox();
     }
 
@@ -375,7 +375,7 @@ public class CameraEntity
 
     //#if MC>=11400
     @Override
-    public boolean shouldRenderFrom(double double_1, double double_2, double double_3) {
+    public boolean shouldRender(double double_1, double double_2, double double_3) {
         return false; // never render the camera otherwise it'd be visible e.g. in 3rd-person or with shaders
     }
     //#else

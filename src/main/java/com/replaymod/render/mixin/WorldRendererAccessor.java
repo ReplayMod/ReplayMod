@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import java.util.Set;
 
 //#if MC>=10800
-import net.minecraft.client.render.chunk.ChunkBatcher;
+import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.chunk.ChunkRenderer;
 //#endif
 
@@ -18,13 +18,13 @@ public interface WorldRendererAccessor {
     void setRenderEntitiesStartupCounter(int value);
 
     //#if MC>=10800
-    @Accessor("chunkBatcher")
-    ChunkBatcher getRenderDispatcher();
+    @Accessor("chunkBuilder")
+    ChunkBuilder getRenderDispatcher();
 
-    @Accessor("terrainUpdateNecessary")
+    @Accessor("needsTerrainUpdate")
     void setDisplayListEntitiesDirty(boolean value);
 
-    @Accessor("chunkRenderers")
+    @Accessor("chunksToRebuild")
     Set<ChunkRenderer> getChunksToUpdate();
     //#endif
     //#endif

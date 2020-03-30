@@ -69,7 +69,7 @@ public class InputReplayTimer extends WrappedTimer {
         //#endif
 
         //#if MC>=11400
-        ReplayMod.instance.executor.executeTaskQueue();
+        ReplayMod.instance.executor.runTasks();
         //#endif
 
         // If we are in a replay, we have to manually process key and mouse events as the

@@ -538,9 +538,9 @@ public class ReplayHandler {
             // Update all entity positions (especially prev/lastTick values)
             for (Entity entity : loadedEntityList(mc.world)) {
                 skipTeleportInterpolation(entity);
-                entity.prevRenderX = entity.prevX = Entity_getX(entity);
-                entity.prevRenderY = entity.prevY = Entity_getY(entity);
-                entity.prevRenderZ = entity.prevZ = Entity_getZ(entity);
+                entity.lastRenderX = entity.prevX = Entity_getX(entity);
+                entity.lastRenderY = entity.prevY = Entity_getY(entity);
+                entity.lastRenderZ = entity.prevZ = Entity_getZ(entity);
                 entity.prevYaw = entity.yaw;
                 entity.prevPitch = entity.pitch;
             }
@@ -694,9 +694,9 @@ public class ReplayHandler {
                         //#endif
                 for (Entity entity : loadedEntityList(mc.world)) {
                     skipTeleportInterpolation(entity);
-                    entity.prevRenderX = entity.prevX = Entity_getX(entity);
-                    entity.prevRenderY = entity.prevY = Entity_getY(entity);
-                    entity.prevRenderZ = entity.prevZ = Entity_getZ(entity);
+                    entity.lastRenderX = entity.prevX = Entity_getX(entity);
+                    entity.lastRenderY = entity.prevY = Entity_getY(entity);
+                    entity.lastRenderZ = entity.prevZ = Entity_getZ(entity);
                     entity.prevYaw = entity.yaw;
                     entity.prevPitch = entity.pitch;
                 }
@@ -724,7 +724,7 @@ public class ReplayHandler {
         if (entity instanceof LivingEntity && !(entity instanceof CameraEntity)) {
             LivingEntity e = (LivingEntity) entity;
             EntityLivingBaseAccessor ea = (EntityLivingBaseAccessor) e;
-            e.setPosition(ea.getInterpTargetX(), ea.getInterpTargetY(), ea.getInterpTargetZ());
+            e.updatePosition(ea.getInterpTargetX(), ea.getInterpTargetY(), ea.getInterpTargetZ());
             e.yaw = (float) ea.getInterpTargetYaw();
             e.pitch = (float) ea.getInterpTargetPitch();
         }

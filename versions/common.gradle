@@ -217,7 +217,7 @@ dependencies {
                 11502: '1.15.2',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
-                11404: '1.14.4+build.1',
+                11404: '1.14.4+build.16',
                 11502: '1.15.2+build.14',
         ][mcVersion]
         modCompile 'net.fabricmc:fabric-loader:' + [

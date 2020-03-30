@@ -11,13 +11,13 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.model.Box;
-import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.SystemUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
@@ -362,7 +362,7 @@ public class MCVer {
     }
 
     @SuppressWarnings("unchecked")
-    public static List<Box> cubeList(Cuboid modelRenderer) {
+    public static List<Box> cubeList(ModelPart modelRenderer) {
         //#if MC>=11500
         //$$ return new ArrayList<>(); // FIXME 1.15
         //#else
@@ -465,7 +465,7 @@ public class MCVer {
 
     //#if MC>=10800
     public static BufferBuilder Tessellator_getBufferBuilder() {
-        return Tessellator.getInstance().getBufferBuilder();
+        return Tessellator.getInstance().getBuffer();
     }
     //#else
     //$$ public static Tessellator Tessellator_getBufferBuilder() {
@@ -495,7 +495,7 @@ public class MCVer {
         Tessellator_getBufferBuilder().begin(
                 mode
                 //#if MC>=10809
-                , VertexFormats.POSITION_UV
+                , VertexFormats.POSITION_TEXTURE
                 //#endif
         );
     }
@@ -512,7 +512,7 @@ public class MCVer {
         Tessellator_getBufferBuilder().begin(
                 mode
                 //#if MC>=10809
-                , VertexFormats.POSITION_UV_COLOR
+                , VertexFormats.POSITION_TEXTURE_COLOR
                 //#endif
         );
     }
@@ -609,7 +609,7 @@ public class MCVer {
 
     public static long milliTime() {
         //#if MC>=11400
-        return SystemUtil.getMeasuringTimeMs();
+        return Util.getMeasuringTimeMs();
         //#else
         //$$ return Minecraft.getSystemTime();
         //#endif
@@ -648,7 +648,7 @@ public class MCVer {
 
     public static void openFile(File file) {
         //#if MC>=11400
-        SystemUtil.getOperatingSystem().open(file);
+        Util.getOperatingSystem().open(file);
         //#else
         //$$ String path = file.getAbsolutePath();
         //$$
@@ -679,7 +679,7 @@ public class MCVer {
     public static void openURL(URI url) {
         //#if MC>=11400
         //#if MC>=11400
-        SystemUtil.getOperatingSystem().open(url);
+        Util.getOperatingSystem().open(url);
         //#else
         //$$ Util.getOSType().openURI(url);
         //#endif

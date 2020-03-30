@@ -9,7 +9,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritableDimension;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.GlFramebuffer;
+import net.minecraft.client.gl.Framebuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -34,7 +34,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     protected final WorldRenderer worldRenderer;
     protected final RenderInfo renderInfo;
     protected int framesDone;
-    private GlFramebuffer frameBuffer;
+    private Framebuffer frameBuffer;
 
     private final MinecraftClient mc = MCVer.getMinecraft();
 
@@ -68,7 +68,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         return renderInfo.getFrameSize().getHeight();
     }
 
-    protected GlFramebuffer frameBuffer() {
+    protected Framebuffer frameBuffer() {
         if (frameBuffer == null) {
             frameBuffer = mc.getFramebuffer();
         }
@@ -117,8 +117,8 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
 
     protected void resize(int width, int height) {
         //#if MC>=11400
-        GlFramebuffer fb = mc.getFramebuffer();
-        if (fb.viewWidth != width || fb.viewHeight != height) {
+        Framebuffer fb = mc.getFramebuffer();
+        if (fb.viewportWidth != width || fb.viewportHeight != height) {
             fb.resize(width, height
                     //#if MC>=11400
                     , false

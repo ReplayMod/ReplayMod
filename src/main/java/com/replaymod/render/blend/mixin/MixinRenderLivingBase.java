@@ -21,10 +21,14 @@ import net.minecraft.client.render.entity.LivingEntityRenderer;
 //$$ @Mixin(RendererLivingEntity.class)
 //#endif
 public abstract class MixinRenderLivingBase {
+    //#if MC>=11500
+    //$$ @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(
+    //#else
     //#if FABRIC>=1
-    @Inject(method = "method_4054", at = @At(
+    @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;DDDFF)V", at = @At(
     //#else
     //$$ @Inject(method = "doRender(Lnet/minecraft/entity/LivingEntity;DDDFF)V", at = @At(
+    //#endif
     //#endif
             value = "INVOKE",
             //#if MC>=10904
@@ -34,7 +38,7 @@ public abstract class MixinRenderLivingBase {
             //#endif
             shift = At.Shift.AFTER
     ))
-    private void recordModelMatrix(LivingEntity entity, double x, double y, double z, float entityYaw, float partialTicks, CallbackInfo ci) {
+    private void recordModelMatrix(CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
             blendState.get(EntityExporter.class).postEntityLivingSetup();

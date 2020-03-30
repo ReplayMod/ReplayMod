@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 //#if MC>=11400
-import net.minecraft.util.SystemUtil;
+import net.minecraft.util.Util;
 //#else
 //$$ import net.minecraft.client.Minecraft;
 //#endif
@@ -16,7 +16,7 @@ import net.minecraft.util.SystemUtil;
 @Mixin(EndPortalBlockEntityRenderer.class)
 public class MixinTileEntityEndPortalRenderer {
     //#if MC>=11400
-    @Redirect(method = "method_3591", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/SystemUtil;getMeasuringTimeMs()J"))
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //#if MC>=11200
     //$$ @Redirect(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntityEndPortal;DDDFIF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))
@@ -38,7 +38,7 @@ public class MixinTileEntityEndPortalRenderer {
             return replayHandler.getReplaySender().currentTimeStamp();
         }
         //#if MC>=11400
-        return SystemUtil.getMeasuringTimeMs();
+        return Util.getMeasuringTimeMs();
         //#else
         //$$ return Minecraft.getSystemTime();
         //#endif

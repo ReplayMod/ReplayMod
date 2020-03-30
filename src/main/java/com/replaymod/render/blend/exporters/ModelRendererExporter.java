@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=11400
 import net.minecraft.client.model.Box;
-import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.ModelPart;
 //#else
 //$$ import net.minecraft.client.model.ModelBox;
 //$$ import net.minecraft.client.model.ModelRenderer;
@@ -31,7 +31,7 @@ public class ModelRendererExporter implements Exporter {
     public void setup() throws IOException {
     }
 
-    public void preRenderModel(Cuboid model, float scale) {
+    public void preRenderModel(ModelPart model, float scale) {
         DObject object = getObjectForModel(model, scale);
         renderState.pushObject(object);
         renderState.pushModelView();
@@ -53,7 +53,7 @@ public class ModelRendererExporter implements Exporter {
         renderState.pop();
     }
 
-    private DObject getObjectForModel(Cuboid model, float scale) {
+    private DObject getObjectForModel(ModelPart model, float scale) {
         int frame = renderState.getFrame();
         DObject parent = renderState.peekObject();
         DObject object = null;
@@ -78,7 +78,7 @@ public class ModelRendererExporter implements Exporter {
         return object;
     }
 
-    private static DMesh generateMesh(Cuboid model, float scale) {
+    private static DMesh generateMesh(ModelPart model, float scale) {
         DMesh mesh = new DMesh();
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
         for (Box box : cubeList(model)) {
@@ -93,17 +93,17 @@ public class ModelRendererExporter implements Exporter {
     }
 
     private static class ModelBasedDObject extends DObject {
-        private final Cuboid model;
+        private final ModelPart model;
         private final float scale;
         private boolean valid;
 
-        public ModelBasedDObject(Cuboid model, float scale) {
+        public ModelBasedDObject(ModelPart model, float scale) {
             super(generateMesh(model, scale));
             this.model = model;
             this.scale = scale;
         }
 
-        public boolean isBasedOn(Cuboid model, float scale) {
+        public boolean isBasedOn(ModelPart model, float scale) {
             return this.model == model && Math.abs(this.scale - scale) < 1e-4;
         }
 

@@ -33,9 +33,9 @@ import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
 import net.minecraft.client.options.Option;
-import net.minecraft.resource.ResourcePackCreator;
-import net.minecraft.resource.ResourcePackContainer;
-import net.minecraft.util.NonBlockingThreadExecutor;
+import net.minecraft.resource.ResourcePackProvider;
+import net.minecraft.resource.ResourcePackProfile;
+import net.minecraft.util.thread.ReentrantThreadExecutor;
 //#endif
 
 //#if FABRIC>=1
@@ -263,10 +263,10 @@ public class ReplayMod implements
             }
         };
         //#if MC>=11400
-        mc.getResourcePackContainerManager().addCreator(new ResourcePackCreator() {
+        mc.getResourcePackManager().registerProvider(new ResourcePackProvider() {
             @Override
-            public <T extends ResourcePackContainer> void registerContainer(Map<String, T> map, ResourcePackContainer.Factory<T> factory) {
-                map.put("jgui", ResourcePackContainer.of("jgui", true, () -> jGuiResourcePack, factory, ResourcePackContainer.InsertionPosition.BOTTOM));
+            public <T extends ResourcePackProfile> void register(Map<String, T> map, ResourcePackProfile.Factory<T> factory) {
+                map.put("jgui", ResourcePackProfile.of("jgui", true, () -> jGuiResourcePack, factory, ResourcePackProfile.InsertionPosition.BOTTOM));
             }
         });
         //#else
@@ -389,7 +389,7 @@ public class ReplayMod implements
         if (mc.isOnThread()) {
             runnable.run();
         } else {
-            executor.executeFuture(() -> {
+            executor.submit(() -> {
                 runnable.run();
                 return null;
             }).get(30, TimeUnit.SECONDS);
@@ -439,7 +439,7 @@ public class ReplayMod implements
     // stuff submitted via runLater is actually always run (e.g. recording might not be fully stopped because parts
     // of that are run via runLater and stopping the recording happens right around the time MC clears the queue).
     // Luckily, that's also the version where MC pulled out the executor implementation, so we can just spin up our own.
-    public static class ReplayModExecutor extends NonBlockingThreadExecutor<Runnable> {
+    public static class ReplayModExecutor extends ReentrantThreadExecutor<Runnable> {
         private final Thread mcThread = Thread.currentThread();
         // Fail-fast in case we ever switch to async loading and forget to change this
         // (except for fabric 1.15+ because it loads the mod before the client thread is set)
@@ -452,12 +452,12 @@ public class ReplayMod implements
         }
 
         @Override
-        protected Runnable prepareRunnable(Runnable runnable) {
+        protected Runnable createTask(Runnable runnable) {
             return runnable;
         }
 
         @Override
-        protected boolean canRun(Runnable runnable) {
+        protected boolean canExecute(Runnable runnable) {
             return true;
         }
 
@@ -466,16 +466,9 @@ public class ReplayMod implements
             return mcThread;
         }
 
-        //#if FABRIC>=1 && MC<11500
         @Override
-        public void send(Runnable runnable) {
-            method_18858(runnable);
-        }
-        //#endif
-
-        @Override
-        public void executeTaskQueue() {
-            super.executeTaskQueue();
+        public void runTasks() {
+            super.runTasks();
         }
     }
     public final ReplayModExecutor executor = new ReplayModExecutor("Client/ReplayMod");
@@ -493,7 +486,7 @@ public class ReplayMod implements
                 }
             });
         } else {
-            executor.method_18858(() -> {
+            executor.send(() -> {
                 inRunLater = true;
                 try {
                     runnable.run();

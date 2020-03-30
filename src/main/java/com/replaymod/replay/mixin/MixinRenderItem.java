@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 //#if MC>=11400
-import net.minecraft.util.SystemUtil;
+import net.minecraft.util.Util;
 //#else
 //$$ import net.minecraft.client.Minecraft;
 //#endif
@@ -17,7 +17,7 @@ import net.minecraft.util.SystemUtil;
 public class MixinRenderItem {
     //#if MC>=11400
     //#if MC>=11400
-    @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/SystemUtil;getMeasuringTimeMs()J"))
+    @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
     //#endif
@@ -31,7 +31,7 @@ public class MixinRenderItem {
             return replayHandler.getReplaySender().currentTimeStamp();
         }
         //#if MC>=11400
-        return SystemUtil.getMeasuringTimeMs();
+        return Util.getMeasuringTimeMs();
         //#else
         //$$ return Minecraft.getSystemTime();
         //#endif

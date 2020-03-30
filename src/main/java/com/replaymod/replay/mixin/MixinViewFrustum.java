@@ -1,14 +1,14 @@
 //#if MC>=10800
 package com.replaymod.replay.mixin;
 
-import net.minecraft.client.render.ChunkRenderDispatcher;
+import net.minecraft.client.render.BuiltChunkStorage;
 import net.minecraft.client.render.chunk.ChunkRenderer;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(ChunkRenderDispatcher.class)
+@Mixin(BuiltChunkStorage.class)
 public abstract class MixinViewFrustum {
     @Redirect(
             method = "updateCameraPosition",

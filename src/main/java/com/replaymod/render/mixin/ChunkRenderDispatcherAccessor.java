@@ -1,7 +1,7 @@
 //#if MC>=10800 && MC<11500
 package com.replaymod.render.mixin;
 
-import net.minecraft.client.render.chunk.ChunkBatcher;
+import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.chunk.ChunkRenderTask;
 import net.minecraft.client.render.chunk.ChunkRenderWorker;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +14,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 //$$ import java.util.concurrent.BlockingQueue;
 //#endif
 
-@Mixin(ChunkBatcher.class)
+@Mixin(ChunkBuilder.class)
 public interface ChunkRenderDispatcherAccessor {
     @Accessor("workers")
     List<ChunkRenderWorker> getListThreadedWorkers();

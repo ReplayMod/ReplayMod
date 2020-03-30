@@ -12,9 +12,9 @@ public interface TimerAccessor {
     void setLastSyncSysClock(long value);
 
     //#if MC>=11200
-    @Accessor("timeScale")
+    @Accessor("tickTime")
     float getTickLength();
-    @Accessor("timeScale")
+    @Accessor("tickTime")
     void setTickLength(float value);
     //#else
     //$$ @Accessor

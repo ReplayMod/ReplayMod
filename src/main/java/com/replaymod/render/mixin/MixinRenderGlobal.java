@@ -2,7 +2,7 @@
 package com.replaymod.render.mixin;
 
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
-import net.minecraft.client.render.chunk.ChunkBatcher;
+import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.VisibleRegion;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,10 +37,10 @@ public abstract class MixinRenderGlobal {
     private boolean replayModRender_passThroughSetupTerrain;
 
     @Shadow
-    public boolean terrainUpdateNecessary;
+    public boolean needsTerrainUpdate;
 
     @Shadow
-    public ChunkBatcher chunkBatcher;
+    public ChunkBuilder chunkBuilder;
 
     @Shadow
     public abstract void setUpTerrain(
@@ -90,9 +90,9 @@ public abstract class MixinRenderGlobal {
                         playerSpectator
                 );
                 replayModRender_hook.updateChunks();
-            } while (this.terrainUpdateNecessary);
+            } while (this.needsTerrainUpdate);
 
-            this.terrainUpdateNecessary = true;
+            this.needsTerrainUpdate = true;
 
             replayModRender_passThroughSetupTerrain = false;
             ci.cancel();
@@ -118,7 +118,7 @@ public abstract class MixinRenderGlobal {
 
     // Prior to 1.9.4, MC always uses the same ChunkRenderDispatcher instance
     //#if MC>=10904
-    @Inject(method = "setWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/chunk/ChunkBatcher;stop()V"))
+    @Inject(method = "setWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/chunk/ChunkBuilder;stop()V"))
     private void stopWorkerThreadsAndChunkLoadingRenderGlobal(CallbackInfo ci) {
         if (replayModRender_hook != null) {
             replayModRender_hook.updateRenderDispatcher(null);
@@ -129,7 +129,7 @@ public abstract class MixinRenderGlobal {
     @Inject(method = "reload", at = @At(value = "RETURN"))
     private void setupChunkLoadingRenderGlobal(CallbackInfo ci) {
         if (replayModRender_hook != null) {
-            replayModRender_hook.updateRenderDispatcher(this.chunkBatcher);
+            replayModRender_hook.updateRenderDispatcher(this.chunkBuilder);
         }
     }
 }

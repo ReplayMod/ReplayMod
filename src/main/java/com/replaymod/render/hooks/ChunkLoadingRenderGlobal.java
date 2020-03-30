@@ -5,9 +5,9 @@ package com.replaymod.render.hooks;
 import com.replaymod.render.mixin.ChunkRenderDispatcherAccessor;
 import com.replaymod.render.mixin.WorldRendererAccessor;
 import com.replaymod.render.utils.JailingQueue;
-import net.minecraft.client.render.chunk.BlockLayeredBufferBuilder;
+import net.minecraft.client.render.chunk.BlockBufferBuilderStorage;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.chunk.ChunkBatcher;
+import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.chunk.ChunkRenderTask;
 import net.minecraft.client.render.chunk.ChunkRenderWorker;
 import net.minecraft.client.render.chunk.ChunkRenderer;
@@ -30,7 +30,7 @@ public class ChunkLoadingRenderGlobal {
     //#else
     //$$ private final RenderGlobal hooked;
     //#endif
-    private ChunkBatcher renderDispatcher;
+    private ChunkBuilder renderDispatcher;
     //#if MC>=11400
     private JailingQueue<ChunkRenderTask> workerJailingQueue;
     //#else
@@ -52,7 +52,7 @@ public class ChunkLoadingRenderGlobal {
         setup(((WorldRendererAccessor) renderGlobal).getRenderDispatcher());
     }
 
-    public void updateRenderDispatcher(ChunkBatcher renderDispatcher) {
+    public void updateRenderDispatcher(ChunkBuilder renderDispatcher) {
         if (this.renderDispatcher != null) {
             workerJailingQueue.freeAll();
             this.renderDispatcher = null;
@@ -62,9 +62,9 @@ public class ChunkLoadingRenderGlobal {
         }
     }
 
-    private void setup(ChunkBatcher renderDispatcher) {
+    private void setup(ChunkBuilder renderDispatcher) {
         this.renderDispatcher = renderDispatcher;
-        this.renderWorker = (ChunkRenderWorkerAccessor) new ChunkRenderWorker(renderDispatcher, new BlockLayeredBufferBuilder());
+        this.renderWorker = (ChunkRenderWorkerAccessor) new ChunkRenderWorker(renderDispatcher, new BlockBufferBuilderStorage());
         ChunkRenderDispatcherAccessor renderDispatcherAcc = (ChunkRenderDispatcherAccessor) renderDispatcher;
 
         int workerThreads = renderDispatcherAcc.getListThreadedWorkers().size();

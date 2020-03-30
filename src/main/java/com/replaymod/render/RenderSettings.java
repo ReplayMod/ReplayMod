@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.util.SystemUtil;
+import net.minecraft.util.Util;
 
 import java.io.File;
 import java.util.Arrays;
@@ -173,7 +173,7 @@ public class RenderSettings {
     }
 
     private static String findFFmpeg() {
-        switch (SystemUtil.getOperatingSystem()) {
+        switch (Util.getOperatingSystem()) {
             case WINDOWS:
                 // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
                 File inDotMinecraft = new File(MCVer.getMinecraft().runDirectory, "ffmpeg/bin/ffmpeg.exe");

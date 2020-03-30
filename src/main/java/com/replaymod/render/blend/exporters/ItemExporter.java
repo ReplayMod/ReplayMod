@@ -86,7 +86,7 @@ public class ItemExporter implements Exporter {
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
         builder.setWellBehaved(true);
         //#if MC>=10809
-        builder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR_UV_NORMAL);
+        builder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
         //#else
         //$$ builder.startDrawingQuads();
         //$$ builder.setVertexFormat(DefaultVertexFormats.ITEM);

@@ -24,7 +24,7 @@ import static com.replaymod.core.versions.MCVer.*;
 //#endif
 public abstract class MixinRenderLivingBase {
     //#if FABRIC>=1
-    @Inject(method = "method_4055", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "hasLabel", at = @At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "canRenderName(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     //#endif
@@ -36,17 +36,17 @@ public abstract class MixinRenderLivingBase {
     }
 
     @Redirect(
-            method = "render",
+            method = "render(Lnet/minecraft/entity/LivingEntity;FFFFFF)V",
             at = @At(
                     value = "INVOKE",
                     //#if MC>=11400
-                    target = "Lnet/minecraft/entity/LivingEntity;canSeePlayer(Lnet/minecraft/entity/player/PlayerEntity;)Z"
+                    target = "Lnet/minecraft/entity/LivingEntity;isInvisibleTo(Lnet/minecraft/entity/player/PlayerEntity;)Z"
                     //#else
                     //$$ target = "Lnet/minecraft/entity/EntityLivingBase;isInvisibleToPlayer(Lnet/minecraft/entity/player/EntityPlayer;)Z"
                     //#endif
             )
     )
     private boolean replayModReplay_shouldInvisibleNotBeRendered(LivingEntity entity, PlayerEntity thePlayer) {
-        return thePlayer instanceof CameraEntity || entity.canSeePlayer(thePlayer);
+        return thePlayer instanceof CameraEntity || entity.isInvisibleTo(thePlayer);
     }
 }

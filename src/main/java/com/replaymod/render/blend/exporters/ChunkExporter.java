@@ -18,13 +18,13 @@ import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.render.chunk.ChunkRenderData;
 import net.minecraft.client.render.chunk.ChunkRenderer;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.gl.GlBuffer;
+import net.minecraft.client.gl.VertexBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 //#if MC>=10904
-import net.minecraft.block.BlockRenderLayer;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.math.BlockPos;
 //#else
 //$$ import net.minecraft.util.BlockPos;
@@ -42,8 +42,8 @@ import java.util.Map;
 public class ChunkExporter implements Exporter {
     private final Map<BlockPos, DObject> chunkObjects = new HashMap<>();
     //#if MC>=10904
-    private final Map<BlockPos, Map<BlockRenderLayer, DObject>> chunkLayerObjects = new HashMap<>();
-    private final List<Pair<ChunkRenderer, BlockRenderLayer>> chunks = new ArrayList<>();
+    private final Map<BlockPos, Map<RenderLayer, DObject>> chunkLayerObjects = new HashMap<>();
+    private final List<Pair<ChunkRenderer, RenderLayer>> chunks = new ArrayList<>();
     //#else
     //$$ private final Map<BlockPos, Map<EnumWorldBlockLayer, DObject>> chunkLayerObjects = new HashMap<>();
     //$$ private final List<Pair<RenderChunk, EnumWorldBlockLayer>> chunks = new ArrayList<>();
@@ -53,7 +53,7 @@ public class ChunkExporter implements Exporter {
 
     public void addChunkUpdate(ChunkRenderer chunk, ChunkRenderData compiledChunk) {
         //#if MC>=10904
-        for (BlockRenderLayer layer : BlockRenderLayer.values()) {
+        for (RenderLayer layer : RenderLayer.values()) {
         //#else
         //$$ for (EnumWorldBlockLayer layer : EnumWorldBlockLayer.values()) {
         //#endif
@@ -98,8 +98,8 @@ public class ChunkExporter implements Exporter {
     @Override
     public void postFrame(int frame) throws IOException {
         //#if MC>=10904
-        for (Pair<ChunkRenderer, BlockRenderLayer> pair : chunks) {
-            BlockRenderLayer layer = pair.getRight();
+        for (Pair<ChunkRenderer, RenderLayer> pair : chunks) {
+            RenderLayer layer = pair.getRight();
         //#else
         //$$ for (Pair<RenderChunk, EnumWorldBlockLayer> pair : chunks) {
         //$$     EnumWorldBlockLayer layer = pair.getRight();
@@ -114,7 +114,7 @@ public class ChunkExporter implements Exporter {
             DObject layerObject = buildChunkLayerObject(chunkObject, chunk, layer);
             if (layerObject == null) continue;
             //#if MC>=10904
-            Map<BlockRenderLayer, DObject> layerObjects
+            Map<RenderLayer, DObject> layerObjects
             //#else
             //$$ Map<EnumWorldBlockLayer, DObject> layerObjects
             //#endif
@@ -145,11 +145,11 @@ public class ChunkExporter implements Exporter {
 
     private DObject buildChunkLayerObject(DObject chunkObject, ChunkRenderer renderChunk,
                                           //#if MC>=10904
-                                          BlockRenderLayer layer) {
+                                          RenderLayer layer) {
                                           //#else
                                           //$$ EnumWorldBlockLayer layer) {
                                           //#endif
-        GlBuffer vertexBuffer = renderChunk.getGlBuffer(layer.ordinal());
+        VertexBuffer vertexBuffer = renderChunk.getGlBuffer(layer.ordinal());
         if (vertexBuffer == null) return null;
 
         DObject layerObject = new DObject(buildChunkLayerMesh(vertexBuffer));
@@ -158,7 +158,7 @@ public class ChunkExporter implements Exporter {
         return layerObject;
     }
 
-    private DMesh buildChunkLayerMesh(GlBuffer vertexBuffer) {
+    private DMesh buildChunkLayerMesh(VertexBuffer vertexBuffer) {
         vertexBuffer.bind();
         int size = GL15.glGetBufferParameteri(GLX.GL_ARRAY_BUFFER, GL15.GL_BUFFER_SIZE);
         ByteBuffer byteBuffer = GlAllocationUtils.allocateByteBuffer(size);

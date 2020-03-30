@@ -20,13 +20,13 @@ import com.replaymod.core.events.PreRenderCallback;
 import java.io.IOException;
 
 //#if MC>=11400
-import net.minecraft.util.NonBlockingThreadExecutor;
+import net.minecraft.util.thread.ReentrantThreadExecutor;
 //#endif
 
 @Mixin(MinecraftClient.class)
 public abstract class MixinMinecraft
         //#if MC>=11400
-        extends NonBlockingThreadExecutor<Runnable>
+        extends ReentrantThreadExecutor<Runnable>
         //#endif
         implements MCVer.MinecraftMethodAccessor {
     //#if MC>=11400
@@ -44,7 +44,7 @@ public abstract class MixinMinecraft
     //#if MC>=11400
     @Override
     public void replayModExecuteTaskQueue() {
-        executeTaskQueue();
+        runTasks();
     }
     //#endif
 

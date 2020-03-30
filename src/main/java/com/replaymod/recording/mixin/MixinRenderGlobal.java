@@ -27,7 +27,7 @@ public abstract class MixinRenderGlobal implements RecordingEventHandler.Recordi
     }
 
     //#if MC>=10800
-    @Inject(method = "setBlockBreakingProgress", at = @At("HEAD"))
+    @Inject(method = "setBlockBreakingInfo", at = @At("HEAD"))
     //#else
     //$$ @Inject(method = "destroyBlockPartially", at = @At("HEAD"))
     //#endif

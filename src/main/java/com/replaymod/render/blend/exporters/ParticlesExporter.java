@@ -169,7 +169,7 @@ public class ParticlesExporter implements Exporter {
         builder.setReverseOffset(offset);
         builder.setWellBehaved(true);
         //#if MC>=10809
-        builder.begin(7, VertexFormats.POSITION_UV_COLOR_LMAP);
+        builder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR_LIGHT);
         //#else
         //$$ builder.startDrawingQuads();
         //#endif
