@@ -637,7 +637,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             p = new PlayerRespawnS2CPacket(
                     respawn.getDimension(),
                     //#if MC>=11500
-                    //$$ respawn.method_22425(),
+                    //$$ respawn.getSha256Seed(),
                     //#endif
                     respawn.getGeneratorType(),
                     GameMode.SPECTATOR

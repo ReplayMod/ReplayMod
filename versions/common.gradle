@@ -214,19 +214,19 @@ dependencies {
     if (FABRIC) {
         minecraft 'com.mojang:minecraft:' + [
                 11404: '1.14.4',
-                11501: '1.15.1',
+                11502: '1.15.2',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.1',
-                11501: '1.15.1+build.37',
+                11502: '1.15.2+build.14',
         ][mcVersion]
         modCompile 'net.fabricmc:fabric-loader:' + [
                 11404: '0.4.8+build.155',
-                11501: '0.7.4+build.177',
+                11502: '0.7.8+build.189',
         ][mcVersion]
         modCompile 'net.fabricmc.fabric-api:fabric-api:' + [
                 11404: '0.3.0+build.200',
-                11501: '0.4.27+build.286-1.15',
+                11502: '0.5.1+build.294-1.15',
         ][mcVersion]
     }
 

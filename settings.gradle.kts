@@ -27,7 +27,7 @@ val jGuiVersions = listOf(
         "1.12",
         "1.14.4-forge",
         "1.14.4",
-        "1.15.1"
+        "1.15.2"
 )
 val replayModVersions = listOf(
         "1.7.10",
@@ -42,7 +42,7 @@ val replayModVersions = listOf(
         "1.12.2",
         "1.14.4-forge",
         "1.14.4",
-        "1.15.1"
+        "1.15.2"
 )
 
 include(":jGui")

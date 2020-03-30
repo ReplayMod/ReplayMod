@@ -174,8 +174,8 @@ val doRelease by tasks.registering {
 defaultTasks("shadowJar")
 
 preprocess {
-    "1.15.1"(11501, "yarn") {
-        "1.14.4"(11404, "yarn", file("versions/mapping-fabric-1.15.1-1.14.4.txt")) {
+    "1.15.2"(11502, "yarn") {
+        "1.14.4"(11404, "yarn", file("versions/mapping-fabric-1.15.2-1.14.4.txt")) {
             "1.14.4-forge"(11404, "srg", file("versions/mapping-1.14.4-fabric-forge.txt")) {
                 "1.12.2"(11202, "srg", file("versions/1.14.4-forge/mapping.txt")) {
                     "1.12.1"(11201, "srg") {
