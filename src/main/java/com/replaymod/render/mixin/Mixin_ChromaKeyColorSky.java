@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class Mixin_ChromaKeyColorSky {
     @Shadow @Final private MinecraftClient client;
 
-    //#if MC>=11400
+    //#if MC>=11400 || 10710>=MC
     @Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "renderSky(FI)V", at = @At("HEAD"), cancellable = true)

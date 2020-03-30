@@ -80,6 +80,7 @@ import net.fabricmc.loader.api.FabricLoader;
 //$$ import com.replaymod.replay.InputReplayTimer;
 //$$
 //$$ import java.util.ArrayDeque;
+//$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //#endif
 //#endif
 //$$ import net.minecraftforge.fml.common.Mod;
