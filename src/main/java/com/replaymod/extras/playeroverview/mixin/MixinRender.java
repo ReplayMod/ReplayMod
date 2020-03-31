@@ -7,10 +7,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 
 //#if MC>=10800
-import net.minecraft.client.render.VisibleRegion;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //#else
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -35,7 +35,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinRender {
     //#if MC>=10800
     @Inject(method = "isVisible", at=@At("HEAD"), cancellable = true)
-    public void replayModExtras_isPlayerHidden(Entity entity, VisibleRegion camera, double camX, double camY, double camZ, CallbackInfoReturnable<Boolean> ci) {
+    public void replayModExtras_isPlayerHidden(Entity entity, @Coerce Object camera, double camX, double camY, double camZ, CallbackInfoReturnable<Boolean> ci) {
         ReplayModExtras.instance.get(PlayerOverview.class).ifPresent(playerOverview -> {
             if (entity instanceof PlayerEntity) {
                 PlayerEntity player = (PlayerEntity) entity;

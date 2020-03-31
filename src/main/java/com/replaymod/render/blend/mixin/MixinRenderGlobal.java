@@ -4,11 +4,16 @@ package com.replaymod.render.blend.mixin;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.exporters.EntityExporter;
 import com.replaymod.render.blend.exporters.TileEntityExporter;
-import net.minecraft.client.render.VisibleRegion;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=11500
+//$$ import net.minecraft.client.render.Frustum;
+//#else
+import net.minecraft.client.render.VisibleRegion;
+//#endif
 
 //#if MC>=11400
 import net.minecraft.client.render.Camera;
@@ -31,6 +36,9 @@ public abstract class MixinRenderGlobal {
 
     // FIXME wither skull ._. mojang pls
 
+    //#if MC>=11500
+    //$$ @Inject(method = "renderEntity", at = @At("HEAD"))
+    //#else
     @Inject(method = "renderEntities",
             at = @At(value = "INVOKE",
                     //#if MC>=10904
@@ -38,19 +46,17 @@ public abstract class MixinRenderGlobal {
                     //#else
                     //$$ target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)Z"))
                     //#endif
-    private void preEntityRender(
-            //#if MC>=11400
-            Camera view,
-            //#else
-            //$$ Entity view,
-            //#endif
-            VisibleRegion camera, float renderPartialTicks, CallbackInfo ci) {
+    //#endif
+    private void preEntityRender(CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
             blendState.get(EntityExporter.class).preEntitiesRender();
         }
     }
 
+    //#if MC>=11500
+    //$$ @Inject(method = "renderEntity", at = @At("RETURN"))
+    //#else
     @Inject(method = "renderEntities",
             at = @At(value = "INVOKE",
                     //#if MC>=10904
@@ -59,19 +65,17 @@ public abstract class MixinRenderGlobal {
                     //$$ target = "Lnet/minecraft/client/renderer/entity/RenderManager;renderEntitySimple(Lnet/minecraft/entity/Entity;F)Z",
                     //#endif
                     shift = At.Shift.AFTER))
-    private void postEntityRender(
-            //#if MC>=11400
-            Camera view,
-            //#else
-            //$$ Entity view,
-            //#endif
-            VisibleRegion camera, float renderPartialTicks, CallbackInfo ci) {
+    //#endif
+    private void postEntityRender(CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
             blendState.get(EntityExporter.class).postEntitiesRender();
         }
     }
 
+    //#if MC>=11500
+    //$$ // FIXME
+    //#else
     @Inject(method = "renderEntities", at = @At(
             value = "INVOKE",
             //#if MC>=11400
@@ -80,13 +84,7 @@ public abstract class MixinRenderGlobal {
             //$$ target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;renderTileEntity(Lnet/minecraft/tileentity/TileEntity;FI)V"
             //#endif
     ))
-    private void preTileEntityRender(
-            //#if MC>=11400
-            Camera view,
-            //#else
-            //$$ Entity view,
-            //#endif
-            VisibleRegion camera, float renderPartialTicks, CallbackInfo ci) {
+    private void preTileEntityRender(CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
             blendState.get(TileEntityExporter.class).preTileEntitiesRender();
@@ -102,17 +100,12 @@ public abstract class MixinRenderGlobal {
             //#endif
             shift = At.Shift.AFTER
     ))
-    private void postTileEntityRender(
-            //#if MC>=11400
-            Camera view,
-            //#else
-            //$$ Entity view,
-            //#endif
-            VisibleRegion camera, float renderPartialTicks, CallbackInfo ci) {
+    private void postTileEntityRender(CallbackInfo ci) {
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
             blendState.get(TileEntityExporter.class).postTileEntitiesRender();
         }
     }
+    //#endif
 }
 //#endif

@@ -1,6 +1,5 @@
 net.fabricmc.fabric.impl.resource.loader.ModResourcePackUtil net.fabricmc.fabric.impl.resources.ModResourcePackUtil
 net.minecraft.client.render.entity.EntityRenderer shouldRender() isVisible()
-net.minecraft.client.render.Frustum net.minecraft.client.render.VisibleRegion
 net.minecraft.client.render.GameRenderer renderWorld() renderCenter()
 net.minecraft.entity.LivingEntity serverX field_6224
 net.minecraft.entity.LivingEntity serverY field_6245
@@ -11,3 +10,4 @@ net.minecraft.client.render.WorldRenderer drawBlockOutline() drawHighlightedBloc
 net.minecraft.client.render.GameRenderer method_22973() applyCameraTransformations()
 net.minecraft.client.util.math.Matrix4f viewboxMatrix() method_4929()
 net.minecraft.client.util.ScreenshotUtils takeScreenshot() method_1663()
+net.minecraft.client.render.WorldRenderer setupTerrain() setUpTerrain()

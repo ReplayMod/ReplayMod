@@ -4,13 +4,18 @@ package com.replaymod.compat.shaders.mixin;
 import com.replaymod.compat.shaders.ShaderReflection;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.VisibleRegion;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+//#if MC>=11500
+//#else
+import net.minecraft.client.render.VisibleRegion;
+//#endif
 
 //#if MC>=11400
 import net.minecraft.client.render.Camera;
@@ -38,7 +43,12 @@ public abstract class MixinShaderRenderGlobal {
             //$$ double partialTicks,
             //#endif
             //#endif
+            //#if MC>=11500
+            //$$ Frustum camera,
+            //$$ boolean skipUpdate,
+            //#else
             VisibleRegion camera,
+            //#endif
             int frameCount,
             boolean playerSpectator,
             CallbackInfo ci
