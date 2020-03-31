@@ -55,27 +55,27 @@ public abstract class Mixin_CubicRotation {
             switch (data) {
                 case FRONT:
                     angle = 0;
-                    x = 1;
+                    y = 1;
                     break;
                 case RIGHT:
                     angle = 90;
-                    x = 1;
+                    y = 1;
                     break;
                 case BACK:
                     angle = 180;
-                    x = 1;
+                    y = 1;
                     break;
                 case LEFT:
                     angle = -90;
-                    x = 1;
+                    y = 1;
                     break;
                 case TOP:
                     angle = -90;
-                    y = 1;
+                    x = 1;
                     break;
                 case BOTTOM:
                     angle = 90;
-                    y = 1;
+                    x = 1;
                     break;
             }
             //#if MC>=11500
