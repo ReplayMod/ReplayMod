@@ -26,7 +26,8 @@ public abstract class MixinFrustum {
     //#endif
     public void intersects(CallbackInfoReturnable<Boolean> ci) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
-        if (handler != null && handler.omnidirectional && handler.data == null) {
+        if (handler != null && handler.omnidirectional) {
+            // Note the following used to be true but for simplicity non-ODS omnidirectional is the same now too.
             // Normally the camera is always facing the direction of the omnidirectional image face that is currently
             // getting rendered. With ODS however, the camera is always facing forwards and the turning happens in the
             // vertex shader (non-trivial due to stereo). As such, all chunks need to be rendered all the time for ODS.
