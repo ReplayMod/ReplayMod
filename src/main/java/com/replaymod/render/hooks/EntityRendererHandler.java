@@ -63,13 +63,11 @@ public class EntityRendererHandler implements WorldRenderer {
         //#endif
 
         if (mc.world != null && mc.player != null) {
-            mc.gameRenderer.renderWorld(
-                    partialTicks,
-                    finishTimeNano
-                    //#if MC>=11500
-                    //$$ , new MatrixStack()
-                    //#endif
-            );
+            //#if MC>=11500
+            //$$ mc.gameRenderer.renderWorld(partialTicks, finishTimeNano, new MatrixStack());
+            //#else
+            mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
+            //#endif
         }
 
         //#if MC>=11400

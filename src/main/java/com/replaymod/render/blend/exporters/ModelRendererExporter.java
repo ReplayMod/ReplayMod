@@ -8,7 +8,11 @@ import com.replaymod.render.blend.data.DObject;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=11400
+//#if MC>=11500
+//$$ import net.minecraft.client.model.ModelPart.Cuboid;
+//#else
 import net.minecraft.client.model.Box;
+//#endif
 import net.minecraft.client.model.ModelPart;
 //#else
 //$$ import net.minecraft.client.model.ModelBox;
@@ -81,13 +85,15 @@ public class ModelRendererExporter implements Exporter {
     private static DMesh generateMesh(ModelPart model, float scale) {
         DMesh mesh = new DMesh();
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
+        //#if MC>=11500
+        //$$ for (Cuboid box : cubeList(model)) {
+        //$$     // FIXME 1.15
+        //$$ }
+        //#else
         for (Box box : cubeList(model)) {
-            //#if MC>=11500
-            //$$ // FIXME 1.15
-            //#else
             box.render(builder, scale);
-            //#endif
         }
+        //#endif
         builder.maybeFinishDrawing();
         return mesh;
     }

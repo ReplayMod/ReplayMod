@@ -1,5 +1,3 @@
-net.minecraft.client.model.ModelPart.Cuboid net.minecraft.client.model.Box
-net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk net.minecraft.client.render.chunk.ChunkRenderer
 net.fabricmc.fabric.impl.resource.loader.ModResourcePackUtil net.fabricmc.fabric.impl.resources.ModResourcePackUtil
 net.minecraft.client.render.entity.EntityRenderer shouldRender() isVisible()
 net.minecraft.client.render.Frustum net.minecraft.client.render.VisibleRegion

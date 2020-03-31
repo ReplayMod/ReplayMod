@@ -63,19 +63,17 @@ public class NoGuiScreenshot {
                     mc.getFramebuffer().beginWrite(true);
                     GlStateManager.enableTexture();
 
+                    //#if MC>=11500
+                    //$$ mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime(), new MatrixStack());
+                    //#else
                     //#if MC>=11400
-                    mc.gameRenderer.renderWorld(
-                            MCVer.getRenderPartialTicks(),
-                            System.nanoTime()
-                            //#if MC>=11500
-                            //$$ , new MatrixStack()
-                            //#endif
-                    );
+                    mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
                     //#else
                     //#if MC>=10809
                     //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks(), System.nanoTime());
                     //#else
                     //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks());
+                    //#endif
                     //#endif
                     //#endif
 

@@ -3,13 +3,16 @@ package com.replaymod.compat.shaders.mixin;
 
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.chunk.ChunkRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ChunkRenderer.class)
+//#if MC>=11500
+//$$ @Mixin(net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk.class)
+//#else
+@Mixin(net.minecraft.client.render.chunk.ChunkRenderer.class)
+//#endif
 public abstract class MixinShaderRenderChunk {
 
     private final MinecraftClient mc = MinecraftClient.getInstance();

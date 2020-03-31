@@ -10,7 +10,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.model.Box;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.entity.Entity;
@@ -24,6 +23,13 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+//#if MC>=11500
+//$$ import net.minecraft.client.model.ModelPart.Cuboid;
+//$$ import java.util.ArrayList;
+//#else
+import net.minecraft.client.model.Box;
+//#endif
+
 //#if MC>=11400
 import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
 import net.minecraft.SharedConstants;
@@ -31,7 +37,6 @@ import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 
-import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 //#else
 //$$ import com.google.common.util.concurrent.FutureCallback;
@@ -141,7 +146,7 @@ public class MCVer {
         //#if MC>=11400
         return SharedConstants.getGameVersion().getProtocolVersion();
         //#else
-        // FIXME
+        //$$ // FIXME
         //$$ throw new UnsupportedOperationException("Minimal mode not supported pre-1.14");
         //#endif
     }
@@ -362,13 +367,15 @@ public class MCVer {
     }
 
     @SuppressWarnings("unchecked")
+    //#if MC>=11500
+    //$$ public static List<Cuboid> cubeList(ModelPart modelRenderer) {
+    //$$     return new ArrayList<>(); // FIXME 1.15
+    //$$ }
+    //#else
     public static List<Box> cubeList(ModelPart modelRenderer) {
-        //#if MC>=11500
-        //$$ return new ArrayList<>(); // FIXME 1.15
-        //#else
         return modelRenderer.boxes;
-        //#endif
     }
+    //#endif
 
     @SuppressWarnings("unchecked")
     public static List<PlayerEntity> playerEntities(World world) {
