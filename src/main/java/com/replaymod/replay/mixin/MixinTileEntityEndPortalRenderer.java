@@ -15,6 +15,9 @@ import net.minecraft.util.Util;
 
 @Mixin(EndPortalBlockEntityRenderer.class)
 public class MixinTileEntityEndPortalRenderer {
+    //#if MC>=11500
+    //$$ // Seems like they finally removed all animation
+    //#else
     //#if MC>=11400
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
@@ -43,4 +46,5 @@ public class MixinTileEntityEndPortalRenderer {
         //$$ return Minecraft.getSystemTime();
         //#endif
     }
+    //#endif
 }

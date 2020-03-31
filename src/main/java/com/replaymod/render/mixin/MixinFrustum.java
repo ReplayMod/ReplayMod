@@ -19,8 +19,12 @@ import net.minecraft.client.render.Frustum;
 //$$ @Mixin(Frustrum.class)
 //#endif
 public abstract class MixinFrustum {
+    //#if MC>=11500
+    //$$ @Inject(method = "isAnyCornerVisible", at = @At("HEAD"), cancellable = true)
+    //#else
     @Inject(method = "intersects", at = @At("HEAD"), cancellable = true)
-    public void intersects(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, CallbackInfoReturnable<Boolean> ci) {
+    //#endif
+    public void intersects(CallbackInfoReturnable<Boolean> ci) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
         if (handler != null && handler.omnidirectional && handler.data == null) {
             // Normally the camera is always facing the direction of the omnidirectional image face that is currently

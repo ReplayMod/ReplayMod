@@ -2,7 +2,6 @@ package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.render.item.ItemRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -13,13 +12,21 @@ import net.minecraft.util.Util;
 //$$ import net.minecraft.client.Minecraft;
 //#endif
 
-@Mixin(ItemRenderer.class)
+//#if MC>=11500
+//$$ @Mixin(net.minecraft.client.render.RenderPhase.class)
+//#else
+@Mixin(net.minecraft.client.render.item.ItemRenderer.class)
+//#endif
 public class MixinRenderItem {
     //#if MC>=11400
+    //#if MC>=11500
+    //$$ @Redirect(method = "setupGlintTexturing", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    //#else
     //#if MC>=11400
     @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
+    //#endif
     //#endif
     private static long getEnchantmentTime() {
     //#else

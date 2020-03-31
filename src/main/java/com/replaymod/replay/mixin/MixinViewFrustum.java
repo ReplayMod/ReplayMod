@@ -21,7 +21,7 @@ public abstract class MixinViewFrustum {
                     value = "INVOKE",
                     //#if MC>=10904
                     //#if MC>=11500
-                    //$$ target = "Lnet/minecraft/client/render/chunk/ChunkBuilder/BuiltChunk;setOrigin(III)V"
+                    //$$ target = "Lnet/minecraft/client/render/chunk/ChunkBuilder$BuiltChunk;setOrigin(III)V"
                     //#else
                     target = "Lnet/minecraft/client/render/chunk/ChunkRenderer;setOrigin(III)V"
                     //#endif

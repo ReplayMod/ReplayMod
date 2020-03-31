@@ -9,6 +9,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=11500
+//$$ import net.minecraft.client.render.VertexConsumer;
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//#endif
+
 //#if MC>=11400
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
@@ -28,6 +33,10 @@ import net.minecraft.client.render.model.BakedModel;
 //$$ @Mixin(RenderItem.class)
 //#endif
 public abstract class MixinRenderItem {
+    //#if MC>=11500
+    //$$ @Inject(method = "renderBakedItemModel", at = @At("HEAD"))
+    //$$ private void onRenderModel(BakedModel model, ItemStack stack, int int_1, int int_2, MatrixStack matrixStack_1, VertexConsumer vertexConsumer_1, CallbackInfo ci) {
+    //#else
     //#if MC>=11400
     @Inject(method = "renderItemModel", at = @At("HEAD"))
     //#else
@@ -45,6 +54,7 @@ public abstract class MixinRenderItem {
     //#endif
     //#endif
     private void onRenderModel(BakedModel model, ItemStack stack, CallbackInfo ci) {
+    //#endif
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
             blendState.get(ItemExporter.class).onRender(this, model, stack);

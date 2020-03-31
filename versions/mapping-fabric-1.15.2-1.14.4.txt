@@ -10,4 +10,6 @@ net.minecraft.client.render.WorldRenderer drawBlockOutline() drawHighlightedBloc
 net.minecraft.client.render.GameRenderer method_22973() applyCameraTransformations()
 net.minecraft.client.util.math.Matrix4f viewboxMatrix() method_4929()
 net.minecraft.client.util.ScreenshotUtils takeScreenshot() method_1663()
+net.minecraft.client.util.ScreenshotUtils saveScreenshot() method_1659()
 net.minecraft.client.render.WorldRenderer setupTerrain() setUpTerrain()
+net.minecraft.client.gui.hud.SpectatorHud cycleSlot() method_1976()

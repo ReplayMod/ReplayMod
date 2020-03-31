@@ -38,7 +38,11 @@ public abstract class MixinRenderManager {
             //#endif
             //#endif
             at = @At(value = "INVOKE",
+                     //#if MC>=11500
+                     //$$ target = "Lnet/minecraft/client/render/entity/EntityRenderer;render(Lnet/minecraft/entity/Entity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"))
+                     //#else
                      target = "Lnet/minecraft/client/render/entity/EntityRenderer;render(Lnet/minecraft/entity/Entity;DDDFF)V"))
+                     //#endif
     public void preRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks,
                           //#if MC>=11500
                           //$$ MatrixStack matrixStack,
@@ -73,7 +77,11 @@ public abstract class MixinRenderManager {
             //#endif
             //#endif
             at = @At(value = "INVOKE",
+                     //#if MC>=11500
+                     //$$ target = "Lnet/minecraft/client/render/entity/EntityRenderer;render(Lnet/minecraft/entity/Entity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
+                     //#else
                      target = "Lnet/minecraft/client/render/entity/EntityRenderer;render(Lnet/minecraft/entity/Entity;DDDFF)V",
+                     //#endif
                      shift = At.Shift.AFTER))
     public void postRender(Entity entity, double x, double y, double z, float yaw, float renderPartialTicks,
                            //#if MC>=11500

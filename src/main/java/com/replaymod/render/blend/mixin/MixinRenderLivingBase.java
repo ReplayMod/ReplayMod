@@ -3,7 +3,6 @@ package com.replaymod.render.blend.mixin;
 
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.blend.exporters.EntityExporter;
-import net.minecraft.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,10 +30,14 @@ public abstract class MixinRenderLivingBase {
     //#endif
     //#endif
             value = "INVOKE",
+            //#if MC>=11500
+            //$$ target = "Lnet/minecraft/client/render/entity/LivingEntityRenderer;scale(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/util/math/MatrixStack;F)V",
+            //#else
             //#if MC>=10904
             target = "Lnet/minecraft/client/render/entity/LivingEntityRenderer;scaleAndTranslate(Lnet/minecraft/entity/LivingEntity;F)F",
             //#else
             //$$ target = "Lnet/minecraft/client/renderer/entity/RendererLivingEntity;preRenderCallback(Lnet/minecraft/entity/EntityLivingBase;F)V",
+            //#endif
             //#endif
             shift = At.Shift.AFTER
     ))
