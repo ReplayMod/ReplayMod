@@ -76,16 +76,7 @@ public class Utils {
     private static Logger LOGGER = LogManager.getLogger();
 
     private static InputStream getResourceAsStream(String path) {
-        // FIXME this seems broken in 1.13, hence the workaround. probably want to open an issue with modlauncher (or forge?)
-        //#ifdef DEV_ENV
-        try {
-            return new java.io.FileInputStream(new File("../src/main/resources" + path));
-        } catch (java.io.FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        //#else
-        //$$ return Utils.class.getResourceAsStream(path);
-        //#endif
+        return Utils.class.getResourceAsStream(path);
     }
 
     public static final Image DEFAULT_THUMBNAIL;

@@ -236,14 +236,15 @@ public class ReplayMod implements
     }
 
     static { // Note: even preInit is too late and we'd have to issue another resource reload
-        //#ifdef DEV_ENV
-        //noinspection ConstantConditions
-        if (true) {
-        //#else
-        //$$ //noinspection ConstantConditions
-        //$$ if (false) {
-        //#endif
-        DirectoryResourcePack jGuiResourcePack = new DirectoryResourcePack(new File("../jGui/src/main/resources")) {
+        initJGuiResourcePack();
+    }
+
+    private static void initJGuiResourcePack() {
+        File folder = new File("../jGui/src/main/resources");
+        if (!folder.exists()) {
+            return;
+        }
+        DirectoryResourcePack jGuiResourcePack = new DirectoryResourcePack(folder) {
             @Override
             protected InputStream openFile(String resourceName) throws IOException {
                 try {
@@ -290,7 +291,7 @@ public class ReplayMod implements
         //$$ };
         //$$ defaultResourcePacks.add(mainResourcePack);
         //#endif
-    }}
+    }
 
     //#if FABRIC>=1
     @Override
