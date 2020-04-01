@@ -2,7 +2,6 @@ package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
-import net.minecraft.client.render.block.entity.EndPortalBlockEntityRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -13,10 +12,15 @@ import net.minecraft.util.Util;
 //$$ import net.minecraft.client.Minecraft;
 //#endif
 
-@Mixin(EndPortalBlockEntityRenderer.class)
+//#if MC>=11500
+//$$ @Mixin(net.minecraft.client.render.RenderPhase.PortalTexturing.class)
+//#else
+@Mixin(net.minecraft.client.render.block.entity.EndPortalBlockEntityRenderer.class)
+//#endif
 public class MixinTileEntityEndPortalRenderer {
     //#if MC>=11500
-    //$$ // Seems like they finally removed all animation
+    //$$ @Redirect(method = "method_23557", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    //$$ static
     //#else
     //#if MC>=11400
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
@@ -35,6 +39,7 @@ public class MixinTileEntityEndPortalRenderer {
     //#endif
     //#endif
     //#endif
+    //#endif
     private long replayModReplay_getEnchantmentTime() {
         ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
         if (replayHandler != null) {
@@ -46,5 +51,4 @@ public class MixinTileEntityEndPortalRenderer {
         //$$ return Minecraft.getSystemTime();
         //#endif
     }
-    //#endif
 }
