@@ -1,3 +1,5 @@
+import com.replaymod.gradle.preprocess.PreprocessTask
+
 buildscript {
     def mcVersion
     def (major, minor, patch) = project.name.tokenize('-')[0].tokenize('.')
@@ -88,6 +90,15 @@ apply plugin: 'com.replaymod.preprocess'
 preprocess {
     vars.put("MC", project.mcVersion)
     vars.put("FABRIC", project.fabric ? 1 : 0)
+
+    keywords.set([
+            ".java": PreprocessTask.DEFAULT_KEYWORDS,
+            ".json": PreprocessTask.DEFAULT_KEYWORDS,
+            ".mcmeta": PreprocessTask.DEFAULT_KEYWORDS,
+            ".cfg": PreprocessTask.CFG_KEYWORDS,
+            ".vert": PreprocessTask.DEFAULT_KEYWORDS,
+            ".frag": PreprocessTask.DEFAULT_KEYWORDS,
+    ])
 }
 
 def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")

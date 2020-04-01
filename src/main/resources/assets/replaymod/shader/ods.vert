@@ -5,6 +5,9 @@ varying float vertId;
 
 varying vec4 textureCoord;
 varying vec4 lightMapCoord;
+//#if MC>=11500
+//$$ varying vec4 overlayCoords;
+//#endif
 
 uniform bool leftEye;
 uniform int direction;
@@ -66,7 +69,12 @@ void main() {
 
     // Misc.
 	textureCoord = gl_TextureMatrix[0] * gl_MultiTexCoord0;
-	lightMapCoord = gl_TextureMatrix[1] * gl_MultiTexCoord1;
+    //#if MC>=11500
+    //$$ overlayCoords = gl_TextureMatrix[1] * gl_MultiTexCoord1;
+    //$$ lightMapCoord = gl_TextureMatrix[2] * gl_MultiTexCoord2;
+    //#else
+    lightMapCoord = gl_TextureMatrix[1] * gl_MultiTexCoord1;
+    //#endif
     vertColor = gl_Color;
 	gl_FogFragCoord = sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
 }
