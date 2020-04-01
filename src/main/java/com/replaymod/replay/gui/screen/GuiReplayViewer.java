@@ -408,7 +408,7 @@ public class GuiReplayViewer extends GuiScreen {
             } else {
                 server.setText(metaData.getServerName());
             }
-            incompatible = !ReplayMod.isCompatible(metaData.getFileFormatVersion(), metaData.getProtocolVersion());
+            incompatible = !ReplayMod.isCompatible(metaData.getFileFormatVersion(), metaData.getRawProtocolVersionOr0());
             if (incompatible) {
                 version.setText("Minecraft " + metaData.getMcVersion());
             }
