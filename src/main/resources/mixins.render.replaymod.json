@@ -17,9 +17,7 @@
     //#endif
     "WorldRendererAccessor",
     //#if MC>=10904
-    //#if MC<11500
     "MixinParticleManager",
-    //#endif
     //#else
     //$$ "MixinEffectRenderer",
     //$$ "MixinRendererLivingEntity",
