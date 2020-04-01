@@ -93,10 +93,11 @@ public class MarkerProcessor {
 
                     try (ReplayOutputStream replayOutputStream = outputReplayFile.writePacketData()) {
                         if (cutFilter != null) {
-                            cutFilter = squashFilter;
+                            cutFilter.release();
+                            cutFilter = squashFilter.copy();
                         } else if (splitCounter > 0) {
                             List<PacketData> packets = new ArrayList<>();
-                            squashFilter.onEnd(
+                            squashFilter.copy().onEnd(
                                     new IteratorStream(packets.listIterator(), (StreamFilter) null),
                                     timeOffset
                             );
@@ -108,6 +109,9 @@ public class MarkerProcessor {
                         while (nextPacket != null) {
                             if (nextMarker != null && nextPacket.getTime() > nextMarker.getTime()) {
                                 if (MARKER_NAME_START_CUT.equals(nextMarker.getName())) {
+                                    if (cutFilter != null) {
+                                        cutFilter.release();
+                                    }
                                     startCutOffset = nextMarker.getTime();
                                     cutFilter = new SquashFilter();
                                 } else if (MARKER_NAME_END_CUT.equals(nextMarker.getName())) {
@@ -139,13 +143,12 @@ public class MarkerProcessor {
 
                             squashFilter.onPacket(null, nextPacket);
                             if (cutFilter != null) {
-                                if (cutFilter != squashFilter) {
-                                    cutFilter.onPacket(null, nextPacket);
-                                }
+                                cutFilter.onPacket(null, nextPacket);
                             } else {
-                                replayOutputStream.write(nextPacket.getTime() - timeOffset, nextPacket.getPacket());
+                                replayOutputStream.write(nextPacket.getTime() - timeOffset, nextPacket.getPacket().copy());
                                 duration = nextPacket.getTime() - timeOffset;
                             }
+                            nextPacket.release();
                             nextPacket = replayInputStream.readPacket();
                             if (nextPacket != null) {
                                 progress.accept((float) nextPacket.getTime() / (float) inputDuration);
@@ -177,6 +180,11 @@ public class MarkerProcessor {
 
                     outputReplayFile.save();
                 }
+            }
+
+            squashFilter.release();
+            if (cutFilter != null) {
+                cutFilter.release();
             }
         }
     }
