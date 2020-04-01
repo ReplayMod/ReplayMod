@@ -129,6 +129,9 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) getWindow(mc);
         mainWindow.setFramebufferWidth(width);
         mainWindow.setFramebufferHeight(height);
+        //#if MC>=11500
+        //$$ mc.gameRenderer.onResized(width, height);
+        //#endif
         //#else
         //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
         //$$     mc.resize(width, height);

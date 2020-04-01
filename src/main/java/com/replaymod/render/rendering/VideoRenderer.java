@@ -378,6 +378,9 @@ public class VideoRenderer implements RenderInfo {
         MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
         acc.setFramebufferWidth(displayWidth);
         acc.setFramebufferHeight(displayHeight);
+        //#if MC>=11500
+        //$$ mc.gameRenderer.onResized(displayWidth, displayHeight);
+        //#endif
         //#else
         //$$ mc.resize(displayWidth, displayHeight);
         //#endif
