@@ -24,6 +24,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
+//#if MC>=11500
+//$$ import com.mojang.blaze3d.systems.RenderSystem;
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//#endif
+
 //#if FABRIC>=1
 import com.replaymod.core.events.PostRenderWorldCallback;
 //#else
@@ -55,7 +60,11 @@ public class PathPreviewRenderer extends EventRegistrations {
 
     //#if FABRIC>=1
     { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
+    //#if MC>=11500
+    //$$ private void renderCameraPath(MatrixStack matrixStack) {
+    //#else
     private void renderCameraPath() {
+    //#endif
     //#else
     //$$ @SubscribeEvent
     //$$ public void renderCameraPath(RenderWorldLastEvent event) {
@@ -80,17 +89,26 @@ public class PathPreviewRenderer extends EventRegistrations {
         int renderDistance = mc.options.viewDistance * 16;
         int renderDistanceSquared = renderDistance * renderDistance;
 
-        //#if MC>=10800
-        // Eye height is subtracted to make path appear higher (at eye height) than it actually is (at foot height)
-        Triple<Double, Double, Double> viewPos = Triple.of(Entity_getX(view), Entity_getY(view) - view.getStandingEyeHeight(), Entity_getZ(view));
-        //#else
-        //$$ Triple<Double, Double, Double> viewPos = Triple.of(view.posX, view.posY, view.posZ);
-        //#endif
+        Triple<Double, Double, Double> viewPos = Triple.of(
+                Entity_getX(view),
+                //#if MC>=10800 && MC<11500
+                // Eye height is subtracted to make path appear higher (at eye height) than it actually is (at foot height)
+                Entity_getY(view) - view.getStandingEyeHeight(),
+                //#else
+                //$$ Entity_getY(view),
+                //#endif
+                Entity_getZ(view)
+        );
 
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        GL11.glPushMatrix();
         try {
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+            //#if MC>=11500
+            //$$ RenderSystem.multMatrix(matrixStack.peek().getModel());
+            //#endif
 
             for (PathSegment segment : path.getSegments()) {
                 Interpolator interpolator = segment.getInterpolator();
@@ -180,6 +198,7 @@ public class PathPreviewRenderer extends EventRegistrations {
                 }
             }
         } finally {
+            GL11.glPopMatrix();
             GlStateManager.popAttributes();
         }
     }

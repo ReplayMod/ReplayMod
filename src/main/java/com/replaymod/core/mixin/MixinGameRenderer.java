@@ -30,7 +30,11 @@ public class MixinGameRenderer {
             //$$ MatrixStack matrixStack,
             //#endif
             CallbackInfo ci) {
-        PostRenderWorldCallback.EVENT.invoker().postRenderWorld();
+        PostRenderWorldCallback.EVENT.invoker().postRenderWorld(
+                //#if MC>=11500
+                //$$ matrixStack
+                //#endif
+        );
     }
 
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
