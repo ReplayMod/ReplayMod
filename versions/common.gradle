@@ -273,6 +273,7 @@ dependencies {
 
     shadow "com.github.ReplayMod:ReplayStudio:ce5876d", shadeExclusions
 
+    project.evaluationDependsOn(":jGui:$jGuiVersion")
     shadowReobf(project(":jGui:$jGuiVersion")){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
@@ -306,6 +307,14 @@ if (mcVersion <= 10710) {
         tasks.reobf.obfOutput.all { artifact ->
             artifact.getFile() // force resolve
             artifact.classpath += configurations.minecraft + configurations.minecraftDeps
+        }
+    }
+}
+
+if (FABRIC) {
+    tasks.remapJar {
+        afterEvaluate { // FIXME why does loom overwrite this if we set it immediately?
+            archiveClassifier.set('obf')
         }
     }
 }
@@ -367,7 +376,7 @@ task configureRelocation() {
 
 tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
 task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    from({ zipTree(tasks.jar.archivePath) }) {
+    from({ zipTree((FABRIC ? tasks.remapJar : tasks.jar).archiveFile.get()) }) {
         filesMatching('mixins.jgui.json') {
             filter { it.replace('de.johni0702', 'com.replaymod.lib.de.johni0702') }
         }
@@ -375,7 +384,7 @@ task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar)
             filter { it.replace('de/johni0702', 'com/replaymod/lib/de/johni0702') }
         }
     }
-    afterEvaluate { dependsOn FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
+    dependsOn { FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
     manifest.inheritFrom tasks.jar.manifest
 
     from project.configurations.shade
