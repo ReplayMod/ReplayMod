@@ -319,9 +319,11 @@ if (FABRIC) {
     }
 }
 
+File configureRelocationOutput = new File(project.buildDir, 'configureRelocation')
 task configureRelocation() {
     dependsOn tasks.jar
     dependsOn configurations.relocate
+    outputs.file(configureRelocationOutput)
     doLast {
         def pkgs = files(configurations.relocate).filter { it.exists() }.collect {
             def tree = it.isDirectory() ? fileTree(it) : zipTree(it)
@@ -367,10 +369,7 @@ task configureRelocation() {
             }
             pkgs
         }.flatten().unique()
-        pkgs.each { pkg ->
-            def pkgName = pkg.replace('/', '.')
-            shadowJar.relocate pkgName, 'com.replaymod.lib.' + pkgName
-        }
+        configureRelocationOutput.write(pkgs.join('\n'))
     }
 }
 
@@ -392,6 +391,13 @@ task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar)
     exclude 'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class'
 
     dependsOn tasks.configureRelocation
+    inputs.file(configureRelocationOutput)
+    doFirst {
+        configureRelocationOutput.readLines().each { pkg ->
+            def pkgName = pkg.replace('/', '.')
+            relocate pkgName, 'com.replaymod.lib.' + pkgName
+        }
+    }
 
     // No need to shadow netty, MC provides it
     relocate 'com.github.steveice10.netty', 'io.netty'
