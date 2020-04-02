@@ -43,6 +43,7 @@ import java.util.concurrent.CompletableFuture;
 //$$ import com.google.common.util.concurrent.Futures;
 //$$ import com.google.common.util.concurrent.ListenableFuture;
 //$$ import net.minecraft.client.gui.GuiButton;
+//$$ import net.minecraft.realms.RealmsSharedConstants;
 //#endif
 
 //#if FABRIC>=1
@@ -146,8 +147,7 @@ public class MCVer {
         //#if MC>=11400
         return SharedConstants.getGameVersion().getProtocolVersion();
         //#else
-        //$$ // FIXME
-        //$$ throw new UnsupportedOperationException("Minimal mode not supported pre-1.14");
+        //$$ return RealmsSharedConstants.NETWORK_PROTOCOL_VERSION;
         //#endif
     }
 
