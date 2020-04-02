@@ -445,7 +445,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             }
         }
 
-        //#if MC<10800
+        //#if MC<10800 || MC>=11500
         //$$ if (method == RenderSettings.RenderMethod.BLEND) {
         //$$     return "replaymod.gui.rendersettings.no_blend_on_1_7_10";
         //$$ }
