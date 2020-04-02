@@ -1,4 +1,4 @@
-//#if MC>=10800
+//#if MC>=10800 && MC<11500
 package com.replaymod.render.blend.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;

@@ -11,8 +11,8 @@
     "MixinEffectRenderer",
     "MixinModelRenderer",
     "MixinTileEntityRendererDispatcher",
-    //#endif
     "ContainerLocalRenderInformationAccessor",
+    //#endif
     //#if MC<10904
     //$$ "EntityAccessor",
     //#endif
