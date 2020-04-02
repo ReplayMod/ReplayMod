@@ -1,27 +1,29 @@
-// FIXME 1.15 chunk rendering has changed significantly, ignoring this feature for now
-//#if MC>=10800 && MC<11500
+//#if MC>=10800
 package com.replaymod.render.hooks;
 
+import net.minecraft.client.render.WorldRenderer;
+
+import java.lang.reflect.Field;
+
+//#if MC>=11500
+//#else
 import com.replaymod.render.mixin.ChunkRenderDispatcherAccessor;
 import com.replaymod.render.mixin.WorldRendererAccessor;
 import com.replaymod.render.utils.JailingQueue;
 import net.minecraft.client.render.chunk.BlockBufferBuilderStorage;
-import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.chunk.ChunkRenderTask;
 import net.minecraft.client.render.chunk.ChunkRenderWorker;
 import net.minecraft.client.render.chunk.ChunkRenderer;
-
-import java.lang.reflect.Field;
 import java.util.Iterator;
+import static com.replaymod.core.versions.MCVer.*;
+//#endif
 
 //#if MC>=10904
 import java.util.concurrent.PriorityBlockingQueue;
 //#else
 //$$ import java.util.concurrent.BlockingQueue;
 //#endif
-
-import static com.replaymod.core.versions.MCVer.*;
 
 public class ChunkLoadingRenderGlobal {
 
@@ -30,6 +32,9 @@ public class ChunkLoadingRenderGlobal {
     //#else
     //$$ private final RenderGlobal hooked;
     //#endif
+
+    //#if MC>=11500
+    //#else
     private ChunkBuilder renderDispatcher;
     //#if MC>=11400
     private JailingQueue<ChunkRenderTask> workerJailingQueue;
@@ -38,8 +43,8 @@ public class ChunkLoadingRenderGlobal {
     //#endif
     private ChunkRenderWorkerAccessor renderWorker;
     private int frame;
+    //#endif
 
-    @SuppressWarnings("unchecked")
     public ChunkLoadingRenderGlobal(
             //#if MC>=11400
             WorldRenderer renderGlobal
@@ -49,9 +54,29 @@ public class ChunkLoadingRenderGlobal {
     ) {
         this.hooked = renderGlobal;
 
+        //#if MC>=11500
+        //$$ install();
+        //#else
         setup(((WorldRendererAccessor) renderGlobal).getRenderDispatcher());
+        install();
+        //#endif
     }
 
+    private void install() {
+        try {
+            //#if MC>=11400
+            Field hookField = WorldRenderer.class.getField("replayModRender_hook");
+            //#else
+            //$$ Field hookField = RenderGlobal.class.getField("replayModRender_hook");
+            //#endif
+            hookField.set(hooked, this);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new Error(e);
+        }
+    }
+
+    //#if MC>=11500
+    //#else
     public void updateRenderDispatcher(ChunkBuilder renderDispatcher) {
         if (this.renderDispatcher != null) {
             workerJailingQueue.freeAll();
@@ -98,17 +123,6 @@ public class ChunkLoadingRenderGlobal {
 
         workerJailingQueue.jail(workerThreads);
         renderDispatcherAcc.setQueueChunkUpdates(queueChunkUpdates);
-
-        try {
-            //#if MC>=11400
-            Field hookField = WorldRenderer.class.getField("replayModRender_hook");
-            //#else
-            //$$ Field hookField = RenderGlobal.class.getField("replayModRender_hook");
-            //#endif
-            hookField.set(hooked, this);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new Error(e);
-        }
     }
 
     public void updateChunks() {
@@ -143,8 +157,15 @@ public class ChunkLoadingRenderGlobal {
         }
     }
 
+    public int nextFrameId() {
+        return frame++;
+    }
+    //#endif
+
     public void uninstall() {
+        //#if MC<11500
         workerJailingQueue.freeAll();
+        //#endif
 
         try {
             //#if MC>=11400
@@ -158,8 +179,10 @@ public class ChunkLoadingRenderGlobal {
         }
     }
 
-    public int nextFrameId() {
-        return frame++;
-    }
+    //#if MC>=11500
+    //$$ public interface IBlockOnChunkRebuilds {
+    //$$     boolean uploadEverythingBlocking();
+    //$$ }
+    //#endif
 }
 //#endif

@@ -8,9 +8,13 @@
     "Mixin_ChromaKeyForceSky",
     "Mixin_CubicRotation",
     "Mixin_SkipBlockOutlinesDuringRender",
-    //#if MC>=10800 && MC<11500
+    //#if MC>=10800
+    //#if MC>=11500
+    //$$ "Mixin_BlockOnChunkRebuilds",
+    //#else
     "ChunkRenderDispatcherAccessor",
-    "MixinChunkRenderWorker",
+    //#endif
+    "Mixin_ForceChunkLoading",
     //#endif
     //#if MC>=11400
     "MainWindowAccessor",

@@ -1,17 +1,24 @@
-//#if MC>=10800 && MC<11500
 package com.replaymod.render.mixin;
 
+//#if MC>=10800
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.chunk.ChunkBuilder;
-import net.minecraft.client.render.VisibleRegion;
-import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11400
+//#if MC>=11500
+//$$ import java.util.Set;
+//#else
+import net.minecraft.client.render.VisibleRegion;
+import net.minecraft.entity.Entity;
+//#endif
+
+//#if MC>=11400 && MC<11500
 import net.minecraft.client.render.Camera;
 //#endif
 
@@ -32,8 +39,57 @@ import net.minecraft.client.render.WorldRenderer;
 //#else
 //$$ @Mixin(RenderGlobal.class)
 //#endif
-public abstract class MixinRenderGlobal {
+public abstract class Mixin_ForceChunkLoading {
     public ChunkLoadingRenderGlobal replayModRender_hook;
+
+    //#if MC>=11500
+    //$$ @Shadow private Set<ChunkBuilder.BuiltChunk> chunksToRebuild;
+    //$$
+    //$$ @Shadow private ChunkBuilder chunkBuilder;
+    //$$
+    //$$ @Shadow private boolean needsTerrainUpdate;
+    //$$
+    //$$ @Shadow public abstract void scheduleTerrainUpdate();
+    //$$
+    //$$ @Shadow protected abstract void setupTerrain(Camera camera_1, Frustum frustum_1, boolean boolean_1, int int_1, boolean boolean_2);
+    //$$
+    //$$ @Shadow private int frame;
+    //$$
+    //$$ private boolean passThrough;
+    //$$ @Inject(method = "setupTerrain", at = @At("HEAD"), cancellable = true)
+    //$$ private void forceAllChunks(Camera camera_1, Frustum frustum_1, boolean boolean_1, int int_1, boolean boolean_2, CallbackInfo ci) {
+    //$$     if (replayModRender_hook == null) {
+    //$$         return;
+    //$$     }
+    //$$     if (passThrough) {
+    //$$         return;
+    //$$     }
+    //$$     ci.cancel();
+    //$$
+    //$$     passThrough = true;
+    //$$     try {
+    //$$         do {
+    //$$             // Determine which chunks shall be visible
+    //$$             setupTerrain(camera_1, frustum_1, boolean_1, frame++, boolean_2);
+    //$$
+    //$$             // Schedule all chunks which need rebuilding (we schedule even important rebuilds because we wait for
+    //$$             // all of them anyway and this way we can take advantage of threading)
+    //$$             for (ChunkBuilder.BuiltChunk builtChunk : this.chunksToRebuild) {
+    //$$                 builtChunk.scheduleRebuild(this.chunkBuilder);
+    //$$                 builtChunk.cancelRebuild();
+    //$$             }
+    //$$             this.chunksToRebuild.clear();
+    //$$
+    //$$             // Upload all chunks
+    //$$             this.needsTerrainUpdate |= ((ChunkLoadingRenderGlobal.IBlockOnChunkRebuilds) this.chunkBuilder).uploadEverythingBlocking();
+    //$$
+    //$$             // Repeat until no more updates are needed
+    //$$         } while (this.needsTerrainUpdate);
+    //$$     } finally {
+    //$$         passThrough = false;
+    //$$     }
+    //$$ }
+    //#else
     private boolean replayModRender_passThroughSetupTerrain;
 
     @Shadow
@@ -132,5 +188,6 @@ public abstract class MixinRenderGlobal {
             replayModRender_hook.updateRenderDispatcher(this.chunkBuilder);
         }
     }
+    //#endif
 }
 //#endif

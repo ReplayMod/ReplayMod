@@ -16,7 +16,7 @@ import com.replaymod.render.mixin.MainWindowAccessor;
 import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
 
-//#if MC>=10800 && MC<11500
+//#if MC>=10800
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 //#endif
 
@@ -44,7 +44,7 @@ public class ScreenshotRenderer implements RenderInfo {
             boolean hideGUIBefore = mc.options.hudHidden;
             mc.options.hudHidden = true;
 
-            //#if MC>=10800 && MC<11500
+            //#if MC>=10800
             ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.worldRenderer);
             //#endif
 
@@ -56,7 +56,7 @@ public class ScreenshotRenderer implements RenderInfo {
                         new ScreenshotWriter(settings.getOutputFile())).run();
             }
 
-            //#if MC>=10800 && MC<11500
+            //#if MC>=10800
             clrg.uninstall();
             //#endif
 

@@ -49,9 +49,7 @@ import org.lwjgl.glfw.GLFW;
 //#endif
 
 //#if MC>=10800
-//#if MC<11500
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
-//#endif
 import static com.mojang.blaze3d.platform.GlStateManager.*;
 //#else
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
@@ -88,7 +86,7 @@ public class VideoRenderer implements RenderInfo {
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
-    //#if MC>=10800 && MC<11500
+    //#if MC>=10800
     private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
     //#endif
     //#if MC<10800
@@ -314,7 +312,7 @@ public class VideoRenderer implements RenderInfo {
         //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
         //#endif
 
-        //#if MC>=10800 && MC<11500
+        //#if MC>=10800
         chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.worldRenderer);
         //#endif
 
@@ -351,7 +349,7 @@ public class VideoRenderer implements RenderInfo {
             mc.options.setSoundVolume(entry.getKey(), entry.getValue());
         }
         mc.openScreen(null);
-        //#if MC>=10800 && MC<11500
+        //#if MC>=10800
         if (chunkLoadingRenderGlobal != null) {
             chunkLoadingRenderGlobal.uninstall();
         }
