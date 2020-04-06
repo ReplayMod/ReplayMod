@@ -30,7 +30,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
     private final Object consumerLock = new Object();
     private final FrameConsumer<P> consumer;
 
-    private Thread runningThread;
+    private volatile boolean abort;
 
     public Pipeline(FrameCapturer<R> capturer, FrameProcessor<R, P> processor, FrameConsumer<P> consumer) {
         this.capturer = capturer;
@@ -40,7 +40,6 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
     @Override
     public synchronized void run() {
-        runningThread = Thread.currentThread();
         consumerNextFrame = 0;
         int processors = Runtime.getRuntime().availableProcessors();
         int processThreads = Math.max(1, processors - 2); // One processor for the main thread and one for ffmpeg, sorry OS :(
@@ -60,13 +59,13 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
                 }, new ThreadPoolExecutor.DiscardPolicy());
 
         MinecraftClient mc = MCVer.getMinecraft();
-        while (!capturer.isDone() && !Thread.currentThread().isInterrupted()) {
+        while (!capturer.isDone() && !abort) {
             //#if MC>=11400
             if (GLFW.glfwWindowShouldClose(getWindow(mc).getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
             //#else
             //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
             //#endif
-                Thread.currentThread().interrupt();
+                processService.shutdown();
                 return;
             }
             R rawFrame = capturer.process();
@@ -93,9 +92,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
     }
 
     public void cancel() {
-        if (runningThread != null) {
-            runningThread.interrupt();
-        }
+        abort = true;
     }
 
     @RequiredArgsConstructor
