@@ -149,6 +149,14 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void save(Packet packet) {
+        // If we're not on the main thread (i.e. we're on the netty thread), then we need to schedule the saving
+        // to happen on the main thread so we can guarantee correct ordering of inbound and inject packets.
+        // Otherwise, injected packets may end up further down the packet stream than they were supposed to and other
+        // inbound packets which may rely on the injected packet would behave incorrectly when played back.
+        if (!MCVer.isOnMainThread()) {
+            MCVer.scheduleOnMainThread(() -> save(packet));
+            return;
+        }
         try {
             if(packet instanceof PlayerSpawnS2CPacket) {
                 //#if MC>=10800

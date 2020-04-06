@@ -394,6 +394,14 @@ public class MCVer {
         //#endif
     }
 
+    public static void scheduleOnMainThread(Runnable runnable) {
+        //#if MC>=11400
+        getMinecraft().send(runnable);
+        //#else
+        //$$ getMinecraft().addScheduledTask(runnable);
+        //#endif
+    }
+
     //#if MC>=11400
     public static Window getWindow(MinecraftClient mc) {
         //#if MC>=11500
