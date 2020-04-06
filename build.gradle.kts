@@ -3,7 +3,7 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     id("fabric-loom") version "0.2.5-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "59a641a"
+    id("com.replaymod.preprocess") version "30eb312"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
