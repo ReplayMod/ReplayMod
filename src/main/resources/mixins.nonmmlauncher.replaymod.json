@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.replaymod.mmdummy",
+  "plugin": "com.replaymod.core.ReplayModNonMMLauncher",
+  "mixins": [],
+  "server": [],
+  "client": [],
+  "compatibilityLevel": "JAVA_8",
+  "minVersion": "0.6.11",
+  "refmap": "mixins.nonmmlauncher.replaymod.refmap.json"
+}

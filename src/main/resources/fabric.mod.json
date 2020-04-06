@@ -24,17 +24,14 @@
     ],
     "modmenu": [
       "com.replaymod.core.gui.ModMenuApiImpl"
+    ],
+    "mm:early_risers": [
+      "com.replaymod.core.ReplayModMMLauncher"
     ]
   },
   "mixins": [
     "mixins.jgui.json",
-    "mixins.core.replaymod.json",
-    "mixins.compat.shaders.replaymod.json",
-    "mixins.extras.playeroverview.replaymod.json",
-    "mixins.recording.replaymod.json",
-    "mixins.render.blend.replaymod.json",
-    "mixins.render.replaymod.json",
-    "mixins.replay.replaymod.json"
+    "mixins.nonmmlauncher.replaymod.json"
   ],
 
   "requires": {
