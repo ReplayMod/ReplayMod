@@ -1,6 +1,7 @@
 {
   "required": true,
   "package": "com.replaymod.replay.mixin",
+  "plugin": "com.replaymod.core.ReplayModMixinConfigPlugin",
   "mixins": [],
   "server": [],
   "client": [
@@ -10,7 +11,8 @@
     //#endif
     "EntityLivingBaseAccessor",
     //#if MC>=11400
-    "MixinGameRenderer",
+    "Mixin_ShowSpectatedHand_NoOF",
+    "Mixin_ShowSpectatedHand_OF",
     //#else
     //$$ "EntityOtherPlayerMPAccessor",
     //#endif

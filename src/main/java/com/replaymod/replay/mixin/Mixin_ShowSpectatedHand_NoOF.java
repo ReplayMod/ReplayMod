@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 @Mixin(GameRenderer.class)
-public abstract class MixinGameRenderer {
+public abstract class Mixin_ShowSpectatedHand_NoOF {
     @Redirect(
             method = "renderHand",
             at = @At(
