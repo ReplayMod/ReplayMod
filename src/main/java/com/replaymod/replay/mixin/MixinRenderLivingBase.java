@@ -36,7 +36,11 @@ public abstract class MixinRenderLivingBase {
     }
 
     @Redirect(
-            method = "render(Lnet/minecraft/entity/LivingEntity;FFFFFF)V",
+            //#if MC>=11500
+            method = "render",
+            //#else
+            //$$ method = "render(Lnet/minecraft/entity/LivingEntity;FFFFFF)V",
+            //#endif
             at = @At(
                     value = "INVOKE",
                     //#if MC>=11400
