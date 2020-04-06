@@ -37,8 +37,8 @@ import java.io.IOException;
 import java.util.*;
 
 //#if MC>=11500
-//$$ import com.mojang.blaze3d.systems.RenderSystem;
-//$$ import org.lwjgl.opengl.GL11;
+import com.mojang.blaze3d.systems.RenderSystem;
+import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
@@ -622,17 +622,17 @@ public class ReplayHandler {
                 enableTexture();
                 mc.getFramebuffer().beginWrite(true);
                 //#if MC>=11500
-                //$$ Window window = getWindow(mc);
-                //$$ RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
-                //$$ RenderSystem.matrixMode(GL11.GL_PROJECTION);
-                //$$ RenderSystem.loadIdentity();
-                //$$ RenderSystem.ortho(0, window.getFramebufferWidth() / window.getScaleFactor(), window.getFramebufferHeight() / window.getScaleFactor(), 0, 1000, 3000);
-                //$$ RenderSystem.matrixMode(GL11.GL_MODELVIEW);
-                //$$ RenderSystem.loadIdentity();
-                //$$ RenderSystem.translatef(0, 0, -2000);
+                Window window = getWindow(mc);
+                RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+                RenderSystem.matrixMode(GL11.GL_PROJECTION);
+                RenderSystem.loadIdentity();
+                RenderSystem.ortho(0, window.getFramebufferWidth() / window.getScaleFactor(), window.getFramebufferHeight() / window.getScaleFactor(), 0, 1000, 3000);
+                RenderSystem.matrixMode(GL11.GL_MODELVIEW);
+                RenderSystem.loadIdentity();
+                RenderSystem.translatef(0, 0, -2000);
                 //#else
                 //#if MC>=11400
-                getWindow(mc).method_4493(true);
+                //$$ getWindow(mc).method_4493(true);
                 //#else
                 //#if MC>=11400
                 //$$ mc.mainWindow.setupOverlayRendering();
@@ -666,10 +666,10 @@ public class ReplayHandler {
                 popMatrix();
 
                 //#if MC>=11500
-                //$$ getWindow(mc).swapBuffers();
+                getWindow(mc).swapBuffers();
                 //#else
                 //#if MC>=11400
-                getWindow(mc).setFullscreen(true);
+                //$$ getWindow(mc).setFullscreen(true);
                 //#else
                 //$$ Display.update();
                 //#endif

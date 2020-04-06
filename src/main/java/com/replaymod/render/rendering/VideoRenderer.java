@@ -33,9 +33,9 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
 
 //#if MC>=11500
-//$$ import com.mojang.blaze3d.systems.RenderSystem;
-//$$ import net.minecraft.client.util.Window;
-//$$ import org.lwjgl.opengl.GL11;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.util.Window;
+import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
@@ -169,7 +169,7 @@ public class VideoRenderer implements RenderInfo {
         }
 
         //#if MC<11500
-        ((WorldRendererAccessor) mc.worldRenderer).setRenderEntitiesStartupCounter(0);
+        //$$ ((WorldRendererAccessor) mc.worldRenderer).setRenderEntitiesStartupCounter(0);
         //#endif
 
         renderingPipeline.run();
@@ -377,7 +377,7 @@ public class VideoRenderer implements RenderInfo {
         acc.setFramebufferWidth(displayWidth);
         acc.setFramebufferHeight(displayHeight);
         //#if MC>=11500
-        //$$ mc.gameRenderer.onResized(displayWidth, displayHeight);
+        mc.gameRenderer.onResized(displayWidth, displayHeight);
         //#endif
         //#else
         //$$ mc.resize(displayWidth, displayHeight);
@@ -441,21 +441,21 @@ public class VideoRenderer implements RenderInfo {
             guiFramebuffer.beginWrite(true);
 
             //#if MC>=11500
-            //$$ Window window = getWindow(mc);
-            //$$ RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
-            //$$ RenderSystem.matrixMode(GL11.GL_PROJECTION);
-            //$$ RenderSystem.loadIdentity();
-            //$$ RenderSystem.ortho(0, window.getFramebufferWidth() / window.getScaleFactor(), window.getFramebufferHeight() / window.getScaleFactor(), 0, 1000, 3000);
-            //$$ RenderSystem.matrixMode(GL11.GL_MODELVIEW);
-            //$$ RenderSystem.loadIdentity();
-            //$$ RenderSystem.translatef(0, 0, -2000);
+            Window window = getWindow(mc);
+            RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+            RenderSystem.matrixMode(GL11.GL_PROJECTION);
+            RenderSystem.loadIdentity();
+            RenderSystem.ortho(0, window.getFramebufferWidth() / window.getScaleFactor(), window.getFramebufferHeight() / window.getScaleFactor(), 0, 1000, 3000);
+            RenderSystem.matrixMode(GL11.GL_MODELVIEW);
+            RenderSystem.loadIdentity();
+            RenderSystem.translatef(0, 0, -2000);
             //#else
             //#if MC>=11400
-            getWindow(mc).method_4493(
+            //$$ getWindow(mc).method_4493(
                     //#if MC>=11400
-                    false
+                    //$$ false
                     //#endif
-            );
+            //$$ );
             //#else
             //$$ mc.entityRenderer.setupOverlayRendering();
             //#endif
@@ -504,10 +504,10 @@ public class VideoRenderer implements RenderInfo {
             popMatrix();
 
             //#if MC>=11500
-            //$$ getWindow(mc).swapBuffers();
+            getWindow(mc).swapBuffers();
             //#else
             //#if MC>=11400
-            getWindow(mc).setFullscreen(false);
+            //$$ getWindow(mc).setFullscreen(false);
             //#else
             //$$ // if not in high performance mode, update the gui size if screen size changed
             //$$ // otherwise just swap the progress gui to screen

@@ -72,7 +72,7 @@ public class ScreenshotRenderer implements RenderInfo {
                     //#endif
             );
             //#if MC>=11500
-            //$$ mc.gameRenderer.onResized(displayWidthBefore, displayHeightBefore);
+            mc.gameRenderer.onResized(displayWidthBefore, displayHeightBefore);
             //#endif
             //#else
             //$$ mc.resize(displayWidthBefore, displayHeightBefore);

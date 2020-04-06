@@ -10,30 +10,30 @@ import java.util.Set;
 import net.minecraft.client.render.chunk.ChunkBuilder;
 
 //#if MC>=11500
-//$$ import net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk;
+import net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk;
 //#else
-import net.minecraft.client.render.chunk.ChunkRenderer;
+//$$ import net.minecraft.client.render.chunk.ChunkRenderer;
 //#endif
 //#endif
 
 @Mixin(WorldRenderer.class)
 public interface WorldRendererAccessor {
     //#if MC<11500
-    @Accessor("field_4076")
-    void setRenderEntitiesStartupCounter(int value);
-
+    //$$ @Accessor("field_4076")
+    //$$ void setRenderEntitiesStartupCounter(int value);
+    //$$
     //#if MC>=10800
-    @Accessor("chunkBuilder")
-    ChunkBuilder getRenderDispatcher();
-
-    @Accessor("needsTerrainUpdate")
-    void setDisplayListEntitiesDirty(boolean value);
-
-    @Accessor("chunksToRebuild")
+    //$$ @Accessor("chunkBuilder")
+    //$$ ChunkBuilder getRenderDispatcher();
+    //$$
+    //$$ @Accessor("needsTerrainUpdate")
+    //$$ void setDisplayListEntitiesDirty(boolean value);
+    //$$
+    //$$ @Accessor("chunksToRebuild")
     //#if MC>=11500
     //$$ Set<BuiltChunk> getChunksToUpdate();
     //#else
-    Set<ChunkRenderer> getChunksToUpdate();
+    //$$ Set<ChunkRenderer> getChunksToUpdate();
     //#endif
     //#endif
     //#endif

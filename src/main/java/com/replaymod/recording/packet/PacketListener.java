@@ -326,49 +326,49 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     @SuppressWarnings("unchecked")
     private byte[] getPacketData(Packet packet) throws Exception {
         //#if MC<11500
-        if (packet instanceof MobSpawnS2CPacket) {
-            MobSpawnS2CPacket p = (MobSpawnS2CPacket) packet;
-            SPacketSpawnMobAccessor pa = (SPacketSpawnMobAccessor) p;
-            if (pa.getDataManager() == null) {
-                pa.setDataManager(new DataTracker(null));
-                if (p.getTrackedValues() != null) {
-                    Set<Integer> seen = new HashSet<>();
+        //$$ if (packet instanceof MobSpawnS2CPacket) {
+        //$$     MobSpawnS2CPacket p = (MobSpawnS2CPacket) packet;
+        //$$     SPacketSpawnMobAccessor pa = (SPacketSpawnMobAccessor) p;
+        //$$     if (pa.getDataManager() == null) {
+        //$$         pa.setDataManager(new DataTracker(null));
+        //$$         if (p.getTrackedValues() != null) {
+        //$$             Set<Integer> seen = new HashSet<>();
                     //#if MC>=10904
-                    for (DataTracker.Entry<?> entry : Lists.reverse(p.getTrackedValues())) {
-                        if (!seen.add(entry.getData().getId())) continue;
-                        DataManager_set(pa.getDataManager(), entry);
-                    }
+                    //$$ for (DataTracker.Entry<?> entry : Lists.reverse(p.getTrackedValues())) {
+                    //$$     if (!seen.add(entry.getData().getId())) continue;
+                    //$$     DataManager_set(pa.getDataManager(), entry);
+                    //$$ }
                     //#else
                     //$$ for(DataWatcher.WatchableObject wo : Lists.reverse((List<DataWatcher.WatchableObject>) p.func_149027_c())) {
                     //$$     if (!seen.add(wo.getDataValueId())) continue;
                     //$$     pa.getDataManager().addObject(wo.getDataValueId(), wo.getObject());
                     //$$ }
                     //#endif
-                }
-            }
-        }
-
-        if (packet instanceof PlayerSpawnS2CPacket) {
-            PlayerSpawnS2CPacket p = (PlayerSpawnS2CPacket) packet;
-            SPacketSpawnPlayerAccessor pa = (SPacketSpawnPlayerAccessor) p;
-            if (pa.getDataManager() == null) {
-                pa.setDataManager(new DataTracker(null));
-                if (p.getTrackedValues() != null) {
-                    Set<Integer> seen = new HashSet<>();
+        //$$         }
+        //$$     }
+        //$$ }
+        //$$
+        //$$ if (packet instanceof PlayerSpawnS2CPacket) {
+        //$$     PlayerSpawnS2CPacket p = (PlayerSpawnS2CPacket) packet;
+        //$$     SPacketSpawnPlayerAccessor pa = (SPacketSpawnPlayerAccessor) p;
+        //$$     if (pa.getDataManager() == null) {
+        //$$         pa.setDataManager(new DataTracker(null));
+        //$$         if (p.getTrackedValues() != null) {
+        //$$             Set<Integer> seen = new HashSet<>();
                     //#if MC>=10904
-                    for (DataTracker.Entry<?> entry : Lists.reverse(p.getTrackedValues())) {
-                        if (!seen.add(entry.getData().getId())) continue;
-                        DataManager_set(pa.getDataManager(), entry);
-                    }
+                    //$$ for (DataTracker.Entry<?> entry : Lists.reverse(p.getTrackedValues())) {
+                    //$$     if (!seen.add(entry.getData().getId())) continue;
+                    //$$     DataManager_set(pa.getDataManager(), entry);
+                    //$$ }
                     //#else
                     //$$ for(DataWatcher.WatchableObject wo : Lists.reverse((List<DataWatcher.WatchableObject>) p.func_148944_c())) {
                     //$$     if (!seen.add(wo.getDataValueId())) continue;
                     //$$     pa.getDataManager().addObject(wo.getDataValueId(), wo.getObject());
                     //$$ }
                     //#endif
-                }
-            }
-        }
+        //$$         }
+        //$$     }
+        //$$ }
         //#endif
 
         //#if MC>=10800

@@ -11,13 +11,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11500
-//$$ import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
     @Inject(
-            method = "renderCenter",
+            method = "renderWorld",
             at = @At(
                     value = "FIELD",
                     target = "Lnet/minecraft/client/render/GameRenderer;renderHand:Z"
@@ -27,12 +27,12 @@ public class MixinGameRenderer {
             float partialTicks,
             long nanoTime,
             //#if MC>=11500
-            //$$ MatrixStack matrixStack,
+            MatrixStack matrixStack,
             //#endif
             CallbackInfo ci) {
         PostRenderWorldCallback.EVENT.invoker().postRenderWorld(
                 //#if MC>=11500
-                //$$ matrixStack
+                matrixStack
                 //#endif
         );
     }
@@ -40,7 +40,7 @@ public class MixinGameRenderer {
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void preRenderHand(
             //#if MC>=11500
-            //$$ MatrixStack matrixStack,
+            MatrixStack matrixStack,
             //#endif
             Camera camera,
             float partialTicks,

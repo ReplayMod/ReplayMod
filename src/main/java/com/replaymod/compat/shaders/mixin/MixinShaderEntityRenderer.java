@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinShaderEntityRenderer {
 
     //#if MC>=11400
-    @Inject(method = "renderCenter", at = @At("HEAD"))
+    @Inject(method = "renderWorld", at = @At("HEAD"))
     //#else
     //#if MC>=11400
     //$$ @Inject(method = "updateCameraAndRender(FJ)V", at = @At("HEAD"))

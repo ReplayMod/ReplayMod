@@ -24,10 +24,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11500
-//$$ import net.minecraft.client.model.ModelPart.Cuboid;
-//$$ import java.util.ArrayList;
+import net.minecraft.client.model.ModelPart.Cuboid;
+import java.util.ArrayList;
 //#else
-import net.minecraft.client.model.Box;
+//$$ import net.minecraft.client.model.Box;
 //#endif
 
 //#if MC>=11400
@@ -88,7 +88,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
 //#if MC<11500
-import net.minecraft.client.render.chunk.ChunkRenderTask;
+//$$ import net.minecraft.client.render.chunk.ChunkRenderTask;
 //#endif
 //#else
 //$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
@@ -172,35 +172,35 @@ public class MCVer {
 
     public static double Entity_getX(Entity entity) {
         //#if MC>=11500
-        //$$ return entity.getX();
+        return entity.getX();
         //#else
-        return entity.x;
+        //$$ return entity.x;
         //#endif
     }
 
     public static double Entity_getY(Entity entity) {
         //#if MC>=11500
-        //$$ return entity.getY();
+        return entity.getY();
         //#else
-        return entity.y;
+        //$$ return entity.y;
         //#endif
     }
 
     public static double Entity_getZ(Entity entity) {
         //#if MC>=11500
-        //$$ return entity.getZ();
+        return entity.getZ();
         //#else
-        return entity.z;
+        //$$ return entity.z;
         //#endif
     }
 
     public static void Entity_setPos(Entity entity, double x, double y, double z) {
         //#if MC>=11500
-        //$$ entity.setPos(x, y, z);
+        entity.setPos(x, y, z);
         //#else
-        entity.x = x;
-        entity.y = y;
-        entity.z = z;
+        //$$ entity.x = x;
+        //$$ entity.y = y;
+        //$$ entity.z = z;
         //#endif
     }
 
@@ -368,13 +368,13 @@ public class MCVer {
 
     @SuppressWarnings("unchecked")
     //#if MC>=11500
-    //$$ public static List<Cuboid> cubeList(ModelPart modelRenderer) {
-    //$$     return new ArrayList<>(); // FIXME 1.15
-    //$$ }
-    //#else
-    public static List<Box> cubeList(ModelPart modelRenderer) {
-        return modelRenderer.boxes;
+    public static List<Cuboid> cubeList(ModelPart modelRenderer) {
+        return new ArrayList<>(); // FIXME 1.15
     }
+    //#else
+    //$$ public static List<Box> cubeList(ModelPart modelRenderer) {
+    //$$     return modelRenderer.boxes;
+    //$$ }
     //#endif
 
     @SuppressWarnings("unchecked")
@@ -397,9 +397,9 @@ public class MCVer {
     //#if MC>=11400
     public static Window getWindow(MinecraftClient mc) {
         //#if MC>=11500
-        //$$ return mc.getWindow();
+        return mc.getWindow();
         //#else
-        return mc.window;
+        //$$ return mc.window;
         //#endif
     }
     //#endif
@@ -609,9 +609,9 @@ public class MCVer {
     }
 
     //#if MC>=10800 && MC<11500
-    public interface ChunkRenderWorkerAccessor {
-        void doRunTask(ChunkRenderTask task) throws InterruptedException;
-    }
+    //$$ public interface ChunkRenderWorkerAccessor {
+    //$$     void doRunTask(ChunkRenderTask task) throws InterruptedException;
+    //$$ }
     //#endif
 
     public static long milliTime() {
@@ -624,10 +624,10 @@ public class MCVer {
 
     public static void bindTexture(Identifier texture) {
         //#if MC>=11500
-        //$$ getMinecraft().getTextureManager().bindTexture(texture);
+        getMinecraft().getTextureManager().bindTexture(texture);
         //#else
         //#if MC>=11400
-        getMinecraft().getTextureManager().bindTexture(texture);
+        //$$ getMinecraft().getTextureManager().bindTexture(texture);
         //#else
         //$$ getMinecraft().renderEngine.bindTexture(texture);
         //#endif
@@ -822,10 +822,10 @@ public class MCVer {
 
         public static boolean isKeyDown(int keyCode) {
             //#if MC>=11500
-            //$$ return InputUtil.isKeyPressed(getMinecraft().getWindow().getHandle(), keyCode);
+            return InputUtil.isKeyPressed(getMinecraft().getWindow().getHandle(), keyCode);
             //#else
             //#if MC>=11400
-            return InputUtil.isKeyPressed(getMinecraft().window.getHandle(), keyCode);
+            //$$ return InputUtil.isKeyPressed(getMinecraft().window.getHandle(), keyCode);
             //#else
             //#if MC>=11400
             //$$ return InputMappings.isKeyDown(keyCode);

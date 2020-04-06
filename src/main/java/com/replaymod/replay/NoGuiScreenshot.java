@@ -13,7 +13,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.util.ScreenshotUtils;
 
 //#if MC>=11500
-//$$ import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 //#if MC>=11400
@@ -64,10 +64,10 @@ public class NoGuiScreenshot {
                     GlStateManager.enableTexture();
 
                     //#if MC>=11500
-                    //$$ mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime(), new MatrixStack());
+                    mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime(), new MatrixStack());
                     //#else
                     //#if MC>=11400
-                    mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
+                    //$$ mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
                     //#else
                     //#if MC>=10809
                     //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks(), System.nanoTime());
@@ -94,7 +94,7 @@ public class NoGuiScreenshot {
                 // Read it, create the screenshot and finish the future
                 try {
                     //#if MC>=11400
-                    Image image = new Image(ScreenshotUtils.method_1663(frameWidth, frameHeight, mc.getFramebuffer()));
+                    Image image = new Image(ScreenshotUtils.takeScreenshot(frameWidth, frameHeight, mc.getFramebuffer()));
                     //#else
                     //$$ // We're using Minecraft's ScreenShotHelper even though it writes the screenshot to
                     //$$ // disk for better maintainability

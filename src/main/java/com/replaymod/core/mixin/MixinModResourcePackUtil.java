@@ -4,7 +4,7 @@ package com.replaymod.core.mixin;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.LangResourcePack;
 import net.fabricmc.fabric.api.resource.ModResourcePack;
-import net.fabricmc.fabric.impl.resources.ModResourcePackUtil;
+import net.fabricmc.fabric.impl.resource.loader.ModResourcePackUtil;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.resource.ResourcePack;

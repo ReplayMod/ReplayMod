@@ -7,15 +7,15 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(LivingEntity.class)
 public interface EntityLivingBaseAccessor {
     //#if MC>=11400
-    @Accessor("field_6224")
+    @Accessor("serverX")
     double getInterpTargetX();
-    @Accessor("field_6245")
+    @Accessor("serverY")
     double getInterpTargetY();
-    @Accessor("field_6263")
+    @Accessor("serverZ")
     double getInterpTargetZ();
-    @Accessor("field_6284")
+    @Accessor("serverYaw")
     double getInterpTargetYaw();
-    @Accessor("field_6221")
+    @Accessor("serverPitch")
     double getInterpTargetPitch();
     //#endif
 

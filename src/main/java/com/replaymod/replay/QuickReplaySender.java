@@ -99,14 +99,14 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             protected Packet<?> decode(com.github.steveice10.netty.buffer.ByteBuf byteBuf) throws IOException {
                 int packetId = new ByteBufNetInput(byteBuf).readVarInt();
                 //#if MC>=11500
-                //$$ Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
+                Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
                 //#else
-                Packet<?> mcPacket;
-                try {
-                    mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
-                } catch (IllegalAccessException | InstantiationException e) {
-                    throw new IOException(e);
-                }
+                //$$ Packet<?> mcPacket;
+                //$$ try {
+                //$$     mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
+                //$$ } catch (IllegalAccessException | InstantiationException e) {
+                //$$     throw new IOException(e);
+                //$$ }
                 //#endif
                 if (mcPacket != null) {
                     int size = byteBuf.readableBytes();
@@ -196,7 +196,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 //$$ 0,
                 //#endif
                 //#if MC>=11500
-                //$$ 0,
+                0,
                 //#endif
                 //#if MC<11400
                 //$$ EnumDifficulty.NORMAL,

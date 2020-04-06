@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11500
-//$$ import net.minecraft.client.util.math.MatrixStack;
-//$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import net.minecraft.client.util.math.MatrixStack;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //#endif
 
 //#if MC>=11400
@@ -98,7 +98,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void replayModRender_renderSpectatorHand(
             //#if MC>=11500
-            //$$ MatrixStack matrixStack,
+            MatrixStack matrixStack,
             //#endif
             //#if MC>=11400
             Camera camera,
@@ -140,76 +140,76 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
      */
 
     //#if MC>=11500
-    //$$ @Inject(method = "method_22973", at = @At("RETURN"), cancellable = true)
-    //$$ private void replayModRender_setupStereoscopicProjection(CallbackInfoReturnable<Matrix4f> ci) {
-    //$$     if (replayModRender_getHandler() != null) {
-    //$$         Matrix4f offset;
-    //$$         if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
-    //$$             offset = Matrix4f.translate(0.07f, 0, 0);
-    //$$         } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
-    //$$             offset = Matrix4f.translate(-0.07f, 0, 0);
-    //$$         } else {
-    //$$             return;
-    //$$         }
-    //$$         offset.multiply(ci.getReturnValue());
-    //$$         ci.setReturnValue(offset);
-    //$$     }
-    //$$ }
+    @Inject(method = "method_22973", at = @At("RETURN"), cancellable = true)
+    private void replayModRender_setupStereoscopicProjection(CallbackInfoReturnable<Matrix4f> ci) {
+        if (replayModRender_getHandler() != null) {
+            Matrix4f offset;
+            if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
+                offset = Matrix4f.translate(0.07f, 0, 0);
+            } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
+                offset = Matrix4f.translate(-0.07f, 0, 0);
+            } else {
+                return;
+            }
+            offset.multiply(ci.getReturnValue());
+            ci.setReturnValue(offset);
+        }
+    }
     //#else
     //#if MC>=10800
-    @Inject(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 0))
+    //$$ @Inject(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 0))
     //#else
     //$$ @Inject(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glLoadIdentity()V", shift = At.Shift.AFTER, ordinal = 0, remap = false))
     //#endif
-    private void replayModRender_setupStereoscopicProjection(
-            float partialTicks,
+    //$$ private void replayModRender_setupStereoscopicProjection(
+    //$$         float partialTicks,
             //#if MC<11400
             //$$ int renderPass,
             //#endif
-            CallbackInfo ci
-    ) {
-        if (replayModRender_getHandler() != null) {
-            if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
-                GL11.glTranslatef(0.07f, 0, 0);
-            } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
-                GL11.glTranslatef(-0.07f, 0, 0);
-            }
-        }
-    }
-    //#endif
-
-    //#if MC>=11500
-    //$$ @Inject(method = "renderWorld", at = @At("HEAD"))
-    //$$ private void replayModRender_setupStereoscopicProjection(float partialTicks, long frameStartNano, MatrixStack matrixStack, CallbackInfo ci) {
+    //$$         CallbackInfo ci
+    //$$ ) {
     //$$     if (replayModRender_getHandler() != null) {
     //$$         if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
-    //$$             matrixStack.translate(0.1, 0, 0);
+    //$$             GL11.glTranslatef(0.07f, 0, 0);
     //$$         } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
-    //$$             matrixStack.translate(-0.1, 0, 0);
+    //$$             GL11.glTranslatef(-0.07f, 0, 0);
     //$$         }
     //$$     }
     //$$ }
-    //#else
-    //#if MC>=10800
-    @Inject(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 1))
-    //#else
-    //$$ @Inject(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glLoadIdentity()V", shift = At.Shift.AFTER, ordinal = 1, remap = false))
     //#endif
-    private void replayModRender_setupStereoscopicModelView(
-            float partialTicks,
-            //#if MC<11400
-            //$$ int renderPass,
-            //#endif
-            CallbackInfo ci
-    ) {
+
+    //#if MC>=11500
+    @Inject(method = "renderWorld", at = @At("HEAD"))
+    private void replayModRender_setupStereoscopicProjection(float partialTicks, long frameStartNano, MatrixStack matrixStack, CallbackInfo ci) {
         if (replayModRender_getHandler() != null) {
             if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
-                GL11.glTranslatef(0.1f, 0, 0);
+                matrixStack.translate(0.1, 0, 0);
             } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
-                GL11.glTranslatef(-0.1f, 0, 0);
+                matrixStack.translate(-0.1, 0, 0);
             }
         }
     }
+    //#else
+    //#if MC>=10800
+    //$$ @Inject(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;loadIdentity()V", shift = At.Shift.AFTER, ordinal = 1))
+    //#else
+    //$$ @Inject(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glLoadIdentity()V", shift = At.Shift.AFTER, ordinal = 1, remap = false))
+    //#endif
+    //$$ private void replayModRender_setupStereoscopicModelView(
+    //$$         float partialTicks,
+            //#if MC<11400
+            //$$ int renderPass,
+            //#endif
+    //$$         CallbackInfo ci
+    //$$ ) {
+    //$$     if (replayModRender_getHandler() != null) {
+    //$$         if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE) {
+    //$$             GL11.glTranslatef(0.1f, 0, 0);
+    //$$         } else if (replayModRender_getHandler().data == StereoscopicOpenGlFrameCapturer.Data.RIGHT_EYE) {
+    //$$             GL11.glTranslatef(-0.1f, 0, 0);
+    //$$         }
+    //$$     }
+    //$$ }
     //#endif
 
     /*
@@ -217,25 +217,25 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
      */
 
     //#if MC>=11400
-    @Redirect(method = "applyCameraTransformations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
+    @Redirect(method = "method_22973", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;viewboxMatrix(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
     private Matrix4f replayModRender_perspective$0(double fovY, float aspect, float zNear, float zFar) {
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
     }
 
     //#if MC<11500
     //#if MC>=11400
-    @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
+    //$$ @Redirect(method = "renderCenter", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
     //#else
     //$$ @Redirect(method = "updateCameraAndRender(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/Matrix4f;perspective(DFFF)Lnet/minecraft/client/renderer/Matrix4f;"))
     //#endif
-    private Matrix4f replayModRender_perspective$1(double fovY, float aspect, float zNear, float zFar) {
-        return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
-    }
-
-    @Redirect(method = "renderAboveClouds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
-    private Matrix4f replayModRender_perspective$2(double fovY, float aspect, float zNear, float zFar) {
-        return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
-    }
+    //$$ private Matrix4f replayModRender_perspective$1(double fovY, float aspect, float zNear, float zFar) {
+    //$$     return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
+    //$$ }
+    //$$
+    //$$ @Redirect(method = "renderAboveClouds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;method_4929(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
+    //$$ private Matrix4f replayModRender_perspective$2(double fovY, float aspect, float zNear, float zFar) {
+    //$$     return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
+    //$$ }
     //#endif
 
     private Matrix4f replayModRender_perspective(float fovY, float aspect, float zNear, float zFar) {
@@ -243,7 +243,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             fovY = 90;
             aspect = 1;
         }
-        return Matrix4f.method_4929(fovY, aspect, zNear, zFar);
+        return Matrix4f.viewboxMatrix(fovY, aspect, zNear, zFar);
     }
     //#else
     //$$ @Redirect(method = "setupCameraTransform", at = @At(value = "INVOKE", target = "Lorg/lwjgl/util/glu/Project;gluPerspective(FFFF)V", remap = false))

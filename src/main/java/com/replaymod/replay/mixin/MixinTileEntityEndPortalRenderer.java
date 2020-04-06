@@ -13,17 +13,17 @@ import net.minecraft.util.Util;
 //#endif
 
 //#if MC>=11500
-//$$ @Mixin(net.minecraft.client.render.RenderPhase.PortalTexturing.class)
+@Mixin(net.minecraft.client.render.RenderPhase.PortalTexturing.class)
 //#else
-@Mixin(net.minecraft.client.render.block.entity.EndPortalBlockEntityRenderer.class)
+//$$ @Mixin(net.minecraft.client.render.block.entity.EndPortalBlockEntityRenderer.class)
 //#endif
 public class MixinTileEntityEndPortalRenderer {
     //#if MC>=11500
-    //$$ @Redirect(method = "method_23557", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
-    //$$ static
+    @Redirect(method = "method_23557", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    static
     //#else
     //#if MC>=11400
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    //$$ @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //#if MC>=11200
     //$$ @Redirect(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntityEndPortal;DDDFIF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))

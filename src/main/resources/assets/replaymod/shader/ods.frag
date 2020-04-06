@@ -5,13 +5,13 @@ varying vec4 vertColor;
 varying vec4 textureCoord;
 varying vec4 lightMapCoord;
 //#if MC>=11500
-//$$ varying vec4 overlayCoords;
+varying vec4 overlayCoords;
 //#endif
 
 uniform sampler2D texture;
 uniform sampler2D lightMap;
 //#if MC>=11500
-//$$ uniform sampler2D overlay;
+uniform sampler2D overlay;
 //#endif
 
 uniform bool textureEnabled;
@@ -26,10 +26,10 @@ void main() {
     }
     if (overlayEnabled) {
         //#if MC>=11500
-        //$$ vec4 c = texture2D(overlay, overlayCoords.st);
-        //$$ color = vec4(mix(c.rgb, color.rgb, c.a), color.a);
+        vec4 c = texture2D(overlay, overlayCoords.st);
+        color = vec4(mix(c.rgb, color.rgb, c.a), color.a);
         //#else
-        color = vec4(mix(color.rgb, vec3(1, 0, 0), 0.3), color.a);
+        //$$ color = vec4(mix(color.rgb, vec3(1, 0, 0), 0.3), color.a);
         //#endif
     }
     if (lightMapEnabled) {

@@ -8,9 +8,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(MobSpawnS2CPacket.class)
 public interface SPacketSpawnMobAccessor {
     //#if MC<11500
-    @Accessor("dataTracker")
-    DataTracker getDataManager();
-    @Accessor("dataTracker")
-    void setDataManager(DataTracker value);
+    //$$ @Accessor("dataTracker")
+    //$$ DataTracker getDataManager();
+    //$$ @Accessor("dataTracker")
+    //$$ void setDataManager(DataTracker value);
     //#endif
 }

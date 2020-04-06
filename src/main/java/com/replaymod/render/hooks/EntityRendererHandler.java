@@ -9,7 +9,7 @@ import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 
 //#if MC>=11500
-//$$ import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 //#if MC>=11400
@@ -64,9 +64,9 @@ public class EntityRendererHandler implements WorldRenderer {
 
         if (mc.world != null && mc.player != null) {
             //#if MC>=11500
-            //$$ mc.gameRenderer.renderWorld(partialTicks, finishTimeNano, new MatrixStack());
+            mc.gameRenderer.renderWorld(partialTicks, finishTimeNano, new MatrixStack());
             //#else
-            mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
+            //$$ mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
             //#endif
         }
 

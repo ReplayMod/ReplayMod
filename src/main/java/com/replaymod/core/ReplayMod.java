@@ -445,7 +445,7 @@ public class ReplayMod implements
         // Fail-fast in case we ever switch to async loading and forget to change this
         // (except for fabric 1.15+ because it loads the mod before the client thread is set)
         //#if FABRIC<1 || MC<11500
-        { if (!MinecraftClient.getInstance().isOnThread()) throw new RuntimeException(); }
+        //$$ { if (!MinecraftClient.getInstance().isOnThread()) throw new RuntimeException(); }
         //#endif
 
         private ReplayModExecutor(String string_1) {

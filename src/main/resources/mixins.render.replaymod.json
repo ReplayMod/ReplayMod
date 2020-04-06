@@ -10,9 +10,9 @@
     "Mixin_SkipBlockOutlinesDuringRender",
     //#if MC>=10800
     //#if MC>=11500
-    //$$ "Mixin_BlockOnChunkRebuilds",
+    "Mixin_BlockOnChunkRebuilds",
     //#else
-    "ChunkRenderDispatcherAccessor",
+    //$$ "ChunkRenderDispatcherAccessor",
     //#endif
     "Mixin_ForceChunkLoading",
     //#endif
@@ -38,7 +38,7 @@
     "MixinRender",
     //#if MC>=10800
     //#if MC<11500
-    "MixinRenderGlobal",
+    //$$ "MixinRenderGlobal",
     //#endif
     //#else
     //$$ "MixinOpenGlHelper",

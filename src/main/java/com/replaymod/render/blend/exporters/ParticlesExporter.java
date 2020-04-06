@@ -117,11 +117,11 @@ public class ParticlesExporter implements Exporter {
         double dy = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * renderPartialTicks;
         double dz = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * renderPartialTicks;
         //#if MC>=11500
-        //$$ // FIXME 1.15 is this still required?
+        // FIXME 1.15 is this still required?
         //#else
-        dx -= Particle.cameraX;
-        dy -= Particle.cameraY;
-        dz -= Particle.cameraZ;
+        //$$ dx -= Particle.cameraX;
+        //$$ dy -= Particle.cameraY;
+        //$$ dz -= Particle.cameraZ;
         //#endif
         Vector3f offset = new Vector3f((float) dx, (float) dy, (float) dz);
         Matrix4f.translate(offset, modelView, modelView);
@@ -182,7 +182,7 @@ public class ParticlesExporter implements Exporter {
                 //#endif
                 0
                 //#if MC<11500
-                , 1, 1, 0, 0, 0
+                //$$ , 1, 1, 0, 0, 0
                 //#endif
         );
         //#else

@@ -125,13 +125,13 @@ public class ItemExporter implements Exporter {
                     //#endif
                     : 0xffffffff;
             //#if MC>=11500
-            //$$ // FIXME 1.15
+            // FIXME 1.15
             //#else
             //#if MC>=11400
-            buffer.putVertexData(quad.getVertexData());
-            buffer.setQuadColor(color);
-            Vec3i vec3i_1 = quad.getFace().getVector();
-            buffer.postNormal(vec3i_1.getX(), vec3i_1.getY(), vec3i_1.getZ());
+            //$$ buffer.putVertexData(quad.getVertexData());
+            //$$ buffer.setQuadColor(color);
+            //$$ Vec3i vec3i_1 = quad.getFace().getVector();
+            //$$ buffer.postNormal(vec3i_1.getX(), vec3i_1.getY(), vec3i_1.getZ());
             //#else
             //$$ LightUtil.renderQuadColor(buffer, quad, color);
             //#endif

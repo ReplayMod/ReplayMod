@@ -12,7 +12,7 @@ import net.minecraft.client.render.VertexFormatElement;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=11500
-//$$ import com.mojang.datafixers.util.Pair;
+import com.mojang.datafixers.util.Pair;
 //#endif
 
 //#if MC>=10904
@@ -140,10 +140,10 @@ public class BlendMeshBuilder
     //$$ public static DMesh addBufferToMesh(WorldRenderer bufferBuilder, DMesh mesh, Vector3f vertOffset) {
     //#endif
         //#if MC>=11500
-        //$$ Pair<DrawArrayParameters, ByteBuffer> data = bufferBuilder.popData();
-        //$$ return addBufferToMesh(data.getSecond(), data.getFirst().getMode(), data.getFirst().getVertexFormat(), mesh, vertOffset);
+        Pair<DrawArrayParameters, ByteBuffer> data = bufferBuilder.popData();
+        return addBufferToMesh(data.getSecond(), data.getFirst().getMode(), data.getFirst().getVertexFormat(), mesh, vertOffset);
         //#else
-        return addBufferToMesh(bufferBuilder.getByteBuffer(), bufferBuilder.getDrawMode(), bufferBuilder.getVertexFormat(), mesh, vertOffset);
+        //$$ return addBufferToMesh(bufferBuilder.getByteBuffer(), bufferBuilder.getDrawMode(), bufferBuilder.getVertexFormat(), mesh, vertOffset);
         //#endif
     }
 
@@ -168,15 +168,15 @@ public class BlendMeshBuilder
         int posOffset = -1, colorOffset = -1, uvOffset = -1;
         int index = 0;
         //#if MC>=11500
-        //$$ int elementOffset = 0;
+        int elementOffset = 0;
         //#endif
         for (VertexFormatElement element : getElements(vertexFormat)) {
             //#if MC>=11500
-            //$$ int offset = elementOffset;
-            //$$ elementOffset += element.getSize();
+            int offset = elementOffset;
+            elementOffset += element.getSize();
             //#else
             //#if MC>=10809
-            int offset = vertexFormat.getElementOffset(index);
+            //$$ int offset = vertexFormat.getElementOffset(index);
             //#else
             //$$ int offset = element.getOffset();
             //#endif

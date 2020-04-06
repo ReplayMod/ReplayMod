@@ -9,9 +9,9 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=11400
 //#if MC>=11500
-//$$ import net.minecraft.client.model.ModelPart.Cuboid;
+import net.minecraft.client.model.ModelPart.Cuboid;
 //#else
-import net.minecraft.client.model.Box;
+//$$ import net.minecraft.client.model.Box;
 //#endif
 import net.minecraft.client.model.ModelPart;
 //#else
@@ -72,9 +72,9 @@ public class ModelRendererExporter implements Exporter {
         if (object == null) {
             object = new ModelBasedDObject(model, scale);
             //#if MC>=11500
-            //$$ object.id.name = "???"; // FIXME 1.15 can we somehow nicely derive this?
+            object.id.name = "???"; // FIXME 1.15 can we somehow nicely derive this?
             //#else
-            object.id.name = model.name;
+            //$$ object.id.name = model.name;
             //#endif
             object.setParent(parent);
         }
@@ -86,13 +86,13 @@ public class ModelRendererExporter implements Exporter {
         DMesh mesh = new DMesh();
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
         //#if MC>=11500
-        //$$ for (Cuboid box : cubeList(model)) {
-        //$$     // FIXME 1.15
-        //$$ }
-        //#else
-        for (Box box : cubeList(model)) {
-            box.render(builder, scale);
+        for (Cuboid box : cubeList(model)) {
+            // FIXME 1.15
         }
+        //#else
+        //$$ for (Box box : cubeList(model)) {
+        //$$     box.render(builder, scale);
+        //$$ }
         //#endif
         builder.maybeFinishDrawing();
         return mesh;

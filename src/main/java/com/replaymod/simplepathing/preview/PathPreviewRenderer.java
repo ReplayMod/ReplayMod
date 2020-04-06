@@ -25,8 +25,8 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=11500
-//$$ import com.mojang.blaze3d.systems.RenderSystem;
-//$$ import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 //#if FABRIC>=1
@@ -61,9 +61,9 @@ public class PathPreviewRenderer extends EventRegistrations {
     //#if FABRIC>=1
     { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
     //#if MC>=11500
-    //$$ private void renderCameraPath(MatrixStack matrixStack) {
+    private void renderCameraPath(MatrixStack matrixStack) {
     //#else
-    private void renderCameraPath() {
+    //$$ private void renderCameraPath() {
     //#endif
     //#else
     //$$ @SubscribeEvent
@@ -92,10 +92,10 @@ public class PathPreviewRenderer extends EventRegistrations {
         Triple<Double, Double, Double> viewPos = Triple.of(
                 Entity_getX(view),
                 //#if MC>=10800 && MC<11500
-                // Eye height is subtracted to make path appear higher (at eye height) than it actually is (at foot height)
-                Entity_getY(view) - view.getStandingEyeHeight(),
+                //$$ // Eye height is subtracted to make path appear higher (at eye height) than it actually is (at foot height)
+                //$$ Entity_getY(view) - view.getStandingEyeHeight(),
                 //#else
-                //$$ Entity_getY(view),
+                Entity_getY(view),
                 //#endif
                 Entity_getZ(view)
         );
@@ -107,7 +107,7 @@ public class PathPreviewRenderer extends EventRegistrations {
             GL11.glDisable(GL11.GL_TEXTURE_2D);
 
             //#if MC>=11500
-            //$$ RenderSystem.multMatrix(matrixStack.peek().getModel());
+            RenderSystem.multMatrix(matrixStack.peek().getModel());
             //#endif
 
             for (PathSegment segment : path.getSegments()) {
@@ -291,11 +291,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         );
         GL11.glNormal3f(0, 1, 0);
         //#if MC>=11500
-        //$$ GL11.glRotatef(-getRenderManager().camera.getYaw(), 0, 1, 0);
-        //$$ GL11.glRotatef(getRenderManager().camera.getPitch(), 1, 0, 0);
+        GL11.glRotatef(-getRenderManager().camera.getYaw(), 0, 1, 0);
+        GL11.glRotatef(getRenderManager().camera.getPitch(), 1, 0, 0);
         //#else
-        GL11.glRotatef(-getRenderManager().cameraYaw, 0, 1, 0);
-        GL11.glRotatef(getRenderManager().cameraPitch, 1, 0, 0);
+        //$$ GL11.glRotatef(-getRenderManager().cameraYaw, 0, 1, 0);
+        //$$ GL11.glRotatef(getRenderManager().cameraPitch, 1, 0, 0);
         //#endif
 
         Tessellator_getInstance().draw();

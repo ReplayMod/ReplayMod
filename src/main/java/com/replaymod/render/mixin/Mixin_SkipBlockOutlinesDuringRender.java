@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class Mixin_SkipBlockOutlinesDuringRender {
     @Shadow @Final private MinecraftClient client;
 
-    @Inject(method = "drawHighlightedBlockOutline", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "drawBlockOutline", at = @At("HEAD"), cancellable = true)
     private void replayModRender_drawSelectionBox(CallbackInfo ci) {
         if (((EntityRendererHandler.IEntityRenderer) this.client.gameRenderer).replayModRender_getHandler() != null) {
             ci.cancel();

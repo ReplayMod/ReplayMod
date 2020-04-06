@@ -18,7 +18,7 @@ public abstract class MixinFogRenderer {
     @Inject(method = "applyFog", at = @At("HEAD"), cancellable = true)
     private
     //#if MC>=11500
-    //$$ static
+    static
     //#endif
     void replayModRender_onSetupFog(CallbackInfo ci) {
         EntityRendererHandler handler =

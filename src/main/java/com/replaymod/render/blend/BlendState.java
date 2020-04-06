@@ -5,7 +5,7 @@ import com.replaymod.render.blend.data.Serializer;
 //#if MC>=10800
 // FIXME 1.15
 //#if MC<11500
-import com.replaymod.render.blend.exporters.ChunkExporter;
+//$$ import com.replaymod.render.blend.exporters.ChunkExporter;
 //#endif
 import com.replaymod.render.blend.exporters.EntityExporter;
 import com.replaymod.render.blend.exporters.ItemExporter;
@@ -58,7 +58,7 @@ public class BlendState implements Exporter {
         register(renderState);
         // FIXME 1.15
         //#if MC<11500
-        register(new ChunkExporter());
+        //$$ register(new ChunkExporter());
         //#endif
         register(new EntityExporter(renderState));
         register(new TileEntityExporter(renderState));

@@ -585,7 +585,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     entId,
                     GameMode.SPECTATOR,
                     //#if MC>=11500
-                    //$$ packet.getSeed(),
+                    packet.getSeed(),
                     //#endif
                     false,
                     packet.getDimension(),
@@ -594,7 +594,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     packet.getChunkLoadDistance(),
                     packet.hasReducedDebugInfo()
                     //#if MC>=11500
-                    //$$ , packet.showsDeathScreen()
+                    , packet.showsDeathScreen()
                     //#endif
             );
             //#else
@@ -637,7 +637,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             p = new PlayerRespawnS2CPacket(
                     respawn.getDimension(),
                     //#if MC>=11500
-                    //$$ respawn.getSha256Seed(),
+                    respawn.getSha256Seed(),
                     //#endif
                     respawn.getGeneratorType(),
                     GameMode.SPECTATOR

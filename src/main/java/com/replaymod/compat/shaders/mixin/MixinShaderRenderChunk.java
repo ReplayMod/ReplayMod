@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //#if MC>=11500
-//$$ @Mixin(net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk.class)
+@Mixin(net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk.class)
 //#else
-@Mixin(net.minecraft.client.render.chunk.ChunkRenderer.class)
+//$$ @Mixin(net.minecraft.client.render.chunk.ChunkRenderer.class)
 //#endif
 public abstract class MixinShaderRenderChunk {
 

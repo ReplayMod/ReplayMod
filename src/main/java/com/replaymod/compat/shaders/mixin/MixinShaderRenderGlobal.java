@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11500
 //#else
-import net.minecraft.client.render.VisibleRegion;
+//$$ import net.minecraft.client.render.VisibleRegion;
 //#endif
 
 //#if MC>=11400
@@ -31,7 +31,7 @@ public abstract class MixinShaderRenderGlobal {
     @Shadow
     public boolean needsTerrainUpdate;
 
-    @Inject(method = "setUpTerrain", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "setupTerrain", at = @At("HEAD"), cancellable = true)
     public void replayModCompat_setupTerrain(
             //#if MC>=11400
             Camera viewEntity,
@@ -44,10 +44,10 @@ public abstract class MixinShaderRenderGlobal {
             //#endif
             //#endif
             //#if MC>=11500
-            //$$ Frustum camera,
-            //$$ boolean skipUpdate,
+            Frustum camera,
+            boolean skipUpdate,
             //#else
-            VisibleRegion camera,
+            //$$ VisibleRegion camera,
             //#endif
             int frameCount,
             boolean playerSpectator,

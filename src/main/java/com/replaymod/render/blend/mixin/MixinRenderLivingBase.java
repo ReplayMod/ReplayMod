@@ -21,20 +21,20 @@ import net.minecraft.client.render.entity.LivingEntityRenderer;
 //#endif
 public abstract class MixinRenderLivingBase {
     //#if MC>=11500
-    //$$ @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(
+    @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(
     //#else
     //#if FABRIC>=1
-    @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;DDDFF)V", at = @At(
+    //$$ @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;DDDFF)V", at = @At(
     //#else
     //$$ @Inject(method = "doRender(Lnet/minecraft/entity/LivingEntity;DDDFF)V", at = @At(
     //#endif
     //#endif
             value = "INVOKE",
             //#if MC>=11500
-            //$$ target = "Lnet/minecraft/client/render/entity/LivingEntityRenderer;scale(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/util/math/MatrixStack;F)V",
+            target = "Lnet/minecraft/client/render/entity/LivingEntityRenderer;scale(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/util/math/MatrixStack;F)V",
             //#else
             //#if MC>=10904
-            target = "Lnet/minecraft/client/render/entity/LivingEntityRenderer;scaleAndTranslate(Lnet/minecraft/entity/LivingEntity;F)F",
+            //$$ target = "Lnet/minecraft/client/render/entity/LivingEntityRenderer;scaleAndTranslate(Lnet/minecraft/entity/LivingEntity;F)F",
             //#else
             //$$ target = "Lnet/minecraft/client/renderer/entity/RendererLivingEntity;preRenderCallback(Lnet/minecraft/entity/EntityLivingBase;F)V",
             //#endif

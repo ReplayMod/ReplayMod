@@ -13,17 +13,17 @@ import net.minecraft.util.Util;
 //#endif
 
 //#if MC>=11500
-//$$ @Mixin(net.minecraft.client.render.RenderPhase.class)
+@Mixin(net.minecraft.client.render.RenderPhase.class)
 //#else
-@Mixin(net.minecraft.client.render.item.ItemRenderer.class)
+//$$ @Mixin(net.minecraft.client.render.item.ItemRenderer.class)
 //#endif
 public class MixinRenderItem {
     //#if MC>=11400
     //#if MC>=11500
-    //$$ @Redirect(method = "setupGlintTexturing", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    @Redirect(method = "setupGlintTexturing", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //#if MC>=11400
-    @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    //$$ @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
     //#endif

@@ -140,7 +140,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
     public Collection<Identifier> findResources(
             ResourceType resourcePackType,
             //#if MC>=11500
-            //$$ String namespace,
+            String namespace,
             //#endif
             String path,
             int maxDepth,

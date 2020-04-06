@@ -13,7 +13,7 @@ import static com.replaymod.core.versions.MCVer.*;
 @Mixin(SpectatorHud.class)
 public abstract class MixinGuiSpectator {
     //#if MC>=10904
-    @Inject(method = "method_1976", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "cycleSlot", at = @At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "func_175260_a", at = @At("HEAD"), cancellable = true)
     //#endif

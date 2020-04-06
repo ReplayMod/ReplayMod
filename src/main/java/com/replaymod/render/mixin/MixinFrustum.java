@@ -20,9 +20,9 @@ import net.minecraft.client.render.Frustum;
 //#endif
 public abstract class MixinFrustum {
     //#if MC>=11500
-    //$$ @Inject(method = "isAnyCornerVisible", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "isAnyCornerVisible", at = @At("HEAD"), cancellable = true)
     //#else
-    @Inject(method = "intersects", at = @At("HEAD"), cancellable = true)
+    //$$ @Inject(method = "intersects", at = @At("HEAD"), cancellable = true)
     //#endif
     public void intersects(CallbackInfoReturnable<Boolean> ci) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
