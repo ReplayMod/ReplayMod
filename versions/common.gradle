@@ -271,7 +271,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:338c5a8", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:93cc258", shadeExclusions
 
     project.evaluationDependsOn(":jGui:$jGuiVersion")
     shadowReobf(project(":jGui:$jGuiVersion")){
