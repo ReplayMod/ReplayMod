@@ -36,6 +36,12 @@ public class ReplayModMixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        if (hasOF) {
+            //#if MC>=11500
+            // OF renames the lambda method name and I see no way we can target it now, so we give up on that patch
+            if (mixinClassName.endsWith("MixinTileEntityEndPortalRenderer")) return false;
+            //#endif
+        }
         if (mixinClassName.endsWith("_OF")) return hasOF;
         if (mixinClassName.endsWith("_NoOF")) return !hasOF;
         return true;
