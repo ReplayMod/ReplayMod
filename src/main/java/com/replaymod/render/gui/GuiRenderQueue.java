@@ -3,6 +3,7 @@ package com.replaymod.render.gui;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
@@ -196,7 +197,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
 
         renderButton.onClick(() -> {
             LOGGER.trace("Render button clicked");
-            processQueue(queue);
+            ReplayMod.instance.runLater(() -> processQueue(queue));
         });
 
         updateButtons();

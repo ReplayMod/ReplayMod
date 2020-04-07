@@ -1,5 +1,6 @@
 package com.replaymod.render.gui;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.VideoWriter;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -79,7 +80,7 @@ public class GuiExportFailed extends GuiScreen {
                         .map(l -> new GuiLabel().setText(l))
                         .toArray(GuiElement[]::new));
 
-        resetButton.onClick(() -> {
+        resetButton.onClick(() -> ReplayMod.instance.runLater(() -> {
             RenderSettings oldSettings = e.getSettings();
             doRestart.accept(new RenderSettings(
                     oldSettings.getRenderMethod(),
@@ -102,7 +103,7 @@ public class GuiExportFailed extends GuiScreen {
                     oldSettings.getEncodingPreset().getValue(),
                     oldSettings.isHighPerformance()
             ));
-        });
+        }));
 
         abortButton.onClick(() -> {
             // Assume they know what they're doing

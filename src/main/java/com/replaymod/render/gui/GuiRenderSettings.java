@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import com.google.gson.JsonSyntaxException;
+import com.replaymod.core.ReplayMod;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
@@ -228,7 +229,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             new GuiRenderQueue(GuiRenderSettings.this, GuiRenderSettings.this, replayHandler, timeline).open();
         }
     }).setSize(100, 20).setI18nLabel("replaymod.gui.renderqueue.open");
-    public final GuiButton renderButton = new GuiButton(buttonPanel).onClick(new Runnable() {
+    public final GuiButton renderButton = new GuiButton(buttonPanel).onClick(() -> ReplayMod.instance.runLater(new Runnable() {
         @Override
         public void run() {
             // Closing this GUI ensures that settings are saved
@@ -261,7 +262,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 display(); // Re-show the render settings gui and the new error popup
             }
         }
-    }).setSize(100, 20).setI18nLabel("replaymod.gui.render");
+    })).setSize(100, 20).setI18nLabel("replaymod.gui.render");
     public final GuiButton cancelButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
