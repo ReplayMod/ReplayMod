@@ -547,7 +547,7 @@ public class VideoRenderer implements RenderInfo {
                     return;
                 }
             }
-        } while (paused && !hasFailed());
+        } while (paused && !hasFailed() && !cancelled);
     }
 
     private boolean displaySizeChanged() {
