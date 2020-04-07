@@ -484,8 +484,8 @@ public class VideoRenderer implements RenderInfo {
             //#endif
 
             //#if MC>=11400
-            int mouseX = (int) mc.mouse.getX();
-            int mouseY = (int) mc.mouse.getY();
+            int mouseX = (int) mc.mouse.getX() * getWindow(mc).getScaledWidth() / displayWidth;
+            int mouseY = (int) mc.mouse.getY() * getWindow(mc).getScaledHeight() / displayHeight;
 
             gui.toMinecraft().tick();
             gui.toMinecraft().render(mouseX, mouseY, 0);
