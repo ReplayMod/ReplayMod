@@ -417,6 +417,14 @@ public class VideoRenderer implements RenderInfo {
 
     public void drawGui() {
         do {
+            //#if MC>=11400
+            if (GLFW.glfwWindowShouldClose(getWindow(mc).getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
+            //#else
+            //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
+            //#endif
+                return;
+            }
+
             // Resize the GUI framebuffer if the display size changed
             if (!settings.isHighPerformance() && displaySizeChanged()) {
                 updateDisplaySize();
