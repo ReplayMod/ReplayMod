@@ -421,7 +421,7 @@ public class VideoRenderer implements RenderInfo {
             if (!settings.isHighPerformance() && displaySizeChanged()) {
                 updateDisplaySize();
                 //#if MC>=11400
-                guiFramebuffer.resize(getWindow(mc).getFramebufferWidth(), getWindow(mc).getFramebufferHeight()
+                guiFramebuffer.resize(displayWidth, displayHeight
                         //#if MC>=11400
                         , false
                         //#endif
