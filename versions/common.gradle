@@ -232,7 +232,7 @@ dependencies {
                 11502: '1.15.2+build.14',
         ][mcVersion]
         modCompile 'net.fabricmc:fabric-loader:' + [
-                11404: '0.4.8+build.155',
+                11404: '0.7.8+build.189',
                 11502: '0.7.8+build.189',
         ][mcVersion]
         modCompile 'net.fabricmc.fabric-api:fabric-api:' + [
