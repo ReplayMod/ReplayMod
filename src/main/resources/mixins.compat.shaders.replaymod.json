@@ -10,7 +10,6 @@
     //#if MC>=10800
     "MixinShaderEntityRenderer",
     "MixinShaderRenderChunk",
-    "MixinShaderRenderGlobal",
     //#else
     //$$ "MixinShaders",
     //#endif

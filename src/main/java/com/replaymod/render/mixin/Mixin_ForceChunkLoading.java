@@ -1,6 +1,7 @@
 package com.replaymod.render.mixin;
 
 //#if MC>=10800
+import com.replaymod.compat.shaders.ShaderReflection;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
@@ -57,11 +58,14 @@ public abstract class Mixin_ForceChunkLoading {
 
     private boolean passThrough;
     @Inject(method = "setupTerrain", at = @At("HEAD"), cancellable = true)
-    private void forceAllChunks(Camera camera_1, Frustum frustum_1, boolean boolean_1, int int_1, boolean boolean_2, CallbackInfo ci) {
+    private void forceAllChunks(Camera camera_1, Frustum frustum_1, boolean boolean_1, int int_1, boolean boolean_2, CallbackInfo ci) throws IllegalAccessException {
         if (replayModRender_hook == null) {
             return;
         }
         if (passThrough) {
+            return;
+        }
+        if (ShaderReflection.shaders_isShadowPass != null && (boolean) ShaderReflection.shaders_isShadowPass.get(null)) {
             return;
         }
         ci.cancel();
@@ -131,7 +135,10 @@ public abstract class Mixin_ForceChunkLoading {
     //$$         int frameCount,
     //$$         boolean playerSpectator,
     //$$         CallbackInfo ci
-    //$$ ) {
+    //$$ ) throws IllegalAccessException {
+    //$$     if (ShaderReflection.shaders_isShadowPass != null && (boolean) ShaderReflection.shaders_isShadowPass.get(null)) {
+    //$$         return;
+    //$$     }
     //$$     if (replayModRender_hook != null && !replayModRender_passThroughSetupTerrain) {
     //$$         replayModRender_passThroughSetupTerrain = true;
     //$$
