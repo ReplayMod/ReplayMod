@@ -38,9 +38,9 @@ public class ReplayModNonMMLauncher implements IMixinConfigPlugin {
     public List<String> getMixins() {
         try {
             if (ReplayModMixinConfigPlugin.hasClass("com.chocohead.mm.Plugin")) {
-                logger.info("Detected MM, they should call us...");
+                logger.debug("Detected MM, they should call us...");
             } else {
-                logger.info("Did not detect MM, initializing ourselves...");
+                logger.debug("Did not detect MM, initializing ourselves...");
                 new ReplayModMMLauncher().run();
             }
             return null;

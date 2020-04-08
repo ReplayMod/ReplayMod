@@ -31,7 +31,7 @@ public class ReplayModMixinConfigPlugin implements IMixinConfigPlugin {
     private final boolean hasOF = hasClass("optifine.OptiFineForgeTweaker") || hasClass("me.modmuss50.optifabric.mod.Optifabric");
 
     {
-        logger.error("hasOF: " + hasOF);
+        logger.debug("hasOF: " + hasOF);
     }
 
     @Override
