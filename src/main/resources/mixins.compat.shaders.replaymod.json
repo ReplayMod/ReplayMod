@@ -4,6 +4,9 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=11500
+    "MixinChunkVisibility",
+    //#endif
     //#if MC>=10800
     "MixinShaderEntityRenderer",
     "MixinShaderRenderChunk",
