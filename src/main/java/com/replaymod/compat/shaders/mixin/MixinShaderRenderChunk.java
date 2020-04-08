@@ -9,6 +9,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //#if MC>=11500
+import org.spongepowered.asm.mixin.Shadow;
+//#endif
+
+//#if MC>=11500
 @Mixin(net.minecraft.client.render.chunk.ChunkBuilder.BuiltChunk.class)
 //#else
 //$$ @Mixin(net.minecraft.client.render.chunk.ChunkRenderer.class)
@@ -16,6 +20,35 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinShaderRenderChunk {
 
     private final MinecraftClient mc = MinecraftClient.getInstance();
+
+    //#if MC>=11500
+    @Shadow private int rebuildFrame;
+
+    @Shadow public abstract boolean shouldBuild();
+
+
+    /**
+     * So, for some reason OF though it'd be a good idea to drop the `shouldBuild` check from the chunk traversal in
+     * the setupTerrain method (see the innermost if of the "iteration" profiler section).
+     * Hint: It's not a good idea. It'll cause chunks to be queued for building which should not be built. And because
+     *       they don't know any better, they'll even re-queue themselves (which looks like a race condition in vanilla
+     *       MC) causing a live-lock when we try to force-build all chunks (or at least it would cause a lockup if it
+     *       wasn't for the vanilla race condition which slowly causes some of the rebuild tasks to get lost over time,
+     *       eventually, potentially all of them).
+     * This is the most convenient place to re-introduce the check (setRebuildFrame would normally be called right after
+     * shouldBuild, if it returns true).
+     */
+    @Inject(method = "setRebuildFrame", at = @At("HEAD"), cancellable = true)
+    private void replayModCompat_OFHaveYouConsideredWhetherThisChunkShouldEvenBeBuilt(int rebuildFrame, CallbackInfoReturnable<Boolean> ci) {
+        if (this.rebuildFrame == rebuildFrame) {
+            // want to keep the fast path
+            ci.setReturnValue(false);
+        } else if (!this.shouldBuild()) {
+            // this is the check which OF removed
+            ci.setReturnValue(false);
+        }
+    }
+    //#endif
 
     /**
      *  Changes the RenderChunk#isPlayerUpdate method that Optifine adds
