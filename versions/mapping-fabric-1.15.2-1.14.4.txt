@@ -1,4 +1,3 @@
-net.fabricmc.fabric.impl.resource.loader.ModResourcePackUtil net.fabricmc.fabric.impl.resources.ModResourcePackUtil
 net.minecraft.client.render.entity.EntityRenderer shouldRender() isVisible()
 net.minecraft.client.render.GameRenderer renderWorld() renderCenter()
 net.minecraft.entity.LivingEntity serverX field_6224
