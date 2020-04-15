@@ -289,8 +289,8 @@ dependencies {
         modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
     }
 
-    annotationProcessor 'org.projectlombok:lombok:1.16.6'
-    compile 'org.projectlombok:lombok:1.16.6' // runtime only for @SneakyThrows which isn't used
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    compile 'org.projectlombok:lombok:1.18.12' // runtime only for @SneakyThrows which isn't used
 
     testCompile 'junit:junit:4.11'
 }
