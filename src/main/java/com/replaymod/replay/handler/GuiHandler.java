@@ -86,6 +86,11 @@ public class GuiHandler extends EventRegistrations {
                 boolean remove = false;
                 //#if MC>=11400
                 String id = b.getMessage();
+                if (id == null) {
+                    // likely a button of some third-part mod
+                    // e.g. https://github.com/Pokechu22/WorldDownloader/blob/b1b279f948beec2d7dac7524eea8f584a866d8eb/share_14/src/main/java/wdl/WDLHooks.java#L491
+                    continue;
+                }
                 //#else
                 //$$ Integer id = b.id;
                 //#endif
