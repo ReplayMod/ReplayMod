@@ -10,7 +10,10 @@
 //$$ import net.minecraft.client.render.chunk.ChunkRenderer;
 //#endif
 //$$
-//$$ @Mixin(targets = "net.minecraft.client.render.WorldRenderer$ChunkInfo")
+//$$ // If this mixin doesn't apply in a development environment, use the following target instead. This seems to be a
+//$$ // (or multiple) bugs in mixin: https://github.com/SpongePowered/Mixin/issues/390
+//$$ // @Mixin(targets = "net.minecraft.client.render.WorldRenderer$ChunkInfo")
+//$$ @Mixin(targets = "net.minecraft.client.render.WorldRenderer.ChunkInfo")
 //$$ public interface ContainerLocalRenderInformationAccessor {
     //#if MC>=11500
     //$$ @Accessor("chunk")
