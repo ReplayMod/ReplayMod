@@ -32,7 +32,7 @@ buildscript {
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.2-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.6-SNAPSHOT'
         } else if (mcVersion >= 11400) {
             classpath('net.minecraftforge.gradle:ForgeGradle:3.+'){
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
