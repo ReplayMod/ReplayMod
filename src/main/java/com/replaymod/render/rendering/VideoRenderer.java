@@ -224,6 +224,8 @@ public class VideoRenderer implements RenderInfo {
                 //#endif
         );
 
+        executeTaskQueue();
+
         //#if MC<10800
         //$$ if (guiOpeningReplay != null) {
         //$$     guiOpeningReplay.handleInput();
@@ -384,7 +386,7 @@ public class VideoRenderer implements RenderInfo {
         //#endif
     }
 
-    private void tick() {
+    private void executeTaskQueue() {
         //#if MC>=11400
         ((MCVer.MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
         //#else
@@ -404,6 +406,9 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         mc.currentScreen = gui.toMinecraft();
+    }
+
+    private void tick() {
         //#if MC>=10800 && MC<11400
         //$$ try {
         //$$     mc.runTick();
