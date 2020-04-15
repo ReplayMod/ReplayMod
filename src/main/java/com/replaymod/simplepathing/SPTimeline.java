@@ -105,9 +105,12 @@ public class SPTimeline implements PathingRegistry {
 
     public void setDefaultInterpolatorType(InterpolatorType defaultInterpolatorType) {
         Validate.isTrue(defaultInterpolatorType != InterpolatorType.DEFAULT, "Must not be DEFAULT");
+        InterpolatorType prevType = this.defaultInterpolatorType;
         this.defaultInterpolatorType = Validate.notNull(defaultInterpolatorType);
 
-        timeline.pushChange(updateInterpolators());
+        if (prevType != null && prevType != this.defaultInterpolatorType) {
+            timeline.pushChange(updateInterpolators());
+        }
     }
 
     public Change setDefaultInterpolator(Interpolator interpolator) {
