@@ -312,6 +312,9 @@ if (mcVersion <= 10710) {
             artifact.classpath += configurations.minecraft + configurations.minecraftDeps
         }
     }
+
+    // Test sources aren't preprocessed and I can't be bothered to fix that
+    tasks.compileTestJava.onlyIf { false }
 }
 
 if (FABRIC) {
