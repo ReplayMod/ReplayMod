@@ -44,7 +44,7 @@ buildscript {
                                          'fc1eabc'   // FG 2.1
             ) + ':all')
         } else {
-            classpath 'com.github.ReplayMod:ForgeGradle:e93f77b4' // FG 1.2
+            classpath 'com.github.ReplayMod:ForgeGradle:5fca6853:all' // FG 1.2
         }
     }
 }
