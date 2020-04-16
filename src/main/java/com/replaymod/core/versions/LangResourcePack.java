@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 
 /**
  * Resource pack which on-the-fly converts pre-1.13 language files into 1.13 json format.
- * Also remaps `replaymod.input.*` bindings to `key.replaymod.*` as convention on Fabric.
+ * Also duplicates `replaymod.input.*` bindings to `key.replaymod.*` as convention on Fabric.
  */
 public class LangResourcePack extends AbstractFileResourcePack {
     private static final Gson GSON = new Gson();
@@ -120,6 +120,8 @@ public class LangResourcePack extends AbstractFileResourcePack {
             value = convertValue(value);
             //#if MC>=11400
             if (key.startsWith(LEGACY_KEY_PREFIX)) {
+                // Duplicating instead of just remapping as some other part of the UI may still rely on the old key
+                properties.put(key, value);
                 key = String.format(FABRIC_KEY_FORMAT, key.substring(LEGACY_KEY_PREFIX.length()));
             }
             //#endif
