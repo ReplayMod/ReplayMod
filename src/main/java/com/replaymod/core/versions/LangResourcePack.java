@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -106,13 +107,13 @@ public class LangResourcePack extends AbstractFileResourcePack {
         Path langPath = langPath(path);
         if (langPath == null) throw new ResourceNotFoundException(this.base, path);
 
-        String langFile;
+        List<String> langFile;
         try (InputStream in = Files.newInputStream(langPath)) {
-            langFile = IOUtils.toString(in, StandardCharsets.UTF_8);
+            langFile = IOUtils.readLines(in, StandardCharsets.UTF_8);
         }
 
         Map<String, String> properties = new HashMap<>();
-        for (String line : langFile.split("\n")) {
+        for (String line : langFile) {
             if (line.trim().isEmpty() || line.trim().startsWith("#")) continue;
             int i = line.indexOf('=');
             String key = line.substring(0, i);
