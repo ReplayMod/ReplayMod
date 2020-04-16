@@ -566,6 +566,10 @@ public class CameraEntity
         if (keyBindings.get("replaymod.input.rollcounterclockwise").isPressed()) {
             roll -= Utils.isCtrlDown() ? 0.2 : 1;
         }
+
+        //#if MC>=10800
+        this.noClip = this.isSpectator();
+        //#endif
     }
 
     private void handleInputEvents() {
