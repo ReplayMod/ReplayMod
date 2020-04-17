@@ -431,7 +431,7 @@ public class VideoRenderer implements RenderInfo {
             }
 
             // Resize the GUI framebuffer if the display size changed
-            if (!settings.isHighPerformance() && displaySizeChanged()) {
+            if (displaySizeChanged()) {
                 updateDisplaySize();
                 //#if MC>=11400
                 guiFramebuffer.resize(displayWidth, displayHeight
