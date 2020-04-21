@@ -408,8 +408,11 @@ task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar)
     }
 
     // No need to shadow netty, MC provides it
-    relocate 'com.github.steveice10.netty', 'io.netty'
-    exclude 'com/github/steveice10/netty/**'
+    // (actually, pre-1.12 ships a netty which is too old, so we need to shade it there anyway)
+    if (mcVersion >= 11200) {
+        relocate 'com.github.steveice10.netty', 'io.netty'
+        exclude 'com/github/steveice10/netty/**'
+    }
 
     minimize {
         exclude(dependency('.*spongepowered:mixin:.*'))
