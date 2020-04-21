@@ -2,7 +2,6 @@ package com.replaymod.core;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -14,6 +13,12 @@ import java.util.Set;
 import java.io.InputStream;
 //#else
 //$$ import net.minecraft.launchwrapper.Launch;
+//#endif
+
+//#if MC>=11200
+import org.objectweb.asm.tree.ClassNode;
+//#else
+//$$ import org.spongepowered.asm.lib.tree.ClassNode;
 //#endif
 
 public class ReplayModMixinConfigPlugin implements IMixinConfigPlugin {
