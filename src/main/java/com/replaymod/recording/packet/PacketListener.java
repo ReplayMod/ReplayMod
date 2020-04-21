@@ -307,6 +307,21 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 //$$ }
                 //#endif
 
+                //#if MC>=10800
+                if (packet instanceof CustomPayloadS2CPacket) {
+                    // Forge may read from this ByteBuf and/or release it during handling
+                    // We want to save the full thing however, so we create a copy and save that one instead of the
+                    // original one
+                    // Note: This isn't an issue with vanilla MC because our saving code runs on the main thread
+                    //       shortly before the vanilla handling code does. Forge however does some stuff on the netty
+                    //       threads which leads to this race condition
+                    packet = new CustomPayloadS2CPacket(
+                            ((CustomPayloadS2CPacket) packet).getChannel(),
+                            new PacketByteBuf(((CustomPayloadS2CPacket) packet).getData().slice().retain())
+                    );
+                }
+                //#endif
+
                 save(packet);
 
                 if (packet instanceof CustomPayloadS2CPacket) {
@@ -397,6 +412,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         byteBuf.readBytes(array);
 
         byteBuf.release();
+
+        //#if MC>=10800
+        if (packet instanceof CustomPayloadS2CPacket) {
+            ((CustomPayloadS2CPacket) packet).getData().release();
+        }
+        //#endif
         return array;
     }
 
