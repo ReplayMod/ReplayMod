@@ -2,7 +2,7 @@ import groovy.json.JsonOutput
 import java.io.ByteArrayOutputStream
 
 plugins {
-    id("fabric-loom") version "0.2.5-SNAPSHOT" apply false
+    id("fabric-loom") version "0.2.7-SNAPSHOT" apply false
     id("com.replaymod.preprocess") version "30eb312"
     id("com.github.hierynomus.license") version "0.15.0"
 }
