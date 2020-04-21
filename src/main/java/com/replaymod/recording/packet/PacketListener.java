@@ -12,7 +12,9 @@ import com.replaymod.recording.Setting;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.mixin.SPacketSpawnMobAccessor;
 import com.replaymod.recording.mixin.SPacketSpawnPlayerAccessor;
+import com.replaymod.replaystudio.PacketData;
 import com.replaymod.replaystudio.data.Marker;
+import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
@@ -85,7 +87,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private final ResourcePackRecorder resourcePackRecorder;
 
     private final ExecutorService saveService = Executors.newSingleThreadExecutor();
-    private final DataOutputStream packetOutputStream;
+    private final ReplayOutputStream packetOutputStream;
 
     private ReplayMetaData metaData;
 
@@ -97,8 +99,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private volatile boolean serverWasPaused;
     //#if MC>=11400
     private NetworkState connectionState = NetworkState.LOGIN;
+    private boolean loginPhase = true;
     //#else
     //$$ private EnumConnectionState connectionState = EnumConnectionState.PLAY;
+    //$$ private boolean loginPhase = false;
     //#endif
 
     /**
@@ -113,8 +117,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         this.replayFile = replayFile;
         this.metaData = metaData;
         this.resourcePackRecorder = new ResourcePackRecorder(replayFile);
-        // Note: doesn't actually always include the login phase, see `connectionState` field instead.
-        this.packetOutputStream = new DataOutputStream(replayFile.writePacketData());
+        this.packetOutputStream = replayFile.writePacketData();
         this.startTime = metaData.getDate();
 
         saveMetaData();
@@ -181,19 +184,17 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             //#endif
             //#endif
 
-            byte[] bytes = getPacketData(packet);
             long now = System.currentTimeMillis();
+            if (serverWasPaused) {
+                timePassedWhilePaused = now - startTime - lastSentPacket;
+                serverWasPaused = false;
+            }
+            int timestamp = (int) (now - startTime - timePassedWhilePaused);
+            lastSentPacket = timestamp;
+            PacketData packetData = getPacketData(timestamp, packet);
             saveService.submit(() -> {
-                if (serverWasPaused) {
-                    timePassedWhilePaused = now - startTime - lastSentPacket;
-                    serverWasPaused = false;
-                }
-                int timestamp = (int) (now - startTime - timePassedWhilePaused);
-                lastSentPacket = timestamp;
                 try {
-                    packetOutputStream.writeInt(timestamp);
-                    packetOutputStream.writeInt(bytes.length);
-                    packetOutputStream.write(bytes);
+                    packetOutputStream.write(packetData);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -202,6 +203,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             //#if MC>=11400
             if (packet instanceof LoginSuccessS2CPacket) {
                 connectionState = NetworkState.PLAY;
+                loginPhase = false;
             }
             //#endif
         } catch(Exception e) {
@@ -347,7 +349,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     //#endif
 
     @SuppressWarnings("unchecked")
-    private byte[] getPacketData(Packet packet) throws Exception {
+    private PacketData getPacketData(int timestamp, Packet packet) throws Exception {
         //#if MC<11500
         //$$ if (packet instanceof MobSpawnS2CPacket) {
         //$$     MobSpawnS2CPacket p = (MobSpawnS2CPacket) packet;
@@ -403,22 +405,26 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             throw new IOException("Unknown packet type:" + packet.getClass());
         }
         ByteBuf byteBuf = Unpooled.buffer();
-        PacketByteBuf packetBuffer = new PacketByteBuf(byteBuf);
-        packetBuffer.writeVarInt(packetId);
-        packet.write(packetBuffer);
+        try {
+            packet.write(new PacketByteBuf(byteBuf));
+            return new PacketData(timestamp, new com.replaymod.replaystudio.protocol.Packet(
+                    MCVer.getPacketTypeRegistry(loginPhase),
+                    packetId,
+                    com.github.steveice10.netty.buffer.Unpooled.wrappedBuffer(
+                            byteBuf.array(),
+                            byteBuf.arrayOffset(),
+                            byteBuf.readableBytes()
+                    )
+            ));
+        } finally {
+            byteBuf.release();
 
-        byteBuf.readerIndex(0);
-        byte[] array = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(array);
-
-        byteBuf.release();
-
-        //#if MC>=10800
-        if (packet instanceof CustomPayloadS2CPacket) {
-            ((CustomPayloadS2CPacket) packet).getData().release();
+            //#if MC>=10800
+            if (packet instanceof CustomPayloadS2CPacket) {
+                ((CustomPayloadS2CPacket) packet).getData().release();
+            }
+            //#endif
         }
-        //#endif
-        return array;
     }
 
     public void addMarker(String name) {
