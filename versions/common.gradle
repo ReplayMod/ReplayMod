@@ -425,7 +425,7 @@ jar {
     if (!FABRIC) {
         from files(project.mixinRefMap.canonicalPath)
         manifest {
-            attributes 'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+            attributes 'TweakClass': 'com.replaymod.core.tweaker.ReplayModTweaker',
                     'TweakOrder': '0',
                     'FMLCorePluginContainsFMLMod': 'true',
                     'FMLCorePlugin': 'com.replaymod.core.LoadingPlugin',
