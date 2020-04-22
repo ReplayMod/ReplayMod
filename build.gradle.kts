@@ -69,7 +69,7 @@ fun command(vararg cmd: Any): List<String> {
         commandLine(*cmd)
         standardOutput = stdout
     }
-    return stdout.toString().split("\n")
+    return stdout.toString().trim().split("\n")
 }
 
 fun generateVersionsJson(): Map<String, Any> {
@@ -86,6 +86,10 @@ fun generateVersionsJson(): Map<String, Any> {
     val commitVersions = releaseCommits.map { commit ->
         val version = command("git", "show", "$commit:version.txt").first()
         val mcVersions = command("git", "ls-tree", "-d", "--name-only", "$commit:versions")
+                // In the past (early days of preprocessor) we used to have an internal "core" project
+                .filter { it != "core" }
+                // Internal project used to automatically remap from Forge 1.12.2 to Fabric 1.14.4
+                .filter { it != "1.14.4-forge" }
         mcVersions.map { "$it-$version" }
     }.flatten()
 
@@ -94,9 +98,9 @@ fun generateVersionsJson(): Map<String, Any> {
             .map {it.substring(0, it.indexOf("-"))}
             .distinct()
             .sortedWith(compareBy(
-                    { (it.split(".")[0] ?: "0").toInt() },
-                    { (it.split(".")[1] ?: "0").toInt() },
-                    { (it.split(".")[2] ?: "0").toInt() }
+                    { (it.split(".").getOrNull(0) ?: "0").toInt() },
+                    { (it.split(".").getOrNull(1) ?: "0").toInt() },
+                    { (it.split(".").getOrNull(2) ?: "0").toInt() }
             ))
 
     val promos = mutableMapOf<String, String>()
@@ -109,7 +113,7 @@ fun generateVersionsJson(): Map<String, Any> {
         var latest: String? = null
         var recommended: String? = null
         versions.forEach {
-            val (thisMcVersion, modVersion, preVersion) = it.split("-")
+            val (thisMcVersion, modVersion, preVersion) = it.split("-") + listOf(null, null)
             if (thisMcVersion == mcVersion) {
                 mcVersionRoot[it] = if (tagVersions.contains(it))
                     "See https://github.com/ReplayMod/ReplayMod/releases/$it"
@@ -133,7 +137,7 @@ fun generateVersionsJson(): Map<String, Any> {
 val doRelease by tasks.registering {
     doLast {
         // Parse version
-        val version = project.extra("releaseVersion") as String
+        val version = project.extra["releaseVersion"] as String
         if (gitDescribe().endsWith("*")) {
             throw InvalidUserDataException("Git working tree is dirty. Make sure to commit all changes.")
         }
