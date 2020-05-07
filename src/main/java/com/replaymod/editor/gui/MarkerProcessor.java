@@ -9,6 +9,7 @@ import com.replaymod.replaystudio.filter.StreamFilter;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
+import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.stream.IteratorStream;
@@ -16,12 +17,14 @@ import com.replaymod.replaystudio.studio.ReplayStudio;
 import com.replaymod.replaystudio.util.Utils;
 import org.apache.commons.io.FilenameUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,6 +55,57 @@ public class MarkerProcessor {
         }
     }
 
+    private enum OutputState {
+        /** A new output file has begun but not data has been written yet. */
+        NotYetWriting,
+        /** Currently writing data to the active output file. */
+        Writing,
+        /** Currently not writing data. */
+        Paused,
+    }
+
+    private static List<String> getOutputSuffixes(ReplayFile inputReplayFile) throws IOException {
+        List<Marker> markers = inputReplayFile.getMarkers().or(HashSet::new)
+                .stream().sorted(Comparator.comparing(Marker::getTime)).collect(Collectors.toList());
+        int nextSuffix = 0;
+        List<String> suffixes = new ArrayList<>();
+        OutputState state = OutputState.Writing;
+        for (Marker marker : markers) {
+            if (MARKER_NAME_START_CUT.equals(marker.getName())) {
+                if (marker.getTime() == 0) {
+                    // Special case: Automatic recording has been disabled
+                    state = OutputState.NotYetWriting;
+                } else {
+                    state = OutputState.Paused;
+                }
+            } else if (MARKER_NAME_END_CUT.equals(marker.getName())) {
+                state = OutputState.Writing;
+            } else if (MARKER_NAME_SPLIT.equals(marker.getName())) {
+                switch (state) {
+                    case NotYetWriting:
+                        break;
+                    case Writing:
+                        suffixes.add("_" + nextSuffix++);
+                        state = OutputState.Writing;
+                        break;
+                    case Paused:
+                        suffixes.add("_" + nextSuffix++);
+                        state = OutputState.NotYetWriting;
+                        break;
+                }
+            }
+        }
+        if (state != OutputState.NotYetWriting) {
+            suffixes.add("_" + nextSuffix);
+        }
+
+        if (suffixes.size() == 1) {
+            // If there's only one output, it can keep the name of the input
+            return Collections.singletonList("");
+        }
+        return suffixes;
+    }
+
     public static void apply(Path path, Consumer<Float> progress) throws IOException {
         if (!hasWork(path)) {
             return;
@@ -73,6 +127,7 @@ public class MarkerProcessor {
             List<Marker> markers = inputReplayFile.getMarkers().or(HashSet::new)
                     .stream().sorted(Comparator.comparing(Marker::getTime)).collect(Collectors.toList());
             Iterator<Marker> markerIterator = markers.iterator();
+            Iterator<String> outputFileSuffixes = getOutputSuffixes(inputReplayFile).iterator();
             boolean anySplit = markers.stream().anyMatch(m -> MARKER_NAME_SPLIT.equals(m.getName()));
 
             int inputDuration = inputReplayFile.getMetaData().getDuration();
@@ -83,9 +138,9 @@ public class MarkerProcessor {
             PacketData nextPacket = replayInputStream.readPacket();
             Marker nextMarker = markerIterator.next();
 
-            while (nextPacket != null) {
-                try (ZipReplayFile outputReplayFile = new ZipReplayFile(studio, null,
-                        (anySplit ? path.resolveSibling(replayName + "_" + splitCounter + ".mcpr") : path).toFile())) {
+            while (nextPacket != null && outputFileSuffixes.hasNext()) {
+                File outputFile = path.resolveSibling(replayName + outputFileSuffixes.next() + ".mcpr").toFile();
+                try (ZipReplayFile outputReplayFile = new ZipReplayFile(studio, null, outputFile)) {
                     long duration = 0;
                     Set<Marker> outputMarkers = new HashSet<>();
                     ReplayMetaData metaData = inputReplayFile.getMetaData();
@@ -105,6 +160,7 @@ public class MarkerProcessor {
                                 replayOutputStream.write(0, packet.getPacket());
                             }
                         }
+                        boolean hasFurtherOutputs = outputFileSuffixes.hasNext();
 
                         while (nextPacket != null) {
                             if (nextMarker != null && nextPacket.getTime() > nextMarker.getTime()) {
@@ -141,7 +197,9 @@ public class MarkerProcessor {
                                 continue;
                             }
 
-                            squashFilter.onPacket(null, nextPacket);
+                            if (hasFurtherOutputs) {
+                                squashFilter.onPacket(null, nextPacket);
+                            }
                             if (cutFilter != null) {
                                 cutFilter.onPacket(null, nextPacket);
                             } else {
