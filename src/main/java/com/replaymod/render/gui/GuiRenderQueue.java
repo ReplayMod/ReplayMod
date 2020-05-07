@@ -197,7 +197,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
 
         renderButton.onClick(() -> {
             LOGGER.trace("Render button clicked");
-            ReplayMod.instance.runLater(() -> processQueue(queue));
+            ReplayMod.instance.runLaterWithoutLock(() -> processQueue(queue));
         });
 
         updateButtons();
@@ -233,7 +233,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                     // Update current job with fixed ffmpeg arguments
                     renderJob.setSettings(newSettings);
                     // Restart queue, skipping the already completed jobs
-                    processQueue(Iterables.skip(queue, jobsToSkip));
+                    ReplayMod.instance.runLaterWithoutLock(() -> processQueue(Iterables.skip(queue, jobsToSkip)));
                 });
                 return;
             } catch (Throwable t) {

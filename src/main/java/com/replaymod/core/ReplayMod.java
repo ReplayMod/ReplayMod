@@ -475,13 +475,30 @@ public class ReplayMod implements
     public final ReplayModExecutor executor = new ReplayModExecutor("Client/ReplayMod");
     //#endif
 
+    // Pre-1.14 MC would hold the lock on the scheduledTasks queue while executing its tasks
+    // such that no new tasks could be submitted while one of them was running.
+    // This would cause issues with long-running tasks (e.g. video rendering) as it would
+    // block all async tasks (e.g. skin loading).
+    public void runLaterWithoutLock(Runnable runnable) {
+        //#if MC>=11400
+        // MC 1.14+ no longer synchronizes on the queue while running its tasks
+        runLater(runnable);
+        //#else
+        //$$ runLater(() -> runLaterWithoutLock(runnable), runnable);
+        //#endif
+    }
+
     public void runLater(Runnable runnable) {
+        runLater(runnable, () -> runLater(runnable));
+    }
+
+    private void runLater(Runnable runnable, Runnable defer) {
         //#if MC>=11400
         if (mc.isOnThread() && inRunLater && !inRenderTaskQueue) {
             ((MinecraftAccessor) mc).getRenderTaskQueue().offer(() -> {
                 inRenderTaskQueue = true;
                 try {
-                    runLater(runnable);
+                    defer.run();
                 } finally {
                     inRenderTaskQueue = false;
                 }
@@ -503,13 +520,13 @@ public class ReplayMod implements
             //$$     @SubscribeEvent
             //$$     public void onRenderTick(TickEvent.RenderTickEvent event) {
             //$$         if (event.phase == TickEvent.Phase.START) {
-            //$$             runLater(runnable);
             //$$             FORGE_BUS.unregister(this);
+            //$$             defer.run();
             //$$         }
             //$$     }
             //$$ });
             //#else
-            //$$ FML_BUS.register(new RunLaterHelper(runnable));
+            //$$ FML_BUS.register(new RunLaterHelper(defer));
             //#endif
         //$$     return;
         //$$ }
@@ -539,17 +556,17 @@ public class ReplayMod implements
     //$$
     //$$ // in 1.7.10 apparently events can't be delivered to anonymous classes
     //$$ public class RunLaterHelper {
-    //$$     private final Runnable runnable;
+    //$$     private final Runnable defer;
     //$$
-    //$$     private RunLaterHelper(Runnable runnable) {
-    //$$         this.runnable = runnable;
+    //$$     private RunLaterHelper(Runnable defer) {
+    //$$         this.defer = defer;
     //$$     }
     //$$
     //$$     @SubscribeEvent
     //$$     public void onRenderTick(TickEvent.RenderTickEvent event) {
     //$$         if (event.phase == TickEvent.Phase.START) {
-    //$$             runLater(runnable);
     //$$             FML_BUS.unregister(this);
+    //$$             defer.run();
     //$$         }
     //$$     }
     //$$ }

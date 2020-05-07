@@ -229,7 +229,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             new GuiRenderQueue(GuiRenderSettings.this, GuiRenderSettings.this, replayHandler, timeline).open();
         }
     }).setSize(100, 20).setI18nLabel("replaymod.gui.renderqueue.open");
-    public final GuiButton renderButton = new GuiButton(buttonPanel).onClick(() -> ReplayMod.instance.runLater(new Runnable() {
+    public final GuiButton renderButton = new GuiButton(buttonPanel).onClick(() -> ReplayMod.instance.runLaterWithoutLock(new Runnable() {
         @Override
         public void run() {
             // Closing this GUI ensures that settings are saved
