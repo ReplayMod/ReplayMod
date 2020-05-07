@@ -523,7 +523,12 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         injectSphericalMetadata.setChecked(settings.isInjectSphericalMetadata());
         antiAliasingDropdown.setSelected(settings.getAntiAliasing());
         exportCommand.setText(settings.getExportCommand());
-        exportArguments.setText(settings.getExportArguments());
+        String exportArguments = settings.getExportArguments();
+        if (exportArguments == null) {
+            // backwards compat, see RenderSettings#exportArguments
+            exportArguments = settings.getEncodingPreset().getValue();
+        }
+        this.exportArguments.setText(exportArguments);
 
         updateInputs();
     }

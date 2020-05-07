@@ -1,5 +1,6 @@
 package com.replaymod.render;
 
+import com.google.gson.annotations.SerializedName;
 import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import lombok.AllArgsConstructor;
@@ -125,6 +126,13 @@ public class RenderSettings {
     private final AntiAliasing antiAliasing;
 
     private final String exportCommand;
+    // We switched from rgb24 to bgra for performance at one point, so for backwards compatibility we need to
+    // reset the arguments if they're from an older version. Easiest way to do that is to just change the key
+    // and handle the null during loading.
+    @SerializedName("exportArguments")
+    // using an empty string as default because old versions will realize it's not a preset and prompt the user
+    private final String exportArgumentsPreBgra = "";
+    @SerializedName("exportArgumentsBgra")
     private final String exportArguments;
 
     private final boolean highPerformance;
