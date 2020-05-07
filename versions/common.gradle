@@ -112,7 +112,7 @@ if (mcVersion >= 11400) {
     }
 }
 
-version = mcVersionStr + '-' + rootProject.version
+version = project.name + '-' + rootProject.version
 group= "com.replaymod"
 archivesBaseName = "replaymod"
 
