@@ -125,6 +125,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
     private boolean canSave() {
         long newTime = (timeMinField.getInteger() * 60 + timeSecField.getInteger()) * 1000 + timeMSecField.getInteger();
+        if (newTime < 0 || newTime > guiPathing.timeline.getLength()) {
+            return false;
+        }
         if (newTime != keyframe.getTime() && path.getKeyframe(newTime) != null) {
             return false;
         }
