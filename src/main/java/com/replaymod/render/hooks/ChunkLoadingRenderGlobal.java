@@ -63,6 +63,15 @@ public class ChunkLoadingRenderGlobal {
     }
 
     private void install() {
+        //#if FABRIC>=1
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium")) {
+            throw new UnsupportedOperationException(
+                    "Rendering is not currently supported while Sodium is installed.\n" +
+                            "See https://github.com/ReplayMod/ReplayMod/issues/150\n" +
+                            "For now, you need to uninstall Sodium before rendering!"
+            );
+        }
+        //#endif
         try {
             //#if MC>=11400
             Field hookField = WorldRenderer.class.getField("replayModRender_hook");
