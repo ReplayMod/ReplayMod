@@ -11,7 +11,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.resource.language.I18n;
 
 //#if FABRIC>=1
-import de.johni0702.minecraft.gui.versions.callbacks.PostRenderHudCallback;
+import de.johni0702.minecraft.gui.versions.callbacks.RenderHudCallback;
 //#else
 //$$ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 //$$ import net.minecraftforge.common.MinecraftForge;
@@ -41,7 +41,7 @@ public class GuiRecordingOverlay extends EventRegistrations {
      * Render the recording icon and text in the top left corner of the screen.
      */
     //#if FABRIC>=1
-    { on(PostRenderHudCallback.EVENT, partialTicks -> renderRecordingIndicator()); }
+    { on(RenderHudCallback.EVENT, partialTicks -> renderRecordingIndicator()); }
     private void renderRecordingIndicator() {
     //#else
     //$$ @SubscribeEvent
