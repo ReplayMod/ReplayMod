@@ -349,13 +349,47 @@ public class ReplayMod implements
         testIfMoeshAndExitMinecraft();
 
         runPostStartup(() -> {
+            final long DAYS = 24 * 60 * 60 * 1000;
+
+            // Cleanup raw folder content three weeks after creation (these are pretty valuable for debugging)
+            try {
+                File[] files = new File(getReplayFolder(), "raw").listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        if (file.lastModified() + 21 * DAYS < System.currentTimeMillis()) {
+                            FileUtils.forceDelete(file);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Cleanup cache folders 7 days after last modification or when its replay is gone
+            try {
+                File[] files = getReplayFolder().listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        String name = file.getName();
+                        if (file.isDirectory() && name.endsWith(".mcpr.cache")) {
+                            File replay = new File(getReplayFolder(), name.substring(0, name.length() - ".cache".length()));
+                            if (file.lastModified() + 7 * DAYS < System.currentTimeMillis() || !replay.exists()) {
+                                FileUtils.deleteDirectory(file);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             // Cleanup deleted corrupted replays
             try {
                 File[] files = getReplayFolder().listFiles();
                 if (files != null) {
                     for (File file : files) {
                         if (file.isDirectory() && file.getName().endsWith(".mcpr.del")) {
-                            if (file.lastModified() + 2 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+                            if (file.lastModified() + 2 * DAYS < System.currentTimeMillis()) {
                                 FileUtils.deleteDirectory(file);
                             }
                         }
