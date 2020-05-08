@@ -233,6 +233,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             } catch (InterruptedException e) {
                 logger.error("Waiting for save service termination:", e);
             }
+            try {
+                packetOutputStream.close();
+            } catch (IOException e) {
+                logger.error("Failed to close packet output stream:", e);
+            }
 
             synchronized (replayFile) {
                 try {
