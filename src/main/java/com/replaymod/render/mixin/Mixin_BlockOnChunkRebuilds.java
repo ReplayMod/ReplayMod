@@ -1,6 +1,7 @@
 package com.replaymod.render.mixin;
 
 //#if MC>=11500
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import net.minecraft.client.render.chunk.BlockBufferBuilderStorage;
 import net.minecraft.client.render.chunk.ChunkBuilder;
@@ -79,6 +80,20 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ChunkLoadingRenderGl
             this.waitingForWorkLock.lock();
             try {
                 while (true) {
+                    // Now, what is this call doing here you might be wondering. Well, from a quick look over everything
+                    // it does not look like it would be required but have a **very** close look at [scheduleUpload]:
+                    // It is not actually guaranteed to run the upload on the main thread, it just looks like it (and
+                    // was probably supposed to do that) but in actuality, because it adds the first, empty future to
+                    // the upload queue before attaching the thenCompose callback, that future can actually be completed
+                    // by the main thread before thenCompose is called, resulting in thenCompose immediately calling
+                    // its callback on the same (non-main) thread.
+                    // Looking at how the upload behaves executed on a non-main thread, it eventually just enqueues
+                    // itself in the RenderSystem's queue and returns a future for that.
+                    // So, even though our [notifyMainThreadOfNewUpload] gets executed after all that, we would simply
+                    // dead-lock ourselves here (since the upload queue is already empty), if we did never do this call
+                    // to run the upload scheduled via this particular path of code execution.
+                    RenderSystem.replayQueue();
+
                     if (this.allDone) {
                         return true;
                     } else if (!this.uploadQueue.isEmpty()) {
