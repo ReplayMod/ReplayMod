@@ -1,6 +1,7 @@
 package com.replaymod.core;
 
 //#if MC<11400
+//$$ import net.minecraft.launchwrapper.Launch;
 //$$ import org.apache.logging.log4j.LogManager;
 //$$ import org.spongepowered.asm.launch.MixinBootstrap;
 //$$ import org.spongepowered.asm.mixin.Mixins;
@@ -25,7 +26,11 @@ package com.replaymod.core;
 //$$ public class LoadingPlugin implements IFMLLoadingPlugin {
 //$$
 //$$     public LoadingPlugin() {
-//$$         MixinBootstrap.init();
+//$$         if ((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
+//$$             // Outside of the dev env, this is the job of the tweaker
+//$$             MixinBootstrap.init();
+//$$         }
+//$$
 //$$         Mixins.addConfiguration("mixins.core.replaymod.json");
 //$$         Mixins.addConfiguration("mixins.recording.replaymod.json");
 //$$         Mixins.addConfiguration("mixins.render.replaymod.json");
