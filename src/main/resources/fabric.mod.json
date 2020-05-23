@@ -40,6 +40,9 @@
   },
 
   "custom": {
+    "mm:early_risers": [
+      "com.replaymod.core.ReplayModMMLauncher"
+    ],
     "modmenu:clientsideOnly": true
   }
 }
