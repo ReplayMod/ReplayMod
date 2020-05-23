@@ -30,7 +30,11 @@ public abstract class Mixin_ChromaKeyForceSky {
     //#if MC>=11500
     @ModifyConstant(method = "render", constant = @Constant(intValue = 4))
     //#else
+    //#if MC>=11400
     //$$ @ModifyConstant(method = "renderCenter", constant = @Constant(intValue = 4))
+    //#else
+    //$$ @ModifyConstant(method = "updateCameraAndRender(FJ)V", constant = @Constant(intValue = 4))
+    //#endif
     //#endif
     private int forceSkyWhenChromaKeying(int value) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) this.client.gameRenderer).replayModRender_getHandler();
