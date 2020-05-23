@@ -34,9 +34,9 @@
     "mixins.nonmmlauncher.replaymod.json"
   ],
 
-  "requires": {
-    "fabricloader": ">=0.4.0",
-    "fabric": ">=0.2.0"
+  "depends": {
+    "fabricloader": ">=0.7.0",
+    "fabric": ">=0.4.3"
   },
 
   "custom": {
