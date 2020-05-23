@@ -255,6 +255,7 @@ net.minecraft.entity.LivingEntity isSleeping() isPlayerSleeping()
 net.minecraft.entity.LivingEntity tickMovement() livingTick()
 net.minecraft.entity.Entity afterSpawn() preparePlayerToSpawn()
 net.minecraft.entity.Entity spawnSprintingParticles() createRunningParticles()
+net.minecraft.entity.Entity isRowingBoat() isRiding()
 net.minecraft.entity.Entity updateNeeded addedToChunk
 net.minecraft.entity.Entity chunkX chunkCoordX
 net.minecraft.entity.Entity chunkY chunkCoordY
