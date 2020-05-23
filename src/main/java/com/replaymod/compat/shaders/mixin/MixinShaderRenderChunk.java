@@ -45,6 +45,11 @@ public abstract class MixinShaderRenderChunk {
             ci.setReturnValue(false);
         } else if (!this.shouldBuild()) {
             // this is the check which OF removed
+            // So, I think I figured out the reason why optifine applies this change: It's so chunks which are outside
+            // the server view distance are still rendered if they've previously compiled. The bug still stands but
+            // fixing it breaks OF's broken feature, so to reduce the impact of our fix, we only apply it during
+            // rendering where it affects us the most.
+            if (((EntityRendererHandler.IEntityRenderer) mc.gameRenderer).replayModRender_getHandler() == null) return;
             ci.setReturnValue(false);
         }
     }
