@@ -53,7 +53,9 @@ public class ReplayModMMLauncher implements Runnable {
         String mcVer = minecraft.get().getMetadata().getVersion().getFriendlyString();
 
         int result = ModCoreInstaller.initialize(gameDir, mcVer + "_fabric");
-        System.out.println("ReplayMod ModCore init result: " + result);
+        if (result != -2) { // Don't even bother logging the result if there's no ModCore for this version.
+            System.out.println("ReplayMod ModCore init result: " + result);
+        }
         if (ModCoreInstaller.isErrored()) {
             System.err.println(ModCoreInstaller.getError());
         }

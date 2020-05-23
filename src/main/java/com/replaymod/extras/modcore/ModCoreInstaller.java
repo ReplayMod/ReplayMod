@@ -131,7 +131,7 @@ public class ModCoreInstaller {
         }
         JsonHolder jsonHolder = fetchJSON(VERSION_URL);
         if (!jsonHolder.has(minecraftVersion)) {
-            System.out.println("No ModCore target for " + minecraftVersion + ". Aborting install");
+            System.out.println("No ModCore target for " + minecraftVersion + ". This in fine, unless you're specifically looking for ModCore.");
             return -2;
         }
         String latestRemote = jsonHolder.optString(minecraftVersion);
