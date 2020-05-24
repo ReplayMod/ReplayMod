@@ -50,23 +50,6 @@
     "dependencies": []
   },
   {
-    "modid": "replaymod-online",
-    "name": "Replay Mod - Online",
-    "description": "Online Module of the ReplayMod - aka ReplayCenter",
-    "version": "${version}",
-    "mcversion": "${mcversion}",
-    "url": "https://replaymod.com",
-    "updateUrl": "https://replaymod.com/download",
-    "authorList": [
-      "CrushedPixel",
-      "johni0702"
-    ],
-    "logoFile": "replaymod_logo.png",
-    "parent": "replaymod",
-    "screenshots": [],
-    "dependencies": ["required-after:replaymod-replay"]
-  },
-  {
     "modid": "replaymod-simplepathing",
     "name": "Replay Mod - Simple Pathing",
     "description": "Simple Pathing Module of the ReplayMod - aka the original pathing",

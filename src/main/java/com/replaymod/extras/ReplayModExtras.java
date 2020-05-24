@@ -4,7 +4,6 @@ import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.extras.advancedscreenshots.AdvancedScreenshots;
 import com.replaymod.extras.playeroverview.PlayerOverview;
-import com.replaymod.extras.urischeme.UriSchemeExtra;
 import com.replaymod.extras.youtube.YoutubeUpload;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +21,6 @@ public class ReplayModExtras implements Module {
     private static final List<Class<? extends Extra>> builtin = Arrays.asList(
             AdvancedScreenshots.class,
             PlayerOverview.class,
-            UriSchemeExtra.class,
             YoutubeUpload.class,
             FullBrightness.class,
             HotkeyButtons.class,

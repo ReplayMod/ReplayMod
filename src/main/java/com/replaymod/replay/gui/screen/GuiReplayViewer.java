@@ -200,7 +200,7 @@ public class GuiReplayViewer extends GuiScreen {
         public void run() {
             new GuiReplaySettings(toMinecraft(), mod.getCore().getSettingsRegistry()).display();
         }
-    }).setSize(73, 20).setI18nLabel("replaymod.gui.settings");
+    }).setSize(150, 20).setI18nLabel("replaymod.gui.settings");
 
     public final GuiButton cancelButton = new GuiButton().onClick(new Runnable() {
         @Override
@@ -211,13 +211,12 @@ public class GuiReplayViewer extends GuiScreen {
 
     public final List<GuiButton> replaySpecificButtons = new ArrayList<>();
     { replaySpecificButtons.addAll(Arrays.asList(loadButton, renameButton, deleteButton)); }
-    public final GuiPanel uploadButton = new GuiPanel();
     public final GuiPanel editorButton = new GuiPanel();
 
     public final GuiPanel upperButtonPanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
-            .addElements(null, loadButton, editorButton, uploadButton);
+            .addElements(null, loadButton, settingsButton);
     public final GuiPanel lowerButtonPanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
-            .addElements(null, renameButton, deleteButton, settingsButton, cancelButton);
+            .addElements(null, renameButton, deleteButton, editorButton, cancelButton);
     public final GuiPanel buttonPanel = new GuiPanel(this).setLayout(new VerticalLayout().setSpacing(5))
             .addElements(null, upperButtonPanel, lowerButtonPanel);
 

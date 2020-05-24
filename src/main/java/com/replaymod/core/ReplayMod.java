@@ -10,7 +10,6 @@ import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.ReplayModEditor;
 import com.replaymod.extras.ReplayModExtras;
-import com.replaymod.online.ReplayModOnline;
 import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.replay.ReplayModReplay;
@@ -198,7 +197,6 @@ public class ReplayMod implements
         modules.add(new ReplayModRecording(this));
         ReplayModReplay replayModule = new ReplayModReplay(this);
         modules.add(replayModule);
-        modules.add(new ReplayModOnline(this, replayModule));
         modules.add(new ReplayModRender(this));
         modules.add(new ReplayModSimplePathing(this));
         modules.add(new ReplayModEditor(this));

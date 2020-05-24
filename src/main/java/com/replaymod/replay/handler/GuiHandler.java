@@ -214,7 +214,7 @@ public class GuiHandler extends EventRegistrations {
                 BUTTON_REPLAY_VIEWER,
                 guiScreen.width / 2 - 100,
                 guiScreen.height / 4 + 10 + 4 * 24,
-                98,
+                200,
                 20,
                 I18n.translate("replaymod.gui.replayviewer"),
                 this::onButton
