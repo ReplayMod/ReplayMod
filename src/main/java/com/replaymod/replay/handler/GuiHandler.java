@@ -219,6 +219,13 @@ public class GuiHandler extends EventRegistrations {
                 I18n.translate("replaymod.gui.replayviewer"),
                 this::onButton
         );
+        //#if FABRIC<=0
+        //$$ if (guiScreen.getClass().getName().endsWith("custommainmenu.gui.GuiFakeMain")) {
+        //$$     // CustomMainMenu uses a different list in the event than in its Fake gui
+        //$$     addButton(event, button);
+        //$$     return;
+        //$$ }
+        //#endif
         addButton(guiScreen, button);
     }
 
