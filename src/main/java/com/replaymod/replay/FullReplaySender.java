@@ -342,6 +342,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
      * Terminate this replay sender.
      */
     public void terminateReplay() {
+        if (terminate) {
+            return;
+        }
         terminate = true;
         events.unregister();
         try {
