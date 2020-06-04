@@ -9,6 +9,7 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.util.math.MatrixStack;
 
 //#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.RenderHudCallback;
@@ -41,21 +42,26 @@ public class GuiRecordingOverlay extends EventRegistrations {
      * Render the recording icon and text in the top left corner of the screen.
      */
     //#if FABRIC>=1
-    { on(RenderHudCallback.EVENT, partialTicks -> renderRecordingIndicator()); }
-    private void renderRecordingIndicator() {
+    { on(RenderHudCallback.EVENT, (stack, partialTicks) -> renderRecordingIndicator(stack)); }
+    private void renderRecordingIndicator(MatrixStack stack) {
     //#else
     //$$ @SubscribeEvent
     //$$ public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
     //$$     if (getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
+    //$$     MatrixStack stack = new MatrixStack();
     //#endif
         if (guiControls.isStopped()) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {
             TextRenderer fontRenderer = mc.textRenderer;
             String text = guiControls.isPaused() ? I18n.translate("replaymod.gui.paused") : I18n.translate("replaymod.gui.recording");
-            fontRenderer.draw(text.toUpperCase(), 30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff);
+            fontRenderer.draw(
+                    //#if MC>=11600
+                    //$$ stack,
+                    //#endif
+                    text.toUpperCase(), 30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff);
             bindTexture(TEXTURE);
             enableAlphaTest();
-            GuiRenderer renderer = new MinecraftGuiRenderer(MCVer.newScaledResolution(mc));
+            GuiRenderer renderer = new MinecraftGuiRenderer(stack, MCVer.newScaledResolution(mc));
             renderer.drawTexturedRect(10, 10, 58, 20, 16, 16, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
         }
     }

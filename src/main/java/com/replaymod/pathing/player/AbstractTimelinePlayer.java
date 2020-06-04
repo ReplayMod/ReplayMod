@@ -124,10 +124,13 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
         float timeInTicks = replayTime / 50f;
         float previousTimeInTicks = lastTime / 50f;
         float passedTicks = timeInTicks - previousTimeInTicks;
-        RenderTickCounter timer = ((MinecraftAccessor) mc).getTimer();
-        timer.tickDelta += passedTicks;
-        timer.ticksThisFrame = (int) timer.tickDelta;
-        timer.tickDelta -= timer.ticksThisFrame;
+        RenderTickCounter renderTickCounter = ((MinecraftAccessor) mc).getTimer();
+        if (renderTickCounter instanceof ReplayTimer) {
+            ReplayTimer timer = (ReplayTimer) renderTickCounter;
+            timer.tickDelta += passedTicks;
+            timer.ticksThisFrame = (int) timer.tickDelta;
+            timer.tickDelta -= timer.ticksThisFrame;
+        }
 
         lastTime = replayTime;
 

@@ -19,15 +19,17 @@ import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.util.Location;
+import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
+import de.johni0702.minecraft.gui.container.GuiScreen;
+import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
+import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -35,6 +37,10 @@ import net.minecraft.network.ClientConnection;
 
 import java.io.IOException;
 import java.util.*;
+
+//#if MC>=11500
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//#endif
 
 //#if MC>=11500
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -180,7 +186,7 @@ public class ReplayHandler {
         //#else
         //$$ // We need to re-set the GUI screen because having one with `allowsUserInput = true` active during world
         //$$ // load (i.e. before player is set) will crash MC...
-        //$$ mc.displayGuiScreen(new GuiScreen() {});
+        //$$ mc.displayGuiScreen(new net.minecraft.client.gui.GuiScreen() {});
         //$$ mc.loadWorld(null);
         //#endif
 
@@ -592,22 +598,10 @@ public class ReplayHandler {
                 replaySender.jumpToTime(targetTime);
             } else { // We either have to restart the replay or send a significant amount of packets
                 // Render our please-wait-screen
-                Screen guiScreen = new Screen(
-                        //#if MC>=11400
-                        null
-                        //#endif
-                ) {
-                    @Override
-                    //#if MC>=11400
-                    public void render(int mouseX, int mouseY, float partialTicks) {
-                    //#else
-                    //$$ public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-                    //#endif
-                        renderDirtBackground(0);
-                        drawCenteredString(this.minecraft.textRenderer, I18n.translate("replaymod.gui.pleasewait"),
-                                width / 2, height / 2, 0xffffffff);
-                    }
-                };
+                GuiScreen guiScreen = new GuiScreen();
+                guiScreen.setBackground(AbstractGuiScreen.Background.DIRT);
+                guiScreen.addElements(new HorizontalLayout.Data(0.5),
+                        new GuiLabel().setI18nText("replaymod.gui.pleasewait"));
 
                 // Make sure that the replaysender changes into sync mode
                 replaySender.setSyncModeAndWait();
@@ -648,12 +642,17 @@ public class ReplayHandler {
                 //$$ ScaledResolution
                 //#endif
                         resolution = newScaledResolution(mc);
-                guiScreen.init(mc, resolution.getScaledWidth(), resolution.getScaledHeight());
-                //#if MC>=11400
-                guiScreen.render(0, 0, 0);
+                guiScreen.toMinecraft().init(mc, resolution.getScaledWidth(), resolution.getScaledHeight());
+                //#if MC>=11600
+                //$$ guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
                 //#else
-                //$$ guiScreen.drawScreen(0, 0, 0);
+                //#if MC>=11400
+                guiScreen.toMinecraft().render(0, 0, 0);
+                //#else
+                //$$ guiScreen.toMinecraft().drawScreen(0, 0, 0);
                 //#endif
+                //#endif
+                guiScreen.toMinecraft().removed();
 
                 mc.getFramebuffer().endWrite();
                 popMatrix();

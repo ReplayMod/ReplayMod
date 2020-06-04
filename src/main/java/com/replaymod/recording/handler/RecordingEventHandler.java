@@ -207,8 +207,12 @@ public class RecordingEventHandler extends EventRegistrations {
                         //$$ (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
                         //#endif
                         newYaw, newPitch
+                        //#if MC>=11600
+                        //$$ , player.isOnGround()
+                        //#else
                         //#if MC>=10800
                         , player.onGround
+                        //#endif
                         //#endif
                 );
             }

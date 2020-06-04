@@ -82,10 +82,14 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                         // There doesn't seem to be an KeyBindingUpdate event, so we'll just update it every time
                         String keyName = "???";
                         try {
+                            //#if MC>=11600
+                            //$$ keyName = keyBinding.getBoundKeyLocalizedText().asString();
+                            //#else
                             //#if MC>=11400
                             keyName = keyBinding.getLocalizedName();
                             //#else
                             //$$ keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
+                            //#endif
                             //#endif
                         } catch (ArrayIndexOutOfBoundsException e) {
                             // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55

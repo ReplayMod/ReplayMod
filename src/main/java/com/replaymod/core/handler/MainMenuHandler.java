@@ -5,12 +5,15 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.realms.RealmsScreenProxy;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
 import static com.replaymod.core.versions.MCVer.*;
+
+//#if MC>=11400 && MC<11600
+import net.minecraft.realms.RealmsScreenProxy;
+//#endif
 
 //#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
@@ -68,7 +71,7 @@ public class MainMenuHandler extends EventRegistrations {
                 }
                 //#endif
             }
-            //#if MC>=11400
+            //#if MC>=11400 && MC<11600
             GuiMainMenuAccessor guiA = (GuiMainMenuAccessor) gui;
             if (realmsOffset != 0 && guiA.getRealmsNotification() instanceof RealmsScreenProxy) {
                 guiA.setRealmsNotification(new RealmsNotificationProxy((RealmsScreenProxy) guiA.getRealmsNotification(), realmsOffset));
@@ -77,7 +80,7 @@ public class MainMenuHandler extends EventRegistrations {
         }
     }
 
-    //#if MC>=11400
+    //#if MC>=11400 && MC<11600
     private static class RealmsNotificationProxy extends Screen {
         private final RealmsScreenProxy proxy;
         private final int offset;

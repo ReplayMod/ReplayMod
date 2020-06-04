@@ -45,11 +45,20 @@ public class InputReplayTimer extends WrappedTimer {
     }
 
     @Override
-    public void beginRenderTick(
+    public
+    //#if MC>=11600
+    //$$ int
+    //#else
+    void
+    //#endif
+    beginRenderTick(
             //#if MC>=11400
             long sysClock
             //#endif
     ) {
+        //#if MC>=11600
+        //$$ int ticksThisFrame =
+        //#endif
         super.beginRenderTick(
                 //#if MC>=11400
                 sysClock
@@ -114,6 +123,9 @@ public class InputReplayTimer extends WrappedTimer {
             //$$ }
             //#endif
         }
+        //#if MC>=11600
+        //$$ return ticksThisFrame;
+        //#endif
     }
 
     public static void handleScroll(int wheel) {

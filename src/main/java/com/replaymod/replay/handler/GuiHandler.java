@@ -10,6 +10,11 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.resource.language.I18n;
 
+//#if MC>=11600
+//$$ import net.minecraft.text.Text;
+//$$ import net.minecraft.text.TranslatableText;
+//#endif
+
 //#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 //#else
@@ -56,6 +61,13 @@ public class GuiHandler extends EventRegistrations {
             // Pause replay when menu is opened
             mod.getReplayHandler().getReplaySender().setReplaySpeed(0);
 
+            //#if MC>=11600
+            //$$ final TranslatableText BUTTON_OPTIONS = new TranslatableText("menu.options");
+            //$$ final TranslatableText BUTTON_EXIT_SERVER = new TranslatableText("menu.disconnect");
+            //$$ final TranslatableText BUTTON_ADVANCEMENTS = new TranslatableText("gui.advancements");
+            //$$ final TranslatableText BUTTON_STATS = new TranslatableText("gui.stats");
+            //$$ final TranslatableText BUTTON_OPEN_TO_LAN = new TranslatableText("menu.shareToLan");
+            //#else
             //#if MC>=11400
             final String BUTTON_OPTIONS = I18n.translate("menu.options");
             final String BUTTON_EXIT_SERVER = I18n.translate("menu.disconnect");
@@ -71,6 +83,7 @@ public class GuiHandler extends EventRegistrations {
             //$$ final int BUTTON_STATS = 6;
             //$$ final int BUTTON_OPEN_TO_LAN = 7;
             //#endif
+            //#endif
 
 
             //#if MC<11400
@@ -85,7 +98,11 @@ public class GuiHandler extends EventRegistrations {
             //#endif
                 boolean remove = false;
                 //#if MC>=11400
+                //#if MC>=11600
+                //$$ Text id = b.getMessage();
+                //#else
                 String id = b.getMessage();
+                //#endif
                 if (id == null) {
                     // likely a button of some third-part mod
                     // e.g. https://github.com/Pokechu22/WorldDownloader/blob/b1b279f948beec2d7dac7524eea8f584a866d8eb/share_14/src/main/java/wdl/WDLHooks.java#L491
@@ -104,7 +121,7 @@ public class GuiHandler extends EventRegistrations {
                             b.y,
                             width(b),
                             height(b),
-                            I18n.translate("replaymod.gui.exit"),
+                            "replaymod.gui.exit",
                             this::onButton
                     ));
                 } else if (id.equals(BUTTON_ADVANCEMENTS)) {
@@ -216,7 +233,7 @@ public class GuiHandler extends EventRegistrations {
                 guiScreen.height / 4 + 10 + 4 * 24,
                 200,
                 20,
-                I18n.translate("replaymod.gui.replayviewer"),
+                "replaymod.gui.replayviewer",
                 this::onButton
         );
         //#if FABRIC<=0
@@ -283,7 +300,11 @@ public class GuiHandler extends EventRegistrations {
                     y,
                     width,
                     height,
-                    buttonText
+                    //#if MC>=11600
+                    //$$ new TranslatableText(buttonText)
+                    //#else
+                    I18n.translate(buttonText)
+                    //#endif
                     //#if MC>=11400
                     , self -> onClick.accept((InjectedButton) self)
                     //#endif

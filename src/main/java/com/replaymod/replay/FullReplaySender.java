@@ -591,13 +591,26 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     packet.getSeed(),
                     //#endif
                     false,
+                    //#if MC>=11600
+                    //$$ packet.method_29443(),
+                    //$$ (net.minecraft.world.dimension.DimensionTracker.Modifiable) packet.getDimension(),
+                    //$$ packet.method_29444(),
+                    //$$ packet.getDimensionId(),
+                    //#else
                     packet.getDimension(),
+                    //#endif
                     0, // max players (has no getter -> never actually used)
+                    //#if MC<11600
                     packet.getGeneratorType(),
+                    //#endif
                     packet.getChunkLoadDistance(),
                     packet.hasReducedDebugInfo()
                     //#if MC>=11500
                     , packet.showsDeathScreen()
+                    //#endif
+                    //#if MC>=11600
+                    //$$ , packet.isDebugWorld()
+                    //$$ , packet.isFlatWorld()
                     //#endif
             );
             //#else
@@ -638,12 +651,22 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             PlayerRespawnS2CPacket respawn = (PlayerRespawnS2CPacket) p;
             //#if MC>=11400
             p = new PlayerRespawnS2CPacket(
+                    //#if MC>=11600
+                    //$$ respawn.method_29445(),
+                    //#endif
                     respawn.getDimension(),
                     //#if MC>=11500
                     respawn.getSha256Seed(),
                     //#endif
+                    //#if MC>=11600
+                    //$$ GameMode.SPECTATOR,
+                    //$$ respawn.isDebugWorld(),
+                    //$$ respawn.isFlatWorld(),
+                    //$$ respawn.isWritingErrorSkippable()
+                    //#else
                     respawn.getGeneratorType(),
                     GameMode.SPECTATOR
+                    //#endif
             );
             //#else
             //#if MC>=10809

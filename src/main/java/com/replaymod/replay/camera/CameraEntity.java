@@ -153,6 +153,10 @@ public class CameraEntity
                 //#if MC>=11200
                 , recipeBook
                 //#endif
+                //#if MC>=11600
+                //$$ , false
+                //$$ , false
+                //#endif
         );
         eventHandler.register();
         if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {

@@ -32,6 +32,10 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
 
+//#if MC>=11600
+//$$ import net.minecraft.client.util.math.MatrixStack;
+//#endif
+
 //#if MC>=11500
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.util.Window;
@@ -160,7 +164,9 @@ public class VideoRenderer implements RenderInfo {
                 //$$ timer.timerSpeed = 1;
                 //#endif
                 while (replayTime < videoStart) {
+                    //#if MC<11600
                     timer.ticksThisFrame = 1;
+                    //#endif
                     replayTime += 50;
                     replayHandler.getReplaySender().sendPacketsTill(replayTime);
                     tick();
@@ -218,6 +224,11 @@ public class VideoRenderer implements RenderInfo {
 
         // Updating the timer will cause the timeline player to update the game state
         RenderTickCounter timer = ((MinecraftAccessor) mc).getTimer();
+        //#if MC>=11600
+        //$$ int elapsedTicks =
+        //#else
+        int elapsedTicks = timer.ticksThisFrame;
+        //#endif
         timer.beginRenderTick(
                 //#if MC>=11400
                 MCVer.milliTime()
@@ -232,7 +243,6 @@ public class VideoRenderer implements RenderInfo {
         //$$ }
         //#endif
 
-        int elapsedTicks = timer.ticksThisFrame;
         while (elapsedTicks-- > 0) {
             tick();
         }
@@ -501,7 +511,11 @@ public class VideoRenderer implements RenderInfo {
             int mouseY = (int) mc.mouse.getY() * getWindow(mc).getScaledHeight() / displayHeight;
 
             gui.toMinecraft().tick();
-            gui.toMinecraft().render(mouseX, mouseY, 0);
+            gui.toMinecraft().render(
+                    //#if MC>=11600
+                    //$$ new MatrixStack(),
+                    //#endif
+                    mouseX, mouseY, 0);
             //#else
             //$$ int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
             //$$ int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;

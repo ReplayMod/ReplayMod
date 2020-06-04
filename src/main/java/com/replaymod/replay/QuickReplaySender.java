@@ -24,7 +24,6 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.util.PacketByteBuf;
-import net.minecraft.world.level.LevelGeneratorType;
 
 //#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
@@ -40,6 +39,11 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.function.Consumer;
 
+//#if MC>=11600
+//$$ import net.minecraft.world.World;
+//#else
+import net.minecraft.world.level.LevelGeneratorType;
+//#endif
 //#if MC>=11400
 import net.minecraft.world.dimension.DimensionType;
 //#else
@@ -190,6 +194,15 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     public void restart() {
         replay.reset();
         ctx.fireChannelRead(new PlayerRespawnS2CPacket(
+                //#if MC>=11600
+                //$$ DimensionType.OVERWORLD_REGISTRY_KEY,
+                //$$ World.field_25179,
+                //$$ 0,
+                //$$ GameMode.SPECTATOR,
+                //$$ false,
+                //$$ false,
+                //$$ false
+                //#else
                 //#if MC>=11400
                 DimensionType.OVERWORLD,
                 //#else
@@ -203,6 +216,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 //#endif
                 LevelGeneratorType.DEFAULT,
                 GameMode.SPECTATOR
+                //#endif
         ));
         ctx.fireChannelRead(new PlayerPositionLookS2CPacket(0, 0, 0, 0, 0, Collections.emptySet(), 0));
     }

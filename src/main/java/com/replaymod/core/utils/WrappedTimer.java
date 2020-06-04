@@ -19,25 +19,39 @@ public class WrappedTimer extends RenderTickCounter {
     }
 
     @Override
-    public void beginRenderTick(
+    public
+    //#if MC>=11600
+    //$$ int
+    //#else
+    void
+    //#endif
+    beginRenderTick(
             //#if MC>=11400
             long sysClock
             //#endif
     ) {
         copy(this, wrapped);
-        wrapped.beginRenderTick(
-                //#if MC>=11400
-                sysClock
-                //#endif
-        );
-        copy(wrapped, this);
+        try {
+            //#if MC>=11600
+            //$$ return
+            //#endif
+            wrapped.beginRenderTick(
+                    //#if MC>=11400
+                    sysClock
+                    //#endif
+            );
+        } finally {
+            copy(wrapped, this);
+        }
     }
 
     protected void copy(RenderTickCounter from, RenderTickCounter to) {
         TimerAccessor fromA = (TimerAccessor) from;
         TimerAccessor toA = (TimerAccessor) to;
 
+        //#if MC<11600
         to.ticksThisFrame = from.ticksThisFrame;
+        //#endif
         to.tickDelta = from.tickDelta;
         toA.setLastSyncSysClock(fromA.getLastSyncSysClock());
         to.lastFrameDuration = from.lastFrameDuration;

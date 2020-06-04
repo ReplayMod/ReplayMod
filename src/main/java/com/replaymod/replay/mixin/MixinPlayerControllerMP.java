@@ -60,6 +60,10 @@ public abstract class MixinPlayerControllerMP {
             //#endif
             StatHandler statisticsManager,
             ClientRecipeBook recipeBookClient,
+            //#if MC>=11600
+            //$$ boolean lastIsHoldingSneakKey,
+            //$$ boolean lastSprinting,
+            //#endif
             CallbackInfoReturnable<ClientPlayerEntity> ci
     ) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {

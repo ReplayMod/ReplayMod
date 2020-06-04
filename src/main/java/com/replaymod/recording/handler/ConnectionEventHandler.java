@@ -18,12 +18,16 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
+//#if MC>=11600
+//$$ import net.minecraft.world.World;
+//#else
 //#if MC>=11400
 import net.minecraft.world.dimension.DimensionType;
 //#endif
 
 //#if MC>=10800
 import net.minecraft.world.level.LevelGeneratorType;
+//#endif
 //#endif
 
 import java.io.File;
@@ -60,10 +64,14 @@ public class ConnectionEventHandler {
             boolean local = networkManager.isLocal();
             if (local) {
                 //#if MC>=10800
+                //#if MC>=11600
+                //$$ if (mc.getServer().getWorld(World.field_25179).isDebugWorld()) {
+                //#else
                 //#if MC>=11400
                 if (mc.getServer().getWorld(DimensionType.OVERWORLD).getGeneratorType() == LevelGeneratorType.DEBUG_ALL_BLOCK_STATES) {
                 //#else
                 //$$ if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
+                //#endif
                 //#endif
                     logger.info("Debug World recording is not supported.");
                     return;
@@ -82,7 +90,11 @@ public class ConnectionEventHandler {
 
             String worldName;
             if (local) {
+                //#if MC>=11600
+                //$$ worldName = mc.getServer().method_27728().getLevelName();
+                //#else
                 worldName = mc.getServer().getLevelName();
+                //#endif
             } else if (mc.getCurrentServerEntry() != null) {
                 worldName = mc.getCurrentServerEntry().address;
             //#if MC>=11100

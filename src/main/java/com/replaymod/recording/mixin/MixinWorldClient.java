@@ -10,16 +10,25 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.level.LevelProperties;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=11600
+//$$ import net.minecraft.util.registry.RegistryKey;
+//$$ import net.minecraft.world.MutableWorldProperties;
+//$$ import java.util.function.Supplier;
+//#else
+import net.minecraft.world.level.LevelProperties;
+//#endif
+
 //#if MC>=11400
 import net.minecraft.world.chunk.ChunkManager;
+//#if MC<11600
 import net.minecraft.world.dimension.Dimension;
+//#endif
 import net.minecraft.world.dimension.DimensionType;
 import java.util.function.BiFunction;
 //#else
@@ -38,6 +47,11 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     @Shadow
     private MinecraftClient client;
 
+    //#if MC>=11600
+    //$$ protected MixinWorldClient(MutableWorldProperties mutableWorldProperties, RegistryKey<World> registryKey, RegistryKey<DimensionType> registryKey2, DimensionType dimensionType, Supplier<Profiler> profiler, boolean bl, boolean bl2, long l) {
+    //$$     super(mutableWorldProperties, registryKey, registryKey2, dimensionType, profiler, bl, bl2, l);
+    //$$ }
+    //#else
     //#if MC>=11400
     protected MixinWorldClient(LevelProperties levelProperties_1, DimensionType dimensionType_1, BiFunction<World, Dimension, ChunkManager> biFunction_1, Profiler profiler_1, boolean boolean_1) {
         super(levelProperties_1, dimensionType_1, biFunction_1, profiler_1, boolean_1);
@@ -60,6 +74,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
                 //#endif
     //$$             info, providerIn, profilerIn, client);
     //$$ }
+    //#endif
     //#endif
 
     private RecordingEventHandler replayModRecording_getRecordingEventHandler() {

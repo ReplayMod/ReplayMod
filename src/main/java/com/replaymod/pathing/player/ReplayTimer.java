@@ -14,6 +14,10 @@ public class ReplayTimer extends WrappedTimer {
     //$$ private final Timer state = new Timer(0);
     //#endif
 
+    //#if MC>=11600
+    //$$ public int ticksThisFrame;
+    //#endif
+
     public ReplayTimer(RenderTickCounter wrapped) {
         super(wrapped);
     }
@@ -21,7 +25,13 @@ public class ReplayTimer extends WrappedTimer {
     @Override
     // This should be handled by Remap but it isn't (was handled before a9724e3).
     //#if MC>=11400
-    public void beginRenderTick(
+    public
+    //#if MC>=11600
+    //$$ int
+    //#else
+    void
+    //#endif
+    beginRenderTick(
     //#else
     //$$ public void updateTimer(
     //#endif
@@ -30,13 +40,22 @@ public class ReplayTimer extends WrappedTimer {
             //#endif
     ) {
         copy(this, state); // Save our current state
-        wrapped.beginRenderTick(
-                //#if MC>=11400
-                sysClock
-                //#endif
-        ); // Update current state
-        copy(state, this); // Restore our old state
-        UpdatedCallback.EVENT.invoker().onUpdate();
+        try {
+            //#if MC>=11600
+            //$$ ticksThisFrame =
+            //#endif
+            wrapped.beginRenderTick(
+                    //#if MC>=11400
+                    sysClock
+                    //#endif
+            ); // Update current state
+        } finally {
+            copy(state, this); // Restore our old state
+            UpdatedCallback.EVENT.invoker().onUpdate();
+        }
+        //#if MC>=11600
+        //$$ return ticksThisFrame;
+        //#endif
     }
 
     public RenderTickCounter getWrapped() {

@@ -32,7 +32,7 @@ buildscript {
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.6-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.2.7-SNAPSHOT'
         } else if (mcVersion >= 11400) {
             classpath('net.minecraftforge.gradle:ForgeGradle:3.+'){
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
@@ -193,7 +193,12 @@ repositories {
         name = "fabric"
         url = "https://maven.fabricmc.net/"
     }
-    maven { url 'https://jitpack.io' }
+    maven {
+        url 'https://jitpack.io'
+        content {
+            includeGroupByRegex 'com\\.github\\..*'
+        }
+    }
 }
 
 configurations {
@@ -226,18 +231,22 @@ dependencies {
         minecraft 'com.mojang:minecraft:' + [
                 11404: '1.14.4',
                 11502: '1.15.2',
+                11600: '20w22a',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
                 11502: '1.15.2+build.14',
+                11600: '20w22a+build.11:v2',
         ][mcVersion]
         modCompile 'net.fabricmc:fabric-loader:' + [
                 11404: '0.7.8+build.189',
                 11502: '0.7.8+build.189',
+                11600: '0.8.6+build.200',
         ][mcVersion]
         modCompile 'net.fabricmc.fabric-api:fabric-api:' + [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
+                11600: '0.11.2+build.351-1.16',
         ][mcVersion]
     }
 
@@ -288,7 +297,11 @@ dependencies {
     }
 
     if (FABRIC) {
-        modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
+        if (mcVersion >= 11600) {
+            modCompile 'io.github.prospector:modmenu:1.11.8+build.13'
+        } else {
+            modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
+        }
     }
 
     annotationProcessor 'org.projectlombok:lombok:1.18.12'

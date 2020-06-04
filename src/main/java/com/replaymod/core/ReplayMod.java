@@ -261,6 +261,9 @@ public class ReplayMod implements
                 }
             }
         };
+        //#if MC>=11600
+        //$$ // TODO
+        //#else
         //#if MC>=11400
         mc.getResourcePackManager().registerProvider(new ResourcePackProvider() {
             @Override
@@ -272,6 +275,7 @@ public class ReplayMod implements
         //$$ @SuppressWarnings("unchecked")
         //$$ List<IResourcePack> defaultResourcePacks = ((MinecraftAccessor) mc).getDefaultResourcePacks();
         //$$ defaultResourcePacks.add(jGuiResourcePack);
+        //#endif
         //#endif
         //#if MC<=10710
         //$$ FolderResourcePack mainResourcePack = new FolderResourcePack(new File("../src/main/resources")) {
@@ -649,13 +653,19 @@ public class ReplayMod implements
         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
             //#if MC>=10904
+            //#if MC>=11600
+            //$$ Style coloredDarkGray = Style.EMPTY.withColor(Formatting.DARK_GRAY);
+            //$$ Style coloredGold = Style.EMPTY.withColor(Formatting.GOLD);
+            //$$ Style alert = Style.EMPTY.withColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
+            //#else
             Style coloredDarkGray = new Style().setColor(Formatting.DARK_GRAY);
             Style coloredGold = new Style().setColor(Formatting.GOLD);
+            Style alert = new Style().setColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
+            //#endif
             Text text = new LiteralText("[").setStyle(coloredDarkGray)
                     .append(new TranslatableText("replaymod.title").setStyle(coloredGold))
                     .append(new LiteralText("] "))
-                    .append(new TranslatableText(message, args).setStyle(new Style()
-                            .setColor(warning ? Formatting.RED : Formatting.DARK_GREEN)));
+                    .append(new TranslatableText(message, args).setStyle(alert));
             //#else
             //$$ ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
             //$$ ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);
