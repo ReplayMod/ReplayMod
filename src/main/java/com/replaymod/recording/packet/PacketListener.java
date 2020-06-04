@@ -1,5 +1,7 @@
 package com.replaymod.recording.packet;
 
+import com.github.steveice10.netty.buffer.PooledByteBufAllocator;
+import com.github.steveice10.packetlib.tcp.io.ByteBufNetOutput;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
@@ -74,6 +76,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.replaymod.core.versions.MCVer.*;
+import static com.replaymod.replaystudio.util.Utils.writeInt;
 
 public class PacketListener extends ChannelInboundHandlerAdapter {
 
@@ -194,7 +197,26 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             PacketData packetData = getPacketData(timestamp, packet);
             saveService.submit(() -> {
                 try {
-                    packetOutputStream.write(packetData);
+                    if (ReplayMod.isMinimalMode()) {
+                        // Minimal mode, ReplayStudio might not know our packet ids, so we cannot use it
+                        com.github.steveice10.netty.buffer.ByteBuf packetIdBuf = PooledByteBufAllocator.DEFAULT.buffer();
+                        com.github.steveice10.netty.buffer.ByteBuf packetBuf = packetData.getPacket().getBuf();
+                        try {
+                            new ByteBufNetOutput(packetIdBuf).writeVarInt(packetData.getPacket().getId());
+
+                            int packetIdLen = packetIdBuf.readableBytes();
+                            int packetBufLen = packetBuf.readableBytes();
+                            writeInt(packetOutputStream, (int) packetData.getTime());
+                            writeInt(packetOutputStream, packetIdLen + packetBufLen);
+                            packetIdBuf.readBytes(packetOutputStream, packetIdLen);
+                            packetBuf.getBytes(packetBuf.readerIndex(), packetOutputStream, packetBufLen);
+                        } finally {
+                            packetIdBuf.release();
+                            packetBuf.release();
+                        }
+                    } else {
+                        packetOutputStream.write(packetData);
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
