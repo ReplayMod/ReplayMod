@@ -599,7 +599,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     false,
                     //#if MC>=11600
                     //$$ packet.method_29443(),
-                    //$$ (net.minecraft.world.dimension.DimensionTracker.Modifiable) packet.getDimension(),
+                    //$$ (net.minecraft.util.registry.RegistryTracker.Modifiable) packet.getDimension(),
                     //$$ packet.method_29444(),
                     //$$ packet.getDimensionId(),
                     //#else
@@ -752,8 +752,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         if(p instanceof GameStateChangeS2CPacket) {
             GameStateChangeS2CPacket pg = (GameStateChangeS2CPacket)p;
-            int reason = pg.getReason();
-
             // only allow the following packets:
             // 1 - End raining
             // 2 - Begin raining
@@ -761,7 +759,19 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // The following values are to control sky color (e.g. if thunderstorm)
             // 7 - Fade value
             // 8 - Fade time
-            if(!(reason == 1 || reason == 2 || reason == 7 || reason == 8)) {
+            if (!Arrays.asList(
+                    //#if MC>=11600
+                    //$$ GameStateChangeS2CPacket.field_25646,
+                    //$$ GameStateChangeS2CPacket.field_25647,
+                    //$$ GameStateChangeS2CPacket.field_25652,
+                    //$$ GameStateChangeS2CPacket.field_25653
+                    //#else
+                    1,
+                    2,
+                    7,
+                    8
+                    //#endif
+            ).contains(pg.getReason())) {
                 return null;
             }
         }

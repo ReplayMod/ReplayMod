@@ -23,6 +23,10 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+//#if MC>=11600
+//$$ import net.minecraft.resource.ResourcePackSource;
+//#endif
+
 //#if MC>=11500
 import net.minecraft.client.model.ModelPart.Cuboid;
 import java.util.ArrayList;
@@ -437,7 +441,7 @@ public class MCVer {
         return getMinecraft().getResourcePackDownloader().loadServerPack(
                 file
                 //#if MC>=11600
-                //$$ , net.minecraft.class_5352.field_25350
+                //$$ , ResourcePackSource.PACK_SOURCE_SERVER
                 //#endif
         );
         //#else

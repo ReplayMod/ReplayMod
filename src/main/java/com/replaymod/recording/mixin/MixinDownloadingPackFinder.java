@@ -9,6 +9,10 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.io.File;
 
+//#if MC>=11600
+//$$ import net.minecraft.resource.ResourcePackSource;
+//#endif
+
 //#if MC>=10800
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -33,7 +37,7 @@ public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder
     private void recordDownloadedPack(
             File file,
             //#if MC>=11600
-            //$$ net.minecraft.class_5352 arg,
+            //$$ ResourcePackSource arg,
             //#endif
             CallbackInfoReturnable ci
     ) {
