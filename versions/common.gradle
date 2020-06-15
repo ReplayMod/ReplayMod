@@ -55,6 +55,7 @@ def FABRIC = fabric
 def jGuiVersion = project.name
 if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
 if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
+def jGui = project.evaluationDependsOn(":jGui:$jGuiVersion")
 
 apply plugin: 'com.github.johnrengelman.shadow'
 
@@ -208,14 +209,6 @@ configurations {
     // Include dep in fat jar with relocation and minimization
     shadow
     compile.extendsFrom shadow
-    // Like shadow but run the dep through reobfJar (jGui needs this because it references MC)
-    shadowReobf
-    compile.extendsFrom shadowReobf
-    // Combination of shadow and shadowReobf
-    relocate {
-        extendsFrom shadow
-        extendsFrom shadowReobf
-    }
 }
 
 def shadeExclusions = {
@@ -287,13 +280,12 @@ dependencies {
 
     shadow "com.github.ReplayMod:ReplayStudio:e6b1b22", shadeExclusions
 
-    project.evaluationDependsOn(":jGui:$jGuiVersion")
-    shadowReobf(project(":jGui:$jGuiVersion")){
+    compileOnly(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
-    project(":jGui:$jGuiVersion").afterEvaluate {
-        shadow files(project(":jGui:$jGuiVersion").tasks.preshadowJar.archivePath) // include pre-shadowed lwjgl_util
+    jGui.afterEvaluate {
+        shadow files(jGui.tasks.preshadowJar.archivePath) // include pre-shadowed lwjgl_util
     }
 
     if (FABRIC) {
@@ -343,10 +335,10 @@ if (FABRIC) {
 File configureRelocationOutput = new File(project.buildDir, 'configureRelocation')
 task configureRelocation() {
     dependsOn tasks.jar
-    dependsOn configurations.relocate
+    dependsOn configurations.shadow
     outputs.file(configureRelocationOutput)
     doLast {
-        def pkgs = files(configurations.relocate).filter { it.exists() }.collect {
+        def pkgs = files(configurations.shadow).filter { it.exists() }.collect {
             def tree = it.isDirectory() ? fileTree(it) : zipTree(it)
             def pkgs = [].toSet()
             tree.visit { file ->
@@ -396,7 +388,10 @@ task configureRelocation() {
 
 tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
 task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    from({ zipTree((FABRIC ? tasks.remapJar : tasks.jar).archiveFile.get()) }) {
+    from { zipTree((FABRIC ? tasks.remapJar : tasks.jar).archiveFile.get()) }
+    dependsOn { FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
+
+    from({ zipTree((FABRIC ? jGui.tasks.remapJar : jGui.tasks.jar).archiveFile.get()) }) {
         filesMatching('mixins.jgui.json') {
             filter { it.replace('de.johni0702', 'com.replaymod.lib.de.johni0702') }
         }
@@ -404,7 +399,9 @@ task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar)
             filter { it.replace('de/johni0702', 'com/replaymod/lib/de/johni0702') }
         }
     }
-    dependsOn { FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
+    dependsOn { FABRIC ? jGui.tasks.remapJar : (mcVersion >= 10800 ? jGui.tasks.reobfJar : jGui.tasks.reobf) }
+    relocate 'de.johni0702', 'com.replaymod.lib.de.johni0702'
+
     manifest.inheritFrom tasks.jar.manifest
 
     from project.configurations.shade
@@ -435,8 +432,6 @@ tasks.assemble.dependsOn tasks.shadowJar
 
 jar {
     classifier = 'raw'
-
-    from { files(configurations.shadowReobf).collect { it.isDirectory() ? it : zipTree(it) } }
 
     if (!FABRIC) {
         from files(project.mixinRefMap.canonicalPath)
