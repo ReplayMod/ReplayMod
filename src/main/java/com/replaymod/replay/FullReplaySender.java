@@ -31,7 +31,6 @@ import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntitySpawnGlobalS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ExperienceOrbSpawnS2CPacket;
@@ -63,6 +62,11 @@ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //#else
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //$$ import net.minecraftforge.event.TickEvent;
+//#endif
+
+//#if MC>=11600
+//#else
+import net.minecraft.network.packet.s2c.play.EntitySpawnGlobalS2CPacket;
 //#endif
 
 //#if MC>=11400
@@ -417,7 +421,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         if (p instanceof PlayerSpawnS2CPacket
                                 || p instanceof EntitySpawnS2CPacket
                                 || p instanceof MobSpawnS2CPacket
+                                //#if MC<11600
                                 || p instanceof EntitySpawnGlobalS2CPacket
+                                //#endif
                                 || p instanceof PaintingSpawnS2CPacket
                                 || p instanceof ExperienceOrbSpawnS2CPacket
                                 || p instanceof EntitiesDestroyS2CPacket) {

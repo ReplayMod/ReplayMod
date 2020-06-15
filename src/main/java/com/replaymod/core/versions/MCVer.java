@@ -434,7 +434,12 @@ public class MCVer {
     //#endif
     setServerResourcePack(File file) {
         //#if MC>=11400
-        return getMinecraft().getResourcePackDownloader().loadServerPack(file);
+        return getMinecraft().getResourcePackDownloader().loadServerPack(
+                file
+                //#if MC>=11600
+                //$$ , net.minecraft.class_5352.field_25350
+                //#endif
+        );
         //#else
         //$$ ResourcePackRepository repo = getMinecraft().getResourcePackRepository();
         //#if MC>=10800

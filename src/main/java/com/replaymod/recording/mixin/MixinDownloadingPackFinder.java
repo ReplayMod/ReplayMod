@@ -30,7 +30,13 @@ public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder
 
     //#if MC>=10800
     @Inject(method = "loadServerPack", at = @At("HEAD"))
-    private void recordDownloadedPack(File file, CallbackInfoReturnable ci) {
+    private void recordDownloadedPack(
+            File file,
+            //#if MC>=11600
+            //$$ net.minecraft.class_5352 arg,
+            //#endif
+            CallbackInfoReturnable ci
+    ) {
         if (requestCallback != null) {
             requestCallback.consume(file);
             requestCallback = null;

@@ -224,22 +224,22 @@ dependencies {
         minecraft 'com.mojang:minecraft:' + [
                 11404: '1.14.4',
                 11502: '1.15.2',
-                11600: '20w22a',
+                11600: '1.16-pre1',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
                 11502: '1.15.2+build.14',
-                11600: '20w22a+build.11:v2',
+                11600: '1.16-pre1+build.1:v2',
         ][mcVersion]
         modCompile 'net.fabricmc:fabric-loader:' + [
                 11404: '0.7.8+build.189',
                 11502: '0.7.8+build.189',
-                11600: '0.8.6+build.200',
+                11600: '0.8.7+build.201',
         ][mcVersion]
         modCompile 'net.fabricmc.fabric-api:fabric-api:' + [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
-                11600: '0.11.2+build.351-1.16',
+                11600: '0.11.4+build.353-1.16',
         ][mcVersion]
     }
 
@@ -278,7 +278,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:e6b1b22", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:d46a0c2", shadeExclusions
 
     compileOnly(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those

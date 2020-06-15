@@ -196,7 +196,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         ctx.fireChannelRead(new PlayerRespawnS2CPacket(
                 //#if MC>=11600
                 //$$ DimensionType.OVERWORLD_REGISTRY_KEY,
-                //$$ World.field_25179,
+                //$$ World.OVERWORLD,
                 //$$ 0,
                 //$$ GameMode.SPECTATOR,
                 //$$ false,

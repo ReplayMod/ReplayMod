@@ -65,7 +65,7 @@ public class ConnectionEventHandler {
             if (local) {
                 //#if MC>=10800
                 //#if MC>=11600
-                //$$ if (mc.getServer().getWorld(World.field_25179).isDebugWorld()) {
+                //$$ if (mc.getServer().getWorld(World.OVERWORLD).isDebugWorld()) {
                 //#else
                 //#if MC>=11400
                 if (mc.getServer().getWorld(DimensionType.OVERWORLD).getGeneratorType() == LevelGeneratorType.DEBUG_ALL_BLOCK_STATES) {
@@ -91,7 +91,7 @@ public class ConnectionEventHandler {
             String worldName;
             if (local) {
                 //#if MC>=11600
-                //$$ worldName = mc.getServer().method_27728().getLevelName();
+                //$$ worldName = mc.getServer().getSaveProperties().getLevelName();
                 //#else
                 worldName = mc.getServer().getLevelName();
                 //#endif
