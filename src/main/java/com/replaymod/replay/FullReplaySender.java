@@ -593,6 +593,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             p = new GameJoinS2CPacket(
                     entId,
                     GameMode.SPECTATOR,
+                    //#if MC>=11600
+                    //$$ GameMode.SPECTATOR,
+                    //#endif
                     //#if MC>=11500
                     packet.getSeed(),
                     //#endif
@@ -665,6 +668,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     respawn.getSha256Seed(),
                     //#endif
                     //#if MC>=11600
+                    //$$ GameMode.SPECTATOR,
                     //$$ GameMode.SPECTATOR,
                     //$$ respawn.isDebugWorld(),
                     //$$ respawn.isFlatWorld(),

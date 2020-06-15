@@ -199,6 +199,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 //$$ World.OVERWORLD,
                 //$$ 0,
                 //$$ GameMode.SPECTATOR,
+                //$$ GameMode.SPECTATOR,
                 //$$ false,
                 //$$ false,
                 //$$ false
