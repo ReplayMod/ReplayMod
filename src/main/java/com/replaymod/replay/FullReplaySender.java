@@ -765,10 +765,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // 8 - Fade time
             if (!Arrays.asList(
                     //#if MC>=11600
-                    //$$ GameStateChangeS2CPacket.field_25646,
-                    //$$ GameStateChangeS2CPacket.field_25647,
-                    //$$ GameStateChangeS2CPacket.field_25652,
-                    //$$ GameStateChangeS2CPacket.field_25653
+                    //$$ GameStateChangeS2CPacket.RAIN_STARTED,
+                    //$$ GameStateChangeS2CPacket.RAIN_STOPPED,
+                    //$$ GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED,
+                    //$$ GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED
                     //#else
                     1,
                     2,

@@ -31,6 +31,11 @@ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //$$ import net.minecraftforge.event.TickEvent;
 //#endif
 
+//#if MC>=11600
+//$$ import com.mojang.datafixers.util.Pair;
+//$$ import java.util.Collections;
+//#endif
+
 //#if MC>=11400
 //#else
 //$$ import net.minecraft.network.play.server.SPacketUseBed;
@@ -270,34 +275,16 @@ public class RecordingEventHandler extends EventRegistrations {
 
             //Inventory Handling
             //#if MC>=10904
-            if (playerItems[0] != player.getStackInHand(Hand.MAIN_HAND)) {
-                playerItems[0] = player.getStackInHand(Hand.MAIN_HAND);
-                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.MAINHAND, playerItems[0]));
-            }
-
-            if (playerItems[1] != player.getStackInHand(Hand.OFF_HAND)) {
-                playerItems[1] = player.getStackInHand(Hand.OFF_HAND);
-                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.OFFHAND, playerItems[1]));
-            }
-
-            if (playerItems[2] != player.getEquippedStack(EquipmentSlot.FEET)) {
-                playerItems[2] = player.getEquippedStack(EquipmentSlot.FEET);
-                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.FEET, playerItems[2]));
-            }
-
-            if (playerItems[3] != player.getEquippedStack(EquipmentSlot.LEGS)) {
-                playerItems[3] = player.getEquippedStack(EquipmentSlot.LEGS);
-                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.LEGS, playerItems[3]));
-            }
-
-            if (playerItems[4] != player.getEquippedStack(EquipmentSlot.CHEST)) {
-                playerItems[4] = player.getEquippedStack(EquipmentSlot.CHEST);
-                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.CHEST, playerItems[4]));
-            }
-
-            if (playerItems[5] != player.getEquippedStack(EquipmentSlot.HEAD)) {
-                playerItems[5] = player.getEquippedStack(EquipmentSlot.HEAD);
-                packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), EquipmentSlot.HEAD, playerItems[5]));
+            for (EquipmentSlot slot : EquipmentSlot.values()) {
+                ItemStack stack = player.getEquippedStack(slot);
+                if (playerItems[slot.ordinal()] != stack) {
+                    playerItems[slot.ordinal()] = stack;
+                    //#if MC>=11600
+                    //$$ packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), Collections.singletonList(Pair.of(slot, stack))));
+                    //#else
+                    packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), slot, stack));
+                    //#endif
+                }
             }
             //#else
             //$$ if(playerItems[0] != mc.thePlayer.getHeldItem()) {
