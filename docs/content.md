@@ -30,7 +30,7 @@ After installing Forge, simply put the downloaded `ReplayMod.jar` file in the `/
 To render your creations with **Replay Mod** you will need to have FFmpeg installed.
 
 ### Windows [windows]
-Download the latest FFmpeg build from <http://ffmpeg.zeranoe.com/builds/>. Make sure to select the latest release in the dropdown next to 'Version'. This will be a number like `4.3` or `4.3.1`. Chose the highest number.
+Download the latest FFmpeg build from <http://ffmpeg.zeranoe.com/builds/>. Make sure to select the latest release in the dropdown next to 'Version'. This will be a number like `4.3` or `4.3.1`. Choose the highest number.
 
 In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .zip file into this folder. The FFmpeg executable should end up at `.minecraft/ffmpeg/bin/ffmpeg.exe`.
 
