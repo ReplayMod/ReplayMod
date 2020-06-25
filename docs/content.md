@@ -10,16 +10,6 @@ After installing Fabric & Fabric API, simply put the downloaded ReplayMod .jar f
 ### Minecraft 1.12.2 and below
 For Minecraft 1.12.2 and below it requires **Minecraft Forge** to be installed.
 
-Depending on your **Replay Mod** version we recommend the following **Forge** versions:
-
-- Replay Mod 2.0.0 or later for Minecraft 1.11: Forge [1.11-13.19.1.2189](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.11.html)
-- Replay Mod 2.0.0 or later for Minecraft 1.10.2: Forge [1.10.2-12.18.2.2099](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.10.2.html)
-- Replay Mod 2.0.0 or later for Minecraft 1.9.4: Forge [1.9.4-12.17.0.1976](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.9.4.html)
-- Replay Mod 2.0.0 or later for Minecraft 1.8: Forge [1.8-11.14.4.1563](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.8.html)
-- Replay Mod 1.0.8 or older for Minecraft 1.8: Forge [1.8-11.14.3.1450](http://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.8.html)
-
-Other Forge Versions might, but don't necessarily work.
-
 If you don't know how to install Forge, follow [this tutorial](https://www.youtube.com/watch?v=4i7-RystzC4).
 
 After installing Forge, simply put the downloaded `ReplayMod.jar` file in the `/mods` folder of your Minecraft directory.
@@ -45,6 +35,11 @@ If in doubt, consult the documentation of your distribution.
 
 ## Settings [settings]
 To access the **Replay Mod Settings** from the Main Menu click the **"Replay Viewer"** button and click the **Settings** button.
+
+While playing, you can click the 'Mods' button in the Pause screen to reach **Replay Mod Settings** if you use Minecraft 1.12.2 and below, or have the mod [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu) installed.
+
+When in a Replay, you can either bind a hotkey to the **Replay Mod Settings** in Minecraft's Control settings
+or use the hotkey GUI by clicking on the arrow button in the lower left corner.
 
 # Recording [recording]
 ![](img/recording-indicator.jpg)
@@ -544,7 +539,7 @@ Please use [Optifine](https://optifine.net/) instead.
 
 ### Custom Main Menu [custom-main-menu]
 The [Custom Main Menu](https://www.curseforge.com/minecraft/mc-mods/custom-main-menu) mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
-If you are familiar with it, the button ids for the Replay Mod are: **17890234** (text: `replaymod.gui.replayviewer`) and **17890237** (text: `replaymod.gui.replayeditor`).
+If you are familiar with it, the button id for the Replay Mod is: **17890234** (text: `replaymod.gui.replayviewer`).
 
 Due to the nature of this Custom Main Menu mod, buttons added to the Main Menu by 3rd party mods like the **Replay Mod** will not show up by default.  
 Thus, to access the Replay Viewer/Editor/Center, you need to manually configure the position for those buttons.  
