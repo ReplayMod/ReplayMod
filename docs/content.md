@@ -523,7 +523,7 @@ If already have installed ffmpeg, you have to manually tell the **Replay Mod** w
 First, get the full path to your `ffmpeg.exe` (on Windows) or `ffmpeg` executable (on Mac/Linux).  
 On Windows, this path  might look like `C:/ffmpeg/ffmpeg.exe`.
 
-Then, open the **"Command Line Settings" Tab** in the Render Settings and paste this path into the **left input field** and retry rendering.
+Then, open the **"Command Line Settings" Section** in the Render Settings and paste this path into the **left input field** and retry rendering.
 
 ## Crash while rendering [crash]
 If Minecraft crashes after a few frames of rendering, it most likely means the **FFmpeg** didn't like the **Command Line Arguments** you passed.
