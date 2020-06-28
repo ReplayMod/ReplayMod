@@ -40,7 +40,9 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=11400
 import com.replaymod.render.mixin.MainWindowAccessor;
+import net.minecraft.client.gui.screen.Screen;
 import org.lwjgl.glfw.GLFW;
+import java.util.concurrent.CompletableFuture;
 //#else
 //$$ import net.minecraft.client.gui.ScaledResolution;
 //$$ import org.lwjgl.input.Mouse;
@@ -213,7 +215,15 @@ public class VideoRenderer implements RenderInfo {
         //#endif
 
         if (!settings.isHighPerformance() || framesDone % fps == 0) {
-            drawGui();
+            while (drawGui() && paused) {
+                try {
+                    //noinspection BusyWait
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
 
         // Updating the timer will cause the timeline player to update the game state
@@ -388,6 +398,20 @@ public class VideoRenderer implements RenderInfo {
 
     private void executeTaskQueue() {
         //#if MC>=11400
+        while (true) {
+            while (mc.overlay != null) {
+                drawGui();
+                ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
+            }
+
+            CompletableFuture<Void> resourceReloadFuture = ((MinecraftAccessor) mc).getResourceReloadFuture();
+            if (resourceReloadFuture != null) {
+                ((MinecraftAccessor) mc).setResourceReloadFuture(null);
+                mc.reloadResources().thenRun(() -> resourceReloadFuture.complete(null));
+                continue;
+            }
+            break;
+        }
         ((MCVer.MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
         //#else
         //$$ Queue<FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
@@ -420,14 +444,14 @@ public class VideoRenderer implements RenderInfo {
         //#endif
     }
 
-    public void drawGui() {
+    public boolean drawGui() {
         do {
             //#if MC>=11400
             if (GLFW.glfwWindowShouldClose(getWindow(mc).getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
             //#else
             //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
             //#endif
-                return;
+                return false;
             }
 
             // Resize the GUI framebuffer if the display size changed
@@ -500,8 +524,18 @@ public class VideoRenderer implements RenderInfo {
             int mouseX = (int) mc.mouse.getX() * getWindow(mc).getScaledWidth() / displayWidth;
             int mouseY = (int) mc.mouse.getY() * getWindow(mc).getScaledHeight() / displayHeight;
 
-            gui.toMinecraft().tick();
-            gui.toMinecraft().render(mouseX, mouseY, 0);
+            if (mc.overlay != null) {
+                Screen orgScreen = mc.currentScreen;
+                try {
+                    mc.currentScreen = gui.toMinecraft();
+                    mc.overlay.render(mouseX, mouseY, 0);
+                } finally {
+                    mc.currentScreen = orgScreen;
+                }
+            } else {
+                gui.toMinecraft().tick();
+                gui.toMinecraft().render(mouseX, mouseY, 0);
+            }
             //#else
             //$$ int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
             //$$ int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
@@ -544,15 +578,9 @@ public class VideoRenderer implements RenderInfo {
             //$$     Mouse.setGrabbed(false);
             //$$ }
             //#endif
-            if (paused) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-            }
-        } while (paused && !hasFailed() && !cancelled);
+
+            return !hasFailed() && !cancelled;
+        } while (true);
     }
 
     private boolean displaySizeChanged() {

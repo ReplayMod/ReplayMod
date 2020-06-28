@@ -8,6 +8,10 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Queue;
 
+//#if MC>=11400
+import java.util.concurrent.CompletableFuture;
+//#endif
+
 //#if MC<11400
 //$$ import java.util.concurrent.FutureTask;
 //#endif
@@ -23,6 +27,13 @@ public interface MinecraftAccessor {
     RenderTickCounter getTimer();
     @Accessor("renderTickCounter")
     void setTimer(RenderTickCounter value);
+
+    //#if MC>=11400
+    @Accessor
+    CompletableFuture<Void> getResourceReloadFuture();
+    @Accessor
+    void setResourceReloadFuture(CompletableFuture<Void> value);
+    //#endif
 
     //#if MC>=11400
     @Accessor
