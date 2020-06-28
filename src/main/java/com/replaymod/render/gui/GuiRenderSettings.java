@@ -95,10 +95,9 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                     }
                     // Update export arguments to match new Preset
                     exportArguments.setText(newPreset.getValue());
-                    // If the user hasn't changed the output file by themselves,
-                    if (!outputFileManuallySet) {
-                        // generate a new output file name with updated file extension
-                        outputFile = generateOutputFile(newPreset);
+                    // Update output file ending
+                    if (outputFile != null) {
+                        outputFile = conformExtension(outputFile, newPreset);
                         outputFileButton.setLabel(outputFile.getName());
                     }
                     updateInputs();
@@ -135,8 +134,10 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                         @Override
                         public void onSuccess(@Nullable File result) {
                             if (result != null) {
+                                if (!result.getName().equals(outputFile.getName())) {
+                                    userDefinedOutputFileName = true;
+                                }
                                 outputFile = result;
-                                outputFileManuallySet = true;
                                 outputFileButton.setLabel(result.getName());
                             }
                         }
@@ -321,7 +322,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     private final ReplayHandler replayHandler;
     private final Timeline timeline;
     private File outputFile;
-    private boolean outputFileManuallySet;
+    private boolean userDefinedOutputFileName;
 
     public GuiRenderSettings(ReplayHandler replayHandler, Timeline timeline) {
         this.replayHandler = replayHandler;
@@ -503,14 +504,19 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             bitRateField.setValue(settings.getBitRate());
             bitRateUnit.setSelected(0);
         }
-        if (settings.getOutputFile() == null) {
-            outputFile = generateOutputFile(settings.getEncodingPreset());
-            outputFileManuallySet = false;
+        File savedOutputFile = settings.getOutputFile();
+        if (savedOutputFile == null || !savedOutputFile.getParentFile().exists()) {
+            this.outputFile = generateOutputFile(settings.getEncodingPreset());
+            userDefinedOutputFileName = false;
+        } else if (savedOutputFile.exists()) {
+            String name = generateOutputFile(settings.getEncodingPreset()).getName();
+            this.outputFile = new File(savedOutputFile.isDirectory() ? savedOutputFile : savedOutputFile.getParentFile(), name);
+            userDefinedOutputFileName = false;
         } else {
-            outputFile = settings.getOutputFile();
-            outputFileManuallySet = true;
+            this.outputFile = conformExtension(savedOutputFile, settings.getEncodingPreset());
+            userDefinedOutputFileName = true;
         }
-        outputFileButton.setLabel(outputFile.getName());
+        outputFileButton.setLabel(this.outputFile.getName());
         nametagCheckbox.setChecked(settings.isRenderNameTags());
         stabilizeYaw.setChecked(settings.isStabilizeYaw());
         stabilizePitch.setChecked(settings.isStabilizePitch());
@@ -546,7 +552,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 videoHeight.getInteger(),
                 frameRateSlider.getValue() + 10,
                 bitRateField.getInteger() << (10 * bitRateUnit.getSelected()),
-                serialize ? null : outputFile,
+                serialize && !userDefinedOutputFileName ? outputFile.getParentFile() : outputFile,
                 nametagCheckbox.isChecked(),
                 stabilizeYaw.isChecked() && (serialize || stabilizeYaw.isEnabled()),
                 stabilizePitch.isChecked() && (serialize || stabilizePitch.isEnabled()),
@@ -565,6 +571,14 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         String fileName = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
         File folder = ReplayModRender.instance.getVideoFolder();
         return new File(folder, fileName + "." + encodingPreset.getFileExtension());
+    }
+
+    protected File conformExtension(File file, RenderSettings.EncodingPreset preset) {
+        String name = file.getName();
+        if (name.contains(".")) {
+            name = name.substring(0, name.lastIndexOf('.'));
+        }
+        return new File(file.getParentFile(), name + "." + preset.getFileExtension());
     }
 
     protected Path getSettingsPath() {
