@@ -70,11 +70,14 @@ import net.minecraft.network.packet.s2c.play.EntitySpawnGlobalS2CPacket;
 //#endif
 
 //#if MC>=11400
+import com.replaymod.core.versions.MCVer;
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenContainerS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenWrittenBookS2CPacket;
 import net.minecraft.entity.EntityType;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.world.chunk.light.LightingProvider;
 //#else
 //$$ import net.minecraft.client.resources.I18n;
 //$$ import net.minecraft.entity.Entity;
@@ -459,6 +462,24 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             //#endif
                         }
                     }
+
+                    //#if MC>=11400
+                    if (p instanceof ChunkDataS2CPacket) {
+                        Runnable doLightUpdates = () -> {
+                            if (mc.world != null) {
+                                LightingProvider provider = mc.world.getChunkManager().getLightingProvider();
+                                while (provider.hasUpdates()) {
+                                    provider.doLightUpdates(Integer.MAX_VALUE, true, true);
+                                }
+                            }
+                        };
+                        if (MCVer.isOnMainThread()) {
+                            doLightUpdates.run();
+                        } else {
+                            MCVer.scheduleOnMainThread(doLightUpdates);
+                        }
+                    }
+                    //#endif
                 }
             } catch (Exception e) {
                 // We'd rather not have a failure parsing one packet screw up the whole replay process

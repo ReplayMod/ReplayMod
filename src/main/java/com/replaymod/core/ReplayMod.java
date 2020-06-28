@@ -28,6 +28,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.crash.CrashException;
 import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
@@ -56,6 +57,7 @@ import net.fabricmc.loader.api.FabricLoader;
 //$$ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 //$$ import net.minecraftforge.versions.mcp.MCPVersion;
 //#else
+//$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //$$ import net.minecraft.client.resources.IResourcePack;
 //$$ import net.minecraftforge.common.config.Configuration;
 //#endif
@@ -72,14 +74,12 @@ import net.fabricmc.loader.api.FabricLoader;
 //$$ import net.minecraftforge.fml.common.Mod.Instance;
 //$$ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 //$$ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-//$$ import static com.replaymod.core.versions.MCVer.FORGE_BUS;
 //#if MC>=10800
 //$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //#else
 //$$ import com.replaymod.replay.InputReplayTimer;
 //$$
 //$$ import java.util.ArrayDeque;
-//$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //#endif
 //#endif
 //$$ import net.minecraftforge.fml.common.Mod;
@@ -544,6 +544,10 @@ public class ReplayMod implements
                 inRunLater = true;
                 try {
                     runnable.run();
+                } catch (CrashException e) {
+                    e.printStackTrace();
+                    System.err.println(e.getReport().asString());
+                    mc.setCrashReport(e.getReport());
                 } finally {
                     inRunLater = false;
                 }
@@ -552,11 +556,11 @@ public class ReplayMod implements
         //#else
         //$$ if (mc.isCallingFromMinecraftThread() && inRunLater) {
             //#if MC>=10800
-            //$$ FORGE_BUS.register(new Object() {
+            //$$ FML_BUS.register(new Object() {
             //$$     @SubscribeEvent
             //$$     public void onRenderTick(TickEvent.RenderTickEvent event) {
             //$$         if (event.phase == TickEvent.Phase.START) {
-            //$$             FORGE_BUS.unregister(this);
+            //$$             FML_BUS.unregister(this);
             //$$             defer.run();
             //$$         }
             //$$     }
@@ -578,6 +582,10 @@ public class ReplayMod implements
         //$$         inRunLater = true;
         //$$         try {
         //$$             runnable.run();
+        //$$         } catch (ReportedException e) {
+        //$$             e.printStackTrace();
+        //$$             System.err.println(e.getCrashReport().getCompleteReport());
+        //$$             mc.crashed(e.getCrashReport());
         //$$         } finally {
         //$$             inRunLater = false;
         //$$         }

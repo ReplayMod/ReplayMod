@@ -578,7 +578,7 @@ public class CameraEntity
 
     private void handleInputEvents() {
         if (this.client.options.keyAttack.wasPressed() || this.client.options.keyUse.wasPressed()) {
-            if (canSpectate(this.client.targetedEntity)) {
+            if (this.client.currentScreen == null && canSpectate(this.client.targetedEntity)) {
                 ReplayModReplay.instance.getReplayHandler().spectateEntity(
                         //#if MC<=10710
                         //$$ (EntityLivingBase)

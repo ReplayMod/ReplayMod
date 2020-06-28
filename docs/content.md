@@ -1,16 +1,14 @@
 # Installation [installing]
 ## Installing the Replay Mod [replaymod]
-The **ReplayMod** requires **Minecraft Forge** to be installed.
+### Minecraft 1.14 and above
+The **ReplayMod** for Minecraft 1.14 and above requires **Fabric & Fabric API** to be installed.
 
-Depending on your **Replay Mod** version we recommend the following **Forge** versions:
+You can find Fabric and the installation instructions [here](https://fabricmc.net/use/). With Fabric, you also need to install the Fabric API by putting it into your mods folder. You can find Fabric API [here](https://www.curseforge.com/minecraft/mc-mods/fabric-api).
 
-- Replay Mod 2.0.0 or later for Minecraft 1.11: Forge [1.11-13.19.1.2189](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.11.html)
-- Replay Mod 2.0.0 or later for Minecraft 1.10.2: Forge [1.10.2-12.18.2.2099](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.10.2.html)
-- Replay Mod 2.0.0 or later for Minecraft 1.9.4: Forge [1.9.4-12.17.0.1976](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.9.4.html)
-- Replay Mod 2.0.0 or later for Minecraft 1.8: Forge [1.8-11.14.4.1563](https://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.8.html)
-- Replay Mod 1.0.8 or older for Minecraft 1.8: Forge [1.8-11.14.3.1450](http://files.minecraftforge.net/maven/net/minecraftforge/forge/index_1.8.html)
+After installing Fabric & Fabric API, simply put the downloaded ReplayMod .jar file into the `/mods` folder of your Minecraft directory.
 
-Other Forge Versions might, but don't necessarily work.
+### Minecraft 1.12.2 and below
+For Minecraft 1.12.2 and below it requires **Minecraft Forge** to be installed.
 
 If you don't know how to install Forge, follow [this tutorial](https://www.youtube.com/watch?v=4i7-RystzC4).
 
@@ -19,22 +17,12 @@ After installing Forge, simply put the downloaded `ReplayMod.jar` file in the `/
 > **Note:** The **Replay Mod** is entirely client side and can not be installed on the servers you play on.
 
 ## Installing FFmpeg [ffmpeg]
-To use the **Replay Mod**'s [Rendering Feature](#replaying-render), you need to have FFmpeg installed.
+To render your creations with **Replay Mod** you will need to have FFmpeg installed.
 
 ### Windows [windows]
-Download the latest **FFmpeg Static Build** for your architecture from <http://ffmpeg.zeranoe.com/builds/>.  
-Then, extract the downloaded `.7z` file in the folder you want to install FFmpeg in.
+Download the latest FFmpeg build from <http://ffmpeg.zeranoe.com/builds/>. Make sure to select the latest release in the dropdown next to 'Version'. This will be a number like `4.3` or `4.3.1`. Choose the highest number.
 
-Next, download this **Batch Script** to quickly install FFmpeg: <https://replaymod.com/files/ffmpeg-path-installer.bat>
-
-> **Note:** If your browser warns you about the download, dismiss the message. It's a simple Batch Script which won't damage your computer.
-
-Put the downloaded script into the folder where you extracted FFmpeg and run itt by double-clicking it.
-If you see a success message in the console, you've sucessfully installed **FFmpeg**!
-
-Alternatively, starting with ReplayMod 2.0.0-b5, you can also extract the downloaded `.7z` file into a `ffmpeg` folder
-(you have to create it, it doesn't exist by default) in your `.minecraft` folder. No need to run any **Batch Script**.
-The FFmpeg executable should end up at `.minecraft/ffmpeg/bin/ffmpeg.exe`.
+In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .zip file into this folder. The FFmpeg executable should end up at `.minecraft/ffmpeg/bin/ffmpeg.exe`.
 
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.
@@ -45,34 +33,10 @@ Alternatively, you can download the latest static build from <https://ffmpeg.org
 On Linux, you can install **FFmpeg** using your system's package manager, for example using `apt install ffmpeg`.
 If in doubt, consult the documentation of your distribution.
 
-## Compatibility with other Mods [compatibility]
-### General information [general]
-In General, the Replay Mod _should_ be compatible with most Forge Mods.
-
-### Shaders Mod [shaders]
-[Karyonix' Shaders Mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/1286604-shaders-mod-updated-by-karyonix)
-is no longer compatible with Minecraft Forge starting with 1.9.4. As such it is not compatible with the Replay Mod either.
-Please use [Optifine](https://optifine.net/) instead.
-
-### Custom Main Menu [custom-main-menu]
-The [Custom Main Menu](https://mods.curse.com/mc-mods/minecraft/226406-custom-main-menu) mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
-If you are familiar with it, the button ids for the Replay Mod are: **17890234** (text: `replaymod.gui.replayviewer`), **17890237** (text: `replaymod.gui.replayeditor`) and **17890236** (text: `replaymod.gui.replaycenter`)
-
-Due to the nature of this Custom Main Menu mod, buttons added to the Main Menu by 3rd party mods like the **Replay Mod** will not show up by default.  
-Thus, to access the Replay Viewer/Editor/Center, you need to manually configure the position for those buttons.  
-To do so, you need to modify the Custom Main Menu configuration file.
-Usually, you can find it at `.minecraft/config/CustomMainMenu/mainmenu.json` (if you're using a mod pack launcher, it normally has its own .minecraft folder).  
-For an explanation of this config file, have a look at Custom Main Menu's page.
-
-You can find a list of already modified config files [here](https://gist.github.com/Johni0702/3f3fab81dbf7ada83d045d9fe8f345aa).
-
-## Troubleshooting [troubleshooting]
-If you need help installing the **Replay Mod** or **FFmpeg**, please read [this forum thread](https://www.replaymod.com/forum/thread/220) 
-by [bela333](https://www.replaymod.com/user/bela333) - it covers most of the problems that users encountered so far.
-
 ## Settings [settings]
-To access the **Replay Mod Settings** from the Main Menu click the **"Mods"** button, select the **Replay Mod** from the list and
-the click the **"Config"** button.
+To access the **Replay Mod Settings** from the Main Menu click the **"Replay Viewer"** button and click the **Settings** button.
+
+While playing, you can click the 'Mods' button in the Pause screen to reach **Replay Mod Settings** if you use Minecraft 1.12.2 and below, or have the mod [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu) installed.
 
 When in a Replay, you can either bind a hotkey to the **Replay Mod Settings** in Minecraft's Control settings
 or use the hotkey GUI by clicking on the arrow button in the lower left corner.
@@ -149,8 +113,6 @@ Please note that it takes longer to do larger steps in time or to jump backwards
 ### Introduction [intro]
 While in a Replay, you can create controlled **Camera Movements** using the Mods's **Keyframe System**.  
 Those Camera Paths can be rendered to a video later (see [Rendering](#replaying-render)).
-
-Camera Paths are inspired by the [PixelCam Mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/2327429-pixelcam-camera-studio-for-minecraft-1-8) which is based on the Camera Studio Mod.
 
 The **Replay Mod Keyframe System** is similar to many Video Editing Software's Keyframe Systems.
 If you're new to Keyframe Systems, try reading [this Wikipedia article](https://en.wikipedia.org/wiki/Key_frame).
@@ -277,60 +239,6 @@ To save the Keyframes currently on your Timeline, click the **"Save as..."** but
 You can change a Preset's name, select it from the list and click the **"Rename"** button.
 To load a Keyframe Preset, select a Preset from the list and click the **"Load"** button.
 Using the **"Remove"** button, you can permanently delete a Keyframe Preset from the **Keyframe Repository**.
-
-## Custom Objects [objects]
-
-> Custom Objects are not available in the 2.0.0 versions. They are expected to return eventually.
-
-[YouTube](_Xdpg828fbE)
-
-### Introduction [introduction]
-**Custom Objects** are mainly meant for **video creators**. They allow you to add any image into the Replay World and animate its Position, Opacity and much more.
-
-Instead of using [Motion Tracking](https://en.wikipedia.org/wiki/Match_moving) to add text or pictures to a video, you can directly add these to the rendered file.
-
-### Adding Assets [assets]
-![](img/asset-manager.jpg)
-The **Asset Manager** with an example Asset
-
-In order to create **Custom Objects**, you first have to add **Assets** to your Replay File.  
-Therefore, open the **Asset Manager** using the `G` key.
-
-In the **Asset Manager**, you can add **Image Files (.png, .jpg and more)**, so-called **Assets**, to the Replay.  
-When clicking the **"Add"** button, a File Chooser will show up. Select the image file you want to use.  
-You can give the Asset a custom name using the Text Input Field in the top right corner.
-
-All of the Assets you added can be used by **Custom Objects**.
-
-### Creating Custom Objects [creating]
-![](img/object-manager.jpg)
-The **Object Manager** with some **Animation Keyframes**
-
-Using the `F` key, you can open the **Object Manager**. Initially there won't be any Objects in the **Object List**, but you can simply add an Object using the **"Add"** button.
-
-After doing so, you can name the newly created **Custom Object** using the Text Field in the upper right corner.  
-To define which **Asset File** (i.e. image) the **Custom Object** should use, select the desired **Asset** from the dropdown beneath the Name Input.
-
-If you leave the **Object Manager**, you should see the image in the World somwhere near your position.
-
-### Animating Custom Objects [animating]
-![](img/custom-object-animated.gif)
-An animated **Custom Image Object**.
-
-Of course, you don't want the image to stay at that position.
- herefore, open the **Object Manager** again and select the **Custom Object** you want to modify.  
-On the lower half of the screen you will see mutliple **Input Fields**, using which you can modify various settings
-(so-called **Transformations**), for example the Object's **Position**, **Scale**, **Orientation** and **Opacity**.
-
-When editing these values, you'll notice that on the TImeline to the right, Keyframes appear.
-You can set and remove Keyframes for specific settings using its "Add Keyframe" button on the very left of the screen.
-
-The **Object Manager's Keyframe System** is very similar to the **Position Keyframe** and **Time Keyframe** System.
-
-During a **Camera Path**, the **Custom Objects** will interpolate their **Transformation Values** like **Position Keyframes** are interpolated.  
-While outside the **Object Manager** you can preview the Objects' position by moving the cursor on the **Keyframe Timeline** - the Objects will interpolate to the position they'll be at that timestamp during the **Camera Path**.
-
-Once you got the hang of it, you'll be able to quickly animate **Custom Objects**.
 
 ## Rendering [render]
 With the **Replay Mod**, you can render **Camera Paths** to videos **without** using a screen recording tool like Fraps.  
@@ -510,29 +418,6 @@ To use **High Performance Rendering**, hold down the `Ctrl` key  (`Cmd` key on M
    but only after one rendered seconds (e.g. every 60 frames when rendering with 60fps)
  - Resizing the Minecraft Window does not update the Rendering Gui
 
-### Troubleshooting [troubleshooting]
-
-> If you have trouble with rendering, please first consult the Documentation before asking for help in the Forums.
-
-#### No FFmpeg installation found [ffmpeg]
-![](img/ffmpeg-missing.jpg)
-The error screen that is displayed when no FFmpeg installation could be found
-
-If the **Replay Mod** tells you to install FFmpeg even though you already have, you have to manually tell the **Replay Mod** where your FFmpeg executable is located.
-
-First, get the full path to your `ffmpeg.exe` (on Windows) or `ffmpeg` executable (on Mac/Linux).  
-On Windows, this path  might look like `C:/ffmpeg/ffmpeg.exe`.
-
-Then, open the **"Command Line Settings" Tab** in the Render Settings and paste this path into the **left input field** and retry rendering.
-
-#### Crash while rendering [crash]
-If Minecraft crashes after a few frames of rendering, it most likely means the **FFmpeg** didn't like the **Command Line Arguments** you passed.
-If you customized the Command Line Arguments manually, re-check them - it's probably your own fault.
-
-> **Hint:** In your .minecraft folder, you'll find a file called `export.log` which contains information about FFmpeg's rendering process.
-
-If you did **not** customize the **Command Line Arguments**, you might have entered some insanely high (or low) values e.g. for Bitrate or Video Resolution. Try again with other, more reasonable values.
-
 ## Ambient Lighting [lighting]
 ![](img/ambient-lighting-comparison.jpg)
 The same setting, onace with **Ambient Lighting** enabled, once with **Ambient Lighting** disabled
@@ -594,83 +479,7 @@ This way, it's even simpler to add structure to your Replays.
 
 You can **delete an Event Marker** by clicking it once to select it and then pressing the `DELETE` key.
 
-# Replay Center [center]
-The **Replay Center** is where you can **share** your **Minecraft Moments** with others and discover awesome **Replays by other Users**.  
-To be able to use the **Replay Center**, you need an **account on ReplayMod.com**.
-
-## Authentication [auth]
-![](img/auth-login.jpg)
-The **Login Screen** which is displayed upon startup
-
-![](img/auth-register.jpg)
-The **Register Screen**
-
-When starting Minecraft with the **Replay Mod** installed, you will be asked to login to **ReplayMod.com**.  
-If you don't want to use the **Replay Center**, you can click the **"Skip" Button** to continue without logging in.
-
-If you want to browse other users' **Replays** and **share your own Replays** however, you need to **Register an account**.
-
-> **Note:** By registering an Account on **ReplayMod.com**, you agree to the Website's [Terms of Service](https://www.replaymod.com/legal/terms)
-
-Please note that you can only create **one ReplayMod.com Account per Minecraft Account**, so choose your username wisely.
-
-Once you've registered, you're automatically going to be logged in. The Mod **remembers your login** until you manually log out from the **Replay Center**, so it won't ask you upon every startup if you logged in once.
-
-## Replay Files [files]
-![](img/replay-center.jpg)
-The **Replay Center** in the Mod
-
-Once you've logged in, you can use the **"Replay Center" Button** in the Main Menu to access the **Replay Center**.
-
-In the upper half of the screen, there are **5 Buttons** for **5 Tabs** of the **Replay Center**:
-- **Recent**  
-  Shows the most recently uploaded Replays in the **Replay Center**
-- **Best**  
-  Shows the Replays with the **best rating and most downloads**
-- **Downloaded**  
-  Shows all of the Replays you've downloaded locally
-- **Favorited**  
-  Shows all of the Replays you favorited
-- **Search**  
-  Allows you to search for specific Replays
-
-When you've found an insteresting looking Replay, you can download it using the **"Download" Button** in the lower left corner.
-After downloading, you'll automatically join the Replay.
-
-After you've downloaded a Replay, you can rate and favorite it in the **Replay Center** using the respective buttons.
-
-> You are encouraged to rate Replays after you downloaded them to help promoting the best Replays.
-
-## Upload Replays [upload]
-![](img/replay-upload.jpg)
-The **Replay Upload Screen**
-
-You can share your own **Replay Files** with other users in the **Replay Center**.
-Therefore, click the **"Upload" Button** in the **Replay Viewer** after selecting a Replay.
-
-In the **Replay Upload Screen** there are **6 input fields**:
-- **Replay Name**  
-  The Replay's Name in the Replay Center
-- **Replay Description**  
-  A description of what happens in the Replay. Try to give the user a good impression why your Replay is worth downloading.
-- **Category**  
-  The Replay's Category, one of the following: **Survival**, **Build**, **Minigame**, **Miscellaneous**. If none of the other categories fit, use **Miscellaneous**.
-- **Tags**  
-  One or more tags that fit your replay, spearated by comma. **Example tags:** pvp,battle,redstone,creative
-- **Hide Server IP**  
-  If you've recorded a Replay on a private Server, you can remove the Server IP by checking the respective checkbox.
-- **Thumbnail**  
-  While you can't directly edit the Thumbnail when uploading, it is highly recommended that
-  you [create a Thumbnail](#replaying-thumbnail) before sharing your Replay.
-  Replays without a Thumbnail are much less likely to be downloaded by other users.
-
-When uploading a Replay File, make sure to follow the [Replay Center Rules](https://www.replaymod.com/rules).
-
 # Frequently Asked Questions [faq]
-
-### Do I need a ReplayMod.com Account to use the mod?
-You only need a ReplayMod.com Account to access the [Replay Center](#center).
-All of the other features are also available offline.
 
 ### For how long can I record?
 Theoretically, a Replay File can be up to **24 days, 20 hours, 30 minutes and 23 seconds** long - which is a timespan you'll probably never reach.
@@ -694,3 +503,48 @@ A Replay in which you travelled around and discovered a lot of terrain is signif
 
 An average Replay File of **10 Minutes duration** usually is between **2MB and 10MB large**.
 Replays recorded on **Minigame Servers** with lots of particle effects and world changes might be larger.
+
+# Troubleshooting [troubleshooting]
+> If you have trouble with rendering, please first consult the Documentation before asking for help in the Discord.
+
+## No FFmpeg installation found [ffmpeg]
+![](img/ffmpeg-missing.jpg)
+The error screen that is displayed when no FFmpeg installation could be found
+
+If you have not installed ffmpeg, please follow the steps provided [here](#installing-ffmpeg)
+
+If already have installed ffmpeg, you have to manually tell the **Replay Mod** where your FFmpeg executable is located.
+
+First, get the full path to your `ffmpeg.exe` (on Windows) or `ffmpeg` executable (on Mac/Linux).  
+On Windows, this path  might look like `C:/ffmpeg/ffmpeg.exe`.
+
+Then, open the **"Command Line Settings" Section** in the Render Settings and paste this path into the **left input field** and retry rendering.
+
+## Crash while rendering [crash]
+If Minecraft crashes after a few frames of rendering, it most likely means the **FFmpeg** didn't like the **Command Line Arguments** you passed.
+If you customized the Command Line Arguments manually, re-check them - it's probably your own fault.
+
+> **Hint:** In your .minecraft folder, you'll find a file called `export.log` which contains information about FFmpeg's rendering process.
+
+If you did **not** customize the **Command Line Arguments**, you might have entered some insanely high (or low) values e.g. for Bitrate or Video Resolution. Try again with other, more reasonable values.
+
+## Compatibility with other Mods [compatibility]
+### General information [general]
+In General, the Replay Mod _should_ be compatible with most Forge and Fabric Mods.
+
+### Shaders Mod [shaders]
+[Karyonix' Shaders Mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/1286604-shaders-mod-updated-by-karyonix)
+is no longer compatible with Minecraft Forge starting with 1.9.4. As such it is not compatible with the Replay Mod either.
+Please use [Optifine](https://optifine.net/) instead.
+
+### Custom Main Menu [custom-main-menu]
+The [Custom Main Menu](https://www.curseforge.com/minecraft/mc-mods/custom-main-menu) mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
+If you are familiar with it, the button id for the Replay Mod is: **17890234** (text: `replaymod.gui.replayviewer`).
+
+Due to the nature of this Custom Main Menu mod, buttons added to the Main Menu by 3rd party mods like the **Replay Mod** will not show up by default.  
+Thus, to access the Replay Viewer/Editor/Center, you need to manually configure the position for those buttons.  
+To do so, you need to modify the Custom Main Menu configuration file.
+Usually, you can find it at `.minecraft/config/CustomMainMenu/mainmenu.json` (if you're using a mod pack launcher, it normally has its own .minecraft folder).  
+For an explanation of this config file, have a look at Custom Main Menu's page.
+
+You can find a list of already modified config files [here](https://gist.github.com/Johni0702/3f3fab81dbf7ada83d045d9fe8f345aa).

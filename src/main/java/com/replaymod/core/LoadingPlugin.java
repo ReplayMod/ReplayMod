@@ -26,7 +26,7 @@ package com.replaymod.core;
 //$$ public class LoadingPlugin implements IFMLLoadingPlugin {
 //$$
 //$$     public LoadingPlugin() {
-//$$         if ((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
+//$$         if (Launch.blackboard.get("fml.deobfuscatedEnvironment") != Boolean.FALSE) {
 //$$             // Outside of the dev env, this is the job of the tweaker
 //$$             MixinBootstrap.init();
 //$$         }

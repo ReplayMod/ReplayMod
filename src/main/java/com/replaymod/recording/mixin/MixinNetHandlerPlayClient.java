@@ -81,7 +81,7 @@ public abstract class MixinNetHandlerPlayClient {
                     // Only add spawn packet for our own player and only if he isn't known yet
                     if (data.getUuid().equals(mcStatic.player.getGameProfile().getId())
                             && !this.playerListEntries.containsKey(data.getUuid())) {
-                        handler.onPlayerJoin();
+                        handler.spawnRecordingPlayer();
                     }
                 }
             } catch (IOException e) {
@@ -96,7 +96,7 @@ public abstract class MixinNetHandlerPlayClient {
     //$$ public void recordOwnJoin(S01PacketJoinGame packet, CallbackInfo ci) {
     //$$     RecordingEventHandler handler = getRecordingEventHandler();
     //$$     if (handler != null) {
-    //$$         handler.onPlayerJoin();
+    //$$         handler.spawnRecordingPlayer();
     //$$     }
     //$$ }
     //#endif
@@ -116,7 +116,7 @@ public abstract class MixinNetHandlerPlayClient {
     public void recordOwnRespawn(PlayerRespawnS2CPacket packet, CallbackInfo ci) {
         RecordingEventHandler handler = getRecordingEventHandler();
         if (handler != null) {
-            handler.onPlayerRespawn();
+            handler.spawnRecordingPlayer();
         }
     }
 }

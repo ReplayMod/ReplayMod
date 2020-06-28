@@ -284,7 +284,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         //$$ public void onTick(TickEvent.ClientTickEvent event) {
         //$$     if (event.phase != TickEvent.Phase.START) return;
         //#endif
-            if (!asyncMode) return;
+            if (!asyncMode || paused()) return;
 
             long now = System.currentTimeMillis();
             long realTimePassed = now - lastAsyncUpdateTime;
