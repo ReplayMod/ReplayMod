@@ -99,17 +99,14 @@ public class RecordingEventHandler extends EventRegistrations {
     }
     //#endif
 
-    public void onPlayerJoin() {
+    public void spawnRecordingPlayer() {
         try {
-            packetListener.save(new PlayerSpawnS2CPacket(mc.player));
-        } catch(Exception e1) {
-            e1.printStackTrace();
-        }
-    }
-
-    public void onPlayerRespawn() {
-        try {
-            packetListener.save(new PlayerSpawnS2CPacket(mc.player));
+            ClientPlayerEntity player = mc.player;
+            assert player != null;
+            packetListener.save(new PlayerSpawnS2CPacket(player));
+            //#if MC>=11500
+            packetListener.save(new EntityTrackerUpdateS2CPacket(player.getEntityId(), player.getDataTracker(), true));
+            //#endif
             lastX = lastY = lastZ = null;
         } catch(Exception e) {
             e.printStackTrace();
