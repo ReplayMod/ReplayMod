@@ -100,7 +100,7 @@ public class GuiPathing {
     public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
         @Override
         public void run() {
-            if (!preparePathsForPlayback()) return;
+            if (!preparePathsForPlayback(false)) return;
 
             // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
             SPTimeline spTimeline = mod.getCurrentTimeline();
@@ -299,11 +299,12 @@ public class GuiPathing {
                 if (player.isActive()) {
                     player.getFuture().cancel(false);
                 } else {
+                    boolean ignoreTimeKeyframes = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
                     Path timePath = mod.getCurrentTimeline().getTimePath();
 
-                    if (!preparePathsForPlayback()) return;
+                    if (!preparePathsForPlayback(ignoreTimeKeyframes)) return;
 
-                    timePath.setActive(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
+                    timePath.setActive(!ignoreTimeKeyframes);
                     // Start from cursor time unless the control key is pressed (then start from beginning)
                     int startTime = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)? 0 : GuiPathing.this.timeline.getCursorPosition();
                     ListenableFuture<Void> future = player.start(mod.getCurrentTimeline().getTimeline(), startTime);
@@ -519,9 +520,19 @@ public class GuiPathing {
         }).start();
     }
 
-    private boolean preparePathsForPlayback() {
+    private boolean preparePathsForPlayback(boolean ignoreTimeKeyframes) {
         SPTimeline timeline = mod.getCurrentTimeline();
         timeline.getTimeline().getPaths().forEach(Path::updateAll);
+
+        // Make sure there are at least two position keyframes
+        if (timeline.getPositionPath().getSegments().isEmpty()) {
+            GuiInfoPopup.open(replayHandler.getOverlay(), "replaymod.chat.morekeyframes");
+            return false;
+        }
+
+        if (ignoreTimeKeyframes) {
+            return true;
+        }
 
         // Make sure time keyframes's values are monotonically increasing
         int lastTime = 0;
@@ -538,9 +549,8 @@ public class GuiPathing {
             lastTime = time;
         }
 
-        // Make sure there are at least two position- and two time-keyframes
-        if (timeline.getPositionPath().getSegments().isEmpty()
-                || timeline.getTimePath().getSegments().isEmpty()) {
+        // Make sure there are at least two time keyframes
+        if (timeline.getTimePath().getSegments().isEmpty()) {
             GuiInfoPopup.open(replayHandler.getOverlay(), "replaymod.chat.morekeyframes");
             return false;
         }
