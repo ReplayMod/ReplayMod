@@ -125,9 +125,12 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     public final GuiButton outputFileButton = new GuiButton().setMinSize(new Dimension(0, 20)).onClick(new Runnable() {
         @Override
         public void run() {
+            GuiFileChooserPopup popup = GuiFileChooserPopup.openSaveGui(GuiRenderSettings.this, "replaymod.gui.save",
+                    encodingPresetDropdown.getSelectedValue().getFileExtension());
+            popup.setFolder(outputFile.getParentFile());
+            popup.setFileName(outputFile.getName());
             Futures.addCallback(
-                    GuiFileChooserPopup.openSaveGui(GuiRenderSettings.this, "replaymod.gui.save",
-                            encodingPresetDropdown.getSelectedValue().getFileExtension()).getFuture(),
+                    popup.getFuture(),
                     new FutureCallback<File>() {
                         @Override
                         public void onSuccess(@Nullable File result) {
