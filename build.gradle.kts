@@ -2,7 +2,7 @@ import groovy.json.JsonOutput
 import java.io.ByteArrayOutputStream
 
 plugins {
-    id("fabric-loom") version "0.2.7-SNAPSHOT" apply false
+    id("fabric-loom") version "0.4-SNAPSHOT" apply false
     id("com.replaymod.preprocess") version "3c46acb"
     id("com.github.hierynomus.license") version "0.15.0"
 }
@@ -178,7 +178,7 @@ val doRelease by tasks.registering {
 defaultTasks("shadowJar")
 
 preprocess {
-    "1.16"(11600, "yarn") {
+    "1.16.1"(11601, "yarn") {
         "1.15.2"(11502, "yarn") {
             "1.14.4"(11404, "yarn", file("versions/mapping-fabric-1.15.2-1.14.4.txt")) {
                 "1.14.4-forge"(11404, "srg", file("versions/mapping-1.14.4-fabric-forge.txt")) {
