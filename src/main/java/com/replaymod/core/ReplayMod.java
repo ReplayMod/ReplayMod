@@ -28,6 +28,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.crash.CrashException;
 import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
@@ -539,6 +540,10 @@ public class ReplayMod implements
                 inRunLater = true;
                 try {
                     runnable.run();
+                } catch (CrashException e) {
+                    e.printStackTrace();
+                    System.err.println(e.getReport().asString());
+                    mc.setCrashReport(e.getReport());
                 } finally {
                     inRunLater = false;
                 }
@@ -573,6 +578,10 @@ public class ReplayMod implements
         //$$         inRunLater = true;
         //$$         try {
         //$$             runnable.run();
+        //$$         } catch (ReportedException e) {
+        //$$             e.printStackTrace();
+        //$$             System.err.println(e.getCrashReport().getCompleteReport());
+        //$$             mc.crashed(e.getCrashReport());
         //$$         } finally {
         //$$             inRunLater = false;
         //$$         }
