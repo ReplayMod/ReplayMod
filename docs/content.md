@@ -27,7 +27,7 @@ In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .z
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.
 
-Alternatively, you can download the latest static build from <https://ffmpeg.org/> and copy the ffmpeg executable to `/usr/local/bin`.
+Alternatively, you can download the latest static build from <https://ffmpeg.org/> and copy the FFmpeg executable to `/usr/local/bin`.
 
 ### Linux [linux]
 On Linux, you can install **FFmpeg** using your system's package manager, for example using `apt install ffmpeg`.
@@ -383,7 +383,7 @@ The **Replay Mod** runs [FFmpeg](http://ffmpeg.org/) via the **Command Line** to
 You can customize both the **executed Command** and the **Command Line Arguments** in the **Command Line Settings** part of the **Render Settings Screen**.
 
 #### Custom Command [command]
-If you leave the left input field blank, `ffmpeg` will be used as **command**. If you haven't set your **PATH variable** to link to your FFmpeg distribution, simply enter the full path to your FFmpeg executable (e.g. `C:/ffmpeg/ffmpeg.exe` or `/usr/local/bin/ffmpeg`).
+If you leave the left input field blank, `ffmpeg` will be used as **command**. If you haven't set your **PATH variable** to link to your FFmpeg distribution, simply enter the full path to your FFmpeg executable (e.g. `C:/FFmpeg/ffmpeg.exe` or `/usr/local/bin/ffmpeg`).
 
 #### Command Line Arguments [arguments]
 In the right input field, you can input custom **Command Line Arguments** to be used in the console.
@@ -511,14 +511,19 @@ Replays recorded on **Minigame Servers** with lots of particle effects and world
 ![](img/ffmpeg-missing.jpg)
 The error screen that is displayed when no FFmpeg installation could be found
 
-If you have not installed ffmpeg, please follow the steps provided [here](#installing-ffmpeg)
+If you have not installed FFmpeg, please follow the steps provided [here](#installing-ffmpeg)
 
-If already have installed ffmpeg, you have to manually tell the **Replay Mod** where your FFmpeg executable is located.
+If already have installed FFmpeg, you have to manually tell the **Replay Mod** where your FFmpeg executable is located.
 
 First, get the full path to your `ffmpeg.exe` (on Windows) or `ffmpeg` executable (on Mac/Linux).  
 On Windows, this path  might look like `C:/ffmpeg/ffmpeg.exe`.
 
 Then, open the **"Command Line Settings" Section** in the Render Settings and paste this path into the **left input field** and retry rendering.
+
+## Rendering Failed [libx264]
+An error screen is displayed with FFmpeg error: `Unknown encoder 'libx264'`
+
+The FFmpeg version you have installed is compiled without `--enable-_libx264_`. The 4.3 version on [https://ffmpeg.zeranoe.com/](https://ffmpeg.zeranoe.com/) has this issue. To fix it, install another version (e.g. the latest snapshot).
 
 ## Crash while rendering [crash]
 If Minecraft crashes after a few frames of rendering, it most likely means the **FFmpeg** didn't like the **Command Line Arguments** you passed.
@@ -526,7 +531,12 @@ If you customized the Command Line Arguments manually, re-check them - it's prob
 
 > **Hint:** In your .minecraft folder, you'll find a file called `export.log` which contains information about FFmpeg's rendering process.
 
-If you did **not** customize the **Command Line Arguments**, you might have entered some insanely high (or low) values e.g. for Bitrate or Video Resolution. Try again with other, more reasonable values.
+- If you did **not** customize the **Command Line Arguments**, you might have entered some insanely high (or low) values e.g. for Bitrate or Video Resolution. Try again with other, more reasonable values.
+- Make sure the camera doesn't move below Y=0 or above Y=255
+
+## Unsupported Launchers [launchers]
+[Lunar Client](https://www.lunarclient.com/) does not support ReplayMod
+[Badlion Client](https://www.badlion.net/) offers a different ReplayMod that is not the same as this one.
 
 ## Compatibility with other Mods [compatibility]
 ### General information [general]
@@ -548,3 +558,10 @@ Usually, you can find it at `.minecraft/config/CustomMainMenu/mainmenu.json` (if
 For an explanation of this config file, have a look at Custom Main Menu's page.
 
 You can find a list of already modified config files [here](https://gist.github.com/Johni0702/3f3fab81dbf7ada83d045d9fe8f345aa).
+
+### Tickrate Changer [tickrate-changer]
+The [Tickrate Changer](https://www.curseforge.com/minecraft/mc-mods/tickratechanger) mod causes minecraft to freeze when you try to use the Replay Viewer.
+
+### LabyMod [labymod]
+The [LabyMod](https://www.curseforge.com/minecraft/mc-mods/labymod) is not compatible with ReplayMod.
+
