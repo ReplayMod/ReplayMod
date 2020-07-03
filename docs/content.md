@@ -560,7 +560,7 @@ For an explanation of this config file, have a look at Custom Main Menu's page.
 You can find a list of already modified config files [here](https://gist.github.com/Johni0702/3f3fab81dbf7ada83d045d9fe8f345aa).
 
 ### Tickrate Changer [tickrate-changer]
-The [Tickrate Changer](https://www.curseforge.com/minecraft/mc-mods/tickratechanger) mod causes minecraft to freeze when you try to use the Replay Viewer.
+The [Tickrate Changer](https://www.curseforge.com/minecraft/mc-mods/tickratechanger) mod may cause minecraft to freeze when you try to use the Replay Viewer UI.
 
 ### LabyMod [labymod]
 The [LabyMod](https://www.curseforge.com/minecraft/mc-mods/labymod) is not compatible with ReplayMod.
