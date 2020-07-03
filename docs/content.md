@@ -383,7 +383,7 @@ The **Replay Mod** runs [FFmpeg](http://ffmpeg.org/) via the **Command Line** to
 You can customize both the **executed Command** and the **Command Line Arguments** in the **Command Line Settings** part of the **Render Settings Screen**.
 
 #### Custom Command [command]
-If you leave the left input field blank, `ffmpeg` will be used as **command**. If you haven't set your **PATH variable** to link to your FFmpeg distribution, simply enter the full path to your FFmpeg executable (e.g. `C:/FFmpeg/ffmpeg.exe` or `/usr/local/bin/ffmpeg`).
+If you leave the left input field blank, `ffmpeg` will be used as **command**. If you haven't set your **PATH variable** to link to your FFmpeg distribution, simply enter the full path to your FFmpeg executable (e.g. `C:\ffmpeg\ffmpeg.exe` or `/usr/local/bin/ffmpeg`).
 
 #### Command Line Arguments [arguments]
 In the right input field, you can input custom **Command Line Arguments** to be used in the console.
@@ -516,7 +516,7 @@ If you have not installed FFmpeg, please follow the steps provided [here](#insta
 If already have installed FFmpeg, you have to manually tell the **Replay Mod** where your FFmpeg executable is located.
 
 First, get the full path to your `ffmpeg.exe` (on Windows) or `ffmpeg` executable (on Mac/Linux).  
-On Windows, this path  might look like `C:/ffmpeg/ffmpeg.exe`.
+On Windows, this path  might look like `C:\ffmpeg\ffmpeg.exe`.
 
 Then, open the **"Command Line Settings" Section** in the Render Settings and paste this path into the **left input field** and retry rendering.
 
