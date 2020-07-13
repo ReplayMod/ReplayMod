@@ -5,25 +5,3 @@
 [submodule "src/main/resources/assets/replaymod/lang"]
 	path = src/main/resources/assets/replaymod/lang
 	url = https://github.com/ReplayMod/Translations
-[submodule "gradle/reprod/upstream/forgeflower"]
-	path = gradle/reprod/upstream/forgeflower
-	url = https://github.com/MinecraftForge/ForgeFlower.git
-[submodule "gradle/reprod/upstream/forgegradle-2.1"]
-	path = gradle/reprod/upstream/forgegradle-2.1
-	url = https://github.com/MinecraftForge/ForgeGradle.git
-[submodule "gradle/reprod/upstream/forgegradle-2.2"]
-	path = gradle/reprod/upstream/forgegradle-2.2
-	url = https://github.com/MinecraftForge/ForgeGradle.git
-[submodule "gradle/reprod/upstream/forgegradle-2.3"]
-	path = gradle/reprod/upstream/forgegradle-2.3
-	url = https://github.com/MinecraftForge/ForgeGradle.git
-[submodule "gradle/reprod/upstream/mixin"]
-	path = gradle/reprod/upstream/mixin
-	url = https://github.com/SpongePowered/Mixin.git
-[submodule "gradle/reprod/upstream/forgegradle-1.2"]
-	path = gradle/reprod/upstream/forgegradle-1.2
-	url = https://github.com/MinecraftForge/ForgeGradle.git
-	branch = FG_1.2
-[submodule "gradle/reprod/upstream/srg2source-3.2"]
-	path = gradle/reprod/upstream/srg2source-3.2
-	url = https://github.com/MinecraftForge/Srg2Source.git
