@@ -23,6 +23,7 @@ import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
@@ -52,8 +53,7 @@ import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
 import net.minecraft.network.packet.s2c.play.StatisticsS2CPacket;
 import net.minecraft.text.Text;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.ChunkProvider;
+import net.minecraft.util.math.MathHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -77,16 +77,16 @@ import net.minecraft.network.packet.s2c.play.OpenContainerS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenWrittenBookS2CPacket;
 import net.minecraft.entity.EntityType;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.world.chunk.ChunkManager;
+import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
 //#else
 //$$ import net.minecraft.client.resources.I18n;
-//$$ import net.minecraft.entity.Entity;
-//$$ import net.minecraft.util.math.MathHelper;
 //$$ import net.minecraft.world.EnumDifficulty;
+//$$ import net.minecraft.world.World;
 //$$ import net.minecraft.world.WorldType;
 //$$ import net.minecraft.world.chunk.Chunk;
-//$$ import java.util.ArrayList;
-//$$ import java.util.Collection;
+//$$ import net.minecraft.world.chunk.IChunkProvider;
 //$$ import java.util.Iterator;
 //#endif
 
@@ -125,7 +125,9 @@ import net.minecraft.network.NetworkSide;
 //#endif
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -1150,81 +1152,105 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // Note: This is only half of the truth. Entities may be removed by chunk-unloading, see else-case below.
             // To make things worse, it seems like players were never supposed to be unloaded this way because
             // they will remain glitched in the World#playerEntities list.
-            World world = mc.world;
-            ChunkProvider chunkProvider = world.getChunkManager();
+            // 1.14+: The update issue remains but only for non-players and the unloading list bug appears to have been
+            //        fixed (chunk unloading no longer removes the entities).
             // Get the chunk that will be unloaded
             //#if MC>=11400
-            // FIXME fabric
+            ClientWorld world = mc.world;
+            ChunkManager chunkProvider = world.getChunkManager();
+            WorldChunk chunk = chunkProvider.getWorldChunk(x, z
+                    //#if MC<11500
+                    //$$ , false
+                    //#endif
+            );
+            if (chunk != null) {
             //#else
-            //#if MC>=11400
-            //$$ Chunk chunk = chunkProvider.provideChunk(x, z, false, false);
-            //#else
+            //$$ World world = mc.world;
+            //$$ IChunkProvider chunkProvider = world.getChunkProvider();
             //$$ Chunk chunk = chunkProvider.provideChunk(x, z);
-            //#endif
             //$$ if (!chunk.isEmpty()) {
-            //$$     List<Entity> entitiesInChunk = new ArrayList<>();
-            //$$     // Gather all entities in that chunk
-            //$$     for (Collection<Entity> entityList : getEntityLists(chunk)) {
-            //$$         entitiesInChunk.addAll(entityList);
-            //$$     }
-            //$$     for (Entity entity : entitiesInChunk) {
-            //$$         // Skip interpolation of position updates coming from server
-            //$$         // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
-            //$$         // Needs to be called at least 4 times thanks to
-            //$$         // EntityOtherPlayerMP#otherPlayerMPPosRotationIncrements (max vanilla value is 3)
-            //$$         for (int i = 0; i < 4; i++) {
+            //#endif
+                List<Entity> entitiesInChunk = new ArrayList<>();
+                // Gather all entities in that chunk
+                for (Collection<Entity> entityList : getEntityLists(chunk)) {
+                    entitiesInChunk.addAll(entityList);
+                }
+                for (Entity entity : entitiesInChunk) {
+                    // Skip interpolation of position updates coming from server
+                    // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
+                    // Needs to be called at least 4 times thanks to
+                    // EntityOtherPlayerMP#otherPlayerMPPosRotationIncrements (max vanilla value is 3)
+                    for (int i = 0; i < 4; i++) {
                         //#if MC>=11400
-                        //$$ entity.tick();
+                        entity.tick();
                         //#else
                         //$$ entity.onUpdate();
                         //#endif
-            //$$         }
-            //$$
-            //$$         // Check whether the entity has left the chunk
-            //$$         int chunkX = MathHelper.floor(entity.posX / 16);
-            //$$         int chunkZ = MathHelper.floor(entity.posZ / 16);
-            //$$         if (entity.chunkCoordX != chunkX || entity.chunkCoordZ != chunkZ) {
-            //$$             // Entity has left the chunk
-            //$$             chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
-                        //#if MC>=11400
-                        //$$ Chunk newChunk = chunkProvider.provideChunk(chunkX, chunkZ, false, false);
-                        //#else
+                    }
+
+                    // Check whether the entity has left the chunk
+                    //#if MC>=11404
+                    int chunkX = MathHelper.floor(Entity_getX(entity) / 16);
+                    int chunkY = MathHelper.floor(Entity_getY(entity) / 16);
+                    int chunkZ = MathHelper.floor(Entity_getZ(entity) / 16);
+                    if (entity.chunkX != chunkX || entity.chunkY != chunkY || entity.chunkZ != chunkZ) {
+                        if (entity.updateNeeded) {
+                            // Entity has left the chunk
+                            chunk.remove(entity, entity.chunkY);
+                        }
+                        WorldChunk newChunk = chunkProvider.getWorldChunk(chunkX, chunkZ
+                                //#if MC<11500
+                                //$$ , false
+                                //#endif
+                        );
+                        if (newChunk != null) {
+                            newChunk.addEntity(entity);
+                        } else {
+                            // Entity has left all loaded chunks
+                            entity.updateNeeded = false;
+                        }
+                    }
+                    //#else
+                    //$$ int chunkX = MathHelper.floor(entity.posX / 16);
+                    //$$ int chunkZ = MathHelper.floor(entity.posZ / 16);
+                    //$$ if (entity.chunkCoordX != chunkX || entity.chunkCoordZ != chunkZ) {
+                    //$$     // Entity has left the chunk
+                    //$$     chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
                         //#if MC>=10904
                         //$$ Chunk newChunk = chunkProvider.getLoadedChunk(chunkX, chunkZ);
                         //#else
                         //$$ Chunk newChunk = chunkProvider.chunkExists(chunkX, chunkZ)
                         //$$         ? chunkProvider.provideChunk(chunkX, chunkZ) : null;
                         //#endif
-                        //#endif
-            //$$             if (newChunk != null) {
-            //$$                 newChunk.addEntity(entity);
-            //$$             } else {
-            //$$                 // Entity has left all loaded chunks
-            //$$                 entity.addedToChunk = false;
-            //$$             }
-            //$$         } else {
-            //$$             // When entities remain in a chunk that's to be unloaded, they'll only be added to a unload
-            //$$             // queue and remain loaded as before until the next tick (which during jumping is way off).
-            //$$             // So, if they are re-spawned with the same entity id, MC actually cleans up the old entity and
-            //$$             // then adds the new one but leaves the unload queue as is.
-            //$$             // Finally, on the next tick the legitimate entity will be unloaded because it's part of the
-            //$$             // unload queue (entities .equals based purely on their id). However, the old entity object
-            //$$             // is used to determine the chunk the entity is removed from and in this case that'll allow the
-            //$$             // legitimate entity to remain registered in a loaded chunk, causing them to still be rendered.
-            //$$             //
-            //$$             // The usual removal-due-to-chunk-unload process will, without touching the entityList, call
-            //$$             // onEntityRemoved. In that method WorldClient checks to see whether the entity is still in the
-            //$$             // entityList (which it is) and then adds it to the entitySpawnQueue.
-            //$$             // As the final result the entity will remain loaded.
-            //$$             // To get the same result without ticking, we just remove the entity from the to-be-unloaded
-            //$$             // chunk but keep it loaded otherwise. They won't be rendered because they're not part of any
-            //$$             // chunk and will be removed properly if the server decides to re-spawn the entity.
-            //$$             chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
-            //$$             entity.addedToChunk = false;
-            //$$         }
-            //$$     }
-            //$$ }
-            //#endif
+                    //$$     if (newChunk != null) {
+                    //$$         newChunk.addEntity(entity);
+                    //$$     } else {
+                    //$$         // Entity has left all loaded chunks
+                    //$$         entity.addedToChunk = false;
+                    //$$     }
+                    //$$ } else {
+                    //$$     // When entities remain in a chunk that's to be unloaded, they'll only be added to a unload
+                    //$$     // queue and remain loaded as before until the next tick (which during jumping is way off).
+                    //$$     // So, if they are re-spawned with the same entity id, MC actually cleans up the old entity and
+                    //$$     // then adds the new one but leaves the unload queue as is.
+                    //$$     // Finally, on the next tick the legitimate entity will be unloaded because it's part of the
+                    //$$     // unload queue (entities .equals based purely on their id). However, the old entity object
+                    //$$     // is used to determine the chunk the entity is removed from and in this case that'll allow the
+                    //$$     // legitimate entity to remain registered in a loaded chunk, causing them to still be rendered.
+                    //$$     //
+                    //$$     // The usual removal-due-to-chunk-unload process will, without touching the entityList, call
+                    //$$     // onEntityRemoved. In that method WorldClient checks to see whether the entity is still in the
+                    //$$     // entityList (which it is) and then adds it to the entitySpawnQueue.
+                    //$$     // As the final result the entity will remain loaded.
+                    //$$     // To get the same result without ticking, we just remove the entity from the to-be-unloaded
+                    //$$     // chunk but keep it loaded otherwise. They won't be rendered because they're not part of any
+                    //$$     // chunk and will be removed properly if the server decides to re-spawn the entity.
+                    //$$     chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
+                    //$$     entity.addedToChunk = false;
+                    //$$ }
+                    //#endif
+                }
+            }
         }
         return p; // During synchronous playback everything is sent normally
     }
