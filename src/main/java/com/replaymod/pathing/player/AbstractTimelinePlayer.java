@@ -114,6 +114,8 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
 
         // Apply to timeline
         timeline.applyToGame(time, replayHandler);
+        // Apply a second time in case same of the packets have moved the camera from where it was
+        timeline.applyToGame(time, replayHandler);
 
         // Update minecraft timer
         long replayTime = replayHandler.getReplaySender().currentTimeStamp();
