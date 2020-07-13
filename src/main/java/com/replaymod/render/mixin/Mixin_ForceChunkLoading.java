@@ -79,7 +79,10 @@ public abstract class Mixin_ForceChunkLoading {
                 // Schedule all chunks which need rebuilding (we schedule even important rebuilds because we wait for
                 // all of them anyway and this way we can take advantage of threading)
                 for (ChunkBuilder.BuiltChunk builtChunk : this.chunksToRebuild) {
-                    builtChunk.scheduleRebuild(this.chunkBuilder);
+                    // MC sometimes schedules invalid chunks when you're outside of loaded chunks (e.g. y > 256)
+                    if (builtChunk.shouldBuild()) {
+                        builtChunk.scheduleRebuild(this.chunkBuilder);
+                    }
                     builtChunk.cancelRebuild();
                 }
                 this.chunksToRebuild.clear();
