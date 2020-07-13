@@ -284,9 +284,7 @@ dependencies {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
-    jGui.afterEvaluate {
-        shadow files(jGui.tasks.preshadowJar.archivePath) // include pre-shadowed lwjgl_util
-    }
+    shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
         if (mcVersion >= 11600) {
