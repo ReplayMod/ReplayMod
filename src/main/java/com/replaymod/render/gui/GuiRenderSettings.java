@@ -490,7 +490,11 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
     public void load(RenderSettings settings) {
         renderMethodDropdown.setSelected(settings.getRenderMethod());
-        encodingPresetDropdown.setSelected(settings.getEncodingPreset());
+        RenderSettings.EncodingPreset encodingPreset = settings.getEncodingPreset();
+        if (encodingPreset == null) {
+            encodingPreset = getDefaultRenderSettings().getEncodingPreset();
+        }
+        encodingPresetDropdown.setSelected(encodingPreset);
         videoWidth.setValue(settings.getTargetVideoWidth());
         videoHeight.setValue(settings.getTargetVideoHeight());
         frameRateSlider.setValue(settings.getFramesPerSecond() - 10);
@@ -506,14 +510,14 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         }
         File savedOutputFile = settings.getOutputFile();
         if (savedOutputFile == null || !savedOutputFile.getParentFile().exists()) {
-            this.outputFile = generateOutputFile(settings.getEncodingPreset());
+            this.outputFile = generateOutputFile(encodingPreset);
             userDefinedOutputFileName = false;
         } else if (savedOutputFile.exists()) {
-            String name = generateOutputFile(settings.getEncodingPreset()).getName();
+            String name = generateOutputFile(encodingPreset).getName();
             this.outputFile = new File(savedOutputFile.isDirectory() ? savedOutputFile : savedOutputFile.getParentFile(), name);
             userDefinedOutputFileName = false;
         } else {
-            this.outputFile = conformExtension(savedOutputFile, settings.getEncodingPreset());
+            this.outputFile = conformExtension(savedOutputFile, encodingPreset);
             userDefinedOutputFileName = true;
         }
         outputFileButton.setLabel(this.outputFile.getName());
@@ -533,9 +537,9 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         antiAliasingDropdown.setSelected(settings.getAntiAliasing());
         exportCommand.setText(settings.getExportCommand());
         String exportArguments = settings.getExportArguments();
-        if (exportArguments == null) {
+        if (exportArguments == null || settings.getEncodingPreset() == null) {
             // backwards compat, see RenderSettings#exportArguments
-            exportArguments = settings.getEncodingPreset().getValue();
+            exportArguments = encodingPreset.getValue();
         }
         this.exportArguments.setText(exportArguments);
 
