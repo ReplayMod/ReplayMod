@@ -280,7 +280,7 @@ dependencies {
 
     shadow "com.github.ReplayMod:ReplayStudio:fc8a66d", shadeExclusions
 
-    compileOnly(jGui){
+    implementation(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
         exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
