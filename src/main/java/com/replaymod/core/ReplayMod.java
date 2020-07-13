@@ -233,15 +233,17 @@ public class ReplayMod implements
         return folder;
     }
 
+    public static final DirectoryResourcePack jGuiResourcePack;
     static { // Note: even preInit is too late and we'd have to issue another resource reload
-        initJGuiResourcePack();
+        jGuiResourcePack = initJGuiResourcePack();
     }
 
-    private static void initJGuiResourcePack() {
+    private static DirectoryResourcePack initJGuiResourcePack() {
         File folder = new File("../jGui/src/main/resources");
         if (!folder.exists()) {
-            return;
+            return null;
         }
+        //noinspection UnnecessaryLocalVariable
         DirectoryResourcePack jGuiResourcePack = new DirectoryResourcePack(folder) {
             @Override
             protected InputStream openFile(String resourceName) throws IOException {
@@ -261,22 +263,13 @@ public class ReplayMod implements
                 }
             }
         };
-        //#if MC>=11600
-        //$$ // TODO
-        //#else
-        //#if MC>=11400
-        mc.getResourcePackManager().registerProvider(new ResourcePackProvider() {
-            @Override
-            public <T extends ResourcePackProfile> void register(Map<String, T> map, ResourcePackProfile.Factory<T> factory) {
-                map.put("jgui", ResourcePackProfile.of("jgui", true, () -> jGuiResourcePack, factory, ResourcePackProfile.InsertionPosition.BOTTOM));
-            }
-        });
-        //#else
+
+        //#if MC<=11202
         //$$ @SuppressWarnings("unchecked")
         //$$ List<IResourcePack> defaultResourcePacks = ((MinecraftAccessor) mc).getDefaultResourcePacks();
         //$$ defaultResourcePacks.add(jGuiResourcePack);
         //#endif
-        //#endif
+
         //#if MC<=10710
         //$$ FolderResourcePack mainResourcePack = new FolderResourcePack(new File("../src/main/resources")) {
         //$$     @Override
@@ -293,6 +286,8 @@ public class ReplayMod implements
         //$$ };
         //$$ defaultResourcePacks.add(mainResourcePack);
         //#endif
+
+        return jGuiResourcePack;
     }
 
     //#if FABRIC>=1

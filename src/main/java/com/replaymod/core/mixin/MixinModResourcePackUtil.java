@@ -27,6 +27,9 @@ public class MixinModResourcePackUtil {
             if (pack instanceof ModResourcePack && ((ModResourcePack) pack).getFabricModMetadata().getId().equals(ReplayMod.MOD_ID)) {
                 ModContainer container = FabricLoader.getInstance().getModContainer(ReplayMod.MOD_ID).orElseThrow(IllegalAccessError::new);
                 packList.add(i, new LangResourcePack(container.getRootPath()));
+                if (ReplayMod.jGuiResourcePack != null) {
+                    packList.add(i, ReplayMod.jGuiResourcePack);
+                }
                 return;
             }
         }
