@@ -382,6 +382,8 @@ task configureRelocation() {
                         } else if (!pkg.startsWith('org/spongepowered')) {
                             pkgs << pkg.substring(0, pkg.indexOf('/', 4))
                         }
+                    } else if (pkg.startsWith('it/unimi/dsi/fastutil') && mcVersion >= 11400) {
+                        return // MC uses this as well
                     } else if (!pkg.startsWith('javax/')) {
                         // Note: we cannot just use top level packages as those will be too generic and we'll run
                         // into this long standing bug: https://github.com/johnrengelman/shadow/issues/232
@@ -435,6 +437,11 @@ task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar)
     if (mcVersion >= 11200) {
         relocate 'com.github.steveice10.netty', 'io.netty'
         exclude 'com/github/steveice10/netty/**'
+    }
+
+    if (mcVersion >= 11400) {
+        // MC ships this
+        exclude 'it/unimi/dsi/fastutil/**'
     }
 
     minimize {
