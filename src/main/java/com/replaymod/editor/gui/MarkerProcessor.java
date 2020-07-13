@@ -163,7 +163,7 @@ public class MarkerProcessor {
                         boolean hasFurtherOutputs = outputFileSuffixes.hasNext();
 
                         while (nextPacket != null) {
-                            if (nextMarker != null && nextPacket.getTime() > nextMarker.getTime()) {
+                            if (nextMarker != null && nextPacket.getTime() >= nextMarker.getTime()) {
                                 if (MARKER_NAME_START_CUT.equals(nextMarker.getName())) {
                                     if (cutFilter != null) {
                                         cutFilter.release();
