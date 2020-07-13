@@ -58,7 +58,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
         LOGGER.info("Starting {} with args: {}", executable, commandArgs);
         String[] cmdline;
         try {
-            cmdline = new CommandLine(executable).addArguments(commandArgs).toStrings();
+            cmdline = new CommandLine(executable).addArguments(commandArgs, false).toStrings();
         } catch (IllegalArgumentException e) {
             LOGGER.error("Failed to parse ffmpeg command line:", e);
             throw new FFmpegStartupException(settings, e.getLocalizedMessage());
