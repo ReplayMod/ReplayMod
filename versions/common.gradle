@@ -237,11 +237,24 @@ dependencies {
                 11502: '0.7.8+build.189',
                 11601: '0.8.8+build.202',
         ][mcVersion]
-        modCompile 'net.fabricmc.fabric-api:fabric-api:' + [
+        def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
                 11601: '0.14.0+build.371-1.16',
         ][mcVersion]
+        def fabricApiModules = [
+                "api-base",
+                "networking-v0",
+                "keybindings-v0",
+                "resource-loader-v0",
+        ]
+        if (mcVersion >= 11600) {
+            fabricApiModules.add("key-binding-api-v1")
+        }
+        fabricApiModules.each { module ->
+            modCompile fabricApi.module("fabric-$module", fabricApiVersion)
+            include fabricApi.module("fabric-$module", fabricApiVersion)
+        }
     }
 
     if (FG3) {
@@ -289,7 +302,7 @@ dependencies {
 
     if (FABRIC) {
         if (mcVersion >= 11600) {
-            modCompile 'io.github.prospector:modmenu:1.11.8+build.13'
+            modCompile 'io.github.prospector:modmenu:1.14.0+build.24'
         } else {
             modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
         }
@@ -325,6 +338,7 @@ if (mcVersion <= 10710) {
 
 if (FABRIC) {
     tasks.remapJar {
+        addNestedDependencies.set(true)
         afterEvaluate { // FIXME why does loom overwrite this if we set it immediately?
             archiveClassifier.set('obf')
         }
@@ -387,7 +401,7 @@ task configureRelocation() {
 
 tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
 task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-    from { zipTree((FABRIC ? tasks.remapJar : tasks.jar).archiveFile.get()) }
+    from { (FABRIC ? tasks.remapJar : tasks.jar).archiveFile.get() }
     dependsOn { FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
 
     from({ zipTree((FABRIC ? jGui.tasks.remapJar : jGui.tasks.jar).archiveFile.get()) }) {

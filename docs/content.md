@@ -1,11 +1,11 @@
 # Installation [installing]
 ## Installing the Replay Mod [replaymod]
 ### Minecraft 1.14 and above
-The **ReplayMod** for Minecraft 1.14 and above requires **Fabric & Fabric API** to be installed.
+The **ReplayMod** for Minecraft 1.14 and above requires **Fabric** to be installed.
 
-You can find Fabric and the installation instructions [here](https://fabricmc.net/use/). With Fabric, you also need to install the Fabric API by putting it into your mods folder. You can find Fabric API [here](https://www.curseforge.com/minecraft/mc-mods/fabric-api).
+You can find Fabric and the installation instructions [here](https://fabricmc.net/use/).
 
-After installing Fabric & Fabric API, simply put the downloaded ReplayMod .jar file into the `/mods` folder of your Minecraft directory.
+After installing Fabric, simply put the downloaded ReplayMod .jar file into the `/mods` folder of your Minecraft directory.
 
 ### Minecraft 1.12.2 and below
 For Minecraft 1.12.2 and below it requires **Minecraft Forge** to be installed.

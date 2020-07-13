@@ -36,7 +36,9 @@
 
   "depends": {
     "fabricloader": ">=0.7.0",
-    "fabric": ">=0.4.3"
+    "fabric-networking-v0": "*",
+    "fabric-keybindings-v0": "*",
+    "fabric-resource-loader-v0": "*"
   },
 
   "custom": {
