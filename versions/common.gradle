@@ -464,10 +464,9 @@ processResources
             inputs.property 'version', { project.version }
             inputs.property 'mcversion', { mcVersionStr }
 
-            // replace stuff in mcmod.info (pre 1.13) and mods.toml (1.13+) and fabric.mod.json, nothing else
+            // replace stuff in mcmod.info (forge) and fabric.mod.json, nothing else
             from(sourceSets.main.resources.srcDirs) { spec ->
                 include 'mcmod.info'
-                include 'mods.toml'
                 include 'fabric.mod.json'
 
                 // replace version and mcversion
@@ -482,10 +481,9 @@ processResources
                 filter { line -> line.trim().startsWith('//') ? '' : line}
             }
 
-            // copy everything else, thats not the mcmod.info (or mods.toml or fabric.mod.json)
+            // copy everything else, thats not the mcmod.info or fabric.mod.json
             from(sourceSets.main.resources.srcDirs) {
                 exclude 'mcmod.info'
-                exclude 'mods.toml'
                 exclude 'fabric.mod.json'
                 exclude 'pack.mcmeta'
             }
