@@ -120,6 +120,7 @@ archivesBaseName = "replaymod"
 if (FABRIC) {
     minecraft {
         refmapName = 'mixins.replaymod.refmap.json'
+        autoGenIDERuns = true
     }
 } else {
     minecraft {

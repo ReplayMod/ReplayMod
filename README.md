@@ -11,14 +11,12 @@ You can build the mod by running `./gradlew build` (or just `./gradlew shadowJar
 You can also build single versions by running `./gradlew :1.8:build` (or just `./gradlew :1.8:shadowJar`) (builds the MC 1.8 version).
 
 ### IntelliJ
-For the initial setup run `./gradlew idea genIntellijRuns`.
-You also need to enable the Mixin annotation processor:
-1. Go to File -> Settings -> Build, Execution, Deployment -> Compiler -> Annotation Processors
-2. Tick "Enable annotation processing"
-3. Add a new entry to the "Annotation Processor options"
-4. For Forge, set the name to "reobfSrgFile" and the value to "$path/versions/$MCVERSION/build/mcp-srg.srg" where you replace $path with the full 
-path to the folder containing the gradlew file
-4. For Fabric, set the name to "inMapFileNamedIntermediary" and the value to "$HOME/.gradle/caches/fabric-loom/mappings/net.fabricmc.yarn-tiny-$YARNVERSION" where you replace $HOME with your home folder and $YARNVERSION with the respective yarn version used by the RM
+Ensure you have at least IDEA 2020.1.
+Build the mod via Gradle as explained above at least once (`./gradlew compileJava` should be sufficient). This will ensure that the sources for all MC versions are generated.
+Then import the Gradle project from within IDEA: File -> Open -> build.gradle -> Open as Project
+Finally configure IDEA to build everything by itself instead of delegating it to Gradle (cause that is slow): File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> Build and run using: IntelliJ IDEA
+
+The generation of run configurations for 1.14+ currently depends on https://github.com/FabricMC/fabric-loom/pull/236
 
 ### Eclipse
 
