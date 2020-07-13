@@ -127,7 +127,7 @@ if (FABRIC) {
         if (FG3) {
             runs {
                 client {
-                    workingDirectory rootProject.file('eclipse')
+                    workingDirectory rootProject.file('run')
                     property 'forge.logging.console.level', 'info'
                     mods {
                         replaymod {
@@ -140,7 +140,7 @@ if (FABRIC) {
             if (mcVersion >= 10800) {
                 coreMod = 'com.replaymod.core.LoadingPlugin'
             }
-            runDir = "../../eclipse"
+            runDir = "../../run"
         }
 
         if (!FG3) {
