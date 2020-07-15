@@ -59,7 +59,6 @@ public class QuickMode extends EventRegistrations implements Extra {
     }
 
     private void updateIndicator(GuiReplayOverlay overlay) {
-        System.out.println("QuickMode::updateIndicator; active=" + (active ? "T" : "F"));
         if (active) {
             overlay.statusIndicatorPanel.addElements(new HorizontalLayout.Data(2), indicator);
         } else {
