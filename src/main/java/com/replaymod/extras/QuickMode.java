@@ -19,8 +19,6 @@ public class QuickMode extends EventRegistrations implements Extra {
 
     private final IGuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 40, 100, 16, 16).setSize(16, 16);
 
-    private boolean active;
-
     @Override
     public void register(final ReplayMod mod) throws Exception {
         this.module = ReplayModReplay.instance;
@@ -32,12 +30,12 @@ public class QuickMode extends EventRegistrations implements Extra {
                 if (replayHandler == null) {
                     return;
                 }
-                updateIndicator(replayHandler.getOverlay());
                 replayHandler.getReplaySender().setSyncModeAndWait();
                 mod.runLater(() -> {
                     replayHandler.ensureQuickModeInitialized(() -> {
-                        active = !active;
-                        replayHandler.setQuickMode(active);
+                        boolean enabled = !replayHandler.isQuickMode();
+                        updateIndicator(replayHandler.getOverlay(), enabled);
+                        replayHandler.setQuickMode(enabled);
                         replayHandler.getReplaySender().setAsyncMode(true);
                     });
                 });
@@ -48,11 +46,11 @@ public class QuickMode extends EventRegistrations implements Extra {
     }
 
     {
-        on(ReplayOpenedCallback.EVENT, replayHandler -> updateIndicator(replayHandler.getOverlay()));
+        on(ReplayOpenedCallback.EVENT, replayHandler -> updateIndicator(replayHandler.getOverlay(), replayHandler.isQuickMode()));
     }
 
-    private void updateIndicator(GuiReplayOverlay overlay) {
-        if (active) {
+    private void updateIndicator(GuiReplayOverlay overlay, boolean enabled) {
+        if (enabled) {
             overlay.statusIndicatorPanel.addElements(new HorizontalLayout.Data(1), indicator);
         } else {
             overlay.statusIndicatorPanel.removeElement(indicator);
