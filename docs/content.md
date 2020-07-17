@@ -39,7 +39,7 @@ To access the **Replay Mod Settings** from the Main Menu click the **"Replay Vie
 While playing, you can click the 'Mods' button in the Pause screen to reach **Replay Mod Settings** if you use Minecraft 1.12.2 and below, or have the mod [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu) installed.
 
 When in a Replay, you can either bind a hotkey to the **Replay Mod Settings** in Minecraft's Control settings
-or use the hotkey GUI by clicking on the arrow button in the lower left corner.
+or use the hotkey GUI by clicking on the hamburger button in the lower left corner.
 
 # Recording [recording]
 ![](img/recording-indicator.jpg)

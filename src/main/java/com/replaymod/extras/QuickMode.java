@@ -19,18 +19,11 @@ public class QuickMode extends EventRegistrations implements Extra {
 
     private final IGuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 40, 100, 16, 16).setSize(16, 16);
 
-    private MinecraftClient mc;
     private boolean active;
-    //#if MC>=11400
-    private double originalGamma;
-    //#else
-    //$$ private float originalGamma;
-    //#endif
 
     @Override
     public void register(final ReplayMod mod) throws Exception {
         this.module = ReplayModReplay.instance;
-        this.mc = mod.getMinecraft();
 
         mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.quickmode", Keyboard.KEY_Q, new Runnable() {
             @Override
@@ -39,15 +32,15 @@ public class QuickMode extends EventRegistrations implements Extra {
                 if (replayHandler == null) {
                     return;
                 }
-                active = !active;
                 updateIndicator(replayHandler.getOverlay());
                 replayHandler.getReplaySender().setSyncModeAndWait();
-                mod.runLater(() ->
-                        replayHandler.ensureQuickModeInitialized(() -> {
-                            replayHandler.setQuickMode(active);
-                            replayHandler.getReplaySender().setAsyncMode(true);
-                        })
-                );
+                mod.runLater(() -> {
+                    replayHandler.ensureQuickModeInitialized(() -> {
+                        active = !active;
+                        replayHandler.setQuickMode(active);
+                        replayHandler.getReplaySender().setAsyncMode(true);
+                    });
+                });
             }
         });
 
@@ -60,7 +53,7 @@ public class QuickMode extends EventRegistrations implements Extra {
 
     private void updateIndicator(GuiReplayOverlay overlay) {
         if (active) {
-            overlay.statusIndicatorPanel.addElements(new HorizontalLayout.Data(2), indicator);
+            overlay.statusIndicatorPanel.addElements(new HorizontalLayout.Data(1), indicator);
         } else {
             overlay.statusIndicatorPanel.removeElement(indicator);
         }
