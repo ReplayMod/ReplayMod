@@ -460,11 +460,9 @@ The **Default Thumbnail** which is used if no Thumbnail was created
 While in a Replay, you can use the `N` key to create a **Thumbnail** of the current Replay.  
 A **Thumbnail** is a Screenshot which should give the viewer a good impression of your Replay's content.
 
-**Thumbnails** are important when uploading a Replay to the **Replay Center**,
-as other users are much more likely to download your Replay if they can see a preview of it.  
-They also help keeping your **Replay Viewer** clear and structured.
+**Thumbnails** help keeping your **Replay Viewer** clear and structured.
 
-If no **Thumbnail** is set for a Replay, the **Default Thumbnail** will be displayed in the **Replay Viewer** and in the **Replay Center**.
+If no **Thumbnail** is set for a Replay, the **Default Thumbnail** will be displayed in the **Replay Viewer**.
 
 ## Event Markers [markers]
 ![](img/marker-timeline.jpg)
