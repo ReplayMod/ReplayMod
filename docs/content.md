@@ -20,9 +20,17 @@ After installing Forge, simply put the downloaded `ReplayMod.jar` file in the `/
 To render your creations with **Replay Mod** you will need to have FFmpeg installed.
 
 ### Windows [windows]
-Download the latest FFmpeg build from <http://ffmpeg.zeranoe.com/builds/>. Make sure to select the latest release in the dropdown next to 'Version'. This will be a number like `4.3` or `4.3.1`. Choose the highest number.
+Download the latest FFmpeg build from <http://ffmpeg.zeranoe.com/builds/>. Currently the best version is `4.2` or the latest snapshot.
+> Note: The 4.3 version currently offered by Zeranoe does **not** support MP4.
 
-In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .zip file into this folder. The FFmpeg executable should end up at `.minecraft/ffmpeg/bin/ffmpeg.exe`.
+In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .zip file into this folder. The FFmpeg executable should end up at `.minecraft\ffmpeg\bin\ffmpeg.exe`.
+
+**Notes for alternative launchers**
+- Twitch launcher by default installs Minecraft instances in C:\\Users\\*username*\\Twitch\\Minecraft\\Instances\\*instancename*\\
+- GD Launcher by default installs Minecraft instances in C:\\Users\\*username*\\AppData\\Roaming\\gdlauncher_next\\instances\\*instancename*\\
+- MultiMC by default installs Minecraft instances in C:\\Program Files (x86)\\MultiMC\\instances\\*Instancename*\\.minecraft\\
+
+For these launchers, make sure FFmpeg exists in `instancename\ffmpeg\bin\ffmpeg.exe` (Twitch / GD) or `Instancename\.minecraft\ffmpeg\bin\ffmpeg.exe` (MultiMC)
 
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.
