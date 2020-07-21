@@ -44,7 +44,7 @@ or use the hotkey GUI by clicking on the arrow button in the lower left corner.
 ## Accounts [accounts]
 In previous versions of ReplayMod we used accounts to deliver videos to the **Replay Center**. This has since been discontinued and with that, so have the accounts.
 
-Instead of the forum, you can join our [Discord server](https://discord.gg/PdQtvr) to get support and answers.
+Instead of the forum, you can join our [Discord server](https://discord.gg/5GR7RSb) to get support and answers.
 
 # Recording [recording]
 ![](img/recording-indicator.jpg)
