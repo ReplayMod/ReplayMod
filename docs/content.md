@@ -49,6 +49,11 @@ While playing, you can click the 'Mods' button in the Pause screen to reach **Re
 When in a Replay, you can either bind a hotkey to the **Replay Mod Settings** in Minecraft's Control settings
 or use the hotkey GUI by clicking on the arrow button in the lower left corner.
 
+## Accounts [accounts]
+In previous versions of ReplayMod we used accounts to deliver videos to the **Replay Center**. This has since been discontinued and with that, so have the accounts.
+
+Instead of the forum, you can join our [Discord server](https://discord.gg/5GR7RSb) to get support and answers.
+
 # Recording [recording]
 ![](img/recording-indicator.jpg)
 The **Recording Indicator** which is displayed while recording
