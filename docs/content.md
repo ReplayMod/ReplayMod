@@ -565,3 +565,6 @@ The [Tickrate Changer](https://www.curseforge.com/minecraft/mc-mods/tickratechan
 ### LabyMod [labymod]
 The [LabyMod](https://www.curseforge.com/minecraft/mc-mods/labymod) is not compatible with ReplayMod.
 
+### OldAnimationsMod [oldanimationsmod]
+In case your Minecraft crashes when you are using both ReplayMod and [OldAnimationsMod](https://oldanimationsmod.net/), try removing OldAnimationsMod.
+
