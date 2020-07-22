@@ -567,4 +567,3 @@ The [LabyMod](https://www.curseforge.com/minecraft/mc-mods/labymod) is not compa
 
 ### OldAnimationsMod [oldanimationsmod]
 In case your Minecraft crashes when you are using both ReplayMod and [OldAnimationsMod](https://oldanimationsmod.net/), try removing OldAnimationsMod.
-
