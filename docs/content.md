@@ -20,9 +20,17 @@ After installing Forge, simply put the downloaded `ReplayMod.jar` file in the `/
 To render your creations with **Replay Mod** you will need to have FFmpeg installed.
 
 ### Windows [windows]
-Download the latest FFmpeg build from <http://ffmpeg.zeranoe.com/builds/>. Make sure to select the latest release in the dropdown next to 'Version'. This will be a number like `4.3` or `4.3.1`. Choose the highest number.
+Download the latest FFmpeg build from <http://ffmpeg.zeranoe.com/builds/>. Currently the best version is `4.2` or the latest snapshot.
+> Note: The 4.3 version currently offered by Zeranoe does **not** support MP4.
 
-In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .zip file into this folder. The FFmpeg executable should end up at `.minecraft/ffmpeg/bin/ffmpeg.exe`.
+In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .zip file into this folder. The FFmpeg executable should end up at `.minecraft\ffmpeg\bin\ffmpeg.exe`.
+
+**Notes for alternative launchers**
+- Twitch launcher by default installs Minecraft instances in C:\\Users\\*username*\\Twitch\\Minecraft\\Instances\\*instancename*\\
+- GD Launcher by default installs Minecraft instances in C:\\Users\\*username*\\AppData\\Roaming\\gdlauncher_next\\instances\\*instancename*\\
+- MultiMC by default installs Minecraft instances in C:\\Program Files (x86)\\MultiMC\\instances\\*Instancename*\\.minecraft\\
+
+For these launchers, make sure FFmpeg exists in `instancename\ffmpeg\bin\ffmpeg.exe` (Twitch / GD) or `Instancename\.minecraft\ffmpeg\bin\ffmpeg.exe` (MultiMC)
 
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.
@@ -40,6 +48,11 @@ While playing, you can click the 'Mods' button in the Pause screen to reach **Re
 
 When in a Replay, you can either bind a hotkey to the **Replay Mod Settings** in Minecraft's Control settings
 or use the hotkey GUI by clicking on the arrow button in the lower left corner.
+
+## Accounts [accounts]
+In previous versions of ReplayMod we used accounts to deliver videos to the **Replay Center**. This has since been discontinued and with that, so have the accounts.
+
+Instead of the forum, you can join our [Discord server](https://discord.gg/5GR7RSb) to get support and answers.
 
 # Recording [recording]
 ![](img/recording-indicator.jpg)
@@ -107,7 +120,7 @@ The minimum Speed value is **0.1 times** the normal Minecraft Tick Speed, and th
 To the right of the Speed Slider, there is the **Replay Timeline**.
 On the Replay Timeline, you see a yellow cursor indicating your current position in the Replay.  
 By clicking somewhere on this Timeline, you will travel in time towards the specified point in time.  
-Please note that it takes longer to do larger steps in time or to jump backwards in time.
+Please note that it takes longer to do larger steps in time or to jump backwards in time (see also [Quick Mode](#replaying-quickmode)).
 
 ## Camera Paths [paths]
 ### Introduction [intro]
@@ -429,6 +442,11 @@ If you have a Replay in a dark setting (for example at nighttime, or in a cave) 
 
 This works as a replacement for the **Night Vision Potion Effect**, without the side effect of a weird sky color.
 
+## Quick Mode [quickmode] (Minecraft 1.9 and up)
+When you first enable **Quick Mode** in a replay, an internal reference of certain entity and block properties is stored for quick access, allowing for faster navigation in the **Replay Timeline**.
+As a side effect, certain features like particles and second skin layers will not be rendered in the preview.
+By default, **Quick Mode** is toggled with `Q`.
+
 ## Player Overview [overview]
 ![](img/player-overview.jpg)
 The **Player Overview** Screen
@@ -452,11 +470,9 @@ The **Default Thumbnail** which is used if no Thumbnail was created
 While in a Replay, you can use the `N` key to create a **Thumbnail** of the current Replay.  
 A **Thumbnail** is a Screenshot which should give the viewer a good impression of your Replay's content.
 
-**Thumbnails** are important when uploading a Replay to the **Replay Center**,
-as other users are much more likely to download your Replay if they can see a preview of it.  
-They also help keeping your **Replay Viewer** clear and structured.
+**Thumbnails** help keeping your **Replay Viewer** clear and structured.
 
-If no **Thumbnail** is set for a Replay, the **Default Thumbnail** will be displayed in the **Replay Viewer** and in the **Replay Center**.
+If no **Thumbnail** is set for a Replay, the **Default Thumbnail** will be displayed in the **Replay Viewer**.
 
 ## Event Markers [markers]
 ![](img/marker-timeline.jpg)
@@ -567,3 +583,6 @@ The [LabyMod](https://www.curseforge.com/minecraft/mc-mods/labymod) is not compa
 
 ### OldAnimationsMod [oldanimationsmod]
 In case your Minecraft crashes when you are using both ReplayMod and [OldAnimationsMod](https://oldanimationsmod.net/), try removing OldAnimationsMod.
+
+### Sk1er Club: Patcher [patcher]
+We have seen reports of crashes that were related to [Patcher](https://sk1er.club/mods/patcher); in case of crashes try removing Patcher.
