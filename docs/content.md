@@ -567,7 +567,3 @@ The [LabyMod](https://www.curseforge.com/minecraft/mc-mods/labymod) is not compa
 
 ### Sk1er Club: Patcher [patcher]
 We have seen reports of crashes that were related to [Patcher](https://sk1er.club/mods/patcher); in case of crashes try removing Patcher.
-
-
-
-
