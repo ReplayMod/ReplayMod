@@ -7,13 +7,13 @@ import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.packet.PacketListener;
 import de.johni0702.minecraft.gui.container.GuiPanel;
-import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.gui.screen.GameMenuScreen;
+import net.minecraft.client.gui.screen.Screen;
 
 //#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
@@ -24,6 +24,14 @@ import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 //$$
 //$$ import static com.replaymod.core.versions.MCVer.getGui;
 //#endif
+
+//#if MC>=11400
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
+//#endif
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class GuiRecordingControls extends EventRegistrations {
     private ReplayMod core;
@@ -70,21 +78,6 @@ public class GuiRecordingControls extends EventRegistrations {
         updateState();
     }
 
-    //#if FABRIC>=1
-    { on(InitScreenCallback.EVENT, (screen, buttons) -> {
-        if (screen instanceof GameMenuScreen) {
-            show((GameMenuScreen) screen);
-        }
-    }); }
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     if (getGui(event) instanceof IngameMenuScreen) {
-    //$$         show((IngameMenuScreen) getGui(event));
-    //$$     }
-    //$$ }
-    //#endif
-
     private void updateState() {
         buttonPauseResume.setI18nLabel("replaymod.gui.recording." + (paused ? "resume" : "pause"));
         buttonStartStop.setI18nLabel("replaymod.gui.recording." + (stopped ? "start" : "stop"));
@@ -92,12 +85,32 @@ public class GuiRecordingControls extends EventRegistrations {
         buttonPauseResume.setEnabled(!stopped);
     }
 
-    public void show(GameMenuScreen gui) {
-        int modMenuOffset = MCVer.isModLoaded("modmenu") ? 12 : 0;
-        VanillaGuiScreen.setup(gui).setLayout(new CustomLayout<GuiScreen>() {
+    //#if FABRIC>=1
+    { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
+    private void injectIntoIngameMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    //#else
+    //$$ @SubscribeEvent
+    //$$ public void injectIntoIngameMenu(GuiScreenEvent.InitGuiEvent.Post event) {
+    //$$     Screen guiScreen = getGui(event);
+        //#if MC>=11400
+        //$$ List<Widget> buttonList = MCVer.getButtonList(event);
+        //#else
+        //$$ List<net.minecraft.client.gui.GuiButton> buttonList = MCVer.getButtonList(event);
+        //#endif
+    //#endif
+        if (!(guiScreen instanceof GameMenuScreen)) {
+            return;
+        }
+        Function<Integer, Integer> yPos =
+                MCVer.findButton(buttonList, "menu.returnToMenu", 1)
+                        .map(Optional::of)
+                        .orElse(MCVer.findButton(buttonList, "menu.disconnect", 1))
+                        .<Function<Integer, Integer>>map(it -> (height) -> it.y)
+                        .orElse((height) -> height / 4 + 120 - 16);
+        VanillaGuiScreen.setup(guiScreen).setLayout(new CustomLayout<de.johni0702.minecraft.gui.container.GuiScreen>() {
             @Override
-            protected void layout(GuiScreen container, int width, int height) {
-                pos(panel, width / 2 - 100, height / 4 + 128 + modMenuOffset);
+            protected void layout(de.johni0702.minecraft.gui.container.GuiScreen container, int width, int height) {
+                pos(panel, width / 2 - 100, yPos.apply(height) + 16 + 8);
             }
         }).addElements(null, panel);
     }
