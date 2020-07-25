@@ -236,14 +236,15 @@ public class VideoRenderer implements RenderInfo {
         RenderTickCounter timer = ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11600
         //$$ int elapsedTicks =
-        //#else
-        int elapsedTicks = timer.ticksThisFrame;
         //#endif
         timer.beginRenderTick(
                 //#if MC>=11400
                 MCVer.milliTime()
                 //#endif
         );
+        //#if MC<11600
+        int elapsedTicks = timer.ticksThisFrame;
+        //#endif
 
         executeTaskQueue();
 
