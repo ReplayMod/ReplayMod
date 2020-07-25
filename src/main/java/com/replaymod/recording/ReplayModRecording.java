@@ -58,7 +58,7 @@ public class ReplayModRecording implements Module {
                     core.printInfoToChat("replaymod.chat.addedmarker");
                 }
             }
-        });
+        }, false);
     }
 
     @Override

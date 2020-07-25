@@ -82,13 +82,13 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
         pathPreview.registerKeyBindings(registry);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.keyframerepository", Keyboard.KEY_X, () -> {
             if (guiPathing != null) guiPathing.keyframeRepoButtonPressed();
-        });
+        }, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.clearkeyframes", Keyboard.KEY_C, () -> {
             if (guiPathing != null) guiPathing.clearKeyframesButtonPressed();
-        });
+        }, true);
         core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
             if (guiPathing != null) guiPathing.syncTimeButtonPressed();
-        });
+        }, true);
         core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
             if (guiPathing != null) guiPathing.deleteButtonPressed();
         });

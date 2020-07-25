@@ -35,7 +35,9 @@ import org.lwjgl.glfw.GLFW;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class KeyBindingRegistry extends EventRegistrations {
     private static final String CATEGORY = "replaymod.title";
@@ -44,19 +46,20 @@ public class KeyBindingRegistry extends EventRegistrations {
     //#endif
 
     private Map<String, KeyBinding> keyBindings = new HashMap<String, KeyBinding>();
+    private Set<KeyBinding> onlyInReplay = new HashSet<>();
     private Multimap<KeyBinding, Runnable> keyBindingHandlers = ArrayListMultimap.create();
     private Multimap<KeyBinding, Runnable> repeatedKeyBindingHandlers = ArrayListMultimap.create();
     private Multimap<Integer, Runnable> rawHandlers = ArrayListMultimap.create();
 
-    public void registerKeyBinding(String name, int keyCode, Runnable whenPressed) {
-        keyBindingHandlers.put(registerKeyBinding(name, keyCode), whenPressed);
+    public void registerKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
+        keyBindingHandlers.put(registerKeyBinding(name, keyCode, onlyInRepay), whenPressed);
     }
 
-    public void registerRepeatedKeyBinding(String name, int keyCode, Runnable whenPressed) {
-        repeatedKeyBindingHandlers.put(registerKeyBinding(name, keyCode), whenPressed);
+    public void registerRepeatedKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
+        repeatedKeyBindingHandlers.put(registerKeyBinding(name, keyCode, onlyInRepay), whenPressed);
     }
 
-    private KeyBinding registerKeyBinding(String name, int keyCode) {
+    private KeyBinding registerKeyBinding(String name, int keyCode, boolean onlyInRepay) {
         KeyBinding keyBinding = keyBindings.get(name);
         if (keyBinding == null) {
             //#if FABRIC>=1
@@ -72,6 +75,11 @@ public class KeyBindingRegistry extends EventRegistrations {
             //$$ ClientRegistry.registerKeyBinding(keyBinding);
             //#endif
             keyBindings.put(name, keyBinding);
+            if (onlyInRepay) {
+                this.onlyInReplay.add(keyBinding);
+            }
+        } else if (!onlyInRepay) {
+            this.onlyInReplay.remove(keyBinding);
         }
         return keyBinding;
     }
@@ -82,6 +90,10 @@ public class KeyBindingRegistry extends EventRegistrations {
 
     public Map<String, KeyBinding> getKeyBindings() {
         return Collections.unmodifiableMap(keyBindings);
+    }
+
+    public Set<KeyBinding> getOnlyInReplay() {
+        return Collections.unmodifiableSet(onlyInReplay);
     }
 
     //#if MC>=11400

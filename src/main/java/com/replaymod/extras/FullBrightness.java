@@ -53,7 +53,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
                     updateIndicator(replayHandler.getOverlay());
                 }
             }
-        });
+        }, true);
 
         register();
     }

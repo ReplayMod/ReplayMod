@@ -6,6 +6,7 @@
   "client": [
     //#if MC>=11400
     "AbstractButtonWidgetAccessor",
+    "Mixin_ContextualKeyBindings",
     "MixinGameRenderer",
     "MixinModResourcePackUtil",
     //#endif

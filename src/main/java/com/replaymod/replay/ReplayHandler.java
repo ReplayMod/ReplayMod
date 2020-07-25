@@ -237,7 +237,7 @@ public class ReplayHandler {
         //#endif
         overlay.setVisible(false);
 
-        ReplayModReplay.instance.replayHandler = null;
+        ReplayModReplay.instance.forcefullyStopReplay();
 
         mc.openScreen(null);
 

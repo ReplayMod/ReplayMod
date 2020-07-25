@@ -93,7 +93,7 @@ public class PlayerOverview extends EventRegistrations implements Extra {
                     new PlayerOverviewGui(PlayerOverview.this, players).display();
                 }
             }
-        });
+        }, true);
 
         register();
     }
