@@ -23,6 +23,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.options.KeyBinding;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,7 +47,7 @@ public class ReplayModReplay implements Module {
 
     public static Logger LOGGER = LogManager.getLogger();
 
-    protected ReplayHandler replayHandler;
+    private ReplayHandler replayHandler;
 
     public ReplayHandler getReplayHandler() {
         return replayHandler;
@@ -78,7 +79,7 @@ public class ReplayModReplay implements Module {
                     }
                 }
             }
-        });
+        }, true);
 
         registry.registerKeyBinding("replaymod.input.thumbnail", Keyboard.KEY_N, new Runnable() {
             @Override
@@ -113,7 +114,7 @@ public class ReplayModReplay implements Module {
                     });
                 }
             }
-        });
+        }, true);
 
         registry.registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
             @Override
@@ -122,7 +123,7 @@ public class ReplayModReplay implements Module {
                     replayHandler.getOverlay().playPauseButton.onClick();
                 }
             }
-        });
+        }, true);
 
         registry.registerKeyBinding("replaymod.input.quickmode", Keyboard.KEY_Q, () -> {
             if (replayHandler != null) {
@@ -133,19 +134,19 @@ public class ReplayModReplay implements Module {
                             replayHandler.getReplaySender().setAsyncMode(true);
                         }));
             }
-        });
+        }, true);
 
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollclockwise", Keyboard.KEY_L, () -> {
             // Noop, actual handling logic in CameraEntity#update
-        });
+        }, true);
 
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollcounterclockwise", Keyboard.KEY_J, () -> {
             // Noop, actual handling logic in CameraEntity#update
-        });
+        }, true);
 
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.resettilt", Keyboard.KEY_K, () -> {
             Optional.ofNullable(replayHandler).map(ReplayHandler::getCameraEntity).ifPresent(c -> c.roll = 0);
-        });
+        }, true);
     }
 
     @Override
@@ -191,10 +192,16 @@ public class ReplayModReplay implements Module {
             }
         }
         replayHandler = new ReplayHandler(replayFile, true);
+        //#if MC>=11400
+        KeyBinding.updateKeysByCode(); // see Mixin_ContextualKeyBindings
+        //#endif
     }
 
     public void forcefullyStopReplay() {
         replayHandler = null;
+        //#if MC>=11400
+        KeyBinding.updateKeysByCode(); // see Mixin_ContextualKeyBindings
+        //#endif
     }
 
     public ReplayMod getCore() {

@@ -75,7 +75,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                     }
                     updateInputs();
                 }
-            }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.RenderMethod.values());
+            }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.RenderMethod.getSupported());
 
     {
         for (Map.Entry<RenderSettings.RenderMethod, IGuiClickable> entry :
@@ -102,7 +102,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                     }
                     updateInputs();
                 }
-            }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.EncodingPreset.values());
+            }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.EncodingPreset.getSupported());
 
     public final GuiNumberField videoWidth = new GuiNumberField().setSize(50, 20).setMinValue(1).setValidateOnFocusChange(true);
     public final GuiNumberField videoHeight = new GuiNumberField().setSize(50, 20).setMinValue(1).setValidateOnFocusChange(true);
@@ -450,12 +450,6 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             }
         }
 
-        //#if MC<10800 || MC>=11500
-        if (method == RenderSettings.RenderMethod.BLEND) {
-            return "replaymod.gui.rendersettings.no_blend_on_1_7_10";
-        }
-        //#endif
-
         return null;
     }
 
@@ -489,8 +483,13 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     }
 
     public void load(RenderSettings settings) {
-        renderMethodDropdown.setSelected(settings.getRenderMethod());
+        if (settings.getRenderMethod().isSupported()) {
+            renderMethodDropdown.setSelected(settings.getRenderMethod());
+        }
         RenderSettings.EncodingPreset encodingPreset = settings.getEncodingPreset();
+        if (!encodingPreset.isSupported()) {
+            encodingPreset = null;
+        }
         if (encodingPreset == null) {
             encodingPreset = getDefaultRenderSettings().getEncodingPreset();
         }

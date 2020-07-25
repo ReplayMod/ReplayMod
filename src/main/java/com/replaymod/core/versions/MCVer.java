@@ -42,6 +42,12 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 
 import java.util.concurrent.CompletableFuture;
+
+//#if MC>=11600
+//$$ import net.minecraft.text.TranslatableText;
+//#else
+import net.minecraft.client.resource.language.I18n;
+//#endif
 //#else
 //$$ import com.google.common.util.concurrent.FutureCallback;
 //$$ import com.google.common.util.concurrent.Futures;
@@ -119,6 +125,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.Optional;
 
 /**
  * Abstraction over things that have changed between different MC versions.
@@ -602,6 +609,31 @@ public class MCVer {
         acc.getChildren().add(button);
         //#endif
     }
+
+    //#if MC>=11400
+    public static Optional<AbstractButtonWidget> findButton(List<AbstractButtonWidget> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
+        //#if MC>=11600
+        //$$ final TranslatableText message = new TranslatableText(text);
+        //#else
+        final String message = I18n.translate(text);
+        //#endif
+        for (AbstractButtonWidget b : buttonList) {
+            if (message.equals(b.getMessage())) {
+                return Optional.of(b);
+            }
+        }
+        return Optional.empty();
+    }
+    //#else
+    //$$ public static Optional<GuiButton> findButton(List<GuiButton> buttonList, @SuppressWarnings("unused") String text, int id) {
+    //$$     for (GuiButton b : buttonList) {
+    //$$         if (b.id == id) {
+    //$$             return Optional.of(b);
+    //$$         }
+    //$$     }
+    //$$     return Optional.empty();
+    //$$ }
+    //#endif
 
     //#if MC>=11400
     public static void processKeyBinds() {

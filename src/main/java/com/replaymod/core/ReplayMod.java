@@ -318,7 +318,7 @@ public class ReplayMod implements
     public void registerKeyBindings(KeyBindingRegistry registry) {
         registry.registerKeyBinding("replaymod.input.settings", 0, () -> {
             new GuiReplaySettings(null, settingsRegistry).display();
-        });
+        }, false);
     }
 
     @Override

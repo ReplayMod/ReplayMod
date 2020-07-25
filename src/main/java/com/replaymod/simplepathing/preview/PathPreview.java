@@ -42,7 +42,7 @@ public class PathPreview extends EventRegistrations {
             SettingsRegistry settings = mod.getCore().getSettingsRegistry();
             settings.set(Setting.PATH_PREVIEW, !settings.get(Setting.PATH_PREVIEW));
             settings.save();
-        });
+        }, true);
     }
 
     private void update() {
