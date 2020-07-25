@@ -23,6 +23,7 @@ import static com.replaymod.core.ReplayMod.MOD_ID;
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.KeyEventCallback;
 import com.replaymod.core.events.PreRenderCallback;
+import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 //$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -133,7 +134,7 @@ public class KeyBindingRegistry extends EventRegistrations {
 
     //#if MC>=11400
     private void handleRaw(int keyCode, int action) {
-        if (action != 0) return;
+        if (action != GLFW.GLFW_PRESS) return;
     //#else
     //$$ private void handleRaw() {
     //$$     int keyCode = Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey();
