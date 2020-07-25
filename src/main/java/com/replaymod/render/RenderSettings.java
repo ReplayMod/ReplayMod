@@ -47,6 +47,21 @@ public class RenderSettings {
         public boolean hasFixedAspectRatio() {
             return this == EQUIRECTANGULAR || this == ODS || this == CUBIC;
         }
+
+        @SuppressWarnings("RedundantIfStatement")
+        public boolean isSupported() {
+            //#if MC<10800 || MC>=11500
+            if (this == BLEND) {
+                return false;
+            }
+            //#endif
+
+            return true;
+        }
+
+        public static RenderMethod[] getSupported() {
+            return Arrays.stream(values()).filter(RenderMethod::isSupported).toArray(RenderMethod[]::new);
+        }
     }
 
     public enum EncodingPreset {
@@ -89,6 +104,18 @@ public class RenderSettings {
         @Override
         public String toString() {
             return I18n.translate("replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase());
+        }
+
+        public boolean isSupported() {
+            if (this == BLEND) {
+                return RenderMethod.BLEND.isSupported();
+            } else {
+                return true;
+            }
+        }
+
+        public static EncodingPreset[] getSupported() {
+            return Arrays.stream(values()).filter(EncodingPreset::isSupported).toArray(EncodingPreset[]::new);
         }
     }
 
