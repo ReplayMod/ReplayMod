@@ -5,6 +5,7 @@ import com.replaymod.render.RenderSettings;
 import com.replaymod.render.capturer.CaptureData;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 
@@ -15,6 +16,7 @@ import net.minecraft.client.util.math.MatrixStack;
 //#if MC>=11400
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
+import com.replaymod.core.events.PreRenderHandCallback;
 //#else
 //#if MC>=11400
 //$$ import net.minecraftforge.fml.hooks.BasicEventHooks;
@@ -25,7 +27,7 @@ import com.replaymod.core.events.PreRenderCallback;
 
 import java.io.IOException;
 
-public class EntityRendererHandler implements WorldRenderer {
+public class EntityRendererHandler extends EventRegistrations implements WorldRenderer {
     public final MinecraftClient mc = MCVer.getMinecraft();
 
     @Getter
@@ -42,7 +44,12 @@ public class EntityRendererHandler implements WorldRenderer {
         this.settings = settings;
         this.renderInfo = renderInfo;
 
+        //#if MC>=11400
+        on(PreRenderHandCallback.EVENT, () -> omnidirectional);
+        //#endif
+
         ((IEntityRenderer) mc.gameRenderer).replayModRender_setHandler(this);
+        register();
     }
 
     @Override
@@ -84,6 +91,7 @@ public class EntityRendererHandler implements WorldRenderer {
     @Override
     public void close() throws IOException {
         ((IEntityRenderer) mc.gameRenderer).replayModRender_setHandler(null);
+        unregister();
     }
 
     @Override
