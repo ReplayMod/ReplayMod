@@ -586,3 +586,6 @@ In case your Minecraft crashes when you are using both ReplayMod and [OldAnimati
 
 ### Sk1er Club: Patcher [patcher]
 We have seen reports of crashes that were related to [Patcher](https://sk1er.club/mods/patcher); in case of crashes try removing Patcher.
+
+### Baritone [baritone]
+The [Baritone](https://github.com/cabaletta/baritone/) mod can cause a crash when you're trying to load a replay. If you experience such problems, try running without Baritone.
