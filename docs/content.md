@@ -589,3 +589,6 @@ We have seen reports of crashes that were related to [Patcher](https://sk1er.clu
 
 ### Baritone [baritone]
 The [Baritone](https://github.com/cabaletta/baritone/) mod can cause a crash when you're trying to load a replay. If you experience such problems, try running without Baritone.
+
+### RandomPatches [randompatches]
+Minecraft may crash if you try to use [RandomPatches](https://www.curseforge.com/minecraft/mc-mods/randompatches) together with ReplayMod. Try removing RandomPatches if Minecraft crashes on startup.
