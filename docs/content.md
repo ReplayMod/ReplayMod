@@ -175,9 +175,6 @@ If you wish to disable smooth interpolation and want to make the Path follow str
 You can easily toggle between **Linear** and **Cubic Interpolation** using the `O` key.
 
 #### Path Preview [preview]
-![](img/path-preview-icon.jpg)
-While the **Path Preview** is enabled, this camera symbol is displayed in the lower right corner of the screen.
-
 ![](img/path-preview.jpg)
 A normal **Path Preview**
 
