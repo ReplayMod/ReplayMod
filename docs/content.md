@@ -589,3 +589,6 @@ The [Baritone](https://github.com/cabaletta/baritone/) mod can cause a crash whe
 
 ### RandomPatches [randompatches]
 Minecraft may crash if you try to use [RandomPatches](https://www.curseforge.com/minecraft/mc-mods/randompatches) together with ReplayMod. Try removing RandomPatches if Minecraft crashes on startup.
+
+### Sodium [sodium]
+ReplayMod can record when [Sodium](https://www.curseforge.com/minecraft/mc-mods/sodium) is installed but will crash during render. Disable Sodium before rendering, it can be re-enabled after that.
