@@ -487,10 +487,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
             renderMethodDropdown.setSelected(settings.getRenderMethod());
         }
         RenderSettings.EncodingPreset encodingPreset = settings.getEncodingPreset();
-        if (!encodingPreset.isSupported()) {
-            encodingPreset = null;
-        }
-        if (encodingPreset == null) {
+        /* encodingPreset can be null from a previously supported and later removed preset */
+        if (encodingPreset == null || !encodingPreset.isSupported()) {
             encodingPreset = getDefaultRenderSettings().getEncodingPreset();
         }
         encodingPresetDropdown.setSelected(encodingPreset);
