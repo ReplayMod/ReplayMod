@@ -48,8 +48,16 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     private MinecraftClient client;
 
     //#if MC>=11600
-    //$$ protected MixinWorldClient(MutableWorldProperties mutableWorldProperties, RegistryKey<World> registryKey, RegistryKey<DimensionType> registryKey2, DimensionType dimensionType, Supplier<Profiler> profiler, boolean bl, boolean bl2, long l) {
-    //$$     super(mutableWorldProperties, registryKey, registryKey2, dimensionType, profiler, bl, bl2, l);
+    //$$ protected MixinWorldClient(MutableWorldProperties mutableWorldProperties, RegistryKey<World> registryKey,
+                               //#if MC<11602
+                               //$$ RegistryKey<DimensionType> registryKey2,
+                               //#endif
+    //$$                            DimensionType dimensionType, Supplier<Profiler> profiler, boolean bl, boolean bl2, long l) {
+    //$$     super(mutableWorldProperties, registryKey,
+                //#if MC<11602
+                //$$ registryKey2,
+                //#endif
+    //$$             dimensionType, profiler, bl, bl2, l);
     //$$ }
     //#else
     //#if MC>=11400

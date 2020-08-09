@@ -625,7 +625,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     false,
                     //#if MC>=11600
                     //$$ packet.method_29443(),
+                    //#if MC>=11602
+                    //$$ (net.minecraft.util.registry.DynamicRegistryManager.Impl) packet.getRegistryManager(),
+                    //#else
                     //$$ (net.minecraft.util.registry.RegistryTracker.Modifiable) packet.getDimension(),
+                    //#endif
                     //$$ packet.method_29444(),
                     //$$ packet.getDimensionId(),
                     //#else

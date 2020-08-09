@@ -51,7 +51,11 @@ public abstract class MixinPlayerControllerMP {
     //#endif
 
     //#if MC>=11400
+    //#if MC>=11602
+    //$$ @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;ZZ)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
+    //#else
     @Inject(method = "createPlayer", at=@At("HEAD"), cancellable = true)
+    //#endif
     private void replayModReplay_createReplayCamera(
             //#if MC>=11400
             ClientWorld worldIn,
