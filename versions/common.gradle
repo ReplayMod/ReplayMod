@@ -226,13 +226,13 @@ dependencies {
                 11404: '1.14.4',
                 11502: '1.15.2',
                 11601: '1.16.1',
-                11602: '1.16.2-rc1',
+                11602: '1.16.2',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
                 11502: '1.15.2+build.14',
                 11601: '1.16.1+build.17:v2',
-                11602: '1.16.2-rc1+build.6:v2',
+                11602: '1.16.2+build.1:v2',
         ][mcVersion]
         modCompile 'net.fabricmc:fabric-loader:' + [
                 11404: '0.7.8+build.189',
@@ -296,7 +296,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:14192d1", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:bc8baba", shadeExclusions
 
     implementation(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
