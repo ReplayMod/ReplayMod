@@ -109,7 +109,11 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
 
     // Same goes for level events (also called effects). E.g. door open, block break, etc.
     //#if MC>=11400
+    //#if MC>=11600
+    //$$ @Inject(method = "syncWorldEvent", at = @At("HEAD"))
+    //#else
     @Inject(method = "playLevelEvent", at = @At("HEAD"))
+    //#endif
     private void playLevelEvent (PlayerEntity player, int type, BlockPos pos, int data, CallbackInfo ci) {
     //#else
     //$$ // These are handled in the World class, so we override the method in WorldClient and add our special handling.
