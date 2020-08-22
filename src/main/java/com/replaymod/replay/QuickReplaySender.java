@@ -39,6 +39,11 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.function.Consumer;
 
+//#if MC>=11602
+//$$ import net.minecraft.util.registry.DynamicRegistryManager;
+//$$ import net.minecraft.util.registry.Registry;
+//#endif
+
 //#if MC>=11600
 //$$ import net.minecraft.world.World;
 //#else
@@ -195,7 +200,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         replay.reset();
         ctx.fireChannelRead(new PlayerRespawnS2CPacket(
                 //#if MC>=11600
+                //#if MC>=11602
+                //$$ DimensionType.addRegistryDefaults(new DynamicRegistryManager.Impl()).get(Registry.DIMENSION_TYPE_KEY).get(DimensionType.OVERWORLD_REGISTRY_KEY),
+                //#else
                 //$$ DimensionType.OVERWORLD_REGISTRY_KEY,
+                //#endif
                 //$$ World.OVERWORLD,
                 //$$ 0,
                 //$$ GameMode.SPECTATOR,
