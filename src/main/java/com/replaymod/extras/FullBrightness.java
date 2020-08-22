@@ -23,7 +23,7 @@ import com.replaymod.core.events.PostRenderCallback;
 public class FullBrightness extends EventRegistrations implements Extra {
     private ReplayModReplay module;
 
-    private final IGuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 90, 20, 19, 13).setSize(19, 13);
+    private final IGuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 90, 20, 19, 16).setSize(19, 16);
 
     private MinecraftClient mc;
     private boolean active;

@@ -226,21 +226,25 @@ dependencies {
                 11404: '1.14.4',
                 11502: '1.15.2',
                 11601: '1.16.1',
+                11602: '1.16.2',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
                 11502: '1.15.2+build.14',
                 11601: '1.16.1+build.17:v2',
+                11602: '1.16.2+build.1:v2',
         ][mcVersion]
         modCompile 'net.fabricmc:fabric-loader:' + [
                 11404: '0.7.8+build.189',
                 11502: '0.7.8+build.189',
                 11601: '0.8.8+build.202',
+                11602: '0.9.1+build.205',
         ][mcVersion]
         def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
                 11601: '0.14.0+build.371-1.16',
+                11602: '0.17.1+build.394-1.16',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -292,7 +296,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:20b5183", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:bc8baba", shadeExclusions
 
     implementation(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
@@ -301,7 +305,10 @@ dependencies {
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 11600) {
+        if (mcVersion >= 11602) {
+            // TODO re-add to runtime once available
+            modCompileOnly 'io.github.prospector:modmenu:1.14.0+build.24'
+        } else if (mcVersion >= 11600) {
             modCompile 'io.github.prospector:modmenu:1.14.0+build.24'
         } else {
             modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'

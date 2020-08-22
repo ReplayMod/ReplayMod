@@ -23,6 +23,7 @@ public class ReplayModExtras implements Module {
             PlayerOverview.class,
             YoutubeUpload.class,
             FullBrightness.class,
+            QuickMode.class,
             HotkeyButtons.class,
             OpenEyeExtra.class
     );

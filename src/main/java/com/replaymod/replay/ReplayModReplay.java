@@ -125,17 +125,6 @@ public class ReplayModReplay implements Module {
             }
         }, true);
 
-        registry.registerKeyBinding("replaymod.input.quickmode", Keyboard.KEY_Q, () -> {
-            if (replayHandler != null) {
-                replayHandler.getReplaySender().setSyncModeAndWait();
-                core.runLater(() ->
-                        replayHandler.ensureQuickModeInitialized(() -> {
-                            replayHandler.setQuickMode(!replayHandler.isQuickMode());
-                            replayHandler.getReplaySender().setAsyncMode(true);
-                        }));
-            }
-        }, true);
-
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollclockwise", Keyboard.KEY_L, () -> {
             // Noop, actual handling logic in CameraEntity#update
         }, true);

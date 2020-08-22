@@ -25,6 +25,9 @@
     "modmenu": [
       "com.replaymod.core.gui.ModMenuApiImpl"
     ],
+    "preLaunch": [
+      "com.replaymod.core.DummyChainLoadEntryPoint"
+    ],
     "mm:early_risers": [
       "com.replaymod.core.ReplayModMMLauncher"
     ]
