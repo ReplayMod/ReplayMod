@@ -57,7 +57,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
      * This is not used by the replay module itself but may be used by other modules/extras to show
      * when they're active.
      */
-    public final GuiPanel statusIndicatorPanel = new GuiPanel(this).setSize(100, 20)
+    public final GuiPanel statusIndicatorPanel = new GuiPanel(this).setSize(100, 16)
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(5));
 
     private final EventHandler eventHandler = new EventHandler();
@@ -78,7 +78,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
                 pos(topPanel, 10, 10);
                 size(topPanel, width - 20, 20);
 
-                pos(statusIndicatorPanel, width / 2, height - 25);
+                pos(statusIndicatorPanel, width / 2, height - 21);
                 width(statusIndicatorPanel, width / 2 - 5);
             }
         });

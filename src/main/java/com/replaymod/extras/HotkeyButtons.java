@@ -52,7 +52,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
 
         public Gui(ReplayMod mod, GuiReplayOverlay overlay) {
             toggleButton = new GuiTexturedButton(overlay).setSize(20, 20)
-                    .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(0, 0)
+                    .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(0, 120)
                     .onClick(new Runnable() {
                         @Override
                         public void run() {
