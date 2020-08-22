@@ -439,6 +439,9 @@ If you have a Replay in a dark setting (for example at nighttime, or in a cave) 
 This works as a replacement for the **Night Vision Potion Effect**, without the side effect of a weird sky color.
 
 ## Quick Mode [quickmode] (Minecraft 1.9 and up)
+![](img/quickmode-icon.jpg)
+In **Quick Mode**, this clock symbol is displayed in the lower right corner of the screen.
+
 When you first enable **Quick Mode** in a replay, an internal reference of certain entity and block properties is stored for quick access, allowing for faster navigation in the **Replay Timeline**.
 As a side effect, certain features like particles and second skin layers will not be rendered in the preview.
 By default, **Quick Mode** is toggled with `Q`.
