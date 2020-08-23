@@ -113,6 +113,14 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             timeline.addTimeKeyframe(guiPathing.timeline.getCursorPosition(), replayHandler.getReplaySender().currentTimeStamp());
         };
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.insertpositionkeyframe", Keyboard.KEY_I, INSERT_PK, true);
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.insertabspositionkeyframe", Keyboard.KEY_U, () -> {
+            if (null == guiPathing) return;
+            ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
+            SPTimeline timeline = this.getCurrentTimeline();
+            CameraEntity camera = replayHandler.getCameraEntity();
+            timeline.addPositionKeyframe(guiPathing.timeline.getCursorPosition(), Entity_getX(camera), Entity_getY(camera), Entity_getZ(camera),
+                    camera.yaw, camera.pitch, camera.roll, -1);
+        }, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.inserttimekeyframe", Keyboard.KEY_O, INSERT_TK, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.insertbothkeyframes", 0, () -> {
             INSERT_PK.run();
