@@ -4,6 +4,7 @@ import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.SettingsChangedCallback;
+import com.replaymod.replay.camera.CameraEntity;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
@@ -34,6 +35,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.replaymod.core.versions.MCVer.*;
+import static com.replaymod.core.versions.MCVer.Entity_getZ;
 
 public class ReplayModSimplePathing extends EventRegistrations implements Module {
     { instance = this; }
@@ -92,6 +96,28 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
         core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
             if (guiPathing != null) guiPathing.deleteButtonPressed();
         });
+
+        final Runnable INSERT_PK = () -> {
+            if (null == guiPathing) return;
+            ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
+            SPTimeline timeline = this.getCurrentTimeline();
+            CameraEntity camera = replayHandler.getCameraEntity();
+            int spectatedId = !replayHandler.isCameraView() ? getRenderViewEntity(replayHandler.getOverlay().getMinecraft()).getEntityId() : -1;
+            timeline.addPositionKeyframe(guiPathing.timeline.getCursorPosition(), Entity_getX(camera), Entity_getY(camera), Entity_getZ(camera),
+                    camera.yaw, camera.pitch, camera.roll, spectatedId);
+        };
+        final Runnable INSERT_TK = () -> {
+            if (null == guiPathing) return;
+            ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
+            SPTimeline timeline = this.getCurrentTimeline();
+            timeline.addTimeKeyframe(guiPathing.timeline.getCursorPosition(), replayHandler.getReplaySender().currentTimeStamp());
+        };
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.insertpositionkeyframe", Keyboard.KEY_I, INSERT_PK, true);
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.inserttimekeyframe", Keyboard.KEY_O, INSERT_TK, true);
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.insertbothkeyframes", 0, () -> {
+            INSERT_PK.run();
+            INSERT_TK.run();
+        }, true);
     }
 
     { on(ReplayOpenedCallback.EVENT, this::onReplayOpened); }
