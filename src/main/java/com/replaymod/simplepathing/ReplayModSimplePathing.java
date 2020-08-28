@@ -21,6 +21,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
+import net.minecraft.client.options.KeyBinding;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +40,8 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     public static ReplayModSimplePathing instance;
 
     private ReplayMod core;
+    public KeyBinding keyPositionKeyframe;
+    public KeyBinding keyTimeKeyframe;
 
     public static Logger LOGGER = LogManager.getLogger();
 
@@ -91,13 +94,13 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
         core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
             if (guiPathing != null) guiPathing.deleteButtonPressed();
         });
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positionkeyframe", Keyboard.KEY_I, () -> {
+        keyPositionKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positionkeyframe", Keyboard.KEY_I, () -> {
             if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, false);
         }, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positiononlykeyframe", 0, () -> {
             if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, true);
         }, true);
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.timekeyframe", Keyboard.KEY_O, () -> {
+        keyTimeKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.timekeyframe", Keyboard.KEY_O, () -> {
             if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.TIME, false);
         }, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.bothkeyframes", 0, () -> {

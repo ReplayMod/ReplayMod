@@ -3,6 +3,7 @@ package com.replaymod.replay.gui.overlay;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.ReplaySender;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -31,8 +32,11 @@ import com.replaymod.core.events.KeyEventCallback;
 //#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
+import static com.replaymod.core.versions.MCVer.getBoundKey;
 
 public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
+
+    private final ReplayModReplay mod = ReplayModReplay.instance;
 
     public final GuiPanel topPanel = new GuiPanel(this)
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.LEFT).setSpacing(5));
@@ -41,11 +45,13 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
+                String label;
                 if (getTextureNormal().getY() == 0) { // Play button
-                    tooltip.setI18nText("replaymod.gui.ingame.menu.unpause");
+                    label = "replaymod.gui.ingame.menu.unpause";
                 } else { // Pause button
-                    tooltip.setI18nText("replaymod.gui.ingame.menu.pause");
+                    label = "replaymod.gui.ingame.menu.pause";
                 }
+                tooltip.setText(I18n.translate(label) + " (" + getBoundKey(mod.keyPlayPause) + ")");
             }
             return tooltip;
         }

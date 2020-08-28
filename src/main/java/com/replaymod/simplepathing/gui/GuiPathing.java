@@ -49,6 +49,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -124,19 +125,21 @@ public class GuiPathing {
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
+                String label;
                 if (getTextureNormal().getY() == 40) { // Add keyframe
                     if (getTextureNormal().getX() == 0) { // Position
-                        tooltip.setI18nText("replaymod.gui.ingame.menu.addposkeyframe");
+                        label = "replaymod.gui.ingame.menu.addposkeyframe";
                     } else { // Spectator
-                        tooltip.setI18nText("replaymod.gui.ingame.menu.addspeckeyframe");
+                        label = "replaymod.gui.ingame.menu.addspeckeyframe";
                     }
                 } else { // Remove keyframe
                     if (getTextureNormal().getX() == 0) { // Position
-                        tooltip.setI18nText("replaymod.gui.ingame.menu.removeposkeyframe");
+                        label = "replaymod.gui.ingame.menu.removeposkeyframe";
                     } else { // Spectator
-                        tooltip.setI18nText("replaymod.gui.ingame.menu.removespeckeyframe");
+                        label = "replaymod.gui.ingame.menu.removespeckeyframe";
                     }
                 }
+                tooltip.setText(I18n.translate(label) + " (" + getBoundKey(mod.keyPositionKeyframe) + ")");
             }
             return tooltip;
         }
@@ -147,11 +150,13 @@ public class GuiPathing {
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
+                String label;
                 if (getTextureNormal().getY() == 80) { // Add time keyframe
-                    tooltip.setI18nText("replaymod.gui.ingame.menu.addtimekeyframe");
+                    label = "replaymod.gui.ingame.menu.addtimekeyframe";
                 } else { // Remove time keyframe
-                    tooltip.setI18nText("replaymod.gui.ingame.menu.removetimekeyframe");
+                    label = "replaymod.gui.ingame.menu.removetimekeyframe";
                 }
+                tooltip.setText(I18n.translate(label) + " (" + getBoundKey(mod.keyTimeKeyframe) + ")");
             }
             return tooltip;
         }

@@ -42,6 +42,7 @@ public class ReplayModReplay implements Module {
     public static ReplayModReplay instance;
 
     private ReplayMod core;
+    public KeyBinding keyPlayPause;
 
     private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 
@@ -116,7 +117,7 @@ public class ReplayModReplay implements Module {
             }
         }, true);
 
-        registry.registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
+        keyPlayPause = registry.registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null) {

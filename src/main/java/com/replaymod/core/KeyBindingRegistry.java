@@ -51,12 +51,16 @@ public class KeyBindingRegistry extends EventRegistrations {
     private Multimap<KeyBinding, Runnable> repeatedKeyBindingHandlers = ArrayListMultimap.create();
     private Multimap<Integer, Runnable> rawHandlers = ArrayListMultimap.create();
 
-    public void registerKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
-        keyBindingHandlers.put(registerKeyBinding(name, keyCode, onlyInRepay), whenPressed);
+    public KeyBinding registerKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
+        KeyBinding keyBinding = registerKeyBinding(name, keyCode, onlyInRepay);
+        keyBindingHandlers.put(keyBinding, whenPressed);
+        return keyBinding;
     }
 
-    public void registerRepeatedKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
-        repeatedKeyBindingHandlers.put(registerKeyBinding(name, keyCode, onlyInRepay), whenPressed);
+    public KeyBinding registerRepeatedKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
+        KeyBinding keyBinding = registerKeyBinding(name, keyCode, onlyInRepay);
+        repeatedKeyBindingHandlers.put(keyBinding, whenPressed);
+        return keyBinding;
     }
 
     private KeyBinding registerKeyBinding(String name, int keyCode, boolean onlyInRepay) {

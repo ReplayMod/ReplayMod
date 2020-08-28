@@ -7,6 +7,7 @@ import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersi
 import com.replaymod.replaystudio.us.myles.ViaVersion.packets.State;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
@@ -748,6 +749,23 @@ public class MCVer {
         //#endif
     }
 
+    public static String getBoundKey(KeyBinding keyBinding) {
+        try {
+            //#if MC>=11600
+            return keyBinding.getBoundKeyLocalizedText().asString();
+            //#else
+            //#if MC>=11400
+            //$$ return keyBinding.getLocalizedName();
+            //#else
+            //$$ return Keyboard.getKeyName(keyBinding.getKeyCode());
+            //#endif
+            //#endif
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
+            return "Unknown";
+        }
+    }
+
     //#if MC>=11400
     private static Boolean hasOptifine;
     public static boolean hasOptifine() {
@@ -892,6 +910,10 @@ public class MCVer {
         //$$
         //$$ public static boolean getEventKeyState() {
         //$$     return org.lwjgl.input.Keyboard.getEventKeyState();
+        //$$ }
+        //$$
+        //$$ public static String getKeyName(int code) {
+        //$$     return org.lwjgl.input.Keyboard.getKeyName(code);
         //$$ }
         //#endif
     }

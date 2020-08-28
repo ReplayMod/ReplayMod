@@ -3,6 +3,7 @@ package com.replaymod.extras;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.mixin.KeyBindingAccessor;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import de.johni0702.minecraft.gui.GuiRenderer;
@@ -21,11 +22,6 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.resource.language.I18n;
-
-//#if MC>=11400
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#endif
 
 import java.util.Collection;
 import java.util.Collections;
@@ -80,21 +76,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                     @Override
                     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
                         // There doesn't seem to be an KeyBindingUpdate event, so we'll just update it every time
-                        String keyName = "???";
-                        try {
-                            //#if MC>=11600
-                            keyName = keyBinding.getBoundKeyLocalizedText().asString();
-                            //#else
-                            //#if MC>=11400
-                            //$$ keyName = keyBinding.getLocalizedName();
-                            //#else
-                            //$$ keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
-                            //#endif
-                            //#endif
-                        } catch (ArrayIndexOutOfBoundsException e) {
-                            // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
-                        }
-                        setLabel(keyName);
+                        setLabel(MCVer.getBoundKey(keyBinding));
                         super.draw(renderer, size, renderInfo);
                     }
                 }.onClick(() -> {
