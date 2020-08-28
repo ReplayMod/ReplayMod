@@ -1,3 +1,4 @@
+net.minecraft.client.gui.screen.AddServerScreen net.minecraft.client.gui.GuiScreenAddServer
 net.minecraft.resources.AbstractResourcePack net.minecraft.client.resources.AbstractResourcePack
 net.minecraft.resources.FolderPack net.minecraft.client.resources.FolderResourcePack
 net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository

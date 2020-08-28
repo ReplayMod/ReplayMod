@@ -69,11 +69,11 @@ public class GuiRecordingControls extends EventRegistrations {
         updateState();
     }).setSize(98, 20);
 
-    public GuiRecordingControls(ReplayMod core, PacketListener packetListener) {
+    public GuiRecordingControls(ReplayMod core, PacketListener packetListener, boolean autoStart) {
         this.core = core;
         this.packetListener = packetListener;
 
-        paused = stopped = !core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING);
+        paused = stopped = !autoStart;
 
         updateState();
     }

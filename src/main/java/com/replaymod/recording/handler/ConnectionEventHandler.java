@@ -4,6 +4,7 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.editor.gui.MarkerProcessor;
+import com.replaymod.recording.ServerInfoExt;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.gui.GuiRecordingControls;
 import com.replaymod.recording.gui.GuiRecordingOverlay;
@@ -15,6 +16,7 @@ import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import io.netty.channel.Channel;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
@@ -89,6 +91,7 @@ public class ConnectionEventHandler {
             }
 
             String worldName;
+            boolean autoStart = core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING);
             if (local) {
                 //#if MC>=11600
                 worldName = mc.getServer().getSaveProperties().getLevelName();
@@ -96,7 +99,13 @@ public class ConnectionEventHandler {
                 //$$ worldName = mc.getServer().getLevelName();
                 //#endif
             } else if (mc.getCurrentServerEntry() != null) {
-                worldName = mc.getCurrentServerEntry().address;
+                ServerInfo serverInfo = mc.getCurrentServerEntry();
+                worldName = serverInfo.address;
+
+                Boolean autoStartServer = ServerInfoExt.from(serverInfo).getAutoRecording();
+                if (autoStartServer != null) {
+                    autoStart = autoStartServer;
+                }
             //#if MC>=11100
             } else if (mc.isConnectedToRealms()) {
                 // we can't access the server name without tapping too deep in the Realms Library
@@ -105,6 +114,11 @@ public class ConnectionEventHandler {
             } else {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
                 return;
+            }
+
+            if (ReplayMod.isMinimalMode()) {
+                // Recording controls are not supported in minimal mode, so always auto-start
+                autoStart = true;
             }
 
             File folder = core.getReplayFolder();
@@ -128,13 +142,13 @@ public class ConnectionEventHandler {
             recordingEventHandler = new RecordingEventHandler(packetListener);
             recordingEventHandler.register();
 
-            guiControls = new GuiRecordingControls(core, packetListener);
+            guiControls = new GuiRecordingControls(core, packetListener, autoStart);
             guiControls.register();
 
             guiOverlay = new GuiRecordingOverlay(mc, core.getSettingsRegistry(), guiControls);
             guiOverlay.register();
 
-            if (core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING) || ReplayMod.isMinimalMode()) {
+            if (autoStart) {
                 core.printInfoToChat("replaymod.chat.recordingstarted");
             } else {
                 packetListener.addMarker(MarkerProcessor.MARKER_NAME_START_CUT, 0);

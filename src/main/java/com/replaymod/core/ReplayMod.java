@@ -138,6 +138,7 @@ public class ReplayMod implements
 
     public static final Identifier TEXTURE = new Identifier("replaymod", "replay_gui.png");
     public static final int TEXTURE_SIZE = 256;
+    public static final Identifier LOGO_FAVICON = new Identifier("replaymod", "favicon_logo.png");
 
     private static final MinecraftClient mc = MCVer.getMinecraft();
 
