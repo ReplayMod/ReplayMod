@@ -1,11 +1,9 @@
 package com.replaymod.render.frame;
 
 import com.replaymod.render.rendering.Frame;
-import lombok.Getter;
 import org.apache.commons.lang3.Validate;
 
 public class StereoscopicOpenGlFrame implements Frame {
-    @Getter
     private final OpenGlFrame left, right;
 
     public StereoscopicOpenGlFrame(OpenGlFrame left, OpenGlFrame right) {
@@ -18,5 +16,13 @@ public class StereoscopicOpenGlFrame implements Frame {
     @Override
     public int getFrameId() {
         return left.getFrameId();
+    }
+
+    public OpenGlFrame getLeft() {
+        return this.left;
+    }
+
+    public OpenGlFrame getRight() {
+        return this.right;
     }
 }

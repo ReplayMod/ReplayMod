@@ -1,11 +1,9 @@
 package com.replaymod.render.frame;
 
 import com.replaymod.render.rendering.Frame;
-import lombok.Getter;
 import org.apache.commons.lang3.Validate;
 
 public class ODSOpenGlFrame implements Frame {
-    @Getter
     private final CubicOpenGlFrame left, right;
 
     public ODSOpenGlFrame(CubicOpenGlFrame left, CubicOpenGlFrame right) {
@@ -17,5 +15,13 @@ public class ODSOpenGlFrame implements Frame {
     @Override
     public int getFrameId() {
         return left.getFrameId();
+    }
+
+    public CubicOpenGlFrame getLeft() {
+        return this.left;
+    }
+
+    public CubicOpenGlFrame getRight() {
+        return this.right;
     }
 }

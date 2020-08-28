@@ -7,7 +7,7 @@ import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.pathing.property.AbstractProperty;
 import com.replaymod.replaystudio.pathing.property.PropertyPart;
 import com.replaymod.replaystudio.pathing.property.PropertyParts;
-import lombok.NonNull;
+import de.johni0702.minecraft.gui.utils.NonNull;
 
 import java.io.IOException;
 import java.util.Collection;

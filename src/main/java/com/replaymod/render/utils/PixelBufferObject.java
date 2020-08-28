@@ -2,7 +2,6 @@ package com.replaymod.render.utils;
 
 import com.google.common.base.Objects;
 import com.replaymod.core.ReplayMod;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 
 //#if MC>=11400
@@ -25,13 +24,17 @@ import static org.lwjgl.opengl.ARBVertexBufferObject.*;
 //#endif
 
 public class PixelBufferObject {
-    @RequiredArgsConstructor
     public enum Usage {
         COPY(GL_STREAM_COPY_ARB, GL_STREAM_COPY),
         DRAW(GL_STREAM_DRAW_ARB, GL_STREAM_DRAW),
         READ(GL_STREAM_READ_ARB, GL_STREAM_READ);
 
         private final int arb, gl15;
+
+        Usage(int arb, int gl15) {
+            this.arb = arb;
+            this.gl15 = gl15;
+        }
     }
 
     //#if MC>=11400

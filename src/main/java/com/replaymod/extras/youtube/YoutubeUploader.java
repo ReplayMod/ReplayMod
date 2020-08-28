@@ -26,8 +26,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.metadata.MetadataInjector;
-import lombok.Getter;
-import lombok.NonNull;
+import de.johni0702.minecraft.gui.utils.NonNull;
 import net.minecraft.client.MinecraftClient;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
@@ -60,10 +59,8 @@ public class YoutubeUploader {
     @NonNull
     private Supplier<Double> progress = Suppliers.ofInstance(0d);
 
-    @Getter
     private State state;
 
-    @Getter
     private volatile boolean cancelled;
 
     public YoutubeUploader(MinecraftClient minecraft, File videoFile, int videoFrames,
@@ -250,6 +247,14 @@ public class YoutubeUploader {
 
     public double getProgress() {
         return progress.get();
+    }
+
+    public State getState() {
+        return this.state;
+    }
+
+    public boolean isCancelled() {
+        return this.cancelled;
     }
 
     public enum State {

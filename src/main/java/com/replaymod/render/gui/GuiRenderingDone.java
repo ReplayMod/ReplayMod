@@ -13,11 +13,9 @@ import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
-import lombok.RequiredArgsConstructor;
 
 import java.io.File;
 
-@RequiredArgsConstructor
 public class GuiRenderingDone extends GuiScreen {
     public final ReplayModRender mod;
     public final File videoFile;
@@ -70,6 +68,13 @@ public class GuiRenderingDone extends GuiScreen {
         });
         setTitle(new GuiLabel().setI18nText("replaymod.gui.renderdonetitle"));
         setBackground(Background.DIRT);
+    }
+
+    public GuiRenderingDone(ReplayModRender mod, File videoFile, int videoFrames, RenderSettings settings) {
+        this.mod = mod;
+        this.videoFile = videoFile;
+        this.videoFrames = videoFrames;
+        this.settings = settings;
     }
 
     @Override

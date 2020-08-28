@@ -2,19 +2,31 @@ package com.replaymod.render.frame;
 
 import com.replaymod.render.rendering.Frame;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.nio.ByteBuffer;
 
-@RequiredArgsConstructor
 public class OpenGlFrame implements Frame {
-    @Getter
     private final int frameId;
 
-    @Getter
     private final ReadableDimension size;
 
-    @Getter
     private final ByteBuffer byteBuffer;
+
+    public OpenGlFrame(int frameId, ReadableDimension size, ByteBuffer byteBuffer) {
+        this.frameId = frameId;
+        this.size = size;
+        this.byteBuffer = byteBuffer;
+    }
+
+    public int getFrameId() {
+        return this.frameId;
+    }
+
+    public ReadableDimension getSize() {
+        return this.size;
+    }
+
+    public ByteBuffer getByteBuffer() {
+        return this.byteBuffer;
+    }
 }

@@ -2,19 +2,15 @@ package com.replaymod.render.frame;
 
 import com.replaymod.render.rendering.Frame;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import lombok.Getter;
 import org.apache.commons.lang3.Validate;
 
 import java.nio.ByteBuffer;
 
 public class RGBFrame implements Frame {
-    @Getter
     private final int frameId;
 
-    @Getter
     private final ReadableDimension size;
 
-    @Getter
     private final ByteBuffer byteBuffer;
 
     public RGBFrame(int frameId, ReadableDimension size, ByteBuffer byteBuffer) {
@@ -24,5 +20,17 @@ public class RGBFrame implements Frame {
         this.frameId = frameId;
         this.size = size;
         this.byteBuffer = byteBuffer;
+    }
+
+    public int getFrameId() {
+        return this.frameId;
+    }
+
+    public ReadableDimension getSize() {
+        return this.size;
+    }
+
+    public ByteBuffer getByteBuffer() {
+        return this.byteBuffer;
     }
 }

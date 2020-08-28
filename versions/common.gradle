@@ -217,7 +217,6 @@ def shadeExclusions = {
     exclude group: 'com.google.guava', module: 'guava-jdk5'
     exclude group: 'com.google.guava', module: 'guava' // provided by MC
     exclude group: 'com.google.code.gson', module: 'gson' // provided by MC
-    exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
 }
 
 dependencies {
@@ -300,7 +299,6 @@ dependencies {
 
     implementation(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
-        exclude group: 'org.projectlombok', module: 'lombok' // runtime only for @SneakyThrows which isn't used
     }
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
@@ -314,9 +312,6 @@ dependencies {
             modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
         }
     }
-
-    annotationProcessor 'org.projectlombok:lombok:1.18.12'
-    compile 'org.projectlombok:lombok:1.18.12' // runtime only for @SneakyThrows which isn't used
 
     testCompile 'junit:junit:4.11'
 }

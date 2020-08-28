@@ -9,7 +9,7 @@ import com.replaymod.replaystudio.pathing.property.AbstractProperty;
 import com.replaymod.replaystudio.pathing.property.AbstractPropertyGroup;
 import com.replaymod.replaystudio.pathing.property.PropertyPart;
 import com.replaymod.replaystudio.pathing.property.PropertyParts;
-import lombok.NonNull;
+import de.johni0702.minecraft.gui.utils.NonNull;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.IOException;

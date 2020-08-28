@@ -10,8 +10,6 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
 import com.replaymod.replay.mixin.FirstPersonRendererAccessor;
 import com.replaymod.replaystudio.util.Location;
-import lombok.Getter;
-import lombok.Setter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -105,8 +103,6 @@ public class CameraEntity
      */
     public float roll;
 
-    @Getter
-    @Setter
     private CameraController cameraController;
 
     private long lastControllerUpdate = System.currentTimeMillis();
@@ -164,6 +160,14 @@ public class CameraEntity
         } else {
             cameraController = new SpectatorCameraController(this);
         }
+    }
+
+    public CameraController getCameraController() {
+        return cameraController;
+    }
+
+    public void setCameraController(CameraController cameraController) {
+        this.cameraController = cameraController;
     }
 
     /**

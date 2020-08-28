@@ -19,7 +19,6 @@ import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.replaystudio.viaversion.ViaVersionPacketConverter;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.resource.DirectoryResourcePack;
@@ -123,16 +122,17 @@ public class ReplayMod implements
         Module
 {
 
-    @Getter(lazy = true)
-    //#if MC>=11400
-    private static final String minecraftVersion = MinecraftClient.getInstance().getGame().getVersion().getName();
-    //#else
-    //#if MC>=11400
-    //$$ private static final String minecraftVersion = MCPVersion.getMCVersion();
-    //#else
-    //$$ private static final String minecraftVersion = Loader.MC_VERSION;
-    //#endif
-    //#endif
+    public static String getMinecraftVersion() {
+        //#if MC>=11400
+        return MinecraftClient.getInstance().getGame().getVersion().getName();
+        //#else
+        //#if MC>=11400
+        //$$ return MCPVersion.getMCVersion();
+        //#else
+        //$$ return Loader.MC_VERSION;
+        //#endif
+        //#endif
+    }
 
     public static final String MOD_ID = "replaymod";
 

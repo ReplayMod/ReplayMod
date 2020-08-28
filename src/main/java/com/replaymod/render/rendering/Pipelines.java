@@ -23,11 +23,7 @@ import com.replaymod.render.processor.ODSToRGBProcessor;
 import com.replaymod.render.processor.OpenGlToRGBProcessor;
 import com.replaymod.render.processor.StereoscopicToRGBProcessor;
 import com.replaymod.render.utils.PixelBufferObject;
-import lombok.experimental.UtilityClass;
 
-import java.io.IOException;
-
-@UtilityClass
 public class Pipelines {
     public static Pipeline newPipeline(RenderSettings.RenderMethod method, RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         switch (method) {
