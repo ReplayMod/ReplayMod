@@ -368,7 +368,7 @@ public class GuiPathing {
         }).onClick(new Runnable() {
             @Override
             public void run() {
-                updateKeyframe(SPPath.POSITION);
+                toggleKeyframe(SPPath.POSITION, false);
             }
         });
 
@@ -395,7 +395,7 @@ public class GuiPathing {
         }).onClick(new Runnable() {
             @Override
             public void run() {
-                updateKeyframe(SPPath.TIME);
+                toggleKeyframe(SPPath.TIME, false);
             }
         });
 
@@ -487,7 +487,7 @@ public class GuiPathing {
 
     public void deleteButtonPressed() {
         if (mod.getSelectedPath() != null) {
-            updateKeyframe(mod.getSelectedPath());
+            toggleKeyframe(mod.getSelectedPath(), false);
         }
     }
 
@@ -603,10 +603,11 @@ public class GuiPathing {
     /**
      * Called when either one of the property buttons is pressed.
      * @param path {@code TIME} for the time property button, {@code POSITION} for the place property button
+     * @param neverSpectator when true, will insert a position keyframe even when currently spectating an entity
      */
-    private void updateKeyframe(SPPath path) {
+    public void toggleKeyframe(SPPath path, boolean neverSpectator) {
         LOGGER.debug("Updating keyframe on path {}" + path);
-        if (!loadEntityTracker(() -> updateKeyframe(path))) return;
+        if (!loadEntityTracker(() -> toggleKeyframe(path, neverSpectator))) return;
 
         int time = timeline.getCursorPosition();
         SPTimeline timeline = mod.getCurrentTimeline();
@@ -640,7 +641,7 @@ public class GuiPathing {
                     LOGGER.debug("No position keyframe found -> adding new keyframe");
                     CameraEntity camera = replayHandler.getCameraEntity();
                     int spectatedId = -1;
-                    if (!replayHandler.isCameraView()) {
+                    if (!replayHandler.isCameraView() && !neverSpectator) {
                         spectatedId = getRenderViewEntity(replayHandler.getOverlay().getMinecraft()).getEntityId();
                     }
                     timeline.addPositionKeyframe(time, Entity_getX(camera), Entity_getY(camera), Entity_getZ(camera),

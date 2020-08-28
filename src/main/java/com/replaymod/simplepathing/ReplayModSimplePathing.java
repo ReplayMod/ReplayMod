@@ -91,6 +91,21 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
         core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
             if (guiPathing != null) guiPathing.deleteButtonPressed();
         });
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positionkeyframe", Keyboard.KEY_I, () -> {
+            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, false);
+        }, true);
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positiononlykeyframe", 0, () -> {
+            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, true);
+        }, true);
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.timekeyframe", Keyboard.KEY_O, () -> {
+            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.TIME, false);
+        }, true);
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.bothkeyframes", 0, () -> {
+            if (guiPathing != null) {
+                guiPathing.toggleKeyframe(SPPath.TIME, false);
+                guiPathing.toggleKeyframe(SPPath.POSITION, false);
+            }
+        }, true);
     }
 
     { on(ReplayOpenedCallback.EVENT, this::onReplayOpened); }
