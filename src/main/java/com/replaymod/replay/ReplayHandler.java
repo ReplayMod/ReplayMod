@@ -38,7 +38,7 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
-//#if MC>=11500
+//#if MC>=11600
 //$$ import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
