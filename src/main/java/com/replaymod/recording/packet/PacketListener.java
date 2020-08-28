@@ -19,8 +19,11 @@ import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
+import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
+import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -245,9 +248,13 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             }
         });
 
-        GuiLabel savingLabel = new GuiLabel().setI18nText("replaymod.gui.replaysaving.title").setColor(Colors.BLACK);
+        GuiLabel label = new GuiLabel().setI18nText("replaymod.gui.replaysaving.title").setColor(Colors.BLACK);
+        GuiProgressBar progressBar = new GuiProgressBar().setHeight(14);
+        GuiPanel savingProcess = new GuiPanel()
+                .setLayout(new VerticalLayout())
+                .addElements(new VerticalLayout.Data(0.5), label, progressBar);
         new Thread(() -> {
-            core.runLater(() -> core.getBackgroundProcesses().addProcess(savingLabel));
+            core.runLater(() -> core.getBackgroundProcesses().addProcess(savingProcess));
 
             saveService.shutdown();
             try {
@@ -267,7 +274,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     replayFile.close();
 
                     if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS) && !ReplayMod.isMinimalMode()) {
-                        MarkerProcessor.apply(outputPath, progress -> {});
+                        MarkerProcessor.apply(outputPath, progressBar::setProgress);
                     }
                 } catch (Exception e) {
                     logger.error("Saving replay file:", e);
@@ -276,7 +283,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 }
             }
 
-            core.runLater(() -> core.getBackgroundProcesses().removeProcess(savingLabel));
+            core.runLater(() -> core.getBackgroundProcesses().removeProcess(savingProcess));
         }).start();
     }
 
