@@ -657,13 +657,13 @@ public class ReplayMod implements
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
             //#if MC>=10904
             //#if MC>=11600
-            //$$ Style coloredDarkGray = Style.EMPTY.withColor(Formatting.DARK_GRAY);
-            //$$ Style coloredGold = Style.EMPTY.withColor(Formatting.GOLD);
-            //$$ Style alert = Style.EMPTY.withColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
+            Style coloredDarkGray = Style.EMPTY.withColor(Formatting.DARK_GRAY);
+            Style coloredGold = Style.EMPTY.withColor(Formatting.GOLD);
+            Style alert = Style.EMPTY.withColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
             //#else
-            Style coloredDarkGray = new Style().setColor(Formatting.DARK_GRAY);
-            Style coloredGold = new Style().setColor(Formatting.GOLD);
-            Style alert = new Style().setColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
+            //$$ Style coloredDarkGray = new Style().setColor(Formatting.DARK_GRAY);
+            //$$ Style coloredGold = new Style().setColor(Formatting.GOLD);
+            //$$ Style alert = new Style().setColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
             //#endif
             Text text = new LiteralText("[").setStyle(coloredDarkGray)
                     .append(new TranslatableText("replaymod.title").setStyle(coloredGold))

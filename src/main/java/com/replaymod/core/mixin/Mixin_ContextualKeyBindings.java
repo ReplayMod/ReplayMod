@@ -45,7 +45,7 @@ public class Mixin_ContextualKeyBindings {
         } else {
             // Not in a replay, remove all replay-exclusive keybindings
             for (KeyBinding keyBinding : onlyInReplay) {
-                if (Mixin_ContextualKeyBindings.keysById.remove(keyBinding.getId()) != null) {
+                if (Mixin_ContextualKeyBindings.keysById.remove(keyBinding.getTranslationKey()) != null) {
                     temporarilyRemoved.add(keyBinding);
                 }
             }
@@ -55,7 +55,7 @@ public class Mixin_ContextualKeyBindings {
     @Inject(method = "updateKeysByCode", at = @At("RETURN"))
     private static void postContextualKeyBindings(CallbackInfo ci) {
         for (KeyBinding keyBinding : temporarilyRemoved) {
-            Mixin_ContextualKeyBindings.keysById.put(keyBinding.getId(), keyBinding);
+            Mixin_ContextualKeyBindings.keysById.put(keyBinding.getTranslationKey(), keyBinding);
         }
         temporarilyRemoved.clear();
     }

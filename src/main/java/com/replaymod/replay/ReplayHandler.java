@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.util.*;
 
 //#if MC>=11600
-//$$ import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 //#if MC>=11500
@@ -644,10 +644,10 @@ public class ReplayHandler {
                         resolution = newScaledResolution(mc);
                 guiScreen.toMinecraft().init(mc, resolution.getScaledWidth(), resolution.getScaledHeight());
                 //#if MC>=11600
-                //$$ guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
+                guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
                 //#else
                 //#if MC>=11400
-                guiScreen.toMinecraft().render(0, 0, 0);
+                //$$ guiScreen.toMinecraft().render(0, 0, 0);
                 //#else
                 //$$ guiScreen.toMinecraft().drawScreen(0, 0, 0);
                 //#endif

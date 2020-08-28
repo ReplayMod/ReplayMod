@@ -47,9 +47,9 @@ public class InputReplayTimer extends WrappedTimer {
     @Override
     public
     //#if MC>=11600
-    //$$ int
+    int
     //#else
-    void
+    //$$ void
     //#endif
     beginRenderTick(
             //#if MC>=11400
@@ -57,7 +57,7 @@ public class InputReplayTimer extends WrappedTimer {
             //#endif
     ) {
         //#if MC>=11600
-        //$$ int ticksThisFrame =
+        int ticksThisFrame =
         //#endif
         super.beginRenderTick(
                 //#if MC>=11400
@@ -124,7 +124,7 @@ public class InputReplayTimer extends WrappedTimer {
             //#endif
         }
         //#if MC>=11600
-        //$$ return ticksThisFrame;
+        return ticksThisFrame;
         //#endif
     }
 

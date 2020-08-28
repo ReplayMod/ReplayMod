@@ -19,14 +19,14 @@ import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11600
-//$$ import net.minecraft.world.World;
+import net.minecraft.world.World;
 //#else
 //#if MC>=11400
-import net.minecraft.world.dimension.DimensionType;
+//$$ import net.minecraft.world.dimension.DimensionType;
 //#endif
-
+//$$
 //#if MC>=10800
-import net.minecraft.world.level.LevelGeneratorType;
+//$$ import net.minecraft.world.level.LevelGeneratorType;
 //#endif
 //#endif
 
@@ -65,10 +65,10 @@ public class ConnectionEventHandler {
             if (local) {
                 //#if MC>=10800
                 //#if MC>=11600
-                //$$ if (mc.getServer().getWorld(World.OVERWORLD).isDebugWorld()) {
+                if (mc.getServer().getWorld(World.OVERWORLD).isDebugWorld()) {
                 //#else
                 //#if MC>=11400
-                if (mc.getServer().getWorld(DimensionType.OVERWORLD).getGeneratorType() == LevelGeneratorType.DEBUG_ALL_BLOCK_STATES) {
+                //$$ if (mc.getServer().getWorld(DimensionType.OVERWORLD).getGeneratorType() == LevelGeneratorType.DEBUG_ALL_BLOCK_STATES) {
                 //#else
                 //$$ if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
                 //#endif
@@ -91,9 +91,9 @@ public class ConnectionEventHandler {
             String worldName;
             if (local) {
                 //#if MC>=11600
-                //$$ worldName = mc.getServer().getSaveProperties().getLevelName();
+                worldName = mc.getServer().getSaveProperties().getLevelName();
                 //#else
-                worldName = mc.getServer().getLevelName();
+                //$$ worldName = mc.getServer().getLevelName();
                 //#endif
             } else if (mc.getCurrentServerEntry() != null) {
                 worldName = mc.getCurrentServerEntry().address;

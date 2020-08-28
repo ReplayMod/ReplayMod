@@ -32,8 +32,8 @@ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //#endif
 
 //#if MC>=11600
-//$$ import com.mojang.datafixers.util.Pair;
-//$$ import java.util.Collections;
+import com.mojang.datafixers.util.Pair;
+import java.util.Collections;
 //#endif
 
 //#if MC>=11400
@@ -210,10 +210,10 @@ public class RecordingEventHandler extends EventRegistrations {
                         //#endif
                         newYaw, newPitch
                         //#if MC>=11600
-                        //$$ , player.isOnGround()
+                        , player.isOnGround()
                         //#else
                         //#if MC>=10800
-                        , player.onGround
+                        //$$ , player.onGround
                         //#endif
                         //#endif
                 );
@@ -239,7 +239,7 @@ public class RecordingEventHandler extends EventRegistrations {
 
             //Animation Packets
             //Swing Animation
-            if (player.isHandSwinging && player.handSwingTicks == 0) {
+            if (player.handSwinging && player.handSwingTicks == 0) {
                 packetListener.save(new EntityAnimationS2CPacket(
                         player,
                         //#if MC>=10904
@@ -277,9 +277,9 @@ public class RecordingEventHandler extends EventRegistrations {
                 if (playerItems[slot.ordinal()] != stack) {
                     playerItems[slot.ordinal()] = stack;
                     //#if MC>=11600
-                    //$$ packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), Collections.singletonList(Pair.of(slot, stack))));
+                    packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), Collections.singletonList(Pair.of(slot, stack))));
                     //#else
-                    packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), slot, stack));
+                    //$$ packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), slot, stack));
                     //#endif
                 }
             }

@@ -17,17 +17,17 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11600
-//$$ import net.minecraft.util.registry.RegistryKey;
-//$$ import net.minecraft.world.MutableWorldProperties;
-//$$ import java.util.function.Supplier;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.MutableWorldProperties;
+import java.util.function.Supplier;
 //#else
-import net.minecraft.world.level.LevelProperties;
+//$$ import net.minecraft.world.level.LevelProperties;
 //#endif
 
 //#if MC>=11400
 import net.minecraft.world.chunk.ChunkManager;
 //#if MC<11600
-import net.minecraft.world.dimension.Dimension;
+//$$ import net.minecraft.world.dimension.Dimension;
 //#endif
 import net.minecraft.world.dimension.DimensionType;
 import java.util.function.BiFunction;
@@ -48,22 +48,22 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     private MinecraftClient client;
 
     //#if MC>=11600
-    //$$ protected MixinWorldClient(MutableWorldProperties mutableWorldProperties, RegistryKey<World> registryKey,
+    protected MixinWorldClient(MutableWorldProperties mutableWorldProperties, RegistryKey<World> registryKey,
                                //#if MC<11602
                                //$$ RegistryKey<DimensionType> registryKey2,
                                //#endif
-    //$$                            DimensionType dimensionType, Supplier<Profiler> profiler, boolean bl, boolean bl2, long l) {
-    //$$     super(mutableWorldProperties, registryKey,
+                               DimensionType dimensionType, Supplier<Profiler> profiler, boolean bl, boolean bl2, long l) {
+        super(mutableWorldProperties, registryKey,
                 //#if MC<11602
                 //$$ registryKey2,
                 //#endif
-    //$$             dimensionType, profiler, bl, bl2, l);
-    //$$ }
+                dimensionType, profiler, bl, bl2, l);
+    }
     //#else
     //#if MC>=11400
-    protected MixinWorldClient(LevelProperties levelProperties_1, DimensionType dimensionType_1, BiFunction<World, Dimension, ChunkManager> biFunction_1, Profiler profiler_1, boolean boolean_1) {
-        super(levelProperties_1, dimensionType_1, biFunction_1, profiler_1, boolean_1);
-    }
+    //$$ protected MixinWorldClient(LevelProperties levelProperties_1, DimensionType dimensionType_1, BiFunction<World, Dimension, ChunkManager> biFunction_1, Profiler profiler_1, boolean boolean_1) {
+    //$$     super(levelProperties_1, dimensionType_1, biFunction_1, profiler_1, boolean_1);
+    //$$ }
     //#else
     //$$ protected MixinWorldClient(ISaveHandler saveHandlerIn,
                                //#if MC>=11400
@@ -118,9 +118,9 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     // Same goes for level events (also called effects). E.g. door open, block break, etc.
     //#if MC>=11400
     //#if MC>=11600
-    //$$ @Inject(method = "syncWorldEvent", at = @At("HEAD"))
+    @Inject(method = "syncWorldEvent", at = @At("HEAD"))
     //#else
-    @Inject(method = "playLevelEvent", at = @At("HEAD"))
+    //$$ @Inject(method = "playLevelEvent", at = @At("HEAD"))
     //#endif
     private void playLevelEvent (PlayerEntity player, int type, BlockPos pos, int data, CallbackInfo ci) {
     //#else

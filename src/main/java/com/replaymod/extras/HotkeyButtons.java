@@ -74,7 +74,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
 
             final KeyBindingRegistry keyBindingRegistry = mod.getKeyBindingRegistry();
             keyBindingRegistry.getKeyBindings().values().stream()
-                    .sorted(Comparator.comparing(it -> I18n.translate(it.getId())))
+                    .sorted(Comparator.comparing(it -> I18n.translate(it.getTranslationKey())))
                     .forEachOrdered(keyBinding -> {
                 GuiButton button = new GuiButton(){
                     @Override
@@ -83,10 +83,10 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                         String keyName = "???";
                         try {
                             //#if MC>=11600
-                            //$$ keyName = keyBinding.getBoundKeyLocalizedText().asString();
+                            keyName = keyBinding.getBoundKeyLocalizedText().asString();
                             //#else
                             //#if MC>=11400
-                            keyName = keyBinding.getLocalizedName();
+                            //$$ keyName = keyBinding.getLocalizedName();
                             //#else
                             //$$ keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
                             //#endif
@@ -115,7 +115,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                                         return new Dimension(Math.max(10, button.getMinSize().getWidth()) + 10, 20);
                                     }
                                 }).addElements(null, button),
-                                new GuiLabel().setI18nText(keyBinding.getId())
+                                new GuiLabel().setI18nText(keyBinding.getTranslationKey())
                         ));
             });
 

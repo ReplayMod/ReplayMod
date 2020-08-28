@@ -1,7 +1,7 @@
 package com.replaymod.core.utils;
 
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 //#if MC>=10904
 import net.minecraft.util.Identifier;
 //#endif

@@ -23,7 +23,7 @@ import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 //#if FABRIC>=1
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
@@ -40,14 +40,14 @@ import java.util.Collections;
 import java.util.function.Consumer;
 
 //#if MC>=11602
-//$$ import net.minecraft.util.registry.DynamicRegistryManager;
-//$$ import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.util.registry.Registry;
 //#endif
 
 //#if MC>=11600
-//$$ import net.minecraft.world.World;
+import net.minecraft.world.World;
 //#else
-import net.minecraft.world.level.LevelGeneratorType;
+//$$ import net.minecraft.world.level.LevelGeneratorType;
 //#endif
 //#if MC>=11400
 import net.minecraft.world.dimension.DimensionType;
@@ -201,31 +201,31 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         ctx.fireChannelRead(new PlayerRespawnS2CPacket(
                 //#if MC>=11600
                 //#if MC>=11602
-                //$$ DimensionType.addRegistryDefaults(new DynamicRegistryManager.Impl()).get(Registry.DIMENSION_TYPE_KEY).get(DimensionType.OVERWORLD_REGISTRY_KEY),
+                DimensionType.addRegistryDefaults(new DynamicRegistryManager.Impl()).get(Registry.DIMENSION_TYPE_KEY).get(DimensionType.OVERWORLD_REGISTRY_KEY),
                 //#else
                 //$$ DimensionType.OVERWORLD_REGISTRY_KEY,
                 //#endif
-                //$$ World.OVERWORLD,
-                //$$ 0,
-                //$$ GameMode.SPECTATOR,
-                //$$ GameMode.SPECTATOR,
-                //$$ false,
-                //$$ false,
-                //$$ false
+                World.OVERWORLD,
+                0,
+                GameMode.SPECTATOR,
+                GameMode.SPECTATOR,
+                false,
+                false,
+                false
                 //#else
                 //#if MC>=11400
-                DimensionType.OVERWORLD,
+                //$$ DimensionType.OVERWORLD,
                 //#else
                 //$$ 0,
                 //#endif
                 //#if MC>=11500
-                0,
+                //$$ 0,
                 //#endif
                 //#if MC<11400
                 //$$ EnumDifficulty.NORMAL,
                 //#endif
-                LevelGeneratorType.DEFAULT,
-                GameMode.SPECTATOR
+                //$$ LevelGeneratorType.DEFAULT,
+                //$$ GameMode.SPECTATOR
                 //#endif
         ));
         ctx.fireChannelRead(new PlayerPositionLookS2CPacket(0, 0, 0, 0, 0, Collections.emptySet(), 0));

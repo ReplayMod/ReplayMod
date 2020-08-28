@@ -64,7 +64,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.entity.EquipmentSlot;
 //#if MC>=11200
 //#if MC>=11400
-import net.minecraft.client.recipe.book.ClientRecipeBook;
+import net.minecraft.client.recipebook.ClientRecipeBook;
 //#else
 //$$ import net.minecraft.stats.RecipeBook;
 //#endif
@@ -150,8 +150,8 @@ public class CameraEntity
                 , recipeBook
                 //#endif
                 //#if MC>=11600
-                //$$ , false
-                //$$ , false
+                , false
+                , false
                 //#endif
         );
         eventHandler.register();
@@ -321,8 +321,8 @@ public class CameraEntity
 
     //#if MC>=11400
     @Override
-    public boolean isInFluid(Tag<Fluid> fluid) {
-        return falseUnlessSpectating(entity -> entity.isInFluid(fluid));
+    public boolean isSubmergedIn(Tag<Fluid> fluid) {
+        return falseUnlessSpectating(entity -> entity.isSubmergedIn(fluid));
     }
     //#else
     //#if MC>=10800

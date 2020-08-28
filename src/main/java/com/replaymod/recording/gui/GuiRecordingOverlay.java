@@ -56,7 +56,7 @@ public class GuiRecordingOverlay extends EventRegistrations {
             String text = guiControls.isPaused() ? I18n.translate("replaymod.gui.paused") : I18n.translate("replaymod.gui.recording");
             fontRenderer.draw(
                     //#if MC>=11600
-                    //$$ stack,
+                    stack,
                     //#endif
                     text.toUpperCase(), 30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff);
             bindTexture(TEXTURE);

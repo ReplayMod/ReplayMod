@@ -33,7 +33,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
 
 //#if MC>=11600
-//$$ import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.MatrixStack;
 //#endif
 
 //#if MC>=11500
@@ -167,7 +167,7 @@ public class VideoRenderer implements RenderInfo {
                 //#endif
                 while (replayTime < videoStart) {
                     //#if MC<11600
-                    timer.ticksThisFrame = 1;
+                    //$$ timer.ticksThisFrame = 1;
                     //#endif
                     replayTime += 50;
                     replayHandler.getReplaySender().sendPacketsTill(replayTime);
@@ -235,7 +235,7 @@ public class VideoRenderer implements RenderInfo {
         // Updating the timer will cause the timeline player to update the game state
         RenderTickCounter timer = ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11600
-        //$$ int elapsedTicks =
+        int elapsedTicks =
         //#endif
         timer.beginRenderTick(
                 //#if MC>=11400
@@ -243,7 +243,7 @@ public class VideoRenderer implements RenderInfo {
                 //#endif
         );
         //#if MC<11600
-        int elapsedTicks = timer.ticksThisFrame;
+        //$$ int elapsedTicks = timer.ticksThisFrame;
         //#endif
 
         executeTaskQueue();
@@ -541,7 +541,7 @@ public class VideoRenderer implements RenderInfo {
                     mc.currentScreen = gui.toMinecraft();
                     mc.overlay.render(
                             //#if MC>=11600
-                            //$$ new MatrixStack(),
+                            new MatrixStack(),
                             //#endif
                             mouseX, mouseY, 0);
                 } finally {
@@ -551,7 +551,7 @@ public class VideoRenderer implements RenderInfo {
                 gui.toMinecraft().tick();
                 gui.toMinecraft().render(
                         //#if MC>=11600
-                        //$$ new MatrixStack(),
+                        new MatrixStack(),
                         //#endif
                         mouseX, mouseY, 0);
             }
