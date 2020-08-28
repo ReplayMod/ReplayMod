@@ -403,7 +403,7 @@ public class ReplayMod implements
                     for (File file : files) {
                         if (file.isDirectory() && file.getName().endsWith(".mcpr.tmp")) {
                             File origFile = new File(file.getParentFile(), Files.getNameWithoutExtension(file.getName()));
-                            new RestoreReplayGui(GuiScreen.wrap(mc.currentScreen), origFile).display();
+                            new RestoreReplayGui(this, GuiScreen.wrap(mc.currentScreen), origFile).display();
                         }
                     }
                 }
