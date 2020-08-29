@@ -5,13 +5,13 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
-import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiClickableContainer;
@@ -20,8 +20,10 @@ import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.GuiButton;
+import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiTextField;
+import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -30,19 +32,24 @@ import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
 import net.minecraft.text.TranslatableText;
+//#else
+//$$ import com.replaymod.replaystudio.util.I18n;
 //#endif
 
-public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
+public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements Typeable {
     private final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.renderqueue.title").setColor(Colors.BLACK);
     private final GuiVerticalList list = new GuiVerticalList().setDrawShadow(true).setDrawSlider(true);
     private final GuiButton addButton = new GuiButton().setI18nLabel("replaymod.gui.renderqueue.add").setSize(150, 20);
@@ -71,7 +78,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
 
     private final AbstractGuiScreen container;
     private final ReplayHandler replayHandler;
-    private Entry selectedEntry;
+    private final Set<Entry> selectedEntries = new HashSet<>();
 
     {
         popup.setLayout(new CustomLayout<GuiPanel>() {
@@ -152,6 +159,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
         }
 
         renameButton.onClick(() -> {
+            Entry selectedEntry = selectedEntries.iterator().next();
             LOGGER.trace("Rename button clicked for {}", selectedEntry.job);
             // Open popup
             GuiYesNoPopup popup = GuiYesNoPopup.open(container)
@@ -188,10 +196,12 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
         });
 
         removeButton.onClick(() -> {
-            LOGGER.trace("Remove button clicked for {}", selectedEntry.job);
-            list.getListPanel().removeElement(selectedEntry);
-            queue.remove(selectedEntry.job);
-            selectedEntry = null;
+            for (Entry entry : selectedEntries) {
+                LOGGER.trace("Remove button clicked for {}", entry.job);
+                list.getListPanel().removeElement(entry);
+                queue.remove(entry.job);
+            }
+            selectedEntries.clear();
             updateButtons();
         });
 
@@ -256,9 +266,28 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
     }
 
     public void updateButtons() {
-        renameButton.setEnabled(selectedEntry != null);
-        removeButton.setEnabled(selectedEntry != null);
+        int selected = selectedEntries.size();
+        renameButton.setEnabled(selected == 1);
+        removeButton.setEnabled(selected >= 1);
         renderButton.setEnabled(!list.getListPanel().getChildren().isEmpty());
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (MCVer.Keyboard.hasControlDown() && keyCode == MCVer.Keyboard.KEY_A) {
+            if (selectedEntries.size() < list.getListPanel().getChildren().size()) {
+                for (GuiElement<?> child : list.getListPanel().getChildren()) {
+                    if (child instanceof Entry) {
+                        selectedEntries.add((Entry) child);
+                    }
+                }
+            } else {
+                selectedEntries.clear();
+            }
+            updateButtons();
+            return true;
+        }
+        return false;
     }
 
     public class Entry extends AbstractGuiClickableContainer<Entry> {
@@ -284,13 +313,20 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
 
         @Override
         protected void onClick() {
-            selectedEntry = this;
+            if (!MCVer.Keyboard.hasControlDown()) {
+                selectedEntries.clear();
+            }
+            if (selectedEntries.contains(this)) {
+                selectedEntries.remove(this);
+            } else {
+                selectedEntries.add(this);
+            }
             updateButtons();
         }
 
         @Override
         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-            if (selectedEntry == this) {
+            if (selectedEntries.contains(this)) {
                 renderer.drawRect(0, 0, size.getWidth(), size.getHeight(), Colors.BLACK);
                 renderer.drawRect(0, 0, 2, size.getHeight(), Colors.WHITE);
             }
