@@ -11,6 +11,8 @@ import de.johni0702.minecraft.gui.element.IGuiImage;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 
 //#if FABRIC>=1
 import com.replaymod.core.events.PreRenderCallback;
@@ -21,6 +23,7 @@ import com.replaymod.core.events.PostRenderCallback;
 //#endif
 
 public class FullBrightness extends EventRegistrations implements Extra {
+    private ReplayMod core;
     private ReplayModReplay module;
 
     private final IGuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 90, 20, 19, 16).setSize(19, 16);
@@ -35,6 +38,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
 
     @Override
     public void register(final ReplayMod mod) throws Exception {
+        this.core = mod;
         this.module = ReplayModReplay.instance;
         this.mc = mod.getMinecraft();
 
@@ -58,6 +62,16 @@ public class FullBrightness extends EventRegistrations implements Extra {
         register();
     }
 
+    public Type getType() {
+        String str = core.getSettingsRegistry().get(Setting.FULL_BRIGHTNESS);
+        for (Type type : Type.values()) {
+            if (type.toString().equals(str)) {
+                return type;
+            }
+        }
+        return Type.Gamma;
+    }
+
     //#if FABRIC>=1
     { on(PreRenderCallback.EVENT, this::preRender); }
     private void preRender() {
@@ -67,8 +81,20 @@ public class FullBrightness extends EventRegistrations implements Extra {
     //$$     if (event.phase != TickEvent.Phase.START) return;
     //#endif
         if (active && module.getReplayHandler() != null) {
-            originalGamma = mc.options.gamma;
-            mc.options.gamma = 1000;
+            Type type = getType();
+            if (type == Type.Gamma || type == Type.Both) {
+                originalGamma = mc.options.gamma;
+                mc.options.gamma = 1000;
+            }
+            if (type == Type.NightVision || type == Type.Both) {
+                if (mc.player != null) {
+                    mc.player.addStatusEffect(new StatusEffectInstance(StatusEffects.NIGHT_VISION
+                            //#if MC<=10809
+                            //$$ .id
+                            //#endif
+                            , Integer.MAX_VALUE));
+                }
+            }
         }
     }
 
@@ -81,7 +107,19 @@ public class FullBrightness extends EventRegistrations implements Extra {
     //$$     if (event.phase != TickEvent.Phase.END) return;
     //#endif
         if (active && module.getReplayHandler() != null) {
-            mc.options.gamma = originalGamma;
+            Type type = getType();
+            if (type == Type.Gamma || type == Type.Both) {
+                mc.options.gamma = originalGamma;
+            }
+            if (type == Type.NightVision || type == Type.Both) {
+                if (mc.player != null) {
+                    mc.player.removeStatusEffect(StatusEffects.NIGHT_VISION
+                            //#if MC<=10809
+                            //$$ .id
+                            //#endif
+                    );
+                }
+            }
         }
     }
 
@@ -91,6 +129,18 @@ public class FullBrightness extends EventRegistrations implements Extra {
             overlay.statusIndicatorPanel.addElements(new HorizontalLayout.Data(1), indicator);
         } else {
             overlay.statusIndicatorPanel.removeElement(indicator);
+        }
+    }
+
+    enum Type {
+        Gamma,
+        NightVision,
+        Both,
+        ;
+
+        @Override
+        public String toString() {
+            return "replaymod.gui.settings.fullbrightness." + name().toLowerCase();
         }
     }
 }
