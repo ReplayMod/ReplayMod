@@ -51,6 +51,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     private final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.renderqueue.title").setColor(Colors.BLACK);
     private final GuiVerticalList list = new GuiVerticalList().setDrawShadow(true).setDrawSlider(true);
     private final GuiButton addButton = new GuiButton().setI18nLabel("replaymod.gui.renderqueue.add").setSize(150, 20);
+    private final GuiButton editButton = new GuiButton().setI18nLabel("replaymod.gui.edit").setSize(73, 20);
     private final GuiButton removeButton = new GuiButton().setI18nLabel("replaymod.gui.remove").setSize(73, 20);
     private final GuiButton renderButton = new GuiButton().setSize(150, 20);
     private final GuiButton closeButton = new GuiButton().setI18nLabel("replaymod.gui.close").setSize(150, 20).onClick(this::close);
@@ -60,7 +61,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     |---------------------------------|
     |       Add       |     Render    |
     |---------------------------------|
-    | Remove |        |     Close     |
+    |  Edit  | Remove |     Close     |
     |---------------------------------|
 
      */
@@ -70,7 +71,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                     addButton,
                     renderButton,
                     new GuiPanel().setLayout(new HorizontalLayout().setSpacing(4)).addElements(null,
-                            removeButton),
+                            editButton, removeButton),
                     closeButton);
 
     private final AbstractGuiScreen<?> container;
@@ -115,6 +116,12 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         }
 
         addButton.onClick(this::addButtonClicked);
+
+        editButton.onClick(() -> {
+            Entry job = selectedEntries.iterator().next();
+            GuiRenderSettings gui = job.edit();
+            gui.open();
+        });
 
         removeButton.onClick(() -> {
             for (Entry entry : selectedEntries) {
@@ -254,6 +261,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
 
     public void updateButtons() {
         int selected = selectedEntries.size();
+        editButton.setEnabled(selected == 1);
         removeButton.setEnabled(selected >= 1);
         renderButton.setEnabled(selected > 0);
         renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
@@ -323,6 +331,18 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         @Override
         protected Entry getThis() {
             return this;
+        }
+
+        public GuiRenderSettings edit() {
+            GuiRenderSettings gui = new GuiRenderSettings(container, replayHandler, job.getTimeline());
+            gui.buttonPanel.removeElement(gui.renderButton);
+            gui.queueButton.setI18nLabel("replaymod.gui.done").onClick(() -> {
+                job.setSettings(gui.save(false));
+                label.setText(job.getName());
+                gui.close();
+            });
+            gui.load(job.getSettings());
+            return gui;
         }
     }
 }
