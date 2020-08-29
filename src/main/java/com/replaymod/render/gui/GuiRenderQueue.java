@@ -1,8 +1,6 @@
 package com.replaymod.render.gui;
 
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
@@ -23,13 +21,11 @@ import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
-import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -37,7 +33,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +51,6 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     private final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.renderqueue.title").setColor(Colors.BLACK);
     private final GuiVerticalList list = new GuiVerticalList().setDrawShadow(true).setDrawSlider(true);
     private final GuiButton addButton = new GuiButton().setI18nLabel("replaymod.gui.renderqueue.add").setSize(150, 20);
-    private final GuiButton renameButton = new GuiButton().setI18nLabel("replaymod.gui.rename").setSize(73, 20);
     private final GuiButton removeButton = new GuiButton().setI18nLabel("replaymod.gui.remove").setSize(73, 20);
     private final GuiButton renderButton = new GuiButton().setSize(150, 20);
     private final GuiButton closeButton = new GuiButton().setI18nLabel("replaymod.gui.close").setSize(150, 20).onClick(this::close);
@@ -66,7 +60,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     |---------------------------------|
     |       Add       |     Render    |
     |---------------------------------|
-    | Rename | Remove |     Close     |
+    | Remove |        |     Close     |
     |---------------------------------|
 
      */
@@ -76,7 +70,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                     addButton,
                     renderButton,
                     new GuiPanel().setLayout(new HorizontalLayout().setSpacing(4)).addElements(null,
-                            renameButton, removeButton),
+                            removeButton),
                     closeButton);
 
     private final AbstractGuiScreen<?> container;
@@ -121,43 +115,6 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         }
 
         addButton.onClick(this::addButtonClicked);
-
-        renameButton.onClick(() -> {
-            Entry selectedEntry = selectedEntries.iterator().next();
-            LOGGER.trace("Rename button clicked for {}", selectedEntry.job);
-            // Open popup
-            GuiYesNoPopup popup = GuiYesNoPopup.open(container)
-                    .setYesI18nLabel("replaymod.gui.rename").setNoI18nLabel("replaymod.gui.cancel");
-            popup.getInfo().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5));
-            // Add content
-            GuiLabel label = new GuiLabel().setI18nText("replaymod.gui.renderqueue.jobname").setColor(Colors.BLACK);
-            GuiTextField nameField = new GuiTextField().setSize(150, 20).setFocused(true)
-                    .setText(selectedEntry.job.getName());
-            popup.getInfo().addElements(new HorizontalLayout.Data(0.5), label, nameField);
-            // Disable "Yes" button while name is empty
-            nameField.onTextChanged(old -> popup.getYesButton().setEnabled(!nameField.getText().isEmpty())).onEnter(() -> {
-                if (popup.getYesButton().isEnabled()) {
-                    popup.getYesButton().onClick();
-                }
-            });
-            // Register callback
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(@Nullable Boolean result) {
-                    if (result == Boolean.TRUE) {
-                        LOGGER.trace("Renaming {} to \"{}\"", selectedEntry.job, nameField.getText());
-                        selectedEntry.setName(nameField.getText());
-                    } else {
-                        LOGGER.trace("Renaming cancelled");
-                    }
-                }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    LOGGER.error("Rename Job popup:", t);
-                }
-            });
-        });
 
         removeButton.onClick(() -> {
             for (Entry entry : selectedEntries) {
@@ -244,7 +201,6 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                     RenderSettings settings = save(false);
 
                     RenderJob newJob = new RenderJob();
-                    newJob.setName(settings.getOutputFile().getName());
                     newJob.setSettings(settings);
                     newJob.setTimeline(timeline);
                     LOGGER.trace("Adding new job: {}", newJob);
@@ -298,7 +254,6 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
 
     public void updateButtons() {
         int selected = selectedEntries.size();
-        renameButton.setEnabled(selected == 1);
         removeButton.setEnabled(selected >= 1);
         renderButton.setEnabled(selected > 0);
         renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
@@ -363,11 +318,6 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                 renderer.drawRect(0, 0, 2, size.getHeight(), Colors.WHITE);
             }
             super.draw(renderer, size, renderInfo);
-        }
-
-        public void setName(String name) {
-            job.setName(name);
-            label.setText(name);
         }
 
         @Override
