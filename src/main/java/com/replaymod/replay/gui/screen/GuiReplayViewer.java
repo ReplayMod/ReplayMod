@@ -50,8 +50,11 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
@@ -332,6 +335,8 @@ public class GuiReplayViewer extends GuiScreen {
                     LOGGER.warn("Failed to list files in {}", folder);
                     return;
                 }
+                Map<File, Long> lastModified = new HashMap<>();
+                Arrays.sort(files, Comparator.<File>comparingLong(f -> lastModified.computeIfAbsent(f, File::lastModified)).reversed());
                 for (final File file : files) {
                     if (Thread.interrupted()) break;
                     try (ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file)) {
