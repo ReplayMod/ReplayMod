@@ -26,6 +26,7 @@ import net.minecraft.client.resource.language.I18n;
 //#if MC>=11400
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.KeyEventCallback;
+import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 //$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -67,6 +68,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(5));
 
     private final EventHandler eventHandler = new EventHandler();
+    private boolean hidden;
 
     public GuiReplayOverlay(final ReplayHandler replayHandler) {
         timeline = new GuiMarkerTimeline(replayHandler){
@@ -162,8 +164,8 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-        // Do not render overlay when user pressed F1 and we are not currently in some popup
-        if (getMinecraft().options.hudHidden && isAllowUserInput()) {
+        // Do not render overlay if all hud, or this one specifically, is hidden and we're not in some popup
+        if ((getMinecraft().options.hudHidden || hidden) && isAllowUserInput()) {
             // Note that this only applies to when the mouse is visible, otherwise
             // the draw method isn't called in the first place
             return;
@@ -207,10 +209,9 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
         //$$     if (!Keyboard.getEventKeyState()) return;
         //$$     int key = Keyboard.getEventKey();
         //#endif
-            GameOptions gameSettings = getMinecraft().options;
-            // Handle the F1 key binding while the overlay is opened as a gui screen
+            // Allow F1 to be used to hide the replay gui (e.g. for recording with OBS)
             if (isMouseVisible() && key == Keyboard.KEY_F1) {
-                gameSettings.hudHidden = !gameSettings.hudHidden;
+                hidden = !hidden;
             }
         }
     }
