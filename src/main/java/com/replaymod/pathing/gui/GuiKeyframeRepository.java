@@ -20,9 +20,11 @@ import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.GuiButton;
+import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.function.Closeable;
+import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
@@ -31,6 +33,7 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,7 +51,7 @@ import static de.johni0702.minecraft.gui.versions.MCVer.setClipboardString;
 /**
  * Gui for loading and saving {@link Timeline Timelines}.
  */
-public class GuiKeyframeRepository extends GuiScreen implements Closeable {
+public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typeable {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public final GuiPanel contentPanel = new GuiPanel(this).setBackgroundColor(Colors.DARK_TRANSPARENT);
@@ -329,6 +332,33 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
             e.printStackTrace();
             ReplayMod.instance.printWarningToChat("Error saving timelines: " + e.getMessage());
         }
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (MCVer.Keyboard.hasControlDown()) {
+            switch (keyCode) {
+                case MCVer.Keyboard.KEY_A:
+                    if (selectedEntries.size() < timelines.size()) {
+                        for (GuiElement<?> child : list.getListPanel().getChildren()) {
+                            if (child instanceof Entry) {
+                                selectedEntries.add((Entry) child);
+                            }
+                        }
+                    } else {
+                        selectedEntries.clear();
+                    }
+                    updateButtons();
+                    return true;
+                case MCVer.Keyboard.KEY_C:
+                    copyButton.onClick();
+                    return true;
+                case MCVer.Keyboard.KEY_V:
+                    pasteButton.onClick();
+                    return true;
+            }
+        }
+        return false;
     }
 
     public class Entry extends AbstractGuiClickableContainer<Entry> {
