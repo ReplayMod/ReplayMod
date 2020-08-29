@@ -574,6 +574,10 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         return new File(folder, fileName + "." + encodingPreset.getFileExtension());
     }
 
+    public File getOutputFile() {
+        return outputFile;
+    }
+
     protected File conformExtension(File file, RenderSettings.EncodingPreset preset) {
         String name = file.getName();
         if (name.contains(".")) {

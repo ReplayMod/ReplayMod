@@ -116,6 +116,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
             // Add content
             GuiLabel label = new GuiLabel().setI18nText("replaymod.gui.renderqueue.jobname").setColor(Colors.BLACK);
             GuiTextField nameField = new GuiTextField().setSize(150, 20).setFocused(true);
+            nameField.setText(guiRenderSettings.getOutputFile().getName());
             popup.getInfo().addElements(new HorizontalLayout.Data(0.5), label, nameField);
             // Disable "Yes" button while name is empty
             nameField.onTextChanged(old -> popup.getYesButton().setEnabled(!nameField.getText().isEmpty())).onEnter(() -> {
@@ -123,7 +124,6 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                     popup.getYesButton().onClick();
                 }
             });
-            popup.getYesButton().setDisabled();
             // Register callback
             Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
                 @Override
