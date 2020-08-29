@@ -22,14 +22,17 @@ To render your creations with **Replay Mod** you will need to have FFmpeg instal
 ### Windows [windows]
 Download the **latest** FFmpeg build from <http://ffmpeg.zeranoe.com/builds/>.
 
-In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .zip file into this folder. The FFmpeg executable should end up at `.minecraft\ffmpeg\bin\ffmpeg.exe`.
+Extract the downloaded .zip file into your `.minecraft` folder.
+
+Historically the exact location inside the `.minecraft` folder was important, this is no longer the case.
+It is sufficient for the `ffmpeg.exe` to be anywhere inside your `.minecraft` folder.
 
 **Notes for alternative launchers**
 - Twitch launcher by default installs Minecraft instances in C:\\Users\\*username*\\Twitch\\Minecraft\\Instances\\*instancename*\\
 - GD Launcher by default installs Minecraft instances in C:\\Users\\*username*\\AppData\\Roaming\\gdlauncher_next\\instances\\*instancename*\\
 - MultiMC by default installs Minecraft instances in C:\\Program Files (x86)\\MultiMC\\instances\\*Instancename*\\.minecraft\\
 
-For these launchers, make sure FFmpeg exists in `instancename\ffmpeg\bin\ffmpeg.exe` (Twitch / GD) or `Instancename\.minecraft\ffmpeg\bin\ffmpeg.exe` (MultiMC)
+For these launchers, make sure FFmpeg exists inside the corresponding folder.
 
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.

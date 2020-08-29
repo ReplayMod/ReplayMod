@@ -7,6 +7,12 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.Util;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
@@ -253,10 +259,34 @@ public class RenderSettings {
         switch (Util.getOperatingSystem()) {
             case WINDOWS:
                 // Allow windows users to unpack the ffmpeg archive into a sub-folder of their .minecraft folder
-                File inDotMinecraft = new File(MCVer.getMinecraft().runDirectory, "ffmpeg/bin/ffmpeg.exe");
+                File dotMinecraft = MCVer.getMinecraft().runDirectory;
+                File inDotMinecraft = new File(dotMinecraft, "ffmpeg/bin/ffmpeg.exe");
                 if (inDotMinecraft.exists()) {
                     LOGGER.debug("FFmpeg found in .minecraft/ffmpeg");
                     return inDotMinecraft.getAbsolutePath();
+                }
+                // But a significant amount of people are not even able to follow instruction to do that.
+                // Instead they'll regularly put it at `.minecraft/ffmpeg-version/bin/ffmpeg.exe`
+                // or `.minecraft/ffmpeg/ffmpeg-version/bin/ffmpeg.exe`
+                // So, for support's sake, let's just search the entire .minecraft folder for an `ffmpeg.exe` file.
+                // We retain above check to have a fast path for any old installations.
+                try {
+                    Path[] result = new Path[1];
+                    Files.walkFileTree(dotMinecraft.toPath(), new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            if ("ffmpeg.exe".equals(file.getFileName().toString())) {
+                                result[0] = file;
+                                return FileVisitResult.TERMINATE;
+                            }
+                            return super.visitFile(file, attrs);
+                        }
+                    });
+                    if (result[0] != null) {
+                        return result[0].toAbsolutePath().toString();
+                    }
+                } catch (IOException e) {
+                    LOGGER.debug("Error searching .minecraft for ffmpeg.exe:", e);
                 }
                 break;
             case OSX:
