@@ -200,7 +200,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
         //#if MC>=11400
         { on(KeyEventCallback.EVENT, (int key, int scanCode, int action, int modifiers) -> onKeyInput(key, action)); }
         private void onKeyInput(int key, int action) {
-            if (action != 0) return;
+            if (action != GLFW.GLFW_PRESS) return;
         //#else
         //$$ @SubscribeEvent
         //$$ public void onKeyInput(InputEvent.KeyInputEvent event) {
