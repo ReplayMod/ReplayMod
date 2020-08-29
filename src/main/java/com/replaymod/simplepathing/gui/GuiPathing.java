@@ -29,14 +29,11 @@ import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
-import de.johni0702.minecraft.gui.element.AbstractGuiClickable;
-import de.johni0702.minecraft.gui.element.AbstractGuiElement;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiHorizontalScrollbar;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiTexturedButton;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
-import de.johni0702.minecraft.gui.element.IGuiClickable;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTimelineTime;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
@@ -46,7 +43,6 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
-import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
@@ -102,20 +98,8 @@ public class GuiPathing {
     public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
         @Override
         public void run() {
-            if (!preparePathsForPlayback(false)) return;
-
-            // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
-            SPTimeline spTimeline = mod.getCurrentTimeline();
-            Timeline timeline;
-            try {
-                TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
-                String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
-                timeline = serialization.deserialize(serialized).get("");
-            } catch (Throwable t) {
-                error(LOGGER, replayHandler.getOverlay(), CrashReport.create(t, "Cloning timeline"), () -> {});
-                return;
-            }
-
+            Timeline timeline = preparePathsForPlayback(false);
+            if (timeline == null) return;
             new GuiRenderSettings(replayHandler, timeline).display();
         }
     }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
@@ -224,48 +208,6 @@ public class GuiPathing {
             .addElements(new HorizontalLayout.Data(0.5),
                     playPauseButton, renderButton, positionKeyframeButton, timeKeyframeButton, timelinePanel);
 
-    /**
-     * IGuiClickable dummy component that is inserted at a high level.
-     * During path playback, this catches all click events and forwards them to the
-     * abort path playback button.
-     * Dragging does not have to be intercepted as every GUI element should only
-     * respond to dragging events after it has received and handled a click event.
-     */
-    private final IGuiClickable clickCatcher = new AbstractGuiClickable() {
-        @Override
-        public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-            if (player.isActive()) {
-                // Make sure the mouse is always visible during path playback
-                // even if the game closes the overlay for some reason (e.g. world change)
-                replayHandler.getOverlay().setMouseVisible(true);
-            }
-        }
-
-        @Override
-        protected AbstractGuiElement getThis() {
-            return this;
-        }
-
-        @Override
-        protected ReadableDimension calcMinSize() {
-            return new Dimension(0, 0);
-        }
-
-        @Override
-        public boolean mouseClick(ReadablePoint position, int button) {
-            if (player.isActive()) {
-                playPauseButton.mouseClick(position, button);
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        public int getLayer() {
-            return player.isActive() ? 10 : 0;
-        }
-    };
-
     private final ReplayMod core;
     private final ReplayModSimplePathing mod;
     private final ReplayHandler replayHandler;
@@ -308,14 +250,16 @@ public class GuiPathing {
                     player.getFuture().cancel(false);
                 } else {
                     boolean ignoreTimeKeyframes = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
-                    Path timePath = mod.getCurrentTimeline().getTimePath();
 
-                    if (!preparePathsForPlayback(ignoreTimeKeyframes)) return;
+                    Timeline timeline = preparePathsForPlayback(ignoreTimeKeyframes);
+                    if (timeline == null) return;
 
+                    Path timePath = new SPTimeline(timeline).getTimePath();
                     timePath.setActive(!ignoreTimeKeyframes);
+
                     // Start from cursor time unless the control key is pressed (then start from beginning)
                     int startTime = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)? 0 : GuiPathing.this.timeline.getCursorPosition();
-                    ListenableFuture<Void> future = player.start(mod.getCurrentTimeline().getTimeline(), startTime);
+                    ListenableFuture<Void> future = player.start(timeline, startTime);
                     overlay.setCloseable(false);
                     overlay.setMouseVisible(true);
                     core.printInfoToChat("replaymod.chat.pathstarted");
@@ -328,14 +272,12 @@ public class GuiPathing {
                                 core.printInfoToChat("replaymod.chat.pathfinished");
                             }
                             overlay.setCloseable(true);
-                            timePath.setActive(true);
                         }
 
                         @Override
                         public void onFailure(Throwable t) {
                             t.printStackTrace();
                             overlay.setCloseable(true);
-                            timePath.setActive(true);
                         }
                     });
                 }
@@ -407,13 +349,12 @@ public class GuiPathing {
             }
         });
 
-        overlay.addElements(null, panel, clickCatcher);
+        overlay.addElements(null, panel);
         overlay.setLayout(new CustomLayout<GuiReplayOverlay>(overlay.getLayout()) {
             @Override
             protected void layout(GuiReplayOverlay container, int width, int height) {
                 pos(panel, 10, y(overlay.topPanel) + height(overlay.topPanel) + 3);
                 size(panel, width - 20, 40);
-                size(clickCatcher, 0, 0);
             }
         });
 
@@ -528,8 +469,26 @@ public class GuiPathing {
         }).start();
     }
 
-    private boolean preparePathsForPlayback(boolean ignoreTimeKeyframes) {
-        SPTimeline timeline = mod.getCurrentTimeline();
+    private Timeline preparePathsForPlayback(boolean ignoreTimeKeyframes) {
+        SPTimeline spTimeline = mod.getCurrentTimeline();
+
+        if (!validatePathsForPlayback(spTimeline, ignoreTimeKeyframes)) {
+            return null;
+        }
+
+        try {
+            TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
+            String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
+            Timeline timeline = serialization.deserialize(serialized).get("");
+            timeline.getPaths().forEach(Path::updateAll);
+            return timeline;
+        } catch (Throwable t) {
+            error(LOGGER, replayHandler.getOverlay(), CrashReport.create(t, "Cloning timeline"), () -> {});
+            return null;
+        }
+    }
+
+    private boolean validatePathsForPlayback(SPTimeline timeline, boolean ignoreTimeKeyframes) {
         timeline.getTimeline().getPaths().forEach(Path::updateAll);
 
         // Make sure there are at least two position keyframes
