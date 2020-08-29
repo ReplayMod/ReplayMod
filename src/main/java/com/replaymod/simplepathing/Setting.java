@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 public final class Setting<T> extends SettingsRegistry.SettingKeys<T> {
     public static final Setting<Boolean> PATH_PREVIEW = make("pathpreview", "pathpreview", true);
+    public static final Setting<Integer> TIMELINE_LENGTH = make("timelineLength", null, 30 * 60);
     public static final SettingsRegistry.MultipleChoiceSettingKeys<String> DEFAULT_INTERPOLATION;
 
     static {
@@ -27,6 +28,6 @@ public final class Setting<T> extends SettingsRegistry.SettingKeys<T> {
     }
 
     public Setting(String key, String displayString, T defaultValue) {
-        super("simplepathing", key, "replaymod.gui.settings." + displayString, defaultValue);
+        super("simplepathing", key, displayString == null ? null : "replaymod.gui.settings." + displayString, defaultValue);
     }
 }

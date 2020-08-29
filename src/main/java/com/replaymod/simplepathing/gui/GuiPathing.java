@@ -24,6 +24,7 @@ import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
+import com.replaymod.simplepathing.Setting;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
@@ -170,7 +171,7 @@ public class GuiPathing {
             }
             super.draw(renderer, size, renderInfo);
         }
-    }.setSize(Integer.MAX_VALUE, 20).setLength(30 * 60 * 1000).setMarkers();
+    }.setSize(Integer.MAX_VALUE, 20).setMarkers();
 
     public final GuiHorizontalScrollbar scrollbar = new GuiHorizontalScrollbar().setSize(Integer.MAX_VALUE, 9);
     {scrollbar.onValueChanged(new Runnable() {
@@ -282,6 +283,8 @@ public class GuiPathing {
         this.replayHandler = replayHandler;
         this.player = new RealtimeTimelinePlayer(replayHandler);
         final GuiReplayOverlay overlay = replayHandler.getOverlay();
+
+        timeline.setLength(core.getSettingsRegistry().get(Setting.TIMELINE_LENGTH) * 1000);
 
         playPauseButton.setTexturePosH(new ReadablePoint() {
             @Override
