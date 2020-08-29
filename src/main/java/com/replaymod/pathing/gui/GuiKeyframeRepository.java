@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -32,8 +33,10 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Gui for loading and saving {@link Timeline Timelines}.
@@ -51,7 +54,9 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
             ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no");
             Utils.addCallback(popup.getFuture(), doIt -> {
                 if (doIt) {
-                    timelines.put(selectedEntry.name, currentTimeline);
+                    for (Entry entry : selectedEntries) {
+                        timelines.put(entry.name, currentTimeline);
+                    }
                     overwriteButton.setDisabled();
                     save();
                 }
@@ -105,7 +110,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
         public void run() {
             getMinecraft().openScreen(null);
             try {
-                Timeline timeline = timelines.get(selectedEntry.name);
+                Timeline timeline = timelines.get(selectedEntries.iterator().next().name);
                 for (Path path : timeline.getPaths()) {
                     path.updateAll();
                 }
@@ -118,6 +123,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
     public final GuiButton renameButton = new GuiButton(buttonPanel).onClick(new Runnable() {
         @Override
         public void run() {
+            Entry selectedEntry = selectedEntries.iterator().next();
             final GuiTextField nameField = new GuiTextField().setSize(200, 20).setFocused(true).setText(selectedEntry.name);
             final GuiYesNoPopup popup = GuiYesNoPopup.open(GuiKeyframeRepository.this,
                     new GuiLabel().setI18nText("replaymod.gui.rename").setColor(Colors.BLACK),
@@ -168,14 +174,13 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
                 @Override
                 public void onSuccess(Boolean delete) {
                     if (delete) {
-                        timelines.remove(selectedEntry.name);
-                        list.getListPanel().removeElement(selectedEntry);
+                        for (Entry entry : selectedEntries) {
+                            timelines.remove(entry.name);
+                            list.getListPanel().removeElement(entry);
+                        }
 
-                        selectedEntry = null;
-                        overwriteButton.setDisabled();
-                        loadButton.setDisabled();
-                        renameButton.setDisabled();
-                        removeButton.setDisabled();
+                        selectedEntries.clear();
+                        updateButtons();
                         save();
                     }
                 }
@@ -194,7 +199,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
     private final PathingRegistry registry;
     private final ReplayFile replayFile;
 
-    private Entry selectedEntry;
+    private final Set<Entry> selectedEntries = new HashSet<>();
 
     {
         setBackground(Background.NONE);
@@ -232,6 +237,15 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
             if (entry.getKey().isEmpty()) continue; // don't show auto-save slot
             list.getListPanel().addElements(null, new Entry(entry.getKey()));
         }
+    }
+
+    private void updateButtons() {
+        int selected = selectedEntries.size();
+
+        overwriteButton.setEnabled(selected >= 1);
+        loadButton.setEnabled(selected == 1);
+        renameButton.setEnabled(selected == 1);
+        removeButton.setEnabled(selected >= 1);
     }
 
     @Override
@@ -281,13 +295,20 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
 
         @Override
         protected void onClick() {
-            selectedEntry = this;
-            buttonPanel.forEach(IGuiButton.class).setEnabled();
+            if (!MCVer.Keyboard.hasControlDown()) {
+                selectedEntries.clear();
+            }
+            if (selectedEntries.contains(this)) {
+                selectedEntries.remove(this);
+            } else {
+                selectedEntries.add(this);
+            }
+            updateButtons();
         }
 
         @Override
         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-            if (selectedEntry == this) {
+            if (selectedEntries.contains(this)) {
                 renderer.drawRect(0, 0, size.getWidth(), size.getHeight(), Colors.BLACK);
                 renderer.drawRect(0, 0, 2, size.getHeight(), Colors.WHITE);
             }
