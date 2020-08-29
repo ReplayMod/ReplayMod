@@ -10,6 +10,7 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.path.Path;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.pathing.serialize.TimelineSerialization;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -21,32 +22,39 @@ import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiTextField;
-import de.johni0702.minecraft.gui.element.IGuiButton;
 import de.johni0702.minecraft.gui.function.Closeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
-import de.johni0702.minecraft.gui.layout.HorizontalLayout;
+import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import net.minecraft.util.crash.CrashReport;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static de.johni0702.minecraft.gui.versions.MCVer.getClipboardString;
+import static de.johni0702.minecraft.gui.versions.MCVer.setClipboardString;
+
 /**
  * Gui for loading and saving {@link Timeline Timelines}.
  */
 public class GuiKeyframeRepository extends GuiScreen implements Closeable {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public final GuiPanel contentPanel = new GuiPanel(this).setBackgroundColor(Colors.DARK_TRANSPARENT);
     public final GuiLabel title = new GuiLabel(contentPanel).setI18nText("replaymod.gui.keyframerepository.title");
     public final GuiVerticalList list = new GuiVerticalList(contentPanel).setDrawShadow(true).setDrawSlider(true);
-    public final GuiPanel buttonPanel = new GuiPanel(contentPanel).setLayout(new HorizontalLayout().setSpacing(5));
-    public final GuiButton overwriteButton = new GuiButton(buttonPanel).onClick(new Runnable() {
+    public final GuiButton overwriteButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
             GuiYesNoPopup popup = GuiYesNoPopup.open(GuiKeyframeRepository.this,
@@ -63,7 +71,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
             }, Throwable::printStackTrace);
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.overwrite").setDisabled();
-    public final GuiButton saveAsButton = new GuiButton(buttonPanel).onClick(new Runnable() {
+    public final GuiButton saveAsButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
             final GuiTextField nameField = new GuiTextField().setSize(200, 20).setFocused(true);
@@ -105,7 +113,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
             });
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.saveas");
-    public final GuiButton loadButton = new GuiButton(buttonPanel).onClick(new Runnable() {
+    public final GuiButton loadButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
             getMinecraft().openScreen(null);
@@ -120,7 +128,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
             }
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.load").setDisabled();
-    public final GuiButton renameButton = new GuiButton(buttonPanel).onClick(new Runnable() {
+    public final GuiButton renameButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
             Entry selectedEntry = selectedEntries.iterator().next();
@@ -164,7 +172,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
             });
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.rename").setDisabled();
-    public final GuiButton removeButton = new GuiButton(buttonPanel).onClick(new Runnable() {
+    public final GuiButton removeButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
             GuiYesNoPopup popup = GuiYesNoPopup.open(GuiKeyframeRepository.this,
@@ -192,6 +200,56 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
             });
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.remove").setDisabled();
+
+    public final GuiButton copyButton = new GuiButton().onClick(new Runnable() {
+        @Override
+        public void run() {
+            Map<String, Timeline> toBeSerialized = new HashMap<>();
+            for (Entry entry : selectedEntries) {
+                toBeSerialized.put(entry.name, timelines.get(entry.name));
+            }
+            try {
+                TimelineSerialization serialization = new TimelineSerialization(registry, null);
+                setClipboardString(serialization.serialize(toBeSerialized));
+            } catch (Throwable t) {
+                t.printStackTrace();
+                CrashReport report = CrashReport.create(t, "Copying timeline(s)");
+                Utils.error(LOGGER, GuiKeyframeRepository.this, report, () -> {});
+            }
+        }
+    }).setSize(75, 20).setI18nLabel("replaymod.gui.copy").setDisabled();
+
+    public final GuiButton pasteButton = new GuiButton().onClick(new Runnable() {
+        @Override
+        public void run() {
+            try {
+                TimelineSerialization serialization = new TimelineSerialization(registry, null);
+                for (Map.Entry<String, Timeline> entry : serialization.deserialize(getClipboardString()).entrySet()) {
+                    String name = entry.getKey();
+                    while (timelines.containsKey(name)) {
+                        name += " (Copy)";
+                    }
+                    timelines.put(name, entry.getValue());
+                    list.getListPanel().addElements(null, new Entry(name));
+                }
+                save();
+            } catch (Throwable t) {
+                // Intentionally not making a fuzz about it cause this will likely happen when they have anything
+                // else in their clipboard.
+                // If it's actually not working, they'll go complain and we'll just check the log.
+                t.printStackTrace();
+            }
+        }
+    }).setSize(75, 20).setI18nLabel("replaymod.gui.paste");
+
+    public final GuiPanel buttonPanel = new GuiPanel(contentPanel)
+            .setLayout(new GridLayout()
+                    .setColumns(4)
+                    .setSpacingX(5)
+                    .setSpacingY(5))
+            .addElements(null,
+                    overwriteButton, saveAsButton, renameButton, removeButton,
+                    loadButton, copyButton, pasteButton);
 
     private final Map<String, Timeline> timelines = new LinkedHashMap<>();
     private final Timeline currentTimeline;
@@ -246,6 +304,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable {
         loadButton.setEnabled(selected == 1);
         renameButton.setEnabled(selected == 1);
         removeButton.setEnabled(selected >= 1);
+        copyButton.setEnabled(selected >= 1);
     }
 
     @Override
