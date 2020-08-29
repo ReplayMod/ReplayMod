@@ -99,7 +99,8 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         }).addElements(null, title, list, buttonPanel);
     }
 
-    private final List<RenderJob> jobs = ReplayModRender.instance.getRenderQueue();
+    private final ReplayModRender mod = ReplayModRender.instance;
+    private final List<RenderJob> jobs = mod.getRenderQueue();
 
     public GuiRenderQueue(AbstractGuiScreen<?> container, ReplayHandler replayHandler, Supplier<Timeline> timelineSupplier) {
         super(container);
@@ -131,6 +132,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
             }
             selectedEntries.clear();
             updateButtons();
+            mod.saveRenderQueue();
         });
 
         renderButton.onClick(() -> {
@@ -214,6 +216,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                     jobs.add(newJob);
                     list.getListPanel().addElements(null, new Entry(newJob));
                     updateButtons();
+                    mod.saveRenderQueue();
 
                     // Need to close the inner popup before we can open the outer one
                     close();
