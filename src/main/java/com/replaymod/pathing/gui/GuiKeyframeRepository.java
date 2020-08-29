@@ -6,6 +6,9 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.render.gui.GuiRenderQueue;
+import com.replaymod.render.gui.GuiRenderSettings;
+import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -39,11 +42,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.johni0702.minecraft.gui.versions.MCVer.getClipboardString;
 import static de.johni0702.minecraft.gui.versions.MCVer.setClipboardString;
@@ -245,6 +250,45 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.paste");
 
+    public final GuiButton addToQueueButton = new GuiButton().onClick(new Runnable() {
+        @Override
+        public void run() {
+            ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
+            GuiRenderQueue queue = new GuiRenderQueue(GuiKeyframeRepository.this, replayHandler, null);
+            queue.open();
+
+            Set<String> selected = selectedEntries.stream().map(e -> e.name).collect(Collectors.toSet());
+            ArrayDeque<Map.Entry<String, Timeline>> toBeAdded = new ArrayDeque<>();
+            // Iterating over timelines to get consistent ordering (cause selectedEntries is an unordered set)
+            // and we need to get the Timelines anyway.
+            for (Map.Entry<String, Timeline> entry : timelines.entrySet()) {
+                if (selected.contains(entry.getKey())) {
+                    toBeAdded.offerLast(entry);
+                }
+            }
+            new Runnable() {
+                @Override
+                public void run() {
+                    Map.Entry<String, Timeline> entry = toBeAdded.pollFirst();
+                    if (entry == null) {
+                        return;
+                    }
+                    String name = entry.getKey();
+                    Timeline timeline = entry.getValue();
+                    GuiRenderSettings settingsGui = queue.addJob(timeline);
+                    settingsGui.buttonPanel.removeElement(settingsGui.renderButton);
+                    settingsGui.setOutputFileBaseName(name);
+                    Runnable orgOnClick = settingsGui.queueButton.getOnClick();
+                    settingsGui.queueButton.onClick(() -> {
+                        orgOnClick.run();
+                        this.run();
+                    });
+                    settingsGui.open();
+                }
+            }.run();
+        }
+    }).setSize(75, 20).setI18nLabel("replaymod.gui.rendersettings.addtoqueue");
+
     public final GuiPanel buttonPanel = new GuiPanel(contentPanel)
             .setLayout(new GridLayout()
                     .setColumns(4)
@@ -252,7 +296,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
                     .setSpacingY(5))
             .addElements(null,
                     overwriteButton, saveAsButton, renameButton, removeButton,
-                    loadButton, copyButton, pasteButton);
+                    loadButton, addToQueueButton, copyButton, pasteButton);
 
     private final Map<String, Timeline> timelines = new LinkedHashMap<>();
     private final Timeline currentTimeline;
@@ -298,6 +342,8 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
             if (entry.getKey().isEmpty()) continue; // don't show auto-save slot
             list.getListPanel().addElements(null, new Entry(entry.getKey()));
         }
+
+        updateButtons();
     }
 
     private void updateButtons() {
@@ -308,6 +354,7 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
         renameButton.setEnabled(selected == 1);
         removeButton.setEnabled(selected >= 1);
         copyButton.setEnabled(selected >= 1);
+        addToQueueButton.setEnabled(selected >= 1);
     }
 
     @Override

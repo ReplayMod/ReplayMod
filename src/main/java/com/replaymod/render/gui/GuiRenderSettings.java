@@ -45,6 +45,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -571,6 +572,20 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
 
     public AbstractGuiScreen<?> getScreen() {
         return screen;
+    }
+
+    public void setOutputFileBaseName(String base) {
+        RenderSettings.EncodingPreset preset = encodingPresetDropdown.getSelectedValue();
+        File file = new File(outputFile.getParentFile(), base + "." + preset.getFileExtension());
+        // Ensure the file name is valid
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            file.toPath();
+            outputFile = file;
+            outputFileButton.setLabel(file.getName());
+        } catch (InvalidPathException ignored) {
+            setOutputFileBaseName("filename_invalid_" + base.hashCode());
+        }
     }
 
     protected File conformExtension(File file, RenderSettings.EncodingPreset preset) {

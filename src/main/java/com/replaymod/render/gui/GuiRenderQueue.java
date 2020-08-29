@@ -235,7 +235,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
 
     @Override
     public void open() {
-        if (jobs.isEmpty()) {
+        if (jobs.isEmpty() && timelineSupplier != null) {
             if (addButtonClicked() == null) {
                 close();
             }
@@ -261,6 +261,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
 
     public void updateButtons() {
         int selected = selectedEntries.size();
+        addButton.setEnabled(timelineSupplier != null);
         editButton.setEnabled(selected == 1);
         removeButton.setEnabled(selected >= 1);
         renderButton.setEnabled(selected > 0);
