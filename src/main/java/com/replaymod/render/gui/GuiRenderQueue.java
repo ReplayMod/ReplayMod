@@ -37,6 +37,7 @@ import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,7 +56,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     private final GuiButton addButton = new GuiButton().setI18nLabel("replaymod.gui.renderqueue.add").setSize(150, 20);
     private final GuiButton renameButton = new GuiButton().setI18nLabel("replaymod.gui.rename").setSize(73, 20);
     private final GuiButton removeButton = new GuiButton().setI18nLabel("replaymod.gui.remove").setSize(73, 20);
-    private final GuiButton renderButton = new GuiButton().setI18nLabel("replaymod.gui.render").setSize(150, 20);
+    private final GuiButton renderButton = new GuiButton().setSize(150, 20);
     private final GuiButton closeButton = new GuiButton().setI18nLabel("replaymod.gui.close").setSize(150, 20).onClick(this::close);
 
     /*
@@ -207,7 +208,11 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
 
         renderButton.onClick(() -> {
             LOGGER.trace("Render button clicked");
-            ReplayMod.instance.runLaterWithoutLock(() -> processQueue(queue));
+            List<RenderJob> renderQueue = new ArrayList<>();
+            for (Entry entry : selectedEntries) {
+                renderQueue.add(entry.job);
+            }
+            ReplayMod.instance.runLaterWithoutLock(() -> processQueue(renderQueue));
         });
 
         updateButtons();
@@ -269,7 +274,8 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         int selected = selectedEntries.size();
         renameButton.setEnabled(selected == 1);
         removeButton.setEnabled(selected >= 1);
-        renderButton.setEnabled(!list.getListPanel().getChildren().isEmpty());
+        renderButton.setEnabled(selected > 0);
+        renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
     }
 
     @Override
