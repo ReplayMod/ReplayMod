@@ -27,7 +27,7 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
     private final ReplayMod mod;
 
     public GuiCreateScreenshot(ReplayMod mod) {
-        super(null, null);
+        super(GuiRenderSettings.createBaseScreen(), null, null);
 
         this.mod = mod;
 
@@ -64,7 +64,7 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
 
                 } catch (Throwable t) {
                     error(LOGGER, GuiCreateScreenshot.this, CrashReport.create(t, "Rendering video"), () -> {});
-                    display(); // Re-show the render settings gui and the new error popup
+                    getScreen().display(); // Re-show the render settings gui and the new error popup
                 }
             });
         });
@@ -73,6 +73,18 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
     private <T extends GuiContainer<?>> T resetChildren(T container) {
         new ArrayList<>(container.getChildren()).forEach(container::removeElement);
         return container;
+    }
+
+    @Override
+    public void open() {
+        super.open();
+        getScreen().display();
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        getMinecraft().openScreen(null);
     }
 
     @Override

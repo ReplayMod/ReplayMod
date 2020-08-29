@@ -20,6 +20,6 @@ public class AdvancedScreenshots implements Extra {
     }
 
     private void takeScreenshot() {
-        ReplayMod.instance.runLater(() -> new GuiCreateScreenshot(mod).display());
+        ReplayMod.instance.runLater(() -> new GuiCreateScreenshot(mod).open());
     }
 }

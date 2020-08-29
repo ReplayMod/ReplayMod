@@ -14,6 +14,7 @@ import com.replaymod.render.VideoWriter;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
@@ -21,11 +22,11 @@ import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.element.advanced.GuiColorPicker;
 import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
-import de.johni0702.minecraft.gui.function.Closeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
+import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiFileChooserPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
@@ -57,8 +58,9 @@ import static com.replaymod.render.ReplayModRender.LOGGER;
 import net.minecraft.text.TranslatableText;
 //#endif
 
-public class GuiRenderSettings extends GuiScreen implements Closeable {
-    public final GuiPanel contentPanel = new GuiPanel(this).setBackgroundColor(Colors.DARK_TRANSPARENT);
+public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
+    { disablePopupBackground(); }
+    public final GuiPanel contentPanel = new GuiPanel(popup).setBackgroundColor(new Color(0, 0, 0, 230));
     public final GuiVerticalList settingsList = new GuiVerticalList(contentPanel).setDrawSlider(true);
 
     public final GuiDropdownMenu<RenderSettings.RenderMethod> renderMethodDropdown =
@@ -227,12 +229,9 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
 
     public final GuiPanel buttonPanel = new GuiPanel(contentPanel).setLayout(new HorizontalLayout().setSpacing(4));
-    public final GuiButton queueButton = new GuiButton(buttonPanel).onClick(new Runnable() {
-        @Override
-        public void run() {
-            new GuiRenderQueue(GuiRenderSettings.this, GuiRenderSettings.this, replayHandler, timeline).open();
-        }
-    }).setSize(100, 20).setI18nLabel("replaymod.gui.renderqueue.open");
+    public final GuiButton queueButton = new GuiButton(buttonPanel)
+            .setSize(100, 20)
+            .setI18nLabel("replaymod.gui.rendersettings.addtoqueue");
     public final GuiButton renderButton = new GuiButton(buttonPanel).onClick(() -> ReplayMod.instance.runLaterWithoutLock(new Runnable() {
         @Override
         public void run() {
@@ -245,7 +244,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 LOGGER.error("Rendering video:", e);
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
-                        GuiRenderSettings.this::display,
+                        getScreen()::display,
                         new TranslatableText("replaymod.gui.rendering.error.title"),
                         new TranslatableText("replaymod.gui.rendering.error.message")
                         //#else
@@ -263,26 +262,17 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
                 });
             } catch (Throwable t) {
                 error(LOGGER, GuiRenderSettings.this, CrashReport.create(t, "Rendering video"), () -> {});
-                display(); // Re-show the render settings gui and the new error popup
+                getScreen().display(); // Re-show the render settings gui and the new error popup
             }
         }
     })).setSize(100, 20).setI18nLabel("replaymod.gui.render");
-    public final GuiButton cancelButton = new GuiButton(buttonPanel).onClick(new Runnable() {
-        @Override
-        public void run() {
-            getMinecraft().openScreen(null);
-        }
-    }).setSize(100, 20).setI18nLabel("replaymod.gui.cancel");
+    public final GuiButton cancelButton = new GuiButton(buttonPanel)
+            .onClick(this::close)
+            .setSize(100, 20)
+            .setI18nLabel("replaymod.gui.cancel");
 
     {
-        setBackground(Background.NONE);
         Utils.link(videoWidth, videoHeight, bitRateField);
-        setLayout(new CustomLayout<GuiScreen>() {
-            @Override
-            protected void layout(GuiScreen container, int width, int height) {
-                pos(contentPanel, width / 2 - width(contentPanel) / 2, height / 2 - height(contentPanel) / 2);
-            }
-        });
 
         contentPanel.setLayout(new CustomLayout<GuiPanel>() {
             @Override
@@ -294,7 +284,7 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
 
             @Override
             public ReadableDimension calcMinSize(GuiContainer<?> container) {
-                ReadableDimension screenSize = getMinSize();
+                ReadableDimension screenSize = getContainer().getMinSize();
                 return new Dimension(screenSize.getWidth() - 40, screenSize.getHeight() - 40);
             }
         });
@@ -319,12 +309,15 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         });
     }
 
+    private final AbstractGuiScreen<?> screen;
     private final ReplayHandler replayHandler;
     private final Timeline timeline;
     private File outputFile;
     private boolean userDefinedOutputFileName;
 
-    public GuiRenderSettings(ReplayHandler replayHandler, Timeline timeline) {
+    public GuiRenderSettings(AbstractGuiScreen<?> container, ReplayHandler replayHandler, Timeline timeline) {
+        super(container);
+        this.screen = container;
         this.replayHandler = replayHandler;
         this.timeline = timeline;
 
@@ -361,10 +354,12 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         String error = updateResolution();
         if (error == null) {
             renderButton.setEnabled().setTooltip(null);
+            queueButton.setEnabled().setTooltip(null);
             videoWidth.setTextColor(Colors.WHITE);
             videoHeight.setTextColor(Colors.WHITE);
         } else {
             renderButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(error));
+            queueButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(error));
             videoWidth.setTextColor(Colors.RED);
             videoHeight.setTextColor(Colors.RED);
         }
@@ -574,8 +569,8 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         return new File(folder, fileName + "." + encodingPreset.getFileExtension());
     }
 
-    public File getOutputFile() {
-        return outputFile;
+    public AbstractGuiScreen<?> getScreen() {
+        return screen;
     }
 
     protected File conformExtension(File file, RenderSettings.EncodingPreset preset) {
@@ -596,6 +591,11 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
     }
 
     @Override
+    public void open() {
+        super.open();
+    }
+
+    @Override
     public void close() {
         RenderSettings settings = save(true);
         String json = new Gson().toJson(settings);
@@ -604,9 +604,21 @@ public class GuiRenderSettings extends GuiScreen implements Closeable {
         } catch (IOException e) {
             LOGGER.error("Saving render settings:", e);
         }
+        super.close();
     }
 
     public ReplayHandler getReplayHandler() {
         return replayHandler;
+    }
+
+    @Override
+    protected GuiRenderSettings getThis() {
+        return this;
+    }
+
+    public static GuiScreen createBaseScreen() {
+        GuiScreen screen = new GuiScreen();
+        screen.setBackground(AbstractGuiScreen.Background.NONE);
+        return screen;
     }
 }

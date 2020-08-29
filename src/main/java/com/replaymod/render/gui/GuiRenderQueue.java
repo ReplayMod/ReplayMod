@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.Futures;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.VideoWriter;
 import com.replaymod.render.rendering.VideoRenderer;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
@@ -77,9 +79,11 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                             renameButton, removeButton),
                     closeButton);
 
-    private final AbstractGuiScreen container;
+    private final AbstractGuiScreen<?> container;
     private final ReplayHandler replayHandler;
     private final Set<Entry> selectedEntries = new HashSet<>();
+    private final Supplier<Timeline> timelineSupplier;
+    private boolean opened;
 
     {
         popup.setLayout(new CustomLayout<GuiPanel>() {
@@ -100,64 +104,23 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         }).addElements(null, title, list, buttonPanel);
     }
 
-    public GuiRenderQueue(AbstractGuiScreen container, GuiRenderSettings guiRenderSettings, ReplayHandler replayHandler, Timeline timeline) {
+    private final List<RenderJob> jobs = ReplayModRender.instance.getRenderQueue();
+
+    public GuiRenderQueue(AbstractGuiScreen<?> container, ReplayHandler replayHandler, Supplier<Timeline> timelineSupplier) {
         super(container);
         this.container = container;
         this.replayHandler = replayHandler;
+        this.timelineSupplier = timelineSupplier;
         LOGGER.trace("Opening render queue popup");
 
         setBackgroundColor(Colors.DARK_TRANSPARENT);
 
-        List<RenderJob> queue = ReplayModRender.instance.getRenderQueue();
-
-        for (RenderJob renderJob : queue) {
+        for (RenderJob renderJob : jobs) {
             LOGGER.trace("Adding {} to job queue list", renderJob);
             list.getListPanel().addElements(null, new Entry(renderJob));
         }
 
-        addButton.onClick(() -> {
-            LOGGER.trace("Add button clicked");
-            // Open popup
-            GuiYesNoPopup popup = GuiYesNoPopup.open(container)
-                    .setYesI18nLabel("replaymod.gui.add").setNoI18nLabel("replaymod.gui.cancel");
-            popup.getInfo().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5));
-            // Add content
-            GuiLabel label = new GuiLabel().setI18nText("replaymod.gui.renderqueue.jobname").setColor(Colors.BLACK);
-            GuiTextField nameField = new GuiTextField().setSize(150, 20).setFocused(true);
-            nameField.setText(guiRenderSettings.getOutputFile().getName());
-            popup.getInfo().addElements(new HorizontalLayout.Data(0.5), label, nameField);
-            // Disable "Yes" button while name is empty
-            nameField.onTextChanged(old -> popup.getYesButton().setEnabled(!nameField.getText().isEmpty())).onEnter(() -> {
-                if (popup.getYesButton().isEnabled()) {
-                    popup.getYesButton().onClick();
-                }
-            });
-            // Register callback
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(@Nullable Boolean result) {
-                    if (result == Boolean.TRUE) {
-                        RenderJob newJob = new RenderJob();
-                        newJob.setName(nameField.getText());
-                        newJob.setSettings(guiRenderSettings.save(false));
-                        newJob.setTimeline(timeline);
-                        LOGGER.trace("Adding new job: {}", newJob);
-                        queue.add(newJob);
-                        list.getListPanel().addElements(null, new Entry(newJob));
-                    } else {
-                        LOGGER.trace("Adding cancelled");
-                    }
-                }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    LOGGER.error("Add Job popup:", t);
-                }
-            });
-        });
-        if (guiRenderSettings != null) {
-            addButton.setEnabled(guiRenderSettings.renderButton.isEnabled());
-        }
+        addButton.onClick(this::addButtonClicked);
 
         renameButton.onClick(() -> {
             Entry selectedEntry = selectedEntries.iterator().next();
@@ -200,7 +163,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
             for (Entry entry : selectedEntries) {
                 LOGGER.trace("Remove button clicked for {}", entry.job);
                 list.getListPanel().removeElement(entry);
-                queue.remove(entry.job);
+                jobs.remove(entry.job);
             }
             selectedEntries.clear();
             updateButtons();
@@ -260,9 +223,72 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         }
     }
 
+    private GuiRenderSettings addButtonClicked() {
+        Timeline timeline = timelineSupplier.get();
+        if (timeline != null) {
+            GuiRenderSettings popup = addJob(timeline);
+            popup.open();
+            return popup;
+        } else {
+            return null;
+        }
+    }
+
+    public GuiRenderSettings addJob(Timeline timeline) {
+        return new GuiRenderSettings(container, replayHandler, timeline) {
+            {
+                if (!jobs.isEmpty()) {
+                    buttonPanel.removeElement(renderButton);
+                }
+                queueButton.onClick(() -> {
+                    RenderSettings settings = save(false);
+
+                    RenderJob newJob = new RenderJob();
+                    newJob.setName(settings.getOutputFile().getName());
+                    newJob.setSettings(settings);
+                    newJob.setTimeline(timeline);
+                    LOGGER.trace("Adding new job: {}", newJob);
+                    jobs.add(newJob);
+                    list.getListPanel().addElements(null, new Entry(newJob));
+                    updateButtons();
+
+                    // Need to close the inner popup before we can open the outer one
+                    close();
+                    if (!opened) {
+                        GuiRenderQueue.this.open();
+                    }
+                });
+            }
+
+            @Override
+            public void close() {
+                super.close();
+                if (!opened && jobs.isEmpty()) {
+                    GuiRenderQueue.this.close();
+                }
+            }
+        };
+    }
+
     @Override
     public void open() {
+        if (jobs.isEmpty()) {
+            if (addButtonClicked() == null) {
+                close();
+            }
+            return;
+        }
+
         super.open();
+        opened = true;
+    }
+
+    @Override
+    protected void close() {
+        if (opened) {
+            super.close();
+        }
+        opened = false;
     }
 
     @Override

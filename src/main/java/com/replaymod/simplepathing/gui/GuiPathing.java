@@ -12,6 +12,7 @@ import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
+import com.replaymod.render.gui.GuiRenderQueue;
 import com.replaymod.render.gui.GuiRenderSettings;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.camera.CameraEntity;
@@ -27,8 +28,10 @@ import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.Setting;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
+import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiHorizontalScrollbar;
 import de.johni0702.minecraft.gui.element.GuiLabel;
@@ -100,7 +103,15 @@ public class GuiPathing {
         public void run() {
             Timeline timeline = preparePathsForPlayback(false);
             if (timeline == null) return;
-            new GuiRenderSettings(replayHandler, timeline).display();
+            GuiScreen screen = GuiRenderSettings.createBaseScreen();
+            new GuiRenderQueue(screen, replayHandler, () -> preparePathsForPlayback(false)) {
+                @Override
+                protected void close() {
+                    super.close();
+                    getMinecraft().openScreen(null);
+                }
+            }.open();
+            screen.display();
         }
     }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.renderpath"));
