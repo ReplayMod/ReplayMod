@@ -9,9 +9,9 @@ import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiOverlay;
 import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiSlider;
-import de.johni0702.minecraft.gui.element.GuiTexturedButton;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
@@ -41,13 +41,13 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
     public final GuiPanel topPanel = new GuiPanel(this)
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.LEFT).setSpacing(5));
-    public final GuiTexturedButton playPauseButton = new GuiTexturedButton() {
+    public final GuiButton playPauseButton = new GuiButton() {
         @Override
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
                 String label;
-                if (getTextureNormal().getY() == 0) { // Play button
+                if (getSpriteUV().getY() == 0) { // Play button
                     label = "replaymod.gui.ingame.menu.unpause";
                 } else { // Pause button
                     label = "replaymod.gui.ingame.menu.pause";
@@ -91,7 +91,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             }
         });
 
-        playPauseButton.setTexturePosH(new ReadablePoint() {
+        playPauseButton.setSpriteUV(new ReadablePoint() {
             @Override
             public int getX() {
                 return 0;

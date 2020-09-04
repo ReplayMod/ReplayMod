@@ -32,10 +32,10 @@ import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
+import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiHorizontalScrollbar;
 import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.element.GuiTexturedButton;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTimelineTime;
@@ -81,7 +81,7 @@ import static com.replaymod.simplepathing.ReplayModSimplePathing.LOGGER;
 public class GuiPathing {
     private static final Logger logger = LogManager.getLogger();
 
-    public final GuiTexturedButton playPauseButton = new GuiTexturedButton() {
+    public final GuiButton playPauseButton = new GuiButton() {
         @Override
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
@@ -98,7 +98,7 @@ public class GuiPathing {
         }
     }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTooltip(new GuiTooltip());
 
-    public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
+    public final GuiButton renderButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
             Timeline timeline = preparePathsForPlayback(false);
@@ -113,23 +113,23 @@ public class GuiPathing {
             }.open();
             screen.display();
         }
-    }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
+    }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 0)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.renderpath"));
 
-    public final GuiTexturedButton positionKeyframeButton = new GuiTexturedButton() {
+    public final GuiButton positionKeyframeButton = new GuiButton() {
         @Override
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
                 String label;
-                if (getTextureNormal().getY() == 40) { // Add keyframe
-                    if (getTextureNormal().getX() == 0) { // Position
+                if (getSpriteUV().getY() == 40) { // Add keyframe
+                    if (getSpriteUV().getX() == 0) { // Position
                         label = "replaymod.gui.ingame.menu.addposkeyframe";
                     } else { // Spectator
                         label = "replaymod.gui.ingame.menu.addspeckeyframe";
                     }
                 } else { // Remove keyframe
-                    if (getTextureNormal().getX() == 0) { // Position
+                    if (getSpriteUV().getX() == 0) { // Position
                         label = "replaymod.gui.ingame.menu.removeposkeyframe";
                     } else { // Spectator
                         label = "replaymod.gui.ingame.menu.removespeckeyframe";
@@ -141,13 +141,13 @@ public class GuiPathing {
         }
     }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTooltip(new GuiTooltip());
 
-    public final GuiTexturedButton timeKeyframeButton = new GuiTexturedButton() {
+    public final GuiButton timeKeyframeButton = new GuiButton() {
         @Override
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
                 String label;
-                if (getTextureNormal().getY() == 80) { // Add time keyframe
+                if (getSpriteUV().getY() == 80) { // Add time keyframe
                     label = "replaymod.gui.ingame.menu.addtimekeyframe";
                 } else { // Remove time keyframe
                     label = "replaymod.gui.ingame.menu.removetimekeyframe";
@@ -180,20 +180,20 @@ public class GuiPathing {
     public final GuiTimelineTime<GuiKeyframeTimeline> timelineTime = new GuiTimelineTime<GuiKeyframeTimeline>()
             .setTimeline(timeline);
 
-    public final GuiTexturedButton zoomInButton = new GuiTexturedButton().setSize(9, 9).onClick(new Runnable() {
+    public final GuiButton zoomInButton = new GuiButton().setSize(9, 9).onClick(new Runnable() {
         @Override
         public void run() {
             zoomTimeline(2d / 3d);
         }
-    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 20)
+    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 20)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomin"));
 
-    public final GuiTexturedButton zoomOutButton = new GuiTexturedButton().setSize(9, 9).onClick(new Runnable() {
+    public final GuiButton zoomOutButton = new GuiButton().setSize(9, 9).onClick(new Runnable() {
         @Override
         public void run() {
             zoomTimeline(3d / 2d);
         }
-    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 30)
+    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 30)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomout"));
 
     public final GuiPanel zoomButtonPanel = new GuiPanel()
@@ -239,7 +239,7 @@ public class GuiPathing {
 
         timeline.setLength(core.getSettingsRegistry().get(Setting.TIMELINE_LENGTH) * 1000);
 
-        playPauseButton.setTexturePosH(new ReadablePoint() {
+        playPauseButton.setSpriteUV(new ReadablePoint() {
             @Override
             public int getX() {
                 return 0;
@@ -295,7 +295,7 @@ public class GuiPathing {
             }
         });
 
-        positionKeyframeButton.setTexturePosH(new ReadablePoint() {
+        positionKeyframeButton.setSpriteUV(new ReadablePoint() {
             @Override
             public int getX() {
                 SPPath keyframePath = mod.getSelectedPath();
@@ -333,7 +333,7 @@ public class GuiPathing {
             }
         });
 
-        timeKeyframeButton.setTexturePosH(new ReadablePoint() {
+        timeKeyframeButton.setSpriteUV(new ReadablePoint() {
             @Override
             public int getX() {
                 return 0;

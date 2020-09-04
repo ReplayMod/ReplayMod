@@ -13,7 +13,6 @@ import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.element.GuiTexturedButton;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -40,15 +39,15 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
 
     { on(ReplayOpenedCallback.EVENT, replayHandler -> new Gui(mod, replayHandler.getOverlay())); }
     public static final class Gui {
-        private final GuiTexturedButton toggleButton;
+        private final GuiButton toggleButton;
         private final GridLayout panelLayout;
         private final GuiPanel panel;
 
         private boolean open;
 
         public Gui(ReplayMod mod, GuiReplayOverlay overlay) {
-            toggleButton = new GuiTexturedButton(overlay).setSize(20, 20)
-                    .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(0, 120)
+            toggleButton = new GuiButton(overlay).setSize(20, 20)
+                    .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(0, 120)
                     .onClick(new Runnable() {
                         @Override
                         public void run() {

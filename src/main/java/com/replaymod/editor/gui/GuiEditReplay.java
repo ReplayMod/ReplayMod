@@ -12,7 +12,6 @@ import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiHorizontalScrollbar;
-import de.johni0702.minecraft.gui.element.GuiTexturedButton;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTimelineTime;
@@ -42,14 +41,14 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
     private final GuiHorizontalScrollbar scrollbar = new GuiHorizontalScrollbar().setSize(300, 9);
 
 
-    private final GuiTexturedButton zoomInButton = new GuiTexturedButton().setSize(9, 9)
+    private final GuiButton zoomInButton = new GuiButton().setSize(9, 9)
             .onClick(() -> zoomTimeline(2d / 3d))
-            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 20)
+            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 20)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomin"));
 
-    private final GuiTexturedButton zoomOutButton = new GuiTexturedButton().setSize(9, 9)
+    private final GuiButton zoomOutButton = new GuiButton().setSize(9, 9)
             .onClick(() -> zoomTimeline(3d / 2d))
-            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 30)
+            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 30)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomout"));
 
     private final GuiPanel zoomButtonPanel = new GuiPanel()
