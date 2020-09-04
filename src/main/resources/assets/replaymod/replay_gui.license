@@ -1,0 +1,33 @@
+The replay_gui.png file as a whole is governed by the same terms as the entire repository.
+Some of its individual icons were originally from other projects and under different licenses.
+This file serves to credit the original author(s) and to comply with the terms of the original license (some parts of
+which may still apply to the derived replay_gui.png file).
+
+In particular:
+
+================================================================================
+
+The "Settings" icon (three horizontal sliders) is based on ModMenu's settings icon.
+Original: https://github.com/Prospector/ModMenu/blob/74200fb7baa697b4e865b15a707a560757a7ee8f/src/main/resources/assets/modmenu/textures/gui/configure_button.png
+
+Copyright (c) 2018-2020 Prospector
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================

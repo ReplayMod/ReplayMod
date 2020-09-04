@@ -197,12 +197,11 @@ public class GuiReplayViewer extends GuiScreen {
         }
     }).setSize(73, 20).setI18nLabel("replaymod.gui.delete").setDisabled();
 
-    public final GuiButton settingsButton = new GuiButton().onClick(new Runnable() {
-        @Override
-        public void run() {
-            new GuiReplaySettings(toMinecraft(), mod.getCore().getSettingsRegistry()).display();
-        }
-    }).setSize(150, 20).setI18nLabel("replaymod.gui.settings");
+    public final GuiButton settingsButton = new GuiButton(this)
+            .setSize(20, 20)
+            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(20, 0)
+            .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.settings"))
+            .onClick(() -> new GuiReplaySettings(toMinecraft(), getMod().getCore().getSettingsRegistry()).display());
 
     public final GuiButton cancelButton = new GuiButton().onClick(new Runnable() {
         @Override
@@ -216,7 +215,7 @@ public class GuiReplayViewer extends GuiScreen {
     public final GuiPanel editorButton = new GuiPanel();
 
     public final GuiPanel upperButtonPanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
-            .addElements(null, loadButton, settingsButton);
+            .addElements(null, loadButton);
     public final GuiPanel lowerButtonPanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
             .addElements(null, renameButton, deleteButton, editorButton, cancelButton);
     public final GuiPanel buttonPanel = new GuiPanel(this).setLayout(new VerticalLayout().setSpacing(5))
@@ -240,8 +239,14 @@ public class GuiReplayViewer extends GuiScreen {
 
                 pos(list, 0, 30);
                 size(list, width, y(buttonPanel) - 10 - y(list));
+
+                pos(settingsButton, width - width(settingsButton) - 5, 5);
             }
         });
+    }
+
+    public ReplayModReplay getMod() {
+        return mod;
     }
 
     private static final GuiImage DEFAULT_THUMBNAIL = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL);
