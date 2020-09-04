@@ -27,6 +27,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+//#if FABRIC>=1
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+//#else
+//#endif
+
 //#if MC>=11400
 //#else
 //$$ import net.minecraft.resources.IPackFinder;
@@ -42,7 +48,7 @@ import java.util.stream.Collectors;
  */
 public class LangResourcePack extends AbstractFileResourcePack {
     private static final Gson GSON = new Gson();
-    private static final String NAME = "replaymod_lang";
+    public static final String NAME = "replaymod_lang";
     private static final Pattern JSON_FILE_PATTERN = Pattern.compile("^assets/" + ReplayMod.MOD_ID + "/lang/([a-z][a-z])_([a-z][a-z]).json$");
     private static final Pattern LANG_FILE_NAME_PATTERN = Pattern.compile("^([a-z][a-z])_([a-z][a-z]).lang$");
 
@@ -51,9 +57,15 @@ public class LangResourcePack extends AbstractFileResourcePack {
     private static final String FABRIC_KEY_FORMAT = "key." + ReplayMod.MOD_ID + ".%s";
 
     private final Path basePath;
-    public LangResourcePack(Path basePath) {
+    public LangResourcePack() {
         super(new File(NAME));
-        this.basePath = basePath;
+
+        //#if FABRIC>=1
+        ModContainer container = FabricLoader.getInstance().getModContainer(ReplayMod.MOD_ID).orElseThrow(IllegalAccessError::new);
+        this.basePath = container.getRootPath();
+        //#else
+        //$$ this.basePath = null; // stub
+        //#endif
     }
     //#else
     //$$ public LangResourcePack() {
