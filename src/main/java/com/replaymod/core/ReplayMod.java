@@ -32,8 +32,6 @@ import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
 import net.minecraft.client.options.Option;
-import net.minecraft.resource.ResourcePackProvider;
-import net.minecraft.resource.ResourcePackProfile;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 //#endif
 
@@ -185,14 +183,6 @@ public class ReplayMod implements
         }
         //#endif
 
-        //#if MC>=11400
-        // Not needed on fabric, using MixinModResourcePackUtil instead. Could in theory also use it on 1.13 but it already works as is.
-        //#else
-        //#if MC>=11400
-        //$$ DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().getResourcePackList().addPackFinder(new LangResourcePack.Finder()));
-        //#endif
-        //#endif
-
         // Register all RM modules
         modules.add(this);
         modules.add(new ReplayModRecording(this));
@@ -235,6 +225,7 @@ public class ReplayMod implements
     }
 
     public static final DirectoryResourcePack jGuiResourcePack;
+    public static final String JGUI_RESOURCE_PACK_NAME = "replaymod_jgui";
     static { // Note: even preInit is too late and we'd have to issue another resource reload
         jGuiResourcePack = initJGuiResourcePack();
     }
@@ -246,6 +237,15 @@ public class ReplayMod implements
         }
         //noinspection UnnecessaryLocalVariable
         DirectoryResourcePack jGuiResourcePack = new DirectoryResourcePack(folder) {
+            @Override
+            //#if MC>=11400
+            public String getName() {
+            //#else
+            //$$ public String getPackName() {
+            //#endif
+                return JGUI_RESOURCE_PACK_NAME;
+            }
+
             @Override
             protected InputStream openFile(String resourceName) throws IOException {
                 try {
