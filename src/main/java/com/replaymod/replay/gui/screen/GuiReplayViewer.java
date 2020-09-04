@@ -72,15 +72,7 @@ import net.minecraft.text.TranslatableText;
 public class GuiReplayViewer extends GuiScreen {
     private final ReplayModReplay mod;
 
-    public final GuiReplayList list = new GuiReplayList(this).onSelectionChanged(new Runnable() {
-        @Override
-        public void run() {
-            replaySpecificButtons.forEach(b -> b.setEnabled(list.getSelected() != null));
-            if (list.getSelected() != null && list.getSelected().incompatible) {
-                loadButton.setDisabled();
-            }
-        }
-    }).onSelectionDoubleClicked(() -> {
+    public final GuiReplayList list = new GuiReplayList(this).onSelectionChanged(this::updateButtons).onSelectionDoubleClicked(() -> {
         if (this.loadButton.isEnabled()) {
             this.loadButton.onClick();
         }
@@ -90,7 +82,7 @@ public class GuiReplayViewer extends GuiScreen {
         @Override
         public void run() {
             try {
-                mod.startReplay(list.getSelected().file);
+                mod.startReplay(list.getSelected().get(0).file);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -116,7 +108,7 @@ public class GuiReplayViewer extends GuiScreen {
     public final GuiButton renameButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            final File file = list.getSelected().file;
+            final File file = list.getSelected().get(0).file;
             String name = Utils.fileNameToReplayName(file.getName());
             final GuiTextField nameField = new GuiTextField().setSize(200, 20).setFocused(true).setText(name);
             final GuiYesNoPopup popup = GuiYesNoPopup.open(GuiReplayViewer.this,
@@ -172,10 +164,9 @@ public class GuiReplayViewer extends GuiScreen {
             });
         }
     }).setSize(73, 20).setI18nLabel("replaymod.gui.rename").setDisabled();
-    public final GuiButton deleteButton = new GuiButton().onClick(new Runnable() {
-        @Override
-        public void run() {
-            String name = list.getSelected().name.getText();
+    public final GuiButton deleteButton = new GuiButton().onClick(() -> {
+        for (GuiReplayEntry entry : list.getSelected()) {
+            String name = entry.name.getText();
             GuiYesNoPopup popup = GuiYesNoPopup.open(GuiReplayViewer.this,
                     new GuiLabel().setI18nText("replaymod.gui.viewer.delete.linea").setColor(Colors.BLACK),
                     new GuiLabel().setI18nText("replaymod.gui.viewer.delete.lineb", name + Formatting.RESET).setColor(Colors.BLACK)
@@ -185,7 +176,7 @@ public class GuiReplayViewer extends GuiScreen {
                 public void onSuccess(Boolean delete) {
                     if (delete) {
                         try {
-                            FileUtils.forceDelete(list.getSelected().file);
+                            FileUtils.forceDelete(entry.file);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -215,7 +206,7 @@ public class GuiReplayViewer extends GuiScreen {
     }).setSize(73, 20).setI18nLabel("replaymod.gui.cancel");
 
     public final List<GuiButton> replaySpecificButtons = new ArrayList<>();
-    { replaySpecificButtons.addAll(Arrays.asList(loadButton, renameButton, deleteButton)); }
+    { replaySpecificButtons.addAll(Arrays.asList(loadButton, renameButton)); }
     public final GuiPanel editorButton = new GuiPanel();
 
     public final GuiPanel upperButtonPanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
@@ -253,6 +244,17 @@ public class GuiReplayViewer extends GuiScreen {
         return mod;
     }
 
+    private void updateButtons() {
+        List<GuiReplayEntry> selected = list.getSelected();
+        int count = selected.size();
+
+        replaySpecificButtons.forEach(b -> b.setEnabled(count == 1));
+        deleteButton.setEnabled(count > 0);
+        if (count == 1 && selected.get(0).incompatible) {
+            loadButton.setDisabled();
+        }
+    }
+
     private static final GuiImage DEFAULT_THUMBNAIL = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL);
 
     public static class GuiSelectReplayPopup extends AbstractGuiPopup<GuiSelectReplayPopup> {
@@ -281,10 +283,10 @@ public class GuiReplayViewer extends GuiScreen {
                 acceptButton.setEnabled(list.getSelected() != null);
             }).onSelectionDoubleClicked(() -> {
                 close();
-                future.set(list.getSelected().file);
+                future.set(list.getSelected().get(0).file);
             });
             acceptButton.onClick(() -> {
-                future.set(list.getSelected().file);
+                future.set(list.getSelected().get(0).file);
                 close();
             });
             cancelButton.onClick(() -> {
@@ -407,7 +409,17 @@ public class GuiReplayViewer extends GuiScreen {
                 load();
             }
 
-            if (filterTextField.typeKey(mousePosition, keyCode, keyChar, ctrlDown, shiftDown)) {
+            boolean filterHasPriority = !filterTextField.getText().isEmpty();
+            if (filterHasPriority && filterTextField.typeKey(mousePosition, keyCode, keyChar, ctrlDown, shiftDown)) {
+                scrollY(0); // ensure we scroll to top if most entries are filtered
+                return true;
+            }
+
+            if (super.typeKey(mousePosition, keyCode, keyChar, ctrlDown, shiftDown)) {
+                return true;
+            }
+
+            if (!filterHasPriority && filterTextField.typeKey(mousePosition, keyCode, keyChar, ctrlDown, shiftDown)) {
                 scrollY(0); // ensure we scroll to top if most entries are filtered
                 return true;
             }

@@ -43,7 +43,7 @@ public class GuiHandler extends EventRegistrations {
         replayViewer.replaySpecificButtons.add(new GuiButton(replayViewer.editorButton).onClick(() -> {
             if (Utils.ifMinimalModeDoPopup(replayViewer, () -> {})) return;
             try {
-                new GuiEditReplay(replayViewer, replayViewer.list.getSelected().file.toPath()) {
+                new GuiEditReplay(replayViewer, replayViewer.list.getSelected().get(0).file.toPath()) {
                     @Override
                     protected void close() {
                         super.close();
