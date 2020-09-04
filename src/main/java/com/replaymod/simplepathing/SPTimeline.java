@@ -28,7 +28,6 @@ import com.replaymod.replaystudio.pathing.property.Property;
 import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.replaystudio.util.Location;
 import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
-import lombok.Getter;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.crash.CrashException;
@@ -63,14 +62,10 @@ public class SPTimeline implements PathingRegistry {
         POSITION,
     }
 
-    @Getter
     private final Timeline timeline;
-    @Getter
     private final Path timePath;
-    @Getter
     private final Path positionPath;
 
-    @Getter
     private EntityPositionTracker entityTracker;
     private InterpolatorType defaultInterpolatorType;
 
@@ -82,6 +77,22 @@ public class SPTimeline implements PathingRegistry {
         this.timeline = timeline;
         this.timePath = timeline.getPaths().get(SPPath.TIME.ordinal());
         this.positionPath = timeline.getPaths().get(SPPath.POSITION.ordinal());
+    }
+
+    public Timeline getTimeline() {
+        return timeline;
+    }
+
+    public Path getTimePath() {
+        return timePath;
+    }
+
+    public Path getPositionPath() {
+        return positionPath;
+    }
+
+    public EntityPositionTracker getEntityTracker() {
+        return entityTracker;
     }
 
     public Path getPath(SPPath path) {

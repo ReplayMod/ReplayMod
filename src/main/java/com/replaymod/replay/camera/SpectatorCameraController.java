@@ -2,7 +2,6 @@ package com.replaymod.replay.camera;
 
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.mixin.EntityPlayerAccessor;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.entity.Entity;
@@ -21,9 +20,12 @@ import java.util.Arrays;
 
 import static com.replaymod.core.versions.MCVer.*;
 
-@RequiredArgsConstructor
 public class SpectatorCameraController implements CameraController {
     private final CameraEntity camera;
+
+    public SpectatorCameraController(CameraEntity camera) {
+        this.camera = camera;
+    }
 
     @Override
     public void update(float partialTicksPassed) {

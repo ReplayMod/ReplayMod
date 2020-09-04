@@ -27,8 +27,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
-import net.minecraft.util.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
@@ -37,10 +37,10 @@ import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ExperienceOrbSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
-import net.minecraft.network.packet.s2c.play.CloseContainerS2CPacket;
-import net.minecraft.network.packet.s2c.play.OpenHorseContainerS2CPacket;
-import net.minecraft.network.packet.s2c.play.ContainerSlotUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.ContainerPropertyUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.CloseScreenS2CPacket;
+import net.minecraft.network.packet.s2c.play.OpenHorseScreenS2CPacket;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.HealthUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
 import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
@@ -66,14 +66,14 @@ import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 
 //#if MC>=11600
 //#else
-import net.minecraft.network.packet.s2c.play.EntitySpawnGlobalS2CPacket;
+//$$ import net.minecraft.network.packet.s2c.play.EntitySpawnGlobalS2CPacket;
 //#endif
 
 //#if MC>=11400
 import com.replaymod.core.versions.MCVer;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
-import net.minecraft.network.packet.s2c.play.OpenContainerS2CPacket;
+import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.network.packet.s2c.play.OpenWrittenBookS2CPacket;
 import net.minecraft.entity.EntityType;
 import net.minecraft.text.TranslatableText;
@@ -150,7 +150,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
             //#if MC>=11400
             OpenWrittenBookS2CPacket.class,
-            OpenContainerS2CPacket.class,
+            OpenScreenS2CPacket.class,
             //#endif
             //#if MC>=11200
             SynchronizeRecipesS2CPacket.class,
@@ -162,10 +162,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             TitleS2CPacket.class,
             //#endif
             HealthUpdateS2CPacket.class,
-            OpenHorseContainerS2CPacket.class,
-            CloseContainerS2CPacket.class,
-            ContainerSlotUpdateS2CPacket.class,
-            ContainerPropertyUpdateS2CPacket.class,
+            OpenHorseScreenS2CPacket.class,
+            CloseScreenS2CPacket.class,
+            ScreenHandlerSlotUpdateS2CPacket.class,
+            ScreenHandlerPropertyUpdateS2CPacket.class,
             SignEditorOpenS2CPacket.class,
             StatisticsS2CPacket.class,
             ExperienceBarUpdateS2CPacket.class,
@@ -427,7 +427,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 || p instanceof EntitySpawnS2CPacket
                                 || p instanceof MobSpawnS2CPacket
                                 //#if MC<11600
-                                || p instanceof EntitySpawnGlobalS2CPacket
+                                //$$ || p instanceof EntitySpawnGlobalS2CPacket
                                 //#endif
                                 || p instanceof PaintingSpawnS2CPacket
                                 || p instanceof ExperienceOrbSpawnS2CPacket
@@ -617,27 +617,27 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     entId,
                     GameMode.SPECTATOR,
                     //#if MC>=11600
-                    //$$ GameMode.SPECTATOR,
+                    GameMode.SPECTATOR,
                     //#endif
                     //#if MC>=11500
-                    packet.getSeed(),
+                    packet.getSha256Seed(),
                     //#endif
                     false,
                     //#if MC>=11600
-                    //$$ packet.method_29443(),
+                    packet.method_29443(),
                     //#if MC>=11602
-                    //$$ (net.minecraft.util.registry.DynamicRegistryManager.Impl) packet.getRegistryManager(),
+                    (net.minecraft.util.registry.DynamicRegistryManager.Impl) packet.getRegistryManager(),
                     //#else
                     //$$ (net.minecraft.util.registry.RegistryTracker.Modifiable) packet.getDimension(),
                     //#endif
-                    //$$ packet.method_29444(),
-                    //$$ packet.getDimensionId(),
+                    packet.method_29444(),
+                    packet.getDimensionId(),
                     //#else
-                    packet.getDimension(),
+                    //$$ packet.getDimension(),
                     //#endif
                     0, // max players (has no getter -> never actually used)
                     //#if MC<11600
-                    packet.getGeneratorType(),
+                    //$$ packet.getGeneratorType(),
                     //#endif
                     packet.getChunkLoadDistance(),
                     packet.hasReducedDebugInfo()
@@ -645,8 +645,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     , packet.showsDeathScreen()
                     //#endif
                     //#if MC>=11600
-                    //$$ , packet.isDebugWorld()
-                    //$$ , packet.isFlatWorld()
+                    , packet.isDebugWorld()
+                    , packet.isFlatWorld()
                     //#endif
             );
             //#else
@@ -688,21 +688,21 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#if MC>=11400
             p = new PlayerRespawnS2CPacket(
                     //#if MC>=11600
-                    //$$ respawn.method_29445(),
+                    respawn.method_29445(),
                     //#endif
                     respawn.getDimension(),
                     //#if MC>=11500
                     respawn.getSha256Seed(),
                     //#endif
                     //#if MC>=11600
-                    //$$ GameMode.SPECTATOR,
-                    //$$ GameMode.SPECTATOR,
-                    //$$ respawn.isDebugWorld(),
-                    //$$ respawn.isFlatWorld(),
-                    //$$ respawn.isWritingErrorSkippable()
+                    GameMode.SPECTATOR,
+                    GameMode.SPECTATOR,
+                    respawn.isDebugWorld(),
+                    respawn.isFlatWorld(),
+                    respawn.isWritingErrorSkippable()
                     //#else
-                    respawn.getGeneratorType(),
-                    GameMode.SPECTATOR
+                    //$$ respawn.getGeneratorType(),
+                    //$$ GameMode.SPECTATOR
                     //#endif
             );
             //#else
@@ -792,22 +792,22 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // 8 - Fade time
             if (!Arrays.asList(
                     //#if MC>=11600
-                    //$$ GameStateChangeS2CPacket.RAIN_STARTED,
-                    //$$ GameStateChangeS2CPacket.RAIN_STOPPED,
-                    //$$ GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED,
-                    //$$ GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED
+                    GameStateChangeS2CPacket.RAIN_STARTED,
+                    GameStateChangeS2CPacket.RAIN_STOPPED,
+                    GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED,
+                    GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED
                     //#else
-                    1,
-                    2,
-                    7,
-                    8
+                    //$$ 1,
+                    //$$ 2,
+                    //$$ 7,
+                    //$$ 8
                     //#endif
             ).contains(pg.getReason())) {
                 return null;
             }
         }
 
-        if (p instanceof ChatMessageS2CPacket) {
+        if (p instanceof GameMessageS2CPacket) {
             if (!ReplayModReplay.instance.getCore().getSettingsRegistry().get(Setting.SHOW_CHAT)) {
                 return null;
             }

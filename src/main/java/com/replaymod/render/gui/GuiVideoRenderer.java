@@ -289,7 +289,7 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
                         buffer.get(); // alpha
                         //#if MC>=11400
                         int value = 0xff << 24 | b << 16 | g << 8 |  r;
-                        data.setPixelRgba(x, y, value); // actually takes ABGR, not RGBA
+                        data.setPixelColor(x, y, value); // actually takes ABGR, not RGBA
                         //#else
                         //$$ int value = 0xff << 24 | r << 16 | g << 8 |  b;
                         //$$ data[y * width + x] = value;

@@ -4,7 +4,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.replaymod.replaystudio.pathing.property.AbstractProperty;
 import com.replaymod.replaystudio.pathing.property.PropertyPart;
-import lombok.NonNull;
+import de.johni0702.minecraft.gui.utils.NonNull;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.IOException;

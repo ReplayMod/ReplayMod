@@ -12,7 +12,7 @@ import java.util.List;
 import static com.replaymod.core.versions.MCVer.*;
 
 //#if MC>=11400 && MC<11600
-import net.minecraft.realms.RealmsScreenProxy;
+//$$ import net.minecraft.realms.RealmsScreenProxy;
 //#endif
 
 //#if FABRIC>=1
@@ -72,53 +72,53 @@ public class MainMenuHandler extends EventRegistrations {
                 //#endif
             }
             //#if MC>=11400 && MC<11600
-            GuiMainMenuAccessor guiA = (GuiMainMenuAccessor) gui;
-            if (realmsOffset != 0 && guiA.getRealmsNotification() instanceof RealmsScreenProxy) {
-                guiA.setRealmsNotification(new RealmsNotificationProxy((RealmsScreenProxy) guiA.getRealmsNotification(), realmsOffset));
-            }
+            //$$ GuiMainMenuAccessor guiA = (GuiMainMenuAccessor) gui;
+            //$$ if (realmsOffset != 0 && guiA.getRealmsNotification() instanceof RealmsScreenProxy) {
+            //$$     guiA.setRealmsNotification(new RealmsNotificationProxy((RealmsScreenProxy) guiA.getRealmsNotification(), realmsOffset));
+            //$$ }
             //#endif
         }
     }
 
     //#if MC>=11400 && MC<11600
-    private static class RealmsNotificationProxy extends Screen {
-        private final RealmsScreenProxy proxy;
-        private final int offset;
-
-        private RealmsNotificationProxy(RealmsScreenProxy proxy, int offset) {
+    //$$ private static class RealmsNotificationProxy extends Screen {
+    //$$     private final RealmsScreenProxy proxy;
+    //$$     private final int offset;
+    //$$
+    //$$     private RealmsNotificationProxy(RealmsScreenProxy proxy, int offset) {
             //#if MC>=11400
-            super(null);
+            //$$ super(null);
             //#endif
-            this.proxy = proxy;
-            this.offset = offset;
-        }
-
-        @Override
-        public void init(MinecraftClient mc, int width, int height) {
-            proxy.init(mc, width, height);
-        }
-
-        @Override
-        public void tick() {
-            proxy.tick();
-        }
-
-        @Override
-        public void render(int mouseX, int mouseY, float partialTicks) {
-            GL11.glTranslated(0, offset, 0);
-            proxy.render(mouseX, mouseY - offset, partialTicks);
-            GL11.glTranslated(0, -offset, 0);
-        }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-            return proxy.mouseClicked(mouseX, mouseY - offset, mouseButton);
-        }
-
-        @Override
-        public void removed() {
-            proxy.removed();
-        }
-    }
+    //$$         this.proxy = proxy;
+    //$$         this.offset = offset;
+    //$$     }
+    //$$
+    //$$     @Override
+    //$$     public void init(MinecraftClient mc, int width, int height) {
+    //$$         proxy.init(mc, width, height);
+    //$$     }
+    //$$
+    //$$     @Override
+    //$$     public void tick() {
+    //$$         proxy.tick();
+    //$$     }
+    //$$
+    //$$     @Override
+    //$$     public void render(int mouseX, int mouseY, float partialTicks) {
+    //$$         GL11.glTranslated(0, offset, 0);
+    //$$         proxy.render(mouseX, mouseY - offset, partialTicks);
+    //$$         GL11.glTranslated(0, -offset, 0);
+    //$$     }
+    //$$
+    //$$     @Override
+    //$$     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    //$$         return proxy.mouseClicked(mouseX, mouseY - offset, mouseButton);
+    //$$     }
+    //$$
+    //$$     @Override
+    //$$     public void removed() {
+    //$$         proxy.removed();
+    //$$     }
+    //$$ }
     //#endif
 }

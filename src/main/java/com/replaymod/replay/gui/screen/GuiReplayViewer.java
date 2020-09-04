@@ -35,7 +35,6 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import lombok.Getter;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
@@ -252,16 +251,12 @@ public class GuiReplayViewer extends GuiScreen {
             return popup;
         }
 
-        @Getter
         private final SettableFuture<File> future = SettableFuture.create();
 
-        @Getter
         private final GuiReplayList list = new GuiReplayList(popup);
 
-        @Getter
         private final GuiButton acceptButton = new GuiButton(popup).setI18nLabel("gui.done").setSize(50, 20).setDisabled();
 
-        @Getter
         private final GuiButton cancelButton = new GuiButton(popup).setI18nLabel("gui.cancel").setSize(50, 20);
 
 
@@ -299,6 +294,22 @@ public class GuiReplayViewer extends GuiScreen {
                     return new Dimension(330, 200);
                 }
             });
+        }
+
+        public SettableFuture<File> getFuture() {
+            return future;
+        }
+
+        public GuiReplayList getList() {
+            return list;
+        }
+
+        public GuiButton getAcceptButton() {
+            return acceptButton;
+        }
+
+        public GuiButton getCancelButton() {
+            return cancelButton;
         }
 
         @Override

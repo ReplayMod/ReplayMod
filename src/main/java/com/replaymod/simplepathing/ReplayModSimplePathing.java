@@ -21,7 +21,6 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
-import lombok.Getter;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
 import org.apache.logging.log4j.LogManager;
@@ -149,7 +148,6 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     private SPTimeline currentTimeline;
 
     private SPPath selectedPath;
-    @Getter
     private long selectedTime;
 
     public SPPath getSelectedPath() {
@@ -158,6 +156,10 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             selectedTime = 0;
         }
         return selectedPath;
+    }
+
+    public long getSelectedTime() {
+        return selectedTime;
     }
 
     public boolean isSelected(Keyframe keyframe) {

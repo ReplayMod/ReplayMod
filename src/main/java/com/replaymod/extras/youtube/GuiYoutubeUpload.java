@@ -22,7 +22,6 @@ import de.johni0702.minecraft.gui.popup.GuiFileChooserPopup;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.versions.Image;
 import joptsimple.internal.Strings;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.client.resource.language.I18n;
 import org.apache.commons.io.IOUtils;
 
@@ -46,7 +45,6 @@ import java.security.GeneralSecurityException;
 import static com.replaymod.extras.ReplayModExtras.LOGGER;
 import static java.util.Arrays.asList;
 
-@RequiredArgsConstructor
 public class GuiYoutubeUpload extends GuiScreen {
     private final GuiScreen previousScreen;
     private final File videoFile;
@@ -183,6 +181,13 @@ public class GuiYoutubeUpload extends GuiScreen {
 
         setState(false);
         inputValidation.run();
+    }
+
+    public GuiYoutubeUpload(GuiScreen previousScreen, File videoFile, int videoFrames, RenderSettings settings) {
+        this.previousScreen = previousScreen;
+        this.videoFile = videoFile;
+        this.videoFrames = videoFrames;
+        this.settings = settings;
     }
 
     private void setState(boolean uploading) {

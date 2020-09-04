@@ -19,7 +19,6 @@ import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.replaystudio.viaversion.ViaVersionPacketConverter;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.container.GuiScreen;
-import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.resource.DirectoryResourcePack;
@@ -33,8 +32,6 @@ import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
 import net.minecraft.client.options.Option;
-import net.minecraft.resource.ResourcePackProvider;
-import net.minecraft.resource.ResourcePackProfile;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 //#endif
 
@@ -123,16 +120,17 @@ public class ReplayMod implements
         Module
 {
 
-    @Getter(lazy = true)
-    //#if MC>=11400
-    private static final String minecraftVersion = MinecraftClient.getInstance().getGame().getVersion().getName();
-    //#else
-    //#if MC>=11400
-    //$$ private static final String minecraftVersion = MCPVersion.getMCVersion();
-    //#else
-    //$$ private static final String minecraftVersion = Loader.MC_VERSION;
-    //#endif
-    //#endif
+    public static String getMinecraftVersion() {
+        //#if MC>=11400
+        return MinecraftClient.getInstance().getGame().getVersion().getName();
+        //#else
+        //#if MC>=11400
+        //$$ return MCPVersion.getMCVersion();
+        //#else
+        //$$ return Loader.MC_VERSION;
+        //#endif
+        //#endif
+    }
 
     public static final String MOD_ID = "replaymod";
 
@@ -184,14 +182,6 @@ public class ReplayMod implements
         }
         //#endif
 
-        //#if MC>=11400
-        // Not needed on fabric, using MixinModResourcePackUtil instead. Could in theory also use it on 1.13 but it already works as is.
-        //#else
-        //#if MC>=11400
-        //$$ DeferredWorkQueue.runLater(() -> MCVer.getMinecraft().getResourcePackList().addPackFinder(new LangResourcePack.Finder()));
-        //#endif
-        //#endif
-
         // Register all RM modules
         modules.add(this);
         modules.add(new ReplayModRecording(this));
@@ -234,6 +224,7 @@ public class ReplayMod implements
     }
 
     public static final DirectoryResourcePack jGuiResourcePack;
+    public static final String JGUI_RESOURCE_PACK_NAME = "replaymod_jgui";
     static { // Note: even preInit is too late and we'd have to issue another resource reload
         jGuiResourcePack = initJGuiResourcePack();
     }
@@ -245,6 +236,15 @@ public class ReplayMod implements
         }
         //noinspection UnnecessaryLocalVariable
         DirectoryResourcePack jGuiResourcePack = new DirectoryResourcePack(folder) {
+            @Override
+            //#if MC>=11400
+            public String getName() {
+            //#else
+            //$$ public String getPackName() {
+            //#endif
+                return JGUI_RESOURCE_PACK_NAME;
+            }
+
             @Override
             protected InputStream openFile(String resourceName) throws IOException {
                 try {
@@ -657,13 +657,13 @@ public class ReplayMod implements
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
             //#if MC>=10904
             //#if MC>=11600
-            //$$ Style coloredDarkGray = Style.EMPTY.withColor(Formatting.DARK_GRAY);
-            //$$ Style coloredGold = Style.EMPTY.withColor(Formatting.GOLD);
-            //$$ Style alert = Style.EMPTY.withColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
+            Style coloredDarkGray = Style.EMPTY.withColor(Formatting.DARK_GRAY);
+            Style coloredGold = Style.EMPTY.withColor(Formatting.GOLD);
+            Style alert = Style.EMPTY.withColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
             //#else
-            Style coloredDarkGray = new Style().setColor(Formatting.DARK_GRAY);
-            Style coloredGold = new Style().setColor(Formatting.GOLD);
-            Style alert = new Style().setColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
+            //$$ Style coloredDarkGray = new Style().setColor(Formatting.DARK_GRAY);
+            //$$ Style coloredGold = new Style().setColor(Formatting.GOLD);
+            //$$ Style alert = new Style().setColor(warning ? Formatting.RED : Formatting.DARK_GREEN);
             //#endif
             Text text = new LiteralText("[").setStyle(coloredDarkGray)
                     .append(new TranslatableText("replaymod.title").setStyle(coloredGold))

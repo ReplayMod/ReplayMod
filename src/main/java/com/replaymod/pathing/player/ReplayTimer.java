@@ -15,7 +15,7 @@ public class ReplayTimer extends WrappedTimer {
     //#endif
 
     //#if MC>=11600
-    //$$ public int ticksThisFrame;
+    public int ticksThisFrame;
     //#endif
 
     public ReplayTimer(RenderTickCounter wrapped) {
@@ -27,9 +27,9 @@ public class ReplayTimer extends WrappedTimer {
     //#if MC>=11400
     public
     //#if MC>=11600
-    //$$ int
+    int
     //#else
-    void
+    //$$ void
     //#endif
     beginRenderTick(
     //#else
@@ -42,7 +42,7 @@ public class ReplayTimer extends WrappedTimer {
         copy(this, state); // Save our current state
         try {
             //#if MC>=11600
-            //$$ ticksThisFrame =
+            ticksThisFrame =
             //#endif
             wrapped.beginRenderTick(
                     //#if MC>=11400
@@ -54,7 +54,7 @@ public class ReplayTimer extends WrappedTimer {
             UpdatedCallback.EVENT.invoker().onUpdate();
         }
         //#if MC>=11600
-        //$$ return ticksThisFrame;
+        return ticksThisFrame;
         //#endif
     }
 

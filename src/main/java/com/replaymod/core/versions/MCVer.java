@@ -14,7 +14,7 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
@@ -24,7 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 //#if MC>=11600
-//$$ import net.minecraft.resource.ResourcePackSource;
+import net.minecraft.resource.ResourcePackSource;
 //#endif
 
 //#if MC>=11500
@@ -44,9 +44,9 @@ import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import java.util.concurrent.CompletableFuture;
 
 //#if MC>=11600
-//$$ import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableText;
 //#else
-import net.minecraft.client.resource.language.I18n;
+//$$ import net.minecraft.client.resource.language.I18n;
 //#endif
 //#else
 //$$ import com.google.common.util.concurrent.FutureCallback;
@@ -448,7 +448,7 @@ public class MCVer {
         return getMinecraft().getResourcePackDownloader().loadServerPack(
                 file
                 //#if MC>=11600
-                //$$ , ResourcePackSource.PACK_SOURCE_SERVER
+                , ResourcePackSource.PACK_SOURCE_SERVER
                 //#endif
         );
         //#else
@@ -574,7 +574,7 @@ public class MCVer {
 
     public static EntityRenderDispatcher getRenderManager() {
         //#if MC>=10800
-        return getMinecraft().getEntityRenderManager();
+        return getMinecraft().getEntityRenderDispatcher();
         //#else
         //$$ return RenderManager.instance;
         //#endif
@@ -613,9 +613,9 @@ public class MCVer {
     //#if MC>=11400
     public static Optional<AbstractButtonWidget> findButton(List<AbstractButtonWidget> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
         //#if MC>=11600
-        //$$ final TranslatableText message = new TranslatableText(text);
+        final TranslatableText message = new TranslatableText(text);
         //#else
-        final String message = I18n.translate(text);
+        //$$ final String message = I18n.translate(text);
         //#endif
         for (AbstractButtonWidget b : buttonList) {
             if (message.equals(b.getMessage())) {

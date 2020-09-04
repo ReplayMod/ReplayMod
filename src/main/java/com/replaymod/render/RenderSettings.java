@@ -3,9 +3,6 @@ package com.replaymod.render;
 import com.google.gson.annotations.SerializedName;
 import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.Util;
 
@@ -26,7 +23,6 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 //#endif
 //#endif
 
-@Data
 public class RenderSettings {
     public enum RenderMethod {
         DEFAULT, STEREOSCOPIC, CUBIC, EQUIRECTANGULAR, ODS, BLEND;
@@ -119,12 +115,18 @@ public class RenderSettings {
         }
     }
 
-    @AllArgsConstructor
     public enum AntiAliasing {
         NONE(1), X2(2), X4(4), X8(8);
 
-        @Getter
         private final int factor;
+
+        AntiAliasing(int factor) {
+            this.factor = factor;
+        }
+
+        public int getFactor() {
+            return factor;
+        }
 
         @Override
         public String toString() {
@@ -161,6 +163,48 @@ public class RenderSettings {
     private final String exportArguments;
 
     private final boolean highPerformance;
+
+    public RenderSettings(
+            RenderMethod renderMethod,
+            EncodingPreset encodingPreset,
+            int videoWidth,
+            int videoHeight,
+            int framesPerSecond,
+            int bitRate,
+            File outputFile,
+            boolean renderNameTags,
+            boolean stabilizeYaw,
+            boolean stabilizePitch,
+            boolean stabilizeRoll,
+            ReadableColor chromaKeyingColor,
+            int sphericalFovX,
+            int sphericalFovY,
+            boolean injectSphericalMetadata,
+            AntiAliasing antiAliasing,
+            String exportCommand,
+            String exportArguments,
+            boolean highPerformance
+    ) {
+        this.renderMethod = renderMethod;
+        this.encodingPreset = encodingPreset;
+        this.videoWidth = videoWidth;
+        this.videoHeight = videoHeight;
+        this.framesPerSecond = framesPerSecond;
+        this.bitRate = bitRate;
+        this.outputFile = outputFile;
+        this.renderNameTags = renderNameTags;
+        this.stabilizeYaw = stabilizeYaw;
+        this.stabilizePitch = stabilizePitch;
+        this.stabilizeRoll = stabilizeRoll;
+        this.chromaKeyingColor = chromaKeyingColor;
+        this.sphericalFovX = sphericalFovX;
+        this.sphericalFovY = sphericalFovY;
+        this.injectSphericalMetadata = injectSphericalMetadata;
+        this.antiAliasing = antiAliasing;
+        this.exportCommand = exportCommand;
+        this.exportArguments = exportArguments;
+        this.highPerformance = highPerformance;
+    }
 
     /**
      * @return the width of the output video during rendering, including the upscale for Anti-Aliasing.
@@ -253,4 +297,71 @@ public class RenderSettings {
         return "ffmpeg";
     }
 
+    public RenderMethod getRenderMethod() {
+        return renderMethod;
+    }
+
+    public EncodingPreset getEncodingPreset() {
+        return encodingPreset;
+    }
+
+    public int getFramesPerSecond() {
+        return framesPerSecond;
+    }
+
+    public int getBitRate() {
+        return bitRate;
+    }
+
+    public File getOutputFile() {
+        return outputFile;
+    }
+
+    public boolean isRenderNameTags() {
+        return renderNameTags;
+    }
+
+    public boolean isStabilizeYaw() {
+        return stabilizeYaw;
+    }
+
+    public boolean isStabilizePitch() {
+        return stabilizePitch;
+    }
+
+    public boolean isStabilizeRoll() {
+        return stabilizeRoll;
+    }
+
+    public ReadableColor getChromaKeyingColor() {
+        return chromaKeyingColor;
+    }
+
+    public int getSphericalFovX() {
+        return sphericalFovX;
+    }
+
+    public int getSphericalFovY() {
+        return sphericalFovY;
+    }
+
+    public boolean isInjectSphericalMetadata() {
+        return injectSphericalMetadata;
+    }
+
+    public AntiAliasing getAntiAliasing() {
+        return antiAliasing;
+    }
+
+    public String getExportCommand() {
+        return exportCommand;
+    }
+
+    public String getExportArguments() {
+        return exportArguments;
+    }
+
+    public boolean isHighPerformance() {
+        return highPerformance;
+    }
 }

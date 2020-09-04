@@ -4,7 +4,6 @@ import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.RGBFrame;
 import com.replaymod.render.utils.ByteBufferPool;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
-import lombok.Getter;
 import org.apache.commons.lang3.Validate;
 
 import java.nio.ByteBuffer;
@@ -19,7 +18,6 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
     private static final byte IMAGE_TOP = 4;
     private static final byte IMAGE_BOTTOM = 5;
 
-    @Getter
     private final int frameSize;
     private final int width;
     private final int height;
@@ -137,5 +135,9 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
         ByteBufferPool.release(rawFrame.getTop().getByteBuffer());
         ByteBufferPool.release(rawFrame.getBottom().getByteBuffer());
         return new RGBFrame(rawFrame.getFrameId(), new Dimension(width, height), result);
+    }
+
+    public int getFrameSize() {
+        return frameSize;
     }
 }

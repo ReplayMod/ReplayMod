@@ -19,7 +19,7 @@ import net.minecraft.client.world.ClientWorld;
 
 //#if MC>=11200
 //#if MC>=11400
-import net.minecraft.client.recipe.book.ClientRecipeBook;
+import net.minecraft.client.recipebook.ClientRecipeBook;
 //#else
 //$$ import net.minecraft.stats.RecipeBook;
 //#endif
@@ -52,9 +52,9 @@ public abstract class MixinPlayerControllerMP {
 
     //#if MC>=11400
     //#if MC>=11602
-    //$$ @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;ZZ)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
+    @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;ZZ)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
     //#else
-    @Inject(method = "createPlayer", at=@At("HEAD"), cancellable = true)
+    //$$ @Inject(method = "createPlayer", at=@At("HEAD"), cancellable = true)
     //#endif
     private void replayModReplay_createReplayCamera(
             //#if MC>=11400
@@ -65,8 +65,8 @@ public abstract class MixinPlayerControllerMP {
             StatHandler statisticsManager,
             ClientRecipeBook recipeBookClient,
             //#if MC>=11600
-            //$$ boolean lastIsHoldingSneakKey,
-            //$$ boolean lastSprinting,
+            boolean lastIsHoldingSneakKey,
+            boolean lastSprinting,
             //#endif
             CallbackInfoReturnable<ClientPlayerEntity> ci
     ) {

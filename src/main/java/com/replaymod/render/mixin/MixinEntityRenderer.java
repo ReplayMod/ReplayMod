@@ -26,7 +26,7 @@ import net.minecraft.util.hit.HitResult;
 //#if MC>=11400
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.util.math.Matrix4f;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.client.render.WorldRenderer;
 //#else
 //$$ import com.replaymod.replay.camera.CameraEntity;
@@ -217,7 +217,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
      */
 
     //#if MC>=11400
-    @Redirect(method = "method_22973", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/Matrix4f;viewboxMatrix(DFFF)Lnet/minecraft/client/util/math/Matrix4f;"))
+    @Redirect(method = "method_22973", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Matrix4f;viewboxMatrix(DFFF)Lnet/minecraft/util/math/Matrix4f;"))
     private Matrix4f replayModRender_perspective$0(double fovY, float aspect, float zNear, float zFar) {
         return replayModRender_perspective((float) fovY, aspect, zNear, zFar);
     }

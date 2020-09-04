@@ -14,7 +14,6 @@ import de.johni0702.minecraft.gui.layout.VerticalLayout;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.client.resource.language.I18n;
 
 import java.util.List;
@@ -115,10 +114,14 @@ public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
         return this;
     }
 
-    @RequiredArgsConstructor
     private static class MultipleChoiceDropdownEntry {
         private final Object value;
         private final String text;
+
+        public MultipleChoiceDropdownEntry(Object value, String text) {
+            this.value = value;
+            this.text = text;
+        }
 
         @Override
         public String toString() {

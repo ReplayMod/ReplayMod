@@ -46,7 +46,7 @@ public abstract class MixinParticleManager {
 
                 buildGeometry(particle, vertexConsumer, camera, partialTicks);
             } finally {
-                rotation.set(org.getA(), org.getB(), org.getC(), org.getD());
+                rotation.set(org.getW(), org.getX(), org.getY(), org.getZ());
             }
         }
     }

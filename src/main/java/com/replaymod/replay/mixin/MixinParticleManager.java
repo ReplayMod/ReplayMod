@@ -10,9 +10,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //#if MC>=11600
-//$$ import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.world.ClientWorld;
 //#else
-import net.minecraft.world.World;
+//$$ import net.minecraft.world.World;
 //#endif
 
 import java.util.Queue;
@@ -37,9 +37,9 @@ public abstract class MixinParticleManager {
     @Inject(method = "setWorld", at = @At("HEAD"))
     public void replayModReplay_clearParticleQueue(
             //#if MC>=11600
-            //$$ ClientWorld world,
+            ClientWorld world,
             //#else
-            World world,
+            //$$ World world,
             //#endif
             CallbackInfo ci) {
         //#if MC>=11400

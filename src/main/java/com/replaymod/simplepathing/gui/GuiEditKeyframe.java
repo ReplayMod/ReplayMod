@@ -34,7 +34,6 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
-import lombok.Getter;
 import net.minecraft.client.resource.language.I18n;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -283,7 +282,6 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
         public class InterpolationPanel extends AbstractGuiContainer<InterpolationPanel> {
 
-            @Getter
             private SettingsPanel settingsPanel;
 
             private GuiDropdownMenu<InterpolatorType> dropdown;
@@ -328,6 +326,10 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                     // Disable dropdown if this is the last keyframe
                     dropdown.setDisabled();
                 }
+            }
+
+            public SettingsPanel getSettingsPanel() {
+                return settingsPanel;
             }
 
             public void setSettingsPanel(InterpolatorType type) {

@@ -2,7 +2,6 @@ package com.replaymod.render.rendering;
 
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.versions.MCVer;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
@@ -95,9 +94,12 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
         abort = true;
     }
 
-    @RequiredArgsConstructor
     private class ProcessTask implements Runnable {
         private final R rawFrame;
+
+        public ProcessTask(R rawFrame) {
+            this.rawFrame = rawFrame;
+        }
 
         @Override
         public void run() {

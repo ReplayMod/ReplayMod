@@ -5,9 +5,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.versions.Image;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.util.ScreenshotUtils;
@@ -26,12 +23,28 @@ import static com.replaymod.core.versions.MCVer.getWindow;
 //$$ import java.io.File;
 //#endif
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-@Getter
 public class NoGuiScreenshot {
     private final Image image;
     private final int width;
     private final int height;
+
+    private NoGuiScreenshot(Image image, int width, int height) {
+        this.image = image;
+        this.width = width;
+        this.height = height;
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 
     public static ListenableFuture<NoGuiScreenshot> take(final MinecraftClient mc, final int width, final int height) {
         final SettableFuture<NoGuiScreenshot> future = SettableFuture.create();

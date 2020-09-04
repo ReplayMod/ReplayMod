@@ -6,7 +6,6 @@ import com.replaymod.render.capturer.CaptureData;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
 
 //#if MC>=11500
@@ -30,10 +29,8 @@ import java.io.IOException;
 public class EntityRendererHandler extends EventRegistrations implements WorldRenderer {
     public final MinecraftClient mc = MCVer.getMinecraft();
 
-    @Getter
     protected final RenderSettings settings;
 
-    @Getter
     private final RenderInfo renderInfo;
 
     public CaptureData data;
@@ -97,6 +94,14 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
     @Override
     public void setOmnidirectional(boolean omnidirectional) {
         this.omnidirectional = omnidirectional;
+    }
+
+    public RenderSettings getSettings() {
+        return this.settings;
+    }
+
+    public RenderInfo getRenderInfo() {
+        return this.renderInfo;
     }
 
     public interface IEntityRenderer {

@@ -21,7 +21,7 @@ import net.minecraft.client.render.entity.LivingEntityRenderer;
 //#endif
 public abstract class MixinRenderLivingBase {
     //#if MC>=11500
-    @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(
+    @Inject(method = "render", at = @At(
     //#else
     //#if FABRIC>=1
     //$$ @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;DDDFF)V", at = @At(

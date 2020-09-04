@@ -52,9 +52,9 @@ public class TileEntityExporter implements Exporter {
         // so we position it at 0/0/0 and instead have the tile entities themselves move more
         Matrix4f.translate(new Vector3f(
                 //#if MC>=11400
-                (float) -mc.getEntityRenderManager().camera.getPos().x,
-                (float) -mc.getEntityRenderManager().camera.getPos().y,
-                (float) -mc.getEntityRenderManager().camera.getPos().z
+                (float) -mc.getEntityRenderDispatcher().camera.getPos().x,
+                (float) -mc.getEntityRenderDispatcher().camera.getPos().y,
+                (float) -mc.getEntityRenderDispatcher().camera.getPos().z
                 //#else
                 //$$ (float) -mc.getRenderManager().viewerPosX,
                 //$$ (float) -mc.getRenderManager().viewerPosY,

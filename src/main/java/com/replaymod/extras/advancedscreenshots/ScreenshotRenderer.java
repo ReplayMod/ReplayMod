@@ -7,7 +7,6 @@ import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.rendering.Pipelines;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashReport;
 
@@ -22,7 +21,6 @@ import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 
 import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
 
-@RequiredArgsConstructor
 public class ScreenshotRenderer implements RenderInfo {
 
     private final MinecraftClient mc = MCVer.getMinecraft();
@@ -30,6 +28,10 @@ public class ScreenshotRenderer implements RenderInfo {
     private final RenderSettings settings;
 
     private int framesDone;
+
+    public ScreenshotRenderer(RenderSettings settings) {
+        this.settings = settings;
+    }
 
     public boolean renderScreenshot() throws Throwable {
         try {
