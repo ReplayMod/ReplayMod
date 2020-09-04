@@ -4,7 +4,10 @@ import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
+import de.johni0702.minecraft.gui.GuiRenderer;
+import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.versions.Image;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.util.Formatting;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
@@ -58,6 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
+import static de.johni0702.minecraft.gui.versions.MCVer.getFontRenderer;
 
 //#if MC>=11400
 import net.minecraft.text.TranslatableText;
@@ -329,6 +333,10 @@ public class GuiReplayViewer extends GuiScreen {
     public static class GuiReplayList extends AbstractGuiResourceLoadingList<GuiReplayList, GuiReplayEntry> implements Typeable {
         private File folder = null;
 
+        // Not actually a child of this element, we just use it for text manipulation
+        private final GuiTextField filterTextField = new GuiTextField()
+                .setFocused(true);
+
         public GuiReplayList(GuiContainer container) {
             super(container);
         }
@@ -361,7 +369,15 @@ public class GuiReplayViewer extends GuiScreen {
                         final ReplayMetaData metaData = replayFile.getMetaData();
 
                         if (metaData != null) {
-                            results.consume(() -> new GuiReplayEntry(file, metaData, thumb));
+                            results.consume(() -> new GuiReplayEntry(file, metaData, thumb) {
+                                @Override
+                                public ReadableDimension calcMinSize() {
+                                    if (isFiltered(this)) {
+                                        return new Dimension(-4, -4);
+                                    }
+                                    return super.calcMinSize();
+                                }
+                            });
                         }
                     } catch (Exception e) {
                         LOGGER.error("Could not load Replay File {}", file.getName(), e);
@@ -374,6 +390,14 @@ public class GuiReplayViewer extends GuiScreen {
             this.folder = folder;
         }
 
+        private boolean isFiltered(GuiReplayEntry entry) {
+            String filter = filterTextField.getText().toLowerCase();
+            if (filter.isEmpty()) {
+                return false;
+            }
+            return !entry.name.getText().toLowerCase().contains(filter);
+        }
+
         @Override
         public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
             if (keyCode == Keyboard.KEY_F1) {
@@ -382,7 +406,40 @@ public class GuiReplayViewer extends GuiScreen {
                 reg.save();
                 load();
             }
+
+            if (filterTextField.typeKey(mousePosition, keyCode, keyChar, ctrlDown, shiftDown)) {
+                scrollY(0); // ensure we scroll to top if most entries are filtered
+                return true;
+            }
+
             return false;
+        }
+
+        @Override
+        public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
+            super.draw(renderer, size, renderInfo);
+
+            String filter = filterTextField.getText();
+            if (!filter.isEmpty()) {
+                boolean anyMatches = getListPanel().calcMinSize().getHeight() > 0;
+
+                TextRenderer fontRenderer = getFontRenderer();
+                int filterTextWidth = fontRenderer.getWidth(filter);
+                int filterTextHeight = fontRenderer.fontHeight;
+                renderer.drawRect(
+                        size.getWidth() - 3 - 2 - filterTextWidth - 2,
+                        size.getHeight() - 3 - 2 - filterTextHeight - 2,
+                        2 + filterTextWidth + 2,
+                        2 + filterTextHeight + 2,
+                        Colors.WHITE
+                );
+                renderer.drawString(
+                        size.getWidth() - 3 - 2 - filterTextWidth,
+                        size.getHeight() - 3 - 2 - filterTextHeight,
+                        anyMatches ? Colors.BLACK : Colors.DARK_RED,
+                        filter
+                );
+            }
         }
 
         @Override
