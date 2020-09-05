@@ -8,11 +8,12 @@ import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
-import net.minecraft.client.resource.language.I18n;
 
 //#if MC>=11600
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+//#else
+//$$ import net.minecraft.client.resource.language.I18n;
 //#endif
 
 //#if FABRIC>=1
@@ -29,6 +30,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.replaymod.core.versions.MCVer.*;
@@ -152,40 +154,48 @@ public class GuiHandler extends EventRegistrations {
                 }
             }
             if (achievements != null && stats != null) {
-                moveAllButtonsDirectlyBelowUpwards(buttonList, achievements.y,
-                        achievements.x, stats.x + width(stats));
+                moveAllButtonsInRect(buttonList,
+                        achievements.x, stats.x + width(stats),
+                        achievements.y, Integer.MAX_VALUE,
+                        -24);
             }
             // In 1.13+ Forge, the Options button shares one row with the Open to LAN button
             //#if MC<11400
             //$$ if (openToLan != null) {
-            //$$     moveAllButtonsDirectlyBelowUpwards(buttonList, openToLan.y,
-            //$$             openToLan.x, openToLan.x + openToLan.width);
+            //$$     moveAllButtonsInRect(buttonList,
+            //$$             openToLan.x, openToLan.x + openToLan.width,
+            //$$             openToLan.y, Integer.MAX_VALUE,
+            //$$             -24);
             //$$ }
             //#endif
         }
     }
 
     /**
-     * Moves all buttons that are within a rectangle below a certain y coordinate upwards by 24 units.
+     * Moves all buttons that in any way intersect a rectangle by a given amount on the y axis.
      * @param buttons List of buttons
-     * @param belowY The Y limit
+     * @param yStart Top y limit of the rectangle
+     * @param yEnd Bottom y limit of the rectangle
      * @param xStart Left x limit of the rectangle
      * @param xEnd Right x limit of the rectangle
+     * @param moveBy Signed distance to move the buttons
      */
-    private void moveAllButtonsDirectlyBelowUpwards(
+    private void moveAllButtonsInRect(
             //#if MC>=11400
             List<AbstractButtonWidget> buttons,
             //#else
             //$$ List<GuiButton> buttons,
             //#endif
-            int belowY,
             int xStart,
-            int xEnd
+            int xEnd,
+            int yStart,
+            int yEnd,
+            int moveBy
     ) {
         buttons.stream()
-                .filter(button -> button.y >= belowY)
                 .filter(button -> button.x <= xEnd && button.x + width(button) >= xStart)
-                .forEach(button -> button.y -= 24);
+                .filter(button -> button.y <= yEnd && button.y + height(button) >= yStart)
+                .forEach(button -> button.y += moveBy);
     }
 
     //#if FABRIC>=1
@@ -222,15 +232,35 @@ public class GuiHandler extends EventRegistrations {
     //$$ @SubscribeEvent
     //$$ public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
     //$$     Screen guiScreen = getGui(event);
+    //$$     List<Widget> buttonList = getButtonList(event);
     //#endif
         if (!(guiScreen instanceof TitleScreen)) {
             return;
         }
+
+        int x = guiScreen.width / 2 - 100;
+        // We want to position our button below the realms button
+        int y = findButton(buttonList, "menu.online", 14)
+                .map(Optional::of)
+                // or, if someone removed the realms button, we'll alternatively take the multiplayer one
+                .orElse(findButton(buttonList, "menu.multiplayer", 2))
+                // if we found some button, put our button at its position (we'll move it out of the way shortly)
+                .map(it -> it.y)
+                // and if we can't even find that one, then just guess
+                .orElse(guiScreen.height / 4 + 10 + 4 * 24);
+
+        // Move all buttons above or at our one upwards
+        moveAllButtonsInRect(buttonList,
+                x, x + 200,
+                Integer.MIN_VALUE, y,
+                -24);
+
+        // Add our button
         InjectedButton button = new InjectedButton(
                 guiScreen,
                 BUTTON_REPLAY_VIEWER,
-                guiScreen.width / 2 - 100,
-                guiScreen.height / 4 + 10 + 4 * 24,
+                x,
+                y,
                 200,
                 20,
                 "replaymod.gui.replayviewer",

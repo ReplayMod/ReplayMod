@@ -5,7 +5,6 @@ import com.replaymod.compat.ReplayModCompat;
 import com.replaymod.core.gui.GuiBackgroundProcesses;
 import com.replaymod.core.gui.GuiReplaySettings;
 import com.replaymod.core.gui.RestoreReplayGui;
-import com.replaymod.core.handler.MainMenuHandler;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.ReplayModEditor;
@@ -324,8 +323,6 @@ public class ReplayMod implements
 
     @Override
     public void initClient() {
-        new MainMenuHandler().register();
-
         //#if MC<=10710
         //$$ FML_BUS.register(this); // For runLater(Runnable)
         //#endif

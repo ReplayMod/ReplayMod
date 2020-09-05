@@ -38,7 +38,6 @@ import java.util.ArrayList;
 //#if MC>=11400
 import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 
@@ -598,13 +597,6 @@ public class MCVer {
             //#endif
     ) {
         GuiScreenAccessor acc = (GuiScreenAccessor) screen;
-        //#if MC>=11400
-        if (screen instanceof TitleScreen && isModLoaded("modmenu")) {
-            // Since we bypass the usual addButton, we need to manually move our buttons down
-            // https://github.com/Prospector/ModMenu/blob/eea70ec37581a7229142cf21df795fdacc6a7b4c/src/main/java/io/github/prospector/modmenu/mixin/TitleScreenMixin.java#L42
-            button.y += 12;
-        }
-        //#endif
         acc.getButtons().add(button);
         //#if MC>=11400
         acc.getChildren().add(button);
