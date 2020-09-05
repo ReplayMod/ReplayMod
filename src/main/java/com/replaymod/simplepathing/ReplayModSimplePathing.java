@@ -21,7 +21,6 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
-import net.minecraft.client.options.KeyBinding;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
 import org.apache.logging.log4j.LogManager;
@@ -40,8 +39,8 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     public static ReplayModSimplePathing instance;
 
     private ReplayMod core;
-    public KeyBinding keyPositionKeyframe;
-    public KeyBinding keyTimeKeyframe;
+    public KeyBindingRegistry.Binding keyPositionKeyframe;
+    public KeyBindingRegistry.Binding keyTimeKeyframe;
 
     public static Logger LOGGER = LogManager.getLogger();
 

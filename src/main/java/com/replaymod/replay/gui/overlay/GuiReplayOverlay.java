@@ -33,7 +33,6 @@ import org.lwjgl.glfw.GLFW;
 //#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
-import static com.replaymod.core.versions.MCVer.getBoundKey;
 
 public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
@@ -52,7 +51,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
                 } else { // Pause button
                     label = "replaymod.gui.ingame.menu.pause";
                 }
-                tooltip.setText(I18n.translate(label) + " (" + getBoundKey(mod.keyPlayPause) + ")");
+                tooltip.setText(I18n.translate(label) + " (" + mod.keyPlayPause.getBoundKey() + ")");
             }
             return tooltip;
         }

@@ -135,7 +135,7 @@ public class GuiPathing {
                         label = "replaymod.gui.ingame.menu.removespeckeyframe";
                     }
                 }
-                tooltip.setText(I18n.translate(label) + " (" + getBoundKey(mod.keyPositionKeyframe) + ")");
+                tooltip.setText(I18n.translate(label) + " (" + mod.keyPositionKeyframe.getBoundKey() + ")");
             }
             return tooltip;
         }
@@ -152,7 +152,7 @@ public class GuiPathing {
                 } else { // Remove time keyframe
                     label = "replaymod.gui.ingame.menu.removetimekeyframe";
                 }
-                tooltip.setText(I18n.translate(label) + " (" + getBoundKey(mod.keyTimeKeyframe) + ")");
+                tooltip.setText(I18n.translate(label) + " (" + mod.keyTimeKeyframe.getBoundKey() + ")");
             }
             return tooltip;
         }

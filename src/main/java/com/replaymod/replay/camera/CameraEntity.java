@@ -1,5 +1,6 @@
 package com.replaymod.replay.camera;
 
+import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedCallback;
@@ -13,7 +14,6 @@ import com.replaymod.replaystudio.util.Location;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.options.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
@@ -567,11 +567,11 @@ public class CameraEntity
 
         handleInputEvents();
 
-        Map<String, KeyBinding> keyBindings = ReplayMod.instance.getKeyBindingRegistry().getKeyBindings();
-        if (keyBindings.get("replaymod.input.rollclockwise").isPressed()) {
+        Map<String, KeyBindingRegistry.Binding> keyBindings = ReplayMod.instance.getKeyBindingRegistry().getBindings();
+        if (keyBindings.get("replaymod.input.rollclockwise").keyBinding.isPressed()) {
             roll += Utils.isCtrlDown() ? 0.2 : 1;
         }
-        if (keyBindings.get("replaymod.input.rollcounterclockwise").isPressed()) {
+        if (keyBindings.get("replaymod.input.rollcounterclockwise").keyBinding.isPressed()) {
             roll -= Utils.isCtrlDown() ? 0.2 : 1;
         }
 

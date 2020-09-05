@@ -42,7 +42,7 @@ public class ReplayModReplay implements Module {
     public static ReplayModReplay instance;
 
     private ReplayMod core;
-    public KeyBinding keyPlayPause;
+    public KeyBindingRegistry.Binding keyPlayPause;
 
     private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 

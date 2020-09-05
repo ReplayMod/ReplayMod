@@ -32,10 +32,12 @@ import org.lwjgl.glfw.GLFW;
 //$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //#endif
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,27 +47,25 @@ public class KeyBindingRegistry extends EventRegistrations {
     static { net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.addCategory(CATEGORY); }
     //#endif
 
-    private Map<String, KeyBinding> keyBindings = new HashMap<String, KeyBinding>();
+    private final Map<String, Binding> bindings = new HashMap<>();
     private Set<KeyBinding> onlyInReplay = new HashSet<>();
-    private Multimap<KeyBinding, Runnable> keyBindingHandlers = ArrayListMultimap.create();
-    private Multimap<KeyBinding, Runnable> repeatedKeyBindingHandlers = ArrayListMultimap.create();
     private Multimap<Integer, Runnable> rawHandlers = ArrayListMultimap.create();
 
-    public KeyBinding registerKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
-        KeyBinding keyBinding = registerKeyBinding(name, keyCode, onlyInRepay);
-        keyBindingHandlers.put(keyBinding, whenPressed);
-        return keyBinding;
+    public Binding registerKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
+        Binding binding = registerKeyBinding(name, keyCode, onlyInRepay);
+        binding.handlers.add(whenPressed);
+        return binding;
     }
 
-    public KeyBinding registerRepeatedKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
-        KeyBinding keyBinding = registerKeyBinding(name, keyCode, onlyInRepay);
-        repeatedKeyBindingHandlers.put(keyBinding, whenPressed);
-        return keyBinding;
+    public Binding registerRepeatedKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
+        Binding binding = registerKeyBinding(name, keyCode, onlyInRepay);
+        binding.repeatedHandlers.add(whenPressed);
+        return binding;
     }
 
-    private KeyBinding registerKeyBinding(String name, int keyCode, boolean onlyInRepay) {
-        KeyBinding keyBinding = keyBindings.get(name);
-        if (keyBinding == null) {
+    private Binding registerKeyBinding(String name, int keyCode, boolean onlyInRepay) {
+        Binding binding = bindings.get(name);
+        if (binding == null) {
             //#if FABRIC>=1
             if (keyCode == 0) {
                 keyCode = -1;
@@ -73,27 +73,28 @@ public class KeyBindingRegistry extends EventRegistrations {
             Identifier id = new Identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
             FabricKeyBinding fabricKeyBinding = FabricKeyBinding.Builder.create(id, InputUtil.Type.KEYSYM, keyCode, CATEGORY).build();
             net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.register(fabricKeyBinding);
-            keyBinding = fabricKeyBinding;
+            KeyBinding keyBinding = fabricKeyBinding;
             //#else
-            //$$ keyBinding = new KeyBinding(name, keyCode, CATEGORY);
+            //$$ KeyBinding keyBinding = new KeyBinding(name, keyCode, CATEGORY);
             //$$ ClientRegistry.registerKeyBinding(keyBinding);
             //#endif
-            keyBindings.put(name, keyBinding);
+            binding = new Binding(name, keyBinding);
+            bindings.put(name, binding);
             if (onlyInRepay) {
                 this.onlyInReplay.add(keyBinding);
             }
         } else if (!onlyInRepay) {
-            this.onlyInReplay.remove(keyBinding);
+            this.onlyInReplay.remove(binding.keyBinding);
         }
-        return keyBinding;
+        return binding;
     }
 
     public void registerRaw(int keyCode, Runnable whenPressed) {
         rawHandlers.put(keyCode, whenPressed);
     }
 
-    public Map<String, KeyBinding> getKeyBindings() {
-        return Collections.unmodifiableMap(keyBindings);
+    public Map<String, Binding> getBindings() {
+        return Collections.unmodifiableMap(bindings);
     }
 
     public Set<KeyBinding> getOnlyInReplay() {
@@ -119,29 +120,29 @@ public class KeyBindingRegistry extends EventRegistrations {
     //#endif
 
     public void handleRepeatedKeyBindings() {
-        for (Map.Entry<KeyBinding, Collection<Runnable>> entry : repeatedKeyBindingHandlers.asMap().entrySet()) {
-            if (entry.getKey().isPressed()) {
-                invokeKeyBindingHandlers(entry.getKey(), entry.getValue());
+        for (Binding binding : bindings.values()) {
+            if (binding.keyBinding.isPressed()) {
+                invokeKeyBindingHandlers(binding, binding.repeatedHandlers);
             }
         }
     }
 
     public void handleKeyBindings() {
-        for (Map.Entry<KeyBinding, Collection<Runnable>> entry : keyBindingHandlers.asMap().entrySet()) {
-            while (entry.getKey().wasPressed()) {
-                invokeKeyBindingHandlers(entry.getKey(), entry.getValue());
+        for (Binding binding : bindings.values()) {
+            while (binding.keyBinding.wasPressed()) {
+                invokeKeyBindingHandlers(binding, binding.handlers);
             }
         }
     }
 
-    private void invokeKeyBindingHandlers(KeyBinding keyBinding, Collection<Runnable> handlers) {
+    private void invokeKeyBindingHandlers(Binding binding, Collection<Runnable> handlers) {
         for (final Runnable runnable : handlers) {
             try {
                 runnable.run();
             } catch (Throwable cause) {
                 CrashReport crashReport = CrashReport.create(cause, "Handling Key Binding");
                 CrashReportSection category = crashReport.addElement("Key Binding");
-                MCVer.addDetail(category, "Key Binding", keyBinding::toString);
+                MCVer.addDetail(category, "Key Binding", () -> binding.name);
                 MCVer.addDetail(category, "Handler", runnable::toString);
                 throw new CrashException(crashReport);
             }
@@ -165,6 +166,22 @@ public class KeyBindingRegistry extends EventRegistrations {
                 MCVer.addDetail(category, "Handler", runnable::toString);
                 throw new CrashException(crashReport);
             }
+        }
+    }
+
+    public static class Binding {
+        public final String name;
+        public final KeyBinding keyBinding;
+        private final List<Runnable> handlers = new ArrayList<>();
+        private final List<Runnable> repeatedHandlers = new ArrayList<>();
+
+        public Binding(String name, KeyBinding keyBinding) {
+            this.name = name;
+            this.keyBinding = keyBinding;
+        }
+
+        public String getBoundKey() {
+            return MCVer.getBoundKey(keyBinding);
         }
     }
 }

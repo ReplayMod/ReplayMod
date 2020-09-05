@@ -3,7 +3,6 @@ package com.replaymod.extras;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.mixin.KeyBindingAccessor;
-import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import de.johni0702.minecraft.gui.GuiRenderer;
@@ -68,14 +67,14 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
             }.setLayout(panelLayout = new GridLayout().setSpacingX(5).setSpacingY(5).setColumns(1));
 
             final KeyBindingRegistry keyBindingRegistry = mod.getKeyBindingRegistry();
-            keyBindingRegistry.getKeyBindings().values().stream()
-                    .sorted(Comparator.comparing(it -> I18n.translate(it.getTranslationKey())))
+            keyBindingRegistry.getBindings().values().stream()
+                    .sorted(Comparator.comparing(it -> I18n.translate(it.name)))
                     .forEachOrdered(keyBinding -> {
                 GuiButton button = new GuiButton(){
                     @Override
                     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
                         // There doesn't seem to be an KeyBindingUpdate event, so we'll just update it every time
-                        setLabel(MCVer.getBoundKey(keyBinding));
+                        setLabel(keyBinding.getBoundKey());
                         super.draw(renderer, size, renderInfo);
                     }
                 }.onClick(() -> {
@@ -96,7 +95,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                                         return new Dimension(Math.max(10, button.getMinSize().getWidth()) + 10, 20);
                                     }
                                 }).addElements(null, button),
-                                new GuiLabel().setI18nText(keyBinding.getTranslationKey())
+                                new GuiLabel().setI18nText(keyBinding.name)
                         ));
             });
 
