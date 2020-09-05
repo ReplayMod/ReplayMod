@@ -116,7 +116,7 @@ public class GuiSavingReplay {
 
     private GuiPanel createTooltip(Path path, ReplayMetaData metaData) {
         GuiTooltip tooltip = new GuiTooltip();
-        GuiReplayViewer.GuiReplayEntry entry = new GuiReplayViewer.GuiReplayEntry(path.toFile(), metaData, null);
+        GuiReplayViewer.GuiReplayEntry entry = new GuiReplayViewer.GuiReplayEntry(path.toFile(), metaData, null, new ArrayList<>());
         return new GuiPanel().setLayout(new CustomLayout<GuiPanel>() {
             @Override
             protected void layout(GuiPanel container, int width, int height) {

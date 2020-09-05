@@ -4,6 +4,7 @@ import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
+import com.replaymod.render.utils.RenderJob;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.versions.Image;
@@ -369,9 +370,10 @@ public class GuiReplayViewer extends GuiScreen {
                             }
                         }).orElse(null);
                         final ReplayMetaData metaData = replayFile.getMetaData();
+                        List<RenderJob> renderQueue = RenderJob.readQueue(replayFile);
 
                         if (metaData != null) {
-                            results.consume(() -> new GuiReplayEntry(file, metaData, thumb) {
+                            results.consume(() -> new GuiReplayEntry(file, metaData, thumb, renderQueue) {
                                 @Override
                                 public ReadableDimension calcMinSize() {
                                     if (isFiltered(this)) {
@@ -483,12 +485,17 @@ public class GuiReplayViewer extends GuiScreen {
                         return new Dimension(dimension.getWidth() + 2, dimension.getHeight() + 2);
                     }
                 });
+        public final GuiImage renderQueueIcon = new GuiImage()
+                .setSize(10, 10)
+                .setTexture(ReplayMod.TEXTURE, 40, 0, 20, 20);
 
         private final long dateMillis;
         private final boolean incompatible;
+        private final List<RenderJob> renderQueue;
 
-        public GuiReplayEntry(File file, ReplayMetaData metaData, Image thumbImage) {
+        public GuiReplayEntry(File file, ReplayMetaData metaData, Image thumbImage, List<RenderJob> renderQueue) {
             this.file = file;
+            this.renderQueue = renderQueue;
 
             name.setText(Formatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
             if (StringUtils.isEmpty(metaData.getServerName())
@@ -512,6 +519,12 @@ public class GuiReplayViewer extends GuiScreen {
             duration.setText(Utils.convertSecondsToShortString(metaData.getDuration() / 1000));
             addElements(null, durationPanel);
 
+            if (!renderQueue.isEmpty()) {
+                renderQueueIcon.setTooltip(new GuiTooltip()
+                        .setText(renderQueue.stream().map(RenderJob::getName).toArray(String[]::new)));
+                addElements(null, renderQueueIcon);
+            }
+
             setLayout(new CustomLayout<GuiReplayEntry>() {
                 @Override
                 protected void layout(GuiReplayEntry container, int width, int height) {
@@ -521,6 +534,10 @@ public class GuiReplayViewer extends GuiScreen {
 
                     pos(infoPanel, width(thumbnail) + 5, 0);
                     pos(version, width - width(version), 0);
+
+                    if (renderQueueIcon.getContainer() != null) {
+                        pos(renderQueueIcon, width(thumbnail) - width(renderQueueIcon), 0);
+                    }
                 }
 
                 @Override
