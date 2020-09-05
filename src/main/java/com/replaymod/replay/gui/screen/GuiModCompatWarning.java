@@ -1,9 +1,7 @@
 package com.replaymod.replay.gui.screen;
 
 import com.replaymod.core.utils.ModCompat;
-import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.data.ModInfo;
-import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.util.I18n;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -14,7 +12,6 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class GuiModCompatWarning extends AbstractGuiScreen<GuiModCompatWarning> {
@@ -38,7 +35,7 @@ public class GuiModCompatWarning extends AbstractGuiScreen<GuiModCompatWarning> 
         content.getListLayout().setSpacing(8);
     }
 
-    public GuiModCompatWarning(ReplayModReplay mod, ReplayFile replayFile, ModCompat.ModInfoDifference difference) {
+    public GuiModCompatWarning(ModCompat.ModInfoDifference difference) {
         VerticalLayout.Data data = new VerticalLayout.Data(0.5);
         GuiPanel content = this.content.getListPanel();
         content.addElements(data, new GuiLabel().setI18nText("replaymod.gui.modwarning.message1"));
@@ -82,13 +79,6 @@ public class GuiModCompatWarning extends AbstractGuiScreen<GuiModCompatWarning> 
         }
 
         cancelButton.onClick(() -> getMinecraft().openScreen(null));
-        loadButton.onClick(() -> {
-            try {
-                mod.startReplay(replayFile, false);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
     }
 
     @Override

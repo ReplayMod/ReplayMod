@@ -167,24 +167,34 @@ public class ReplayModReplay implements Module {
     }
 
     public void startReplay(ReplayFile replayFile) throws IOException {
-        startReplay(replayFile, true);
+        startReplay(replayFile, true, true);
     }
 
-    public void startReplay(ReplayFile replayFile, boolean checkModCompat) throws IOException {
+    public ReplayHandler startReplay(ReplayFile replayFile, boolean checkModCompat, boolean asyncMode) throws IOException {
         if (replayHandler != null) {
             replayHandler.endReplay();
         }
         if (checkModCompat) {
             ModCompat.ModInfoDifference modDifference = new ModCompat.ModInfoDifference(replayFile.getModInfo());
             if (!modDifference.getMissing().isEmpty() || !modDifference.getDiffering().isEmpty()) {
-                new GuiModCompatWarning(this, replayFile, modDifference).display();
-                return;
+                GuiModCompatWarning screen = new GuiModCompatWarning(modDifference);
+                screen.loadButton.onClick(() -> {
+                    try {
+                        startReplay(replayFile, false, asyncMode);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                screen.display();
+                return null;
             }
         }
-        replayHandler = new ReplayHandler(replayFile, true);
+        replayHandler = new ReplayHandler(replayFile, asyncMode);
         //#if MC>=11400
         KeyBinding.updateKeysByCode(); // see Mixin_ContextualKeyBindings
         //#endif
+
+        return replayHandler;
     }
 
     public void forcefullyStopReplay() {

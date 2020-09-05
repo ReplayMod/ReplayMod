@@ -225,7 +225,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     /**
      * Whether we're currently reading packets from the login phase.
      */
-    private boolean loginPhase;
+    private boolean loginPhase = true;
 
     /**
      * Whether we need to restart the current replay. E.g. when jumping backwards in time
