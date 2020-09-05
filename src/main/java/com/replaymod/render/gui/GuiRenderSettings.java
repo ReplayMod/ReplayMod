@@ -209,13 +209,20 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                             new GuiLabel().setI18nText("replaymod.gui.rendersettings.antialiasing"), antiAliasingDropdown));
 
     public final GuiTextField exportCommand = new GuiTextField().setI18nHint("replaymod.gui.rendersettings.command")
-            .setSize(55, 20).setMaxLength(100);
+            .setSize(55, 20).setMaxLength(100).onTextChanged((old) -> updateInputs());
     public final GuiTextField exportArguments = new GuiTextField().setI18nHint("replaymod.gui.rendersettings.arguments")
-            .setMinSize(new Dimension(245, 20)).setMaxLength(500);
+            .setMinSize(new Dimension(245, 20)).setMaxLength(500).onTextChanged((old) -> updateInputs());
+    public final GuiButton exportReset = new GuiButton().setLabel("X")
+            .setSize(20, 20)
+            .onClick(() -> {
+                exportCommand.setText("");
+                exportArguments.setText(encodingPresetDropdown.getSelectedValue().getValue());
+                updateInputs();
+            });
 
     public final GuiPanel commandlinePanel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(10))
             .addElements(null,
-                    new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5)).addElements(null, exportCommand, exportArguments),
+                    new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5)).addElements(null, exportCommand, exportArguments, exportReset),
                     new GuiLabel(new GuiPanel().setLayout(new CustomLayout<GuiPanel>() {
                         @Override
                         protected void layout(GuiPanel container, int width, int height) {
@@ -407,6 +414,11 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         exportCommand.setEnabled(!isBlend);
         exportArguments.setEnabled(!isBlend);
         antiAliasingDropdown.setEnabled(!isBlend);
+
+        // Enable/Disable export args reset button
+        boolean commandChanged = !exportCommand.getText().isEmpty();
+        boolean argsChanged = !encodingPresetDropdown.getSelectedValue().getValue().equals(exportArguments.getText());
+        exportReset.setEnabled(commandChanged || argsChanged);
     }
 
     protected String updateResolution() {
