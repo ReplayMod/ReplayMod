@@ -4,7 +4,9 @@ import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
+import com.replaymod.render.gui.GuiRenderQueue;
 import com.replaymod.render.utils.RenderJob;
+import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.versions.Image;
@@ -57,9 +59,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 import static de.johni0702.minecraft.gui.versions.MCVer.getFontRenderer;
@@ -80,18 +85,37 @@ public class GuiReplayViewer extends GuiScreen {
     });
 
     public final GuiButton loadButton = new GuiButton().onClick(new Runnable() {
+        private boolean loading = false;
+
         @Override
         public void run() {
-            try {
-                mod.startReplay(list.getSelected().get(0).file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                // Disable load button to prevent the player from opening the replay twice at the same time
-                loadButton.setDisabled();
+            // Prevent the player from opening the replay twice at the same time
+            if (loading) {
+                return;
+            }
+            loading = true;
+            loadButton.setDisabled(); // visual hint
+
+            List<GuiReplayEntry> selected = list.getSelected();
+            if (selected.size() == 1) {
+                try {
+                    mod.startReplay(selected.get(0).file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Iterator<Pair<File, List<RenderJob>>> replays = selected.stream()
+                        .filter(it -> !it.renderQueue.isEmpty())
+                        .map(it -> new Pair<>(it.file, it.renderQueue))
+                        .iterator();
+                GuiRenderQueue.processMultipleReplays(GuiReplayViewer.this, mod, replays, () -> {
+                    loading = false;
+                    updateButtons();
+                    display();
+                });
             }
         }
-    }).setSize(150, 20).setI18nLabel("replaymod.gui.load").setDisabled();
+    }).setSize(150, 20);
 
     public final GuiButton folderButton = new GuiButton().onClick(new Runnable() {
         @Override
@@ -207,7 +231,7 @@ public class GuiReplayViewer extends GuiScreen {
     }).setSize(73, 20).setI18nLabel("replaymod.gui.cancel");
 
     public final List<GuiButton> replaySpecificButtons = new ArrayList<>();
-    { replaySpecificButtons.addAll(Arrays.asList(loadButton, renameButton)); }
+    { replaySpecificButtons.addAll(Arrays.asList(renameButton)); }
     public final GuiPanel editorButton = new GuiPanel();
 
     public final GuiPanel upperButtonPanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(5))
@@ -239,6 +263,8 @@ public class GuiReplayViewer extends GuiScreen {
                 pos(settingsButton, width - width(settingsButton) - 5, 5);
             }
         });
+
+        updateButtons();
     }
 
     public ReplayModReplay getMod() {
@@ -251,8 +277,16 @@ public class GuiReplayViewer extends GuiScreen {
 
         replaySpecificButtons.forEach(b -> b.setEnabled(count == 1));
         deleteButton.setEnabled(count > 0);
-        if (count == 1 && selected.get(0).incompatible) {
-            loadButton.setDisabled();
+        if (count > 1) {
+            Set<RenderJob> jobs = selected.stream().flatMap(entry -> entry.renderQueue.stream()).collect(Collectors.toSet());
+            String[] tooltipLines = jobs.stream().map(RenderJob::getName).toArray(String[]::new);
+            loadButton.setI18nLabel("replaymod.gui.viewer.bulkrender", jobs.size());
+            loadButton.setTooltip(new GuiTooltip().setText(tooltipLines));
+            loadButton.setEnabled(!jobs.isEmpty());
+        } else {
+            loadButton.setI18nLabel("replaymod.gui.load");
+            loadButton.setTooltip(null);
+            loadButton.setEnabled(count == 1 && !selected.get(0).incompatible);
         }
     }
 

@@ -10,7 +10,12 @@ import com.replaymod.render.VideoWriter;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import com.replaymod.replaystudio.replay.ZipReplayFile;
+import com.replaymod.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiClickableContainer;
@@ -30,11 +35,16 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
+import org.apache.commons.io.IOUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -141,15 +151,17 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
             for (Entry entry : selectedEntries) {
                 renderQueue.add(entry.job);
             }
-            ReplayMod.instance.runLaterWithoutLock(() -> processQueue(renderQueue));
+            ReplayMod.instance.runLaterWithoutLock(() -> processQueue(container, replayHandler, renderQueue, () -> {}));
         });
 
         updateButtons();
     }
 
-    private void processQueue(Iterable<RenderJob> queue) {
+    private static void processQueue(AbstractGuiScreen<?> container, ReplayHandler replayHandler, Iterable<RenderJob> queue, Runnable done) {
+        MinecraftClient mc = MCVer.getMinecraft();
+
         // Close all GUIs (so settings in GuiRenderSettings are saved)
-        getMinecraft().openScreen(null);
+        mc.openScreen(null);
         // Start rendering
         int jobsDone = 0;
         for (RenderJob renderJob : queue) {
@@ -169,7 +181,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                         //$$ I18n.format("replaymod.gui.rendering.error.message")
                         //#endif
                 );
-                getMinecraft().openScreen(errorScreen);
+                mc.openScreen(errorScreen);
                 return;
             } catch (VideoWriter.FFmpegStartupException e) {
                 int jobsToSkip = jobsDone;
@@ -177,16 +189,74 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                     // Update current job with fixed ffmpeg arguments
                     renderJob.setSettings(newSettings);
                     // Restart queue, skipping the already completed jobs
-                    ReplayMod.instance.runLaterWithoutLock(() -> processQueue(Iterables.skip(queue, jobsToSkip)));
+                    ReplayMod.instance.runLaterWithoutLock(() -> processQueue(container, replayHandler, Iterables.skip(queue, jobsToSkip), done));
                 });
                 return;
             } catch (Throwable t) {
-                Utils.error(LOGGER, this, CrashReport.create(t, "Rendering video"), () -> {});
+                Utils.error(LOGGER, container, CrashReport.create(t, "Rendering video"), () -> {});
                 container.display(); // Re-show the queue popup and the new error popup
                 return;
             }
             jobsDone++;
         }
+        done.run();
+    }
+
+    public static void processMultipleReplays(
+            AbstractGuiScreen<?> container,
+            ReplayModReplay mod,
+            Iterator<Pair<File, List<RenderJob>>> queue,
+            Runnable done
+    ) {
+        if (!queue.hasNext()) {
+            done.run();
+            return;
+        }
+        Pair<File, List<RenderJob>> next = queue.next();
+
+        LOGGER.info("Opening replay {} for {} render jobs", next.getKey(), next.getValue().size());
+        ReplayHandler replayHandler;
+        ZipReplayFile replayFile = null;
+        try {
+            replayFile = new ZipReplayFile(new ReplayStudio(), next.getKey());
+            replayHandler = mod.startReplay(replayFile, true, false);
+        } catch (IOException e) {
+            Utils.error(LOGGER, container, CrashReport.create(e, "Opening replay"), () -> {});
+            container.display(); // Re-show the queue popup and the new error popup
+            IOUtils.closeQuietly(replayFile);
+            return;
+        }
+        if (replayHandler == null) {
+            LOGGER.warn("Replay failed to open (missing mods?), skipping..");
+            IOUtils.closeQuietly(replayFile);
+            processMultipleReplays(container, mod, queue, done);
+            return;
+        }
+        ReplaySender replaySender = replayHandler.getReplaySender();
+
+        MinecraftClient mc = mod.getCore().getMinecraft();
+        int jumpTo = 1000;
+        while (mc.world == null && jumpTo < replayHandler.getReplayDuration()) {
+            replaySender.sendPacketsTill(jumpTo);
+            jumpTo += 1000;
+        }
+        if (mc.world == null) {
+            LOGGER.warn("Replay failed to load world (corrupted?), skipping..");
+            IOUtils.closeQuietly(replayFile);
+            processMultipleReplays(container, mod, queue, done);
+            return;
+        }
+
+        processQueue(container, replayHandler, next.getValue(), () -> {
+            try {
+                replayHandler.endReplay();
+            } catch (IOException e) {
+                Utils.error(LOGGER, container, CrashReport.create(e, "Closing replay"), () -> {});
+                container.display(); // Re-show the queue popup and the new error popup
+                return;
+            }
+            processMultipleReplays(container, mod, queue, done);
+        });
     }
 
     private GuiRenderSettings addButtonClicked() {
