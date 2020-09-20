@@ -122,17 +122,17 @@ public class ModCoreInstaller {
 
     public static int initialize(File gameDir, String minecraftVersion) {
         if (isInitalized()) return -1;
+        JsonHolder jsonHolder = fetchJSON(VERSION_URL);
+        if (!jsonHolder.has(minecraftVersion)) {
+            System.out.println("No ModCore target for " + minecraftVersion + ". This in fine, unless you're specifically looking for ModCore.");
+            return -2;
+        }
         dataDir = new File(gameDir, "modcore");
         if (!dataDir.exists()) {
             if (!dataDir.mkdirs()) {
                 bail("Unable to create necessary files");
                 return 1;
             }
-        }
-        JsonHolder jsonHolder = fetchJSON(VERSION_URL);
-        if (!jsonHolder.has(minecraftVersion)) {
-            System.out.println("No ModCore target for " + minecraftVersion + ". This in fine, unless you're specifically looking for ModCore.");
-            return -2;
         }
         String latestRemote = jsonHolder.optString(minecraftVersion);
         boolean failed = jsonHolder.getKeys().size() == 0 || (jsonHolder.has("success") && !jsonHolder.optBoolean("success"));
