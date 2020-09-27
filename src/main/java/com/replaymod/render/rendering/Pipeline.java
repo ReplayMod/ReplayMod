@@ -2,6 +2,7 @@ package com.replaymod.render.rendering;
 
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.render.capturer.WorldRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
@@ -23,6 +24,7 @@ import static com.replaymod.core.versions.MCVer.getWindow;
 
 public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
+    private final WorldRenderer worldRenderer;
     private final FrameCapturer<R> capturer;
     private final FrameProcessor<R, P> processor;
     private int consumerNextFrame;
@@ -31,7 +33,8 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
     private volatile boolean abort;
 
-    public Pipeline(FrameCapturer<R> capturer, FrameProcessor<R, P> processor, FrameConsumer<P> consumer) {
+    public Pipeline(WorldRenderer worldRenderer, FrameCapturer<R> capturer, FrameProcessor<R, P> processor, FrameConsumer<P> consumer) {
+        this.worldRenderer = worldRenderer;
         this.capturer = capturer;
         this.processor = processor;
         this.consumer = consumer;
@@ -81,6 +84,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
         }
 
         try {
+            worldRenderer.close();
             capturer.close();
             processor.close();
             consumer.close();

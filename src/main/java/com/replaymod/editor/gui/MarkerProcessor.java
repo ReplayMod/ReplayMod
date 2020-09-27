@@ -127,6 +127,9 @@ public class MarkerProcessor {
         List<Pair<Path, ReplayMetaData>> outputPaths = new ArrayList<>();
 
         Path inputPath = path.resolveSibling("raw").resolve(path.getFileName());
+        for (int i = 1; Files.exists(inputPath); i++) {
+            inputPath = inputPath.resolveSibling(replayName + "." + i + ".mcpr");
+        }
         Files.createDirectories(inputPath.getParent());
         Files.move(path, inputPath);
 

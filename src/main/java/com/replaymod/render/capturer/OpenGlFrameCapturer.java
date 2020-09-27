@@ -141,6 +141,5 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
 
     @Override
     public void close() throws IOException {
-        worldRenderer.close();
     }
 }

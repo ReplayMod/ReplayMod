@@ -212,6 +212,30 @@ public class RenderSettings {
         this.highPerformance = highPerformance;
     }
 
+    public RenderSettings withEncodingPreset(EncodingPreset encodingPreset) {
+        return new RenderSettings(
+                renderMethod,
+                encodingPreset,
+                videoWidth,
+                videoHeight,
+                framesPerSecond,
+                bitRate,
+                outputFile,
+                renderNameTags,
+                stabilizeYaw,
+                stabilizePitch,
+                stabilizeRoll,
+                chromaKeyingColor,
+                sphericalFovX,
+                sphericalFovY,
+                injectSphericalMetadata,
+                antiAliasing,
+                exportCommand,
+                exportArguments,
+                highPerformance
+        );
+    }
+
     /**
      * @return the width of the output video during rendering, including the upscale for Anti-Aliasing.
      */

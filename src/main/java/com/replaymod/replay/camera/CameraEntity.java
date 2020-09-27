@@ -74,11 +74,13 @@ import net.minecraft.util.Hand;
 
 //#if MC>=10800
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.entity.PlayerModelPart;
 //#else
 //$$ import net.minecraft.client.entity.EntityClientPlayerMP;
 //$$ import net.minecraft.util.Session;
 //#endif
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -98,6 +100,8 @@ public class CameraEntity
         //$$ extends EntityClientPlayerMP
         //#endif
 {
+    private static final UUID CAMERA_UUID = UUID.nameUUIDFromBytes("ReplayModCamera".getBytes(StandardCharsets.UTF_8));
+
     /**
      * Roll of this camera in degrees.
      */
@@ -154,6 +158,11 @@ public class CameraEntity
                 , false
                 //#endif
         );
+        //#if MC>=10900
+        setUuid(CAMERA_UUID);
+        //#else
+        //$$ entityUniqueID = CAMERA_UUID;
+        //#endif
         eventHandler.register();
         if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
             cameraController = ReplayModReplay.instance.createCameraController(this);
@@ -422,6 +431,15 @@ public class CameraEntity
             return ((AbstractClientPlayerEntity) view).getModel();
         }
         return super.getModel();
+    }
+
+    @Override
+    public boolean isPartVisible(PlayerModelPart modelPart) {
+        Entity view = getRenderViewEntity(this.client);
+        if (view != this && view instanceof PlayerEntity) {
+            return ((PlayerEntity) view).isPartVisible(modelPart);
+        }
+        return super.isPartVisible(modelPart);
     }
     //#endif
 
