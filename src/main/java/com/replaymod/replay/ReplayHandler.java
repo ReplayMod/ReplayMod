@@ -592,7 +592,7 @@ public class ReplayHandler {
             }
         }
 
-        long diff = targetTime - replaySender.getDesiredTimestamp();
+        long diff = targetTime - (replaySender.isHurrying() ? replaySender.getDesiredTimestamp() : replaySender.currentTimeStamp());
         if (diff != 0) {
             if (diff > 0 && diff < 5000) { // Small difference and no time travel
                 replaySender.jumpToTime(targetTime);
