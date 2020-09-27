@@ -74,6 +74,7 @@ import net.minecraft.util.Hand;
 
 //#if MC>=10800
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.entity.PlayerModelPart;
 //#else
 //$$ import net.minecraft.client.entity.EntityClientPlayerMP;
 //$$ import net.minecraft.util.Session;
@@ -422,6 +423,15 @@ public class CameraEntity
             return ((AbstractClientPlayerEntity) view).getModel();
         }
         return super.getModel();
+    }
+
+    @Override
+    public boolean isPartVisible(PlayerModelPart modelPart) {
+        Entity view = getRenderViewEntity(this.client);
+        if (view != this && view instanceof PlayerEntity) {
+            return ((PlayerEntity) view).isPartVisible(modelPart);
+        }
+        return super.isPartVisible(modelPart);
     }
     //#endif
 
