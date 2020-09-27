@@ -85,6 +85,7 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
     protected File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
         DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
         File screenshotFolder = new File(getMinecraft().runDirectory, "screenshots");
+        screenshotFolder.mkdirs();
         String baseName = DATE_FORMAT.format(new Date());
         for (int i = 1; ; i++) {
             File screenshotFile = new File(screenshotFolder, baseName + (i == 1 ? "" : "_" + i) + ".png");
