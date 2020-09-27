@@ -173,7 +173,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
                     if (cameraEntity != null) {
                         cameraEntity.setCameraPosRot(new Location(
                                 marker.getX(), marker.getY(), marker.getZ(),
-                                marker.getPitch(), marker.getYaw()
+                                marker.getYaw(), marker.getPitch()
                         ));
                     }
                     replayHandler.doJump(marker.getTime(), true);
