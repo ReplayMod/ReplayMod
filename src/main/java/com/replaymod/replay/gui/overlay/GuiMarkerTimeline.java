@@ -4,6 +4,7 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.util.Location;
 import de.johni0702.minecraft.gui.GuiRenderer;
@@ -168,11 +169,14 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
             } else if (button == 1) { // Right click
                 selectedMarker = null;
                 if (replayHandler != null) {
-                    replayHandler.setTargetPosition(new Location(
-                            marker.getX(), marker.getY(), marker.getZ(),
-                            marker.getPitch(), marker.getYaw()
-                    ));
-                    replayHandler.doJump(marker.getTime(), false);
+                    CameraEntity cameraEntity = replayHandler.getCameraEntity();
+                    if (cameraEntity != null) {
+                        cameraEntity.setCameraPosRot(new Location(
+                                marker.getX(), marker.getY(), marker.getZ(),
+                                marker.getPitch(), marker.getYaw()
+                        ));
+                    }
+                    replayHandler.doJump(marker.getTime(), true);
                 } else {
                     setCursorPosition(marker.getTime());
                 }

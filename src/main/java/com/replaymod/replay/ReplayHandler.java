@@ -519,10 +519,6 @@ public class ReplayHandler {
         return spectating;
     }
 
-    public void setTargetPosition(Location pos) {
-        targetCameraPosition = pos;
-    }
-
     public void moveCameraToTargetPosition() {
         CameraEntity cam = getCameraEntity();
         if (cam != null && targetCameraPosition != null) {
