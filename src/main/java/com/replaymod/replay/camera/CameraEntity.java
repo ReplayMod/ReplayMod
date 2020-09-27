@@ -80,6 +80,7 @@ import net.minecraft.client.render.entity.PlayerModelPart;
 //$$ import net.minecraft.util.Session;
 //#endif
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -99,6 +100,8 @@ public class CameraEntity
         //$$ extends EntityClientPlayerMP
         //#endif
 {
+    private static final UUID CAMERA_UUID = UUID.nameUUIDFromBytes("ReplayModCamera".getBytes(StandardCharsets.UTF_8));
+
     /**
      * Roll of this camera in degrees.
      */
@@ -155,6 +158,11 @@ public class CameraEntity
                 , false
                 //#endif
         );
+        //#if MC>=10900
+        setUuid(CAMERA_UUID);
+        //#else
+        //$$ entityUniqueID = CAMERA_UUID;
+        //#endif
         eventHandler.register();
         if (ReplayModReplay.instance.getReplayHandler().getSpectatedUUID() == null) {
             cameraController = ReplayModReplay.instance.createCameraController(this);
