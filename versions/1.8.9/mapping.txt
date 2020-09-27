@@ -1,3 +1,4 @@
+net.minecraft.entity.player.EntityPlayer isWearing() func_175148_a()
 net.minecraft.client.renderer.WorldRenderer begin() startDrawing()
 net.minecraft.network.play.server.S38PacketPlayerListItem getAction() func_179768_b()
 net.minecraft.network.play.server.S40PacketDisconnect getReason() func_149165_c()

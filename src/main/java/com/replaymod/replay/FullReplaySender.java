@@ -624,13 +624,15 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#endif
                     false,
                     //#if MC>=11600
-                    packet.method_29443(),
-                    //#if MC>=11602
+                    //#if MC>=11603
+                    packet.getDimensionIds(),
                     (net.minecraft.util.registry.DynamicRegistryManager.Impl) packet.getRegistryManager(),
+                    packet.getDimensionType(),
                     //#else
+                    //$$ packet.method_29443(),
                     //$$ (net.minecraft.util.registry.RegistryTracker.Modifiable) packet.getDimension(),
+                    //$$ packet.method_29444(),
                     //#endif
-                    packet.method_29444(),
                     packet.getDimensionId(),
                     //#else
                     //$$ packet.getDimension(),
@@ -639,7 +641,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#if MC<11600
                     //$$ packet.getGeneratorType(),
                     //#endif
-                    packet.getChunkLoadDistance(),
+                    packet.getViewDistance(),
                     packet.hasReducedDebugInfo()
                     //#if MC>=11500
                     , packet.showsDeathScreen()
@@ -727,10 +729,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             final PlayerPositionLookS2CPacket ppl = (PlayerPositionLookS2CPacket) p;
             if(!hasWorldLoaded) hasWorldLoaded = true;
 
-            if (mc.currentScreen instanceof DownloadingTerrainScreen) {
-                // Close the world loading screen manually in case we swallow the packet
-                mc.openScreen(null);
-            }
+            ReplayMod.instance.runLater(() -> {
+                if (mc.currentScreen instanceof DownloadingTerrainScreen) {
+                    // Close the world loading screen manually in case we swallow the packet
+                    mc.openScreen(null);
+                }
+            });
 
             if(replayHandler.shouldSuppressCameraMovements()) return null;
 

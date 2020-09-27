@@ -38,7 +38,7 @@ import net.minecraft.client.render.WorldRenderer;
 //#endif
 
 //#if MC>=10904
-import net.minecraft.world.RayTraceContext;
+import net.minecraft.world.RaycastContext;
 //#else
 //$$ import net.minecraft.util.MovingObjectPosition;
 //#endif
