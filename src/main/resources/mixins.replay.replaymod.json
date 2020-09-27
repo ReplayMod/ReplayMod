@@ -5,6 +5,9 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=11600
+    "Mixin_MoveRealmsButton",
+    //#endif
     //#if MC>=11400
     "MixinCamera",
     "MixinInGameHud",
