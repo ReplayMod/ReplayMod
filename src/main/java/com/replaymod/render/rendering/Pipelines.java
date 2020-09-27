@@ -10,6 +10,7 @@ import com.replaymod.render.capturer.SimpleOpenGlFrameCapturer;
 import com.replaymod.render.capturer.SimplePboOpenGlFrameCapturer;
 import com.replaymod.render.capturer.StereoscopicOpenGlFrameCapturer;
 import com.replaymod.render.capturer.StereoscopicPboOpenGlFrameCapturer;
+import com.replaymod.render.capturer.WorldRenderer;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
@@ -45,66 +46,72 @@ public class Pipelines {
 
     public static Pipeline<OpenGlFrame, RGBFrame> newDefaultPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderSettings settings = renderInfo.getRenderSettings();
+        WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
         FrameCapturer<OpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new SimplePboOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo);
+            capturer = new SimplePboOpenGlFrameCapturer(worldRenderer, renderInfo);
         } else {
-            capturer = new SimpleOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo);
+            capturer = new SimpleOpenGlFrameCapturer(worldRenderer, renderInfo);
         }
-        return new Pipeline<>(capturer, new OpenGlToRGBProcessor(), consumer);
+        return new Pipeline<>(worldRenderer, capturer, new OpenGlToRGBProcessor(), consumer);
     }
 
     public static Pipeline<StereoscopicOpenGlFrame, RGBFrame> newStereoscopicPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderSettings settings = renderInfo.getRenderSettings();
+        WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
         FrameCapturer<StereoscopicOpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new StereoscopicPboOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo);
+            capturer = new StereoscopicPboOpenGlFrameCapturer(worldRenderer, renderInfo);
         } else {
-            capturer = new StereoscopicOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo);
+            capturer = new StereoscopicOpenGlFrameCapturer(worldRenderer, renderInfo);
         }
-        return new Pipeline<>(capturer, new StereoscopicToRGBProcessor(), consumer);
+        return new Pipeline<>(worldRenderer, capturer, new StereoscopicToRGBProcessor(), consumer);
     }
 
     public static Pipeline<CubicOpenGlFrame, RGBFrame> newCubicPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderSettings settings = renderInfo.getRenderSettings();
+        WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
         FrameCapturer<CubicOpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new CubicPboOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, settings.getVideoWidth() / 4);
+            capturer = new CubicPboOpenGlFrameCapturer(worldRenderer, renderInfo, settings.getVideoWidth() / 4);
         } else {
-            capturer = new CubicOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, settings.getVideoWidth() / 4);
+            capturer = new CubicOpenGlFrameCapturer(worldRenderer, renderInfo, settings.getVideoWidth() / 4);
         }
-        return new Pipeline<>(capturer, new CubicToRGBProcessor(), consumer);
+        return new Pipeline<>(worldRenderer, capturer, new CubicToRGBProcessor(), consumer);
     }
 
     public static Pipeline<CubicOpenGlFrame, RGBFrame> newEquirectangularPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderSettings settings = renderInfo.getRenderSettings();
+        WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
 
         EquirectangularToRGBProcessor processor = new EquirectangularToRGBProcessor(settings.getVideoWidth(),
                 settings.getVideoHeight(), settings.getSphericalFovX());
 
         FrameCapturer<CubicOpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED) {
-            capturer = new CubicPboOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, processor.getFrameSize());
+            capturer = new CubicPboOpenGlFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
         } else {
-            capturer = new CubicOpenGlFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, processor.getFrameSize());
+            capturer = new CubicOpenGlFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
         }
-        return new Pipeline<>(capturer, processor, consumer);
+        return new Pipeline<>(worldRenderer, capturer, processor, consumer);
     }
 
     public static Pipeline<ODSOpenGlFrame, RGBFrame> newODSPipeline(RenderInfo renderInfo, FrameConsumer<RGBFrame> consumer) {
         RenderSettings settings = renderInfo.getRenderSettings();
+        WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
 
         ODSToRGBProcessor processor = new ODSToRGBProcessor(settings.getVideoWidth(),
                 settings.getVideoHeight(), settings.getSphericalFovX());
 
         FrameCapturer<ODSOpenGlFrame> capturer =
-                new ODSFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo, processor.getFrameSize());
-        return new Pipeline<>(capturer, processor, consumer);
+                new ODSFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
+        return new Pipeline<>(worldRenderer, capturer, processor, consumer);
     }
 
     public static Pipeline<RGBFrame, RGBFrame> newBlendPipeline(RenderInfo renderInfo) {
         RenderSettings settings = renderInfo.getRenderSettings();
-        FrameCapturer<RGBFrame> capturer = new BlendFrameCapturer(new EntityRendererHandler(settings, renderInfo), renderInfo);
+        WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
+        FrameCapturer<RGBFrame> capturer = new BlendFrameCapturer(worldRenderer, renderInfo);
         FrameConsumer<RGBFrame> consumer = new FrameConsumer<RGBFrame>() {
             @Override
             public void consume(RGBFrame frame) {
@@ -114,6 +121,6 @@ public class Pipelines {
             public void close() {
             }
         };
-        return new Pipeline<>(capturer, new DummyProcessor<>(), consumer);
+        return new Pipeline<>(worldRenderer, capturer, new DummyProcessor<>(), consumer);
     }
 }
