@@ -481,8 +481,8 @@ public class CameraEntity
 
     //#if MC>=11400
     @Override
-    public HitResult rayTrace(double maxDistance, float tickDelta, boolean fluids) {
-        HitResult result = super.rayTrace(maxDistance, tickDelta, fluids);
+    public HitResult raycast(double maxDistance, float tickDelta, boolean fluids) {
+        HitResult result = super.raycast(maxDistance, tickDelta, fluids);
 
         // Make sure we can never look at blocks (-> no outline)
         if (result instanceof BlockHitResult) {
