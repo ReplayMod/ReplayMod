@@ -66,6 +66,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -350,6 +351,10 @@ public class Utils {
             super(container);
             setBackgroundColor(Colors.DARK_TRANSPARENT);
 
+            ProtocolVersion latestVersion = ProtocolVersion.getProtocols()
+                    .stream()
+                    .max(Comparator.comparing(ProtocolVersion::getId))
+                    .orElseThrow(RuntimeException::new);
             getInfo().addElements(new VerticalLayout.Data(0.5),
                     new GuiLabel()
                             .setColor(Colors.BLACK)
@@ -357,10 +362,7 @@ public class Utils {
                     new GuiLabel()
                             .setColor(Colors.BLACK)
                             .setI18nText("replaymod.gui.minimalmode.supportedversion",
-                                    ProtocolVersion.v1_7_6.getName()
-                                            + " - "
-                                            + Iterables.getLast(ProtocolVersion.getProtocols()).getName()
-                            ));
+                                    "1.7.10 - " + latestVersion.getName()));
 
             open();
         }
