@@ -729,10 +729,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             final PlayerPositionLookS2CPacket ppl = (PlayerPositionLookS2CPacket) p;
             if(!hasWorldLoaded) hasWorldLoaded = true;
 
-            if (mc.currentScreen instanceof DownloadingTerrainScreen) {
-                // Close the world loading screen manually in case we swallow the packet
-                mc.openScreen(null);
-            }
+            ReplayMod.instance.runLater(() -> {
+                if (mc.currentScreen instanceof DownloadingTerrainScreen) {
+                    // Close the world loading screen manually in case we swallow the packet
+                    mc.openScreen(null);
+                }
+            });
 
             if(replayHandler.shouldSuppressCameraMovements()) return null;
 
