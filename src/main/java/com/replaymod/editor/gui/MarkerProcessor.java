@@ -120,6 +120,9 @@ public class MarkerProcessor {
         squashFilter.init(studio, null);
 
         Path inputPath = path.resolveSibling("raw").resolve(path.getFileName());
+        for (int i = 1; Files.exists(inputPath); i++) {
+            inputPath = inputPath.resolveSibling(replayName + "." + i + ".mcpr");
+        }
         Files.createDirectories(inputPath.getParent());
         Files.move(path, inputPath);
 
