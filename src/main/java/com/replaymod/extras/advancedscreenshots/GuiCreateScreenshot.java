@@ -96,6 +96,11 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
     }
 
     @Override
+    public void load(RenderSettings settings) {
+        super.load(settings.withEncodingPreset(RenderSettings.EncodingPreset.PNG));
+    }
+
+    @Override
     protected Path getSettingsPath() {
         return getMinecraft().runDirectory.toPath().resolve("config/replaymod-screenshotsettings.json");
     }
