@@ -594,3 +594,33 @@ Minecraft may crash if you try to use [RandomPatches](https://www.curseforge.com
 
 ### Sodium [sodium]
 ReplayMod can record when [Sodium](https://www.curseforge.com/minecraft/mc-mods/sodium) is installed but will crash during render. Disable Sodium before rendering, it can be re-enabled after that.
+
+
+### LiteLoader [liteloader]
+![](img/mutlimc-liteloader.jpg)
+The MultiMC interface to place ReplayMod above LiteLoader.
+
+![](img/multimc-addempty.jpg)
+The properties for the new *Empty*.
+
+[LiteLoader](http://www.liteloader.com/) is known to cause issues due to the mixin version it contains.
+
+You can use MultiMC to workaround this problem.
+> The MultiMC `Edit` function requires that your computer has a default editor for json files associated.
+
+1: Create your instance then edit the instance  
+2: Click `Install Forge`  
+3: Click `Install LiteLoader`  
+4: Click `Add Empty`; use `ReplayMod` as name and `com.replaymod` as uid  
+5: Select the new *ReplayMod* and click `Edit`  
+6: Replace the contents with one of the below snippets  
+7: Save and close the text editor  
+8: Move *ReplayMod* up until it is **above** *LiteLoader*  
+9: Remove the ReplayMod jar from the mods folder if you installed it previously.
+
+** Snippet for 1.8.9 **  
+`{ "formatVersion": 1, "name": "ReplayMod", "uid": "com.replaymod", "version": "1.8.9-2.4.5", "libraries": [{ "name": "com.replaymod:replaymod:1.8.9-2.4.5", "MMC-absoluteUrl":  "https://minio.replaymod.com/replaymod/replaymod-1.8.9-2.4.5.jar" }]}`
+
+** Snippet for 1.12.2 **  
+`{ "formatVersion": 1, "name": "ReplayMod", "uid": "com.replaymod", "version": "1.12.2-2.4.5", "libraries": [{ "name": "com.replaymod:replaymod:1.12.2-2.4.5", "MMC-absoluteUrl":  "https://minio.replaymod.com/replaymod/replaymod-1.12.2-2.4.5.jar" }]}`
+
