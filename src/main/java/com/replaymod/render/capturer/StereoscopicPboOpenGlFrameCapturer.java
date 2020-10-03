@@ -4,7 +4,7 @@ import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.frame.StereoscopicOpenGlFrame;
 
 public class StereoscopicPboOpenGlFrameCapturer
-        extends MultiFramePboOpenGlFrameCapturer<StereoscopicOpenGlFrame, StereoscopicOpenGlFrameCapturer.Data> {
+        extends PboOpenGlFrameCapturer<StereoscopicOpenGlFrame, StereoscopicOpenGlFrameCapturer.Data> {
 
     public StereoscopicPboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         super(worldRenderer, renderInfo, StereoscopicOpenGlFrameCapturer.Data.class,

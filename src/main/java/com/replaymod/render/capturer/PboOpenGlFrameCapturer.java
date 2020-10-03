@@ -10,12 +10,12 @@ import org.lwjgl.opengl.GL12;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public abstract class MultiFramePboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> & CaptureData>
+public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> & CaptureData>
         extends OpenGlFrameCapturer<F, D> {
     private final D[] data;
     private PixelBufferObject pbo, otherPBO;
 
-    public MultiFramePboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, Class<D> type, int framePixels) {
+    public PboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, Class<D> type, int framePixels) {
         super(worldRenderer, renderInfo);
 
         data = type.getEnumConstants();
