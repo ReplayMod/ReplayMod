@@ -1,7 +1,7 @@
 package com.replaymod.render;
 
 import com.replaymod.core.versions.MCVer;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.ByteBufferPool;
@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.apache.commons.lang3.Validate.isTrue;
 
-public class VideoWriter implements FrameConsumer<RGBFrame> {
+public class VideoWriter implements FrameConsumer<BitmapFrame> {
 
     private final VideoRenderer renderer;
     private final RenderSettings settings;
@@ -103,7 +103,7 @@ public class VideoWriter implements FrameConsumer<RGBFrame> {
     }
 
     @Override
-    public void consume(RGBFrame frame) {
+    public void consume(BitmapFrame frame) {
         try {
             checkSize(frame.getSize());
             channel.write(frame.getByteBuffer());

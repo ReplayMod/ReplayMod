@@ -6,19 +6,19 @@ import org.apache.commons.lang3.Validate;
 
 import java.nio.ByteBuffer;
 
-public class RGBFrame implements Frame {
+public class BitmapFrame implements Frame {
     private final int frameId;
-
     private final ReadableDimension size;
-
+    private final int bytesPerPixel;
     private final ByteBuffer byteBuffer;
 
-    public RGBFrame(int frameId, ReadableDimension size, ByteBuffer byteBuffer) {
-        Validate.isTrue(size.getWidth() * size.getHeight() * 4 == byteBuffer.remaining(),
+    public BitmapFrame(int frameId, ReadableDimension size, int bytesPerPixel, ByteBuffer byteBuffer) {
+        Validate.isTrue(size.getWidth() * size.getHeight() * bytesPerPixel == byteBuffer.remaining(),
                 "Buffer size is %d (cap: %d) but should be %d",
-                byteBuffer.remaining(), byteBuffer.capacity(), size.getWidth() * size.getHeight() * 4);
+                byteBuffer.remaining(), byteBuffer.capacity(), size.getWidth() * size.getHeight() * bytesPerPixel);
         this.frameId = frameId;
         this.size = size;
+        this.bytesPerPixel = bytesPerPixel;
         this.byteBuffer = byteBuffer;
     }
 
@@ -28,6 +28,10 @@ public class RGBFrame implements Frame {
 
     public ReadableDimension getSize() {
         return this.size;
+    }
+
+    public int getBytesPerPixel() {
+        return bytesPerPixel;
     }
 
     public ByteBuffer getByteBuffer() {

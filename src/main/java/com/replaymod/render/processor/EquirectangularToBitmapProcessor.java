@@ -1,7 +1,7 @@
 package com.replaymod.render.processor;
 
 import com.replaymod.render.frame.CubicOpenGlFrame;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.utils.ByteBufferPool;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import org.apache.commons.lang3.Validate;
@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 
 import static java.lang.Math.PI;
 
-public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicOpenGlFrame, RGBFrame> {
+public class EquirectangularToBitmapProcessor extends AbstractFrameProcessor<CubicOpenGlFrame, BitmapFrame> {
     private static final byte IMAGE_BACK = 0;
     private static final byte IMAGE_FRONT = 1;
     private static final byte IMAGE_LEFT = 2;
@@ -26,7 +26,7 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
     private final int[][] imageX;
     private final int[][] imageY;
 
-    public EquirectangularToRGBProcessor(int outputWidth, int outputHeight, int sphericalFovX) {
+    public EquirectangularToBitmapProcessor(int outputWidth, int outputHeight, int sphericalFovX) {
         // calculate the dimensions of the original equirectangular projection
         // (before cropping according to FOV)
         width = outputWidth;
@@ -103,16 +103,17 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
     }
 
     @Override
-    public RGBFrame process(CubicOpenGlFrame rawFrame) {
+    public BitmapFrame process(CubicOpenGlFrame rawFrame) {
         Validate.isTrue(rawFrame.getLeft().getSize().getWidth() == frameSize, "Frame size must be %d but was %d",
                 frameSize, rawFrame.getLeft().getSize().getWidth());
-        ByteBuffer result = ByteBufferPool.allocate(width * height * 4);
+        int bpp = rawFrame.getLeft().getBytesPerPixel();
+        ByteBuffer result = ByteBufferPool.allocate(width * height * bpp);
         ByteBuffer[] images = {
                 rawFrame.getBack().getByteBuffer(), rawFrame.getFront().getByteBuffer(),
                 rawFrame.getLeft().getByteBuffer(), rawFrame.getRight().getByteBuffer(),
                 rawFrame.getTop().getByteBuffer(), rawFrame.getBottom().getByteBuffer()
         };
-        byte[] pixel = new byte[4];
+        byte[] pixel = new byte[bpp];
         byte[] image;
         int[] imageX, imageY;
         for (int y = 0; y < height; y++) {
@@ -121,7 +122,7 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
             imageY = this.imageY[y];
             for (int x = 0; x < width; x++) {
                 ByteBuffer source = images[image[x]];
-                source.position((imageX[x] + imageY[x] * frameSize) * 4);
+                source.position((imageX[x] + imageY[x] * frameSize) * bpp);
                 source.get(pixel);
                 result.put(pixel);
             }
@@ -134,7 +135,7 @@ public class EquirectangularToRGBProcessor extends AbstractFrameProcessor<CubicO
         ByteBufferPool.release(rawFrame.getBack().getByteBuffer());
         ByteBufferPool.release(rawFrame.getTop().getByteBuffer());
         ByteBufferPool.release(rawFrame.getBottom().getByteBuffer());
-        return new RGBFrame(rawFrame.getFrameId(), new Dimension(width, height), result);
+        return new BitmapFrame(rawFrame.getFrameId(), new Dimension(width, height), bpp, result);
     }
 
     public int getFrameSize() {

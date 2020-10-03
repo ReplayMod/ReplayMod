@@ -1,7 +1,7 @@
 package com.replaymod.render.gui;
 
 import com.replaymod.core.utils.Utils;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.rendering.VideoRenderer;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -265,7 +265,7 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
         guiRenderer.drawTexturedRect(x, y, 0, 0, width, height, videoWidth, videoHeight, videoWidth, videoHeight);
     }
 
-    public void updatePreview(RGBFrame frame) {
+    public void updatePreview(BitmapFrame frame) {
         if (previewCheckbox.isChecked() && previewTexture != null) {
             ByteBuffer buffer = frame.getByteBuffer();
             buffer.mark();

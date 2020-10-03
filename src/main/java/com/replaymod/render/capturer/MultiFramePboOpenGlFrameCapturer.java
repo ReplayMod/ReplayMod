@@ -53,7 +53,7 @@ public abstract class MultiFramePboOpenGlFrameCapturer<F extends Frame, D extend
                 pboBuffer.limit(pboBuffer.position() + frameBufferSize);
                 frameBuffer.put(pboBuffer);
                 frameBuffer.rewind();
-                frames[i] = new OpenGlFrame(framesDone - 2, frameSize, frameBuffer);
+                frames[i] = new OpenGlFrame(framesDone - 2, frameSize, 4, frameBuffer);
             }
 
             pbo.unmap();

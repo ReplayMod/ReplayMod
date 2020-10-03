@@ -47,7 +47,7 @@ public class SimplePboOpenGlFrameCapturer extends OpenGlFrameCapturer<OpenGlFram
             buffer.rewind();
             pbo.unmap();
             pbo.unbind();
-            frame = new OpenGlFrame(framesDone - 2, frameSize, buffer);
+            frame = new OpenGlFrame(framesDone - 2, frameSize, 4, buffer);
         }
 
         if (framesDone < renderInfo.getTotalFrames()) {

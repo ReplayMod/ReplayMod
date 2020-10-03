@@ -13,7 +13,7 @@ import com.replaymod.render.VideoWriter;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.events.ReplayRenderCallback;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.metadata.MetadataInjector;
@@ -124,7 +124,7 @@ public class VideoRenderer implements RenderInfo {
             this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this,
                     videoWriter = new VideoWriter(this) {
                         @Override
-                        public void consume(RGBFrame frame) {
+                        public void consume(BitmapFrame frame) {
                             gui.updatePreview(frame);
                             super.consume(frame);
                         }

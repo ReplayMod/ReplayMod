@@ -112,7 +112,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         frameBuffer().endWrite();
         buffer.rewind();
 
-        return new OpenGlFrame(frameId, new Dimension(getFrameWidth(), getFrameHeight()), buffer);
+        return new OpenGlFrame(frameId, new Dimension(getFrameWidth(), getFrameHeight()), 4, buffer);
     }
 
     protected void resize(int width, int height) {
