@@ -357,6 +357,12 @@ There are **7 Encoding Presets** you can choose from:
 - **PNG Sequence**  
   Exports the sequence as individual frames in the **PNG Format**.  
   **Warning:** This can create a huge amount of files, so make sure to save them in a separate folder.
+- **OpenEXR Sequence** (Minecraft 1.14 and above)  
+  Exports the sequence as individual frames in the **OpenEXR Format**.
+  The images are of perfect quality and may contain
+  additional image layers beyond the visible one (e.g. [depth](#replaying-render-advanced-depth-map)).
+  As such, this format is a good choice if you have plenty of disk space to spare and want to perform additional editing
+  on the video in a third-party video editor.
 
 ### Advanced Settings [advanced]
 ![](img/rendersettings-advanced.jpg)

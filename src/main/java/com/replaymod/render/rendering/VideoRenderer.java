@@ -43,6 +43,8 @@ import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
+import com.replaymod.render.EXRWriter;
+import com.replaymod.render.frame.EXRFrame;
 import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.client.gui.screen.Screen;
 import org.lwjgl.glfw.GLFW;
@@ -120,12 +122,23 @@ public class VideoRenderer implements RenderInfo {
 
             this.renderingPipeline = Pipelines.newBlendPipeline(this);
             this.ffmpegWriter = null;
+        //#if MC>=11400
+        } else if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
+            this.renderingPipeline = Pipelines.newEXRPipeline(settings.getRenderMethod(), this, new EXRWriter(settings.getOutputFile().toPath()) {
+                @Override
+                public void consume(EXRFrame frame) {
+                    gui.updatePreview(frame.getBgraBuffer(), frame.getSize());
+                    super.consume(frame);
+                }
+            });
+            this.ffmpegWriter = null;
+        //#endif
         } else {
             this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this,
                     ffmpegWriter = new FFmpegWriter(this) {
                         @Override
                         public void consume(BitmapFrame frame) {
-                            gui.updatePreview(frame);
+                            gui.updatePreview(frame.getByteBuffer(), frame.getSize());
                             super.consume(frame);
                         }
                     });

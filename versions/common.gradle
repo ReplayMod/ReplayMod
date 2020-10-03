@@ -286,7 +286,15 @@ dependencies {
     shadow 'com.google.api-client:google-api-client-gson:1.20.0', shadeExclusions
     shadow 'com.google.api-client:google-api-client-java6:1.20.0', shadeExclusions
     shadow 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
-    
+
+    if (mcVersion >= 11400) { // need lwjgl 3
+        for (suffix in ['', ':natives-linux', ':natives-windows', ':natives-macos']) {
+            shadow('org.lwjgl:lwjgl-tinyexr:3.2.2' + suffix) {
+                exclude group: 'org.lwjgl', module: 'lwjgl' // comes with MC
+            }
+        }
+    }
+
     if (FABRIC) {
         shadow 'org.apache.maven:maven-artifact:3.6.1'
     }
@@ -381,6 +389,8 @@ task configureRelocation() {
                             } else if (!pkg.startsWith('org/apache/logging')) {
                                 pkgs << pkg.substring(0, pkg.indexOf('/', 'org/apache/'.length()))
                             }
+                        } else if (pkg.startsWith('org/lwjgl')) {
+                            return // either bundled with MC or uses natives which we can't relocate
                         } else if (!pkg.startsWith('org/spongepowered')) {
                             pkgs << pkg.substring(0, pkg.indexOf('/', 4))
                         }

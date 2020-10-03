@@ -405,15 +405,17 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         }
 
         // Enable/Disable various options for blend export
+        boolean isEXR = encodingPresetDropdown.getSelectedValue() == RenderSettings.EncodingPreset.EXR;
         boolean isBlend = renderMethod == RenderSettings.RenderMethod.BLEND;
+        boolean isFFmpeg = !isBlend && !isEXR;
         if (isBlend) {
             videoWidth.setDisabled();
             videoHeight.setDisabled();
         }
         encodingPresetDropdown.setEnabled(!isBlend);
-        exportCommand.setEnabled(!isBlend);
-        exportArguments.setEnabled(!isBlend);
-        antiAliasingDropdown.setEnabled(!isBlend);
+        exportCommand.setEnabled(isFFmpeg);
+        exportArguments.setEnabled(isFFmpeg);
+        antiAliasingDropdown.setEnabled(isFFmpeg);
 
         // Enable/Disable export args reset button
         boolean commandChanged = !exportCommand.getText().isEmpty();
@@ -519,7 +521,8 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             userDefinedOutputFileName = false;
         } else if (savedOutputFile.exists()) {
             String name = generateOutputFile(encodingPreset).getName();
-            this.outputFile = new File(savedOutputFile.isDirectory() ? savedOutputFile : savedOutputFile.getParentFile(), name);
+            boolean isFolder = savedOutputFile.isDirectory() && !savedOutputFile.getName().endsWith(".exr");
+            this.outputFile = new File(isFolder ? savedOutputFile : savedOutputFile.getParentFile(), name);
             userDefinedOutputFileName = false;
         } else {
             this.outputFile = conformExtension(savedOutputFile, encodingPreset);
@@ -569,7 +572,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                 chromaKeyingCheckbox.isChecked() ? chromaKeyingColor.getColor() : null,
                 sphericalFov, Math.min(180, sphericalFov),
                 injectSphericalMetadata.isChecked() && (serialize || injectSphericalMetadata.isEnabled()),
-                antiAliasingDropdown.getSelectedValue(),
+                serialize || antiAliasingDropdown.isEnabled() ? antiAliasingDropdown.getSelectedValue() : RenderSettings.AntiAliasing.NONE,
                 exportCommand.getText(),
                 exportArguments.getText(),
                 net.minecraft.client.gui.screen.Screen.hasControlDown()

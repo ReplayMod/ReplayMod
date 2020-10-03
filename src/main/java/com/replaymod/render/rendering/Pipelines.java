@@ -12,6 +12,7 @@ import com.replaymod.render.capturer.StereoscopicOpenGlFrameCapturer;
 import com.replaymod.render.capturer.StereoscopicPboOpenGlFrameCapturer;
 import com.replaymod.render.capturer.WorldRenderer;
 import com.replaymod.render.frame.CubicOpenGlFrame;
+import com.replaymod.render.frame.EXRFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.frame.BitmapFrame;
@@ -25,7 +26,23 @@ import com.replaymod.render.processor.OpenGlToBitmapProcessor;
 import com.replaymod.render.processor.StereoscopicToBitmapProcessor;
 import com.replaymod.render.utils.PixelBufferObject;
 
+import java.io.IOException;
+
 public class Pipelines {
+    public static Pipeline newEXRPipeline(RenderSettings.RenderMethod method, RenderInfo renderInfo, FrameConsumer<EXRFrame> consumer) {
+        return newPipeline(method, renderInfo, new FrameConsumer<BitmapFrame>() {
+            @Override
+            public void consume(BitmapFrame frame) {
+                consumer.consume(new EXRFrame(frame.getFrameId(), frame.getSize(), frame.getByteBuffer()));
+            }
+
+            @Override
+            public void close() throws IOException {
+                consumer.close();
+            }
+        });
+    }
+
     public static Pipeline newPipeline(RenderSettings.RenderMethod method, RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer) {
         switch (method) {
             case DEFAULT:
