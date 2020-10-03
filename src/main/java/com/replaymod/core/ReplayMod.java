@@ -1,6 +1,5 @@
 package com.replaymod.core;
 
-import com.google.common.io.Files;
 import com.replaymod.compat.ReplayModCompat;
 import com.replaymod.core.gui.GuiBackgroundProcesses;
 import com.replaymod.core.gui.GuiReplaySettings;
@@ -27,6 +26,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.crash.CrashException;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
 
 //#if MC>=11400
@@ -89,6 +89,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -216,11 +219,24 @@ public class ReplayMod implements
         return settingsRegistry;
     }
 
-    public File getReplayFolder() throws IOException {
-        String path = getSettingsRegistry().get(Setting.RECORDING_PATH);
-        File folder = new File(path.startsWith("./") ? getMinecraft().runDirectory : null, path);
-        FileUtils.forceMkdir(folder);
-        return folder;
+    public Path getReplayFolder() throws IOException {
+        String str = getSettingsRegistry().get(Setting.RECORDING_PATH);
+        return Files.createDirectories(getMinecraft().runDirectory.toPath().resolve(str));
+    }
+
+    /**
+     * Folder into which replay backups are saved before the MarkerProcessor is unleashed.
+     */
+    public Path getRawReplayFolder() throws IOException {
+        return Files.createDirectories(getReplayFolder().resolve("raw"));
+    }
+
+    /**
+     * Folder into which replays are recorded.
+     * Distinct from the main folder, so they cannot be opened while they are still saving.
+     */
+    public Path getRecordingFolder() throws IOException {
+        return Files.createDirectories(getReplayFolder().resolve("recording"));
     }
 
     public static final DirectoryResourcePack jGuiResourcePack;
@@ -347,30 +363,39 @@ public class ReplayMod implements
             final long DAYS = 24 * 60 * 60 * 1000;
 
             // Cleanup raw folder content three weeks after creation (these are pretty valuable for debugging)
-            try {
-                File[] files = new File(getReplayFolder(), "raw").listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        if (file.lastModified() + 21 * DAYS < System.currentTimeMillis()) {
-                            FileUtils.forceDelete(file);
-                        }
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(getRawReplayFolder())) {
+                for (Path path : paths) {
+                    if (Files.getLastModifiedTime(path).toMillis() + 21 * DAYS < System.currentTimeMillis()) {
+                        Files.delete(path);
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
+            // Move anything which is still in the recording folder into the regular replay folder
+            // so it can be opened and/or recovered
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(getRecordingFolder())) {
+                for (Path path : paths) {
+                    Path destination = getReplayFolder().resolve(path.getFileName());
+                    if (Files.exists(destination)) {
+                        continue; // better play it save
+                    }
+                    Files.move(path, destination);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             // Cleanup cache folders 7 days after last modification or when its replay is gone
-            try {
-                File[] files = getReplayFolder().listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        String name = file.getName();
-                        if (file.isDirectory() && name.endsWith(".mcpr.cache")) {
-                            File replay = new File(getReplayFolder(), name.substring(0, name.length() - ".cache".length()));
-                            if (file.lastModified() + 7 * DAYS < System.currentTimeMillis() || !replay.exists()) {
-                                FileUtils.deleteDirectory(file);
-                            }
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(getReplayFolder())) {
+                for (Path path : paths) {
+                    String name = path.getFileName().toString();
+                    if (name.endsWith(".mcpr.cache") && Files.isDirectory(path)) {
+                        Path replay = path.resolveSibling(FilenameUtils.getBaseName(name));
+                        long lastModified = Files.getLastModifiedTime(path).toMillis();
+                        if (lastModified + 7 * DAYS < System.currentTimeMillis() || !Files.exists(replay)) {
+                            FileUtils.deleteDirectory(path.toFile());
                         }
                     }
                 }
@@ -379,14 +404,13 @@ public class ReplayMod implements
             }
 
             // Cleanup deleted corrupted replays
-            try {
-                File[] files = getReplayFolder().listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        if (file.isDirectory() && file.getName().endsWith(".mcpr.del")) {
-                            if (file.lastModified() + 2 * DAYS < System.currentTimeMillis()) {
-                                FileUtils.deleteDirectory(file);
-                            }
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(getReplayFolder())) {
+                for (Path path : paths) {
+                    String name = path.getFileName().toString();
+                    if (name.endsWith(".mcpr.del") && Files.isDirectory(path)) {
+                        long lastModified = Files.getLastModifiedTime(path).toMillis();
+                        if (lastModified + 2 * DAYS < System.currentTimeMillis()) {
+                            FileUtils.deleteDirectory(path.toFile());
                         }
                     }
                 }
@@ -395,14 +419,12 @@ public class ReplayMod implements
             }
 
             // Restore corrupted replays
-            try {
-                File[] files = getReplayFolder().listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        if (file.isDirectory() && file.getName().endsWith(".mcpr.tmp")) {
-                            File origFile = new File(file.getParentFile(), Files.getNameWithoutExtension(file.getName()));
-                            new RestoreReplayGui(this, GuiScreen.wrap(mc.currentScreen), origFile).display();
-                        }
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(getReplayFolder())) {
+                for (Path path : paths) {
+                    String name = path.getFileName().toString();
+                    if (name.endsWith(".mcpr.tmp") && Files.isDirectory(path)) {
+                        Path original = path.resolveSibling(FilenameUtils.getBaseName(name));
+                        new RestoreReplayGui(this, GuiScreen.wrap(mc.currentScreen), original.toFile()).display();
                     }
                 }
             } catch (IOException e) {

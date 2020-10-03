@@ -109,13 +109,7 @@ public class GuiSavingReplay {
                 .addElements(null, textField, clearButton);
         panel.addElements(new VerticalLayout.Data(0.5), row);
 
-        apply.add(() -> {
-            String newName = textField.getText();
-            if (newName.equals(originalName)) {
-                return;
-            }
-            applyOutput(path, newName);
-        });
+        apply.add(() -> applyOutput(path, textField.getText()));
 
         return textField;
     }
@@ -151,12 +145,12 @@ public class GuiSavingReplay {
             return;
         }
 
-        Path newPath = path.resolveSibling(Utils.replayNameToFileName(newName));
-        if (Files.exists(newPath)) {
-            return;
-        }
-
         try {
+            Path replaysFolder = core.getReplayFolder();
+            Path newPath = replaysFolder.resolve(Utils.replayNameToFileName(newName));
+            for (int i = 1; Files.exists(newPath); i++) {
+                newPath = replaysFolder.resolve(Utils.replayNameToFileName(newName + " (" + i + ")"));
+            }
             Files.move(path, newPath);
         } catch (IOException e) {
             logger.error("Renaming replay file:", e);

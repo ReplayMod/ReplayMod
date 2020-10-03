@@ -1,5 +1,6 @@
 package com.replaymod.editor.gui;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replaystudio.PacketData;
 import com.replaymod.replaystudio.Studio;
@@ -126,7 +127,8 @@ public class MarkerProcessor {
 
         List<Pair<Path, ReplayMetaData>> outputPaths = new ArrayList<>();
 
-        Path inputPath = path.resolveSibling("raw").resolve(path.getFileName());
+        Path rawFolder = ReplayMod.instance.getRawReplayFolder();
+        Path inputPath = rawFolder.resolve(path.getFileName());
         for (int i = 1; Files.exists(inputPath); i++) {
             inputPath = inputPath.resolveSibling(replayName + "." + i + ".mcpr");
         }

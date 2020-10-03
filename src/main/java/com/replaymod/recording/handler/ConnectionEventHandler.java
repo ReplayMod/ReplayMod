@@ -32,7 +32,7 @@ import net.minecraft.world.World;
 //#endif
 //#endif
 
-import java.io.File;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -121,11 +121,9 @@ public class ConnectionEventHandler {
                 autoStart = true;
             }
 
-            File folder = core.getReplayFolder();
-
             String name = sdf.format(Calendar.getInstance().getTime());
-            File currentFile = new File(folder, Utils.replayNameToFileName(name));
-            ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), currentFile);
+            Path outputPath = core.getRecordingFolder().resolve(Utils.replayNameToFileName(name));
+            ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), outputPath.toFile());
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 
@@ -135,7 +133,7 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.instance.getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
-            packetListener = new PacketListener(core, currentFile.toPath(), replayFile, metaData);
+            packetListener = new PacketListener(core, outputPath, replayFile, metaData);
             Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
             channel.pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
 

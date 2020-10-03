@@ -121,7 +121,7 @@ public class GuiReplayViewer extends GuiScreen {
         @Override
         public void run() {
             try {
-                File folder = mod.getCore().getReplayFolder();
+                File folder = mod.getCore().getReplayFolder().toFile();
 
                 MCVer.openFile(folder);
             } catch (IOException e) {
@@ -245,7 +245,7 @@ public class GuiReplayViewer extends GuiScreen {
         this.mod = mod;
 
         try {
-            list.setFolder(mod.getCore().getReplayFolder());
+            list.setFolder(mod.getCore().getReplayFolder().toFile());
         } catch (IOException e) {
             throw new CrashException(CrashReport.create(e, "Getting replay folder"));
         }
