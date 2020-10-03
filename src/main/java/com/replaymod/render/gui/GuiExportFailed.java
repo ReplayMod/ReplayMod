@@ -2,7 +2,7 @@ package com.replaymod.render.gui;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.render.RenderSettings;
-import com.replaymod.render.VideoWriter;
+import com.replaymod.render.FFmpegWriter;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.container.GuiVerticalList;
@@ -23,7 +23,7 @@ import static com.replaymod.core.versions.MCVer.addDetail;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 public class GuiExportFailed extends GuiScreen {
-    public static GuiExportFailed tryToRecover(VideoWriter.FFmpegStartupException e, Consumer<RenderSettings> doRestart) {
+    public static GuiExportFailed tryToRecover(FFmpegWriter.FFmpegStartupException e, Consumer<RenderSettings> doRestart) {
         // Always log the error first
         LOGGER.error("Rendering video:", e);
 
@@ -74,7 +74,7 @@ public class GuiExportFailed extends GuiScreen {
         setBackground(Background.DIRT);
     }
 
-    public GuiExportFailed(VideoWriter.FFmpegStartupException e, Consumer<RenderSettings> doRestart) {
+    public GuiExportFailed(FFmpegWriter.FFmpegStartupException e, Consumer<RenderSettings> doRestart) {
         logList.getListPanel().addElements(null,
                 Arrays.stream(e.getLog().replace("\t", "    ").split("\n"))
                         .map(l -> new GuiLabel().setText(l))

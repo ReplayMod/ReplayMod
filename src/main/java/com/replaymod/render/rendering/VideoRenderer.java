@@ -9,7 +9,7 @@ import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
-import com.replaymod.render.VideoWriter;
+import com.replaymod.render.FFmpegWriter;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.events.ReplayRenderCallback;
@@ -83,7 +83,7 @@ public class VideoRenderer implements RenderInfo {
     private final ReplayHandler replayHandler;
     private final Timeline timeline;
     private final Pipeline renderingPipeline;
-    private final VideoWriter videoWriter;
+    private final FFmpegWriter ffmpegWriter;
 
     private int fps;
     private boolean mouseWasGrabbed;
@@ -119,10 +119,10 @@ public class VideoRenderer implements RenderInfo {
             BlendState.setState(new BlendState(settings.getOutputFile()));
 
             this.renderingPipeline = Pipelines.newBlendPipeline(this);
-            this.videoWriter = null;
+            this.ffmpegWriter = null;
         } else {
             this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this,
-                    videoWriter = new VideoWriter(this) {
+                    ffmpegWriter = new FFmpegWriter(this) {
                         @Override
                         public void consume(BitmapFrame frame) {
                             gui.updatePreview(frame);
@@ -381,10 +381,10 @@ public class VideoRenderer implements RenderInfo {
         new SoundHandler().playRenderSuccessSound();
 
         try {
-            if (!hasFailed() && videoWriter != null) {
-                new GuiRenderingDone(ReplayModRender.instance, videoWriter.getVideoFile(), totalFrames, settings).display();
+            if (!hasFailed() && ffmpegWriter != null) {
+                new GuiRenderingDone(ReplayModRender.instance, ffmpegWriter.getVideoFile(), totalFrames, settings).display();
             }
-        } catch (VideoWriter.FFmpegStartupException e) {
+        } catch (FFmpegWriter.FFmpegStartupException e) {
             setFailure(e);
         }
 
@@ -652,8 +652,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     public void cancel() {
-        if (videoWriter != null) {
-            videoWriter.abort();
+        if (ffmpegWriter != null) {
+            ffmpegWriter.abort();
         }
         this.cancelled = true;
         renderingPipeline.cancel();

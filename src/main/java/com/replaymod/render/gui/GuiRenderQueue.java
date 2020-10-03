@@ -6,7 +6,7 @@ import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
-import com.replaymod.render.VideoWriter;
+import com.replaymod.render.FFmpegWriter;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.ReplayHandler;
@@ -169,7 +169,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
             try {
                 VideoRenderer videoRenderer = new VideoRenderer(renderJob.getSettings(), replayHandler, renderJob.getTimeline());
                 videoRenderer.renderVideo();
-            } catch (VideoWriter.NoFFmpegException e) {
+            } catch (FFmpegWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
@@ -183,7 +183,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                 );
                 mc.openScreen(errorScreen);
                 return;
-            } catch (VideoWriter.FFmpegStartupException e) {
+            } catch (FFmpegWriter.FFmpegStartupException e) {
                 int jobsToSkip = jobsDone;
                 GuiExportFailed.tryToRecover(e, newSettings -> {
                     // Update current job with fixed ffmpeg arguments

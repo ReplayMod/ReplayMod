@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.apache.commons.lang3.Validate.isTrue;
 
-public class VideoWriter implements FrameConsumer<BitmapFrame> {
+public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
 
     private final VideoRenderer renderer;
     private final RenderSettings settings;
@@ -38,7 +38,7 @@ public class VideoWriter implements FrameConsumer<BitmapFrame> {
 
     private ByteArrayOutputStream ffmpegLog = new ByteArrayOutputStream(4096);
 
-    public VideoWriter(final VideoRenderer renderer) throws IOException {
+    public FFmpegWriter(final VideoRenderer renderer) throws IOException {
         this.renderer = renderer;
         this.settings = renderer.getRenderSettings();
 
