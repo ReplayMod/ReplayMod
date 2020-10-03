@@ -5,8 +5,10 @@ import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
+import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiLabel;
@@ -63,6 +65,10 @@ public class GuiSavingReplay {
 
     public void close() {
         core.getBackgroundProcesses().removeProcess(panel);
+        AbstractGuiScreen<?> currentScreen = GuiScreen.from(mc.currentScreen);
+        if (currentScreen instanceof GuiReplayViewer) {
+            ((GuiReplayViewer) currentScreen).list.load();
+        }
     }
 
     public GuiProgressBar getProgressBar() {
