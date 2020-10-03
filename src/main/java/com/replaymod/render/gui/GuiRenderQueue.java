@@ -413,6 +413,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
             gui.queueButton.setI18nLabel("replaymod.gui.done").onClick(() -> {
                 job.setSettings(gui.save(false));
                 label.setText(job.getName());
+                mod.saveRenderQueue();
                 gui.close();
             });
             gui.load(job.getSettings());
