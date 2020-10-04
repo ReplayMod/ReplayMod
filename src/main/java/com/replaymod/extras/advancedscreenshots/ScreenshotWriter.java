@@ -5,6 +5,7 @@ import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.extras.ReplayModExtras;
 import com.replaymod.render.frame.BitmapFrame;
+import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -13,6 +14,7 @@ import net.minecraft.util.crash.CrashReport;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public class ScreenshotWriter implements FrameConsumer<BitmapFrame> {
 
@@ -23,7 +25,9 @@ public class ScreenshotWriter implements FrameConsumer<BitmapFrame> {
     }
 
     @Override
-    public void consume(BitmapFrame frame) {
+    public void consume(Map<Channel, BitmapFrame> channels) {
+        BitmapFrame frame = channels.get(Channel.BRGA);
+
         // skip the first frame, in which not all chunks are properly loaded
         if (frame.getFrameId() == 0) return;
 

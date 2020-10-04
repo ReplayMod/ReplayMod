@@ -98,6 +98,7 @@ public class GuiExportFailed extends GuiScreen {
                     oldSettings.getSphericalFovX(),
                     oldSettings.getSphericalFovY(),
                     oldSettings.isInjectSphericalMetadata(),
+                    oldSettings.isDepthMap(),
                     oldSettings.getAntiAliasing(),
                     oldSettings.getExportCommand(),
                     oldSettings.getEncodingPreset().getValue(),

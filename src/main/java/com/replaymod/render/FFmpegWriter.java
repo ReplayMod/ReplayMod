@@ -2,6 +2,7 @@ package com.replaymod.render;
 
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.frame.BitmapFrame;
+import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.ByteBufferPool;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
@@ -103,11 +105,11 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
     }
 
     @Override
-    public void consume(BitmapFrame frame) {
+    public void consume(Map<Channel, BitmapFrame> channels) {
+        BitmapFrame frame = channels.get(Channel.BRGA);
         try {
             checkSize(frame.getSize());
             channel.write(frame.getByteBuffer());
-            ByteBufferPool.release(frame.getByteBuffer());
         } catch (Throwable t) {
             if (aborted) {
                 return;
@@ -127,6 +129,8 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
             MCVer.addDetail(exportDetails, "Export command", settings::getExportCommand);
             MCVer.addDetail(exportDetails, "Export args", commandArgs::toString);
             MCVer.getMinecraft().setCrashReport(report);
+        } finally {
+            channels.values().forEach(it -> ByteBufferPool.release(it.getByteBuffer()));
         }
     }
 

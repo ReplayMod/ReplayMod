@@ -389,6 +389,21 @@ Using a **Video Editing Software** like **Adobe After Effects** or **Sony Vegas*
 
 > **Note:** For best results, you should **disable clouds** before rendering, as they are transparent.
 
+#### Depth Map [depth-map]
+![](img/depthmapsuzanne.jpg)
+"Suzanne" model added into a scene using Blender
+
+This setting causes depth information to be recorded and included in video formats which support it
+(currently only [OpenEXR](#replaying-render-settings-quality)).
+
+Using a video editor which supports it (e.g. [Blender](https://www.blender.org/)), you can then for example (among many
+other effects) add arbitrary geometry onto your rendered video in such a way that foreground objects in the
+video will still occlude background geometry as if it actually was part of the world.
+
+> **Note:** For best results, avoid semi-transparent blocks in front of your geometry, as they cannot be accurately represented in the depth map.
+
+> **Note:** Anti-aliasing is not supported when exporting depth. Instead simply render and edit your video at a higher resolution and scale it down at the very end.
+
 ### Command Line Settings [commandline]
 ![](img/rendersettings-commandline.jpg)
 The **Command Line Render Settings**

@@ -1,6 +1,8 @@
 package com.replaymod.render.capturer;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.render.frame.OpenGlFrame;
+import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.Frame;
 import com.replaymod.render.utils.ByteBufferPool;
 import com.replaymod.render.utils.PixelBufferObject;
@@ -9,17 +11,21 @@ import org.lwjgl.opengl.GL12;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> & CaptureData>
         extends OpenGlFrameCapturer<F, D> {
+    private final boolean withDepth;
     private final D[] data;
     private PixelBufferObject pbo, otherPBO;
 
     public PboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, Class<D> type, int framePixels) {
         super(worldRenderer, renderInfo);
 
+        withDepth = renderInfo.getRenderSettings().isDepthMap();
         data = type.getEnumConstants();
-        int bufferSize = framePixels * 4 * data.length;
+        int bufferSize = framePixels * (4 /* bgra */ + (withDepth ? 4 /* float */ : 0)) * data.length;
         pbo = new PixelBufferObject(bufferSize, PixelBufferObject.Usage.READ);
         otherPBO = new PixelBufferObject(bufferSize, PixelBufferObject.Usage.READ);
     }
@@ -37,29 +43,36 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
         return framesDone >= renderInfo.getTotalFrames() + 2;
     }
 
+    private F readFromPbo(ByteBuffer pboBuffer, int bytesPerPixel) {
+        OpenGlFrame[] frames = new OpenGlFrame[data.length];
+        int frameBufferSize = getFrameWidth() * getFrameHeight() * bytesPerPixel;
+        for (int i = 0; i < frames.length; i++) {
+            ByteBuffer frameBuffer = ByteBufferPool.allocate(frameBufferSize);
+            pboBuffer.limit(pboBuffer.position() + frameBufferSize);
+            frameBuffer.put(pboBuffer);
+            frameBuffer.rewind();
+            frames[i] = new OpenGlFrame(framesDone - 2, frameSize, bytesPerPixel, frameBuffer);
+        }
+        return create(frames);
+    }
+
     @Override
-    public F process() {
-        F frame = null;
+    public Map<Channel, F> process() {
+        Map<Channel, F> channels = null;
 
         if (framesDone > 1) {
             // Read pbo to memory
             pbo.bind();
             ByteBuffer pboBuffer = pbo.mapReadOnly();
 
-            OpenGlFrame[] frames = new OpenGlFrame[data.length];
-            int frameBufferSize = getFrameWidth() * getFrameHeight() * 4;
-            for (int i = 0; i < frames.length; i++) {
-                ByteBuffer frameBuffer = ByteBufferPool.allocate(frameBufferSize);
-                pboBuffer.limit(pboBuffer.position() + frameBufferSize);
-                frameBuffer.put(pboBuffer);
-                frameBuffer.rewind();
-                frames[i] = new OpenGlFrame(framesDone - 2, frameSize, 4, frameBuffer);
+            channels = new HashMap<>();
+            channels.put(Channel.BRGA, readFromPbo(pboBuffer, 4));
+            if (withDepth) {
+                channels.put(Channel.DEPTH, readFromPbo(pboBuffer, 4));
             }
 
             pbo.unmap();
             pbo.unbind();
-
-            frame = create(frames);
         }
 
         if (framesDone < renderInfo.getTotalFrames()) {
@@ -72,7 +85,7 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
 
         framesDone++;
         swapPBOs();
-        return frame;
+        return channels;
     }
 
     @Override
@@ -82,6 +95,10 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
         int offset = captureData.ordinal() * getFrameWidth() * getFrameHeight() * 4;
         frameBuffer().beginWrite(true);
         GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, offset);
+        if (withDepth) {
+            offset += data.length * getFrameWidth() * getFrameHeight() * 4;
+            GL11.glReadPixels(0, 0, getFrameWidth(), getFrameHeight(), GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, offset);
+        }
         frameBuffer().endWrite();
 
         pbo.unbind();

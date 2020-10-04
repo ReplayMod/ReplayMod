@@ -12,7 +12,6 @@ import com.replaymod.render.capturer.StereoscopicOpenGlFrameCapturer;
 import com.replaymod.render.capturer.StereoscopicPboOpenGlFrameCapturer;
 import com.replaymod.render.capturer.WorldRenderer;
 import com.replaymod.render.frame.CubicOpenGlFrame;
-import com.replaymod.render.frame.EXRFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.frame.BitmapFrame;
@@ -26,23 +25,9 @@ import com.replaymod.render.processor.OpenGlToBitmapProcessor;
 import com.replaymod.render.processor.StereoscopicToBitmapProcessor;
 import com.replaymod.render.utils.PixelBufferObject;
 
-import java.io.IOException;
+import java.util.Map;
 
 public class Pipelines {
-    public static Pipeline newEXRPipeline(RenderSettings.RenderMethod method, RenderInfo renderInfo, FrameConsumer<EXRFrame> consumer) {
-        return newPipeline(method, renderInfo, new FrameConsumer<BitmapFrame>() {
-            @Override
-            public void consume(BitmapFrame frame) {
-                consumer.consume(new EXRFrame(frame.getFrameId(), frame.getSize(), frame.getByteBuffer()));
-            }
-
-            @Override
-            public void close() throws IOException {
-                consumer.close();
-            }
-        });
-    }
-
     public static Pipeline newPipeline(RenderSettings.RenderMethod method, RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer) {
         switch (method) {
             case DEFAULT:
@@ -65,7 +50,7 @@ public class Pipelines {
         RenderSettings settings = renderInfo.getRenderSettings();
         WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
         FrameCapturer<OpenGlFrame> capturer;
-        if (PixelBufferObject.SUPPORTED) {
+        if (PixelBufferObject.SUPPORTED || settings.isDepthMap()) {
             capturer = new SimplePboOpenGlFrameCapturer(worldRenderer, renderInfo);
         } else {
             capturer = new SimpleOpenGlFrameCapturer(worldRenderer, renderInfo);
@@ -77,7 +62,7 @@ public class Pipelines {
         RenderSettings settings = renderInfo.getRenderSettings();
         WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
         FrameCapturer<StereoscopicOpenGlFrame> capturer;
-        if (PixelBufferObject.SUPPORTED) {
+        if (PixelBufferObject.SUPPORTED || settings.isDepthMap()) {
             capturer = new StereoscopicPboOpenGlFrameCapturer(worldRenderer, renderInfo);
         } else {
             capturer = new StereoscopicOpenGlFrameCapturer(worldRenderer, renderInfo);
@@ -89,7 +74,7 @@ public class Pipelines {
         RenderSettings settings = renderInfo.getRenderSettings();
         WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
         FrameCapturer<CubicOpenGlFrame> capturer;
-        if (PixelBufferObject.SUPPORTED) {
+        if (PixelBufferObject.SUPPORTED || settings.isDepthMap()) {
             capturer = new CubicPboOpenGlFrameCapturer(worldRenderer, renderInfo, settings.getVideoWidth() / 4);
         } else {
             capturer = new CubicOpenGlFrameCapturer(worldRenderer, renderInfo, settings.getVideoWidth() / 4);
@@ -105,7 +90,7 @@ public class Pipelines {
                 settings.getVideoHeight(), settings.getSphericalFovX());
 
         FrameCapturer<CubicOpenGlFrame> capturer;
-        if (PixelBufferObject.SUPPORTED) {
+        if (PixelBufferObject.SUPPORTED || settings.isDepthMap()) {
             capturer = new CubicPboOpenGlFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
         } else {
             capturer = new CubicOpenGlFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
@@ -131,7 +116,7 @@ public class Pipelines {
         FrameCapturer<BitmapFrame> capturer = new BlendFrameCapturer(worldRenderer, renderInfo);
         FrameConsumer<BitmapFrame> consumer = new FrameConsumer<BitmapFrame>() {
             @Override
-            public void consume(BitmapFrame frame) {
+            public void consume(Map<Channel, BitmapFrame> channels) {
             }
 
             @Override

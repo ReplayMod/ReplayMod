@@ -44,7 +44,6 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=11400
 import com.replaymod.render.EXRWriter;
-import com.replaymod.render.frame.EXRFrame;
 import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.client.gui.screen.Screen;
 import org.lwjgl.glfw.GLFW;
@@ -122,26 +121,34 @@ public class VideoRenderer implements RenderInfo {
 
             this.renderingPipeline = Pipelines.newBlendPipeline(this);
             this.ffmpegWriter = null;
-        //#if MC>=11400
-        } else if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
-            this.renderingPipeline = Pipelines.newEXRPipeline(settings.getRenderMethod(), this, new EXRWriter(settings.getOutputFile().toPath()) {
-                @Override
-                public void consume(EXRFrame frame) {
-                    gui.updatePreview(frame.getBgraBuffer(), frame.getSize());
-                    super.consume(frame);
-                }
-            });
-            this.ffmpegWriter = null;
-        //#endif
         } else {
-            this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this,
-                    ffmpegWriter = new FFmpegWriter(this) {
-                        @Override
-                        public void consume(BitmapFrame frame) {
-                            gui.updatePreview(frame.getByteBuffer(), frame.getSize());
-                            super.consume(frame);
-                        }
-                    });
+            FrameConsumer<BitmapFrame> frameConsumer;
+            if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
+                ffmpegWriter = null;
+                //#if MC>=11400
+                frameConsumer = new EXRWriter(settings.getOutputFile().toPath());
+                //#else
+                //$$ throw new UnsupportedOperationException("EXR requires LWJGL3");
+                //#endif
+            } else {
+                frameConsumer = ffmpegWriter = new FFmpegWriter(this);
+            }
+            FrameConsumer<BitmapFrame> previewingFrameConsumer = new FrameConsumer<BitmapFrame>() {
+                @Override
+                public void consume(Map<Channel, BitmapFrame> channels) {
+                    BitmapFrame bgra = channels.get(Channel.BRGA);
+                    if (bgra != null) {
+                        gui.updatePreview(bgra.getByteBuffer(), bgra.getSize());
+                    }
+                    frameConsumer.consume(channels);
+                }
+
+                @Override
+                public void close() throws IOException {
+                    frameConsumer.close();
+                }
+            };
+            this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this, previewingFrameConsumer);
         }
     }
 

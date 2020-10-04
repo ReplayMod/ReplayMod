@@ -2,7 +2,8 @@
 package com.replaymod.render;
 
 import com.replaymod.core.versions.MCVer;
-import com.replaymod.render.frame.EXRFrame;
+import com.replaymod.render.frame.BitmapFrame;
+import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.utils.ByteBufferPool;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -18,12 +19,13 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.util.tinyexr.TinyEXR.*;
 
-public class EXRWriter implements FrameConsumer<EXRFrame> {
+public class EXRWriter implements FrameConsumer<BitmapFrame> {
 
     private final Path outputFolder;
 
@@ -34,13 +36,16 @@ public class EXRWriter implements FrameConsumer<EXRFrame> {
     }
 
     @Override
-    public void consume(EXRFrame frame) {
-        Path path = outputFolder.resolve(frame.getFrameId() + ".exr");
-        ReadableDimension size = frame.getSize();
-        ByteBuffer bgra = frame.getBgraBuffer();
+    public void consume(Map<Channel, BitmapFrame> channels) {
+        BitmapFrame bgraFrame = channels.get(Channel.BRGA);
+        BitmapFrame depthFrame = channels.get(Channel.DEPTH);
+
+        Path path = outputFolder.resolve(bgraFrame.getFrameId() + ".exr");
+        ReadableDimension size = bgraFrame.getSize();
+        ByteBuffer bgra = bgraFrame.getByteBuffer();
         int width = size.getWidth();
         int height = size.getHeight();
-        int numChannels = 3;
+        int numChannels = 4 + (depthFrame != null ? 1 : 0);
 
         stackPush();
         EXRHeader header = EXRHeader.mallocStack(); InitEXRHeader(header);
@@ -58,32 +63,44 @@ public class EXRWriter implements FrameConsumer<EXRFrame> {
             header.requested_pixel_types(requestedPixelTypes);
 
             // Some readers ignore this, so we use the most expected order
-            memASCII("B", true, channelInfos.get(0).name());
-            memASCII("G", true, channelInfos.get(1).name());
-            memASCII("R", true, channelInfos.get(2).name());
+            memASCII("A", true, channelInfos.get(0).name());
+            memASCII("B", true, channelInfos.get(1).name());
+            memASCII("G", true, channelInfos.get(2).name());
+            memASCII("R", true, channelInfos.get(3).name());
             for (int i = 0; i < numChannels; i++) {
                 pixelTypes.put(i, TINYEXR_PIXELTYPE_FLOAT);
                 requestedPixelTypes.put(i, TINYEXR_PIXELTYPE_HALF);
+            }
+            if (depthFrame != null) {
+                memASCII("Z", true, channelInfos.get(4).name());
+                requestedPixelTypes.put(4, TINYEXR_PIXELTYPE_FLOAT);
             }
 
             image.num_channels(numChannels);
             image.width(width);
             image.height(height);
             image.images(imagePointers);
-            FloatBuffer[] bgrChannels = new FloatBuffer[3];
+            FloatBuffer[] bgrChannels = new FloatBuffer[4];
+            FloatBuffer depthChannel = null;
             for (int i = 0; i < numChannels; i++) {
                 FloatBuffer channel = images.slice();
                 channel.position(width * height * i);
                 imagePointers.put(i, channel.slice());
-                bgrChannels[i] = channel;
+                if (i == 4) {
+                    depthChannel = channel;
+                } else {
+                    bgrChannels[(i + 3) % 4] = channel;
+                }
             }
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     for (FloatBuffer channel : bgrChannels) {
                         channel.put(((int) bgra.get() & 0xff) / 255f);
                     }
-                    bgra.get(); // alpha
                 }
+            }
+            if (depthFrame != null && depthChannel != null) {
+                depthChannel.put(depthFrame.getByteBuffer().asFloatBuffer());
             }
 
             int ret = SaveEXRImageToFile(image, header, path.toString(), err);
@@ -97,7 +114,7 @@ public class EXRWriter implements FrameConsumer<EXRFrame> {
         } finally {
             memFree(images);
             stackPop();
-            ByteBufferPool.release(bgra);
+            channels.values().forEach(it -> ByteBufferPool.release(it.getByteBuffer()));
         }
     }
 
