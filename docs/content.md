@@ -578,6 +578,9 @@ The [LabyMod](https://www.curseforge.com/minecraft/mc-mods/labymod) is not compa
 ### OldAnimationsMod [oldanimationsmod]
 In case your Minecraft crashes when you are using both ReplayMod and [OldAnimationsMod](https://oldanimationsmod.net/), try removing OldAnimationsMod.
 
+### Orange's 1.7 Animations [17animations]
+If you use ReplayMod with shaders and [1.7 Animations](https://www.curseforge.com/minecraft/mc-mods/old-animations-mod) you may see floating water and glass. Remove 1.7 Animations to resolve this.
+
 ### Sk1er Club: Patcher [patcher]
 We have seen reports of crashes that were related to [Patcher](https://sk1er.club/mods/patcher); in case of crashes try removing Patcher.
 
