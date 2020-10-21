@@ -535,11 +535,6 @@ On Windows, this path  might look like `C:\ffmpeg\ffmpeg.exe`.
 
 Then, open the **"Command Line Settings" Section** in the Render Settings and paste this path into the **left input field** and retry rendering.
 
-## Rendering Failed [libx264]
-An error screen is displayed with FFmpeg error: `Unknown encoder 'libx264'`
-
-The FFmpeg version you have installed is compiled without `--enable-_libx264_`. The 4.3 version on [https://ffmpeg.zeranoe.com/](https://ffmpeg.zeranoe.com/) has this issue. To fix it, install another version (e.g. the latest snapshot).
-
 ## Crash while rendering [crash]
 If Minecraft crashes after a few frames of rendering, it most likely means the **FFmpeg** didn't like the **Command Line Arguments** you passed.
 If you customized the Command Line Arguments manually, re-check them - it's probably your own fault.
