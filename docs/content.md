@@ -546,7 +546,7 @@ If you customized the Command Line Arguments manually, re-check them - it's prob
 
 ## Unsupported Launchers [launchers]
 _Future Client_ is not compatible with the Mixin required by ReplayMod.  
-_Lunar Client_ does not support ReplayMod
+_Lunar Client_ does not support ReplayMod.  
 _Badlion Client_ offers a different ReplayMod that is not the same as this one.
 
 ## Compatibility with other Mods [compatibility]
