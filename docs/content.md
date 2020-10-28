@@ -544,8 +544,9 @@ If you customized the Command Line Arguments manually, re-check them - it's prob
 - If you did **not** customize the **Command Line Arguments**, you might have entered some insanely high (or low) values e.g. for Bitrate or Video Resolution. Try again with other, more reasonable values.
 - Make sure the camera doesn't move below Y=0 or above Y=255
 
-## Unsupported Launchers [launchers]
-[Lunar Client](https://www.lunarclient.com/) does not support ReplayMod
+## Unsupported Launchers and clients [launchers]
+[Future Client](https://www.futureclient.net/) is not compatible with the Mixin required by ReplayMod.  
+[Lunar Client](https://www.lunarclient.com/) does not support ReplayMod  
 [Badlion Client](https://www.badlion.net/) offers a different ReplayMod that is not the same as this one.
 
 ## Compatibility with other Mods [compatibility]
