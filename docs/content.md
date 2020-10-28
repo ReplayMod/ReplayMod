@@ -43,7 +43,7 @@ If in doubt, consult the documentation of your distribution.
 ## Settings [settings]
 To access the **Replay Mod Settings** from the Main Menu click the **"Replay Viewer"** button and click the **Settings** button.
 
-While playing, you can click the 'Mods' button in the Pause screen to reach **Replay Mod Settings** if you use Minecraft 1.12.2 and below, or have the mod [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu) installed.
+While playing, you can click the 'Mods' button in the Pause screen to reach **Replay Mod Settings** if you use Minecraft 1.12.2 and below, or have the mod _Mod Menu_ installed.
 
 When in a Replay, you can either bind a hotkey to the **Replay Mod Settings** in Minecraft's Control settings
 or use the hotkey GUI by clicking on the hamburger button in the lower left corner.
@@ -544,22 +544,21 @@ If you customized the Command Line Arguments manually, re-check them - it's prob
 - If you did **not** customize the **Command Line Arguments**, you might have entered some insanely high (or low) values e.g. for Bitrate or Video Resolution. Try again with other, more reasonable values.
 - Make sure the camera doesn't move below Y=0 or above Y=255
 
-## Unsupported Launchers and clients [launchers]
-[Future Client](https://www.futureclient.net/) is not compatible with the Mixin required by ReplayMod.  
-[Lunar Client](https://www.lunarclient.com/) does not support ReplayMod  
-[Badlion Client](https://www.badlion.net/) offers a different ReplayMod that is not the same as this one.
+## Unsupported Launchers [launchers]
+_Future Client_ is not compatible with the Mixin required by ReplayMod.  
+_Lunar Client_ does not support ReplayMod
+_Badlion Client_ offers a different ReplayMod that is not the same as this one.
 
 ## Compatibility with other Mods [compatibility]
 ### General information [general]
 In General, the Replay Mod _should_ be compatible with most Forge and Fabric Mods.
 
 ### Shaders Mod [shaders]
-[Karyonix' Shaders Mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/1286604-shaders-mod-updated-by-karyonix)
-is no longer compatible with Minecraft Forge starting with 1.9.4. As such it is not compatible with the Replay Mod either.
-Please use [Optifine](https://optifine.net/) instead.
+_Karyonix' Shaders Mod_ is no longer compatible with Minecraft Forge starting with 1.9.4. As such it is not compatible with the Replay Mod either.
+Please use _Optifine_ instead.
 
 ### Custom Main Menu [custom-main-menu]
-The [Custom Main Menu](https://www.curseforge.com/minecraft/mc-mods/custom-main-menu) mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
+The _Custom Main Menu_ mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
 If you are familiar with it, the button id for the Replay Mod is: **17890234** (text: `replaymod.gui.replayviewer`).
 
 Due to the nature of this Custom Main Menu mod, buttons added to the Main Menu by 3rd party mods like the **Replay Mod** will not show up by default.  
@@ -571,28 +570,28 @@ For an explanation of this config file, have a look at Custom Main Menu's page.
 You can find a list of already modified config files [here](https://gist.github.com/Johni0702/3f3fab81dbf7ada83d045d9fe8f345aa).
 
 ### Tickrate Changer [tickrate-changer]
-The [Tickrate Changer](https://www.curseforge.com/minecraft/mc-mods/tickratechanger) mod may cause minecraft to freeze when you try to use the Replay Viewer UI.
+The _Tickrate Changer_ mod may cause minecraft to freeze when you try to use the Replay Viewer UI.
 
 ### LabyMod [labymod]
-The [LabyMod](https://www.curseforge.com/minecraft/mc-mods/labymod) is not compatible with ReplayMod.
+The _LabyMod_ is not compatible with ReplayMod.
 
 ### OldAnimationsMod [oldanimationsmod]
-In case your Minecraft crashes when you are using both ReplayMod and [OldAnimationsMod](https://oldanimationsmod.net/), try removing OldAnimationsMod.
+In case your Minecraft crashes when you are using both ReplayMod and _OldAnimationsMod_, try removing OldAnimationsMod.
 
 ### Orange's 1.7 Animations [17animations]
-If you use ReplayMod with shaders and [1.7 Animations](https://www.curseforge.com/minecraft/mc-mods/old-animations-mod) you may see floating water and glass. Remove 1.7 Animations to resolve this.
+If you use ReplayMod with shaders and _1.7 Animations_ you may see floating water and glass. Remove 1.7 Animations to resolve this.
 
 ### Sk1er Club: Patcher [patcher]
-We have seen reports of crashes that were related to [Patcher](https://sk1er.club/mods/patcher); in case of crashes try removing Patcher.
+We have seen reports of crashes that were related to _Patcher_; in case of crashes try removing Patcher.
 
 ### Baritone [baritone]
-The [Baritone](https://github.com/cabaletta/baritone/) mod can cause a crash when you're trying to load a replay. If you experience such problems, try running without Baritone.
+The _Baritone_ mod can cause a crash when you're trying to load a replay. If you experience such problems, try running without Baritone.
 
 ### RandomPatches [randompatches]
-Minecraft may crash if you try to use [RandomPatches](https://www.curseforge.com/minecraft/mc-mods/randompatches) together with ReplayMod. Try removing RandomPatches if Minecraft crashes on startup.
+Minecraft may crash if you try to use _RandomPatches_ together with ReplayMod. Try removing RandomPatches if Minecraft crashes on startup.
 
 ### Sodium [sodium]
-ReplayMod can record when [Sodium](https://www.curseforge.com/minecraft/mc-mods/sodium) is installed but will crash during render. Disable Sodium before rendering, it can be re-enabled after that.
+ReplayMod can record when _Sodium_ is installed but will crash during render. Disable Sodium before rendering, it can be re-enabled after that.
 
 
 ### LiteLoader [liteloader]
@@ -602,7 +601,7 @@ The MultiMC interface to place ReplayMod above LiteLoader.
 ![](img/multimc-addempty.jpg)
 The properties for the new *Empty*.
 
-[LiteLoader](http://www.liteloader.com/) is known to cause issues due to the mixin version it contains.
+_LiteLoader_ is known to cause issues due to the mixin version it contains.
 
 You can use MultiMC to workaround this problem.
 > The MultiMC `Edit` function requires that your computer has a default editor for json files associated.
