@@ -60,7 +60,8 @@ public class GuiHandler extends EventRegistrations {
                 settingsRegistry.save();
             });
 
-            VanillaGuiScreen.setup(gui).setLayout(new CustomLayout<GuiScreen>() {
+            VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(gui);
+            vanillaGui.setLayout(new CustomLayout<GuiScreen>(vanillaGui.getLayout()) {
                 @Override
                 protected void layout(GuiScreen container, int width, int height) {
                     //size(recordingCheckbox, 200, 20);
@@ -70,7 +71,7 @@ public class GuiHandler extends EventRegistrations {
         }
 
         if (gui instanceof AddServerScreen) {
-            VanillaGuiScreen vanillaGui = VanillaGuiScreen.setup(gui);
+            VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(gui);
             GuiButton replayButton = new GuiReplayButton().onClick(() -> {
                 ServerInfo serverInfo = ((AddServerScreenAccessor) gui).getServer();
                 ServerInfoExt serverInfoExt = ServerInfoExt.from(serverInfo);
@@ -89,7 +90,7 @@ public class GuiHandler extends EventRegistrations {
                 });
                 GuiInfoPopup.open(vanillaGui, autoRecording);
             });
-            vanillaGui.setLayout(new CustomLayout<GuiScreen>() {
+            vanillaGui.setLayout(new CustomLayout<GuiScreen>(vanillaGui.getLayout()) {
                 @Override
                 protected void layout(GuiScreen container, int width, int height) {
                     size(replayButton, 20, 20);

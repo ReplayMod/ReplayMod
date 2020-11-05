@@ -38,7 +38,8 @@ public class GuiBackgroundProcesses extends EventRegistrations {
     //#endif
         if (guiScreen != getMinecraft().currentScreen) return; // people tend to construct GuiScreens without opening them
 
-        VanillaGuiScreen.setup(guiScreen).setLayout(new CustomLayout<GuiScreen>() {
+        VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(guiScreen);
+        vanillaGui.setLayout(new CustomLayout<GuiScreen>(vanillaGui.getLayout()) {
             @Override
             protected void layout(GuiScreen container, int width, int height) {
                 pos(panel, width - 5 - width(panel), 5);
@@ -74,6 +75,11 @@ public class GuiBackgroundProcesses extends EventRegistrations {
                     size(inner, width - 20, height - 20);
                 }
             });
+        }
+
+        @Override
+        public int getLayer() {
+            return 1;
         }
 
         @Override

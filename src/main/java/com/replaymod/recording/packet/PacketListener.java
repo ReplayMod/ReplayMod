@@ -277,7 +277,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 } catch (Exception e) {
                     logger.error("Saving replay file:", e);
                     CrashReport crashReport = CrashReport.create(e, "Saving replay file");
-                    core.runLater(() -> Utils.error(logger, VanillaGuiScreen.setup(mc.currentScreen), crashReport, guiSavingReplay::close));
+                    core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, guiSavingReplay::close));
                     return;
                 }
             }

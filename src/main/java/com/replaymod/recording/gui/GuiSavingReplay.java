@@ -140,7 +140,7 @@ public class GuiSavingReplay {
             } catch (IOException e) {
                 logger.error("Deleting replay file:", e);
                 CrashReport crashReport = CrashReport.create(e, "Deleting replay file");
-                core.runLater(() -> Utils.error(logger, VanillaGuiScreen.setup(mc.currentScreen), crashReport, () -> {}));
+                core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, () -> {}));
             }
             return;
         }
@@ -155,7 +155,7 @@ public class GuiSavingReplay {
         } catch (IOException e) {
             logger.error("Renaming replay file:", e);
             CrashReport crashReport = CrashReport.create(e, "Renaming replay file");
-            core.runLater(() -> Utils.error(logger, VanillaGuiScreen.setup(mc.currentScreen), crashReport, () -> {}));
+            core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, () -> {}));
         }
     }
 }

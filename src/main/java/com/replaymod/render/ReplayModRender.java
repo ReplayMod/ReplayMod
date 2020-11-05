@@ -88,7 +88,7 @@ public class ReplayModRender extends EventRegistrations implements Module {
             RenderJob.writeQueue(replayFile, renderQueue);
         } catch (IOException e) {
             e.printStackTrace();
-            VanillaGuiScreen screen = VanillaGuiScreen.setup(getCore().getMinecraft().currentScreen);
+            VanillaGuiScreen screen = VanillaGuiScreen.wrap(getCore().getMinecraft().currentScreen);
             CrashReport report = CrashReport.create(e, "Reading timeline");
             Utils.error(LOGGER, screen, report, () -> {});
         }
