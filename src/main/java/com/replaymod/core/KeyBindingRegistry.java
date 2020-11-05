@@ -132,6 +132,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         for (Binding binding : bindings.values()) {
             while (binding.keyBinding.wasPressed()) {
                 invokeKeyBindingHandlers(binding, binding.handlers);
+                invokeKeyBindingHandlers(binding, binding.repeatedHandlers);
             }
         }
     }
