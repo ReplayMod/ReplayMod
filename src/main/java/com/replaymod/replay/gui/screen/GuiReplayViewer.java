@@ -390,13 +390,8 @@ public class GuiReplayViewer extends GuiScreen {
                 for (final File file : files) {
                     if (Thread.interrupted()) break;
                     try (ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file)) {
-                        // TODO add a getThumbBytes method to ReplayStudio
-                        final Image thumb = Optional.ofNullable(replayFile.get("thumb").orNull()).flatMap(stream -> {
+                        final Image thumb = Optional.ofNullable(replayFile.getThumbBytes().orNull()).flatMap(stream -> {
                             try (InputStream in = stream) {
-                                int i = 7;
-                                while (i > 0) {
-                                    i -= in.skip(i);
-                                }
                                 return Optional.of(Image.read(in));
                             } catch (IOException e) {
                                 e.printStackTrace();
