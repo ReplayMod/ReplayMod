@@ -6,17 +6,14 @@ import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
-import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
-import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.resource.language.I18n;
 
@@ -77,21 +74,24 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                         super.draw(renderer, size, renderInfo);
                     }
                 }.onClick(keyBinding::trigger);
-                panel.addElements(null, new GuiPanel().setSize(150, 20).setLayout(new HorizontalLayout().setSpacing(2))
-                        .addElements(new HorizontalLayout.Data(0.5),
-                                new GuiPanel().setLayout(new CustomLayout<GuiPanel>() {
-                                    @Override
-                                    protected void layout(GuiPanel container, int width, int height) {
-                                        size(button, width, height);
-                                    }
+                GuiLabel label = new GuiLabel().setI18nText(keyBinding.name);
+                panel.addElements(null, new GuiPanel().setLayout(new CustomLayout<GuiPanel>() {
+                    @Override
+                    protected void layout(GuiPanel container, int width, int height) {
+                        width(button, Math.max(10 /* consistent min width */, width(button)) + 10 /* padding */);
+                        height(button, 20);
 
-                                    @Override
-                                    public ReadableDimension calcMinSize(GuiContainer<?> container) {
-                                        return new Dimension(Math.max(10, button.getMinSize().getWidth()) + 10, 20);
-                                    }
-                                }).addElements(null, button),
-                                new GuiLabel().setI18nText(keyBinding.name)
-                        ));
+                        int textWidth = width(label);
+
+                        x(label, width(button) + 4);
+                        width(label, width - x(label));
+
+                        if (textWidth > width - x(label)) {
+                            height(label, height(label) * 2); // split over two lines
+                        }
+                        y(label, (height - height(label)) / 2);
+                    }
+                }).addElements(null, button, label).setSize(150, 20));
             });
 
             overlay.setLayout(new CustomLayout<GuiReplayOverlay>(overlay.getLayout()) {
