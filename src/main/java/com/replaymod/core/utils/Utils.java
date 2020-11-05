@@ -367,4 +367,9 @@ public class Utils {
             open();
         }
     }
+
+    public static <T> T configure(T instance, Consumer<T> configure) {
+        configure.accept(instance);
+        return instance;
+    }
 }

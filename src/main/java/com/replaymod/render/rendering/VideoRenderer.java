@@ -7,6 +7,7 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
+import com.replaymod.render.CameraPathExporter;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.FFmpegWriter;
@@ -85,6 +86,7 @@ public class VideoRenderer implements RenderInfo {
     private final Timeline timeline;
     private final Pipeline renderingPipeline;
     private final FFmpegWriter ffmpegWriter;
+    private final CameraPathExporter cameraPathExporter;
 
     private int fps;
     private boolean mouseWasGrabbed;
@@ -149,6 +151,12 @@ public class VideoRenderer implements RenderInfo {
                 }
             };
             this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this, previewingFrameConsumer);
+        }
+
+        if (settings.isCameraPathExport()) {
+            this.cameraPathExporter = new CameraPathExporter(settings);
+        } else {
+            this.cameraPathExporter = null;
         }
     }
 
@@ -287,6 +295,10 @@ public class VideoRenderer implements RenderInfo {
         //$$ mc.displayHeight = displayHeightBefore;
         //#endif
 
+        if (cameraPathExporter != null) {
+            cameraPathExporter.recordFrame(timer.tickDelta);
+        }
+
         framesDone++;
         return timer.tickDelta;
     }
@@ -348,6 +360,10 @@ public class VideoRenderer implements RenderInfo {
 
         totalFrames = (int) (duration*fps/1000);
 
+        if (cameraPathExporter != null) {
+            cameraPathExporter.setup(totalFrames);
+        }
+
         updateDisplaySize();
 
         //#if MC<=10809
@@ -397,6 +413,14 @@ public class VideoRenderer implements RenderInfo {
             chunkLoadingRenderGlobal.uninstall();
         }
         //#endif
+
+        if (!hasFailed() && cameraPathExporter != null) {
+            try {
+                cameraPathExporter.finish();
+            } catch (IOException e) {
+                setFailure(e);
+            }
+        }
 
         new SoundHandler().playRenderSuccessSound();
 

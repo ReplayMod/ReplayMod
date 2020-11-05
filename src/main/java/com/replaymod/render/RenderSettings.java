@@ -166,6 +166,7 @@ public class RenderSettings {
     private final int sphericalFovY;
     private final boolean injectSphericalMetadata;
     private final boolean depthMap;
+    private final boolean cameraPathExport;
     private final AntiAliasing antiAliasing;
 
     private final String exportCommand;
@@ -197,6 +198,7 @@ public class RenderSettings {
             int sphericalFovY,
             boolean injectSphericalMetadata,
             boolean depthMap,
+            boolean cameraPathExport,
             AntiAliasing antiAliasing,
             String exportCommand,
             String exportArguments,
@@ -218,6 +220,7 @@ public class RenderSettings {
         this.sphericalFovY = sphericalFovY;
         this.injectSphericalMetadata = injectSphericalMetadata;
         this.depthMap = depthMap;
+        this.cameraPathExport = cameraPathExport;
         this.antiAliasing = antiAliasing;
         this.exportCommand = exportCommand;
         this.exportArguments = exportArguments;
@@ -242,6 +245,7 @@ public class RenderSettings {
                 sphericalFovY,
                 injectSphericalMetadata,
                 depthMap,
+                cameraPathExport,
                 antiAliasing,
                 exportCommand,
                 exportArguments,
@@ -418,6 +422,10 @@ public class RenderSettings {
 
     public boolean isDepthMap() {
         return depthMap;
+    }
+
+    public boolean isCameraPathExport() {
+        return cameraPathExport;
     }
 
     public AntiAliasing getAntiAliasing() {

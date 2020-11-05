@@ -199,6 +199,9 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
     public final GuiCheckbox depthMap = new GuiCheckbox()
             .setI18nLabel("replaymod.gui.rendersettings.depthmap");
 
+    public final GuiCheckbox cameraPathExport = new GuiCheckbox()
+            .setI18nLabel("replaymod.gui.rendersettings.camerapath");
+
     public final GuiDropdownMenu<RenderSettings.AntiAliasing> antiAliasingDropdown = new GuiDropdownMenu<RenderSettings.AntiAliasing>()
             .setSize(200, 20).setValues(RenderSettings.AntiAliasing.values()).setSelected(RenderSettings.AntiAliasing.NONE);
 
@@ -210,6 +213,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                             chromaKeyingCheckbox, chromaKeyingColor,
                             injectSphericalMetadata, sphericalFovSlider,
                             depthMap, new GuiLabel(),
+                            cameraPathExport, new GuiLabel(),
                             new GuiLabel().setI18nText("replaymod.gui.rendersettings.antialiasing"), antiAliasingDropdown));
 
     public final GuiTextField exportCommand = new GuiTextField().setI18nHint("replaymod.gui.rendersettings.command")
@@ -554,6 +558,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         sphericalFovSlider.setValue((settings.getSphericalFovX() - MIN_SPHERICAL_FOV) / SPHERICAL_FOV_STEP_SIZE);
         injectSphericalMetadata.setChecked(settings.isInjectSphericalMetadata());
         depthMap.setChecked(settings.isDepthMap());
+        cameraPathExport.setChecked(settings.isCameraPathExport());
         antiAliasingDropdown.setSelected(settings.getAntiAliasing());
         exportCommand.setText(settings.getExportCommand());
         String exportArguments = settings.getExportArguments();
@@ -585,6 +590,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                 sphericalFov, Math.min(180, sphericalFov),
                 injectSphericalMetadata.isChecked() && (serialize || injectSphericalMetadata.isEnabled()),
                 depthMap.isChecked() && (serialize || depthMap.isEnabled()),
+                cameraPathExport.isChecked(),
                 serialize || antiAliasingDropdown.isEnabled() ? antiAliasingDropdown.getSelectedValue() : RenderSettings.AntiAliasing.NONE,
                 exportCommand.getText(),
                 exportArguments.getText(),
@@ -630,7 +636,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
 
     private RenderSettings getDefaultRenderSettings() {
         return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT, 1920, 1080, 60, 10 << 20, null,
-                true, false, false, false, null, 360, 180, false, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
+                true, false, false, false, null, 360, 180, false, false, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
     }
 
     @Override

@@ -295,6 +295,8 @@ dependencies {
         }
     }
 
+    shadow 'com.github.javagl.JglTF:jgltf-model:3af6de4'
+
     if (FABRIC) {
         shadow 'org.apache.maven:maven-artifact:3.6.1'
     }
