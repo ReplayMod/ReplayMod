@@ -405,6 +405,22 @@ public class CameraEntity
     //$$ }
     //#endif
 
+    //#if MC>=10800
+    @Override
+    public float getSpeed() {
+        Entity view = getRenderViewEntity(this.client);
+        if (view != this && view instanceof AbstractClientPlayerEntity) {
+            return ((AbstractClientPlayerEntity) view).getSpeed();
+        }
+        return 1;
+    }
+    //#else
+    //$$ @Override
+    //$$ public float getFOVMultiplier() {
+    //$$     return 1;
+    //$$ }
+    //#endif
+
     @Override
     public boolean isInvisible() {
         Entity view = getRenderViewEntity(this.client);
