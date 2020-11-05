@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.replaymod.core.mixin.KeyBindingAccessor;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.versions.MCVer;
 import net.minecraft.client.options.KeyBinding;
@@ -127,7 +128,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         }
     }
 
-    public void handleKeyBindings() {
+    private void handleKeyBindings() {
         for (Binding binding : bindings.values()) {
             while (binding.keyBinding.wasPressed()) {
                 invokeKeyBindingHandlers(binding, binding.handlers);
@@ -169,7 +170,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         }
     }
 
-    public static class Binding {
+    public class Binding {
         public final String name;
         public final KeyBinding keyBinding;
         private final List<Runnable> handlers = new ArrayList<>();
@@ -182,6 +183,12 @@ public class KeyBindingRegistry extends EventRegistrations {
 
         public String getBoundKey() {
             return MCVer.getBoundKey(keyBinding);
+        }
+
+        public void trigger() {
+            KeyBindingAccessor acc = (KeyBindingAccessor) keyBinding;
+            acc.setPressTime(acc.getPressTime() + 1);
+            handleKeyBindings();
         }
     }
 }
