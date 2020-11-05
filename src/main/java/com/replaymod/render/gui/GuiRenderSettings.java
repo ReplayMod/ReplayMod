@@ -367,17 +367,24 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         videoWidth.setEnabled(!renderMethod.hasFixedAspectRatio());
 
         // Validate video width and height
-        String error = updateResolution();
-        if (error == null) {
-            renderButton.setEnabled().setTooltip(null);
+        String resolutionError = updateResolution();
+        if (resolutionError == null) {
             queueButton.setEnabled().setTooltip(null);
             videoWidth.setTextColor(Colors.WHITE);
             videoHeight.setTextColor(Colors.WHITE);
         } else {
-            renderButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(error));
-            queueButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(error));
+            queueButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(resolutionError));
             videoWidth.setTextColor(Colors.RED);
             videoHeight.setTextColor(Colors.RED);
+        }
+
+        String[] compatError = VideoRenderer.checkCompat();
+        if (resolutionError != null) {
+            renderButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(resolutionError));
+        } else if (compatError != null) {
+            renderButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
+        } else {
+            renderButton.setEnabled().setTooltip(null);
         }
 
         // Enable/Disable bitrate input field and dropdown

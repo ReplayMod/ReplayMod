@@ -25,6 +25,7 @@ import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
@@ -338,6 +339,11 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         removeButton.setEnabled(selected >= 1);
         renderButton.setEnabled(selected > 0);
         renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
+
+        String[] compatError = VideoRenderer.checkCompat();
+        if (compatError != null) {
+            renderButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
+        }
     }
 
     @Override

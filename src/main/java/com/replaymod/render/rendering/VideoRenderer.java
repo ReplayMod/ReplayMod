@@ -727,4 +727,17 @@ public class VideoRenderer implements RenderInfo {
             return getVideoTime();
         }
     }
+
+    public static String[] checkCompat() {
+        //#if FABRIC>=1
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium")) {
+            return new String[] {
+                    "Rendering is not currently supported while Sodium is installed.",
+                    "See https://github.com/ReplayMod/ReplayMod/issues/150",
+                    "For now, you need to uninstall Sodium before rendering!"
+            };
+        }
+        //#endif
+        return null;
+    }
 }

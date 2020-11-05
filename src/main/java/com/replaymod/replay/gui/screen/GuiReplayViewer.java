@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.render.gui.GuiRenderQueue;
+import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.GuiRenderer;
@@ -281,6 +282,11 @@ public class GuiReplayViewer extends GuiScreen {
             loadButton.setI18nLabel("replaymod.gui.viewer.bulkrender", jobs.size());
             loadButton.setTooltip(new GuiTooltip().setText(tooltipLines));
             loadButton.setEnabled(!jobs.isEmpty());
+
+            String[] compatError = VideoRenderer.checkCompat();
+            if (compatError != null) {
+                loadButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
+            }
         } else {
             loadButton.setI18nLabel("replaymod.gui.load");
             loadButton.setTooltip(null);
