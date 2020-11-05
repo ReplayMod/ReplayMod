@@ -12,8 +12,6 @@ import com.replaymod.recording.mixin.NetworkManagerAccessor;
 import com.replaymod.recording.packet.PacketListener;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
 import io.netty.channel.Channel;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
@@ -123,7 +121,7 @@ public class ConnectionEventHandler {
 
             String name = sdf.format(Calendar.getInstance().getTime());
             Path outputPath = core.getRecordingFolder().resolve(Utils.replayNameToFileName(name));
-            ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), outputPath.toFile());
+            ReplayFile replayFile = core.openReplay(outputPath);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
 

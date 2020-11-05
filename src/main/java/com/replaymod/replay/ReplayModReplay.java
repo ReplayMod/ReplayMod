@@ -20,8 +20,6 @@ import com.replaymod.replay.gui.screen.GuiModCompatWarning;
 import com.replaymod.replay.handler.GuiHandler;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
 import org.apache.logging.log4j.LogManager;
@@ -163,7 +161,7 @@ public class ReplayModReplay implements Module {
     }
 
     public void startReplay(File file) throws IOException {
-        startReplay(new ZipReplayFile(new ReplayStudio(), file));
+        startReplay(core.openReplay(file.toPath()));
     }
 
     public void startReplay(ReplayFile replayFile) throws IOException {

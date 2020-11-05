@@ -9,8 +9,6 @@ import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
@@ -110,8 +108,7 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
     }
 
     private void tryRecover(Consumer<Float> progress) throws IOException {
-        ReplayStudio studio = new ReplayStudio();
-        ReplayFile replayFile = new ZipReplayFile(studio, null, file);
+        ReplayFile replayFile = ReplayMod.instance.openReplay(file.toPath());
         // Commit all not-yet-committed files into the main zip file.
         // If we don't do this, then re-writing packet data below can actually overwrite uncommitted packet data!
         replayFile.save();

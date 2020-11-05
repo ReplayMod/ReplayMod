@@ -1,5 +1,6 @@
 package com.replaymod.core;
 
+import com.google.common.net.PercentEscaper;
 import com.replaymod.compat.ReplayModCompat;
 import com.replaymod.core.gui.GuiBackgroundProcesses;
 import com.replaymod.core.gui.GuiReplaySettings;
@@ -11,6 +12,8 @@ import com.replaymod.extras.ReplayModExtras;
 import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
 import com.replaymod.replaystudio.util.I18n;
@@ -88,13 +91,16 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -239,6 +245,36 @@ public class ReplayMod implements
         return Files.createDirectories(getReplayFolder().resolve("recording"));
     }
 
+    /**
+     * Folder in which replay cache files are stored.
+     * Distinct from the recording folder cause people kept confusing them with recordings.
+     */
+    public Path getCacheFolder() throws IOException {
+        String str = getSettingsRegistry().get(Setting.CACHE_PATH);
+        Path path = getMinecraft().runDirectory.toPath().resolve(str);
+        Files.createDirectories(path);
+        try {
+            Files.setAttribute(path, "dos:hidden", true);
+        } catch (UnsupportedOperationException ignored) {
+        }
+        return path;
+    }
+
+    private static final PercentEscaper CACHE_FILE_NAME_ENCODER = new PercentEscaper("-_ ", false);
+
+    public Path getCachePathForReplay(Path replay) throws IOException {
+        Path replayFolder = getReplayFolder();
+        Path cacheFolder = getCacheFolder();
+        Path relative = replayFolder.toAbsolutePath().relativize(replay.toAbsolutePath());
+        return cacheFolder.resolve(CACHE_FILE_NAME_ENCODER.escape(relative.toString()));
+    }
+
+    public Path getReplayPathForCache(Path cache) throws IOException {
+        String relative = URLDecoder.decode(cache.getFileName().toString(), "UTF-8");
+        Path replayFolder = getReplayFolder();
+        return replayFolder.resolve(relative);
+    }
+
     public static final DirectoryResourcePack jGuiResourcePack;
     public static final String JGUI_RESOURCE_PACK_NAME = "replaymod_jgui";
     static { // Note: even preInit is too late and we'd have to issue another resource reload
@@ -362,6 +398,23 @@ public class ReplayMod implements
         runPostStartup(() -> {
             final long DAYS = 24 * 60 * 60 * 1000;
 
+            // Cleanup any cache folders still remaining in the recording folder (we once used to put them there)
+            try {
+                Files.walkFileTree(getReplayFolder(), new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                        String name = dir.getFileName().toString();
+                        if (name.endsWith(".mcpr.cache")) {
+                            FileUtils.deleteDirectory(dir.toFile());
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                        return super.preVisitDirectory(dir, attrs);
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             // Cleanup raw folder content three weeks after creation (these are pretty valuable for debugging)
             try (DirectoryStream<Path> paths = Files.newDirectoryStream(getRawReplayFolder())) {
                 for (Path path : paths) {
@@ -388,11 +441,10 @@ public class ReplayMod implements
             }
 
             // Cleanup cache folders 7 days after last modification or when its replay is gone
-            try (DirectoryStream<Path> paths = Files.newDirectoryStream(getReplayFolder())) {
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(getCacheFolder())) {
                 for (Path path : paths) {
-                    String name = path.getFileName().toString();
-                    if (name.endsWith(".mcpr.cache") && Files.isDirectory(path)) {
-                        Path replay = path.resolveSibling(FilenameUtils.getBaseName(name));
+                    if (Files.isDirectory(path)) {
+                        Path replay = getReplayPathForCache(path);
                         long lastModified = Files.getLastModifiedTime(path).toMillis();
                         if (lastModified + 7 * DAYS < System.currentTimeMillis() || !Files.exists(replay)) {
                             FileUtils.deleteDirectory(path.toFile());
@@ -719,5 +771,18 @@ public class ReplayMod implements
         } else {
             return new ReplayStudio().isCompatible(fileFormatVersion, protocolVersion, MCVer.getProtocolVersion());
         }
+    }
+
+    public ReplayFile openReplay(Path path) throws IOException {
+        return openReplay(path, path);
+    }
+
+    public ReplayFile openReplay(Path input, Path output) throws IOException {
+        return new ZipReplayFile(
+                new ReplayStudio(),
+                input != null ? input.toFile() : null,
+                output.toFile(),
+                getCachePathForReplay(output).toFile()
+        );
     }
 }

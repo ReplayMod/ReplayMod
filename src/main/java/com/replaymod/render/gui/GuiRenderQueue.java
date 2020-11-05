@@ -13,8 +13,7 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.pathing.path.Timeline;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -216,9 +215,9 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
 
         LOGGER.info("Opening replay {} for {} render jobs", next.getKey(), next.getValue().size());
         ReplayHandler replayHandler;
-        ZipReplayFile replayFile = null;
+        ReplayFile replayFile = null;
         try {
-            replayFile = new ZipReplayFile(new ReplayStudio(), next.getKey());
+            replayFile = mod.getCore().openReplay(next.getKey().toPath());
             replayHandler = mod.startReplay(replayFile, true, false);
         } catch (IOException e) {
             Utils.error(LOGGER, container, CrashReport.create(e, "Opening replay"), () -> {});

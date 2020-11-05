@@ -5,8 +5,7 @@ import com.replaymod.core.utils.Utils;
 import com.replaymod.editor.ReplayModEditor;
 import com.replaymod.replay.gui.overlay.GuiMarkerTimeline;
 import com.replaymod.replaystudio.data.Marker;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -61,7 +60,7 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
         super(container);
         this.inputPath = inputPath;
 
-        try (ZipReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), inputPath.toFile())) {
+        try (ReplayFile replayFile = ReplayMod.instance.openReplay(inputPath)) {
             markers = replayFile.getMarkers().or(HashSet::new);
             timeline = new EditTimeline(new HashSet<>(markers), markers -> this.markers = markers);
             timeline.setSize(300, 20)
@@ -148,7 +147,7 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
         ProgressPopup progressPopup = new ProgressPopup(this);
 
         new Thread(() -> {
-            try (ZipReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), inputPath.toFile())) {
+            try (ReplayFile replayFile = ReplayMod.instance.openReplay(inputPath)) {
                 replayFile.writeMarkers(markers);
                 replayFile.save();
             } catch (IOException e) {

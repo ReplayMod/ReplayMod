@@ -22,8 +22,6 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
 import de.johni0702.minecraft.gui.container.AbstractGuiContainer;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
@@ -389,7 +387,7 @@ public class GuiReplayViewer extends GuiScreen {
                 Arrays.sort(files, Comparator.<File>comparingLong(f -> lastModified.computeIfAbsent(f, File::lastModified)).reversed());
                 for (final File file : files) {
                     if (Thread.interrupted()) break;
-                    try (ReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), file)) {
+                    try (ReplayFile replayFile = ReplayMod.instance.openReplay(file.toPath())) {
                         final Image thumb = Optional.ofNullable(replayFile.getThumbBytes().orNull()).flatMap(stream -> {
                             try (InputStream in = stream) {
                                 return Optional.of(Image.read(in));
