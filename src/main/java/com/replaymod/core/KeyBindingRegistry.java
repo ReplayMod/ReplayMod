@@ -185,6 +185,14 @@ public class KeyBindingRegistry extends EventRegistrations {
             return MCVer.getBoundKey(keyBinding);
         }
 
+        public boolean isBound() {
+            //#if MC>=11400
+            return !keyBinding.isUnbound();
+            //#else
+            //$$ return keyBinding.getKeyCode() != 0;
+            //#endif
+        }
+
         public void trigger() {
             KeyBindingAccessor acc = (KeyBindingAccessor) keyBinding;
             acc.setPressTime(acc.getPressTime() + 1);

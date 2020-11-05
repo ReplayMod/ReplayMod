@@ -73,7 +73,7 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
                     @Override
                     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
                         // There doesn't seem to be an KeyBindingUpdate event, so we'll just update it every time
-                        setLabel(keyBinding.getBoundKey());
+                        setLabel(keyBinding.isBound() ? keyBinding.getBoundKey() : "");
                         super.draw(renderer, size, renderInfo);
                     }
                 }.onClick(keyBinding::trigger);
