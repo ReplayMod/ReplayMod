@@ -744,7 +744,7 @@ public class MCVer {
     public static String getBoundKey(KeyBinding keyBinding) {
         try {
             //#if MC>=11600
-            return keyBinding.getBoundKeyLocalizedText().asString();
+            return keyBinding.getBoundKeyLocalizedText().getString();
             //#else
             //#if MC>=11400
             //$$ return keyBinding.getLocalizedName();
