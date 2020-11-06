@@ -615,6 +615,13 @@ public class GuiPathing {
         int time = timeline.getCursorPosition();
         SPTimeline timeline = mod.getCurrentTimeline();
 
+        if (timeline.getPositionPath().getKeyframes().isEmpty() &&
+                timeline.getTimePath().getKeyframes().isEmpty() &&
+                time > 1000) {
+            String text = I18n.translate("replaymod.gui.ingame.first_keyframe_not_at_start_warning");
+            GuiInfoPopup.open(overlay, text.split("\\\\n"));
+        }
+
         switch (path) {
             case TIME:
                 if (mod.getSelectedPath() == path) {
