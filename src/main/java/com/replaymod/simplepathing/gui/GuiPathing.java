@@ -468,10 +468,12 @@ public class GuiPathing {
         });
     }
 
-    public void deleteButtonPressed() {
+    public boolean deleteButtonPressed() {
         if (mod.getSelectedPath() != null) {
             toggleKeyframe(mod.getSelectedPath(), false);
+            return true;
         }
+        return false;
     }
 
     private void startLoadingEntityTracker() {

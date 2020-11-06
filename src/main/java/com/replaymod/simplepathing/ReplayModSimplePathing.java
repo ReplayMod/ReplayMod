@@ -97,9 +97,8 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             settingsRegistry.set(Setting.AUTO_SYNC, active);
             settingsRegistry.save();
         });
-        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
-            if (guiPathing != null) guiPathing.deleteButtonPressed();
-        });
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () ->
+                guiPathing != null && guiPathing.deleteButtonPressed());
         keyPositionKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positionkeyframe", Keyboard.KEY_I, () -> {
             if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, false);
         }, true);

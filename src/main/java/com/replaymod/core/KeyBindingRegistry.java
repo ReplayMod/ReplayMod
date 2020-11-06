@@ -4,6 +4,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.replaymod.core.mixin.KeyBindingAccessor;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import com.replaymod.core.events.KeyBindingEventCallback;
+import com.replaymod.core.events.KeyEventCallback;
 import com.replaymod.core.versions.MCVer;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.util.crash.CrashReport;
@@ -21,13 +23,9 @@ import static com.replaymod.core.ReplayMod.MOD_ID;
 //#endif
 
 //#if MC>=11400
-import com.replaymod.core.events.KeyBindingEventCallback;
-import com.replaymod.core.events.KeyEventCallback;
 import com.replaymod.core.events.PreRenderCallback;
-import org.lwjgl.glfw.GLFW;
 //#else
 //$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
 //$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
 //$$ import org.lwjgl.input.Keyboard;
 //$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
@@ -42,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class KeyBindingRegistry extends EventRegistrations {
     private static final String CATEGORY = "replaymod.title";
@@ -51,7 +50,7 @@ public class KeyBindingRegistry extends EventRegistrations {
 
     private final Map<String, Binding> bindings = new HashMap<>();
     private Set<KeyBinding> onlyInReplay = new HashSet<>();
-    private Multimap<Integer, Runnable> rawHandlers = ArrayListMultimap.create();
+    private Multimap<Integer, Supplier<Boolean>> rawHandlers = ArrayListMultimap.create();
 
     public Binding registerKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
         Binding binding = registerKeyBinding(name, keyCode, onlyInRepay);
@@ -91,7 +90,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         return binding;
     }
 
-    public void registerRaw(int keyCode, Runnable whenPressed) {
+    public void registerRaw(int keyCode, Supplier<Boolean> whenPressed) {
         rawHandlers.put(keyCode, whenPressed);
     }
 
@@ -104,16 +103,8 @@ public class KeyBindingRegistry extends EventRegistrations {
     }
 
     //#if MC>=11400
-    { on(KeyBindingEventCallback.EVENT, this::handleKeyBindings); }
-    { on(KeyEventCallback.EVENT, (keyCode, scanCode, action, modifiers) -> handleRaw(keyCode, action)); }
     { on(PreRenderCallback.EVENT, this::handleRepeatedKeyBindings); }
     //#else
-    //$$ @SubscribeEvent
-    //$$ public void onKeyInput(InputEvent.KeyInputEvent event) {
-    //$$     handleKeyBindings();
-    //$$     handleRaw();
-    //$$ }
-    //$$
     //$$ @SubscribeEvent
     //$$ public void onTick(TickEvent.RenderTickEvent event) {
     //$$     if (event.phase != TickEvent.Phase.START) return;
@@ -129,6 +120,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         }
     }
 
+    { on(KeyBindingEventCallback.EVENT, this::handleKeyBindings); }
     private void handleKeyBindings() {
         for (Binding binding : bindings.values()) {
             while (binding.keyBinding.wasPressed()) {
@@ -152,24 +144,23 @@ public class KeyBindingRegistry extends EventRegistrations {
         }
     }
 
-    //#if MC>=11400
-    private void handleRaw(int keyCode, int action) {
-        if (action != GLFW.GLFW_PRESS) return;
-    //#else
-    //$$ private void handleRaw() {
-    //$$     int keyCode = Keyboard.getEventKey() == 0 ? Keyboard.getEventCharacter() + 256 : Keyboard.getEventKey();
-    //#endif
-        for (final Runnable runnable : rawHandlers.get(keyCode)) {
+    { on(KeyEventCallback.EVENT, (keyCode, scanCode, action, modifiers) -> handleRaw(keyCode, action)); }
+    private boolean handleRaw(int keyCode, int action) {
+        if (action != KeyEventCallback.ACTION_PRESS) return false;
+        for (final Supplier<Boolean> handler : rawHandlers.get(keyCode)) {
             try {
-                runnable.run();
+                if (handler.get()) {
+                    return true;
+                }
             } catch (Throwable cause) {
                 CrashReport crashReport = CrashReport.create(cause, "Handling Raw Key Binding");
                 CrashReportSection category = crashReport.addElement("Key Binding");
                 MCVer.addDetail(category, "Key Code", () -> "" + keyCode);
-                MCVer.addDetail(category, "Handler", runnable::toString);
+                MCVer.addDetail(category, "Handler", handler::toString);
                 throw new CrashException(crashReport);
             }
         }
+        return false;
     }
 
     public class Binding {

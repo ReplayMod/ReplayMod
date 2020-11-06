@@ -1,6 +1,8 @@
 package com.replaymod.replay.gui.overlay;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.events.KeyBindingEventCallback;
+import com.replaymod.core.events.KeyEventCallback;
 import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
@@ -22,15 +24,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.resource.language.I18n;
-
-//#if MC>=11400
-import com.replaymod.core.events.KeyBindingEventCallback;
-import com.replaymod.core.events.KeyEventCallback;
-import org.lwjgl.glfw.GLFW;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
-//#endif
 
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 
@@ -183,13 +176,8 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     //$$ public // All event handlers need to be public in 1.7.10
     //#endif
     class EventHandler extends EventRegistrations {
-        //#if MC>=11400
         { on(KeyBindingEventCallback.EVENT, this::onKeyBindingEvent); }
         private void onKeyBindingEvent() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onKeyBindingEvent(InputEvent.KeyInputEvent event) {
-        //#endif
             GameOptions gameSettings = getMinecraft().options;
             while (gameSettings.keyChat.wasPressed() || gameSettings.keyCommand.wasPressed()) {
                 if (!isMouseVisible()) {
@@ -198,16 +186,9 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             }
         }
 
-        //#if MC>=11400
-        { on(KeyEventCallback.EVENT, (int key, int scanCode, int action, int modifiers) -> onKeyInput(key, action)); }
+        { on(KeyEventCallback.EVENT, (int key, int scanCode, int action, int modifiers) -> { onKeyInput(key, action); return false; }); }
         private void onKeyInput(int key, int action) {
-            if (action != GLFW.GLFW_PRESS) return;
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onKeyInput(InputEvent.KeyInputEvent event) {
-        //$$     if (!Keyboard.getEventKeyState()) return;
-        //$$     int key = Keyboard.getEventKey();
-        //#endif
+            if (action != KeyEventCallback.ACTION_PRESS) return;
             // Allow F1 to be used to hide the replay gui (e.g. for recording with OBS)
             if (isMouseVisible() && key == Keyboard.KEY_F1) {
                 hidden = !hidden;
