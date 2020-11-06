@@ -147,6 +147,8 @@ If two Keyframes are 5 seconds apart, the Camera Path will take 5 seconds to int
 
 You can drag Keyframes on the **Keyframe Timeline** by left-clicking them, holding the mouse button and moving your mouse.
 
+> **Hint:** Made a mistake? You can use `Ctrl+Z` to undo your changes to the keyframe timeline. Changed you mind? Press `Ctrl+Y` (or `Ctrl+Shift+Z`) to redo them.
+
 ### Position Keyframes [place]
 The basic components of a Camera Path are **Position Keyframes**.
 A Position Keyframe stores a **Camera Position** (x, y, z, yaw, pitch, roll).

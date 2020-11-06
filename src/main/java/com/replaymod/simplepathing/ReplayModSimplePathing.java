@@ -22,6 +22,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
 import org.apache.logging.log4j.LogManager;
@@ -114,6 +115,32 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
                 guiPathing.toggleKeyframe(SPPath.POSITION, false);
             }
         }, true);
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_Z, () -> {
+            if (Screen.hasControlDown() && currentTimeline != null) {
+                Timeline timeline = currentTimeline.getTimeline();
+                if (Screen.hasShiftDown()) {
+                    if (timeline.peekRedoStack() != null) {
+                        timeline.redoLastChange();
+                    }
+                } else {
+                    if (timeline.peekUndoStack() != null) {
+                        timeline.undoLastChange();
+                    }
+                }
+                return true;
+            }
+            return false;
+        });
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_Y, () -> {
+            if (Screen.hasControlDown() && currentTimeline != null) {
+                Timeline timeline = currentTimeline.getTimeline();
+                if (timeline.peekRedoStack() != null) {
+                    timeline.redoLastChange();
+                }
+                return true;
+            }
+            return false;
+        });
     }
 
     { on(ReplayOpenedCallback.EVENT, this::onReplayOpened); }
