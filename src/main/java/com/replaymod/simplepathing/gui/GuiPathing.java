@@ -162,7 +162,7 @@ public class GuiPathing {
         @Override
         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
             if (player.isActive()) {
-                setCursorPosition((int) player.getTimePassed());
+                setCursorPosition((int) player.getTimePassed()).ensureCursorVisibleWithPadding();
             }
             super.draw(renderer, size, renderInfo);
         }
@@ -439,7 +439,7 @@ public class GuiPathing {
             // Cursor time passed
             int cursorPassed = (int) (timePassed / speed);
             // Move cursor to new position
-            timeline.setCursorPosition(keyframeCursor + cursorPassed);
+            timeline.setCursorPosition(keyframeCursor + cursorPassed).ensureCursorVisibleWithPadding();
             // Deselect keyframe to allow the user to add a new one right away
             mod.setSelected(null, 0);
         });
