@@ -250,4 +250,9 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
         markers.add(marker);
         saveMarkers.accept(markers);
     }
+
+    @Override
+    public ReadableDimension getLastSize() {
+        return super.getLastSize();
+    }
 }

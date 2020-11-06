@@ -6,6 +6,7 @@ import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replay.gui.overlay.GuiMarkerTimeline;
 import com.replaymod.replaystudio.pathing.change.Change;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -21,9 +22,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Comparator;
 import java.util.Optional;
+
+import static com.replaymod.core.versions.MCVer.BufferBuilder_addPosCol;
+import static com.replaymod.core.versions.MCVer.BufferBuilder_beginPosCol;
+import static com.replaymod.core.versions.MCVer.Tessellator_getInstance;
 
 public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline> implements Draggable {
     protected static final int KEYFRAME_SIZE = 5;
@@ -101,9 +107,93 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     }
                     renderer.drawTexturedRect(positonX, BORDER_TOP, u, v, KEYFRAME_SIZE, KEYFRAME_SIZE);
                 }
-                if (keyframe.getValue(TimestampProperty.PROPERTY).isPresent()) {
+                Optional<Integer> timeProperty = keyframe.getValue(TimestampProperty.PROPERTY);
+                if (timeProperty.isPresent()) {
                     v += KEYFRAME_SIZE;
                     renderer.drawTexturedRect(positonX, BORDER_TOP + KEYFRAME_SIZE, u, v, KEYFRAME_SIZE, KEYFRAME_SIZE);
+
+                    GuiMarkerTimeline replayTimeline = gui.overlay.timeline;
+                    GuiKeyframeTimeline keyframeTimeline = this;
+
+                    ReadableDimension replayTimelineSize = replayTimeline.getLastSize();
+                    ReadableDimension keyframeTimelineSize = this.getLastSize();
+                    if (replayTimelineSize == null || keyframeTimelineSize == null) {
+                        return;
+                    }
+
+                    // Determine absolute positions for both timelines
+                    Point replayTimelinePos = new Point(0, 0);
+                    Point keyframeTimelinePos = new Point(0, 0);
+                    replayTimeline.getContainer().convertFor(replayTimeline, replayTimelinePos);
+                    keyframeTimeline.getContainer().convertFor(keyframeTimeline, keyframeTimelinePos);
+                    replayTimelinePos.setLocation(-replayTimelinePos.getX(), -replayTimelinePos.getY());
+                    keyframeTimelinePos.setLocation(-keyframeTimelinePos.getX(), -keyframeTimelinePos.getY());
+
+                    int replayTimelineLeft = replayTimelinePos.getX();
+                    int replayTimelineRight = replayTimelinePos.getX() + replayTimelineSize.getWidth();
+                    int replayTimelineTop = replayTimelinePos.getY();
+                    int replayTimelineBottom = replayTimelinePos.getY() + replayTimelineSize.getHeight();
+                    int replayTimelineWidth = replayTimelineRight - replayTimelineLeft - BORDER_LEFT - BORDER_RIGHT;
+
+                    int keyframeTimelineLeft = keyframeTimelinePos.getX();
+                    int keyframeTimelineTop = keyframeTimelinePos.getY();
+
+                    float positionXReplayTimeline = BORDER_LEFT + timeProperty.get() / (float) replayTimeline.getLength() * replayTimelineWidth;
+                    float positionXKeyframeTimeline = positonX + KEYFRAME_SIZE / 2f;
+
+                    final int color = 0xff0000ff;
+                    BufferBuilder_beginPosCol(GL11.GL_LINE_STRIP);
+
+                    // Start just below the top border of the replay timeline
+                    BufferBuilder_addPosCol(
+                            replayTimelineLeft + positionXReplayTimeline,
+                            replayTimelineTop + BORDER_TOP,
+                            0,
+                            color >> 24 & 0xff,
+                            color >> 16 & 0xff,
+                            color >> 8 & 0xff,
+                            color & 0xff
+                    );
+                    // Draw vertically over the replay timeline, including its bottom border
+                    BufferBuilder_addPosCol(
+                            replayTimelineLeft + positionXReplayTimeline,
+                            replayTimelineBottom,
+                            0,
+                            color >> 24 & 0xff,
+                            color >> 16 & 0xff,
+                            color >> 8 & 0xff,
+                            color & 0xff
+                    );
+                    // Now for the important part: connecting to the keyframe timeline
+                    BufferBuilder_addPosCol(
+                            keyframeTimelineLeft + positionXKeyframeTimeline,
+                            keyframeTimelineTop,
+                            0,
+                            color >> 24 & 0xff,
+                            color >> 16 & 0xff,
+                            color >> 8 & 0xff,
+                            color & 0xff
+                    );
+                    // And finally another vertical bit (the timeline is already crammed enough, so only the border)
+                    BufferBuilder_addPosCol(
+                            keyframeTimelineLeft + positionXKeyframeTimeline,
+                            keyframeTimelineTop + BORDER_TOP,
+                            0,
+                            color >> 24 & 0xff,
+                            color >> 16 & 0xff,
+                            color >> 8 & 0xff,
+                            color & 0xff
+                    );
+
+                    GL11.glEnable(GL11.GL_LINE_SMOOTH);
+                    GL11.glDisable(GL11.GL_TEXTURE_2D);
+                    GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
+                    GL11.glDisable(GL11.GL_SCISSOR_TEST);
+                    GL11.glLineWidth(1);
+                    Tessellator_getInstance().draw();
+                    GL11.glPopAttrib();
+                    GL11.glEnable(GL11.GL_TEXTURE_2D);
+                    GL11.glDisable(GL11.GL_LINE_SMOOTH);
                 }
             }
         });

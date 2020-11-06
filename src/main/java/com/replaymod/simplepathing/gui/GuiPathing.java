@@ -211,7 +211,7 @@ public class GuiPathing {
                     pos(scrollbar, 0, y(timeline) + height(timeline) + 1);
                     size(scrollbar, x(zoomButtonPanel) - 2, 9);
                 }
-            }).addElements(null, timelineTime, timeline, scrollbar, zoomButtonPanel);
+            }).addElements(null, timeline, timelineTime, scrollbar, zoomButtonPanel);
 
     public final GuiPanel panel = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5))
@@ -221,7 +221,7 @@ public class GuiPathing {
     private final ReplayMod core;
     private final ReplayModSimplePathing mod;
     private final ReplayHandler replayHandler;
-    private final GuiReplayOverlay overlay;
+    public final GuiReplayOverlay overlay;
     private final RealtimeTimelinePlayer player;
 
     // Whether any error which occured during entity tracker loading has already been shown to the user
