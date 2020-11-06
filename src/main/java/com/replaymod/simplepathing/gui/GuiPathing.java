@@ -28,7 +28,6 @@ import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.Setting;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
-import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
@@ -222,6 +221,7 @@ public class GuiPathing {
     private final ReplayMod core;
     private final ReplayModSimplePathing mod;
     private final ReplayHandler replayHandler;
+    private final GuiReplayOverlay overlay;
     private final RealtimeTimelinePlayer player;
 
     // Whether any error which occured during entity tracker loading has already been shown to the user
@@ -234,8 +234,8 @@ public class GuiPathing {
         this.core = core;
         this.mod = mod;
         this.replayHandler = replayHandler;
+        this.overlay = replayHandler.getOverlay();
         this.player = new RealtimeTimelinePlayer(replayHandler);
-        final GuiReplayOverlay overlay = replayHandler.getOverlay();
 
         timeline.setLength(core.getSettingsRegistry().get(Setting.TIMELINE_LENGTH) * 1000);
 
@@ -364,6 +364,7 @@ public class GuiPathing {
         overlay.setLayout(new CustomLayout<GuiReplayOverlay>(overlay.getLayout()) {
             @Override
             protected void layout(GuiReplayOverlay container, int width, int height) {
+                checkForAutoSync();
                 pos(panel, 10, y(overlay.topPanel) + height(overlay.topPanel) + 3);
                 size(panel, width - 20, 40);
             }
@@ -417,6 +418,28 @@ public class GuiPathing {
                 t.printStackTrace();
             }
         });
+    }
+
+    private int prevSpeed = -1;
+    private int prevTime = -1;
+    private void checkForAutoSync() {
+        if (!mod.keySyncTime.isAutoActivating()) {
+            prevSpeed = -1;
+            prevTime = -1;
+            return;
+        }
+
+        int speed = overlay.speedSlider.getValue();
+        if (prevSpeed != speed && prevSpeed != -1) {
+            syncTimeButtonPressed();
+        }
+        prevSpeed = speed;
+
+        int time = replayHandler.getReplaySender().currentTimeStamp();
+        if (prevTime != time && prevTime != -1 && !player.isActive()) {
+            syncTimeButtonPressed();
+        }
+        prevTime = time;
     }
 
     public void syncTimeButtonPressed() {

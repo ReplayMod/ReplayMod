@@ -3,6 +3,7 @@ package com.replaymod.simplepathing;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedCallback;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.versions.MCVer.Keyboard;
@@ -41,6 +42,7 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     private ReplayMod core;
     public KeyBindingRegistry.Binding keyPositionKeyframe;
     public KeyBindingRegistry.Binding keyTimeKeyframe;
+    public KeyBindingRegistry.Binding keySyncTime;
 
     public static Logger LOGGER = LogManager.getLogger();
 
@@ -87,9 +89,14 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.clearkeyframes", Keyboard.KEY_C, () -> {
             if (guiPathing != null) guiPathing.clearKeyframesButtonPressed();
         }, true);
-        core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
+        keySyncTime = core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
             if (guiPathing != null) guiPathing.syncTimeButtonPressed();
         }, true);
+        SettingsRegistry settingsRegistry = core.getSettingsRegistry();
+        keySyncTime.registerAutoActivationSupport(settingsRegistry.get(Setting.AUTO_SYNC), active -> {
+            settingsRegistry.set(Setting.AUTO_SYNC, active);
+            settingsRegistry.save();
+        });
         core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
             if (guiPathing != null) guiPathing.deleteButtonPressed();
         });

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 public final class Setting<T> extends SettingsRegistry.SettingKeys<T> {
     public static final Setting<Boolean> PATH_PREVIEW = make("pathpreview", "pathpreview", true);
+    public static final Setting<Boolean> AUTO_SYNC = make("autosync", null, true);
     public static final Setting<Integer> TIMELINE_LENGTH = make("timelineLength", null, 30 * 60);
     public static final SettingsRegistry.MultipleChoiceSettingKeys<String> DEFAULT_INTERPOLATION;
 

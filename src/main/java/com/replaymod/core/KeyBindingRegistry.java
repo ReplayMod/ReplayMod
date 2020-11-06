@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class KeyBindingRegistry extends EventRegistrations {
     private static final String CATEGORY = "replaymod.title";
@@ -176,6 +177,8 @@ public class KeyBindingRegistry extends EventRegistrations {
         public final KeyBinding keyBinding;
         private final List<Runnable> handlers = new ArrayList<>();
         private final List<Runnable> repeatedHandlers = new ArrayList<>();
+        private boolean autoActivation;
+        private Consumer<Boolean> autoActivationUpdate;
 
         public Binding(String name, KeyBinding keyBinding) {
             this.name = name;
@@ -198,6 +201,27 @@ public class KeyBindingRegistry extends EventRegistrations {
             KeyBindingAccessor acc = (KeyBindingAccessor) keyBinding;
             acc.setPressTime(acc.getPressTime() + 1);
             handleKeyBindings();
+        }
+
+        public void registerAutoActivationSupport(boolean active, Consumer<Boolean> update) {
+            this.autoActivation = active;
+            this.autoActivationUpdate = update;
+        }
+
+        public boolean supportsAutoActivation() {
+            return autoActivationUpdate != null;
+        }
+
+        public boolean isAutoActivating() {
+            return supportsAutoActivation() && autoActivation;
+        }
+
+        public void setAutoActivating(boolean active) {
+            if (this.autoActivation == active) {
+                return;
+            }
+            this.autoActivation = active;
+            this.autoActivationUpdate.accept(active);
         }
     }
 }
