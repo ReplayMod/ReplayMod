@@ -531,7 +531,9 @@ public class GuiReplayViewer extends GuiScreen {
             this.renderQueue = renderQueue;
 
             name.setText(Formatting.UNDERLINE + Utils.fileNameToReplayName(file.getName()));
-            if (StringUtils.isEmpty(metaData.getServerName())
+            if (!StringUtils.isEmpty(metaData.getCustomServerName())) {
+                server.setText(metaData.getCustomServerName());
+            } else if (StringUtils.isEmpty(metaData.getServerName())
                     || !ReplayMod.instance.getSettingsRegistry().get(Setting.SHOW_SERVER_IPS)) {
                 server.setI18nText("replaymod.gui.iphidden").setColor(Colors.DARK_RED);
             } else {

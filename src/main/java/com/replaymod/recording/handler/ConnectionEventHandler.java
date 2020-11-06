@@ -15,6 +15,7 @@ import com.replaymod.replaystudio.replay.ReplayMetaData;
 import io.netty.channel.Channel;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
@@ -89,6 +90,7 @@ public class ConnectionEventHandler {
             }
 
             String worldName;
+            String serverName = null;
             boolean autoStart = core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING);
             if (local) {
                 //#if MC>=11600
@@ -96,9 +98,13 @@ public class ConnectionEventHandler {
                 //#else
                 //$$ worldName = mc.getServer().getLevelName();
                 //#endif
+                serverName = worldName;
             } else if (mc.getCurrentServerEntry() != null) {
                 ServerInfo serverInfo = mc.getCurrentServerEntry();
                 worldName = serverInfo.address;
+                if (!I18n.translate("selectServer.defaultName").equals(serverInfo.name)) {
+                    serverName = serverInfo.name;
+                }
 
                 Boolean autoStartServer = ServerInfoExt.from(serverInfo).getAutoRecording();
                 if (autoStartServer != null) {
@@ -128,6 +134,7 @@ public class ConnectionEventHandler {
             ReplayMetaData metaData = new ReplayMetaData();
             metaData.setSingleplayer(local);
             metaData.setServerName(worldName);
+            metaData.setCustomServerName(serverName);
             metaData.setGenerator("ReplayMod v" + ReplayMod.instance.getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
