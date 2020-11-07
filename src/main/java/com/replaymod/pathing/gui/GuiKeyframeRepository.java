@@ -65,18 +65,15 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
     public final GuiButton overwriteButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            GuiYesNoPopup popup = GuiYesNoPopup.open(GuiKeyframeRepository.this,
+            GuiYesNoPopup.open(GuiKeyframeRepository.this,
                     new GuiLabel().setI18nText("replaymod.gui.keyframerepo.overwrite").setColor(Colors.BLACK)
-            ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no");
-            Utils.addCallback(popup.getFuture(), doIt -> {
-                if (doIt) {
-                    for (Entry entry : selectedEntries) {
-                        timelines.put(entry.name, currentTimeline);
-                    }
-                    overwriteButton.setDisabled();
-                    save();
+            ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no").onAccept(() -> {
+                for (Entry entry : selectedEntries) {
+                    timelines.put(entry.name, currentTimeline);
                 }
-            }, Throwable::printStackTrace);
+                overwriteButton.setDisabled();
+                save();
+            });
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.overwrite").setDisabled();
     public final GuiButton saveAsButton = new GuiButton().onClick(new Runnable() {
@@ -103,21 +100,11 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
                             && !timelines.containsKey(nameField.getText()));
                 }
             });
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(Boolean save) {
-                    if (save) {
-                        String name = nameField.getText();
-                        timelines.put(name, currentTimeline);
-                        list.getListPanel().addElements(null, new Entry(name));
-                        save();
-                    }
-                }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    t.printStackTrace();
-                }
+            popup.onAccept(() -> {
+                String name = nameField.getText();
+                timelines.put(name, currentTimeline);
+                list.getListPanel().addElements(null, new Entry(name));
+                save();
             });
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.saveas");
@@ -161,50 +148,29 @@ public class GuiKeyframeRepository extends GuiScreen implements Closeable, Typea
                             && !timelines.containsKey(nameField.getText()));
                 }
             });
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(Boolean save) {
-                    if (save) {
-                        String name = nameField.getText();
-                        timelines.put(name, timelines.remove(selectedEntry.name));
-                        selectedEntry.name = name;
-                        selectedEntry.label.setText(name);
-                        save();
-                    }
-                }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    t.printStackTrace();
-                }
+            popup.onAccept(() -> {
+                String name = nameField.getText();
+                timelines.put(name, timelines.remove(selectedEntry.name));
+                selectedEntry.name = name;
+                selectedEntry.label.setText(name);
+                save();
             });
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.rename").setDisabled();
     public final GuiButton removeButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            GuiYesNoPopup popup = GuiYesNoPopup.open(GuiKeyframeRepository.this,
+            GuiYesNoPopup.open(GuiKeyframeRepository.this,
                     new GuiLabel().setI18nText("replaymod.gui.keyframerepo.delete").setColor(Colors.BLACK)
-            ).setYesI18nLabel("replaymod.gui.delete").setNoI18nLabel("replaymod.gui.cancel");
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(Boolean delete) {
-                    if (delete) {
-                        for (Entry entry : selectedEntries) {
-                            timelines.remove(entry.name);
-                            list.getListPanel().removeElement(entry);
-                        }
-
-                        selectedEntries.clear();
-                        updateButtons();
-                        save();
-                    }
+            ).setYesI18nLabel("replaymod.gui.delete").setNoI18nLabel("replaymod.gui.cancel").onAccept(() -> {
+                for (Entry entry : selectedEntries) {
+                    timelines.remove(entry.name);
+                    list.getListPanel().removeElement(entry);
                 }
 
-                @Override
-                public void onFailure(Throwable t) {
-                    t.printStackTrace();
-                }
+                selectedEntries.clear();
+                updateButtons();
+                save();
             });
         }
     }).setSize(75, 20).setI18nLabel("replaymod.gui.remove").setDisabled();

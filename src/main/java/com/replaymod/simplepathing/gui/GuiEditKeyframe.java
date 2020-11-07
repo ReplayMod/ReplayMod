@@ -155,7 +155,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
             link(timeMinField, timeSecField, timeMSecField);
 
-            popup.forEach(IGuiLabel.class).setColor(Colors.BLACK);
+            popup.invokeAll(IGuiLabel.class, e -> e.setColor(Colors.BLACK));
         }
 
         @Override
@@ -194,7 +194,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
             link(timestampMinField, timestampSecField, timestampMSecField, timeMinField, timeSecField, timeMSecField);
 
-            popup.forEach(IGuiLabel.class).setColor(Colors.BLACK);
+            popup.invokeAll(IGuiLabel.class, e -> e.setColor(Colors.BLACK));
         }
 
         @Override
@@ -252,7 +252,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
             link(xField, yField, zField, yawField, pitchField, rollField, timeMinField, timeSecField, timeMSecField);
 
-            popup.forEach(IGuiLabel.class).setColor(Colors.BLACK);
+            popup.invokeAll(IGuiLabel.class, e -> e.setColor(Colors.BLACK));
         }
 
         @Override

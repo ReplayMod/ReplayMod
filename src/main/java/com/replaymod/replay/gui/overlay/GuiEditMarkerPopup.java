@@ -93,7 +93,7 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
 
         popup.setLayout(new VerticalLayout().setSpacing(5))
                 .addElements(new VerticalLayout.Data(0.5), title, inputs, buttons);
-        popup.forEach(IGuiLabel.class).setColor(Colors.BLACK);
+        popup.invokeAll(IGuiLabel.class, e -> e.setColor(Colors.BLACK));
 
         nameField.setText(Strings.nullToEmpty(marker.getName()));
         timeField.setValue(marker.getTime());

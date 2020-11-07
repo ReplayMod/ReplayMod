@@ -1,8 +1,6 @@
 package com.replaymod.render.gui;
 
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -39,7 +37,6 @@ import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -131,25 +128,13 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                     encodingPresetDropdown.getSelectedValue().getFileExtension());
             popup.setFolder(outputFile.getParentFile());
             popup.setFileName(outputFile.getName());
-            Futures.addCallback(
-                    popup.getFuture(),
-                    new FutureCallback<File>() {
-                        @Override
-                        public void onSuccess(@Nullable File result) {
-                            if (result != null) {
-                                if (!result.getName().equals(outputFile.getName())) {
-                                    userDefinedOutputFileName = true;
-                                }
-                                outputFile = result;
-                                outputFileButton.setLabel(result.getName());
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Throwable t) {
-                            throw new RuntimeException(t);
-                        }
-                    });
+            popup.onAccept(file -> {
+                if (!file.getName().equals(outputFile.getName())) {
+                    userDefinedOutputFileName = true;
+                }
+                outputFile = file;
+                outputFileButton.setLabel(file.getName());
+            });
         }
     });
 
@@ -401,10 +386,10 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             case CUBIC:
             case EQUIRECTANGULAR:
             case ODS:
-                stabilizePanel.forEach(IGuiCheckbox.class).setEnabled();
+                stabilizePanel.invokeAll(IGuiCheckbox.class, GuiElement::setEnabled);
                 break;
             default:
-                stabilizePanel.forEach(IGuiCheckbox.class).setDisabled();
+                stabilizePanel.invokeAll(IGuiCheckbox.class, GuiElement::setDisabled);
         }
 
         // Enable/Disable Spherical FOV slider

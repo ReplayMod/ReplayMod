@@ -399,23 +399,12 @@ public class GuiPathing {
     }
 
     public void clearKeyframesButtonPressed() {
-        GuiYesNoPopup popup = GuiYesNoPopup.open(replayHandler.getOverlay(),
+        GuiYesNoPopup.open(replayHandler.getOverlay(),
                 new GuiLabel().setI18nText("replaymod.gui.clearcallback.title").setColor(Colors.BLACK)
-        ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no");
-        Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-            @Override
-            public void onSuccess(Boolean delete) {
-                if (delete) {
-                    mod.clearCurrentTimeline();
-                    if (entityTracker != null) {
-                        mod.getCurrentTimeline().setEntityTracker(entityTracker);
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                t.printStackTrace();
+        ).setYesI18nLabel("gui.yes").setNoI18nLabel("gui.no").onAccept(() -> {
+            mod.clearCurrentTimeline();
+            if (entityTracker != null) {
+                mod.getCurrentTimeline().setEntityTracker(entityTracker);
             }
         });
     }
