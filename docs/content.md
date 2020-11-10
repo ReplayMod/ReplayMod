@@ -573,7 +573,8 @@ You can find a list of already modified config files [here](https://gist.github.
 The _Tickrate Changer_ mod may cause minecraft to freeze when you try to use the Replay Viewer UI.
 
 ### LabyMod [labymod]
-The _LabyMod_ is not compatible with ReplayMod.
+_LabyMod_ v3.7.x has been reported to be compatible with ReplayMod and other Forge mods.
+Lower versions are not compatible.
 
 ### OldAnimationsMod [oldanimationsmod]
 In case your Minecraft crashes when you are using both ReplayMod and _OldAnimationsMod_, try removing OldAnimationsMod.
