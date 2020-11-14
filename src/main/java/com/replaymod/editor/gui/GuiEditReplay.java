@@ -5,14 +5,12 @@ import com.replaymod.core.utils.Utils;
 import com.replaymod.editor.ReplayModEditor;
 import com.replaymod.replay.gui.overlay.GuiMarkerTimeline;
 import com.replaymod.replaystudio.data.Marker;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiHorizontalScrollbar;
-import de.johni0702.minecraft.gui.element.GuiTexturedButton;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTimelineTime;
@@ -42,14 +40,14 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
     private final GuiHorizontalScrollbar scrollbar = new GuiHorizontalScrollbar().setSize(300, 9);
 
 
-    private final GuiTexturedButton zoomInButton = new GuiTexturedButton().setSize(9, 9)
+    private final GuiButton zoomInButton = new GuiButton().setSize(9, 9)
             .onClick(() -> zoomTimeline(2d / 3d))
-            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 20)
+            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 20)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomin"));
 
-    private final GuiTexturedButton zoomOutButton = new GuiTexturedButton().setSize(9, 9)
+    private final GuiButton zoomOutButton = new GuiButton().setSize(9, 9)
             .onClick(() -> zoomTimeline(3d / 2d))
-            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 30)
+            .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 30)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomout"));
 
     private final GuiPanel zoomButtonPanel = new GuiPanel()
@@ -62,7 +60,7 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
         super(container);
         this.inputPath = inputPath;
 
-        try (ZipReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), inputPath.toFile())) {
+        try (ReplayFile replayFile = ReplayMod.instance.openReplay(inputPath)) {
             markers = replayFile.getMarkers().or(HashSet::new);
             timeline = new EditTimeline(new HashSet<>(markers), markers -> this.markers = markers);
             timeline.setSize(300, 20)
@@ -149,7 +147,7 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
         ProgressPopup progressPopup = new ProgressPopup(this);
 
         new Thread(() -> {
-            try (ZipReplayFile replayFile = new ZipReplayFile(new ReplayStudio(), inputPath.toFile())) {
+            try (ReplayFile replayFile = ReplayMod.instance.openReplay(inputPath)) {
                 replayFile.writeMarkers(markers);
                 replayFile.save();
             } catch (IOException e) {

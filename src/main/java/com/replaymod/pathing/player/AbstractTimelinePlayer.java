@@ -30,6 +30,7 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
     private final ReplayHandler replayHandler;
     private Timeline timeline;
     protected long startOffset;
+    private boolean wasAsyncMode;
     private long lastTime;
     private long lastTimestamp;
     private ListenableFuture<Void> future;
@@ -69,6 +70,7 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
             }.max(iter).getTime();
         }
 
+        wasAsyncMode = replayHandler.getReplaySender().isAsyncMode();
         replayHandler.getReplaySender().setSyncModeAndWait();
         register();
         lastTime = 0;
@@ -103,7 +105,9 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
             MinecraftAccessor mcA = (MinecraftAccessor) mc;
             mcA.setTimer(((ReplayTimer) mcA.getTimer()).getWrapped());
             replayHandler.getReplaySender().setReplaySpeed(0);
-            replayHandler.getReplaySender().setAsyncMode(true);
+            if (wasAsyncMode) {
+                replayHandler.getReplaySender().setAsyncMode(true);
+            }
             unregister();
             return;
         }

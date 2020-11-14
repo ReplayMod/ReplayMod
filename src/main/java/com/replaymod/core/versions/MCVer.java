@@ -7,6 +7,7 @@ import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersi
 import com.replaymod.replaystudio.us.myles.ViaVersion.packets.State;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 //#if MC>=11400
 import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 
@@ -597,13 +597,6 @@ public class MCVer {
             //#endif
     ) {
         GuiScreenAccessor acc = (GuiScreenAccessor) screen;
-        //#if MC>=11400
-        if (screen instanceof TitleScreen && isModLoaded("modmenu")) {
-            // Since we bypass the usual addButton, we need to manually move our buttons down
-            // https://github.com/Prospector/ModMenu/blob/eea70ec37581a7229142cf21df795fdacc6a7b4c/src/main/java/io/github/prospector/modmenu/mixin/TitleScreenMixin.java#L42
-            button.y += 12;
-        }
-        //#endif
         acc.getButtons().add(button);
         //#if MC>=11400
         acc.getChildren().add(button);
@@ -748,6 +741,23 @@ public class MCVer {
         //#endif
     }
 
+    public static String getBoundKey(KeyBinding keyBinding) {
+        try {
+            //#if MC>=11600
+            return keyBinding.getBoundKeyLocalizedText().getString();
+            //#else
+            //#if MC>=11400
+            //$$ return keyBinding.getLocalizedName();
+            //#else
+            //$$ return Keyboard.getKeyName(keyBinding.getKeyCode());
+            //#endif
+            //#endif
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
+            return "Unknown";
+        }
+    }
+
     //#if MC>=11400
     private static Boolean hasOptifine;
     public static boolean hasOptifine() {
@@ -869,6 +879,10 @@ public class MCVer {
         //$$ public static final int KEY_Z = org.lwjgl.input.Keyboard.KEY_Z;
         //#endif
 
+        public static boolean hasControlDown() {
+            return Screen.hasControlDown();
+        }
+
         public static boolean isKeyDown(int keyCode) {
             //#if MC>=11500
             return InputUtil.isKeyPressed(getMinecraft().getWindow().getHandle(), keyCode);
@@ -892,6 +906,10 @@ public class MCVer {
         //$$
         //$$ public static boolean getEventKeyState() {
         //$$     return org.lwjgl.input.Keyboard.getEventKeyState();
+        //$$ }
+        //$$
+        //$$ public static String getKeyName(int code) {
+        //$$     return org.lwjgl.input.Keyboard.getKeyName(code);
         //$$ }
         //#endif
     }

@@ -2,8 +2,13 @@ package com.replaymod.render;
 
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Utils;
 import com.replaymod.render.utils.RenderJob;
+import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.events.ReplayClosedCallback;
+import com.replaymod.replay.events.ReplayOpenedCallback;
+import com.replaymod.replaystudio.replay.ReplayFile;
+import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
@@ -17,8 +22,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.replaymod.core.versions.MCVer.*;
-
 public class ReplayModRender extends EventRegistrations implements Module {
     { instance = this; }
     public static ReplayModRender instance;
@@ -27,6 +30,7 @@ public class ReplayModRender extends EventRegistrations implements Module {
 
     public static Logger LOGGER = LogManager.getLogger();
 
+    private ReplayFile replayFile;
     private final List<RenderJob> renderQueue = new ArrayList<>();
 
     public ReplayModRender(ReplayMod core) {
@@ -41,8 +45,6 @@ public class ReplayModRender extends EventRegistrations implements Module {
 
     @Override
     public void initClient() {
-        on(ReplayClosedCallback.EVENT, replayHandler -> renderQueue.clear());
-
         register();
     }
 
@@ -63,5 +65,32 @@ public class ReplayModRender extends EventRegistrations implements Module {
 
     public List<RenderJob> getRenderQueue() {
         return renderQueue;
+    }
+
+    { on(ReplayOpenedCallback.EVENT, this::onReplayOpened); }
+    private void onReplayOpened(ReplayHandler replayHandler) {
+        replayFile = replayHandler.getReplayFile();
+        try {
+            renderQueue.addAll(RenderJob.readQueue(replayFile));
+        } catch (IOException e) {
+            throw new CrashException(CrashReport.create(e, "Reading timeline"));
+        }
+    }
+
+    { on(ReplayClosedCallback.EVENT, replayHandler -> onReplayClosed()); }
+    private void onReplayClosed() {
+        renderQueue.clear();
+        replayFile = null;
+    }
+
+    public void saveRenderQueue() {
+        try {
+            RenderJob.writeQueue(replayFile, renderQueue);
+        } catch (IOException e) {
+            e.printStackTrace();
+            VanillaGuiScreen screen = VanillaGuiScreen.wrap(getCore().getMinecraft().currentScreen);
+            CrashReport report = CrashReport.create(e, "Reading timeline");
+            Utils.error(LOGGER, screen, report, () -> {});
+        }
     }
 }

@@ -14,7 +14,7 @@ public abstract class Mixin_MoveRealmsButton {
             index = 2
     )
     private int adjustRealmsButton(int height) {
-        return height - (24 - 10) * 4;
+        return height - 24 * 4;
     }
 }
 //#endif

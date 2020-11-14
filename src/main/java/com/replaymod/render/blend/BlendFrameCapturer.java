@@ -3,14 +3,17 @@ package com.replaymod.render.blend;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
+import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.utils.ByteBufferPool;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
-public class BlendFrameCapturer implements FrameCapturer<RGBFrame> {
+public class BlendFrameCapturer implements FrameCapturer<BitmapFrame> {
     protected final WorldRenderer worldRenderer;
     protected final RenderInfo renderInfo;
     protected int framesDone;
@@ -26,7 +29,7 @@ public class BlendFrameCapturer implements FrameCapturer<RGBFrame> {
     }
 
     @Override
-    public RGBFrame process() {
+    public Map<Channel, BitmapFrame> process() {
         if (framesDone == 0) {
             BlendState.getState().setup();
         }
@@ -37,7 +40,8 @@ public class BlendFrameCapturer implements FrameCapturer<RGBFrame> {
         worldRenderer.renderWorld(MCVer.getRenderPartialTicks(), null);
         BlendState.getState().postFrame(framesDone);
 
-        return new RGBFrame(framesDone++, new Dimension(0, 0), ByteBufferPool.allocate(0));
+        BitmapFrame frame = new BitmapFrame(framesDone++, new Dimension(0, 0), 0, ByteBufferPool.allocate(0));
+        return Collections.singletonMap(Channel.BRGA, frame);
     }
 
     @Override

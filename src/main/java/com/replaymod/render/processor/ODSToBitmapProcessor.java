@@ -1,7 +1,7 @@
 package com.replaymod.render.processor;
 
 import com.replaymod.render.frame.ODSOpenGlFrame;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.utils.ByteBufferPool;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -9,25 +9,26 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class ODSToRGBProcessor extends AbstractFrameProcessor<ODSOpenGlFrame, RGBFrame> {
-    private final EquirectangularToRGBProcessor processor;
+public class ODSToBitmapProcessor extends AbstractFrameProcessor<ODSOpenGlFrame, BitmapFrame> {
+    private final EquirectangularToBitmapProcessor processor;
 
-    public ODSToRGBProcessor(int outputWidth, int outputHeight, int sphericalFovX) {
-        processor = new EquirectangularToRGBProcessor(outputWidth, outputHeight / 2, sphericalFovX);
+    public ODSToBitmapProcessor(int outputWidth, int outputHeight, int sphericalFovX) {
+        processor = new EquirectangularToBitmapProcessor(outputWidth, outputHeight / 2, sphericalFovX);
     }
 
     @Override
-    public RGBFrame process(ODSOpenGlFrame rawFrame) {
-        RGBFrame leftFrame = processor.process(rawFrame.getLeft());
-        RGBFrame rightFrame = processor.process(rawFrame.getRight());
+    public BitmapFrame process(ODSOpenGlFrame rawFrame) {
+        BitmapFrame leftFrame = processor.process(rawFrame.getLeft());
+        BitmapFrame rightFrame = processor.process(rawFrame.getRight());
         ReadableDimension size = new Dimension(leftFrame.getSize().getWidth(), leftFrame.getSize().getHeight() * 2);
-        ByteBuffer result = ByteBufferPool.allocate(size.getWidth() * size.getHeight() * 4);
+        int bpp = rawFrame.getLeft().getLeft().getBytesPerPixel();
+        ByteBuffer result = ByteBufferPool.allocate(size.getWidth() * size.getHeight() * bpp);
         result.put(leftFrame.getByteBuffer());
         result.put(rightFrame.getByteBuffer());
         result.rewind();
         ByteBufferPool.release(leftFrame.getByteBuffer());
         ByteBufferPool.release(rightFrame.getByteBuffer());
-        return new RGBFrame(rawFrame.getFrameId(), size, result);
+        return new BitmapFrame(rawFrame.getFrameId(), size, bpp, result);
     }
 
     @Override

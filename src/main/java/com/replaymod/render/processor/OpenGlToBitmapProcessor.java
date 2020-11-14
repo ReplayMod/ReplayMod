@@ -1,21 +1,22 @@
 package com.replaymod.render.processor;
 
 import com.replaymod.render.frame.OpenGlFrame;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 
 import java.nio.ByteBuffer;
 
-public class OpenGlToRGBProcessor extends AbstractFrameProcessor<OpenGlFrame, RGBFrame> {
+public class OpenGlToBitmapProcessor extends AbstractFrameProcessor<OpenGlFrame, BitmapFrame> {
 
     private byte[] row, rowSwap;
 
     @Override
-    public RGBFrame process(OpenGlFrame rawFrame) {
+    public BitmapFrame process(OpenGlFrame rawFrame) {
         // Flip whole image in place
 
         ReadableDimension size = rawFrame.getSize();
-        int rowSize = size.getWidth() * 4;
+        int bpp = rawFrame.getBytesPerPixel();
+        int rowSize = size.getWidth() * bpp;
         if (row == null || row.length < rowSize) {
             row = new byte[rowSize];
             rowSwap = new byte[rowSize];
@@ -37,6 +38,6 @@ public class OpenGlToRGBProcessor extends AbstractFrameProcessor<OpenGlFrame, RG
             buffer.put(rowSwap);
         }
         buffer.rewind();
-        return new RGBFrame(rawFrame.getFrameId(), size, buffer);
+        return new BitmapFrame(rawFrame.getFrameId(), size, bpp, buffer);
     }
 }

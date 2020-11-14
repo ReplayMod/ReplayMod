@@ -1,7 +1,7 @@
 package com.replaymod.render.gui;
 
 import com.replaymod.core.utils.Utils;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.rendering.VideoRenderer;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -265,9 +265,8 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
         guiRenderer.drawTexturedRect(x, y, 0, 0, width, height, videoWidth, videoHeight, videoWidth, videoHeight);
     }
 
-    public void updatePreview(RGBFrame frame) {
+    public void updatePreview(ByteBuffer buffer, ReadableDimension size) {
         if (previewCheckbox.isChecked() && previewTexture != null) {
-            ByteBuffer buffer = frame.getByteBuffer();
             buffer.mark();
             synchronized (this) {
                 //#if MC>=11400
@@ -279,7 +278,6 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
                 // Note: Optifine changes the texture data array to be three times as long (for use by shaders),
                 //       we only want to initialize the first third and since we use our frame size, not the array size,
                 //       we're good to go.
-                ReadableDimension size = frame.getSize();
                 int width = size.getWidth();
                 for (int y = 0; y < size.getHeight(); y++) {
                     for (int x = 0; x < width; x++) {

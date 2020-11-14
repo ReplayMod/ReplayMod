@@ -72,7 +72,7 @@ public class SettingsRegistry {
             JsonElement category = root.get(key.getCategory());
             if (category != null && category.isJsonObject()) {
                 JsonElement valueElem = category.getAsJsonObject().get(key.getKey());
-                if (!valueElem.isJsonPrimitive()) continue;
+                if (valueElem == null || !valueElem.isJsonPrimitive()) continue;
                 JsonPrimitive value = valueElem.getAsJsonPrimitive();
                 if (key.getDefault() instanceof Boolean && value.isBoolean()) {
                     entry.setValue(value.getAsBoolean());

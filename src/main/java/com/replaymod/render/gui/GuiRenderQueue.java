@@ -1,17 +1,20 @@
 package com.replaymod.render.gui;
 
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
+import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
-import com.replaymod.render.VideoWriter;
+import com.replaymod.render.FFmpegWriter;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.ReplayModReplay;
+import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.pathing.path.Timeline;
-import com.replaymod.replaystudio.util.I18n;
+import com.replaymod.replaystudio.replay.ReplayFile;
+import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiClickableContainer;
@@ -20,35 +23,47 @@ import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.GuiButton;
+import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.element.GuiTextField;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
+import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
-import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
+import org.apache.commons.io.IOUtils;
 
-import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 //#if MC>=11400
 import net.minecraft.text.TranslatableText;
+//#else
+//$$ import com.replaymod.replaystudio.util.I18n;
 //#endif
 
-public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
+public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements Typeable {
     private final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.renderqueue.title").setColor(Colors.BLACK);
     private final GuiVerticalList list = new GuiVerticalList().setDrawShadow(true).setDrawSlider(true);
     private final GuiButton addButton = new GuiButton().setI18nLabel("replaymod.gui.renderqueue.add").setSize(150, 20);
-    private final GuiButton renameButton = new GuiButton().setI18nLabel("replaymod.gui.rename").setSize(73, 20);
+    private final GuiButton editButton = new GuiButton().setI18nLabel("replaymod.gui.edit").setSize(73, 20);
     private final GuiButton removeButton = new GuiButton().setI18nLabel("replaymod.gui.remove").setSize(73, 20);
-    private final GuiButton renderButton = new GuiButton().setI18nLabel("replaymod.gui.render").setSize(150, 20);
+    private final GuiButton renderButton = new GuiButton().setSize(150, 20);
     private final GuiButton closeButton = new GuiButton().setI18nLabel("replaymod.gui.close").setSize(150, 20).onClick(this::close);
 
     /*
@@ -56,7 +71,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
     |---------------------------------|
     |       Add       |     Render    |
     |---------------------------------|
-    | Rename | Remove |     Close     |
+    |  Edit  | Remove |     Close     |
     |---------------------------------|
 
      */
@@ -66,12 +81,14 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                     addButton,
                     renderButton,
                     new GuiPanel().setLayout(new HorizontalLayout().setSpacing(4)).addElements(null,
-                            renameButton, removeButton),
+                            editButton, removeButton),
                     closeButton);
 
-    private final AbstractGuiScreen container;
+    private final AbstractGuiScreen<?> container;
     private final ReplayHandler replayHandler;
-    private Entry selectedEntry;
+    private final Set<Entry> selectedEntries = new HashSet<>();
+    private final Supplier<Timeline> timelineSupplier;
+    private boolean opened;
 
     {
         popup.setLayout(new CustomLayout<GuiPanel>() {
@@ -92,120 +109,59 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
         }).addElements(null, title, list, buttonPanel);
     }
 
-    public GuiRenderQueue(AbstractGuiScreen container, GuiRenderSettings guiRenderSettings, ReplayHandler replayHandler, Timeline timeline) {
+    private final ReplayModRender mod = ReplayModRender.instance;
+    private final List<RenderJob> jobs = mod.getRenderQueue();
+
+    public GuiRenderQueue(AbstractGuiScreen<?> container, ReplayHandler replayHandler, Supplier<Timeline> timelineSupplier) {
         super(container);
         this.container = container;
         this.replayHandler = replayHandler;
+        this.timelineSupplier = timelineSupplier;
         LOGGER.trace("Opening render queue popup");
 
         setBackgroundColor(Colors.DARK_TRANSPARENT);
 
-        List<RenderJob> queue = ReplayModRender.instance.getRenderQueue();
-
-        for (RenderJob renderJob : queue) {
+        for (RenderJob renderJob : jobs) {
             LOGGER.trace("Adding {} to job queue list", renderJob);
             list.getListPanel().addElements(null, new Entry(renderJob));
         }
 
-        addButton.onClick(() -> {
-            LOGGER.trace("Add button clicked");
-            // Open popup
-            GuiYesNoPopup popup = GuiYesNoPopup.open(container)
-                    .setYesI18nLabel("replaymod.gui.add").setNoI18nLabel("replaymod.gui.cancel");
-            popup.getInfo().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5));
-            // Add content
-            GuiLabel label = new GuiLabel().setI18nText("replaymod.gui.renderqueue.jobname").setColor(Colors.BLACK);
-            GuiTextField nameField = new GuiTextField().setSize(150, 20).setFocused(true);
-            popup.getInfo().addElements(new HorizontalLayout.Data(0.5), label, nameField);
-            // Disable "Yes" button while name is empty
-            nameField.onTextChanged(old -> popup.getYesButton().setEnabled(!nameField.getText().isEmpty())).onEnter(() -> {
-                if (popup.getYesButton().isEnabled()) {
-                    popup.getYesButton().onClick();
-                }
-            });
-            popup.getYesButton().setDisabled();
-            // Register callback
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(@Nullable Boolean result) {
-                    if (result == Boolean.TRUE) {
-                        RenderJob newJob = new RenderJob();
-                        newJob.setName(nameField.getText());
-                        newJob.setSettings(guiRenderSettings.save(false));
-                        newJob.setTimeline(timeline);
-                        LOGGER.trace("Adding new job: {}", newJob);
-                        queue.add(newJob);
-                        list.getListPanel().addElements(null, new Entry(newJob));
-                    } else {
-                        LOGGER.trace("Adding cancelled");
-                    }
-                }
+        addButton.onClick(this::addButtonClicked);
 
-                @Override
-                public void onFailure(Throwable t) {
-                    LOGGER.error("Add Job popup:", t);
-                }
-            });
-        });
-        if (guiRenderSettings != null) {
-            addButton.setEnabled(guiRenderSettings.renderButton.isEnabled());
-        }
-
-        renameButton.onClick(() -> {
-            LOGGER.trace("Rename button clicked for {}", selectedEntry.job);
-            // Open popup
-            GuiYesNoPopup popup = GuiYesNoPopup.open(container)
-                    .setYesI18nLabel("replaymod.gui.rename").setNoI18nLabel("replaymod.gui.cancel");
-            popup.getInfo().setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5));
-            // Add content
-            GuiLabel label = new GuiLabel().setI18nText("replaymod.gui.renderqueue.jobname").setColor(Colors.BLACK);
-            GuiTextField nameField = new GuiTextField().setSize(150, 20).setFocused(true)
-                    .setText(selectedEntry.job.getName());
-            popup.getInfo().addElements(new HorizontalLayout.Data(0.5), label, nameField);
-            // Disable "Yes" button while name is empty
-            nameField.onTextChanged(old -> popup.getYesButton().setEnabled(!nameField.getText().isEmpty())).onEnter(() -> {
-                if (popup.getYesButton().isEnabled()) {
-                    popup.getYesButton().onClick();
-                }
-            });
-            // Register callback
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(@Nullable Boolean result) {
-                    if (result == Boolean.TRUE) {
-                        LOGGER.trace("Renaming {} to \"{}\"", selectedEntry.job, nameField.getText());
-                        selectedEntry.setName(nameField.getText());
-                    } else {
-                        LOGGER.trace("Renaming cancelled");
-                    }
-                }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    LOGGER.error("Rename Job popup:", t);
-                }
-            });
+        editButton.onClick(() -> {
+            Entry job = selectedEntries.iterator().next();
+            GuiRenderSettings gui = job.edit();
+            gui.open();
         });
 
         removeButton.onClick(() -> {
-            LOGGER.trace("Remove button clicked for {}", selectedEntry.job);
-            list.getListPanel().removeElement(selectedEntry);
-            queue.remove(selectedEntry.job);
-            selectedEntry = null;
+            for (Entry entry : selectedEntries) {
+                LOGGER.trace("Remove button clicked for {}", entry.job);
+                list.getListPanel().removeElement(entry);
+                jobs.remove(entry.job);
+            }
+            selectedEntries.clear();
             updateButtons();
+            mod.saveRenderQueue();
         });
 
         renderButton.onClick(() -> {
             LOGGER.trace("Render button clicked");
-            ReplayMod.instance.runLaterWithoutLock(() -> processQueue(queue));
+            List<RenderJob> renderQueue = new ArrayList<>();
+            for (Entry entry : selectedEntries) {
+                renderQueue.add(entry.job);
+            }
+            ReplayMod.instance.runLaterWithoutLock(() -> processQueue(container, replayHandler, renderQueue, () -> {}));
         });
 
         updateButtons();
     }
 
-    private void processQueue(Iterable<RenderJob> queue) {
+    private static void processQueue(AbstractGuiScreen<?> container, ReplayHandler replayHandler, Iterable<RenderJob> queue, Runnable done) {
+        MinecraftClient mc = MCVer.getMinecraft();
+
         // Close all GUIs (so settings in GuiRenderSettings are saved)
-        getMinecraft().openScreen(null);
+        mc.openScreen(null);
         // Start rendering
         int jobsDone = 0;
         for (RenderJob renderJob : queue) {
@@ -213,7 +169,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
             try {
                 VideoRenderer videoRenderer = new VideoRenderer(renderJob.getSettings(), replayHandler, renderJob.getTimeline());
                 videoRenderer.renderVideo();
-            } catch (VideoWriter.NoFFmpegException e) {
+            } catch (FFmpegWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
                 NoticeScreen errorScreen = new NoticeScreen(
                         //#if MC>=11400
@@ -225,29 +181,150 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
                         //$$ I18n.format("replaymod.gui.rendering.error.message")
                         //#endif
                 );
-                getMinecraft().openScreen(errorScreen);
+                mc.openScreen(errorScreen);
                 return;
-            } catch (VideoWriter.FFmpegStartupException e) {
+            } catch (FFmpegWriter.FFmpegStartupException e) {
                 int jobsToSkip = jobsDone;
                 GuiExportFailed.tryToRecover(e, newSettings -> {
                     // Update current job with fixed ffmpeg arguments
                     renderJob.setSettings(newSettings);
                     // Restart queue, skipping the already completed jobs
-                    ReplayMod.instance.runLaterWithoutLock(() -> processQueue(Iterables.skip(queue, jobsToSkip)));
+                    ReplayMod.instance.runLaterWithoutLock(() -> processQueue(container, replayHandler, Iterables.skip(queue, jobsToSkip), done));
                 });
                 return;
             } catch (Throwable t) {
-                Utils.error(LOGGER, this, CrashReport.create(t, "Rendering video"), () -> {});
+                Utils.error(LOGGER, container, CrashReport.create(t, "Rendering video"), () -> {});
                 container.display(); // Re-show the queue popup and the new error popup
                 return;
             }
             jobsDone++;
         }
+        done.run();
+    }
+
+    public static void processMultipleReplays(
+            AbstractGuiScreen<?> container,
+            ReplayModReplay mod,
+            Iterator<Pair<File, List<RenderJob>>> queue,
+            Runnable done
+    ) {
+        if (!queue.hasNext()) {
+            done.run();
+            return;
+        }
+        Pair<File, List<RenderJob>> next = queue.next();
+
+        LOGGER.info("Opening replay {} for {} render jobs", next.getKey(), next.getValue().size());
+        ReplayHandler replayHandler;
+        ReplayFile replayFile = null;
+        try {
+            replayFile = mod.getCore().openReplay(next.getKey().toPath());
+            replayHandler = mod.startReplay(replayFile, true, false);
+        } catch (IOException e) {
+            Utils.error(LOGGER, container, CrashReport.create(e, "Opening replay"), () -> {});
+            container.display(); // Re-show the queue popup and the new error popup
+            IOUtils.closeQuietly(replayFile);
+            return;
+        }
+        if (replayHandler == null) {
+            LOGGER.warn("Replay failed to open (missing mods?), skipping..");
+            IOUtils.closeQuietly(replayFile);
+            processMultipleReplays(container, mod, queue, done);
+            return;
+        }
+        ReplaySender replaySender = replayHandler.getReplaySender();
+
+        MinecraftClient mc = mod.getCore().getMinecraft();
+        int jumpTo = 1000;
+        while (mc.world == null && jumpTo < replayHandler.getReplayDuration()) {
+            replaySender.sendPacketsTill(jumpTo);
+            jumpTo += 1000;
+        }
+        if (mc.world == null) {
+            LOGGER.warn("Replay failed to load world (corrupted?), skipping..");
+            IOUtils.closeQuietly(replayFile);
+            processMultipleReplays(container, mod, queue, done);
+            return;
+        }
+
+        processQueue(container, replayHandler, next.getValue(), () -> {
+            try {
+                replayHandler.endReplay();
+            } catch (IOException e) {
+                Utils.error(LOGGER, container, CrashReport.create(e, "Closing replay"), () -> {});
+                container.display(); // Re-show the queue popup and the new error popup
+                return;
+            }
+            processMultipleReplays(container, mod, queue, done);
+        });
+    }
+
+    private GuiRenderSettings addButtonClicked() {
+        Timeline timeline = timelineSupplier.get();
+        if (timeline != null) {
+            GuiRenderSettings popup = addJob(timeline);
+            popup.open();
+            return popup;
+        } else {
+            return null;
+        }
+    }
+
+    public GuiRenderSettings addJob(Timeline timeline) {
+        return new GuiRenderSettings(container, replayHandler, timeline) {
+            {
+                if (!jobs.isEmpty()) {
+                    buttonPanel.removeElement(renderButton);
+                }
+                queueButton.onClick(() -> {
+                    RenderSettings settings = save(false);
+
+                    RenderJob newJob = new RenderJob();
+                    newJob.setSettings(settings);
+                    newJob.setTimeline(timeline);
+                    LOGGER.trace("Adding new job: {}", newJob);
+                    jobs.add(newJob);
+                    list.getListPanel().addElements(null, new Entry(newJob));
+                    updateButtons();
+                    mod.saveRenderQueue();
+
+                    // Need to close the inner popup before we can open the outer one
+                    close();
+                    if (!opened) {
+                        GuiRenderQueue.this.open();
+                    }
+                });
+            }
+
+            @Override
+            public void close() {
+                super.close();
+                if (!opened && jobs.isEmpty()) {
+                    GuiRenderQueue.this.close();
+                }
+            }
+        };
     }
 
     @Override
     public void open() {
+        if (jobs.isEmpty() && timelineSupplier != null) {
+            if (addButtonClicked() == null) {
+                close();
+            }
+            return;
+        }
+
         super.open();
+        opened = true;
+    }
+
+    @Override
+    protected void close() {
+        if (opened) {
+            super.close();
+        }
+        opened = false;
     }
 
     @Override
@@ -256,9 +333,35 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
     }
 
     public void updateButtons() {
-        renameButton.setEnabled(selectedEntry != null);
-        removeButton.setEnabled(selectedEntry != null);
-        renderButton.setEnabled(!list.getListPanel().getChildren().isEmpty());
+        int selected = selectedEntries.size();
+        addButton.setEnabled(timelineSupplier != null);
+        editButton.setEnabled(selected == 1);
+        removeButton.setEnabled(selected >= 1);
+        renderButton.setEnabled(selected > 0);
+        renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
+
+        String[] compatError = VideoRenderer.checkCompat();
+        if (compatError != null) {
+            renderButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
+        }
+    }
+
+    @Override
+    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+        if (MCVer.Keyboard.hasControlDown() && keyCode == MCVer.Keyboard.KEY_A) {
+            if (selectedEntries.size() < list.getListPanel().getChildren().size()) {
+                for (GuiElement<?> child : list.getListPanel().getChildren()) {
+                    if (child instanceof Entry) {
+                        selectedEntries.add((Entry) child);
+                    }
+                }
+            } else {
+                selectedEntries.clear();
+            }
+            updateButtons();
+            return true;
+        }
+        return false;
     }
 
     public class Entry extends AbstractGuiClickableContainer<Entry> {
@@ -284,27 +387,42 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> {
 
         @Override
         protected void onClick() {
-            selectedEntry = this;
+            if (!MCVer.Keyboard.hasControlDown()) {
+                selectedEntries.clear();
+            }
+            if (selectedEntries.contains(this)) {
+                selectedEntries.remove(this);
+            } else {
+                selectedEntries.add(this);
+            }
             updateButtons();
         }
 
         @Override
         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-            if (selectedEntry == this) {
+            if (selectedEntries.contains(this)) {
                 renderer.drawRect(0, 0, size.getWidth(), size.getHeight(), Colors.BLACK);
                 renderer.drawRect(0, 0, 2, size.getHeight(), Colors.WHITE);
             }
             super.draw(renderer, size, renderInfo);
         }
 
-        public void setName(String name) {
-            job.setName(name);
-            label.setText(name);
-        }
-
         @Override
         protected Entry getThis() {
             return this;
+        }
+
+        public GuiRenderSettings edit() {
+            GuiRenderSettings gui = new GuiRenderSettings(container, replayHandler, job.getTimeline());
+            gui.buttonPanel.removeElement(gui.renderButton);
+            gui.queueButton.setI18nLabel("replaymod.gui.done").onClick(() -> {
+                job.setSettings(gui.save(false));
+                label.setText(job.getName());
+                mod.saveRenderQueue();
+                gui.close();
+            });
+            gui.load(job.getSettings());
+            return gui;
         }
     }
 }

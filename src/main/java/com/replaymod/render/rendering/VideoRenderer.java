@@ -7,13 +7,14 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
+import com.replaymod.render.CameraPathExporter;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
-import com.replaymod.render.VideoWriter;
+import com.replaymod.render.FFmpegWriter;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.events.ReplayRenderCallback;
-import com.replaymod.render.frame.RGBFrame;
+import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.metadata.MetadataInjector;
@@ -43,6 +44,7 @@ import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
+import com.replaymod.render.EXRWriter;
 import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.client.gui.screen.Screen;
 import org.lwjgl.glfw.GLFW;
@@ -83,7 +85,8 @@ public class VideoRenderer implements RenderInfo {
     private final ReplayHandler replayHandler;
     private final Timeline timeline;
     private final Pipeline renderingPipeline;
-    private final VideoWriter videoWriter;
+    private final FFmpegWriter ffmpegWriter;
+    private final CameraPathExporter cameraPathExporter;
 
     private int fps;
     private boolean mouseWasGrabbed;
@@ -119,16 +122,41 @@ public class VideoRenderer implements RenderInfo {
             BlendState.setState(new BlendState(settings.getOutputFile()));
 
             this.renderingPipeline = Pipelines.newBlendPipeline(this);
-            this.videoWriter = null;
+            this.ffmpegWriter = null;
         } else {
-            this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this,
-                    videoWriter = new VideoWriter(this) {
-                        @Override
-                        public void consume(RGBFrame frame) {
-                            gui.updatePreview(frame);
-                            super.consume(frame);
-                        }
-                    });
+            FrameConsumer<BitmapFrame> frameConsumer;
+            if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
+                ffmpegWriter = null;
+                //#if MC>=11400
+                frameConsumer = new EXRWriter(settings.getOutputFile().toPath());
+                //#else
+                //$$ throw new UnsupportedOperationException("EXR requires LWJGL3");
+                //#endif
+            } else {
+                frameConsumer = ffmpegWriter = new FFmpegWriter(this);
+            }
+            FrameConsumer<BitmapFrame> previewingFrameConsumer = new FrameConsumer<BitmapFrame>() {
+                @Override
+                public void consume(Map<Channel, BitmapFrame> channels) {
+                    BitmapFrame bgra = channels.get(Channel.BRGA);
+                    if (bgra != null) {
+                        gui.updatePreview(bgra.getByteBuffer(), bgra.getSize());
+                    }
+                    frameConsumer.consume(channels);
+                }
+
+                @Override
+                public void close() throws IOException {
+                    frameConsumer.close();
+                }
+            };
+            this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this, previewingFrameConsumer);
+        }
+
+        if (settings.isCameraPathExport()) {
+            this.cameraPathExporter = new CameraPathExporter(settings);
+        } else {
+            this.cameraPathExporter = null;
         }
     }
 
@@ -267,6 +295,10 @@ public class VideoRenderer implements RenderInfo {
         //$$ mc.displayHeight = displayHeightBefore;
         //#endif
 
+        if (cameraPathExporter != null) {
+            cameraPathExporter.recordFrame(timer.tickDelta);
+        }
+
         framesDone++;
         return timer.tickDelta;
     }
@@ -328,6 +360,10 @@ public class VideoRenderer implements RenderInfo {
 
         totalFrames = (int) (duration*fps/1000);
 
+        if (cameraPathExporter != null) {
+            cameraPathExporter.setup(totalFrames);
+        }
+
         updateDisplaySize();
 
         //#if MC<=10809
@@ -378,13 +414,21 @@ public class VideoRenderer implements RenderInfo {
         }
         //#endif
 
+        if (!hasFailed() && cameraPathExporter != null) {
+            try {
+                cameraPathExporter.finish();
+            } catch (IOException e) {
+                setFailure(e);
+            }
+        }
+
         new SoundHandler().playRenderSuccessSound();
 
         try {
-            if (!hasFailed() && videoWriter != null) {
-                new GuiRenderingDone(ReplayModRender.instance, videoWriter.getVideoFile(), totalFrames, settings).display();
+            if (!hasFailed() && ffmpegWriter != null) {
+                new GuiRenderingDone(ReplayModRender.instance, ffmpegWriter.getVideoFile(), totalFrames, settings).display();
             }
-        } catch (VideoWriter.FFmpegStartupException e) {
+        } catch (FFmpegWriter.FFmpegStartupException e) {
             setFailure(e);
         }
 
@@ -652,8 +696,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     public void cancel() {
-        if (videoWriter != null) {
-            videoWriter.abort();
+        if (ffmpegWriter != null) {
+            ffmpegWriter.abort();
         }
         this.cancelled = true;
         renderingPipeline.cancel();
@@ -682,5 +726,18 @@ public class VideoRenderer implements RenderInfo {
         public long getTimePassed() {
             return getVideoTime();
         }
+    }
+
+    public static String[] checkCompat() {
+        //#if FABRIC>=1
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium")) {
+            return new String[] {
+                    "Rendering is not currently supported while Sodium is installed.",
+                    "See https://github.com/ReplayMod/ReplayMod/issues/150",
+                    "For now, you need to uninstall Sodium before rendering!"
+            };
+        }
+        //#endif
+        return null;
     }
 }

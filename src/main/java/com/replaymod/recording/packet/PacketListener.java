@@ -11,6 +11,7 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.recording.Setting;
+import com.replaymod.recording.gui.GuiSavingReplay;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.mixin.SPacketSpawnMobAccessor;
 import com.replaymod.recording.mixin.SPacketSpawnPlayerAccessor;
@@ -19,9 +20,8 @@ import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
+import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
-import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.utils.Colors;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -67,7 +67,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -245,9 +247,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             }
         });
 
-        GuiLabel savingLabel = new GuiLabel().setI18nText("replaymod.gui.replaysaving.title").setColor(Colors.BLACK);
+        GuiSavingReplay guiSavingReplay = new GuiSavingReplay(core);
         new Thread(() -> {
-            core.runLater(() -> core.getBackgroundProcesses().addProcess(savingLabel));
+            core.runLater(guiSavingReplay::open);
 
             saveService.shutdown();
             try {
@@ -261,22 +263,26 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 logger.error("Failed to close packet output stream:", e);
             }
 
+            List<Pair<Path, ReplayMetaData>> outputPaths;
             synchronized (replayFile) {
                 try {
                     replayFile.save();
                     replayFile.close();
 
                     if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS) && !ReplayMod.isMinimalMode()) {
-                        MarkerProcessor.apply(outputPath, progress -> {});
+                        outputPaths = MarkerProcessor.apply(outputPath, guiSavingReplay.getProgressBar()::setProgress);
+                    } else {
+                        outputPaths = Collections.singletonList(new Pair<>(outputPath, metaData));
                     }
                 } catch (Exception e) {
                     logger.error("Saving replay file:", e);
                     CrashReport crashReport = CrashReport.create(e, "Saving replay file");
-                    core.runLater(() -> Utils.error(logger, VanillaGuiScreen.setup(mc.currentScreen), crashReport, () -> {}));
+                    core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, guiSavingReplay::close));
+                    return;
                 }
             }
 
-            core.runLater(() -> core.getBackgroundProcesses().removeProcess(savingLabel));
+            core.runLater(() -> guiSavingReplay.presentRenameDialog(outputPaths));
         }).start();
     }
 

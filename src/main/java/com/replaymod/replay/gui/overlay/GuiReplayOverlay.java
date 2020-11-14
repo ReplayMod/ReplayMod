@@ -1,16 +1,19 @@
 package com.replaymod.replay.gui.overlay;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.events.KeyBindingEventCallback;
+import com.replaymod.core.events.KeyEventCallback;
 import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.ReplaySender;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiOverlay;
 import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiSlider;
-import de.johni0702.minecraft.gui.element.GuiTexturedButton;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.advanced.IGuiTimeline;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
@@ -22,30 +25,26 @@ import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.resource.language.I18n;
 
-//#if MC>=11400
-import com.replaymod.core.events.KeyBindingEventCallback;
-import com.replaymod.core.events.KeyEventCallback;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
-//#endif
-
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 
 public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
+    private final ReplayModReplay mod = ReplayModReplay.instance;
+
     public final GuiPanel topPanel = new GuiPanel(this)
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.LEFT).setSpacing(5));
-    public final GuiTexturedButton playPauseButton = new GuiTexturedButton() {
+    public final GuiButton playPauseButton = new GuiButton() {
         @Override
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
-                if (getTextureNormal().getY() == 0) { // Play button
-                    tooltip.setI18nText("replaymod.gui.ingame.menu.unpause");
+                String label;
+                if (getSpriteUV().getY() == 0) { // Play button
+                    label = "replaymod.gui.ingame.menu.unpause";
                 } else { // Pause button
-                    tooltip.setI18nText("replaymod.gui.ingame.menu.pause");
+                    label = "replaymod.gui.ingame.menu.pause";
                 }
+                tooltip.setText(I18n.translate(label) + " (" + mod.keyPlayPause.getBoundKey() + ")");
             }
             return tooltip;
         }
@@ -61,6 +60,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(5));
 
     private final EventHandler eventHandler = new EventHandler();
+    private boolean hidden;
 
     public GuiReplayOverlay(final ReplayHandler replayHandler) {
         timeline = new GuiMarkerTimeline(replayHandler){
@@ -83,7 +83,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             }
         });
 
-        playPauseButton.setTexturePosH(new ReadablePoint() {
+        playPauseButton.setSpriteUV(new ReadablePoint() {
             @Override
             public int getX() {
                 return 0;
@@ -156,8 +156,8 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-        // Do not render overlay when user pressed F1 and we are not currently in some popup
-        if (getMinecraft().options.hudHidden && isAllowUserInput()) {
+        // Do not render overlay if all hud, or this one specifically, is hidden and we're not in some popup
+        if ((getMinecraft().options.hudHidden || hidden) && isAllowUserInput()) {
             // Note that this only applies to when the mouse is visible, otherwise
             // the draw method isn't called in the first place
             return;
@@ -176,13 +176,8 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     //$$ public // All event handlers need to be public in 1.7.10
     //#endif
     class EventHandler extends EventRegistrations {
-        //#if MC>=11400
         { on(KeyBindingEventCallback.EVENT, this::onKeyBindingEvent); }
         private void onKeyBindingEvent() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onKeyBindingEvent(InputEvent.KeyInputEvent event) {
-        //#endif
             GameOptions gameSettings = getMinecraft().options;
             while (gameSettings.keyChat.wasPressed() || gameSettings.keyCommand.wasPressed()) {
                 if (!isMouseVisible()) {
@@ -191,20 +186,12 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
             }
         }
 
-        //#if MC>=11400
-        { on(KeyEventCallback.EVENT, (int key, int scanCode, int action, int modifiers) -> onKeyInput(key, action)); }
+        { on(KeyEventCallback.EVENT, (int key, int scanCode, int action, int modifiers) -> { onKeyInput(key, action); return false; }); }
         private void onKeyInput(int key, int action) {
-            if (action != 0) return;
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onKeyInput(InputEvent.KeyInputEvent event) {
-        //$$     if (!Keyboard.getEventKeyState()) return;
-        //$$     int key = Keyboard.getEventKey();
-        //#endif
-            GameOptions gameSettings = getMinecraft().options;
-            // Handle the F1 key binding while the overlay is opened as a gui screen
+            if (action != KeyEventCallback.ACTION_PRESS) return;
+            // Allow F1 to be used to hide the replay gui (e.g. for recording with OBS)
             if (isMouseVisible() && key == Keyboard.KEY_F1) {
-                gameSettings.hudHidden = !gameSettings.hudHidden;
+                hidden = !hidden;
             }
         }
     }

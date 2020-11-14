@@ -29,6 +29,7 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.entity.Entity;
@@ -671,7 +672,10 @@ public class ReplayHandler {
                 //#endif
 
                 // Send the packets
-                replaySender.sendPacketsTill(targetTime);
+                do {
+                    replaySender.sendPacketsTill(targetTime);
+                    targetTime += 500;
+                } while (mc.player == null || mc.currentScreen instanceof DownloadingTerrainScreen);
                 replaySender.setAsyncMode(true);
                 replaySender.setReplaySpeed(0);
 

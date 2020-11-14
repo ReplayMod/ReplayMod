@@ -20,8 +20,6 @@ import com.replaymod.replay.gui.screen.GuiModCompatWarning;
 import com.replaymod.replay.handler.GuiHandler;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
-import com.replaymod.replaystudio.studio.ReplayStudio;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +40,7 @@ public class ReplayModReplay implements Module {
     public static ReplayModReplay instance;
 
     private ReplayMod core;
+    public KeyBindingRegistry.Binding keyPlayPause;
 
     private final CameraControllerRegistry cameraControllerRegistry = new CameraControllerRegistry();
 
@@ -116,7 +115,7 @@ public class ReplayModReplay implements Module {
             }
         }, true);
 
-        registry.registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
+        keyPlayPause = registry.registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null) {
@@ -162,28 +161,38 @@ public class ReplayModReplay implements Module {
     }
 
     public void startReplay(File file) throws IOException {
-        startReplay(new ZipReplayFile(new ReplayStudio(), file));
+        startReplay(core.openReplay(file.toPath()));
     }
 
     public void startReplay(ReplayFile replayFile) throws IOException {
-        startReplay(replayFile, true);
+        startReplay(replayFile, true, true);
     }
 
-    public void startReplay(ReplayFile replayFile, boolean checkModCompat) throws IOException {
+    public ReplayHandler startReplay(ReplayFile replayFile, boolean checkModCompat, boolean asyncMode) throws IOException {
         if (replayHandler != null) {
             replayHandler.endReplay();
         }
         if (checkModCompat) {
             ModCompat.ModInfoDifference modDifference = new ModCompat.ModInfoDifference(replayFile.getModInfo());
             if (!modDifference.getMissing().isEmpty() || !modDifference.getDiffering().isEmpty()) {
-                new GuiModCompatWarning(this, replayFile, modDifference).display();
-                return;
+                GuiModCompatWarning screen = new GuiModCompatWarning(modDifference);
+                screen.loadButton.onClick(() -> {
+                    try {
+                        startReplay(replayFile, false, asyncMode);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                screen.display();
+                return null;
             }
         }
-        replayHandler = new ReplayHandler(replayFile, true);
+        replayHandler = new ReplayHandler(replayFile, asyncMode);
         //#if MC>=11400
         KeyBinding.updateKeysByCode(); // see Mixin_ContextualKeyBindings
         //#endif
+
+        return replayHandler;
     }
 
     public void forcefullyStopReplay() {

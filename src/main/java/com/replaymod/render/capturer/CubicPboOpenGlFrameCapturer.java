@@ -4,7 +4,7 @@ import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
 
 public class CubicPboOpenGlFrameCapturer extends
-        MultiFramePboOpenGlFrameCapturer<CubicOpenGlFrame, CubicOpenGlFrameCapturer.Data> {
+        PboOpenGlFrameCapturer<CubicOpenGlFrame, CubicOpenGlFrameCapturer.Data> {
 
     private final int frameSize;
     public CubicPboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, int frameSize) {

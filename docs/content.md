@@ -22,14 +22,17 @@ To render your creations with **Replay Mod** you will need to have FFmpeg instal
 ### Windows [windows]
 Download the latest FFmpeg release from https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip.
 
-In your `.minecraft` folder, create a `ffmpeg` folder. Extract the downloaded .zip file into this folder. The FFmpeg executable should end up at `.minecraft\ffmpeg\bin\ffmpeg.exe`.
+Extract the downloaded .zip file into your `.minecraft` folder.
+
+Historically the exact location inside the `.minecraft` folder was important, this is no longer the case.
+It is sufficient for the `ffmpeg.exe` to be anywhere inside your `.minecraft` folder.
 
 **Notes for alternative launchers**
 - Twitch launcher by default installs Minecraft instances in C:\\Users\\*username*\\Twitch\\Minecraft\\Instances\\*instancename*\\
 - GD Launcher by default installs Minecraft instances in C:\\Users\\*username*\\AppData\\Roaming\\gdlauncher_next\\instances\\*instancename*\\
 - MultiMC by default installs Minecraft instances in C:\\Program Files (x86)\\MultiMC\\instances\\*Instancename*\\.minecraft\\
 
-For these launchers, make sure FFmpeg exists in `instancename\ffmpeg\bin\ffmpeg.exe` (Twitch / GD) or `Instancename\.minecraft\ffmpeg\bin\ffmpeg.exe` (MultiMC)
+For these launchers, make sure FFmpeg exists inside the corresponding folder.
 
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.
@@ -143,6 +146,8 @@ Other than the **Replay Timeline**, the **Keyframe Timeline**'s time values are 
 If two Keyframes are 5 seconds apart, the Camera Path will take 5 seconds to interpolate between those Keyframes.
 
 You can drag Keyframes on the **Keyframe Timeline** by left-clicking them, holding the mouse button and moving your mouse.
+
+> **Hint:** Made a mistake? You can use `Ctrl+Z` to undo your changes to the keyframe timeline. Changed you mind? Press `Ctrl+Y` (or `Ctrl+Shift+Z`) to redo them.
 
 ### Position Keyframes [place]
 The basic components of a Camera Path are **Position Keyframes**.
@@ -354,6 +359,12 @@ There are **7 Encoding Presets** you can choose from:
 - **PNG Sequence**  
   Exports the sequence as individual frames in the **PNG Format**.  
   **Warning:** This can create a huge amount of files, so make sure to save them in a separate folder.
+- **OpenEXR Sequence** (Minecraft 1.14 and above)  
+  Exports the sequence as individual frames in the **OpenEXR Format**.
+  The images are of perfect quality and may contain
+  additional image layers beyond the visible one (e.g. [depth](#replaying-render-advanced-depth-map)).
+  As such, this format is a good choice if you have plenty of disk space to spare and want to perform additional editing
+  on the video in a third-party video editor.
 
 ### Advanced Settings [advanced]
 ![](img/rendersettings-advanced.jpg)
@@ -379,6 +390,21 @@ This is an experimental setting for video producers which allows you to change t
 Using a **Video Editing Software** like **Adobe After Effects** or **Sony Vegas**, you can change the sky color to transparency and add your own footage as sky. Read more about **Chroma Keying** [here](https://en.wikipedia.org/wiki/Chroma_key).
 
 > **Note:** For best results, you should **disable clouds** before rendering, as they are transparent.
+
+#### Depth Map [depth-map]
+![](img/depthmapsuzanne.jpg)
+"Suzanne" model added into a scene using Blender
+
+This setting causes depth information to be recorded and included in video formats which support it
+(currently only [OpenEXR](#replaying-render-settings-quality)).
+
+Using a video editor which supports it (e.g. [Blender](https://www.blender.org/)), you can then for example (among many
+other effects) add arbitrary geometry onto your rendered video in such a way that foreground objects in the
+video will still occlude background geometry as if it actually was part of the world.
+
+> **Note:** For best results, avoid semi-transparent blocks in front of your geometry, as they cannot be accurately represented in the depth map.
+
+> **Note:** Anti-aliasing is not supported when exporting depth. Instead simply render and edit your video at a higher resolution and scale it down at the very end.
 
 ### Command Line Settings [commandline]
 ![](img/rendersettings-commandline.jpg)

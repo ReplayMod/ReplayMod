@@ -18,6 +18,7 @@
     "Mixin_ForceChunkLoading",
     //#endif
     //#if MC>=11400
+    "Mixin_PreserveDepthDuringHandRendering",
     "MainWindowAccessor",
     //#endif
     "WorldRendererAccessor",

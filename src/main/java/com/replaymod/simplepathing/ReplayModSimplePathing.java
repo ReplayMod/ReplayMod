@@ -3,6 +3,7 @@ package com.replaymod.simplepathing;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedCallback;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.versions.MCVer.Keyboard;
@@ -21,6 +22,7 @@ import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import com.replaymod.simplepathing.preview.PathPreview;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +41,9 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     public static ReplayModSimplePathing instance;
 
     private ReplayMod core;
+    public KeyBindingRegistry.Binding keyPositionKeyframe;
+    public KeyBindingRegistry.Binding keyTimeKeyframe;
+    public KeyBindingRegistry.Binding keySyncTime;
 
     public static Logger LOGGER = LogManager.getLogger();
 
@@ -85,11 +90,56 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.clearkeyframes", Keyboard.KEY_C, () -> {
             if (guiPathing != null) guiPathing.clearKeyframesButtonPressed();
         }, true);
-        core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
+        keySyncTime = core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
             if (guiPathing != null) guiPathing.syncTimeButtonPressed();
         }, true);
-        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () -> {
-            if (guiPathing != null) guiPathing.deleteButtonPressed();
+        SettingsRegistry settingsRegistry = core.getSettingsRegistry();
+        keySyncTime.registerAutoActivationSupport(settingsRegistry.get(Setting.AUTO_SYNC), active -> {
+            settingsRegistry.set(Setting.AUTO_SYNC, active);
+            settingsRegistry.save();
+        });
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () ->
+                guiPathing != null && guiPathing.deleteButtonPressed());
+        keyPositionKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positionkeyframe", Keyboard.KEY_I, () -> {
+            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, false);
+        }, true);
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positiononlykeyframe", 0, () -> {
+            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, true);
+        }, true);
+        keyTimeKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.timekeyframe", Keyboard.KEY_O, () -> {
+            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.TIME, false);
+        }, true);
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.bothkeyframes", 0, () -> {
+            if (guiPathing != null) {
+                guiPathing.toggleKeyframe(SPPath.TIME, false);
+                guiPathing.toggleKeyframe(SPPath.POSITION, false);
+            }
+        }, true);
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_Z, () -> {
+            if (Screen.hasControlDown() && currentTimeline != null) {
+                Timeline timeline = currentTimeline.getTimeline();
+                if (Screen.hasShiftDown()) {
+                    if (timeline.peekRedoStack() != null) {
+                        timeline.redoLastChange();
+                    }
+                } else {
+                    if (timeline.peekUndoStack() != null) {
+                        timeline.undoLastChange();
+                    }
+                }
+                return true;
+            }
+            return false;
+        });
+        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_Y, () -> {
+            if (Screen.hasControlDown() && currentTimeline != null) {
+                Timeline timeline = currentTimeline.getTimeline();
+                if (timeline.peekRedoStack() != null) {
+                    timeline.redoLastChange();
+                }
+                return true;
+            }
+            return false;
         });
     }
 

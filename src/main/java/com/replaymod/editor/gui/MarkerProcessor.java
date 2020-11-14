@@ -1,8 +1,8 @@
 package com.replaymod.editor.gui;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replaystudio.PacketData;
-import com.replaymod.replaystudio.Studio;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.filter.SquashFilter;
 import com.replaymod.replaystudio.filter.StreamFilter;
@@ -11,13 +11,11 @@ import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
-import com.replaymod.replaystudio.replay.ZipReplayFile;
 import com.replaymod.replaystudio.stream.IteratorStream;
-import com.replaymod.replaystudio.studio.ReplayStudio;
+import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import com.replaymod.replaystudio.util.Utils;
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,7 +48,7 @@ public class MarkerProcessor {
     public static final String MARKER_NAME_SPLIT = "_RM_SPLIT";
 
     private static boolean hasWork(Path path) throws IOException {
-        try (ZipReplayFile inputReplayFile = new ZipReplayFile(new ReplayStudio(), path.toFile())) {
+        try (ReplayFile inputReplayFile = ReplayMod.instance.openReplay(path)) {
             return inputReplayFile.getMarkers().or(HashSet::new).stream().anyMatch(m -> m.getName() != null && m.getName().startsWith("_RM_"));
         }
     }
@@ -106,27 +104,33 @@ public class MarkerProcessor {
         return suffixes;
     }
 
-    public static void apply(Path path, Consumer<Float> progress) throws IOException {
+    public static List<Pair<Path, ReplayMetaData>> apply(Path path, Consumer<Float> progress) throws IOException {
+        ReplayMod mod = ReplayMod.instance;
         if (!hasWork(path)) {
-            return;
+            ReplayMetaData metaData;
+            try (ReplayFile inputReplayFile = mod.openReplay(path)) {
+                metaData = inputReplayFile.getMetaData();
+            }
+            return Collections.singletonList(new Pair<>(path, metaData));
         }
 
         String replayName = FilenameUtils.getBaseName(path.getFileName().toString());
         int splitCounter = 0;
 
         PacketTypeRegistry registry = MCVer.getPacketTypeRegistry(true);
-        Studio studio = new ReplayStudio();
         SquashFilter squashFilter = new SquashFilter();
-        squashFilter.init(studio, null);
 
-        Path inputPath = path.resolveSibling("raw").resolve(path.getFileName());
+        List<Pair<Path, ReplayMetaData>> outputPaths = new ArrayList<>();
+
+        Path rawFolder = ReplayMod.instance.getRawReplayFolder();
+        Path inputPath = rawFolder.resolve(path.getFileName());
         for (int i = 1; Files.exists(inputPath); i++) {
             inputPath = inputPath.resolveSibling(replayName + "." + i + ".mcpr");
         }
         Files.createDirectories(inputPath.getParent());
         Files.move(path, inputPath);
 
-        try (ZipReplayFile inputReplayFile = new ZipReplayFile(studio, inputPath.toFile())) {
+        try (ReplayFile inputReplayFile = mod.openReplay(inputPath)) {
             List<Marker> markers = inputReplayFile.getMarkers().or(HashSet::new)
                     .stream().sorted(Comparator.comparing(Marker::getTime)).collect(Collectors.toList());
             Iterator<Marker> markerIterator = markers.iterator();
@@ -142,8 +146,8 @@ public class MarkerProcessor {
             Marker nextMarker = markerIterator.next();
 
             while (nextPacket != null && outputFileSuffixes.hasNext()) {
-                File outputFile = path.resolveSibling(replayName + outputFileSuffixes.next() + ".mcpr").toFile();
-                try (ZipReplayFile outputReplayFile = new ZipReplayFile(studio, null, outputFile)) {
+                Path outputPath = path.resolveSibling(replayName + outputFileSuffixes.next() + ".mcpr");
+                try (ReplayFile outputReplayFile = mod.openReplay(null, outputPath)) {
                     long duration = 0;
                     Set<Marker> outputMarkers = new HashSet<>();
                     ReplayMetaData metaData = inputReplayFile.getMetaData();
@@ -240,6 +244,8 @@ public class MarkerProcessor {
                     }
 
                     outputReplayFile.save();
+
+                    outputPaths.add(new Pair(outputPath, metaData));
                 }
             }
 
@@ -248,5 +254,7 @@ public class MarkerProcessor {
                 cutFilter.release();
             }
         }
+
+        return outputPaths;
     }
 }

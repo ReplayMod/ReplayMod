@@ -4,11 +4,13 @@
   "mixins": [],
   "server": [],
   "client": [
+    "AddServerScreenAccessor",
     "EntityLivingBaseAccessor",
     "IntegratedServerAccessor",
     "NetworkManagerAccessor",
     "SPacketSpawnMobAccessor",
     "SPacketSpawnPlayerAccessor",
+    "MixinServerInfo",
     //#if MC>=11400
     "MixinDownloadingPackFinder",
     "MixinMouseHelper",

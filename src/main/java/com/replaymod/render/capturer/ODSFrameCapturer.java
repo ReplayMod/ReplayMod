@@ -1,5 +1,6 @@
 package com.replaymod.render.capturer;
 
+import com.replaymod.render.rendering.Channel;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.frame.CubicOpenGlFrame;
@@ -17,6 +18,8 @@ import net.minecraft.util.Identifier;
 import static com.mojang.blaze3d.platform.GlStateManager.*;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -125,16 +128,22 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
     }
 
     @Override
-    public ODSOpenGlFrame process() {
+    public Map<Channel, ODSOpenGlFrame> process() {
         bindProgram();
         leftEyeVariable.set(true);
-        CubicOpenGlFrame leftFrame = left.process();
+        Map<Channel, CubicOpenGlFrame> leftChannels = left.process();
         leftEyeVariable.set(false);
-        CubicOpenGlFrame rightFrame = right.process();
+        Map<Channel, CubicOpenGlFrame> rightChannels = right.process();
         unbindProgram();
 
-        if (leftFrame != null && rightFrame != null) {
-            return new ODSOpenGlFrame(leftFrame, rightFrame);
+        if (leftChannels != null && rightChannels != null) {
+            Map<Channel, ODSOpenGlFrame> result = new HashMap<>();
+            for (Channel channel : Channel.values()) {
+                CubicOpenGlFrame leftFrame = leftChannels.get(channel);
+                CubicOpenGlFrame rightFrame = rightChannels.get(channel);
+                result.put(channel, new ODSOpenGlFrame(leftFrame, rightFrame));
+            }
+            return result;
         }
         return null;
     }

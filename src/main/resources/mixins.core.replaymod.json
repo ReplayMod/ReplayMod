@@ -12,12 +12,12 @@
     "Mixin_RegisterDynamicResourcePacks",
     //#endif
     //#if MC>=11400
-    "MixinKeyboardListener",
     "MixinMouse",
     //#endif
     //#if MC<10800
     //$$ "ResourcePackRepositoryAccessor",
     //#endif
+    "MixinKeyboardListener",
     "MixinMinecraft",
     "GuiMainMenuAccessor",
     "GuiScreenAccessor",

@@ -12,6 +12,7 @@ import com.replaymod.pathing.player.RealtimeTimelinePlayer;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
+import com.replaymod.render.gui.GuiRenderQueue;
 import com.replaymod.render.gui.GuiRenderSettings;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.camera.CameraEntity;
@@ -24,18 +25,17 @@ import com.replaymod.replaystudio.util.EntityPositionTracker;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
+import com.replaymod.simplepathing.Setting;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
-import de.johni0702.minecraft.gui.element.AbstractGuiClickable;
-import de.johni0702.minecraft.gui.element.AbstractGuiElement;
+import de.johni0702.minecraft.gui.container.GuiScreen;
+import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiHorizontalScrollbar;
 import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.element.GuiTexturedButton;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
-import de.johni0702.minecraft.gui.element.IGuiClickable;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.element.advanced.GuiTimelineTime;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
@@ -45,10 +45,10 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
-import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -80,7 +80,7 @@ import static com.replaymod.simplepathing.ReplayModSimplePathing.LOGGER;
 public class GuiPathing {
     private static final Logger logger = LogManager.getLogger();
 
-    public final GuiTexturedButton playPauseButton = new GuiTexturedButton() {
+    public final GuiButton playPauseButton = new GuiButton() {
         @Override
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
@@ -97,61 +97,61 @@ public class GuiPathing {
         }
     }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTooltip(new GuiTooltip());
 
-    public final GuiTexturedButton renderButton = new GuiTexturedButton().onClick(new Runnable() {
+    public final GuiButton renderButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            if (!preparePathsForPlayback(false)) return;
-
-            // Clone the timeline passed to the settings gui as it may be stored for later rendering in a queue
-            SPTimeline spTimeline = mod.getCurrentTimeline();
-            Timeline timeline;
-            try {
-                TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
-                String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
-                timeline = serialization.deserialize(serialized).get("");
-            } catch (Throwable t) {
-                error(LOGGER, replayHandler.getOverlay(), CrashReport.create(t, "Cloning timeline"), () -> {});
-                return;
-            }
-
-            new GuiRenderSettings(replayHandler, timeline).display();
+            Timeline timeline = preparePathsForPlayback(false);
+            if (timeline == null) return;
+            GuiScreen screen = GuiRenderSettings.createBaseScreen();
+            new GuiRenderQueue(screen, replayHandler, () -> preparePathsForPlayback(false)) {
+                @Override
+                protected void close() {
+                    super.close();
+                    getMinecraft().openScreen(null);
+                }
+            }.open();
+            screen.display();
         }
-    }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 0)
+    }).setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 0)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.renderpath"));
 
-    public final GuiTexturedButton positionKeyframeButton = new GuiTexturedButton() {
+    public final GuiButton positionKeyframeButton = new GuiButton() {
         @Override
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
-                if (getTextureNormal().getY() == 40) { // Add keyframe
-                    if (getTextureNormal().getX() == 0) { // Position
-                        tooltip.setI18nText("replaymod.gui.ingame.menu.addposkeyframe");
+                String label;
+                if (getSpriteUV().getY() == 40) { // Add keyframe
+                    if (getSpriteUV().getX() == 0) { // Position
+                        label = "replaymod.gui.ingame.menu.addposkeyframe";
                     } else { // Spectator
-                        tooltip.setI18nText("replaymod.gui.ingame.menu.addspeckeyframe");
+                        label = "replaymod.gui.ingame.menu.addspeckeyframe";
                     }
                 } else { // Remove keyframe
-                    if (getTextureNormal().getX() == 0) { // Position
-                        tooltip.setI18nText("replaymod.gui.ingame.menu.removeposkeyframe");
+                    if (getSpriteUV().getX() == 0) { // Position
+                        label = "replaymod.gui.ingame.menu.removeposkeyframe";
                     } else { // Spectator
-                        tooltip.setI18nText("replaymod.gui.ingame.menu.removespeckeyframe");
+                        label = "replaymod.gui.ingame.menu.removespeckeyframe";
                     }
                 }
+                tooltip.setText(I18n.translate(label) + " (" + mod.keyPositionKeyframe.getBoundKey() + ")");
             }
             return tooltip;
         }
     }.setSize(20, 20).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTooltip(new GuiTooltip());
 
-    public final GuiTexturedButton timeKeyframeButton = new GuiTexturedButton() {
+    public final GuiButton timeKeyframeButton = new GuiButton() {
         @Override
         public GuiElement getTooltip(RenderInfo renderInfo) {
             GuiTooltip tooltip = (GuiTooltip) super.getTooltip(renderInfo);
             if (tooltip != null) {
-                if (getTextureNormal().getY() == 80) { // Add time keyframe
-                    tooltip.setI18nText("replaymod.gui.ingame.menu.addtimekeyframe");
+                String label;
+                if (getSpriteUV().getY() == 80) { // Add time keyframe
+                    label = "replaymod.gui.ingame.menu.addtimekeyframe";
                 } else { // Remove time keyframe
-                    tooltip.setI18nText("replaymod.gui.ingame.menu.removetimekeyframe");
+                    label = "replaymod.gui.ingame.menu.removetimekeyframe";
                 }
+                tooltip.setText(I18n.translate(label) + " (" + mod.keyTimeKeyframe.getBoundKey() + ")");
             }
             return tooltip;
         }
@@ -161,11 +161,11 @@ public class GuiPathing {
         @Override
         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
             if (player.isActive()) {
-                setCursorPosition((int) player.getTimePassed());
+                setCursorPosition((int) player.getTimePassed()).ensureCursorVisibleWithPadding();
             }
             super.draw(renderer, size, renderInfo);
         }
-    }.setSize(Integer.MAX_VALUE, 20).setLength(30 * 60 * 1000).setMarkers();
+    }.setSize(Integer.MAX_VALUE, 20).setMarkers();
 
     public final GuiHorizontalScrollbar scrollbar = new GuiHorizontalScrollbar().setSize(Integer.MAX_VALUE, 9);
     {scrollbar.onValueChanged(new Runnable() {
@@ -179,20 +179,20 @@ public class GuiPathing {
     public final GuiTimelineTime<GuiKeyframeTimeline> timelineTime = new GuiTimelineTime<GuiKeyframeTimeline>()
             .setTimeline(timeline);
 
-    public final GuiTexturedButton zoomInButton = new GuiTexturedButton().setSize(9, 9).onClick(new Runnable() {
+    public final GuiButton zoomInButton = new GuiButton().setSize(9, 9).onClick(new Runnable() {
         @Override
         public void run() {
             zoomTimeline(2d / 3d);
         }
-    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 20)
+    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 20)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomin"));
 
-    public final GuiTexturedButton zoomOutButton = new GuiTexturedButton().setSize(9, 9).onClick(new Runnable() {
+    public final GuiButton zoomOutButton = new GuiButton().setSize(9, 9).onClick(new Runnable() {
         @Override
         public void run() {
             zoomTimeline(3d / 2d);
         }
-    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(40, 30)
+    }).setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(40, 30)
             .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.ingame.menu.zoomout"));
 
     public final GuiPanel zoomButtonPanel = new GuiPanel()
@@ -211,58 +211,17 @@ public class GuiPathing {
                     pos(scrollbar, 0, y(timeline) + height(timeline) + 1);
                     size(scrollbar, x(zoomButtonPanel) - 2, 9);
                 }
-            }).addElements(null, timelineTime, timeline, scrollbar, zoomButtonPanel);
+            }).addElements(null, timeline, timelineTime, scrollbar, zoomButtonPanel);
 
     public final GuiPanel panel = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(5))
             .addElements(new HorizontalLayout.Data(0.5),
                     playPauseButton, renderButton, positionKeyframeButton, timeKeyframeButton, timelinePanel);
 
-    /**
-     * IGuiClickable dummy component that is inserted at a high level.
-     * During path playback, this catches all click events and forwards them to the
-     * abort path playback button.
-     * Dragging does not have to be intercepted as every GUI element should only
-     * respond to dragging events after it has received and handled a click event.
-     */
-    private final IGuiClickable clickCatcher = new AbstractGuiClickable() {
-        @Override
-        public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
-            if (player.isActive()) {
-                // Make sure the mouse is always visible during path playback
-                // even if the game closes the overlay for some reason (e.g. world change)
-                replayHandler.getOverlay().setMouseVisible(true);
-            }
-        }
-
-        @Override
-        protected AbstractGuiElement getThis() {
-            return this;
-        }
-
-        @Override
-        protected ReadableDimension calcMinSize() {
-            return new Dimension(0, 0);
-        }
-
-        @Override
-        public boolean mouseClick(ReadablePoint position, int button) {
-            if (player.isActive()) {
-                playPauseButton.mouseClick(position, button);
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        public int getLayer() {
-            return player.isActive() ? 10 : 0;
-        }
-    };
-
     private final ReplayMod core;
     private final ReplayModSimplePathing mod;
     private final ReplayHandler replayHandler;
+    public final GuiReplayOverlay overlay;
     private final RealtimeTimelinePlayer player;
 
     // Whether any error which occured during entity tracker loading has already been shown to the user
@@ -275,10 +234,12 @@ public class GuiPathing {
         this.core = core;
         this.mod = mod;
         this.replayHandler = replayHandler;
+        this.overlay = replayHandler.getOverlay();
         this.player = new RealtimeTimelinePlayer(replayHandler);
-        final GuiReplayOverlay overlay = replayHandler.getOverlay();
 
-        playPauseButton.setTexturePosH(new ReadablePoint() {
+        timeline.setLength(core.getSettingsRegistry().get(Setting.TIMELINE_LENGTH) * 1000);
+
+        playPauseButton.setSpriteUV(new ReadablePoint() {
             @Override
             public int getX() {
                 return 0;
@@ -300,14 +261,16 @@ public class GuiPathing {
                     player.getFuture().cancel(false);
                 } else {
                     boolean ignoreTimeKeyframes = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
-                    Path timePath = mod.getCurrentTimeline().getTimePath();
 
-                    if (!preparePathsForPlayback(ignoreTimeKeyframes)) return;
+                    Timeline timeline = preparePathsForPlayback(ignoreTimeKeyframes);
+                    if (timeline == null) return;
 
+                    Path timePath = new SPTimeline(timeline).getTimePath();
                     timePath.setActive(!ignoreTimeKeyframes);
+
                     // Start from cursor time unless the control key is pressed (then start from beginning)
                     int startTime = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)? 0 : GuiPathing.this.timeline.getCursorPosition();
-                    ListenableFuture<Void> future = player.start(mod.getCurrentTimeline().getTimeline(), startTime);
+                    ListenableFuture<Void> future = player.start(timeline, startTime);
                     overlay.setCloseable(false);
                     overlay.setMouseVisible(true);
                     core.printInfoToChat("replaymod.chat.pathstarted");
@@ -320,21 +283,19 @@ public class GuiPathing {
                                 core.printInfoToChat("replaymod.chat.pathfinished");
                             }
                             overlay.setCloseable(true);
-                            timePath.setActive(true);
                         }
 
                         @Override
                         public void onFailure(Throwable t) {
                             t.printStackTrace();
                             overlay.setCloseable(true);
-                            timePath.setActive(true);
                         }
                     });
                 }
             }
         });
 
-        positionKeyframeButton.setTexturePosH(new ReadablePoint() {
+        positionKeyframeButton.setSpriteUV(new ReadablePoint() {
             @Override
             public int getX() {
                 SPPath keyframePath = mod.getSelectedPath();
@@ -368,11 +329,11 @@ public class GuiPathing {
         }).onClick(new Runnable() {
             @Override
             public void run() {
-                updateKeyframe(SPPath.POSITION);
+                toggleKeyframe(SPPath.POSITION, false);
             }
         });
 
-        timeKeyframeButton.setTexturePosH(new ReadablePoint() {
+        timeKeyframeButton.setSpriteUV(new ReadablePoint() {
             @Override
             public int getX() {
                 return 0;
@@ -395,17 +356,17 @@ public class GuiPathing {
         }).onClick(new Runnable() {
             @Override
             public void run() {
-                updateKeyframe(SPPath.TIME);
+                toggleKeyframe(SPPath.TIME, false);
             }
         });
 
-        overlay.addElements(null, panel, clickCatcher);
+        overlay.addElements(null, panel);
         overlay.setLayout(new CustomLayout<GuiReplayOverlay>(overlay.getLayout()) {
             @Override
             protected void layout(GuiReplayOverlay container, int width, int height) {
+                checkForAutoSync();
                 pos(panel, 10, y(overlay.topPanel) + height(overlay.topPanel) + 3);
                 size(panel, width - 20, 40);
-                size(clickCatcher, 0, 0);
             }
         });
 
@@ -459,6 +420,28 @@ public class GuiPathing {
         });
     }
 
+    private int prevSpeed = -1;
+    private int prevTime = -1;
+    private void checkForAutoSync() {
+        if (!mod.keySyncTime.isAutoActivating()) {
+            prevSpeed = -1;
+            prevTime = -1;
+            return;
+        }
+
+        int speed = overlay.speedSlider.getValue();
+        if (prevSpeed != speed && prevSpeed != -1) {
+            syncTimeButtonPressed();
+        }
+        prevSpeed = speed;
+
+        int time = replayHandler.getReplaySender().currentTimeStamp();
+        if (prevTime != time && prevTime != -1 && !player.isActive()) {
+            syncTimeButtonPressed();
+        }
+        prevTime = time;
+    }
+
     public void syncTimeButtonPressed() {
         // Current replay time
         int time = replayHandler.getReplaySender().currentTimeStamp();
@@ -479,16 +462,18 @@ public class GuiPathing {
             // Cursor time passed
             int cursorPassed = (int) (timePassed / speed);
             // Move cursor to new position
-            timeline.setCursorPosition(keyframeCursor + cursorPassed);
+            timeline.setCursorPosition(keyframeCursor + cursorPassed).ensureCursorVisibleWithPadding();
             // Deselect keyframe to allow the user to add a new one right away
             mod.setSelected(null, 0);
         });
     }
 
-    public void deleteButtonPressed() {
+    public boolean deleteButtonPressed() {
         if (mod.getSelectedPath() != null) {
-            updateKeyframe(mod.getSelectedPath());
+            toggleKeyframe(mod.getSelectedPath(), false);
+            return true;
         }
+        return false;
     }
 
     private void startLoadingEntityTracker() {
@@ -520,8 +505,26 @@ public class GuiPathing {
         }).start();
     }
 
-    private boolean preparePathsForPlayback(boolean ignoreTimeKeyframes) {
-        SPTimeline timeline = mod.getCurrentTimeline();
+    private Timeline preparePathsForPlayback(boolean ignoreTimeKeyframes) {
+        SPTimeline spTimeline = mod.getCurrentTimeline();
+
+        if (!validatePathsForPlayback(spTimeline, ignoreTimeKeyframes)) {
+            return null;
+        }
+
+        try {
+            TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
+            String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
+            Timeline timeline = serialization.deserialize(serialized).get("");
+            timeline.getPaths().forEach(Path::updateAll);
+            return timeline;
+        } catch (Throwable t) {
+            error(LOGGER, replayHandler.getOverlay(), CrashReport.create(t, "Cloning timeline"), () -> {});
+            return null;
+        }
+    }
+
+    private boolean validatePathsForPlayback(SPTimeline timeline, boolean ignoreTimeKeyframes) {
         timeline.getTimeline().getPaths().forEach(Path::updateAll);
 
         // Make sure there are at least two position keyframes
@@ -603,13 +606,21 @@ public class GuiPathing {
     /**
      * Called when either one of the property buttons is pressed.
      * @param path {@code TIME} for the time property button, {@code POSITION} for the place property button
+     * @param neverSpectator when true, will insert a position keyframe even when currently spectating an entity
      */
-    private void updateKeyframe(SPPath path) {
+    public void toggleKeyframe(SPPath path, boolean neverSpectator) {
         LOGGER.debug("Updating keyframe on path {}" + path);
-        if (!loadEntityTracker(() -> updateKeyframe(path))) return;
+        if (!loadEntityTracker(() -> toggleKeyframe(path, neverSpectator))) return;
 
         int time = timeline.getCursorPosition();
         SPTimeline timeline = mod.getCurrentTimeline();
+
+        if (timeline.getPositionPath().getKeyframes().isEmpty() &&
+                timeline.getTimePath().getKeyframes().isEmpty() &&
+                time > 1000) {
+            String text = I18n.translate("replaymod.gui.ingame.first_keyframe_not_at_start_warning");
+            GuiInfoPopup.open(overlay, text.split("\\\\n"));
+        }
 
         switch (path) {
             case TIME:
@@ -640,7 +651,7 @@ public class GuiPathing {
                     LOGGER.debug("No position keyframe found -> adding new keyframe");
                     CameraEntity camera = replayHandler.getCameraEntity();
                     int spectatedId = -1;
-                    if (!replayHandler.isCameraView()) {
+                    if (!replayHandler.isCameraView() && !neverSpectator) {
                         spectatedId = getRenderViewEntity(replayHandler.getOverlay().getMinecraft()).getEntityId();
                     }
                     timeline.addPositionKeyframe(time, Entity_getX(camera), Entity_getY(camera), Entity_getZ(camera),

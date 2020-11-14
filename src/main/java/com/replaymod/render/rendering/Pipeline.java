@@ -3,6 +3,8 @@ package com.replaymod.render.rendering;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.capturer.WorldRenderer;
+import com.replaymod.render.frame.BitmapFrame;
+import com.replaymod.render.processor.GlToAbsoluteDepthProcessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
@@ -13,11 +15,14 @@ import org.lwjgl.glfw.GLFW;
 //$$ import org.lwjgl.opengl.Display;
 //#endif
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static com.replaymod.core.versions.MCVer.getMinecraft;
 //#if MC>=11400
 import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
@@ -27,6 +32,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
     private final WorldRenderer worldRenderer;
     private final FrameCapturer<R> capturer;
     private final FrameProcessor<R, P> processor;
+    private final GlToAbsoluteDepthProcessor depthProcessor;
     private int consumerNextFrame;
     private final Object consumerLock = new Object();
     private final FrameConsumer<P> consumer;
@@ -38,6 +44,10 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
         this.capturer = capturer;
         this.processor = processor;
         this.consumer = consumer;
+
+        float near = 0.05f;
+        float far = getMinecraft().options.viewDistance * 16 * 4;
+        this.depthProcessor = new GlToAbsoluteDepthProcessor(near, far);
     }
 
     @Override
@@ -70,7 +80,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
                 processService.shutdown();
                 return;
             }
-            R rawFrame = capturer.process();
+            Map<Channel, R> rawFrame = capturer.process();
             if (rawFrame != null) {
                 processService.submit(new ProcessTask(rawFrame));
             }
@@ -99,25 +109,37 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
     }
 
     private class ProcessTask implements Runnable {
-        private final R rawFrame;
+        private final Map<Channel, R> rawChannels;
 
-        public ProcessTask(R rawFrame) {
-            this.rawFrame = rawFrame;
+        public ProcessTask(Map<Channel, R> rawChannels) {
+            this.rawChannels = rawChannels;
         }
 
         @Override
         public void run() {
             try {
-                P processedFrame = processor.process(rawFrame);
+                Integer frameId = null;
+                Map<Channel, P> processedChannels = new HashMap<>();
+                for (Map.Entry<Channel, R> entry : rawChannels.entrySet()) {
+                    P processedFrame = processor.process(entry.getValue());
+                    if (entry.getKey() == Channel.DEPTH && processedFrame instanceof BitmapFrame) {
+                        depthProcessor.process((BitmapFrame) processedFrame);
+                    }
+                    processedChannels.put(entry.getKey(), processedFrame);
+                    frameId = processedFrame.getFrameId();
+                }
+                if (frameId == null) {
+                    return;
+                }
                 synchronized (consumerLock) {
-                    while (consumerNextFrame != processedFrame.getFrameId()) {
+                    while (consumerNextFrame != frameId) {
                         try {
                             consumerLock.wait();
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                         }
                     }
-                    consumer.consume(processedFrame);
+                    consumer.consume(processedChannels);
                     consumerNextFrame++;
                     consumerLock.notifyAll();
                 }

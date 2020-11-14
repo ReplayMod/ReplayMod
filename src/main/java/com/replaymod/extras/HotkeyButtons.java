@@ -2,30 +2,22 @@ package com.replaymod.extras;
 
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.mixin.KeyBindingAccessor;
 import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
-import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiElement;
 import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.element.GuiTexturedButton;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
-import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.LayoutData;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
-
-//#if MC>=11400
-//#else
-//$$ import org.lwjgl.input.Keyboard;
-//#endif
 
 import java.util.Collection;
 import java.util.Collections;
@@ -44,15 +36,15 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
 
     { on(ReplayOpenedCallback.EVENT, replayHandler -> new Gui(mod, replayHandler.getOverlay())); }
     public static final class Gui {
-        private final GuiTexturedButton toggleButton;
+        private final GuiButton toggleButton;
         private final GridLayout panelLayout;
         private final GuiPanel panel;
 
         private boolean open;
 
         public Gui(ReplayMod mod, GuiReplayOverlay overlay) {
-            toggleButton = new GuiTexturedButton(overlay).setSize(20, 20)
-                    .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setTexturePosH(0, 120)
+            toggleButton = new GuiButton(overlay).setSize(20, 20)
+                    .setTexture(ReplayMod.TEXTURE, ReplayMod.TEXTURE_SIZE).setSpriteUV(0, 120)
                     .onClick(new Runnable() {
                         @Override
                         public void run() {
@@ -73,50 +65,51 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
             }.setLayout(panelLayout = new GridLayout().setSpacingX(5).setSpacingY(5).setColumns(1));
 
             final KeyBindingRegistry keyBindingRegistry = mod.getKeyBindingRegistry();
-            keyBindingRegistry.getKeyBindings().values().stream()
-                    .sorted(Comparator.comparing(it -> I18n.translate(it.getTranslationKey())))
+            keyBindingRegistry.getBindings().values().stream()
+                    .sorted(Comparator.comparing(it -> I18n.translate(it.name)))
                     .forEachOrdered(keyBinding -> {
                 GuiButton button = new GuiButton(){
                     @Override
                     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
                         // There doesn't seem to be an KeyBindingUpdate event, so we'll just update it every time
-                        String keyName = "???";
-                        try {
-                            //#if MC>=11600
-                            keyName = keyBinding.getBoundKeyLocalizedText().asString();
-                            //#else
-                            //#if MC>=11400
-                            //$$ keyName = keyBinding.getLocalizedName();
-                            //#else
-                            //$$ keyName = Keyboard.getKeyName(keyBinding.getKeyCode());
-                            //#endif
-                            //#endif
-                        } catch (ArrayIndexOutOfBoundsException e) {
-                            // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
+                        setLabel(keyBinding.isBound() ? keyBinding.getBoundKey() : "");
+
+                        if (keyBinding.supportsAutoActivation()) {
+                            setTooltip(new GuiTooltip().setText(new String[]{
+                                    I18n.translate("replaymod.gui.ingame.autoactivating"),
+                                    I18n.translate("replaymod.gui.ingame.autoactivating."
+                                            + (keyBinding.isAutoActivating() ? "disable" : "enable")),
+                            }));
+                            setLabelColor(keyBinding.isAutoActivating() ? 0x00ff00 : 0xe0e0e0);
                         }
-                        setLabel(keyName);
+
                         super.draw(renderer, size, renderInfo);
                     }
                 }.onClick(() -> {
-                    KeyBindingAccessor acc = (KeyBindingAccessor) keyBinding;
-                    acc.setPressTime(acc.getPressTime() + 1);
-                    keyBindingRegistry.handleKeyBindings();
+                    if (keyBinding.supportsAutoActivation() && Screen.hasControlDown()) {
+                        keyBinding.setAutoActivating(!keyBinding.isAutoActivating());
+                    } else {
+                        keyBinding.trigger();
+                    }
                 });
-                panel.addElements(null, new GuiPanel().setSize(150, 20).setLayout(new HorizontalLayout().setSpacing(2))
-                        .addElements(new HorizontalLayout.Data(0.5),
-                                new GuiPanel().setLayout(new CustomLayout<GuiPanel>() {
-                                    @Override
-                                    protected void layout(GuiPanel container, int width, int height) {
-                                        size(button, width, height);
-                                    }
+                GuiLabel label = new GuiLabel().setI18nText(keyBinding.name);
+                panel.addElements(null, new GuiPanel().setLayout(new CustomLayout<GuiPanel>() {
+                    @Override
+                    protected void layout(GuiPanel container, int width, int height) {
+                        width(button, Math.max(10 /* consistent min width */, width(button)) + 10 /* padding */);
+                        height(button, 20);
 
-                                    @Override
-                                    public ReadableDimension calcMinSize(GuiContainer<?> container) {
-                                        return new Dimension(Math.max(10, button.getMinSize().getWidth()) + 10, 20);
-                                    }
-                                }).addElements(null, button),
-                                new GuiLabel().setI18nText(keyBinding.getTranslationKey())
-                        ));
+                        int textWidth = width(label);
+
+                        x(label, width(button) + 4);
+                        width(label, width - x(label));
+
+                        if (textWidth > width - x(label)) {
+                            height(label, height(label) * 2); // split over two lines
+                        }
+                        y(label, (height - height(label)) / 2);
+                    }
+                }).addElements(null, button, label).setSize(150, 20));
             });
 
             overlay.setLayout(new CustomLayout<GuiReplayOverlay>(overlay.getLayout()) {
