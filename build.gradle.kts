@@ -115,10 +115,7 @@ fun generateVersionsJson(): Map<String, Any> {
         versions.forEach {
             val (thisMcVersion, modVersion, preVersion) = it.split("-") + listOf(null, null)
             if (thisMcVersion == mcVersion) {
-                mcVersionRoot[it] = if (tagVersions.contains(it))
-                    "See https://github.com/ReplayMod/ReplayMod/releases/$it"
-                else
-                    "See https://www.replaymod.com/forum/thread/100"
+                mcVersionRoot[it] = "See https://www.replaymod.com/changelog.txt"
                 if (latest == null) latest = it
                 if (preVersion == null) {
                     if (recommended == null) recommended = it
