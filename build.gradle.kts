@@ -144,13 +144,19 @@ val doRelease by tasks.registering {
             listOf(version, null)
         }
 
-        // Create new commit
+        // Merge release branch into stable but do not yet commit (we need to update the version.txt first)
+        command("git", "checkout", "stable")
+        command("git", "merge", "--no-ff", "--no-commit", "release-$version")
+
+        // Update version.txt
+        file("version.txt").writeText("$version\n")
+        command("git", "add", "version.txt")
+
+        // Finallize the merge. The message is what is later used to identify releses for building the version.json tree
         val commitMessage = if (preVersion != null)
             "Pre-release $preVersion of $modVersion"
         else
             "Release $modVersion"
-        file("version.txt").writeText("$version\n")
-        command("git", "add", "version.txt")
         command("git", "commit", "-m", commitMessage)
 
         // Generate versions.json content
