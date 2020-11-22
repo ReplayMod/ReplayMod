@@ -91,7 +91,7 @@ public class CameraPathExporter {
 
         quatYaw.setFromAxisAngle(new Vector4f(0, -1, 0, (float) Math.toRadians(yaw)));
         quatPitch.setFromAxisAngle(new Vector4f(-1, 0, 0, (float) Math.toRadians(pitch)));
-        quatRoll.setFromAxisAngle(new Vector4f(0, 0, 1, (float) Math.toRadians(roll)));
+        quatRoll.setFromAxisAngle(new Vector4f(0, 0, -1, (float) Math.toRadians(roll)));
 
         Quaternion quaternion = new Quaternion(0, 0, 0, 1);
         Quaternion.mul(quaternion, quatYaw, quaternion);
