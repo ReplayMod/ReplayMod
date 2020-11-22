@@ -39,6 +39,7 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.crash.CrashReport;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -65,6 +66,7 @@ import net.minecraft.network.NetworkSide;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -266,6 +268,23 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             List<Pair<Path, ReplayMetaData>> outputPaths;
             synchronized (replayFile) {
                 try {
+                    if (!MarkerProcessor.producesAnyOutput(replayFile)) {
+                        // Immediately close the saving popup, the user doesn't care about it
+                        core.runLater(guiSavingReplay::close);
+
+                        // We still have the replay, so we just save it (at least for a few weeks) in case they change their mind
+                        String replayName = FilenameUtils.getBaseName(outputPath.getFileName().toString());
+                        Path rawFolder = ReplayMod.instance.getRawReplayFolder();
+                        Path rawPath = rawFolder.resolve(outputPath.getFileName());
+                        for (int i = 1; Files.exists(rawPath); i++) {
+                            rawPath = rawPath.resolveSibling(replayName + "." + i + ".mcpr");
+                        }
+                        Files.createDirectories(rawPath.getParent());
+                        replayFile.saveTo(rawPath.toFile());
+                        replayFile.close();
+                        return;
+                    }
+
                     replayFile.save();
                     replayFile.close();
 

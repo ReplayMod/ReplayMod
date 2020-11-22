@@ -53,6 +53,10 @@ public class MarkerProcessor {
         }
     }
 
+    public static boolean producesAnyOutput(ReplayFile replayFile) throws IOException {
+        return !getOutputSuffixes(replayFile).isEmpty();
+    }
+
     private enum OutputState {
         /** A new output file has begun but not data has been written yet. */
         NotYetWriting,

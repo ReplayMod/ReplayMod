@@ -19,6 +19,7 @@
     //#endif
     //#if MC>=11400
     "Mixin_PreserveDepthDuringHandRendering",
+    "Mixin_WindowsWorkaroundForTinyEXRNatives",
     "MainWindowAccessor",
     //#endif
     "WorldRendererAccessor",

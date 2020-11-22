@@ -141,7 +141,9 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             for (Channel channel : Channel.values()) {
                 CubicOpenGlFrame leftFrame = leftChannels.get(channel);
                 CubicOpenGlFrame rightFrame = rightChannels.get(channel);
-                result.put(channel, new ODSOpenGlFrame(leftFrame, rightFrame));
+                if (leftFrame != null && rightFrame != null) {
+                    result.put(channel, new ODSOpenGlFrame(leftFrame, rightFrame));
+                }
             }
             return result;
         }
