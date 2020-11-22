@@ -2,6 +2,7 @@ package com.replaymod.recording.gui;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.recording.Setting;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
@@ -86,6 +87,10 @@ public class GuiSavingReplay {
                 .onClick(this::apply);
 
         panel.addElements(new VerticalLayout.Data(0.5), applyButton);
+
+        if (!core.getSettingsRegistry().get(Setting.RENAME_DIALOG)) {
+            apply();
+        }
     }
 
     private GuiTextField addOutput(Path path, ReplayMetaData metaData) {
