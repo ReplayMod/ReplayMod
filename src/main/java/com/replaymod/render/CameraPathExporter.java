@@ -91,7 +91,7 @@ public class CameraPathExporter {
 
         quatYaw.setFromAxisAngle(new Vector4f(0, -1, 0, (float) Math.toRadians(yaw)));
         quatPitch.setFromAxisAngle(new Vector4f(-1, 0, 0, (float) Math.toRadians(pitch)));
-        quatRoll.setFromAxisAngle(new Vector4f(0, 0, 1, (float) Math.toRadians(roll)));
+        quatRoll.setFromAxisAngle(new Vector4f(0, 0, -1, (float) Math.toRadians(roll)));
 
         Quaternion quaternion = new Quaternion(0, 0, 0, 1);
         Quaternion.mul(quaternion, quatYaw, quaternion);
@@ -213,7 +213,7 @@ public class CameraPathExporter {
         java.nio.file.Path videoPath = settings.getOutputFile().toPath();
         java.nio.file.Path glbBasePath = Files.isDirectory(videoPath)
                 ? videoPath.resolve("camera.glb")
-                : videoPath.resolveSibling(videoPath.getFileName() + ".glb");
+                : videoPath.resolveSibling(FilenameUtils.getBaseName(videoPath.getFileName().toString()) + ".glb");
         java.nio.file.Path glbPath = glbBasePath;
         for (int i = 0; Files.exists(glbPath); i++) {
             String baseName = FilenameUtils.getBaseName(glbBasePath.getFileName().toString());

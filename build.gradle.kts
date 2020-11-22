@@ -3,7 +3,7 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     id("fabric-loom") version "0.4-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "3c46acb"
+    id("com.replaymod.preprocess") version "24ac087"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
@@ -115,10 +115,7 @@ fun generateVersionsJson(): Map<String, Any> {
         versions.forEach {
             val (thisMcVersion, modVersion, preVersion) = it.split("-") + listOf(null, null)
             if (thisMcVersion == mcVersion) {
-                mcVersionRoot[it] = if (tagVersions.contains(it))
-                    "See https://github.com/ReplayMod/ReplayMod/releases/$it"
-                else
-                    "See https://www.replaymod.com/forum/thread/100"
+                mcVersionRoot[it] = "See https://www.replaymod.com/changelog.txt"
                 if (latest == null) latest = it
                 if (preVersion == null) {
                     if (recommended == null) recommended = it
@@ -147,13 +144,19 @@ val doRelease by tasks.registering {
             listOf(version, null)
         }
 
-        // Create new commit
+        // Merge release branch into stable but do not yet commit (we need to update the version.txt first)
+        command("git", "checkout", "stable")
+        command("git", "merge", "--no-ff", "--no-commit", "release-$version")
+
+        // Update version.txt
+        file("version.txt").writeText("$version\n")
+        command("git", "add", "version.txt")
+
+        // Finallize the merge. The message is what is later used to identify releses for building the version.json tree
         val commitMessage = if (preVersion != null)
             "Pre-release $preVersion of $modVersion"
         else
             "Release $modVersion"
-        file("version.txt").writeText("$version\n")
-        command("git", "add", "version.txt")
         command("git", "commit", "-m", commitMessage)
 
         // Generate versions.json content

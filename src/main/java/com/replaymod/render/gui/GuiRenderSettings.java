@@ -237,7 +237,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         @Override
         public void run() {
             // Closing this GUI ensures that settings are saved
-            getMinecraft().openScreen(null);
+            close();
             try {
                 VideoRenderer videoRenderer = new VideoRenderer(save(false), replayHandler, timeline);
                 videoRenderer.renderVideo();

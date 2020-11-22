@@ -2,6 +2,7 @@ package com.replaymod.recording.gui;
 
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.recording.Setting;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
@@ -83,12 +84,13 @@ public class GuiSavingReplay {
         GuiButton applyButton = new GuiButton()
                 .setSize(150, 20)
                 .setI18nLabel("replaymod.gui.done")
-                .onClick(() -> {
-                    apply.forEach(Runnable::run);
-                    close();
-                });
+                .onClick(this::apply);
 
         panel.addElements(new VerticalLayout.Data(0.5), applyButton);
+
+        if (!core.getSettingsRegistry().get(Setting.RENAME_DIALOG)) {
+            apply();
+        }
     }
 
     private GuiTextField addOutput(Path path, ReplayMetaData metaData) {
@@ -98,6 +100,7 @@ public class GuiSavingReplay {
                 .setText(originalName)
                 .setI18nHint("replaymod.gui.delete")
                 .setTextColorDisabled(Colors.RED)
+                .onEnter(this::apply)
                 .setTooltip(createTooltip(path, metaData));
         GuiButton clearButton = new GuiButton()
                 .setSize(20, 20)
@@ -131,6 +134,11 @@ public class GuiSavingReplay {
                 return new Dimension(size.getWidth() + 8, size.getHeight() + 8);
             }
         }).addElements(null, tooltip, entry);
+    }
+
+    private void apply() {
+        apply.forEach(Runnable::run);
+        close();
     }
 
     private void applyOutput(Path path, String newName) {

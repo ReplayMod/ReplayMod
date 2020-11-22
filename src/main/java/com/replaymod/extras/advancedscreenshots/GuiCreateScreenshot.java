@@ -50,7 +50,7 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
         buttonPanel.removeElement(queueButton);
         renderButton.setI18nLabel("replaymod.gui.advancedscreenshots.create").onClick(() -> {
             // Closing this GUI ensures that settings are saved
-            getMinecraft().openScreen(null);
+            close();
 
             mod.runLater(() -> {
                 try {
