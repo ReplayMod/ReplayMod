@@ -48,6 +48,7 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import de.johni0702.minecraft.gui.utils.lwjgl.WritablePoint;
+import java.util.concurrent.CancellationException;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
@@ -258,7 +259,11 @@ public class GuiPathing {
             @Override
             public void run() {
                 if (player.isActive()) {
-                    player.getFuture().cancel(false);
+                    try {
+                        player.getFuture().cancel(false);
+                    } catch (CancellationException error) {
+                        // No need to call core.printInfoChat("replaymod.chat.pathinterrupted") since that is done later in callbacks   
+                    }
                 } else {
                     boolean ignoreTimeKeyframes = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
 
