@@ -189,7 +189,7 @@ repositories {
     mavenLocal()
     maven {
         name = "SpongePowered Repo"
-        url = "http://repo.spongepowered.org/maven/"
+        url = "https://repo.spongepowered.org/maven/"
     }
     maven {
         name = "fabric"
