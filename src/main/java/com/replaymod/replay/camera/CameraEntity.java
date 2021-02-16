@@ -637,12 +637,11 @@ public class CameraEntity
     }
 
     public boolean canSpectate(Entity e) {
-        return e != null && !e.isInvisible()
-                //#if MC>=10800
-                && (e instanceof PlayerEntity || e instanceof MobEntity || e instanceof ItemFrameEntity);
-                //#else
-                //$$ && e instanceof EntityPlayer; // cannot be more generic since 1.7.10 has no concept of eye height
+        return e != null
+                //#if MC<10800
+                //$$ && e instanceof EntityPlayer // cannot be more generic since 1.7.10 has no concept of eye height
                 //#endif
+                && !e.isInvisible();
     }
 
     //#if MC<11400
