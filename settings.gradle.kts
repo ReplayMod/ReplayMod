@@ -48,6 +48,8 @@ val replayModVersions = listOf(
         "1.16.4"
 )
 
+rootProject.buildFileName = "root.gradle.kts"
+
 include(":jGui")
 project(":jGui").apply {
     projectDir = file("jGui")
@@ -57,7 +59,7 @@ jGuiVersions.forEach { version ->
     include(":jGui:$version")
     project(":jGui:$version").apply {
         projectDir = file("jGui/versions/$version")
-        buildFileName = "../common.gradle"
+        buildFileName = "../../build.gradle"
     }
 }
 
@@ -65,6 +67,6 @@ replayModVersions.forEach { version ->
     include(":$version")
     project(":$version").apply {
         projectDir = file("versions/$version")
-        buildFileName = "../common.gradle"
+        buildFileName = "../../build.gradle"
     }
 }
