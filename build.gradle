@@ -274,7 +274,7 @@ dependencies {
 
     if (!FABRIC) {
         // Mixin 0.8 is no longer compatible with MC 1.11.2 or older
-        def mixinVersion = mcVersion >= 11200 ? '0.8' : '0.7.10-SNAPSHOT'
+        def mixinVersion = mcVersion >= 11200 ? '0.8.2' : '0.7.11-SNAPSHOT'
         annotationProcessor "org.spongepowered:mixin:$mixinVersion"
         compileOnly "org.spongepowered:mixin:$mixinVersion"
         shade("org.spongepowered:mixin:$mixinVersion") {
@@ -285,6 +285,7 @@ dependencies {
         annotationProcessor 'com.google.code.gson:gson:2.2.4'
         annotationProcessor 'com.google.guava:guava:21.0'
         annotationProcessor 'org.ow2.asm:asm-tree:6.2'
+        annotationProcessor 'org.apache.logging.log4j:log4j-core:2.0-beta9'
     }
     shadow 'com.googlecode.mp4parser:isoparser:1.1.7'
     shadow 'org.apache.commons:commons-exec:1.3'
