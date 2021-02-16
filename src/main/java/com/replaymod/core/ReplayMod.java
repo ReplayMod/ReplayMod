@@ -476,6 +476,14 @@ public class ReplayMod implements
                     String name = path.getFileName().toString();
                     if (name.endsWith(".mcpr.tmp") && Files.isDirectory(path)) {
                         Path original = path.resolveSibling(FilenameUtils.getBaseName(name));
+                        Path noRecoverMarker = original.resolveSibling(original.getFileName() + ".no_recover");
+                        if (Files.exists(noRecoverMarker)) {
+                            // This file, when its markers are processed, doesn't actually result in any replays.
+                            // So we don't really need to recover it either, let's just get rid of it.
+                            FileUtils.deleteDirectory(path.toFile());
+                            Files.delete(noRecoverMarker);
+                            continue;
+                        }
                         new RestoreReplayGui(this, GuiScreen.wrap(mc.currentScreen), original.toFile()).display();
                     }
                 }

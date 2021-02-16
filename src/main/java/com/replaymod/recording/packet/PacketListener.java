@@ -272,6 +272,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                         // Immediately close the saving popup, the user doesn't care about it
                         core.runLater(guiSavingReplay::close);
 
+                        // If we crash right here, on the next start we'll prompt the user for recovery
+                        // but we don't really want that, so drop a marker file to skip recovery for this replay.
+                        Files.createFile(outputPath.resolveSibling(outputPath.getFileName() + ".no_recover"));
+
                         // We still have the replay, so we just save it (at least for a few weeks) in case they change their mind
                         String replayName = FilenameUtils.getBaseName(outputPath.getFileName().toString());
                         Path rawFolder = ReplayMod.instance.getRawReplayFolder();
