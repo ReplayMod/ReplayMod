@@ -51,6 +51,7 @@ import net.minecraft.util.hit.HitResult;
 //$$ import net.minecraft.util.math.RayTraceResult;
 //$$ import net.minecraft.util.text.ITextComponent;
 //$$ import net.minecraft.world.World;
+//$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
 //$$
 //#if MC>=11400
 //$$ import net.minecraft.util.math.RayTraceFluidMode;
@@ -694,6 +695,16 @@ public class CameraEntity
 
         //#if FABRIC>=1
         { on(KeyBindingEventCallback.EVENT, CameraEntity.this::handleInputEvents); }
+        //#elseif MC<11400
+        //$$ @SubscribeEvent
+        //$$ public void onKeyEvent(InputEvent.KeyInputEvent event) {
+        //$$     handleInputEvents();
+        //$$ }
+        //$$
+        //$$ @SubscribeEvent
+        //$$ public void onMouseInput(InputEvent.MouseInputEvent event) {
+        //$$     handleInputEvents();
+        //$$ }
         //#endif
 
         //#if FABRIC>=1
