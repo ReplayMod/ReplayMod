@@ -10,7 +10,9 @@ buildscript {
 
     repositories {
         mavenLocal()
-        jcenter()
+        maven {
+            url = "https://plugins.gradle.org/m2/"
+        }
         mavenCentral()
         maven {
             name = "fabric"
@@ -32,7 +34,7 @@ buildscript {
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.4-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.5-SNAPSHOT'
         } else if (mcVersion >= 11400) {
             classpath('net.minecraftforge.gradle:ForgeGradle:3.+'){
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
@@ -189,7 +191,7 @@ repositories {
     mavenLocal()
     maven {
         name = "SpongePowered Repo"
-        url = "http://repo.spongepowered.org/maven/"
+        url = "https://repo.spongepowered.org/maven/"
     }
     maven {
         name = "fabric"
@@ -272,7 +274,7 @@ dependencies {
 
     if (!FABRIC) {
         // Mixin 0.8 is no longer compatible with MC 1.11.2 or older
-        def mixinVersion = mcVersion >= 11200 ? '0.8' : '0.7.10-SNAPSHOT'
+        def mixinVersion = mcVersion >= 11200 ? '0.8.2' : '0.7.11-SNAPSHOT'
         annotationProcessor "org.spongepowered:mixin:$mixinVersion"
         compileOnly "org.spongepowered:mixin:$mixinVersion"
         shade("org.spongepowered:mixin:$mixinVersion") {
@@ -283,6 +285,7 @@ dependencies {
         annotationProcessor 'com.google.code.gson:gson:2.2.4'
         annotationProcessor 'com.google.guava:guava:21.0'
         annotationProcessor 'org.ow2.asm:asm-tree:6.2'
+        annotationProcessor 'org.apache.logging.log4j:log4j-core:2.0-beta9'
     }
     shadow 'com.googlecode.mp4parser:isoparser:1.1.7'
     shadow 'org.apache.commons:commons-exec:1.3'
@@ -309,7 +312,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:dac74cc", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:a1f82a7", shadeExclusions
 
     implementation(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those

@@ -19,7 +19,6 @@ import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.render.mixin.WorldRendererAccessor;
-import com.replaymod.render.utils.SoundHandler;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -29,6 +28,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
@@ -422,7 +422,7 @@ public class VideoRenderer implements RenderInfo {
             }
         }
 
-        new SoundHandler().playRenderSuccessSound();
+        MCVer.playSound(new Identifier("replaymod", "render_success"));
 
         try {
             if (!hasFailed() && ffmpegWriter != null) {

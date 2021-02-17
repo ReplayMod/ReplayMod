@@ -67,6 +67,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CancellationException;
 import java.util.function.Consumer;
 
 import static com.replaymod.core.utils.Utils.error;
@@ -287,7 +288,9 @@ public class GuiPathing {
 
                         @Override
                         public void onFailure(Throwable t) {
-                            t.printStackTrace();
+                            if (!(t instanceof CancellationException)) {
+                                t.printStackTrace();
+                            }
                             overlay.setCloseable(true);
                         }
                     });

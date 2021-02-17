@@ -339,9 +339,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
      */
     @Override
     public int currentTimeStamp() {
-        if (asyncMode) {
-            int timePassed = (int) (System.currentTimeMillis() - lastPacketSent);
-            return lastTimeStamp + (int) (timePassed * getReplaySpeed());
+        if (asyncMode && !paused()) {
+            return (int) ((System.currentTimeMillis() - realTimeStart) * realTimeStartSpeed);
         } else {
             return lastTimeStamp;
         }
@@ -864,7 +863,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
      */
     @Override
     public void setReplaySpeed(final double d) {
-        if(d != 0) this.replaySpeed = d;
+        if (d != 0) {
+            this.replaySpeed = d;
+            this.realTimeStartSpeed = d;
+            this.realTimeStart = System.currentTimeMillis() - (long) (lastTimeStamp / d);
+        }
         TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
         timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK / (float) d);
@@ -878,9 +881,18 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     /////////////////////////////////////////////////////////
 
     /**
-     * The real time at which the last packet was sent in milliseconds.
+     * Timestamp in milliseconds of when we started (or would have started when taking pauses and speed into account)
+     * the playback of the replay.
+     * Updated only when replay speed changes or on pause/unpause but definitely not on every packet to prevent gradual
+     * drifting.
      */
-    private long lastPacketSent;
+    private long realTimeStart;
+
+    /**
+     * The replay speed used for {@link #realTimeStart}.
+     * If the target speed differs from this one, the timestamp is recalculated.
+     */
+    private double realTimeStartSpeed;
 
     /**
      * There is no waiting performed until a packet with at least this timestamp is reached (but not yet sent).
@@ -936,15 +948,13 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 // If we aren't jumping and the world has already been loaded (no dirt-screens) then wait
                                 // the required amount to get proper packet timing
                                 if (!isHurrying() && hasWorldLoaded) {
-                                    // How much time should have passed
-                                    int timeWait = (int) Math.round((nextTimeStamp - lastTimeStamp) / replaySpeed);
-                                    // How much time did pass
-                                    long timeDiff = System.currentTimeMillis() - lastPacketSent;
-                                    // How much time we need to wait to make up for the difference
-                                    long timeToSleep = Math.max(0, timeWait - timeDiff);
-
-                                    Thread.sleep(timeToSleep);
-                                    lastPacketSent = System.currentTimeMillis();
+                                    // Timestamp of when the next packet should be sent
+                                    long expectedTime = realTimeStart + (long) (nextTimeStamp / replaySpeed);
+                                    long now = System.currentTimeMillis();
+                                    // If the packet should not yet be sent, wait a bit
+                                    if (expectedTime > now) {
+                                        Thread.sleep(expectedTime - now);
+                                    }
                                 }
 
                                 // Process packet
@@ -961,7 +971,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                                     replayHandler.moveCameraToTargetPosition();
 
-                                    // Pause after jumping
+                                    // Pause after jumping (this will also reset realTimeStart accordingly)
                                     setReplaySpeed(0);
                                 }
                             } catch (EOFException eof) {
@@ -988,7 +998,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         loginPhase = true;
                         startFromBeginning = false;
                         nextPacket = null;
-                        lastPacketSent = System.currentTimeMillis();
+                        realTimeStart = System.currentTimeMillis();
                         if (replayIn != null) {
                             replayIn.close();
                             replayIn = null;
@@ -1133,7 +1143,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 }
 
                 // This might be required if we change to async mode anytime soon
-                lastPacketSent = System.currentTimeMillis();
+                realTimeStart = System.currentTimeMillis() - (long) (timestamp / replaySpeed);
                 lastTimeStamp = timestamp;
             }
         } catch (Exception e) {
