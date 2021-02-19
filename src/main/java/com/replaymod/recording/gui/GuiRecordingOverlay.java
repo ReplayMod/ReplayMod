@@ -61,7 +61,7 @@ public class GuiRecordingOverlay extends EventRegistrations {
                     text.toUpperCase(), 30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff);
             bindTexture(TEXTURE);
             enableAlphaTest();
-            GuiRenderer renderer = new MinecraftGuiRenderer(stack, MCVer.newScaledResolution(mc));
+            GuiRenderer renderer = new MinecraftGuiRenderer(stack);
             renderer.drawTexturedRect(10, 10, 58, 20, 16, 16, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
         }
     }
