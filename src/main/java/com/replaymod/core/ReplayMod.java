@@ -202,9 +202,7 @@ public class ReplayMod implements
         modules.add(new ReplayModExtras(this));
         modules.add(new ReplayModCompat());
 
-        //#if MC>=11400
         settingsRegistry.register();
-        //#endif
     }
 
     //#if MC<=11400
@@ -212,7 +210,7 @@ public class ReplayMod implements
     //$$ public void init(FMLPreInitializationEvent event) {
     //$$     config = new Configuration(event.getSuggestedConfigurationFile());
     //$$     config.load();
-    //$$     settingsRegistry.setConfiguration(config);
+    //$$     settingsRegistry.backend.setConfiguration(config);
     //$$     settingsRegistry.save(); // Save default values to disk
     //$$ }
     //#endif
