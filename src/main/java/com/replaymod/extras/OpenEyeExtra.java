@@ -28,7 +28,7 @@ import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
 import static com.replaymod.extras.ReplayModExtras.LOGGER;
 
 public class OpenEyeExtra implements Extra {
-    private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + ReplayMod.getMinecraftVersion();
+    private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + MCVer.getMinecraftVersion();
 
     private ReplayMod mod;
 
@@ -86,7 +86,7 @@ public class OpenEyeExtra implements Extra {
                 GuiPopup popup = new GuiPopup(OfferGui.this);
                 new Thread(() -> {
                     try {
-                        File targetFile = new File(mod.getMinecraft().runDirectory, "mods/" + ReplayMod.getMinecraftVersion() + "/OpenEye.jar");
+                        File targetFile = new File(mod.getMinecraft().runDirectory, "mods/" + MCVer.getMinecraftVersion() + "/OpenEye.jar");
                         FileUtils.forceMkdir(targetFile.getParentFile());
 
                         HttpsURLConnection connection = (HttpsURLConnection) new URL(DOWNLOAD_URL).openConnection();

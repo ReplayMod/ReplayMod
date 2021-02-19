@@ -176,6 +176,14 @@ public class MCVer {
         );
     }
 
+    public static String getMinecraftVersion() {
+        //#if MC>=11400
+        return getMinecraft().getGame().getVersion().getName();
+        //#else
+        //$$ return Loader.MC_VERSION;
+        //#endif
+    }
+
     public static void addDetail(CrashReportSection category, String name, Callable<String> callable) {
         //#if MC>=10904
         //#if MC>=11200

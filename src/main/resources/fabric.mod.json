@@ -20,7 +20,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.replaymod.core.ReplayMod"
+      "com.replaymod.core.ReplayModBackend"
     ],
     "modmenu": [
       "com.replaymod.core.gui.ModMenuApiImpl"
