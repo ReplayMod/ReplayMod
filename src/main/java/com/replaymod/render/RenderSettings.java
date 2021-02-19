@@ -443,4 +443,32 @@ public class RenderSettings {
     public boolean isHighPerformance() {
         return highPerformance;
     }
+
+    @Override
+    public String toString() {
+        return "RenderSettings{" +
+                "renderMethod=" + renderMethod +
+                ", encodingPreset=" + encodingPreset +
+                ", videoWidth=" + videoWidth +
+                ", videoHeight=" + videoHeight +
+                ", framesPerSecond=" + framesPerSecond +
+                ", bitRate=" + bitRate +
+                ", outputFile=" + outputFile +
+                ", renderNameTags=" + renderNameTags +
+                ", stabilizeYaw=" + stabilizeYaw +
+                ", stabilizePitch=" + stabilizePitch +
+                ", stabilizeRoll=" + stabilizeRoll +
+                ", chromaKeyingColor=" + chromaKeyingColor +
+                ", sphericalFovX=" + sphericalFovX +
+                ", sphericalFovY=" + sphericalFovY +
+                ", injectSphericalMetadata=" + injectSphericalMetadata +
+                ", depthMap=" + depthMap +
+                ", cameraPathExport=" + cameraPathExport +
+                ", antiAliasing=" + antiAliasing +
+                ", exportCommand='" + exportCommand + '\'' +
+                ", exportArgumentsPreBgra='" + exportArgumentsPreBgra + '\'' +
+                ", exportArguments='" + exportArguments + '\'' +
+                ", highPerformance=" + highPerformance +
+                '}';
+    }
 }

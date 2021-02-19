@@ -80,9 +80,16 @@ import org.lwjgl.glfw.GLFW;
 //$$ import java.io.IOException;
 //#endif
 
+//#if MC>=11400
+import net.minecraft.client.sound.PositionedSoundInstance;
+//#else
+//$$ import net.minecraft.client.audio.PositionedSoundRecord;
+//#endif
+
 //#if MC>=10904
 import com.replaymod.render.blend.mixin.ParticleAccessor;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.Vec3d;
 //#endif
 
@@ -756,6 +763,20 @@ public class MCVer {
             // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
             return "Unknown";
         }
+    }
+
+    public static void playSound(Identifier sound) {
+        getMinecraft().getSoundManager().play(
+                //#if MC>=11400
+                PositionedSoundInstance.master(new SoundEvent(sound), 1.0F)
+                //#elseif MC>=10904
+                //$$ PositionedSoundRecord.getMasterRecord(new SoundEvent(sound), 1.0F)
+                //#elseif MC>=10800
+                //$$ PositionedSoundRecord.create(sound, 1.0F)
+                //#else
+                //$$ PositionedSoundRecord.createPositionedSoundRecord(sound, 1.0F)
+                //#endif
+        );
     }
 
     //#if MC>=11400

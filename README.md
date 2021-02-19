@@ -16,8 +16,6 @@ Build the mod via Gradle as explained above at least once (`./gradlew compileJav
 Then import the Gradle project from within IDEA: File -> Open -> build.gradle -> Open as Project
 Finally configure IDEA to build everything by itself instead of delegating it to Gradle (cause that is slow): File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> Build and run using: IntelliJ IDEA
 
-The generation of run configurations for 1.14+ currently depends on https://github.com/FabricMC/fabric-loom/pull/236
-
 ### Eclipse
 
 ## Development

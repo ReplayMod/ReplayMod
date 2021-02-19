@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
@@ -148,8 +149,15 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         renderButton.onClick(() -> {
             LOGGER.trace("Render button clicked");
             List<RenderJob> renderQueue = new ArrayList<>();
-            for (Entry entry : selectedEntries) {
-                renderQueue.add(entry.job);
+            if (selectedEntries.isEmpty()) {
+                renderQueue.addAll(jobs);
+            } else {
+                Set<RenderJob> selectedJobs = selectedEntries.stream().map(it -> it.job).collect(Collectors.toSet());
+                for (RenderJob job : jobs) {
+                    if (selectedJobs.contains(job)) {
+                        renderQueue.add(job);
+                    }
+                }
             }
             ReplayMod.instance.runLaterWithoutLock(() -> processQueue(container, replayHandler, renderQueue, () -> {}));
         });
@@ -337,7 +345,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         addButton.setEnabled(timelineSupplier != null);
         editButton.setEnabled(selected == 1);
         removeButton.setEnabled(selected >= 1);
-        renderButton.setEnabled(selected > 0);
+        renderButton.setEnabled(jobs.size() > 0);
         renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
 
         String[] compatError = VideoRenderer.checkCompat();

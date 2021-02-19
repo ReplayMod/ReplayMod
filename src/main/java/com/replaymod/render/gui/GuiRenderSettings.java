@@ -126,7 +126,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         public void run() {
             GuiFileChooserPopup popup = GuiFileChooserPopup.openSaveGui(GuiRenderSettings.this, "replaymod.gui.save",
                     encodingPresetDropdown.getSelectedValue().getFileExtension());
-            popup.setFolder(outputFile.getParentFile());
+            popup.setFolder(getParentFile(outputFile));
             popup.setFileName(outputFile.getName());
             popup.onAccept(file -> {
                 if (!file.getName().equals(outputFile.getName())) {
@@ -523,13 +523,13 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             bitRateUnit.setSelected(0);
         }
         File savedOutputFile = settings.getOutputFile();
-        if (savedOutputFile == null || !savedOutputFile.getParentFile().exists()) {
+        if (savedOutputFile == null || !getParentFile(savedOutputFile).exists()) {
             this.outputFile = generateOutputFile(encodingPreset);
             userDefinedOutputFileName = false;
         } else if (savedOutputFile.exists()) {
             String name = generateOutputFile(encodingPreset).getName();
             boolean isFolder = savedOutputFile.isDirectory() && !savedOutputFile.getName().endsWith(".exr");
-            this.outputFile = new File(isFolder ? savedOutputFile : savedOutputFile.getParentFile(), name);
+            this.outputFile = new File(isFolder ? savedOutputFile : getParentFile(savedOutputFile), name);
             userDefinedOutputFileName = false;
         } else {
             this.outputFile = conformExtension(savedOutputFile, encodingPreset);
@@ -573,7 +573,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                 videoHeight.getInteger(),
                 frameRateSlider.getValue() + 10,
                 bitRateField.getInteger() << (10 * bitRateUnit.getSelected()),
-                serialize && !userDefinedOutputFileName ? outputFile.getParentFile() : outputFile,
+                serialize && !userDefinedOutputFileName ? getParentFile(outputFile) : outputFile,
                 nametagCheckbox.isChecked(),
                 stabilizeYaw.isChecked() && (serialize || stabilizeYaw.isEnabled()),
                 stabilizePitch.isChecked() && (serialize || stabilizePitch.isEnabled()),
@@ -602,7 +602,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
 
     public void setOutputFileBaseName(String base) {
         RenderSettings.EncodingPreset preset = encodingPresetDropdown.getSelectedValue();
-        File file = new File(outputFile.getParentFile(), base + "." + preset.getFileExtension());
+        File file = new File(getParentFile(outputFile), base + "." + preset.getFileExtension());
         // Ensure the file name is valid
         try {
             //noinspection ResultOfMethodCallIgnored
@@ -619,7 +619,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         if (name.contains(".")) {
             name = name.substring(0, name.lastIndexOf('.'));
         }
-        return new File(file.getParentFile(), name + "." + preset.getFileExtension());
+        return new File(getParentFile(file), name + "." + preset.getFileExtension());
     }
 
     protected Path getSettingsPath() {
@@ -661,5 +661,11 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         GuiScreen screen = new GuiScreen();
         screen.setBackground(AbstractGuiScreen.Background.NONE);
         return screen;
+    }
+
+    private static File getParentFile(File file) {
+        File parent = file.getParentFile();
+        // parent this can be null if file is just a name (i.e. in CWD)
+        return parent == null ? new File(".") : parent;
     }
 }
