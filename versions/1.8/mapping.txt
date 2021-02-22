@@ -34,3 +34,4 @@ net.minecraftforge.fml.common.gameevent.InputEvent cpw.mods.fml.common.gameevent
 net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer net.minecraft.client.renderer.tileentity.RenderEndPortal
 net.minecraft.network.play.server.S3FPacketCustomPayload getChannelName() func_149169_c()
 net.minecraft.network.play.server.S01PacketJoinGame getEntityId() func_149197_c()
+net.minecraft.client.network.NetHandlerLoginClient networkManager field_147393_d
