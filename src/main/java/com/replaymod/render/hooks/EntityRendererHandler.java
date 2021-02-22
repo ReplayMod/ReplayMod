@@ -1,5 +1,6 @@
 package com.replaymod.render.hooks;
 
+import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.capturer.CaptureData;
@@ -15,7 +16,6 @@ import net.minecraft.client.util.math.MatrixStack;
 //#if MC>=11400
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
-import com.replaymod.core.events.PreRenderHandCallback;
 //#else
 //#if MC>=11400
 //$$ import net.minecraftforge.fml.hooks.BasicEventHooks;
@@ -41,9 +41,7 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
         this.settings = settings;
         this.renderInfo = renderInfo;
 
-        //#if MC>=11400
         on(PreRenderHandCallback.EVENT, () -> omnidirectional);
-        //#endif
 
         ((IEntityRenderer) mc.gameRenderer).replayModRender_setHandler(this);
         register();

@@ -1,6 +1,8 @@
 package com.replaymod.simplepathing.preview;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.events.PostRenderWorldCallback;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
@@ -17,7 +19,7 @@ import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,14 +28,6 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=11500
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.util.math.MatrixStack;
-//#endif
-
-//#if FABRIC>=1
-import com.replaymod.core.events.PostRenderWorldCallback;
-//#else
-//$$ import net.minecraftforge.client.event.RenderWorldLastEvent;
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#endif
 
 import java.util.Comparator;
@@ -58,17 +52,8 @@ public class PathPreviewRenderer extends EventRegistrations {
         this.replayHandler = replayHandler;
     }
 
-    //#if FABRIC>=1
     { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
-    //#if MC>=11500
     private void renderCameraPath(MatrixStack matrixStack) {
-    //#else
-    //$$ private void renderCameraPath() {
-    //#endif
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void renderCameraPath(RenderWorldLastEvent event) {
-    //#endif
         if (!replayHandler.getReplaySender().isAsyncMode() || mc.options.hudHidden) return;
 
         Entity view = getRenderViewEntity(mc);

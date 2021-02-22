@@ -1,6 +1,7 @@
 //#if MC>=10800
 package com.replaymod.compat.shaders;
 
+import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
@@ -8,13 +9,6 @@ import net.minecraft.client.MinecraftClient;
 import java.lang.reflect.InvocationTargetException;
 
 import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
-
-//#if FABRIC>=1
-import com.replaymod.core.events.PreRenderCallback;
-//#else
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.event.TickEvent;
-//#endif
 
 public class ShaderBeginRender extends EventRegistrations {
 
@@ -25,14 +19,8 @@ public class ShaderBeginRender extends EventRegistrations {
      *  as this would usually get called by EntityRenderer#renderWorld,
      *  which we're not calling during rendering.
      */
-    //#if FABRIC>=1
     { on(PreRenderCallback.EVENT, this::onRenderTickStart); }
     private void onRenderTickStart() {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void onRenderTickStart(TickEvent.RenderTickEvent event) {
-    //$$     if (event.phase != TickEvent.Phase.START) return;
-    //#endif
         if (ShaderReflection.shaders_beginRender == null) return;
         if (ShaderReflection.config_isShaders == null) return;
 

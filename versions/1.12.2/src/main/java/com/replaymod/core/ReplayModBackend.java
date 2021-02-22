@@ -1,6 +1,7 @@
 package com.replaymod.core;
 
 import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.core.versions.forge.EventsAdapter;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Loader;
@@ -36,6 +37,7 @@ import static com.replaymod.core.versions.MCVer.getMinecraft;
         guiFactory = "com.replaymod.core.gui.GuiFactory")
 public class ReplayModBackend {
     private final ReplayMod mod = new ReplayMod(this);
+    private final EventsAdapter eventsAdapter = new EventsAdapter();
 
     @Deprecated
     public static Configuration config;
@@ -52,6 +54,7 @@ public class ReplayModBackend {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         mod.initModules();
+        eventsAdapter.register();
     }
 
     public String getVersion() {

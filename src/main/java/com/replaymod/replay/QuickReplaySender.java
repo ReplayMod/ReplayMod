@@ -12,6 +12,7 @@ import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.util.RandomAccessReplay;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
@@ -24,15 +25,6 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
-
-//#if FABRIC>=1
-import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-//#else
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.event.TickEvent;
-//$$
-//$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
-//#endif
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -285,14 +277,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     }
 
     private class EventHandler extends EventRegistrations {
-        //#if FABRIC>=1
         { on(PreTickCallback.EVENT, this::onTick); }
         private void onTick() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onTick(TickEvent.ClientTickEvent event) {
-        //$$     if (event.phase != TickEvent.Phase.START) return;
-        //#endif
             if (!asyncMode || paused()) return;
 
             long now = System.currentTimeMillis();

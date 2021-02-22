@@ -1,4 +1,3 @@
-//#if MC>=11400
 package com.replaymod.core.events;
 
 import de.johni0702.minecraft.gui.utils.Event;
@@ -17,4 +16,3 @@ public interface PreRenderHandCallback {
 
     boolean preRenderHand();
 }
-//#endif

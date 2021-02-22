@@ -3,9 +3,13 @@ package com.replaymod.replay.camera;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
+import com.replaymod.core.events.KeyBindingEventCallback;
+import com.replaymod.core.events.PreRenderCallback;
+import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.core.events.SettingsChangedCallback;
 import com.replaymod.replay.ReplayHandler;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
@@ -24,20 +28,14 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 
 //#if FABRIC>=1
-import com.replaymod.core.events.KeyBindingEventCallback;
-import com.replaymod.core.events.PreRenderCallback;
-import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
-import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //#else
 //$$ import com.replaymod.core.versions.MCVer;
 //$$ import net.minecraftforge.client.event.EntityViewRenderEvent;
 //$$ import net.minecraftforge.client.event.RenderGameOverlayEvent;
-//$$ import net.minecraftforge.client.event.RenderHandEvent;
 //$$ import net.minecraftforge.common.MinecraftForge;
 //$$ import net.minecraftforge.eventbus.api.EventPriority;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.event.TickEvent;
 //#endif
 
 //#if MC>=11400
@@ -51,7 +49,6 @@ import net.minecraft.util.hit.HitResult;
 //$$ import net.minecraft.util.math.RayTraceResult;
 //$$ import net.minecraft.util.text.ITextComponent;
 //$$ import net.minecraft.world.World;
-//$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
 //$$
 //#if MC>=11400
 //$$ import net.minecraft.util.math.RayTraceFluidMode;
@@ -671,41 +668,17 @@ public class CameraEntity
 
         private EventHandler() {}
 
-        //#if FABRIC>=1
         { on(PreTickCallback.EVENT, this::onPreClientTick); }
         private void onPreClientTick() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onPreClientTick(TickEvent.ClientTickEvent event) {
-        //$$     if (event.phase != TickEvent.Phase.START) return;
-        //#endif
             updateArmYawAndPitch();
         }
 
-        //#if FABRIC>=1
         { on(PreRenderCallback.EVENT, this::onRenderUpdate); }
         private void onRenderUpdate() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onRenderUpdate(TickEvent.RenderTickEvent event) {
-        //$$     if (event.phase != TickEvent.Phase.START) return;
-        //#endif
             update();
         }
 
-        //#if FABRIC>=1
         { on(KeyBindingEventCallback.EVENT, CameraEntity.this::handleInputEvents); }
-        //#elseif MC<11400
-        //$$ @SubscribeEvent
-        //$$ public void onKeyEvent(InputEvent.KeyInputEvent event) {
-        //$$     handleInputEvents();
-        //$$ }
-        //$$
-        //$$ @SubscribeEvent
-        //$$ public void onMouseInput(InputEvent.MouseInputEvent event) {
-        //$$     handleInputEvents();
-        //$$ }
-        //#endif
 
         //#if FABRIC>=1
         { on(RenderSpectatorCrosshairCallback.EVENT, this::shouldRenderSpectatorCrosshair); }
@@ -737,35 +710,13 @@ public class CameraEntity
             }
         }
 
-        //#if FABRIC>=1
         { on(PreRenderHandCallback.EVENT, this::onRenderHand); }
         private boolean onRenderHand() {
             // Unless we are spectating another player, don't render our hand
-            if (getRenderViewEntity(mc) == CameraEntity.this || !(getRenderViewEntity(mc) instanceof PlayerEntity)) {
+            Entity view = getRenderViewEntity(mc);
+            if (view == CameraEntity.this || !(view instanceof PlayerEntity)) {
                 return true; // cancel hand rendering
             } else {
-                onRenderHandMonitor();
-                return false;
-            }
-        }
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onRenderHand(RenderHandEvent event) {
-        //$$     // Unless we are spectating another player, don't render our hand
-        //$$     if (getRenderViewEntity(mc) == CameraEntity.this || !(getRenderViewEntity(mc) instanceof PlayerEntity)) {
-        //$$         event.setCanceled(true);
-        //$$     }
-        //$$ }
-        //#endif
-
-        //#if FABRIC>=1
-        private void onRenderHandMonitor() {
-        //#else
-        //$$ @SubscribeEvent(priority = EventPriority.LOWEST)
-        //$$ public void onRenderHandMonitor(RenderHandEvent event) {
-        //#endif
-            Entity view = getRenderViewEntity(mc);
-            if (view instanceof PlayerEntity) {
                 PlayerEntity player = (PlayerEntity) view;
                 // When the spectated player has changed, force equip their items to prevent the equip animation
                 if (lastHandRendered != player) {
@@ -790,6 +741,7 @@ public class CameraEntity
                     mc.player.renderYaw = mc.player.lastRenderYaw = player.yaw;
                     mc.player.renderPitch = mc.player.lastRenderPitch = player.pitch;
                 }
+                return false;
             }
         }
 

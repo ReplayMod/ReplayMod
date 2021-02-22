@@ -1,6 +1,7 @@
 package com.replaymod.replay.handler;
 
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import net.minecraft.client.gui.screen.GameMenuScreen;
@@ -16,9 +17,7 @@ import net.minecraft.text.TranslatableText;
 //$$ import net.minecraft.client.resource.language.I18n;
 //#endif
 
-//#if FABRIC>=1
-import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-//#else
+//#if FABRIC<1
 //$$ import net.minecraftforge.client.event.GuiScreenEvent;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#endif
@@ -46,15 +45,8 @@ public class GuiHandler extends EventRegistrations {
         this.mod = mod;
     }
 
-    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
     private void injectIntoIngameMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void injectIntoIngameMenu(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     Screen guiScreen = getGui(event);
-    //$$     List<Widget> buttonList = getButtonList(event);
-    //#endif
         if (!(guiScreen instanceof GameMenuScreen)) {
             return;
         }
@@ -198,14 +190,8 @@ public class GuiHandler extends EventRegistrations {
                 .forEach(button -> button.y += moveBy);
     }
 
-    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::ensureReplayStopped); }
     private void ensureReplayStopped(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void ensureReplayStopped(GuiScreenEvent.InitGuiEvent event) {
-    //$$     Screen guiScreen = getGui(event);
-    //#endif
         if (!(guiScreen instanceof TitleScreen || guiScreen instanceof MultiplayerScreen)) {
             return;
         }
@@ -225,15 +211,8 @@ public class GuiHandler extends EventRegistrations {
         }
     }
 
-    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::injectIntoMainMenu); }
     private void injectIntoMainMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void injectIntoMainMenu(GuiScreenEvent.InitGuiEvent event) {
-    //$$     Screen guiScreen = getGui(event);
-    //$$     List<Widget> buttonList = getButtonList(event);
-    //#endif
         if (!(guiScreen instanceof TitleScreen)) {
             return;
         }
@@ -269,7 +248,7 @@ public class GuiHandler extends EventRegistrations {
         //#if FABRIC<=0
         //$$ if (guiScreen.getClass().getName().endsWith("custommainmenu.gui.GuiFakeMain")) {
         //$$     // CustomMainMenu uses a different list in the event than in its Fake gui
-        //$$     addButton(event, button);
+        //$$     buttonList.add(button);
         //$$     return;
         //$$ }
         //#endif

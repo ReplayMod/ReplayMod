@@ -12,6 +12,7 @@ import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
@@ -56,13 +57,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-
-//#if FABRIC>=1
-import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-//#else
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.event.TickEvent;
-//#endif
 
 //#if MC>=11600
 //#else
@@ -364,22 +358,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         }
     }
 
-    //#if MC>=10800
-    private
-    //#else
-    //$$ public // All event handlers need to be public in 1.7.10
-    //#endif
-    class EventHandler extends EventRegistrations {
-        //#if FABRIC>=1
+    private class EventHandler extends EventRegistrations {
         { on(PreTickCallback.EVENT, this::onWorldTick); }
         private void onWorldTick() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onWorldTick(TickEvent.ClientTickEvent event) {
-        //$$     // Unfortunately the WorldTickEvent doesn't seem to be emitted on the CLIENT side
-        //$$     if (event.phase != TickEvent.Phase.START) return;
-        //#endif
-
             // Spawning a player into an empty chunk (which we might do with the recording player)
             // prevents it from being moved by teleport packets (it essentially gets stuck) because
             // Entity#addedToChunk is not set and it is therefore not updated every tick.

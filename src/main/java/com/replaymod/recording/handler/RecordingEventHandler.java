@@ -1,8 +1,10 @@
 package com.replaymod.recording.handler;
 
+import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.recording.mixin.IntegratedServerAccessor;
 import com.replaymod.recording.packet.PacketListener;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
@@ -20,15 +22,11 @@ import net.minecraft.network.Packet;
 import net.minecraft.server.integrated.IntegratedServer;
 // FIXME not (yet?) 1.13 import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 
-//#if FABRIC>=1
-import com.replaymod.core.events.PreRenderCallback;
-import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-//#else
+//#if FABRIC<1
 //$$ import net.minecraft.network.play.server.SCollectItemPacket;
 //$$ import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //$$ import net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent;
-//$$ import net.minecraftforge.event.TickEvent;
 //#endif
 
 //#if MC>=11600
@@ -139,15 +137,9 @@ public class RecordingEventHandler extends EventRegistrations {
     }
     //#endif
 
-    //#if FABRIC>=1
     { on(PreTickCallback.EVENT, this::onPlayerTick); }
     private void onPlayerTick() {
         if (mc.player == null) return;
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void onPlayerTick(TickEvent.ClientTickEvent e) {
-    //$$     if(e.phase != TickEvent.Phase.START || mc.player == null) return;
-    //#endif
         ClientPlayerEntity player = mc.player;
         try {
 
@@ -465,14 +457,8 @@ public class RecordingEventHandler extends EventRegistrations {
         }
     }
 
-    //#if FABRIC>=1
     { on(PreRenderCallback.EVENT, this::checkForGamePaused); }
     private void checkForGamePaused() {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void checkForGamePaused(TickEvent.RenderTickEvent event) {
-    //$$     if (event.phase != TickEvent.Phase.START) return;
-    //#endif
         if (mc.isIntegratedServerRunning()) {
             IntegratedServer server =  mc.getServer();
             if (server != null && ((IntegratedServerAccessor) server).isGamePaused()) {

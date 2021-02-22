@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.mixin.KeyBindingAccessor;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.events.KeyBindingEventCallback;
@@ -20,15 +21,6 @@ import net.minecraft.util.Identifier;
 import static com.replaymod.core.ReplayMod.MOD_ID;
 //#else
 //$$ import net.minecraftforge.fml.client.registry.ClientRegistry;
-//#endif
-
-//#if MC>=11400
-import com.replaymod.core.events.PreRenderCallback;
-//#else
-//$$ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-//$$ import net.minecraftforge.fml.common.gameevent.TickEvent;
-//$$ import org.lwjgl.input.Keyboard;
-//$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //#endif
 
 import java.util.ArrayList;
@@ -102,15 +94,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         return Collections.unmodifiableSet(onlyInReplay);
     }
 
-    //#if MC>=11400
     { on(PreRenderCallback.EVENT, this::handleRepeatedKeyBindings); }
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void onTick(TickEvent.RenderTickEvent event) {
-    //$$     if (event.phase != TickEvent.Phase.START) return;
-    //$$     handleRepeatedKeyBindings();
-    //$$ }
-    //#endif
 
     public void handleRepeatedKeyBindings() {
         for (Binding binding : bindings.values()) {

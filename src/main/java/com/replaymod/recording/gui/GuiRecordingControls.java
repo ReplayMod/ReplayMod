@@ -4,7 +4,6 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.gui.MarkerProcessor;
-import com.replaymod.recording.Setting;
 import com.replaymod.recording.packet.PacketListener;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
@@ -12,18 +11,9 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
-
-//#if FABRIC>=1
-import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-//#else
-//$$ import net.minecraftforge.client.event.GuiScreenEvent;
-//$$ import net.minecraftforge.common.MinecraftForge;
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$
-//$$ import static com.replaymod.core.versions.MCVer.getGui;
-//#endif
 
 //#if MC>=11400
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
@@ -85,19 +75,14 @@ public class GuiRecordingControls extends EventRegistrations {
         buttonPauseResume.setEnabled(!stopped);
     }
 
-    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
-    private void injectIntoIngameMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void injectIntoIngameMenu(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     Screen guiScreen = getGui(event);
-        //#if MC>=11400
-        //$$ List<Widget> buttonList = MCVer.getButtonList(event);
-        //#else
-        //$$ List<net.minecraft.client.gui.GuiButton> buttonList = MCVer.getButtonList(event);
-        //#endif
-    //#endif
+    private void injectIntoIngameMenu(Screen guiScreen,
+                                      //#if MC>=11400
+                                      List<AbstractButtonWidget> buttonList
+                                      //#else
+                                      //$$ List<net.minecraft.client.gui.GuiButton> buttonList
+                                      //#endif
+    ) {
         if (!(guiScreen instanceof GameMenuScreen)) {
             return;
         }

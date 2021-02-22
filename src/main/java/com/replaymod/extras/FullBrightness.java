@@ -1,6 +1,8 @@
 package com.replaymod.extras;
 
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.events.PostRenderCallback;
+import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
@@ -13,14 +15,6 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-
-//#if FABRIC>=1
-import com.replaymod.core.events.PreRenderCallback;
-import com.replaymod.core.events.PostRenderCallback;
-//#else
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.event.TickEvent;
-//#endif
 
 public class FullBrightness extends EventRegistrations implements Extra {
     private ReplayMod core;
@@ -72,14 +66,8 @@ public class FullBrightness extends EventRegistrations implements Extra {
         return Type.Gamma;
     }
 
-    //#if FABRIC>=1
     { on(PreRenderCallback.EVENT, this::preRender); }
     private void preRender() {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void preRender(TickEvent.RenderTickEvent event) {
-    //$$     if (event.phase != TickEvent.Phase.START) return;
-    //#endif
         if (active && module.getReplayHandler() != null) {
             Type type = getType();
             if (type == Type.Gamma || type == Type.Both) {
@@ -98,14 +86,8 @@ public class FullBrightness extends EventRegistrations implements Extra {
         }
     }
 
-    //#if FABRIC>=1
     { on(PostRenderCallback.EVENT, this::postRender); }
     private void postRender() {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void postRender(TickEvent.RenderTickEvent event) {
-    //$$     if (event.phase != TickEvent.Phase.END) return;
-    //#endif
         if (active && module.getReplayHandler() != null) {
             Type type = getType();
             if (type == Type.Gamma || type == Type.Both) {
