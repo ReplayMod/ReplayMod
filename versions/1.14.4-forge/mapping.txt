@@ -12,6 +12,8 @@ net.minecraft.crash.ReportedException net.minecraft.util.ReportedException
 net.minecraftforge.eventbus.api.IEventBus net.minecraftforge.fml.common.eventhandler.EventBus
 net.minecraft.network.play.server.SPacketEntity.Move net.minecraft.network.play.server.SPacketEntity.S17PacketEntityLookMove
 net.minecraftforge.fml.network.NetworkRegistry net.minecraftforge.fml.common.network.NetworkRegistry
+net.minecraft.client.particle.ParticleManager queue queueEntityFX
+org.apache.maven.artifact.versioning.ComparableVersion net.minecraftforge.fml.common.versioning.ComparableVersion
 
 net.minecraft.resources.FolderPack getInputStream() getInputStreamByName()
 net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()

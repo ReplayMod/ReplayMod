@@ -5,6 +5,7 @@ import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.Util;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,16 +19,6 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
-
-//#if MC>=11400
-import org.apache.maven.artifact.versioning.ComparableVersion;
-//#else
-//#if MC>=10800
-//$$ import net.minecraftforge.fml.common.versioning.ComparableVersion;
-//#else
-//$$ import cpw.mods.fml.common.versioning.ComparableVersion;
-//#endif
-//#endif
 
 public class RenderSettings {
     public enum RenderMethod {
