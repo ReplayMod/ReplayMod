@@ -3,8 +3,6 @@ package com.replaymod.render.hooks;
 
 import net.minecraft.client.render.WorldRenderer;
 
-import java.lang.reflect.Field;
-
 //#if MC>=11500
 //#else
 //$$ import com.replaymod.render.mixin.ChunkRenderDispatcherAccessor;
@@ -45,20 +43,10 @@ public class ChunkLoadingRenderGlobal {
         this.hooked = renderGlobal;
 
         //#if MC>=11500
-        install();
         //#else
         //$$ setup(((WorldRendererAccessor) renderGlobal).getRenderDispatcher());
-        //$$ install();
         //#endif
-    }
-
-    private void install() {
-        try {
-            Field hookField = WorldRenderer.class.getField("replayModRender_hook");
-            hookField.set(hooked, this);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new Error(e);
-        }
+        IForceChunkLoading.from(renderGlobal).replayModRender_setHook(this);
     }
 
     //#if MC>=11500
@@ -153,12 +141,7 @@ public class ChunkLoadingRenderGlobal {
         //$$ workerJailingQueue.freeAll();
         //#endif
 
-        try {
-            Field hookField = WorldRenderer.class.getField("replayModRender_hook");
-            hookField.set(hooked, null);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new Error(e);
-        }
+        IForceChunkLoading.from(hooked).replayModRender_setHook(null);
     }
 
     //#if MC>=11500

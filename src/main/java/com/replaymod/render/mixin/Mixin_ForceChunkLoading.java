@@ -3,6 +3,7 @@ package com.replaymod.render.mixin;
 //#if MC>=10800
 import com.replaymod.compat.shaders.ShaderReflection;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+import com.replaymod.render.hooks.IForceChunkLoading;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.WorldRenderer;
@@ -31,8 +32,13 @@ import java.util.Set;
 //#endif
 
 @Mixin(WorldRenderer.class)
-public abstract class Mixin_ForceChunkLoading {
-    public ChunkLoadingRenderGlobal replayModRender_hook;
+public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
+    private ChunkLoadingRenderGlobal replayModRender_hook;
+
+    @Override
+    public void replayModRender_setHook(ChunkLoadingRenderGlobal hook) {
+        this.replayModRender_hook = hook;
+    }
 
     //#if MC>=11500
     @Shadow private Set<ChunkBuilder.BuiltChunk> chunksToRebuild;
