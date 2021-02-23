@@ -5,6 +5,7 @@ import com.replaymod.compat.shaders.ShaderReflection;
 import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.chunk.ChunkBuilder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,23 +24,13 @@ import java.util.Set;
 //$$ import net.minecraft.client.render.Camera;
 //#endif
 
-//#if MC>=11400
-import net.minecraft.client.render.WorldRenderer;
-//#else
-//$$ import net.minecraft.client.renderer.RenderGlobal;
-//#endif
-
 //#if MC<10904
 //$$ import net.minecraft.client.renderer.chunk.RenderChunk;
 //$$ import net.minecraft.util.BlockPos;
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //#endif
 
-//#if MC>=11400
 @Mixin(WorldRenderer.class)
-//#else
-//$$ @Mixin(RenderGlobal.class)
-//#endif
 public abstract class Mixin_ForceChunkLoading {
     public ChunkLoadingRenderGlobal replayModRender_hook;
 

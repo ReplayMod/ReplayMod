@@ -27,11 +27,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public class ChunkLoadingRenderGlobal {
 
-    //#if MC>=11400
     private final WorldRenderer hooked;
-    //#else
-    //$$ private final RenderGlobal hooked;
-    //#endif
 
     //#if MC>=11500
     //#else
@@ -45,13 +41,7 @@ public class ChunkLoadingRenderGlobal {
     //$$ private int frame;
     //#endif
 
-    public ChunkLoadingRenderGlobal(
-            //#if MC>=11400
-            WorldRenderer renderGlobal
-            //#else
-            //$$ RenderGlobal renderGlobal
-            //#endif
-    ) {
+    public ChunkLoadingRenderGlobal(WorldRenderer renderGlobal) {
         this.hooked = renderGlobal;
 
         //#if MC>=11500
@@ -64,11 +54,7 @@ public class ChunkLoadingRenderGlobal {
 
     private void install() {
         try {
-            //#if MC>=11400
             Field hookField = WorldRenderer.class.getField("replayModRender_hook");
-            //#else
-            //$$ Field hookField = RenderGlobal.class.getField("replayModRender_hook");
-            //#endif
             hookField.set(hooked, this);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new Error(e);
@@ -168,11 +154,7 @@ public class ChunkLoadingRenderGlobal {
         //#endif
 
         try {
-            //#if MC>=11400
             Field hookField = WorldRenderer.class.getField("replayModRender_hook");
-            //#else
-            //$$ Field hookField = RenderGlobal.class.getField("replayModRender_hook");
-            //#endif
             hookField.set(hooked, null);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new Error(e);
