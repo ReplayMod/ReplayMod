@@ -2,11 +2,11 @@ package com.replaymod.render.hooks;
 
 import net.minecraft.client.render.WorldRenderer;
 
-public class ChunkLoadingRenderGlobal {
+public class ForceChunkLoadingHook {
 
     private final WorldRenderer hooked;
 
-    public ChunkLoadingRenderGlobal(WorldRenderer renderGlobal) {
+    public ForceChunkLoadingHook(WorldRenderer renderGlobal) {
         this.hooked = renderGlobal;
 
         IForceChunkLoading.from(renderGlobal).replayModRender_setHook(this);

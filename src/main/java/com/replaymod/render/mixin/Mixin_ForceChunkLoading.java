@@ -1,7 +1,7 @@
 package com.replaymod.render.mixin;
 
 import com.replaymod.compat.shaders.ShaderReflection;
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.hooks.IForceChunkLoading;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
@@ -17,10 +17,10 @@ import java.util.Set;
 
 @Mixin(WorldRenderer.class)
 public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
-    private ChunkLoadingRenderGlobal replayModRender_hook;
+    private ForceChunkLoadingHook replayModRender_hook;
 
     @Override
-    public void replayModRender_setHook(ChunkLoadingRenderGlobal hook) {
+    public void replayModRender_setHook(ForceChunkLoadingHook hook) {
         this.replayModRender_hook = hook;
     }
 
@@ -66,7 +66,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
                 this.chunksToRebuild.clear();
 
                 // Upload all chunks
-                this.needsTerrainUpdate |= ((ChunkLoadingRenderGlobal.IBlockOnChunkRebuilds) this.chunkBuilder).uploadEverythingBlocking();
+                this.needsTerrainUpdate |= ((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.chunkBuilder).uploadEverythingBlocking();
 
                 // Repeat until no more updates are needed
             } while (this.needsTerrainUpdate);

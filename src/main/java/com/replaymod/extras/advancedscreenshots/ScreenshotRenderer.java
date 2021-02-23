@@ -4,7 +4,7 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.rendering.Pipelines;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -43,7 +43,7 @@ public class ScreenshotRenderer implements RenderInfo {
             boolean hideGUIBefore = mc.options.hudHidden;
             mc.options.hudHidden = true;
 
-            ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.worldRenderer);
+            ForceChunkLoadingHook clrg = new ForceChunkLoadingHook(mc.worldRenderer);
 
             if (settings.getRenderMethod() == RenderSettings.RenderMethod.BLEND) {
                 BlendState.setState(new BlendState(settings.getOutputFile()));

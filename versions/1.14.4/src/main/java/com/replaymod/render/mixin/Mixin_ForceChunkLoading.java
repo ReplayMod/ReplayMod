@@ -2,7 +2,7 @@ package com.replaymod.render.mixin;
 
 //#if MC>=10800
 import com.replaymod.compat.shaders.ShaderReflection;
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.hooks.IForceChunkLoading;
 import net.minecraft.client.render.VisibleRegion;
 import net.minecraft.client.render.WorldRenderer;
@@ -27,10 +27,10 @@ import net.minecraft.client.render.Camera;
 
 @Mixin(WorldRenderer.class)
 public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
-    private ChunkLoadingRenderGlobal replayModRender_hook;
+    private ForceChunkLoadingHook replayModRender_hook;
 
     @Override
-    public void replayModRender_setHook(ChunkLoadingRenderGlobal hook) {
+    public void replayModRender_setHook(ForceChunkLoadingHook hook) {
         this.replayModRender_hook = hook;
     }
 

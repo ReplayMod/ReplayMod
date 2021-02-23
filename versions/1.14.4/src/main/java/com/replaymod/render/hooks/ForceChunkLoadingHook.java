@@ -20,7 +20,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 import static com.replaymod.core.versions.MCVer.ChunkRenderWorkerAccessor;
 
-public class ChunkLoadingRenderGlobal {
+public class ForceChunkLoadingHook {
 
     private final WorldRenderer hooked;
 
@@ -33,7 +33,7 @@ public class ChunkLoadingRenderGlobal {
     private ChunkRenderWorkerAccessor renderWorker;
     private int frame;
 
-    public ChunkLoadingRenderGlobal(WorldRenderer renderGlobal) {
+    public ForceChunkLoadingHook(WorldRenderer renderGlobal) {
         this.hooked = renderGlobal;
 
         setup(((WorldRendererAccessor) renderGlobal).getRenderDispatcher());

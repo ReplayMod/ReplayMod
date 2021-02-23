@@ -17,7 +17,7 @@ import com.replaymod.render.events.ReplayRenderCallback;
 import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
+import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.render.mixin.WorldRendererAccessor;
 import com.replaymod.replay.ReplayHandler;
@@ -95,7 +95,7 @@ public class VideoRenderer implements RenderInfo {
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
-    private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
+    private ForceChunkLoadingHook forceChunkLoadingHook;
     //#if MC<10800
     //$$ private GuiOpeningReplay guiOpeningReplay;
     //#endif
@@ -369,7 +369,7 @@ public class VideoRenderer implements RenderInfo {
         //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
         //#endif
 
-        chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.worldRenderer);
+        forceChunkLoadingHook = new ForceChunkLoadingHook(mc.worldRenderer);
 
         // Set up our own framebuffer to render the GUI to
         guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true
@@ -404,7 +404,7 @@ public class VideoRenderer implements RenderInfo {
             mc.options.setSoundVolume(entry.getKey(), entry.getValue());
         }
         mc.openScreen(null);
-        chunkLoadingRenderGlobal.uninstall();
+        forceChunkLoadingHook.uninstall();
 
         if (!hasFailed() && cameraPathExporter != null) {
             try {
