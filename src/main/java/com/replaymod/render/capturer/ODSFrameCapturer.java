@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.replaymod.core.versions.MCVer.resizeMainWindow;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -164,7 +165,7 @@ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
         @Override
         protected OpenGlFrame renderFrame(int frameId, float partialTicks, CubicOpenGlFrameCapturer.Data captureData) {
-            resize(getFrameWidth(), getFrameHeight());
+            resizeMainWindow(mc, getFrameWidth(), getFrameHeight());
 
             pushMatrix();
             frameBuffer().beginWrite(true);

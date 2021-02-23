@@ -11,12 +11,9 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashReport;
 
-//#if MC>=11400
-import com.replaymod.render.mixin.MainWindowAccessor;
-import static com.replaymod.core.versions.MCVer.getWindow;
-//#endif
-
+import static com.replaymod.core.versions.MCVer.getMainWindowSize;
 import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
+import static com.replaymod.core.versions.MCVer.resizeMainWindow;
 
 public class ScreenshotRenderer implements RenderInfo {
 
@@ -32,14 +29,7 @@ public class ScreenshotRenderer implements RenderInfo {
 
     public boolean renderScreenshot() throws Throwable {
         try {
-            //#if MC>=11400
-            int displayWidthBefore = getWindow(mc).getFramebufferWidth();
-            int displayHeightBefore = getWindow(mc).getFramebufferHeight();
-            //#else
-            //$$ int displayWidthBefore = mc.displayWidth;
-            //$$ int displayHeightBefore = mc.displayHeight;
-            //#endif
-
+            Dimension sizeBefore = getMainWindowSize(mc);
             boolean hideGUIBefore = mc.options.hudHidden;
             mc.options.hudHidden = true;
 
@@ -56,22 +46,7 @@ public class ScreenshotRenderer implements RenderInfo {
             clrg.uninstall();
 
             mc.options.hudHidden = hideGUIBefore;
-            //#if MC>=11400
-            //noinspection ConstantConditions
-            MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
-            acc.setFramebufferWidth(displayWidthBefore);
-            acc.setFramebufferHeight(displayHeightBefore);
-            mc.getFramebuffer().resize(displayWidthBefore, displayHeightBefore
-                    //#if MC>=11400
-                    , false
-                    //#endif
-            );
-            //#if MC>=11500
-            mc.gameRenderer.onResized(displayWidthBefore, displayHeightBefore);
-            //#endif
-            //#else
-            //$$ mc.resize(displayWidthBefore, displayHeightBefore);
-            //#endif
+            resizeMainWindow(mc, sizeBefore.getWidth(), sizeBefore.getHeight());
             return true;
         } catch (OutOfMemoryError e) {
             e.printStackTrace();

@@ -5,6 +5,7 @@ import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
 import com.replaymod.replaystudio.us.myles.ViaVersion.packets.State;
+import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.options.KeyBinding;
@@ -37,7 +38,9 @@ import java.util.ArrayList;
 
 //#if MC>=11400
 import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
+import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 
@@ -193,6 +196,38 @@ public class MCVer {
         //#endif
         //#else
         //$$ category.addCrashSectionCallable(name, callable);
+        //#endif
+    }
+
+    public static Dimension getMainWindowSize(MinecraftClient mc) {
+        return new Dimension(
+                //#if MC>=11400
+                getWindow(mc).getFramebufferWidth(),
+                getWindow(mc).getFramebufferHeight()
+                //#else
+                //$$ mc.displayWidth,
+                //$$ mc.displayHeight
+                //#endif
+        );
+    }
+
+    public static void resizeMainWindow(MinecraftClient mc, int width, int height) {
+        //#if MC>=11400
+        Framebuffer fb = mc.getFramebuffer();
+        if (fb.viewportWidth != width || fb.viewportHeight != height) {
+            fb.resize(width, height, false);
+        }
+        //noinspection ConstantConditions
+        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) getWindow(mc);
+        mainWindow.setFramebufferWidth(width);
+        mainWindow.setFramebufferHeight(height);
+        //#if MC>=11500
+        mc.gameRenderer.onResized(width, height);
+        //#endif
+        //#else
+        //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
+        //$$     mc.resize(width, height);
+        //$$ }
         //#endif
     }
 

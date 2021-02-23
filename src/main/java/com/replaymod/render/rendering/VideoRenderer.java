@@ -425,22 +425,7 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
-        //#if MC>=11400
-        mc.getFramebuffer().resize(displayWidth, displayHeight
-                //#if MC>=11400
-                , false
-                //#endif
-        );
-        //noinspection ConstantConditions
-        MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
-        acc.setFramebufferWidth(displayWidth);
-        acc.setFramebufferHeight(displayHeight);
-        //#if MC>=11500
-        mc.gameRenderer.onResized(displayWidth, displayHeight);
-        //#endif
-        //#else
-        //$$ mc.resize(displayWidth, displayHeight);
-        //#endif
+        resizeMainWindow(mc, displayWidth, displayHeight);
     }
 
     private void executeTaskQueue() {
