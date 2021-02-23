@@ -19,6 +19,7 @@ import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
+import com.replaymod.render.mixin.MainWindowAccessor;
 import com.replaymod.render.mixin.WorldRendererAccessor;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
@@ -46,7 +47,6 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=11400
 import com.replaymod.render.EXRWriter;
-import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.client.gui.screen.Screen;
 import org.lwjgl.glfw.GLFW;
 import java.util.concurrent.CompletableFuture;
@@ -232,19 +232,11 @@ public class VideoRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
-        //#if MC>=11400
-        int displayWidthBefore = getWindow(mc).getFramebufferWidth();
-        int displayHeightBefore = getWindow(mc).getFramebufferHeight();
-        //noinspection ConstantConditions
         MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
+        int displayWidthBefore = acc.getFramebufferWidth();
+        int displayHeightBefore = acc.getFramebufferHeight();
         acc.setFramebufferWidth(displayWidth);
         acc.setFramebufferHeight(displayHeight);
-        //#else
-        //$$ int displayWidthBefore = mc.displayWidth;
-        //$$ int displayHeightBefore = mc.displayHeight;
-        //$$ mc.displayWidth = displayWidth;
-        //$$ mc.displayHeight = displayHeight;
-        //#endif
 
         if (!settings.isHighPerformance() || framesDone % fps == 0) {
             while (drawGui() && paused) {
@@ -285,13 +277,8 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // change Minecraft's display size back
-        //#if MC>=11400
         acc.setFramebufferWidth(displayWidthBefore);
         acc.setFramebufferHeight(displayHeightBefore);
-        //#else
-        //$$ mc.displayWidth = displayWidthBefore;
-        //$$ mc.displayHeight = displayHeightBefore;
-        //#endif
 
         if (cameraPathExporter != null) {
             cameraPathExporter.recordFrame(timer.tickDelta);

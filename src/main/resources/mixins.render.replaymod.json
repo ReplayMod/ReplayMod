@@ -20,8 +20,8 @@
     //#if MC>=11400
     "Mixin_PreserveDepthDuringHandRendering",
     "Mixin_WindowsWorkaroundForTinyEXRNatives",
-    "MainWindowAccessor",
     //#endif
+    "MainWindowAccessor",
     "WorldRendererAccessor",
     //#if MC>=10904
     "MixinParticleManager",

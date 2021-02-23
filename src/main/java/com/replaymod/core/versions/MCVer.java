@@ -2,9 +2,11 @@ package com.replaymod.core.versions;
 
 import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.render.mixin.MainWindowAccessor;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
 import com.replaymod.replaystudio.us.myles.ViaVersion.packets.State;
+import de.johni0702.minecraft.gui.utils.NonNull;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -38,7 +40,6 @@ import java.util.ArrayList;
 
 //#if MC>=11400
 import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
-import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -464,13 +465,17 @@ public class MCVer {
     }
 
     //#if MC>=11400
-    public static Window getWindow(MinecraftClient mc) {
+    public static @NonNull Window getWindow(MinecraftClient mc) {
         //#if MC>=11500
         return mc.getWindow();
         //#else
         //$$ return mc.window;
         //#endif
     }
+    //#else
+    //$$ public static @NonNull MainWindowAccessor getWindow(Minecraft mc) {
+    //$$     return (MainWindowAccessor) mc;
+    //$$ }
     //#endif
 
     //#if MC>=11400
