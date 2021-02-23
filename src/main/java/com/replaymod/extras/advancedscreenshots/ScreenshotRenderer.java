@@ -4,6 +4,7 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
+import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 import com.replaymod.render.rendering.Pipelines;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -13,10 +14,6 @@ import net.minecraft.util.crash.CrashReport;
 //#if MC>=11400
 import com.replaymod.render.mixin.MainWindowAccessor;
 import static com.replaymod.core.versions.MCVer.getWindow;
-//#endif
-
-//#if MC>=10800
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
@@ -46,9 +43,7 @@ public class ScreenshotRenderer implements RenderInfo {
             boolean hideGUIBefore = mc.options.hudHidden;
             mc.options.hudHidden = true;
 
-            //#if MC>=10800
             ChunkLoadingRenderGlobal clrg = new ChunkLoadingRenderGlobal(mc.worldRenderer);
-            //#endif
 
             if (settings.getRenderMethod() == RenderSettings.RenderMethod.BLEND) {
                 BlendState.setState(new BlendState(settings.getOutputFile()));
@@ -58,9 +53,7 @@ public class ScreenshotRenderer implements RenderInfo {
                         new ScreenshotWriter(settings.getOutputFile())).run();
             }
 
-            //#if MC>=10800
             clrg.uninstall();
-            //#endif
 
             mc.options.hudHidden = hideGUIBefore;
             //#if MC>=11400

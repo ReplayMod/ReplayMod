@@ -1,4 +1,3 @@
-//#if MC>=10800
 package com.replaymod.render.hooks;
 
 import com.replaymod.render.mixin.ChunkRenderDispatcherAccessor;
@@ -130,4 +129,3 @@ public class ChunkLoadingRenderGlobal {
         IForceChunkLoading.from(hooked).replayModRender_setHook(null);
     }
 }
-//#endif
