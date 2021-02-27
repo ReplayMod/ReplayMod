@@ -5,6 +5,7 @@
   "server": [],
   "client": [
     "Mixin_ChromaKeyColorSky",
+    "Mixin_ChromaKeyDisableFog",
     "Mixin_ChromaKeyForceSky",
     "Mixin_CubicRotation",
     "Mixin_SkipBlockOutlinesDuringRender",
@@ -31,9 +32,6 @@
     //#endif
     "MixinCamera",
     "MixinEntityRenderer",
-    //#if MC>=11400
-    "MixinFogRenderer",
-    //#endif
     //#if MC>=10800
     "MixinGlStateManager",
     //#endif

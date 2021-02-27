@@ -1,4 +1,3 @@
-//#if MC>=11400
 package com.replaymod.render.mixin;
 
 import com.replaymod.core.versions.MCVer;
@@ -9,12 +8,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11400
-import net.minecraft.client.render.Camera;
-//#endif
-
 @Mixin(BackgroundRenderer.class)
-public abstract class MixinFogRenderer {
+public abstract class Mixin_ChromaKeyDisableFog {
     @Inject(method = "applyFog", at = @At("HEAD"), cancellable = true)
     private
     //#if MC>=11500
@@ -29,4 +24,3 @@ public abstract class MixinFogRenderer {
         }
     }
 }
-//#endif

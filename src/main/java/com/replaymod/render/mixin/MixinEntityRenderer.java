@@ -84,17 +84,6 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
     //$$ }
     //#endif
 
-    // Moved to MixinFogRenderer in 1.13
-    //#if MC<11400
-    //$$ @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true)
-    //$$ private void replayModRender_onSetupFog(int fogDistanceFlag, float partialTicks, CallbackInfo ci) {
-    //$$     if (replayModRender_handler == null) return;
-    //$$     if (replayModRender_handler.getSettings().getChromaKeyingColor() != null) {
-    //$$         ci.cancel();
-    //$$     }
-    //$$ }
-    //#endif
-
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void replayModRender_renderSpectatorHand(
             //#if MC>=11500
