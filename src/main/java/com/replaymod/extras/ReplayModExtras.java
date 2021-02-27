@@ -24,8 +24,7 @@ public class ReplayModExtras implements Module {
             YoutubeUpload.class,
             FullBrightness.class,
             QuickMode.class,
-            HotkeyButtons.class,
-            OpenEyeExtra.class
+            HotkeyButtons.class
     );
 
     private final Map<Class<? extends Extra>, Extra> instances = new HashMap<>();
