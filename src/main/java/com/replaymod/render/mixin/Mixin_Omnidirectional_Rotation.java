@@ -25,7 +25,7 @@ import static com.replaymod.core.versions.MCVer.getMinecraft;
 //$$ @Mixin(value = net.minecraft.client.renderer.EntityRenderer.class)
 //#endif
 //#endif
-public abstract class Mixin_CubicRotation {
+public abstract class Mixin_Omnidirectional_Rotation {
     private EntityRendererHandler getHandler() {
         return ((EntityRendererHandler.IEntityRenderer) getMinecraft().gameRenderer).replayModRender_getHandler();
     }
