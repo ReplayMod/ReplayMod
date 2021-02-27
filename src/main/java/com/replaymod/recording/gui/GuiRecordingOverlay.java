@@ -13,7 +13,6 @@ import net.minecraft.client.util.math.MatrixStack;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
-import static com.replaymod.core.versions.MCVer.*;
 import static com.mojang.blaze3d.platform.GlStateManager.*;
 
 /**
@@ -44,7 +43,7 @@ public class GuiRecordingOverlay extends EventRegistrations {
                     stack,
                     //#endif
                     text.toUpperCase(), 30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff);
-            bindTexture(TEXTURE);
+            mc.getTextureManager().bindTexture(TEXTURE);
             enableAlphaTest();
             GuiRenderer renderer = new MinecraftGuiRenderer(stack);
             renderer.drawTexturedRect(10, 10, 58, 20, 16, 16, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);

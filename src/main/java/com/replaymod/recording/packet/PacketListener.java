@@ -163,8 +163,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         // to happen on the main thread so we can guarantee correct ordering of inbound and inject packets.
         // Otherwise, injected packets may end up further down the packet stream than they were supposed to and other
         // inbound packets which may rely on the injected packet would behave incorrectly when played back.
-        if (!MCVer.isOnMainThread()) {
-            MCVer.scheduleOnMainThread(() -> save(packet));
+        if (!mc.isOnThread()) {
+            mc.send(() -> save(packet));
             return;
         }
         try {
@@ -488,15 +488,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void addMarker(String name, int timestamp) {
-        Entity view = getRenderViewEntity(mc);
+        Entity view = mc.getCameraEntity();
 
         Marker marker = new Marker();
         marker.setName(name);
         marker.setTime(timestamp);
         if (view != null) {
-            marker.setX(Entity_getX(view));
-            marker.setY(Entity_getY(view));
-            marker.setZ(Entity_getZ(view));
+            marker.setX(view.getX());
+            marker.setY(view.getY());
+            marker.setZ(view.getZ());
             marker.setYaw(view.yaw);
             marker.setPitch(view.pitch);
         }

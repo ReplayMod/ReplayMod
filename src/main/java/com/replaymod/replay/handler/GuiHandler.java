@@ -113,8 +113,8 @@ public class GuiHandler extends EventRegistrations {
                             BUTTON_EXIT_REPLAY,
                             b.x,
                             b.y,
-                            width(b),
-                            height(b),
+                            b.getWidth(),
+                            b.getHeight(),
                             "replaymod.gui.exit",
                             this::onButton
                     ));
@@ -133,9 +133,9 @@ public class GuiHandler extends EventRegistrations {
                 //#if MC>=11400
                 } else if (id.equals(BUTTON_OPTIONS)) {
                     //#if MC>=11400
-                    width(b, 204);
+                    b.setWidth(204);
                     //#else
-                    //$$ width(b, 200);
+                    //$$ b.width = 200
                     //#endif
                 //#endif
                 }
@@ -147,7 +147,7 @@ public class GuiHandler extends EventRegistrations {
             }
             if (achievements != null && stats != null) {
                 moveAllButtonsInRect(buttonList,
-                        achievements.x, stats.x + width(stats),
+                        achievements.x, stats.x + stats.getWidth(),
                         achievements.y, Integer.MAX_VALUE,
                         -24);
             }
@@ -185,8 +185,8 @@ public class GuiHandler extends EventRegistrations {
             int moveBy
     ) {
         buttons.stream()
-                .filter(button -> button.x <= xEnd && button.x + width(button) >= xStart)
-                .filter(button -> button.y <= yEnd && button.y + height(button) >= yStart)
+                .filter(button -> button.x <= xEnd && button.x + button.getWidth() >= xStart)
+                .filter(button -> button.y <= yEnd && button.y + button.getHeight() >= yStart)
                 .forEach(button -> button.y += moveBy);
     }
 
@@ -261,8 +261,8 @@ public class GuiHandler extends EventRegistrations {
     //#else
     //$$ @SubscribeEvent
     //$$ public void onButton(GuiScreenEvent.ActionPerformedEvent.Pre event) {
-    //$$     GuiScreen guiScreen = getGui(event);
-    //$$     GuiButton button = getButton(event);
+    //$$     GuiScreen guiScreen = event.getGui();
+    //$$     GuiButton button = event.getButton();
     //#endif
         if(!button.active) return;
 

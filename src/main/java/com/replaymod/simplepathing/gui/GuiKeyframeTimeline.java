@@ -18,6 +18,9 @@ import com.replaymod.simplepathing.SPTimeline.SPPath;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
 import de.johni0702.minecraft.gui.function.Draggable;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
 import org.apache.commons.lang3.tuple.Pair;
 import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -26,10 +29,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Comparator;
 import java.util.Optional;
-
-import static com.replaymod.core.versions.MCVer.BufferBuilder_addPosCol;
-import static com.replaymod.core.versions.MCVer.BufferBuilder_beginPosCol;
-import static com.replaymod.core.versions.MCVer.Tessellator_getInstance;
 
 public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline> implements Draggable {
     protected static final int KEYFRAME_SIZE = 5;
@@ -142,55 +141,61 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     float positionXKeyframeTimeline = positonX + KEYFRAME_SIZE / 2f;
 
                     final int color = 0xff0000ff;
-                    BufferBuilder_beginPosCol(GL11.GL_LINE_STRIP);
+                    Tessellator tessellator = Tessellator.getInstance();
+                    BufferBuilder buffer = tessellator.getBuffer();
+                    buffer.begin(GL11.GL_LINE_STRIP, VertexFormats.POSITION_COLOR);
 
                     // Start just below the top border of the replay timeline
-                    BufferBuilder_addPosCol(
+                    buffer.vertex(
                             replayTimelineLeft + positionXReplayTimeline,
                             replayTimelineTop + BORDER_TOP,
-                            0,
+                            0
+                    ).color(
                             color >> 24 & 0xff,
                             color >> 16 & 0xff,
                             color >> 8 & 0xff,
                             color & 0xff
-                    );
+                    ).next();
                     // Draw vertically over the replay timeline, including its bottom border
-                    BufferBuilder_addPosCol(
+                    buffer.vertex(
                             replayTimelineLeft + positionXReplayTimeline,
                             replayTimelineBottom,
-                            0,
+                            0
+                    ).color(
                             color >> 24 & 0xff,
                             color >> 16 & 0xff,
                             color >> 8 & 0xff,
                             color & 0xff
-                    );
+                    ).next();
                     // Now for the important part: connecting to the keyframe timeline
-                    BufferBuilder_addPosCol(
+                    buffer.vertex(
                             keyframeTimelineLeft + positionXKeyframeTimeline,
                             keyframeTimelineTop,
-                            0,
+                            0
+                    ).color(
                             color >> 24 & 0xff,
                             color >> 16 & 0xff,
                             color >> 8 & 0xff,
                             color & 0xff
-                    );
+                    ).next();
                     // And finally another vertical bit (the timeline is already crammed enough, so only the border)
-                    BufferBuilder_addPosCol(
+                    buffer.vertex(
                             keyframeTimelineLeft + positionXKeyframeTimeline,
                             keyframeTimelineTop + BORDER_TOP,
-                            0,
+                            0
+                    ).color(
                             color >> 24 & 0xff,
                             color >> 16 & 0xff,
                             color >> 8 & 0xff,
                             color & 0xff
-                    );
+                    ).next();
 
                     GL11.glEnable(GL11.GL_LINE_SMOOTH);
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
                     GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
                     GL11.glDisable(GL11.GL_SCISSOR_TEST);
                     GL11.glLineWidth(1);
-                    Tessellator_getInstance().draw();
+                    tessellator.draw();
                     GL11.glPopAttrib();
                     GL11.glEnable(GL11.GL_TEXTURE_2D);
                     GL11.glDisable(GL11.GL_LINE_SMOOTH);

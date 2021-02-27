@@ -9,6 +9,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
+import net.minecraft.client.render.VertexFormats;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=11500
@@ -82,7 +83,7 @@ public class BlendMeshBuilder
 
         if (!wellBehaved) {
             // In case the calling code finishes with Tessellator.getInstance().draw()
-            BufferBuilder_beginPosTexCol(mode);
+            Tessellator.getInstance().getBuffer().begin(mode, VertexFormats.POSITION_TEXTURE_COLOR);
         }
 
         //#if MC>=10809

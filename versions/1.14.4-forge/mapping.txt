@@ -16,6 +16,9 @@ net.minecraft.network.play.server.SPacketEntity.Move net.minecraft.network.play.
 net.minecraftforge.fml.network.NetworkRegistry net.minecraftforge.fml.common.network.NetworkRegistry
 net.minecraft.client.particle.ParticleManager queue queueEntityFX
 org.apache.maven.artifact.versioning.ComparableVersion net.minecraftforge.fml.common.versioning.ComparableVersion
+org.lwjgl.glfw.GLFW com.replaymod.core.versions.GLFW
+net.minecraft.client.MainWindow com.replaymod.core.versions.Window
+net.minecraft.client.audio.SimpleSound net.minecraft.client.audio.PositionedSoundRecord
 
 net.minecraft.resources.FolderPack getInputStream() getInputStreamByName()
 net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()

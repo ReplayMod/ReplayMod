@@ -7,6 +7,7 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityAttachS2CPacket;
@@ -146,9 +147,9 @@ public class RecordingEventHandler extends EventRegistrations {
             boolean force = false;
             if(lastX == null || lastY == null || lastZ == null) {
                 force = true;
-                lastX = Entity_getX(player);
-                lastY = Entity_getY(player);
-                lastZ = Entity_getZ(player);
+                lastX = player.getX();
+                lastY = player.getY();
+                lastZ = player.getZ();
             }
 
             ticksSinceLastCorrection++;
@@ -157,13 +158,13 @@ public class RecordingEventHandler extends EventRegistrations {
                 force = true;
             }
 
-            double dx = Entity_getX(player) - lastX;
-            double dy = Entity_getY(player) - lastY;
-            double dz = Entity_getZ(player) - lastZ;
+            double dx = player.getX() - lastX;
+            double dy = player.getY() - lastY;
+            double dz = player.getZ() - lastZ;
 
-            lastX = Entity_getX(player);
-            lastY = Entity_getY(player);
-            lastZ = Entity_getZ(player);
+            lastX = player.getX();
+            lastY = player.getY();
+            lastZ = player.getZ();
 
             Packet packet;
             if (force || Math.abs(dx) > 8.0 || Math.abs(dy) > 8.0 || Math.abs(dz) > 8.0) {
@@ -309,18 +310,16 @@ public class RecordingEventHandler extends EventRegistrations {
 
             //Leaving Ride
 
-            if((!player.isRiding() && lastRiding != -1) ||
-                    (player.isRiding() && lastRiding != getRiddenEntity(player).getEntityId())) {
-                if(!player.isRiding()) {
-                    lastRiding = -1;
-                } else {
-                    lastRiding = getRiddenEntity(player).getEntityId();
-                }
+            Entity vehicle = player.getVehicle();
+            int vehicleId = vehicle == null ? -1 : vehicle.getEntityId();
+            if (lastRiding != vehicleId) {
+                lastRiding = vehicleId;
                 packetListener.save(new EntityAttachS2CPacket(
                         //#if MC<10904
                         //$$ 0,
                         //#endif
-                        player, getRiddenEntity(player)
+                        player,
+                        vehicle
                 ));
             }
 

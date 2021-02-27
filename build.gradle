@@ -102,6 +102,8 @@ preprocess {
             ".vert": PreprocessTask.DEFAULT_KEYWORDS,
             ".frag": PreprocessTask.DEFAULT_KEYWORDS,
     ])
+
+    patternAnnotation.set("com.replaymod.gradle.remap.Pattern")
 }
 
 def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")

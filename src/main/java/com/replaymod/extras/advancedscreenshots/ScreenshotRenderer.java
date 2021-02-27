@@ -9,10 +9,9 @@ import com.replaymod.render.rendering.Pipelines;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.util.Window;
 import net.minecraft.util.crash.CrashReport;
 
-import static com.replaymod.core.versions.MCVer.getMainWindowSize;
-import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
 import static com.replaymod.core.versions.MCVer.resizeMainWindow;
 
 public class ScreenshotRenderer implements RenderInfo {
@@ -29,7 +28,9 @@ public class ScreenshotRenderer implements RenderInfo {
 
     public boolean renderScreenshot() throws Throwable {
         try {
-            Dimension sizeBefore = getMainWindowSize(mc);
+            Window window = mc.getWindow();
+            int widthBefore = window.getFramebufferWidth();
+            int heightBefore = window.getFramebufferHeight();
             boolean hideGUIBefore = mc.options.hudHidden;
             mc.options.hudHidden = true;
 
@@ -46,7 +47,7 @@ public class ScreenshotRenderer implements RenderInfo {
             clrg.uninstall();
 
             mc.options.hudHidden = hideGUIBefore;
-            resizeMainWindow(mc, sizeBefore.getWidth(), sizeBefore.getHeight());
+            resizeMainWindow(mc, widthBefore, heightBefore);
             return true;
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
@@ -75,7 +76,7 @@ public class ScreenshotRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         framesDone++;
-        return getRenderPartialTicks();
+        return mc.getTickDelta();
     }
 
     @Override

@@ -10,8 +10,6 @@ import net.minecraft.util.Identifier;
 //$$ import io.netty.buffer.Unpooled;
 //#endif
 
-import static com.replaymod.core.versions.MCVer.readString;
-
 /**
  * Restrictions set by the server,
  * @see <a href="https://gist.github.com/Johni0702/2547c463e51f65f312cb">Replay Restrictions Gist</a>
@@ -34,7 +32,7 @@ public class Restrictions {
         //$$ PacketBuffer buffer = new PacketBuffer(Unpooled.wrappedBuffer(packet.func_149168_d()));
         //#endif
         while (buffer.isReadable()) {
-            String name = readString(buffer, 64);
+            String name = buffer.readString(64);
             boolean active = buffer.readBoolean();
 //            if ("no_xray".equals(name)) {
 //                noXray = active;

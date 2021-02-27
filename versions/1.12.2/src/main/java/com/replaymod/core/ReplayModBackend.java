@@ -61,6 +61,14 @@ public class ReplayModBackend {
         return Loader.instance().getIndexedModList().get(MOD_ID).getVersion();
     }
 
+    public String getMinecraftVersion() {
+        return Loader.MC_VERSION;
+    }
+
+    public boolean isModLoaded(String id) {
+        return Loader.isModLoaded(id);
+    }
+
     static { // Note: even preInit is too late and we'd have to issue another resource reload
         List<IResourcePack> defaultResourcePacks = ((MinecraftAccessor) getMinecraft()).getDefaultResourcePacks();
 

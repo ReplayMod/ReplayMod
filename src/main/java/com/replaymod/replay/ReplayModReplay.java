@@ -32,8 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
-import static com.replaymod.core.versions.MCVer.*;
-
 public class ReplayModReplay implements Module {
 
     { instance = this; }
@@ -68,9 +66,9 @@ public class ReplayModReplay implements Module {
                     if (camera != null) {
                         Marker marker = new Marker();
                         marker.setTime(replayHandler.getReplaySender().currentTimeStamp());
-                        marker.setX(Entity_getX(camera));
-                        marker.setY(Entity_getY(camera));
-                        marker.setZ(Entity_getZ(camera));
+                        marker.setX(camera.getX());
+                        marker.setY(camera.getY());
+                        marker.setZ(camera.getZ());
                         marker.setYaw(camera.yaw);
                         marker.setPitch(camera.pitch);
                         marker.setRoll(camera.roll);

@@ -644,9 +644,9 @@ public class GuiPathing {
                     CameraEntity camera = replayHandler.getCameraEntity();
                     int spectatedId = -1;
                     if (!replayHandler.isCameraView() && !neverSpectator) {
-                        spectatedId = getRenderViewEntity(replayHandler.getOverlay().getMinecraft()).getEntityId();
+                        spectatedId = replayHandler.getOverlay().getMinecraft().getCameraEntity().getEntityId();
                     }
-                    timeline.addPositionKeyframe(time, Entity_getX(camera), Entity_getY(camera), Entity_getZ(camera),
+                    timeline.addPositionKeyframe(time, camera.getX(), camera.getY(), camera.getZ(),
                             camera.yaw, camera.pitch, camera.roll, spectatedId);
                     mod.setSelected(path, time);
                 }

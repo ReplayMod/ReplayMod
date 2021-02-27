@@ -19,6 +19,9 @@ import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.gui.GuiPathing;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
@@ -34,7 +37,6 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
-import static com.replaymod.core.versions.MCVer.*;
 
 public class PathPreviewRenderer extends EventRegistrations {
     private static final Identifier CAMERA_HEAD = new Identifier("replaymod", "camera_head.png");
@@ -56,7 +58,7 @@ public class PathPreviewRenderer extends EventRegistrations {
     private void renderCameraPath(MatrixStack matrixStack) {
         if (!replayHandler.getReplaySender().isAsyncMode() || mc.options.hudHidden) return;
 
-        Entity view = getRenderViewEntity(mc);
+        Entity view = mc.getCameraEntity();
         if (view == null) return;
 
         GuiPathing guiPathing = mod.getGuiPathing();
@@ -75,14 +77,15 @@ public class PathPreviewRenderer extends EventRegistrations {
         int renderDistanceSquared = renderDistance * renderDistance;
 
         Triple<Double, Double, Double> viewPos = Triple.of(
-                Entity_getX(view),
+                view.getX(),
+                view.getY()
                 //#if MC>=10800 && MC<11500
                 //$$ // Eye height is subtracted to make path appear higher (at eye height) than it actually is (at foot height)
-                //$$ Entity_getY(view) - view.getStandingEyeHeight(),
+                //$$ - view.getStandingEyeHeight(),
                 //#else
-                Entity_getY(view),
+                ,
                 //#endif
-                Entity_getZ(view)
+                view.getZ()
         );
 
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
@@ -212,36 +215,40 @@ public class PathPreviewRenderer extends EventRegistrations {
         if (distanceSquared(view, pos1) > renderDistanceSquared) return;
         if (distanceSquared(view, pos2) > renderDistanceSquared) return;
 
-        BufferBuilder_beginPosCol(GL11.GL_LINES);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
 
-        BufferBuilder_addPosCol(
+        buffer.vertex(
                 pos1.getLeft() - view.getLeft(),
                 pos1.getMiddle() - view.getMiddle(),
-                pos1.getRight() - view.getRight(),
+                pos1.getRight() - view.getRight()
+        ).color(
                 color >> 16 & 0xff,
                 color >> 8 & 0xff,
                 color & 0xff,
                 255
-        );
-        BufferBuilder_addPosCol(
+        ).next();
+        buffer.vertex(
                 pos2.getLeft() - view.getLeft(),
                 pos2.getMiddle() - view.getMiddle(),
-                pos2.getRight() - view.getRight(),
+                pos2.getRight() - view.getRight()
+        ).color(
                 color >> 16 & 0xff,
                 color >> 8 & 0xff,
                 color & 0xff,
                 255
-        );
+        ).next();
 
         GL11.glLineWidth(3);
-        Tessellator_getInstance().draw();
+        tessellator.draw();
     }
 
     private void drawPoint(Triple<Double, Double, Double> view,
                            Triple<Double, Double, Double> pos,
                            Keyframe keyframe) {
 
-        MCVer.bindTexture(TEXTURE);
+        mc.getTextureManager().bindTexture(TEXTURE);
 
         float posX = 80f / ReplayMod.TEXTURE_SIZE;
         float posY = 0f;
@@ -260,12 +267,14 @@ public class PathPreviewRenderer extends EventRegistrations {
         float maxX = 0.5f;
         float maxY = 0.5f;
 
-        BufferBuilder_beginPosTex(GL11.GL_QUADS);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE);
 
-        BufferBuilder_addPosTex(minX, minY, 0, posX + size, posY + size);
-        BufferBuilder_addPosTex(minX, maxY, 0, posX + size, posY);
-        BufferBuilder_addPosTex(maxX, maxY, 0, posX, posY);
-        BufferBuilder_addPosTex(maxX, minY, 0, posX, posY + size);
+        buffer.vertex(minX, minY, 0).texture(posX + size, posY + size).next();
+        buffer.vertex(minX, maxY, 0).texture(posX + size, posY).next();
+        buffer.vertex(maxX, maxY, 0).texture(posX, posY).next();
+        buffer.vertex(maxX, minY, 0).texture(posX, posY + size).next();
 
         GL11.glPushMatrix();
 
@@ -275,15 +284,10 @@ public class PathPreviewRenderer extends EventRegistrations {
                 pos.getRight() - view.getRight()
         );
         GL11.glNormal3f(0, 1, 0);
-        //#if MC>=11500
-        GL11.glRotatef(-getRenderManager().camera.getYaw(), 0, 1, 0);
-        GL11.glRotatef(getRenderManager().camera.getPitch(), 1, 0, 0);
-        //#else
-        //$$ GL11.glRotatef(-getRenderManager().cameraYaw, 0, 1, 0);
-        //$$ GL11.glRotatef(getRenderManager().cameraPitch, 1, 0, 0);
-        //#endif
+        GL11.glRotatef(-mc.getEntityRenderDispatcher().camera.getYaw(), 0, 1, 0);
+        GL11.glRotatef(mc.getEntityRenderDispatcher().camera.getPitch(), 1, 0, 0);
 
-        Tessellator_getInstance().draw();
+        tessellator.draw();
 
         GL11.glPopMatrix();
     }
@@ -292,7 +296,7 @@ public class PathPreviewRenderer extends EventRegistrations {
                             Triple<Double, Double, Double> pos,
                             Triple<Float, Float, Float> rot) {
 
-        MCVer.bindTexture(CAMERA_HEAD);
+        mc.getTextureManager().bindTexture(CAMERA_HEAD);
 
         GL11.glPushMatrix();
 
@@ -308,12 +312,14 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         //draw the position line
         GL11.glDisable(GL11.GL_TEXTURE_2D);
-        BufferBuilder_beginPosCol(GL11.GL_LINES);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
 
-        BufferBuilder_addPosCol(0, 0, 0, 0, 255, 0, 170);
-        BufferBuilder_addPosCol(0, 0, 2, 0, 255, 0, 170);
+        buffer.vertex(0, 0, 0).color(0, 255, 0, 170).next();
+        buffer.vertex(0, 0, 2).color(0, 255, 0, 170).next();
 
-        Tessellator_getInstance().draw();
+        tessellator.draw();
 
         // draw camera cube
         GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -322,45 +328,45 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         double r = -cubeSize/2;
 
-        BufferBuilder_beginPosTexCol(GL11.GL_QUADS);
+        buffer.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 
         //back
-        BufferBuilder_addPosTexCol(r, r + cubeSize, r, 3 * 8 / 64f, 8 / 64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r, 4*8/64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r + cubeSize, r, r, 4*8/64f, 2*8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r, r, 3*8/64f, 2*8/64f, 255, 255, 255, 200);
+        buffer.vertex(r, r + cubeSize, r).texture(3 * 8 / 64f, 8 / 64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r + cubeSize, r + cubeSize, r).texture(4*8/64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r + cubeSize, r, r).texture(4*8/64f, 2*8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r, r).texture(3*8/64f, 2*8/64f).color(255, 255, 255, 200).next();
 
         //front
-        BufferBuilder_addPosTexCol(r + cubeSize, r, r + cubeSize, 2 * 8 / 64f, 2*8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r + cubeSize, 2 * 8 / 64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r + cubeSize, r + cubeSize, 8 / 64f, 8 / 64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r, r + cubeSize, 8 / 64f, 2*8/64f, 255, 255, 255, 200);
+        buffer.vertex(r + cubeSize, r, r + cubeSize).texture(2 * 8 / 64f, 2*8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r + cubeSize, r + cubeSize, r + cubeSize).texture(2 * 8 / 64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r + cubeSize, r + cubeSize).texture(8 / 64f, 8 / 64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r, r + cubeSize).texture(8 / 64f, 2*8/64f).color(255, 255, 255, 200).next();
 
         //left
-        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r, 0, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r + cubeSize, r, r + cubeSize, 8/64f, 2*8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r+cubeSize, r, r, 0, 2*8/64f, 255, 255, 255, 200);
+        buffer.vertex(r + cubeSize, r + cubeSize, r).texture(0, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r + cubeSize, r + cubeSize, r + cubeSize).texture(8/64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r + cubeSize, r, r + cubeSize).texture(8/64f, 2*8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r+cubeSize, r, r).texture(0, 2*8/64f).color(255, 255, 255, 200).next();
 
         //right
-        BufferBuilder_addPosTexCol(r, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r + cubeSize, r, 3*8/64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r, r, 3*8/64f, 2*8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r, r + cubeSize, 2 * 8 / 64f, 2 * 8 / 64f, 255, 255, 255, 200);
+        buffer.vertex(r, r + cubeSize, r + cubeSize).texture(2*8/64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r + cubeSize, r).texture(3*8/64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r, r).texture(3*8/64f, 2*8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r, r + cubeSize).texture(2 * 8 / 64f, 2 * 8 / 64f).color(255, 255, 255, 200).next();
 
         //bottom
-        BufferBuilder_addPosTexCol(r + cubeSize, r, r, 3*8/64f, 0, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r + cubeSize, r, r + cubeSize, 3*8/64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r, r + cubeSize, 2*8/64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r, r, 2 * 8 / 64f, 0, 255, 255, 255, 200);
+        buffer.vertex(r + cubeSize, r, r).texture(3*8/64f, 0).color(255, 255, 255, 200).next();
+        buffer.vertex(r + cubeSize, r, r + cubeSize).texture(3*8/64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r, r + cubeSize).texture(2*8/64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r, r).texture(2 * 8 / 64f, 0).color(255, 255, 255, 200).next();
 
         //top
-        BufferBuilder_addPosTexCol(r, r + cubeSize, r, 8/64f, 0, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 255, 255, 255, 200);
-        BufferBuilder_addPosTexCol(r + cubeSize, r + cubeSize, r, 2 * 8 / 64f, 0, 255, 255, 255, 200);
+        buffer.vertex(r, r + cubeSize, r).texture(8/64f, 0).color(255, 255, 255, 200).next();
+        buffer.vertex(r, r + cubeSize, r + cubeSize).texture(8/64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r + cubeSize, r + cubeSize, r + cubeSize).texture(2*8/64f, 8/64f).color(255, 255, 255, 200).next();
+        buffer.vertex(r + cubeSize, r + cubeSize, r).texture(2 * 8 / 64f, 0).color(255, 255, 255, 200).next();
 
-        Tessellator_getInstance().draw();
+        tessellator.draw();
 
         GL11.glPopMatrix();
     }

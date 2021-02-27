@@ -55,7 +55,7 @@ public class EventsAdapter extends EventRegistrations {
     @SubscribeEvent
     public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
         Boolean result = null;
-        switch (MCVer.getType(event)) {
+        switch (event.getType()) {
             case CROSSHAIRS:
                 result = RenderSpectatorCrosshairCallback.EVENT.invoker().shouldRenderSpectatorCrosshair();
                 break;

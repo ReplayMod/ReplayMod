@@ -8,8 +8,6 @@ import net.minecraft.client.MinecraftClient;
 
 import java.lang.reflect.InvocationTargetException;
 
-import static com.replaymod.core.versions.MCVer.getRenderPartialTicks;
-
 public class ShaderBeginRender extends EventRegistrations {
 
     private final MinecraftClient mc = MinecraftClient.getInstance();
@@ -36,7 +34,7 @@ public class ShaderBeginRender extends EventRegistrations {
                     //#if MC>=11400
                     mc.gameRenderer.getCamera(),
                     //#endif
-                    getRenderPartialTicks(), 0);
+                    mc.getTickDelta(), 0);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }

@@ -57,7 +57,7 @@ public abstract class MixinNetHandlerPlayClient {
     //$$ @Inject(method = "handlePlayerListItem", at=@At("HEAD"))
     //#endif
     public void recordOwnJoin(PlayerListS2CPacket packet, CallbackInfo ci) {
-        if (!MCVer.isOnMainThread()) return;
+        if (!mcStatic.isOnThread()) return;
         if (mcStatic.player == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();

@@ -59,7 +59,7 @@ public abstract class MixinCamera {
     ) {
         if (getHandler() != null) {
             //#if MC<11400
-            //$$ Entity entity = getRenderViewEntity(getMinecraft());
+            //$$ Entity entity = getMinecraft().getRenderViewEntity();
             //#endif
             orgYaw = entity.yaw;
             orgPitch = entity.pitch;
@@ -79,7 +79,7 @@ public abstract class MixinCamera {
     //#endif
         if (getHandler() != null) {
             //#if MC<11400
-            //$$ Entity entity = getRenderViewEntity(getMinecraft());
+            //$$ Entity entity = getMinecraft().getRenderViewEntity();
             //#endif
             RenderSettings settings = getHandler().getSettings();
             if (settings.isStabilizeYaw()) {
@@ -117,7 +117,7 @@ public abstract class MixinCamera {
     ) {
         if (getHandler() != null) {
             //#if MC<11400
-            //$$ Entity entity = getRenderViewEntity(getMinecraft());
+            //$$ Entity entity = getMinecraft().getRenderViewEntity();
             //#endif
             entity.yaw = orgYaw;
             entity.pitch = orgPitch;

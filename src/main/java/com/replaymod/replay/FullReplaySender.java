@@ -367,7 +367,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // To counteract this, we need to manually update it's position if it hasn't been added
             // to any chunk yet.
             if (mc.world != null) {
-                for (PlayerEntity playerEntity : playerEntities(mc.world)) {
+                for (PlayerEntity playerEntity : mc.world.getPlayers()) {
                     if (!playerEntity.updateNeeded && playerEntity instanceof OtherClientPlayerEntity) {
                         playerEntity.tickMovement();
                     }
@@ -417,7 +417,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             // Note: Not sure if it's still required but there's this really handy method anyway
                             world.finishRemovingEntities();
                             //#else
-                            //$$ Iterator<Entity> iter = loadedEntityList(world).iterator();
+                            //$$ Iterator<Entity> iter = world.loadedEntityList.iterator();
                             //$$ while (iter.hasNext()) {
                             //$$     Entity entity = iter.next();
                             //$$     if (entity.isDead) {
@@ -455,10 +455,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 }
                             }
                         };
-                        if (MCVer.isOnMainThread()) {
+                        if (mc.isOnThread()) {
                             doLightUpdates.run();
                         } else {
-                            MCVer.scheduleOnMainThread(doLightUpdates);
+                            mc.send(doLightUpdates);
                         }
                     }
                     //#endif
@@ -742,8 +742,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
 
             if(cent != null) {
-                if(!allowMovement && !((Math.abs(Entity_getX(cent) - ppl.getX()) > TP_DISTANCE_LIMIT) ||
-                        (Math.abs(Entity_getZ(cent) - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                if(!allowMovement && !((Math.abs(cent.getX() - ppl.getX()) > TP_DISTANCE_LIMIT) ||
+                        (Math.abs(cent.getZ() - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
                     return null;
                 } else {
                     allowMovement = false;
@@ -754,7 +754,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 @Override
                 @SuppressWarnings("unchecked")
                 public void run() {
-                    if (mc.world == null || !isOnMainThread()) {
+                    if (mc.world == null || !mc.isOnThread()) {
                         ReplayMod.instance.runLater(this);
                         return;
                     }
@@ -1171,7 +1171,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
                 List<Entity> entitiesInChunk = new ArrayList<>();
                 // Gather all entities in that chunk
-                for (Collection<Entity> entityList : getEntityLists(chunk)) {
+                for (Collection<Entity> entityList : chunk.getEntitySectionArray()) {
                     entitiesInChunk.addAll(entityList);
                 }
                 for (Entity entity : entitiesInChunk) {
@@ -1189,9 +1189,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                     // Check whether the entity has left the chunk
                     //#if MC>=11404
-                    int chunkX = MathHelper.floor(Entity_getX(entity) / 16);
-                    int chunkY = MathHelper.floor(Entity_getY(entity) / 16);
-                    int chunkZ = MathHelper.floor(Entity_getZ(entity) / 16);
+                    int chunkX = MathHelper.floor(entity.getX() / 16);
+                    int chunkY = MathHelper.floor(entity.getY() / 16);
+                    int chunkZ = MathHelper.floor(entity.getZ() / 16);
                     if (entity.chunkX != chunkX || entity.chunkY != chunkY || entity.chunkZ != chunkZ) {
                         if (entity.updateNeeded) {
                             // Entity has left the chunk

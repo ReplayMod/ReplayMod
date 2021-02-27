@@ -3,7 +3,6 @@ package com.replaymod.replay;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -11,10 +10,6 @@ import net.minecraft.client.util.ScreenshotUtils;
 
 //#if MC>=11500
 import net.minecraft.client.util.math.MatrixStack;
-//#endif
-
-//#if MC>=11400
-import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
 
 //#if MC<11400
@@ -55,11 +50,8 @@ public class NoGuiScreenshot {
                     return;
                 }
 
-                //#if MC>=11400
-                int frameWidth = getWindow(mc).getFramebufferWidth(), frameHeight = getWindow(mc).getFramebufferHeight();
-                //#else
-                //$$ int frameWidth = mc.displayWidth, frameHeight = mc.displayHeight;
-                //#endif
+                int frameWidth = mc.getWindow().getFramebufferWidth();
+                int frameHeight = mc.getWindow().getFramebufferHeight();
 
                 final boolean guiHidden = mc.options.hudHidden;
                 try {
@@ -76,16 +68,17 @@ public class NoGuiScreenshot {
                     mc.getFramebuffer().beginWrite(true);
                     GlStateManager.enableTexture();
 
+                    float tickDelta = mc.getTickDelta();
                     //#if MC>=11500
-                    mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime(), new MatrixStack());
+                    mc.gameRenderer.renderWorld(tickDelta, System.nanoTime(), new MatrixStack());
                     //#else
                     //#if MC>=11400
-                    //$$ mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
+                    //$$ mc.gameRenderer.renderWorld(tickDelta, System.nanoTime());
                     //#else
                     //#if MC>=10809
-                    //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks(), System.nanoTime());
+                    //$$ mc.entityRenderer.updateCameraAndRender(tickDelta, System.nanoTime());
                     //#else
-                    //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks());
+                    //$$ mc.entityRenderer.updateCameraAndRender(tickDelta);
                     //#endif
                     //#endif
                     //#endif

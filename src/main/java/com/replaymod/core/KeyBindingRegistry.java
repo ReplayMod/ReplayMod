@@ -7,7 +7,6 @@ import com.replaymod.core.mixin.KeyBindingAccessor;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.KeyEventCallback;
-import com.replaymod.core.versions.MCVer;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
@@ -121,8 +120,8 @@ public class KeyBindingRegistry extends EventRegistrations {
             } catch (Throwable cause) {
                 CrashReport crashReport = CrashReport.create(cause, "Handling Key Binding");
                 CrashReportSection category = crashReport.addElement("Key Binding");
-                MCVer.addDetail(category, "Key Binding", () -> binding.name);
-                MCVer.addDetail(category, "Handler", runnable::toString);
+                category.add("Key Binding", () -> binding.name);
+                category.add("Handler", runnable::toString);
                 throw new CrashException(crashReport);
             }
         }
@@ -139,8 +138,8 @@ public class KeyBindingRegistry extends EventRegistrations {
             } catch (Throwable cause) {
                 CrashReport crashReport = CrashReport.create(cause, "Handling Raw Key Binding");
                 CrashReportSection category = crashReport.addElement("Key Binding");
-                MCVer.addDetail(category, "Key Code", () -> "" + keyCode);
-                MCVer.addDetail(category, "Handler", handler::toString);
+                category.add("Key Code", () -> "" + keyCode);
+                category.add("Handler", handler::toString);
                 throw new CrashException(crashReport);
             }
         }
@@ -161,7 +160,12 @@ public class KeyBindingRegistry extends EventRegistrations {
         }
 
         public String getBoundKey() {
-            return MCVer.getBoundKey(keyBinding);
+            try {
+                return keyBinding.getBoundKeyLocalizedText().getString();
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
+                return "Unknown";
+            }
         }
 
         public boolean isBound() {

@@ -22,15 +22,15 @@ import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.Option;
-import net.minecraft.util.Identifier;
 import net.minecraft.resource.DirectoryResourcePack;
-import net.minecraft.text.Text;
-import net.minecraft.text.Style;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
-import org.apache.commons.io.FilenameUtils;
+import net.minecraft.util.Identifier;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -353,6 +353,14 @@ public class ReplayMod implements Module, Scheduler {
 
     public String getVersion() {
         return backend.getVersion();
+    }
+
+    public String getMinecraftVersion() {
+        return backend.getMinecraftVersion();
+    }
+
+    public boolean isModLoaded(String id) {
+        return backend.isModLoaded(id);
     }
 
     public MinecraftClient getMinecraft() {

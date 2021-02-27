@@ -28,20 +28,20 @@ import static com.replaymod.core.utils.Utils.SSL_SOCKET_FACTORY;
 import static com.replaymod.extras.ReplayModExtras.LOGGER;
 
 public class OpenEyeExtra implements Extra {
-    private static final String DOWNLOAD_URL = "https://www.replaymod.com/dl/openeye/" + MCVer.getMinecraftVersion();
-
+    private URL url;
     private ReplayMod mod;
 
     @Override
     public void register(ReplayMod mod) throws Exception {
         this.mod = mod;
+        this.url = new URL("https://www.replaymod.com/dl/openeye/" + mod.getMinecraftVersion());
 
-        boolean isOpenEyeLoaded = MCVer.isModLoaded("OpenEye");
+        boolean isOpenEyeLoaded = mod.isModLoaded("OpenEye");
         if (!isOpenEyeLoaded && mod.getSettingsRegistry().get(Setting.ASK_FOR_OPEN_EYE)) {
             new Thread(() -> {
                 try {
                     LOGGER.trace("Checking for OpenEye availability");
-                    HttpsURLConnection connection = (HttpsURLConnection) new URL(DOWNLOAD_URL).openConnection();
+                    HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
                     connection.setSSLSocketFactory(SSL_SOCKET_FACTORY);
                     connection.setRequestMethod("HEAD");
                     connection.connect();
@@ -86,10 +86,10 @@ public class OpenEyeExtra implements Extra {
                 GuiPopup popup = new GuiPopup(OfferGui.this);
                 new Thread(() -> {
                     try {
-                        File targetFile = new File(mod.getMinecraft().runDirectory, "mods/" + MCVer.getMinecraftVersion() + "/OpenEye.jar");
+                        File targetFile = new File(mod.getMinecraft().runDirectory, "mods/" + mod.getMinecraftVersion() + "/OpenEye.jar");
                         FileUtils.forceMkdir(targetFile.getParentFile());
 
-                        HttpsURLConnection connection = (HttpsURLConnection) new URL(DOWNLOAD_URL).openConnection();
+                        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
                         connection.setSSLSocketFactory(SSL_SOCKET_FACTORY);
                         ReadableByteChannel in = Channels.newChannel(connection.getInputStream());
                         FileChannel out = new FileOutputStream(targetFile).getChannel();

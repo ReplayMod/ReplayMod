@@ -6,14 +6,9 @@ import com.replaymod.render.capturer.WorldRenderer;
 import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.processor.GlToAbsoluteDepthProcessor;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
-
-//#if MC>=11400
+import net.minecraft.util.crash.CrashReport;
 import org.lwjgl.glfw.GLFW;
-//#else
-//$$ import org.lwjgl.opengl.Display;
-//#endif
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +18,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
-//#if MC>=11400
-import static com.replaymod.core.versions.MCVer.getWindow;
-//#endif
 
 public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
@@ -72,11 +64,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
         MinecraftClient mc = MCVer.getMinecraft();
         while (!capturer.isDone() && !abort) {
-            //#if MC>=11400
-            if (GLFW.glfwWindowShouldClose(getWindow(mc).getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
-            //#else
-            //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
-            //#endif
+            if (GLFW.glfwWindowShouldClose(mc.getWindow().getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
                 processService.shutdown();
                 return;
             }

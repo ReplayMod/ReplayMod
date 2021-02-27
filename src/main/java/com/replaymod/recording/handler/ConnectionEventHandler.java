@@ -138,7 +138,7 @@ public class ConnectionEventHandler {
             metaData.setCustomServerName(serverName);
             metaData.setGenerator("ReplayMod v" + ReplayMod.instance.getVersion());
             metaData.setDate(System.currentTimeMillis());
-            metaData.setMcVersion(MCVer.getMinecraftVersion());
+            metaData.setMcVersion(ReplayMod.instance.getMinecraftVersion());
             packetListener = new PacketListener(core, outputPath, replayFile, metaData);
             Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
             channel.pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);

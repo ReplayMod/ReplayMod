@@ -21,7 +21,6 @@ import net.minecraft.client.model.ModelPart;
 
 import java.io.IOException;
 
-import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.blend.Util.isGlTextureMatrixIdentity;
 
 public class ModelRendererExporter implements Exporter {
@@ -86,11 +85,13 @@ public class ModelRendererExporter implements Exporter {
         DMesh mesh = new DMesh();
         BlendMeshBuilder builder = new BlendMeshBuilder(mesh);
         //#if MC>=11500
-        for (Cuboid box : cubeList(model)) {
-            // FIXME 1.15
-        }
+        // FIXME 1.15
+        //#elseif MC>=10809
+        //$$ for (Box box : model.boxes) {
+        //$$     box.render(builder, scale);
+        //$$ }
         //#else
-        //$$ for (Box box : cubeList(model)) {
+        //$$ for (ModelBox box : (java.util.List<ModelBox>) model.cubeList) {
         //$$     box.render(builder, scale);
         //$$ }
         //#endif

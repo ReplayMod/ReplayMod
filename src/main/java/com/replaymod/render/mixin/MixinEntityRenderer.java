@@ -117,7 +117,7 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
             }
             //#else
             //$$ } else {
-            //$$     Entity currentEntity = getRenderViewEntity(MCVer.getMinecraft());
+            //$$     Entity currentEntity = this.mc.getRenderViewEntity();
             //$$     if (currentEntity instanceof EntityPlayer && !(currentEntity instanceof CameraEntity)) {
             //$$         if (renderPass == 2) { // Need to update render pass
             //$$             renderPass = replayModRender_handler.data == StereoscopicOpenGlFrameCapturer.Data.LEFT_EYE ? 1 : 0;

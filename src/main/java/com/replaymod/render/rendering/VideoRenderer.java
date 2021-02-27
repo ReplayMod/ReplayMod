@@ -30,10 +30,14 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.util.Window;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
+import org.lwjgl.glfw.GLFW;
 
 //#if MC>=11600
 import net.minecraft.client.util.math.MatrixStack;
@@ -41,20 +45,16 @@ import net.minecraft.client.util.math.MatrixStack;
 
 //#if MC>=11500
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.util.Window;
 import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
 import com.replaymod.render.EXRWriter;
 import net.minecraft.client.gui.screen.Screen;
-import org.lwjgl.glfw.GLFW;
 import java.util.concurrent.CompletableFuture;
 //#else
-//$$ import net.minecraft.client.gui.ScaledResolution;
 //$$ import org.lwjgl.input.Mouse;
 //$$ import org.lwjgl.opengl.Display;
-//$$ import static com.replaymod.core.versions.MCVer.newScaledResolution;
 //#endif
 
 //#if MC>=10800
@@ -80,6 +80,7 @@ import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class VideoRenderer implements RenderInfo {
+    private static final Identifier SOUND_RENDER_SUCCESS = new Identifier("replaymod", "render_success");
     private final MinecraftClient mc = MCVer.getMinecraft();
     private final RenderSettings settings;
     private final ReplayHandler replayHandler;
@@ -232,7 +233,7 @@ public class VideoRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
-        MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
+        MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.getWindow();
         int displayWidthBefore = acc.getFramebufferWidth();
         int displayHeightBefore = acc.getFramebufferHeight();
         acc.setFramebufferWidth(displayWidth);
@@ -351,10 +352,7 @@ public class VideoRenderer implements RenderInfo {
 
         updateDisplaySize();
 
-        //#if MC<=10809
-        //$$ ScaledResolution scaled = newScaledResolution(mc);
-        //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
-        //#endif
+        gui.toMinecraft().init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
 
         forceChunkLoadingHook = new ForceChunkLoadingHook(mc.worldRenderer);
 
@@ -401,7 +399,7 @@ public class VideoRenderer implements RenderInfo {
             }
         }
 
-        MCVer.playSound(new Identifier("replaymod", "render_success"));
+        mc.getSoundManager().play(PositionedSoundInstance.master(new SoundEvent(SOUND_RENDER_SUCCESS), 1));
 
         try {
             if (!hasFailed() && ffmpegWriter != null) {
@@ -464,12 +462,9 @@ public class VideoRenderer implements RenderInfo {
     }
 
     public boolean drawGui() {
+        Window window = mc.getWindow();
         do {
-            //#if MC>=11400
-            if (GLFW.glfwWindowShouldClose(getWindow(mc).getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
-            //#else
-            //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
-            //#endif
+            if (GLFW.glfwWindowShouldClose(window.getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
                 return false;
             }
 
@@ -497,7 +492,6 @@ public class VideoRenderer implements RenderInfo {
             guiFramebuffer.beginWrite(true);
 
             //#if MC>=11500
-            Window window = getWindow(mc);
             RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
             RenderSystem.matrixMode(GL11.GL_PROJECTION);
             RenderSystem.loadIdentity();
@@ -507,7 +501,7 @@ public class VideoRenderer implements RenderInfo {
             RenderSystem.translatef(0, 0, -2000);
             //#else
             //#if MC>=11400
-            //$$ getWindow(mc).method_4493(
+            //$$ window.method_4493(
                     //#if MC>=11400
                     //$$ false
                     //#endif
@@ -517,12 +511,7 @@ public class VideoRenderer implements RenderInfo {
             //#endif
             //#endif
 
-            //#if MC>=11400
-            gui.toMinecraft().init(mc, getWindow(mc).getScaledWidth(), getWindow(mc).getScaledHeight());
-            //#else
-            //$$ ScaledResolution scaled = newScaledResolution(mc);
-            //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
-            //#endif
+            gui.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
 
             // Events are polled on 1.13+ in mainWindow.update which is called later
             //#if MC<11400
@@ -540,8 +529,8 @@ public class VideoRenderer implements RenderInfo {
             //#endif
 
             //#if MC>=11400
-            int mouseX = (int) mc.mouse.getX() * getWindow(mc).getScaledWidth() / displayWidth;
-            int mouseY = (int) mc.mouse.getY() * getWindow(mc).getScaledHeight() / displayHeight;
+            int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / displayWidth;
+            int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / displayHeight;
 
             if (mc.overlay != null) {
                 Screen orgScreen = mc.currentScreen;
@@ -564,8 +553,8 @@ public class VideoRenderer implements RenderInfo {
                         mouseX, mouseY, 0);
             }
             //#else
-            //$$ int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
-            //$$ int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
+            //$$ int mouseX = Mouse.getX() * window.getScaledWidth() / mc.displayWidth;
+            //$$ int mouseY = window.getScaledHeight() - Mouse.getY() * window.getScaledHeight() / mc.displayHeight - 1;
             //$$
             //$$ gui.toMinecraft().updateScreen();
             //$$ gui.toMinecraft().drawScreen(mouseX, mouseY, 0);
@@ -578,10 +567,10 @@ public class VideoRenderer implements RenderInfo {
             popMatrix();
 
             //#if MC>=11500
-            getWindow(mc).swapBuffers();
+            window.swapBuffers();
             //#else
             //#if MC>=11400
-            //$$ getWindow(mc).setFullscreen(false);
+            //$$ window.setFullscreen(false);
             //#else
             //$$ // if not in high performance mode, update the gui size if screen size changed
             //$$ // otherwise just swap the progress gui to screen
@@ -611,13 +600,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private boolean displaySizeChanged() {
-        //#if MC>=11400
-        int realWidth = getWindow(mc).getWidth();
-        int realHeight = getWindow(mc).getHeight();
-        //#else
-        //$$ int realWidth = Display.getWidth();
-        //$$ int realHeight = Display.getHeight();
-        //#endif
+        int realWidth = mc.getWindow().getWidth();
+        int realHeight = mc.getWindow().getHeight();
         if (realWidth == 0 || realHeight == 0) {
             // These can be zero on Windows if minimized.
             // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
@@ -627,13 +611,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void updateDisplaySize() {
-        //#if MC>=11400
-        displayWidth = getWindow(mc).getWidth();
-        displayHeight = getWindow(mc).getHeight();
-        //#else
-        //$$ displayWidth = Display.getWidth();
-        //$$ displayHeight = Display.getHeight();
-        //#endif
+        displayWidth = mc.getWindow().getWidth();
+        displayHeight = mc.getWindow().getHeight();
     }
 
     public int getFramesDone() {
