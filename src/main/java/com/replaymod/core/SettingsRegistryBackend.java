@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.replaymod.core.events.SettingsChangedCallback;
+import net.minecraft.client.MinecraftClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,6 +14,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.List;
 import java.util.Map;
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
@@ -27,6 +34,15 @@ class SettingsRegistryBackend {
     }
 
     public void register() {
+        load(true);
+        try {
+            registerWatcher();
+        } catch (IOException e) {
+            LOGGER.warn("Failed to setup file watcher for {}, live-reloading is disabled. Cause: {}", configFile, e);
+        }
+    }
+
+    private void load(boolean createIfMissingOrBroken) {
         String config;
         if (Files.exists(configFile)) {
             try {
@@ -36,14 +52,18 @@ class SettingsRegistryBackend {
                 return;
             }
         } else {
-            save();
+            if (createIfMissingOrBroken) {
+                save();
+            }
             return;
         }
         Gson gson = new Gson();
         JsonObject root = gson.fromJson(config, JsonObject.class);
         if (root == null) {
             LOGGER.error("Config file {} appears corrupted: {}", configFile, config);
-            save();
+            if (createIfMissingOrBroken) {
+                save();
+            }
             return;
         }
         for (Map.Entry<SettingsRegistry.SettingKey<?>, Object> entry : settings.entrySet()) {
@@ -63,9 +83,57 @@ class SettingsRegistryBackend {
                     entry.setValue(value.getAsNumber().doubleValue());
                 }
                 if (key.getDefault() instanceof String && value.isString()) {
-                    entry.setValue(value.getAsString());
+                    String valueStr = value.getAsString();
+                    if (entry instanceof SettingsRegistry.MultipleChoiceSettingKey) {
+                        @SuppressWarnings("unchecked")
+                        List<String> choices = ((SettingsRegistry.MultipleChoiceSettingKey<String>) entry).getChoices();
+                        if (choices.stream().noneMatch(valueStr::equals)) {
+                            continue;
+                        }
+                    }
+                    entry.setValue(valueStr);
                 }
             }
+        }
+    }
+
+    private void registerWatcher() throws IOException {
+        WatchService watchService = configFile.getFileSystem().newWatchService();
+        configFile.getParent().register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY);
+        Thread thread = new Thread(() -> {
+            while (true) {
+                WatchKey nextKey;
+                try {
+                    nextKey = watchService.take();
+                } catch (InterruptedException e) {
+                    return;
+                }
+                for (WatchEvent<?> event : nextKey.pollEvents()) {
+                    WatchEvent.Kind<?> kind = event.kind();
+                    if (kind == StandardWatchEventKinds.OVERFLOW) {
+                        continue;
+                    }
+                    Path fileName = ((Path) event.context());
+                    if (fileName.equals(configFile.getFileName())) {
+                        MinecraftClient.getInstance().send(this::reload);
+                    }
+                }
+                if (!nextKey.reset()) {
+                    return;
+                }
+            }
+        });
+        thread.setName("replaymod-config-watcher");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void reload() {
+        load(false);
+
+        SettingsRegistry settingsRegistry = ReplayMod.instance.getSettingsRegistry();
+        for (SettingsRegistry.SettingKey<?> key : settings.keySet()) {
+            SettingsChangedCallback.EVENT.invoker().onSettingsChanged(settingsRegistry, key);
         }
     }
 
