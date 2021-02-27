@@ -18,7 +18,7 @@ import net.minecraft.client.render.Frustum;
 //#else
 //$$ @Mixin(Frustrum.class)
 //#endif
-public abstract class MixinFrustum {
+public abstract class Mixin_Omnidirectional_DisableFrustumCulling {
     //#if MC>=11500
     @Inject(method = "isAnyCornerVisible", at = @At("HEAD"), cancellable = true)
     //#else

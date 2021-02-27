@@ -10,6 +10,7 @@
     "Mixin_CubicRotation",
     "Mixin_ForceChunkLoading",
     "Mixin_Omnidirectional_Camera",
+    "Mixin_Omnidirectional_DisableFrustumCulling",
     "Mixin_Omnidirectional_SkipHand",
     "Mixin_SkipBlockOutlinesDuringRender",
     "Mixin_StabilizeCamera",
@@ -39,7 +40,6 @@
     //#if MC>=10800
     "MixinGlStateManager",
     //#endif
-    "MixinFrustum",
     "MixinRender",
     //#if MC>=10800
     //#else
