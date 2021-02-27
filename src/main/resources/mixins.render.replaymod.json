@@ -12,6 +12,7 @@
     "Mixin_Omnidirectional_Camera",
     "Mixin_Omnidirectional_SkipHand",
     "Mixin_SkipBlockOutlinesDuringRender",
+    "Mixin_StabilizeCamera",
     "Mixin_Stereoscopic_Camera",
     "Mixin_Stereoscopic_HandRenderPass",
     //#if MC>=10800
@@ -34,7 +35,6 @@
     //$$ "MixinEffectRenderer",
     //$$ "MixinRendererLivingEntity",
     //#endif
-    "MixinCamera",
     "MixinEntityRenderer",
     //#if MC>=10800
     "MixinGlStateManager",

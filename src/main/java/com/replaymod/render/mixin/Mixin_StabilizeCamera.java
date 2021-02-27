@@ -24,7 +24,7 @@ import net.minecraft.world.BlockView;
 //#else
 //$$ @Mixin(value = EntityRenderer.class)
 //#endif
-public abstract class MixinCamera {
+public abstract class Mixin_StabilizeCamera {
     private EntityRendererHandler getHandler() {
         return ((EntityRendererHandler.IEntityRenderer) getMinecraft().gameRenderer).replayModRender_getHandler();
     }
