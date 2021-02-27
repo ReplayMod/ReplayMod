@@ -8,6 +8,7 @@
     "Mixin_ChromaKeyDisableFog",
     "Mixin_ChromaKeyForceSky",
     "Mixin_ForceChunkLoading",
+    "Mixin_HideNameTags",
     "Mixin_Omnidirectional_Camera",
     "Mixin_Omnidirectional_DisableFrustumCulling",
     "Mixin_Omnidirectional_Rotation",
@@ -40,7 +41,6 @@
     //#if MC>=10800
     "MixinGlStateManager",
     //#endif
-    "MixinRender",
     //#if MC>=10800
     //#else
     //$$ "MixinOpenGlHelper",

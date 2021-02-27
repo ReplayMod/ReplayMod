@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityRenderer.class)
-public abstract class MixinRender {
+public abstract class Mixin_HideNameTags {
     //#if MC>=11500
     @Inject(method = "renderLabelIfPresent", at = @At("HEAD"), cancellable = true)
     //#else
