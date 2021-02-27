@@ -200,6 +200,12 @@ repositories {
         url = "https://maven.fabricmc.net/"
     }
     maven {
+        url 'https://maven.terraformersmc.com/releases/'
+        content {
+            includeGroup 'com.terraformersmc'
+        }
+    }
+    maven {
         url 'https://jitpack.io'
         content {
             includeGroupByRegex 'com\\.github\\..*'
@@ -323,8 +329,7 @@ dependencies {
 
     if (FABRIC) {
         if (mcVersion >= 11602) {
-            // TODO re-add to runtime once available
-            modCompileOnly 'io.github.prospector:modmenu:1.14.0+build.24'
+            modCompile 'com.terraformersmc:modmenu:1.16.8'
         } else if (mcVersion >= 11600) {
             modCompile 'io.github.prospector:modmenu:1.14.0+build.24'
         } else {

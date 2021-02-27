@@ -223,6 +223,12 @@ public class MCVer {
             if (message.equals(b.getMessage())) {
                 return Optional.of(b);
             }
+            //#if MC>=11600
+            // Fuzzy match (copy does not include children)
+            if (b.getMessage() != null && b.getMessage().copy().equals(message)) {
+                return Optional.of(b);
+            }
+            //#endif
         }
         return Optional.empty();
     }

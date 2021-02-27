@@ -1,6 +1,12 @@
 package com.replaymod.replay.handler;
 
+import com.replaymod.core.gui.GuiReplayButton;
+import com.replaymod.replay.Setting;
+import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
+import de.johni0702.minecraft.gui.element.GuiTooltip;
+import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.utils.lwjgl.Point;
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.gui.screen.GuiReplayViewer;
@@ -28,9 +34,11 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
@@ -217,6 +225,34 @@ public class GuiHandler extends EventRegistrations {
             return;
         }
 
+        boolean isCustomMainMenuMod = guiScreen.getClass().getName().endsWith("custommainmenu.gui.GuiFakeMain");
+
+        MainMenuButtonPosition buttonPosition = MainMenuButtonPosition.valueOf(mod.getCore().getSettingsRegistry().get(Setting.MAIN_MENU_BUTTON));
+        if (buttonPosition != MainMenuButtonPosition.BIG && !isCustomMainMenuMod) {
+            VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(guiScreen);
+
+            GuiReplayButton replayButton = new GuiReplayButton();
+            replayButton
+                    .onClick(() -> new GuiReplayViewer(mod).display())
+                    .setTooltip(new GuiTooltip().setI18nText("replaymod.gui.replayviewer"));
+
+            vanillaGui.setLayout(new CustomLayout<de.johni0702.minecraft.gui.container.GuiScreen>(vanillaGui.getLayout()) {
+                private Point pos;
+
+                @Override
+                protected void layout(de.johni0702.minecraft.gui.container.GuiScreen container, int width, int height) {
+                    if (pos == null) {
+                        // Delaying computation so we can take into account buttons
+                        // added after our callback.
+                        pos = determineButtonPos(buttonPosition, guiScreen, buttonList);
+                    }
+                    size(replayButton, 20, 20);
+                    pos(replayButton, pos.getX(), pos.getY());
+                }
+            }).addElements(null, replayButton);
+            return;
+        }
+
         int x = guiScreen.width / 2 - 100;
         // We want to position our button below the realms button
         int y = findButton(buttonList, "menu.online", 14)
@@ -246,13 +282,77 @@ public class GuiHandler extends EventRegistrations {
                 this::onButton
         );
         //#if FABRIC<=0
-        //$$ if (guiScreen.getClass().getName().endsWith("custommainmenu.gui.GuiFakeMain")) {
+        //$$ if (isCustomMainMenuMod) {
         //$$     // CustomMainMenu uses a different list in the event than in its Fake gui
         //$$     buttonList.add(button);
         //$$     return;
         //$$ }
         //#endif
         addButton(guiScreen, button);
+    }
+
+    private Point determineButtonPos(MainMenuButtonPosition buttonPosition, Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+        Point topRight = new Point(guiScreen.width - 20 - 5, 5);
+
+        if (buttonPosition == MainMenuButtonPosition.TOP_LEFT) {
+            return new Point(5, 5);
+        } else if (buttonPosition == MainMenuButtonPosition.TOP_RIGHT) {
+            return topRight;
+        } else if (buttonPosition == MainMenuButtonPosition.DEFAULT) {
+            return Stream.of(
+                    findButton(buttonList, "menu.singleplayer", 1),
+                    findButton(buttonList, "menu.multiplayer", 2),
+                    findButton(buttonList, "menu.online", 14),
+                    findButton(buttonList, "modmenu.title", 6)
+            )
+                    // skip buttons which do not exist
+                    .flatMap(it -> it.map(Stream::of).orElseGet(Stream::empty))
+                    // skip buttons which already have something next to them
+                    .filter(it -> buttonList.stream().noneMatch(button ->
+                            button.x <= it.x + it.getWidth() + 4 + 20
+                                    && button.y <= it.y + it.getHeight()
+                                    && button.x + button.getWidth() >= it.x + it.getWidth() + 4
+                                    && button.y + button.getHeight() >= it.y
+                    ))
+                    // then take the bottom-most and if there's two, the right-most
+                    .max(Comparator.<AbstractButtonWidget>comparingInt(it -> it.y).thenComparingInt(it -> it.x))
+                    // and place ourselves next to it
+                    .map(it -> new Point(it.x + it.getWidth() + 4, it.y))
+                    // if all fails, just go with TOP_RIGHT
+                    .orElse(topRight);
+        } else {
+            return Optional.of(buttonList).flatMap(buttons -> {
+                switch (buttonPosition) {
+                    case LEFT_OF_SINGLEPLAYER:
+                    case RIGHT_OF_SINGLEPLAYER:
+                        return findButton(buttons, "menu.singleplayer", 1);
+                    case LEFT_OF_MULTIPLAYER:
+                    case RIGHT_OF_MULTIPLAYER:
+                        return findButton(buttons, "menu.multiplayer", 2);
+                    case LEFT_OF_REALMS:
+                    case RIGHT_OF_REALMS:
+                        return findButton(buttons, "menu.online", 14);
+                    case LEFT_OF_MODS:
+                    case RIGHT_OF_MODS:
+                        return findButton(buttons, "modmenu.title", 6);
+                }
+                throw new RuntimeException();
+            }).map(button -> {
+                switch (buttonPosition) {
+                    case LEFT_OF_SINGLEPLAYER:
+                    case LEFT_OF_MULTIPLAYER:
+                    case LEFT_OF_REALMS:
+                    case LEFT_OF_MODS:
+                        return new Point(button.x - 4 - 20, button.y);
+                    case RIGHT_OF_MODS:
+                    case RIGHT_OF_SINGLEPLAYER:
+                    case RIGHT_OF_MULTIPLAYER:
+                    case RIGHT_OF_REALMS:
+                        return new Point(button.x + button.getWidth() + 4, button.y);
+                }
+                throw new RuntimeException();
+            }).orElse(topRight);
+        }
     }
 
     //#if MC>=11400
@@ -333,5 +433,23 @@ public class GuiHandler extends EventRegistrations {
         //$$     onClick.accept(this);
         //$$ }
         //#endif
+    }
+
+    public enum MainMenuButtonPosition {
+        // The old big button below Realms/Mods which pushes other buttons around.
+        BIG,
+        // Right of the bottom-most button in the main block of buttons (so not the quit button).
+        // That will generally be either RIGHT_OF_REALMS or RIGHT_OF_MODS depending on version and installed mods.
+        DEFAULT,
+        TOP_LEFT,
+        TOP_RIGHT,
+        LEFT_OF_SINGLEPLAYER,
+        RIGHT_OF_SINGLEPLAYER,
+        LEFT_OF_MULTIPLAYER,
+        RIGHT_OF_MULTIPLAYER,
+        LEFT_OF_REALMS,
+        RIGHT_OF_REALMS,
+        LEFT_OF_MODS,
+        RIGHT_OF_MODS,
     }
 }

@@ -1,6 +1,9 @@
 //#if MC>=11600
 package com.replaymod.replay.mixin;
 
+import com.replaymod.core.ReplayMod;
+import com.replaymod.replay.Setting;
+import com.replaymod.replay.handler.GuiHandler.MainMenuButtonPosition;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +17,11 @@ public abstract class Mixin_MoveRealmsButton {
             index = 2
     )
     private int adjustRealmsButton(int height) {
-        return height - 24 * 4;
+        String setting = ReplayMod.instance.getSettingsRegistry().get(Setting.MAIN_MENU_BUTTON);
+        if (MainMenuButtonPosition.valueOf(setting) == MainMenuButtonPosition.BIG) {
+            height -= 24 * 4;
+        }
+        return height;
     }
 }
 //#endif
