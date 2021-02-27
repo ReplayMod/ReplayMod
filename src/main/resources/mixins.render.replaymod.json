@@ -9,7 +9,11 @@
     "Mixin_ChromaKeyForceSky",
     "Mixin_CubicRotation",
     "Mixin_ForceChunkLoading",
+    "Mixin_Omnidirectional_Camera",
+    "Mixin_Omnidirectional_SkipHand",
     "Mixin_SkipBlockOutlinesDuringRender",
+    "Mixin_Stereoscopic_Camera",
+    "Mixin_Stereoscopic_HandRenderPass",
     //#if MC>=10800
     //#if MC>=11500
     "Mixin_BlockOnChunkRebuilds",
