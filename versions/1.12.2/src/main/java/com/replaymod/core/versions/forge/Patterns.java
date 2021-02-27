@@ -7,6 +7,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.common.config.Property;
 
 class Patterns {
     @Pattern
@@ -42,6 +43,15 @@ class Patterns {
         return event.getType();
         //#else
         //$$ return event.type;
+        //#endif
+    }
+
+    @Pattern
+    private static void setComment(Property property, String comment) {
+        //#if MC>=10900
+        property.setComment(comment);
+        //#else
+        //$$ property.comment = comment;
         //#endif
     }
 }

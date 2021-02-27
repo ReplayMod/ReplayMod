@@ -1,8 +1,10 @@
 package com.replaymod.core;
 
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 class SettingsRegistryBackend {
@@ -36,7 +38,14 @@ class SettingsRegistryBackend {
             } else if (key.getDefault() instanceof Double) {
                 value = configuration.get(key.getCategory(), key.getKey(), (Double) key.getDefault()).getDouble();
             } else if (key.getDefault() instanceof String) {
-                value = configuration.get(key.getCategory(), key.getKey(), (String) key.getDefault()).getString();
+                Property property = configuration.get(key.getCategory(), key.getKey(), (String) key.getDefault());
+                value = property.getString();
+                if (key instanceof SettingsRegistry.MultipleChoiceSettingKey) {
+                    @SuppressWarnings("unchecked")
+                    List<String> choices = ((SettingsRegistry.MultipleChoiceSettingKey<String>) key).getChoices();
+                    property.setValidValues(choices.toArray(new String[0]));
+                    property.setComment("Valid values: " + String.join(", ", choices));
+                }
             } else {
                 throw new IllegalArgumentException("Default type " + key.getDefault().getClass() + " not supported.");
             }

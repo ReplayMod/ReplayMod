@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -164,6 +165,15 @@ class SettingsRegistryBackend {
             }
             if (value instanceof String) {
                 category.addProperty(key.getKey(), (String) value);
+                if (key instanceof SettingsRegistry.MultipleChoiceSettingKey) {
+                    @SuppressWarnings("unchecked")
+                    List<String> choices = ((SettingsRegistry.MultipleChoiceSettingKey<String>) key).getChoices();
+                    JsonArray array = new JsonArray();
+                    for (String choice : choices) {
+                        array.add(choice);
+                    }
+                    category.add(key.getKey() + "_valid_values", array);
+                }
             }
         }
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
