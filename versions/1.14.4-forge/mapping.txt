@@ -4,6 +4,8 @@ net.minecraft.resources.AbstractResourcePack net.minecraft.client.resources.Abst
 net.minecraft.resources.FolderPack net.minecraft.client.resources.FolderResourcePack
 net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository
 net.minecraft.client.renderer.chunk.ChunkRenderTask net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator
+net.minecraft.client.settings.AbstractOption net.minecraft.client.settings.GameSettings.Options
+net.minecraft.client.settings.AbstractOption func_216728_a() setValueMax()
 net.minecraftforge.eventbus.api.SubscribeEvent net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 net.minecraftforge.eventbus.api.EventPriority net.minecraftforge.fml.common.eventhandler.EventPriority
 net.minecraftforge.eventbus.api.Cancelable net.minecraftforge.fml.common.eventhandler.Cancelable

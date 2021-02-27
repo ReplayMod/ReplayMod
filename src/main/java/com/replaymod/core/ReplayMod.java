@@ -21,6 +21,7 @@ import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.options.Option;
 import net.minecraft.util.Identifier;
 import net.minecraft.resource.DirectoryResourcePack;
 import net.minecraft.text.Text;
@@ -30,12 +31,6 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
-
-//#if MC>=11400
-import net.minecraft.client.options.Option;
-//#else
-//$$ import net.minecraft.client.settings.GameSettings;
-//#endif
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -229,11 +224,7 @@ public class ReplayMod implements Module, Scheduler {
         // 1.7.10 crashes when render distance > 16
         //#if MC>=10800
         if (!MCVer.hasOptifine()) {
-            //#if MC>=11400
             Option.RENDER_DISTANCE.setMax(64f);
-            //#else
-            //$$ GameSettings.Options.RENDER_DISTANCE.setValueMax(64f);
-            //#endif
         }
         //#endif
 
