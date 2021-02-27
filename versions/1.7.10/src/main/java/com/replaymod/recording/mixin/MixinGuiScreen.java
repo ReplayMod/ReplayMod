@@ -2,6 +2,7 @@ package com.replaymod.recording.mixin;
 
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,8 +10,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import static com.replaymod.core.versions.MCVer.*;
 
 @Mixin(GuiScreen.class)
 public abstract class MixinGuiScreen {
@@ -20,7 +19,7 @@ public abstract class MixinGuiScreen {
         ci.cancel();
         if (Mouse.isCreated()) {
             while (Mouse.next()) {
-                if (FORGE_BUS.post(new VanillaGuiScreen.MouseInputEvent())) {
+                if (MinecraftForge.EVENT_BUS.post(new VanillaGuiScreen.MouseInputEvent())) {
                     continue;
                 }
                 handleMouseInput();
@@ -29,7 +28,7 @@ public abstract class MixinGuiScreen {
 
         if (Keyboard.isCreated()) {
             while (Keyboard.next()) {
-                if (FORGE_BUS.post(new VanillaGuiScreen.KeyboardInputEvent())) {
+                if (MinecraftForge.EVENT_BUS.post(new VanillaGuiScreen.KeyboardInputEvent())) {
                     continue;
                 }
                 handleKeyboardInput();

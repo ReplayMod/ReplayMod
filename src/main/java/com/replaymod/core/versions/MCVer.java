@@ -34,12 +34,6 @@ import net.minecraft.text.TranslatableText;
 //$$ import net.minecraft.realms.RealmsSharedConstants;
 //#endif
 
-//#if FABRIC>=1
-//#else
-//$$ import net.minecraftforge.common.MinecraftForge;
-//$$ import net.minecraftforge.eventbus.api.IEventBus;
-//#endif
-
 //#if MC>=11400
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
@@ -56,11 +50,6 @@ import org.lwjgl.glfw.GLFW;
 import com.replaymod.render.blend.mixin.ParticleAccessor;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.math.Vec3d;
-//#endif
-
-//#if MC>=10809
-//#else
-//$$ import net.minecraftforge.fml.common.FMLCommonHandler;
 //#endif
 
 //#if MC>=10800
@@ -89,15 +78,6 @@ import java.util.Optional;
  * Abstraction over things that have changed between different MC versions.
  */
 public class MCVer {
-    //#if FABRIC<=0
-    //$$ public static IEventBus FORGE_BUS = MinecraftForge.EVENT_BUS;
-    //#if MC>=10809
-    //$$ public static IEventBus FML_BUS = FORGE_BUS;
-    //#else
-    //$$ public static EventBus FML_BUS = FMLCommonHandler.instance().bus();
-    //#endif
-    //#endif
-
     public static int getProtocolVersion() {
         //#if MC>=11400
         return SharedConstants.getGameVersion().getProtocolVersion();

@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ReportedException;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
@@ -13,14 +14,24 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+//#if MC>=10809
+import net.minecraftforge.common.MinecraftForge;
+//#else
+//$$ import net.minecraftforge.fml.common.FMLCommonHandler;
+//#endif
+
 //#if MC<10800
 //$$ import java.util.ArrayDeque;
 //#endif
 
-import static com.replaymod.core.versions.MCVer.FML_BUS;
-
 public class SchedulerImpl implements  Scheduler {
     private static final Minecraft mc = Minecraft.getMinecraft();
+
+    //#if MC>=10809
+    private static final EventBus FML_BUS = MinecraftForge.EVENT_BUS;
+    //#else
+    //$$ private static final EventBus FML_BUS = FMLCommonHandler.instance().bus();
+    //#endif
 
     @Override
     public void runSync(Runnable runnable) throws InterruptedException, ExecutionException, TimeoutException {
