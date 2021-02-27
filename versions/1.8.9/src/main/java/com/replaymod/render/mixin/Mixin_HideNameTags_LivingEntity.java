@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(RendererLivingEntity.class)
-public abstract class MixinRendererLivingEntity {
+public abstract class Mixin_HideNameTags_LivingEntity {
     @Inject(method = "canRenderName", at = @At("HEAD"), cancellable = true)
     private void replayModRender_areAllNamesHidden(EntityLivingBase entity, CallbackInfoReturnable<Boolean> ci) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) Minecraft.getMinecraft().entityRenderer).replayModRender_getHandler();
