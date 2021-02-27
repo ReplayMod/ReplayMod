@@ -5,8 +5,12 @@ import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PostRenderWorldCallback;
 import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.events.PreRenderHandCallback;
+import com.replaymod.core.versions.MCVer;
+import com.replaymod.replay.events.RenderHotbarCallback;
+import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.MatrixStack;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -44,6 +48,22 @@ public class EventsAdapter extends EventRegistrations {
     @SubscribeEvent
     public void oRenderHand(RenderHandEvent event) {
         if (PreRenderHandCallback.EVENT.invoker().preRenderHand()) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
+        Boolean result = null;
+        switch (MCVer.getType(event)) {
+            case CROSSHAIRS:
+                result = RenderSpectatorCrosshairCallback.EVENT.invoker().shouldRenderSpectatorCrosshair();
+                break;
+            case HOTBAR:
+                result = RenderHotbarCallback.EVENT.invoker().shouldRenderHotbar();
+                break;
+        }
+        if (result == Boolean.FALSE) {
             event.setCanceled(true);
         }
     }

@@ -8,6 +8,8 @@ import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.core.events.SettingsChangedCallback;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.events.RenderHotbarCallback;
+import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import com.replaymod.core.utils.Utils;
@@ -28,7 +30,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 
 //#if FABRIC>=1
-import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
 //#else
 //$$ import com.replaymod.core.versions.MCVer;
 //$$ import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -680,24 +681,15 @@ public class CameraEntity
 
         { on(KeyBindingEventCallback.EVENT, CameraEntity.this::handleInputEvents); }
 
-        //#if FABRIC>=1
         { on(RenderSpectatorCrosshairCallback.EVENT, this::shouldRenderSpectatorCrosshair); }
         private Boolean shouldRenderSpectatorCrosshair() {
             return canSpectate(mc.targetedEntity);
         }
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
-        //$$     // The crosshair should only render if targeted entity can actually be spectated
-        //$$     if (MCVer.getType(event) == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
-        //$$         event.setCanceled(!canSpectate(mc.pointedEntity));
-        //$$     }
-        //$$     // Hotbar should never be rendered
-        //$$     if (MCVer.getType(event) == RenderGameOverlayEvent.ElementType.HOTBAR) {
-        //$$         event.setCanceled(true);
-        //$$     }
-        //$$ }
-        //#endif
+
+        { on(RenderHotbarCallback.EVENT, this::shouldRenderHotbar); }
+        private Boolean shouldRenderHotbar() {
+            return false;
+        }
 
         { on(SettingsChangedCallback.EVENT, this::onSettingsChanged); }
         private void onSettingsChanged(SettingsRegistry registry, SettingsRegistry.SettingKey<?> key) {
