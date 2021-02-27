@@ -73,17 +73,6 @@ public abstract class MixinEntityRenderer implements EntityRendererHandler.IEnti
         return replayModRender_handler;
     }
 
-    //#if MC<=10710
-    //$$ @Redirect(method = "renderWorld", at = @At(value = "INVOKE",target =
-    //$$         "Lnet/minecraft/client/renderer/RenderGlobal;updateRenderers(Lnet/minecraft/entity/EntityLivingBase;Z)Z"))
-    //$$ private boolean replayModRender_updateAllChunks(RenderGlobal self, EntityLivingBase view, boolean renderAllChunks) {
-    //$$     if (replayModRender_handler != null) {
-    //$$         renderAllChunks = true;
-    //$$     }
-    //$$     return self.updateRenderers(view, renderAllChunks);
-    //$$ }
-    //#endif
-
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void replayModRender_renderSpectatorHand(
             //#if MC>=11500

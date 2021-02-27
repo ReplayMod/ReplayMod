@@ -8,6 +8,7 @@
     "Mixin_ChromaKeyDisableFog",
     "Mixin_ChromaKeyForceSky",
     "Mixin_CubicRotation",
+    "Mixin_ForceChunkLoading",
     "Mixin_SkipBlockOutlinesDuringRender",
     //#if MC>=10800
     //#if MC>=11500
@@ -16,7 +17,6 @@
     //$$ "ChunkRenderDispatcherAccessor",
     //$$ "MixinChunkRenderWorker",
     //#endif
-    "Mixin_ForceChunkLoading",
     //#endif
     //#if MC>=11400
     "Mixin_PreserveDepthDuringHandRendering",
