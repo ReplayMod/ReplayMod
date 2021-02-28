@@ -373,4 +373,13 @@ class Patterns {
         //$$ return PositionedSoundRecord.createPositionedSoundRecord(sound, pitch);
         //#endif
     }
+
+    @Pattern
+    private static boolean isKeyBindingConflicting(KeyBinding a, KeyBinding b) {
+        //#if MC>=10900
+        return a.equals(b);
+        //#else
+        //$$ return (a.getKeyCode() == b.getKeyCode());
+        //#endif
+    }
 }

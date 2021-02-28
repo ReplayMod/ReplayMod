@@ -186,18 +186,14 @@ public class ReplayModReplay implements Module {
             }
         }
         replayHandler = new ReplayHandler(replayFile, asyncMode);
-        //#if MC>=11400
         KeyBinding.updateKeysByCode(); // see Mixin_ContextualKeyBindings
-        //#endif
 
         return replayHandler;
     }
 
     public void forcefullyStopReplay() {
         replayHandler = null;
-        //#if MC>=11400
         KeyBinding.updateKeysByCode(); // see Mixin_ContextualKeyBindings
-        //#endif
     }
 
     public ReplayMod getCore() {
