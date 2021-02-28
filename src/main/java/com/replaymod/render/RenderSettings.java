@@ -72,7 +72,7 @@ public class RenderSettings {
 
         EXR(null, "exr"),
 
-        PNG("\"%FILENAME%-%06d.png\"", "png");
+        PNG(null, "png");
 
         private final String preset;
         private final String fileExtension;

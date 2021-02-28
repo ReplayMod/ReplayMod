@@ -8,6 +8,7 @@ import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.CameraPathExporter;
+import com.replaymod.render.PNGWriter;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.FFmpegWriter;
@@ -125,15 +126,17 @@ public class VideoRenderer implements RenderInfo {
         } else {
             FrameConsumer<BitmapFrame> frameConsumer;
             if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
-                ffmpegWriter = null;
                 //#if MC>=11400
                 frameConsumer = new EXRWriter(settings.getOutputFile().toPath());
                 //#else
                 //$$ throw new UnsupportedOperationException("EXR requires LWJGL3");
                 //#endif
+            } else if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.PNG) {
+                frameConsumer = new PNGWriter(settings.getOutputFile().toPath());
             } else {
-                frameConsumer = ffmpegWriter = new FFmpegWriter(this);
+                frameConsumer = new FFmpegWriter(this);
             }
+            ffmpegWriter = frameConsumer instanceof FFmpegWriter ? (FFmpegWriter) frameConsumer : null;
             FrameConsumer<BitmapFrame> previewingFrameConsumer = new FrameConsumer<BitmapFrame>() {
                 @Override
                 public void consume(Map<Channel, BitmapFrame> channels) {

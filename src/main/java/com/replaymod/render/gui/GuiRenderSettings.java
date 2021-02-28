@@ -406,8 +406,9 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
 
         // Enable/Disable various options for blend export
         boolean isEXR = encodingPresetDropdown.getSelectedValue() == RenderSettings.EncodingPreset.EXR;
+        boolean isPNG = encodingPresetDropdown.getSelectedValue() == RenderSettings.EncodingPreset.PNG;
         boolean isBlend = renderMethod == RenderSettings.RenderMethod.BLEND;
-        boolean isFFmpeg = !isBlend && !isEXR;
+        boolean isFFmpeg = !isBlend && !isEXR && !isPNG;
         if (isBlend) {
             videoWidth.setDisabled();
             videoHeight.setDisabled();
@@ -417,11 +418,11 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         exportArguments.setEnabled(isFFmpeg);
         antiAliasingDropdown.setEnabled(isFFmpeg);
 
-        if (isEXR) {
+        if (isEXR || isPNG) {
             depthMap.setEnabled().setTooltip(null);
         } else {
             depthMap.setDisabled().setTooltip(new GuiTooltip().setColor(Colors.RED)
-                    .setI18nText("replaymod.gui.rendersettings.depthmap.onlyexr"));
+                    .setI18nText("replaymod.gui.rendersettings.depthmap.only_exr_or_png"));
         }
 
         // Enable/Disable export args reset button
