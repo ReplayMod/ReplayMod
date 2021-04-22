@@ -21,7 +21,7 @@ buildscript {
         if (!fabric) {
             maven {
                 name = "forge"
-                url = "https://files.minecraftforge.net/maven"
+                url = "https://maven.minecraftforge.net"
             }
         }
         maven {
@@ -41,12 +41,12 @@ buildscript {
             }
         } else if (mcVersion >= 10800) {
             classpath('com.github.ReplayMod:ForgeGradle:' + (
-                    mcVersion >= 11200 ? 'b64de9c' : // FG 2.3
-                    mcVersion >= 10904 ? '5bb7a53' : // FG 2.2
-                                         'fc1eabc'   // FG 2.1
+                    mcVersion >= 11200 ? '541e1485' : // FG 2.3
+                    mcVersion >= 10904 ? '5c1f53dc' : // FG 2.2
+                                         '48c4f0c6'   // FG 2.1
             ) + ':all')
         } else {
-            classpath 'com.github.ReplayMod:ForgeGradle:5fca6853:all' // FG 1.2
+            classpath 'com.github.ReplayMod:ForgeGradle:a8a9e0ca:all' // FG 1.2
         }
     }
 }
