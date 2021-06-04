@@ -7,8 +7,8 @@ Make sure your sub-projects are up-to-date: `git submodule update --init --recur
 For compiling 1.7.10, you must run `./gradlew :jGui:1.7.10:setupDecompWorkspace :1.7.10:setupDecompWorkspace` once after the initial clone. This may take quite some time.
 
 ### No IDE
-You can build the mod by running `./gradlew build` (or just `./gradlew shadowJar`). You can then find the final jar files in `versions/$MCVERSION/build/libs/`.
-You can also build single versions by running `./gradlew :1.8:build` (or just `./gradlew :1.8:shadowJar`) (builds the MC 1.8 version).
+You can build the mod by running `./gradlew build` (or just `./gradlew bundleJar`). You can then find the final jar files in `versions/$MCVERSION/build/libs/`.
+You can also build single versions by running `./gradlew :1.8:build` (or just `./gradlew :1.8:bundleJar`) (builds the MC 1.8 version).
 
 ### IntelliJ
 Ensure you have at least IDEA 2020.1.

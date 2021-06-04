@@ -32,18 +32,18 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
+        classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.6-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.8-SNAPSHOT'
         } else if (mcVersion >= 11400) {
-            classpath('net.minecraftforge.gradle:ForgeGradle:3.+'){
+            classpath('net.minecraftforge.gradle:ForgeGradle:5.+'){
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
             }
         } else if (mcVersion >= 10800) {
             classpath('com.github.ReplayMod:ForgeGradle:' + (
-                    mcVersion >= 11200 ? '541e1485' : // FG 2.3
-                    mcVersion >= 10904 ? '5c1f53dc' : // FG 2.2
-                                         '48c4f0c6'   // FG 2.1
+                    mcVersion >= 11200 ? '34ab703' : // FG 2.3
+                    mcVersion >= 10904 ? '5d1e8d8' : // FG 2.2
+                                         'd1a7165'   // FG 2.1
             ) + ':all')
         } else {
             classpath 'com.github.ReplayMod:ForgeGradle:a8a9e0ca:all' // FG 1.2
@@ -218,10 +218,10 @@ repositories {
 configurations {
     // Include dep in fat jar without relocation and, when forge supports it, without exploding (TODO)
     shade
-    compile.extendsFrom shade
+    implementation.extendsFrom shade
     // Include dep in fat jar with relocation and minimization
     shadow
-    compile.extendsFrom shadow
+    implementation.extendsFrom shadow
 }
 
 def shadeExclusions = {
@@ -247,7 +247,7 @@ dependencies {
                 11603: '1.16.3+build.1:v2',
                 11604: '1.16.4+build.6:v2',
         ][mcVersion]
-        modCompile 'net.fabricmc:fabric-loader:' + [
+        modImplementation 'net.fabricmc:fabric-loader:' + [
                 11404: '0.7.8+build.189',
                 11502: '0.7.8+build.189',
                 11601: '0.8.8+build.202',
@@ -271,7 +271,7 @@ dependencies {
             fabricApiModules.add("key-binding-api-v1")
         }
         fabricApiModules.each { module ->
-            modCompile fabricApi.module("fabric-$module", fabricApiVersion)
+            modImplementation fabricApi.module("fabric-$module", fabricApiVersion)
             include fabricApi.module("fabric-$module", fabricApiVersion)
         }
     }
@@ -331,15 +331,15 @@ dependencies {
 
     if (FABRIC) {
         if (mcVersion >= 11602) {
-            modCompile 'com.terraformersmc:modmenu:1.16.8'
+            modImplementation 'com.terraformersmc:modmenu:1.16.8'
         } else if (mcVersion >= 11600) {
-            modCompile 'io.github.prospector:modmenu:1.14.0+build.24'
+            modImplementation 'io.github.prospector:modmenu:1.14.0+build.24'
         } else {
-            modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
+            modImplementation 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
         }
     }
 
-    testCompile 'junit:junit:4.11'
+    testImplementation 'junit:junit:4.11'
 }
 
 if (mcVersion <= 10710) {
@@ -431,8 +431,12 @@ task configureRelocation() {
     }
 }
 
-tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
-task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+// we want to base our shadowed jar on the reobfJar output, not the sourceSet output
+// Tried tasks.replace but that does not actually seem to replace everything.
+tasks.shadowJar.doFirst {
+    throw new GradleException("Wrong task! You want to run 'bundleJar' instead.")
+}
+tasks.register('bundleJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
     from { (FABRIC ? tasks.remapJar : tasks.jar).archiveFile.get() }
     dependsOn { FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
 
@@ -478,7 +482,7 @@ task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar)
         exclude(dependency('.*spongepowered:mixin:.*'))
     }
 }
-tasks.assemble.dependsOn tasks.shadowJar
+tasks.assemble.dependsOn tasks.bundleJar
 
 jar {
     classifier = 'raw'

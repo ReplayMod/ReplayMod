@@ -2,8 +2,8 @@ import groovy.json.JsonOutput
 import java.io.ByteArrayOutputStream
 
 plugins {
-    id("fabric-loom") version "0.6-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "3d85a00"
+    id("fabric-loom") version "0.8-SNAPSHOT" apply false
+    id("com.replaymod.preprocess") version "4b4dfe5"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
@@ -25,7 +25,7 @@ if (gitDescribe().endsWith("*")) {
 
 group = "com.replaymod"
 
-val shadowJar by tasks.creating(Copy::class) {
+val bundleJar by tasks.creating(Copy::class) {
     into("$buildDir/libs")
 }
 
@@ -37,10 +37,10 @@ subprojects {
     }
 
     afterEvaluate {
-        val projectShadowJar = project.tasks.findByName("shadowJar")
-        if (projectShadowJar != null && projectShadowJar.hasProperty("archivePath") && project.name != "core") {
-            shadowJar.dependsOn(projectShadowJar)
-            shadowJar.from(projectShadowJar.withGroovyBuilder { getProperty("archivePath") })
+        val projectBundleJar = project.tasks.findByName("bundleJar")
+        if (projectBundleJar != null && projectBundleJar.hasProperty("archivePath") && project.name != "core") {
+            bundleJar.dependsOn(projectBundleJar)
+            bundleJar.from(projectBundleJar.withGroovyBuilder { getProperty("archivePath") })
         }
     }
 }
@@ -173,7 +173,7 @@ val doRelease by tasks.registering {
     }
 }
 
-defaultTasks("shadowJar")
+defaultTasks("bundleJar")
 
 preprocess {
     "1.16.4"(11604, "yarn") {
