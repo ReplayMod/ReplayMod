@@ -176,33 +176,34 @@ val doRelease by tasks.registering {
 defaultTasks("bundleJar")
 
 preprocess {
-    "1.16.4"(11604, "yarn") {
-        "1.16.1"(11601, "yarn") {
-            "1.15.2"(11502, "yarn") {
-                "1.14.4"(11404, "yarn", file("versions/mapping-fabric-1.15.2-1.14.4.txt")) {
-                    "1.14.4-forge"(11404, "srg", file("versions/mapping-1.14.4-fabric-forge.txt")) {
-                        "1.12.2"(11202, "srg", file("versions/1.14.4-forge/mapping.txt")) {
-                            "1.12.1"(11201, "srg") {
-                                "1.12"(11200, "srg") {
-                                    "1.11.2"(11102, "srg", file("versions/1.12/mapping.txt")) {
-                                        "1.11"(11100, "srg", file("versions/1.11.2/mapping.txt")) {
-                                            "1.10.2"(11002, "srg", file("versions/1.11/mapping.txt")) {
-                                                "1.9.4"(10904, "srg") {
-                                                    "1.8.9"(10809, "srg", file("versions/1.9.4/mapping.txt")) {
-                                                        "1.8"(10800, "srg", file("versions/1.8.9/mapping.txt")) {
-                                                            "1.7.10"(10710, "srg", file("versions/1.8/mapping.txt"))
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    val mc11604 = createNode("1.16.4", 11604, "yarn")
+    val mc11601 = createNode("1.16.1", 11601, "yarn")
+    val mc11502 = createNode("1.15.2", 11502, "yarn")
+    val mc11404 = createNode("1.14.4", 11404, "yarn")
+    val mc11404Forge = createNode("1.14.4-forge", 11404, "srg")
+    val mc11202 = createNode("1.12.2", 11202, "srg")
+    val mc11201 = createNode("1.12.1", 11201, "srg")
+    val mc11200 = createNode("1.12", 11200, "srg")
+    val mc11102 = createNode("1.11.2", 11102, "srg")
+    val mc11100 = createNode("1.11", 11100, "srg")
+    val mc11002 = createNode("1.10.2", 11002, "srg")
+    val mc10904 = createNode("1.9.4", 10904, "srg")
+    val mc10809 = createNode("1.8.9", 10809, "srg")
+    val mc10800 = createNode("1.8", 10800, "srg")
+    val mc10710 = createNode("1.7.10", 10710, "srg")
+
+    mc11604.link(mc11601)
+    mc11601.link(mc11502)
+    mc11502.link(mc11404, file("versions/mapping-fabric-1.15.2-1.14.4.txt"))
+    mc11404.link(mc11404Forge, file("versions/mapping-1.14.4-fabric-forge.txt"))
+    mc11404Forge.link(mc11202, file("versions/1.14.4-forge/mapping.txt"))
+    mc11202.link(mc11201)
+    mc11201.link(mc11200)
+    mc11200.link(mc11102, file("versions/1.12/mapping.txt"))
+    mc11102.link(mc11100, file("versions/1.11.2/mapping.txt"))
+    mc11100.link(mc11002, file("versions/1.11/mapping.txt"))
+    mc11002.link(mc10904)
+    mc10904.link(mc10809, file("versions/1.9.4/mapping.txt"))
+    mc10809.link(mc10800, file("versions/1.8.9/mapping.txt"))
+    mc10800.link(mc10710, file("versions/1.8/mapping.txt"))
 }
