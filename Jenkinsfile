@@ -13,7 +13,7 @@ pipeline {
                         [$class: 'ArbitraryFileCache', excludes: '', includes: '**/*', path: '.gradle/user_home/wrapper'],
                         [$class: 'ArbitraryFileCache', excludes: '', includes: '**/*', path: '.gradle/loom-cache'],
                 ]) {
-                    sh './gradlew :jGui:1.7.10:setupCIWorkspace :1.7.10:setupCIWorkspace'
+                    // sh './gradlew :jGui:1.7.10:setupCIWorkspace :1.7.10:setupCIWorkspace'
                     sh './gradlew --parallel'
                 }
                 archiveArtifacts 'versions/*/build/libs/*.jar'
