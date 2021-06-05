@@ -1,6 +1,7 @@
 package com.replaymod.core.mixin;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Mixin;
@@ -49,5 +50,10 @@ public interface MinecraftAccessor {
     //#if MC<11400
     //$$ @Accessor
     //$$ List<IResourcePack> getDefaultResourcePacks();
+    //#endif
+
+    //#if MC>=11400
+    @Accessor
+    void setConnection(ClientConnection connection);
     //#endif
 }

@@ -308,8 +308,8 @@ public class ReplayHandler {
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
 
-        //#if MC>=11400 && MC<11400
-        //$$ NetworkHooks.registerClientLoginChannel(networkManager);
+        //#if MC>=11400
+        ((MinecraftAccessor) mc).setConnection(networkManager);
         //#endif
     }
 
