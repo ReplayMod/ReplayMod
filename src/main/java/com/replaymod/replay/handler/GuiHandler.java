@@ -34,8 +34,8 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -54,7 +54,7 @@ public class GuiHandler extends EventRegistrations {
     }
 
     { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
-    private void injectIntoIngameMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    private void injectIntoIngameMenu(Screen guiScreen, Collection<AbstractButtonWidget> buttonList) {
         if (!(guiScreen instanceof GameMenuScreen)) {
             return;
         }
@@ -182,9 +182,9 @@ public class GuiHandler extends EventRegistrations {
      */
     private void moveAllButtonsInRect(
             //#if MC>=11400
-            List<AbstractButtonWidget> buttons,
+            Collection<AbstractButtonWidget> buttons,
             //#else
-            //$$ List<GuiButton> buttons,
+            //$$ Collection<GuiButton> buttons,
             //#endif
             int xStart,
             int xEnd,
@@ -198,8 +198,8 @@ public class GuiHandler extends EventRegistrations {
                 .forEach(button -> button.y += moveBy);
     }
 
-    { on(InitScreenCallback.EVENT, this::ensureReplayStopped); }
-    private void ensureReplayStopped(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    { on(InitScreenCallback.EVENT, (screen, buttons) -> ensureReplayStopped(screen)); }
+    private void ensureReplayStopped(Screen guiScreen) {
         if (!(guiScreen instanceof TitleScreen || guiScreen instanceof MultiplayerScreen)) {
             return;
         }
@@ -220,7 +220,7 @@ public class GuiHandler extends EventRegistrations {
     }
 
     { on(InitScreenCallback.EVENT, this::injectIntoMainMenu); }
-    private void injectIntoMainMenu(Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    private void injectIntoMainMenu(Screen guiScreen, Collection<AbstractButtonWidget> buttonList) {
         if (!(guiScreen instanceof TitleScreen)) {
             return;
         }
@@ -291,7 +291,7 @@ public class GuiHandler extends EventRegistrations {
         addButton(guiScreen, button);
     }
 
-    private Point determineButtonPos(MainMenuButtonPosition buttonPosition, Screen guiScreen, List<AbstractButtonWidget> buttonList) {
+    private Point determineButtonPos(MainMenuButtonPosition buttonPosition, Screen guiScreen, Collection<AbstractButtonWidget> buttonList) {
         Point topRight = new Point(guiScreen.width - 20 - 5, 5);
 
         if (buttonPosition == MainMenuButtonPosition.TOP_LEFT) {

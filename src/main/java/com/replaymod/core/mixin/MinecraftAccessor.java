@@ -5,6 +5,7 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Queue;
@@ -27,6 +28,9 @@ public interface MinecraftAccessor {
     @Accessor("renderTickCounter")
     RenderTickCounter getTimer();
     @Accessor("renderTickCounter")
+    //#if MC>=11200
+    @Mutable
+    //#endif
     void setTimer(RenderTickCounter value);
 
     //#if MC>=11400

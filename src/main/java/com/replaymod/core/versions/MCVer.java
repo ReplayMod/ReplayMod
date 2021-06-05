@@ -1,11 +1,17 @@
 package com.replaymod.core.versions;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
 import com.replaymod.replaystudio.us.myles.ViaVersion.packets.State;
+import de.johni0702.minecraft.gui.MinecraftGuiRenderer;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 
 //#if MC>=11600
@@ -206,14 +212,15 @@ public class MCVer {
             //#endif
     ) {
         GuiScreenAccessor acc = (GuiScreenAccessor) screen;
-        acc.getButtons().add(button);
         //#if MC>=11400
-        acc.getChildren().add(button);
+        acc.invokeAddButton(button);
+        //#else
+        //$$ acc.getButtons().add(button);
         //#endif
     }
 
     //#if MC>=11400
-    public static Optional<AbstractButtonWidget> findButton(List<AbstractButtonWidget> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
+    public static Optional<AbstractButtonWidget> findButton(Iterable<AbstractButtonWidget> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
         //#if MC>=11600
         final TranslatableText message = new TranslatableText(text);
         //#else
@@ -233,7 +240,7 @@ public class MCVer {
         return Optional.empty();
     }
     //#else
-    //$$ public static Optional<GuiButton> findButton(List<GuiButton> buttonList, @SuppressWarnings("unused") String text, int id) {
+    //$$ public static Optional<GuiButton> findButton(Iterable<GuiButton> buttonList, @SuppressWarnings("unused") String text, int id) {
     //$$     for (GuiButton b : buttonList) {
     //$$         if (b.id == id) {
     //$$             return Optional.of(b);
@@ -330,6 +337,53 @@ public class MCVer {
         //$$     LogManager.getLogger().error("Failed to open URL: ", e);
         //$$ }
         //#endif
+    }
+
+    public static void pushMatrix() {
+        //#if MC>=11700
+        //$$ RenderSystem.getModelViewStack().push();
+        //#else
+        GlStateManager.pushMatrix();
+        //#endif
+    }
+
+    public static void popMatrix() {
+        //#if MC>=11700
+        //$$ RenderSystem.getModelViewStack().pop();
+        //$$ RenderSystem.applyModelViewMatrix();
+        //#else
+        GlStateManager.popMatrix();
+        //#endif
+    }
+
+    public static void emitLine(BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
+        emitLine(buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
+    }
+
+    public static void emitLine(BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
+        int r = color >> 24 & 0xff;
+        int g = color >> 16 & 0xff;
+        int b = color >> 8 & 0xff;
+        int a = color & 0xff;
+        //#if MC>=11700
+        //$$ Vector3f n = Vector3f.sub(p2, p1, null);
+        //#endif
+        buffer.vertex(p1.x, p1.y, p1.z)
+                .color(r, g, b, a)
+                //#if MC>=11700
+                //$$ .normal(n.x, n.y, n.z)
+                //#endif
+                .next();
+        buffer.vertex(p2.x, p2.y, p2.z)
+                .color(r, g, b, a)
+                //#if MC>=11700
+                //$$ .normal(n.x, n.y, n.z)
+                //#endif
+                .next();
+    }
+
+    public static void bindTexture(Identifier id) {
+        new MinecraftGuiRenderer(null).bindTexture(id);
     }
 
     //#if MC<10900

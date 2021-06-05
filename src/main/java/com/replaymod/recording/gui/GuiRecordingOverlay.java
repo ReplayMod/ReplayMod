@@ -38,14 +38,12 @@ public class GuiRecordingOverlay extends EventRegistrations {
         if (settingsRegistry.get(Setting.INDICATOR)) {
             TextRenderer fontRenderer = mc.textRenderer;
             String text = guiControls.isPaused() ? I18n.translate("replaymod.gui.paused") : I18n.translate("replaymod.gui.recording");
-            fontRenderer.draw(
-                    //#if MC>=11600
-                    stack,
-                    //#endif
-                    text.toUpperCase(), 30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff);
-            mc.getTextureManager().bindTexture(TEXTURE);
+            MinecraftGuiRenderer renderer = new MinecraftGuiRenderer(stack);
+            renderer.drawString(30, 18 - (fontRenderer.fontHeight / 2), 0xffffffff, text.toUpperCase());
+            renderer.bindTexture(TEXTURE);
+            //#if MC<11700
             enableAlphaTest();
-            GuiRenderer renderer = new MinecraftGuiRenderer(stack);
+            //#endif
             renderer.drawTexturedRect(10, 10, 58, 20, 16, 16, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
         }
     }

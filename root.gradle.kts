@@ -3,7 +3,7 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     id("fabric-loom") version "0.8-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "4b4dfe5"
+    id("com.replaymod.preprocess") version "123fb7a"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
@@ -176,6 +176,7 @@ val doRelease by tasks.registering {
 defaultTasks("bundleJar")
 
 preprocess {
+    val mc11700 = createNode("1.17", 11700, "yarn")
     val mc11604 = createNode("1.16.4", 11604, "yarn")
     val mc11601 = createNode("1.16.1", 11601, "yarn")
     val mc11502 = createNode("1.15.2", 11502, "yarn")
@@ -192,6 +193,7 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc11700.link(mc11604, file("versions/mapping-fabric-1.17-1.16.4.txt"))
     mc11604.link(mc11601)
     mc11601.link(mc11502)
     mc11502.link(mc11404, file("versions/mapping-fabric-1.15.2-1.14.4.txt"))

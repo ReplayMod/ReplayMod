@@ -1,4 +1,4 @@
-//#if MC>=10800
+//#if MC>=10800 && MC<11700
 package com.replaymod.render.mixin;
 
 import com.replaymod.render.hooks.FogStateCallback;

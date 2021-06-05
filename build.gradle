@@ -108,8 +108,7 @@ preprocess {
 
 def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = targetCompatibility = mcVersion >= 11700 ? 16 : 1.8
 
 if (mcVersion >= 11400) {
     sourceSets {
@@ -239,6 +238,7 @@ dependencies {
                 11601: '1.16.1',
                 11603: '1.16.3',
                 11604: '1.16.4',
+                11700: '1.17-rc1',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -246,6 +246,7 @@ dependencies {
                 11601: '1.16.1+build.17:v2',
                 11603: '1.16.3+build.1:v2',
                 11604: '1.16.4+build.6:v2',
+                11700: '1.17-rc1+build.1:v2',
         ][mcVersion]
         modImplementation 'net.fabricmc:fabric-loader:' + [
                 11404: '0.7.8+build.189',
@@ -253,6 +254,7 @@ dependencies {
                 11601: '0.8.8+build.202',
                 11603: '0.9.1+build.205',
                 11604: '0.10.6+build.214',
+                11700: '0.11.3',
         ][mcVersion]
         def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
@@ -260,6 +262,7 @@ dependencies {
                 11601: '0.14.0+build.371-1.16',
                 11603: '0.17.1+build.394-1.16',
                 11604: '0.25.1+build.416-1.16',
+                11700: '0.34.8+1.17',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -335,7 +338,9 @@ dependencies {
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 11602) {
+        if (mcVersion >= 11700) {
+            modImplementation 'com.terraformersmc:modmenu:2.0.0-beta.7'
+        } else if (mcVersion >= 11602) {
             modImplementation 'com.terraformersmc:modmenu:1.16.8'
         } else if (mcVersion >= 11600) {
             modImplementation 'io.github.prospector:modmenu:1.14.0+build.24'
@@ -500,6 +505,15 @@ jar {
                     'FMLCorePluginContainsFMLMod': 'true',
                     'FMLCorePlugin': 'com.replaymod.core.LoadingPlugin',
                     'FMLAT': 'replaymod_at.cfg'
+        }
+    }
+
+    if (mcVersion >= 11700) {
+        // Workaround a mixin bug which generates invalid refmaps for the `addDrawableChild` invoker
+        filesMatching("mixins.replaymod.refmap.json") {
+            it.filter {
+                it.replace("addDrawableChild(L/;)L/;", "method_37063(Lnet/minecraft/class_364;)Lnet/minecraft/class_364;")
+            }
         }
     }
 }

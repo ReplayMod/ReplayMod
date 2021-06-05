@@ -8,6 +8,9 @@ import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.util.ScreenshotUtils;
 
+import static com.replaymod.core.versions.MCVer.popMatrix;
+import static com.replaymod.core.versions.MCVer.pushMatrix;
+
 //#if MC>=11500
 import net.minecraft.client.util.math.MatrixStack;
 //#endif
@@ -58,7 +61,7 @@ public class NoGuiScreenshot {
                     mc.options.hudHidden = true;
 
                     // Render frame without GUI
-                    GlStateManager.pushMatrix();
+                    pushMatrix();
                     GlStateManager.clear(
                             16640
                             //#if MC>=11400
@@ -84,10 +87,10 @@ public class NoGuiScreenshot {
                     //#endif
 
                     mc.getFramebuffer().endWrite();
-                    GlStateManager.popMatrix();
-                    GlStateManager.pushMatrix();
+                    popMatrix();
+                    pushMatrix();
                     mc.getFramebuffer().draw(frameWidth, frameHeight);
-                    GlStateManager.popMatrix();
+                    popMatrix();
                 } catch (Throwable t) {
                     future.setException(t);
                     return;

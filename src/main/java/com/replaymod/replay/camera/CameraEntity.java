@@ -208,8 +208,10 @@ public class CameraEntity
      * @param roll Roll in degrees
      */
     public void setCameraRotation(float yaw, float pitch, float roll) {
-        this.prevYaw = this.yaw = yaw;
-        this.prevPitch = this.pitch = pitch;
+        this.prevYaw = yaw;
+        this.prevPitch = pitch;
+        this.yaw = yaw;
+        this.pitch = pitch;
         this.roll = roll;
     }
 
@@ -575,8 +577,13 @@ public class CameraEntity
     //#endif
 
     @Override
+    //#if MC>=11700
+    //$$ public void remove(RemovalReason reason) {
+    //$$     super.remove(reason);
+    //#else
     public void remove() {
         super.remove();
+    //#endif
         if (eventHandler != null) {
             eventHandler.unregister();
             eventHandler = null;

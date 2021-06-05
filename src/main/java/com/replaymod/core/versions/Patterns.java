@@ -3,6 +3,7 @@ package com.replaymod.core.versions;
 import com.replaymod.gradle.remap.Pattern;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
@@ -15,6 +16,11 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+
+//#if MC>=11700
+//#else
+import org.lwjgl.opengl.GL11;
+//#endif
 
 //#if MC>=11400
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
@@ -85,6 +91,42 @@ class Patterns {
         return entity.getZ();
         //#else
         //$$ return entity.z;
+        //#endif
+    }
+
+    @Pattern
+    private static void Entity_setYaw(Entity entity, float value) {
+        //#if MC>=11700
+        //$$ entity.setYaw(value);
+        //#else
+        entity.yaw = value;
+        //#endif
+    }
+
+    @Pattern
+    private static float Entity_getYaw(Entity entity) {
+        //#if MC>=11700
+        //$$ return entity.getYaw();
+        //#else
+        return entity.yaw;
+        //#endif
+    }
+
+    @Pattern
+    private static void Entity_setPitch(Entity entity, float value) {
+        //#if MC>=11700
+        //$$ entity.setPitch(value);
+        //#else
+        entity.pitch = value;
+        //#endif
+    }
+
+    @Pattern
+    private static float Entity_getPitch(Entity entity) {
+        //#if MC>=11700
+        //$$ return entity.getPitch();
+        //#else
+        return entity.pitch;
         //#endif
     }
 
@@ -187,13 +229,19 @@ class Patterns {
     }
 
     @Pattern
+    //#if MC>=11700
+    //$$ private static void getEntitySectionArray() {}
+    //#else
     private static Collection<Entity>[] getEntitySectionArray(WorldChunk chunk) {
-        //#if MC>=10800
+        //#if MC>=11700
+        //$$ return obsolete(chunk);
+        //#elseif MC>=10800
         return chunk.getEntitySectionArray();
         //#else
         //$$ return chunk.entityLists;
         //#endif
     }
+    //#endif
 
     @Pattern
     private static List<? extends PlayerEntity> playerEntities(World world) {
@@ -244,6 +292,7 @@ class Patterns {
         //#endif
     }
 
+    //#if MC<11700
     @Pattern
     private static void BufferBuilder_beginPosCol(BufferBuilder buffer, int mode) {
         //#if MC>=10809
@@ -297,6 +346,14 @@ class Patterns {
         //$$ { WorldRenderer $buffer = buffer; double $x = x; double $y = y; double $z = z; float $u = u; float $v = v; $buffer.setColorRGBA(r, g, b, a); $buffer.addVertexWithUV($x, $y, $z, $u, $v); }
         //#endif
     }
+    //#else
+    @Pattern private static void BufferBuilder_beginPosCol() {}
+    @Pattern private static void BufferBuilder_addPosCol() {}
+    @Pattern private static void BufferBuilder_beginPosTex() {}
+    @Pattern private static void BufferBuilder_addPosTex() {}
+    @Pattern private static void BufferBuilder_beginPosTexCol() {}
+    @Pattern private static void BufferBuilder_addPosTexCol() {}
+    //#endif
 
     @Pattern
     private static Tessellator Tessellator_getInstance() {
@@ -380,6 +437,66 @@ class Patterns {
         return a.equals(b);
         //#else
         //$$ return (a.getKeyCode() == b.getKeyCode());
+        //#endif
+    }
+
+    //#if MC>=11600
+    @Pattern
+    private static void BufferBuilder_beginLineStrip(BufferBuilder buffer, VertexFormat vertexFormat) {
+        //#if MC>=11700
+        //$$ buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
+        //#else
+        buffer.begin(GL11.GL_LINE_STRIP, VertexFormats.POSITION_COLOR);
+        //#endif
+    }
+
+    @Pattern
+    private static void BufferBuilder_beginLines(BufferBuilder buffer) {
+        //#if MC>=11700
+        //$$ buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        //#else
+        buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
+        //#endif
+    }
+
+    @Pattern
+    private static void BufferBuilder_beginQuads(BufferBuilder buffer, VertexFormat vertexFormat) {
+        //#if MC>=11700
+        //$$ buffer.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, vertexFormat);
+        //#else
+        buffer.begin(GL11.GL_QUADS, vertexFormat);
+        //#endif
+    }
+    //#else
+    //$$ @Pattern private static void BufferBuilder_beginLineStrip() {}
+    //$$ @Pattern private static void BufferBuilder_beginLines() {}
+    //$$ @Pattern private static void BufferBuilder_beginQuads() {}
+    //#endif
+
+    @Pattern
+    private static void GL11_glLineWidth(float width) {
+        //#if MC>=11700
+        //$$ com.mojang.blaze3d.systems.RenderSystem.lineWidth(width);
+        //#else
+        GL11.glLineWidth(width);
+        //#endif
+    }
+
+    @Pattern
+    private static void GL11_glTranslatef(float x, float y, float z) {
+        //#if MC>=11700
+        //$$ com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().translate(x, y, z);
+        //#else
+        GL11.glTranslatef(x, y, z);
+        //#endif
+    }
+
+    @Pattern
+    private static void GL11_glRotatef(float angle, float x, float y, float z) {
+        //#if MC>=11700
+        //$$ { float $angle = angle; com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(new net.minecraft.util.math.Quaternion(new net.minecraft.util.math.Vec3f(x, y, z), $angle, true)); }
+        //#else
+        GL11.glRotatef(angle, x, y, z);
         //#endif
     }
 }

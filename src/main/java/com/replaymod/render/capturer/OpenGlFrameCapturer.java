@@ -1,5 +1,6 @@
 package com.replaymod.render.capturer;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.Frame;
@@ -16,12 +17,8 @@ import org.lwjgl.opengl.GL12;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-//#if MC>=10800
-import static com.mojang.blaze3d.platform.GlStateManager.*;
-//#else
-//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
-//#endif
-
+import static com.replaymod.core.versions.MCVer.popMatrix;
+import static com.replaymod.core.versions.MCVer.pushMatrix;
 import static com.replaymod.core.versions.MCVer.resizeMainWindow;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
@@ -86,12 +83,12 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         pushMatrix();
         frameBuffer().beginWrite(true);
 
-        clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+        GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                 //#if MC>=11400
                 , false
                 //#endif
         );
-        enableTexture();
+        GlStateManager.enableTexture();
 
         worldRenderer.renderWorld(partialTicks, captureData);
 

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
@@ -39,6 +40,11 @@ import net.minecraft.network.ClientConnection;
 
 import java.io.IOException;
 import java.util.*;
+
+//#if MC>=11700
+//$$ import net.minecraft.client.render.DiffuseLighting;
+//$$ import net.minecraft.util.math.Matrix4f;
+//#endif
 
 //#if MC>=11600
 import net.minecraft.client.util.math.MatrixStack;
@@ -97,7 +103,6 @@ import javax.annotation.Nullable;
 
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
-import static com.mojang.blaze3d.platform.GlStateManager.*;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -213,10 +218,12 @@ public class ReplayHandler {
         channel.close().awaitUninterruptibly();
 
         if (mc.player instanceof CameraEntity) {
+            //#if MC<11700
             //#if MC>=11400
             mc.player.remove();
             //#else
             //$$ mc.player.setDead();
+            //#endif
             //#endif
         }
 
@@ -604,22 +611,38 @@ public class ReplayHandler {
 
                 // Perform the rendering using OpenGL
                 pushMatrix();
-                clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+                GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                         //#if MC>=11400
                         , true
                         //#endif
                 );
-                enableTexture();
+                GlStateManager.enableTexture();
                 mc.getFramebuffer().beginWrite(true);
                 Window window = mc.getWindow();
                 //#if MC>=11500
                 RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+                //#if MC>=11700
+                //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
+                //$$         0,
+                //$$         (float) (window.getFramebufferWidth() / window.getScaleFactor()),
+                //$$         0,
+                //$$         (float) (window.getFramebufferHeight() / window.getScaleFactor()),
+                //$$         1000,
+                //$$         3000
+                //$$ ));
+                //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
+                //$$ matrixStack.loadIdentity();
+                //$$ matrixStack.translate(0, 0, -2000);
+                //$$ RenderSystem.applyModelViewMatrix();
+                //$$ DiffuseLighting.enableGuiDepthLighting();
+                //#else
                 RenderSystem.matrixMode(GL11.GL_PROJECTION);
                 RenderSystem.loadIdentity();
                 RenderSystem.ortho(0, window.getFramebufferWidth() / window.getScaleFactor(), window.getFramebufferHeight() / window.getScaleFactor(), 0, 1000, 3000);
                 RenderSystem.matrixMode(GL11.GL_MODELVIEW);
                 RenderSystem.loadIdentity();
                 RenderSystem.translatef(0, 0, -2000);
+                //#endif
                 //#else
                 //#if MC>=11400
                 //$$ window.method_4493(true);

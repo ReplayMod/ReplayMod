@@ -172,7 +172,12 @@ public class ResourcePackRecorder {
             }
         }
 
-        return new ResourcePackSendS2CPacket("replay://" + requestId, "");
+        return new ResourcePackSendS2CPacket(
+                "replay://" + requestId, ""
+                //#if MC>=11700
+                //$$ , packet.isRequired(), packet.getPrompt()
+                //#endif
+        );
     }
 
     private void downloadResourcePackFuture(int requestId, String url, final String hash) {
@@ -190,7 +195,11 @@ public class ResourcePackRecorder {
     downloadResourcePack(final int requestId, String url, String hash) {
         ClientBuiltinResourcePackProvider packFinder = mc.getResourcePackDownloader();
         ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file, requestId));
+        //#if MC>=11700
+        //$$ return packFinder.download(url, hash, true);
+        //#else
         return packFinder.download(url, hash);
+        //#endif
     }
 
     public interface IDownloadingPackFinder {

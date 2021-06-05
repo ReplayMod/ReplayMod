@@ -29,7 +29,7 @@ public class SchedulerImpl implements  Scheduler {
         runLater(new Runnable() {
             @Override
             public void run() {
-                if (mc.overlay != null) {
+                if (mc.getOverlay() != null) {
                     // delay until after resources have been loaded
                     runLater(this);
                     return;

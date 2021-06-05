@@ -19,6 +19,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 //#endif
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -78,9 +79,9 @@ public class GuiRecordingControls extends EventRegistrations {
     { on(InitScreenCallback.EVENT, this::injectIntoIngameMenu); }
     private void injectIntoIngameMenu(Screen guiScreen,
                                       //#if MC>=11400
-                                      List<AbstractButtonWidget> buttonList
+                                      Collection<AbstractButtonWidget> buttonList
                                       //#else
-                                      //$$ List<net.minecraft.client.gui.GuiButton> buttonList
+                                      //$$ Collection<net.minecraft.client.gui.GuiButton> buttonList
                                       //#endif
     ) {
         if (!(guiScreen instanceof GameMenuScreen)) {

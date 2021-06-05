@@ -18,6 +18,7 @@ import com.replaymod.simplepathing.SPTimeline.SPPath;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline;
 import de.johni0702.minecraft.gui.function.Draggable;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
@@ -29,6 +30,16 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Comparator;
 import java.util.Optional;
+
+import static com.replaymod.core.versions.MCVer.emitLine;
+import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
+import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
+import static de.johni0702.minecraft.gui.versions.MCVer.setScissorState;
+
+//#if MC>=11700
+//$$ import com.mojang.blaze3d.systems.RenderSystem;
+//$$ import net.minecraft.client.render.GameRenderer;
+//#endif
 
 public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline> implements Draggable {
     protected static final int KEYFRAME_SIZE = 5;
@@ -146,59 +157,33 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     buffer.begin(GL11.GL_LINE_STRIP, VertexFormats.POSITION_COLOR);
 
                     // Start just below the top border of the replay timeline
-                    buffer.vertex(
-                            replayTimelineLeft + positionXReplayTimeline,
-                            replayTimelineTop + BORDER_TOP,
-                            0
-                    ).color(
-                            color >> 24 & 0xff,
-                            color >> 16 & 0xff,
-                            color >> 8 & 0xff,
-                            color & 0xff
-                    ).next();
+                    Vector2f p1 = new Vector2f(replayTimelineLeft + positionXReplayTimeline, replayTimelineTop + BORDER_TOP);
                     // Draw vertically over the replay timeline, including its bottom border
-                    buffer.vertex(
-                            replayTimelineLeft + positionXReplayTimeline,
-                            replayTimelineBottom,
-                            0
-                    ).color(
-                            color >> 24 & 0xff,
-                            color >> 16 & 0xff,
-                            color >> 8 & 0xff,
-                            color & 0xff
-                    ).next();
+                    Vector2f p2 = new Vector2f(replayTimelineLeft + positionXReplayTimeline, replayTimelineBottom);
                     // Now for the important part: connecting to the keyframe timeline
-                    buffer.vertex(
-                            keyframeTimelineLeft + positionXKeyframeTimeline,
-                            keyframeTimelineTop,
-                            0
-                    ).color(
-                            color >> 24 & 0xff,
-                            color >> 16 & 0xff,
-                            color >> 8 & 0xff,
-                            color & 0xff
-                    ).next();
+                    Vector2f p3 = new Vector2f(keyframeTimelineLeft + positionXKeyframeTimeline, keyframeTimelineTop);
                     // And finally another vertical bit (the timeline is already crammed enough, so only the border)
-                    buffer.vertex(
-                            keyframeTimelineLeft + positionXKeyframeTimeline,
-                            keyframeTimelineTop + BORDER_TOP,
-                            0
-                    ).color(
-                            color >> 24 & 0xff,
-                            color >> 16 & 0xff,
-                            color >> 8 & 0xff,
-                            color & 0xff
-                    ).next();
+                    Vector2f p4 = new Vector2f(keyframeTimelineLeft + positionXKeyframeTimeline, keyframeTimelineTop + BORDER_TOP);
 
+                    emitLine(buffer, p1, p2, color);
+                    emitLine(buffer, p2, p3, color);
+                    emitLine(buffer, p3, p4, color);
+
+                    //#if MC>=11700
+                    //$$ RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+                    //#else
                     GL11.glEnable(GL11.GL_LINE_SMOOTH);
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
-                    GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
-                    GL11.glDisable(GL11.GL_SCISSOR_TEST);
-                    GL11.glLineWidth(1);
+                    //#endif
+                    pushScissorState();
+                    setScissorState(false);
+                    GL11.glLineWidth(2);
                     tessellator.draw();
-                    GL11.glPopAttrib();
+                    popScissorState();
+                    //#if MC<11700
                     GL11.glEnable(GL11.GL_TEXTURE_2D);
                     GL11.glDisable(GL11.GL_LINE_SMOOTH);
+                    //#endif
                 }
             }
         });

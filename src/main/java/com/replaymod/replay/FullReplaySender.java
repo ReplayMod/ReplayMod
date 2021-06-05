@@ -366,6 +366,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // Entity#addedToChunk is not set and it is therefore not updated every tick.
             // To counteract this, we need to manually update it's position if it hasn't been added
             // to any chunk yet.
+            // The `updateNeeded` flag appears to have been removed in 1.17, so this should no longer be an issue.
+            //#if MC<11700
             if (mc.world != null) {
                 for (PlayerEntity playerEntity : mc.world.getPlayers()) {
                     if (!playerEntity.updateNeeded && playerEntity instanceof OtherClientPlayerEntity) {
@@ -373,6 +375,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     }
                 }
             }
+            //#endif
         }
     }
 
@@ -413,7 +416,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 || p instanceof ExperienceOrbSpawnS2CPacket
                                 || p instanceof EntitiesDestroyS2CPacket) {
                             ClientWorld world = mc.world;
-                            //#if MC>=11400
+                            //#if MC>=11700
+                            //$$ // From the looks of it, this has now been resolved (thanks to EntityChangeListener)
+                            //#elseif MC>=11400
                             // Note: Not sure if it's still required but there's this really handy method anyway
                             world.finishRemovingEntities();
                             //#else
@@ -478,12 +483,16 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         int i = pb.readVarInt();
 
         NetworkState state = loginPhase ? NetworkState.LOGIN : NetworkState.PLAY;
+        //#if MC>=11700
+        //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
+        //#else
         //#if MC>=10800
         Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i);
         //#else
         //$$ Packet p = Packet.generatePacket(state.func_150755_b(), i);
         //#endif
         p.read(pb);
+        //#endif
 
         return p;
     }
@@ -1154,6 +1163,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // 1.14+: The update issue remains but only for non-players and the unloading list bug appears to have been
             //        fixed (chunk unloading no longer removes the entities).
             // Get the chunk that will be unloaded
+            //#if MC>=11700
+            //$$ // From the looks of it, this may be fixed now (thanks to EntityChangeListener), guess we'll see
+            //#else
             //#if MC>=11400
             ClientWorld world = mc.world;
             ChunkManager chunkProvider = world.getChunkManager();
@@ -1250,6 +1262,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#endif
                 }
             }
+            //#endif
         }
         return p; // During synchronous playback everything is sent normally
     }

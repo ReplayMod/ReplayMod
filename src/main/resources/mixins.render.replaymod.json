@@ -38,7 +38,7 @@
     //$$ "MixinEffectRenderer",
     //#endif
     "MixinEntityRenderer",
-    //#if MC>=10800
+    //#if MC>=10800 && MC<11700
     "MixinGlStateManager",
     //#endif
     //#if MC>=10800

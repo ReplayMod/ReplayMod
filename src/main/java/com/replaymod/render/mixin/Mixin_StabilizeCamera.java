@@ -83,13 +83,15 @@ public abstract class Mixin_StabilizeCamera {
             //#endif
             RenderSettings settings = getHandler().getSettings();
             if (settings.isStabilizeYaw()) {
-                entity.prevYaw = entity.yaw = 0;
+                entity.prevYaw = 0;
+                entity.yaw = 0;
                 if (entity instanceof LivingEntity) {
                     ((LivingEntity) entity).prevHeadYaw = ((LivingEntity) entity).headYaw = 0;
                 }
             }
             if (settings.isStabilizePitch()) {
-                entity.prevPitch = entity.pitch = 0;
+                entity.prevPitch = 0;
+                entity.pitch = 0;
             }
             if (settings.isStabilizeRoll() && entity instanceof CameraEntity) {
                 ((CameraEntity) entity).roll = 0;

@@ -1,5 +1,6 @@
 package com.replaymod.render.rendering;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.WrappedTimer;
@@ -40,6 +41,12 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
 import org.lwjgl.glfw.GLFW;
 
+//#if MC>=11700
+//$$ import net.minecraft.client.gl.WindowFramebuffer;
+//$$ import net.minecraft.client.render.DiffuseLighting;
+//$$ import net.minecraft.util.math.Matrix4f;
+//#endif
+
 //#if MC>=11600
 import net.minecraft.client.util.math.MatrixStack;
 //#endif
@@ -59,10 +66,8 @@ import java.util.concurrent.CompletableFuture;
 //#endif
 
 //#if MC>=10800
-import static com.mojang.blaze3d.platform.GlStateManager.*;
 //#else
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
-//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
 //#endif
 
 import java.io.IOException;
@@ -360,11 +365,15 @@ public class VideoRenderer implements RenderInfo {
         forceChunkLoadingHook = new ForceChunkLoadingHook(mc.worldRenderer);
 
         // Set up our own framebuffer to render the GUI to
+        //#if MC>=11700
+        //$$ guiFramebuffer = new WindowFramebuffer(displayWidth, displayHeight);
+        //#else
         guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true
                 //#if MC>=11400
                 , false
                 //#endif
         );
+        //#endif
     }
 
     private void finish() {
@@ -419,7 +428,7 @@ public class VideoRenderer implements RenderInfo {
     private void executeTaskQueue() {
         //#if MC>=11400
         while (true) {
-            while (mc.overlay != null) {
+            while (mc.getOverlay() != null) {
                 drawGui();
                 ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
             }
@@ -486,22 +495,38 @@ public class VideoRenderer implements RenderInfo {
             }
 
             pushMatrix();
-            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+            GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                     //#if MC>=11400
                     , false
                     //#endif
             );
-            enableTexture();
+            GlStateManager.enableTexture();
             guiFramebuffer.beginWrite(true);
 
             //#if MC>=11500
             RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+            //#if MC>=11700
+            //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
+            //$$         0,
+            //$$         (float) (window.getFramebufferWidth() / window.getScaleFactor()),
+            //$$         0,
+            //$$         (float) (window.getFramebufferHeight() / window.getScaleFactor()),
+            //$$         1000,
+            //$$         3000
+            //$$ ));
+            //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
+            //$$ matrixStack.loadIdentity();
+            //$$ matrixStack.translate(0, 0, -2000);
+            //$$ RenderSystem.applyModelViewMatrix();
+            //$$ DiffuseLighting.enableGuiDepthLighting();
+            //#else
             RenderSystem.matrixMode(GL11.GL_PROJECTION);
             RenderSystem.loadIdentity();
             RenderSystem.ortho(0, window.getFramebufferWidth() / window.getScaleFactor(), window.getFramebufferHeight() / window.getScaleFactor(), 0, 1000, 3000);
             RenderSystem.matrixMode(GL11.GL_MODELVIEW);
             RenderSystem.loadIdentity();
             RenderSystem.translatef(0, 0, -2000);
+            //#endif
             //#else
             //#if MC>=11400
             //$$ window.method_4493(
@@ -535,11 +560,11 @@ public class VideoRenderer implements RenderInfo {
             int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / displayWidth;
             int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / displayHeight;
 
-            if (mc.overlay != null) {
+            if (mc.getOverlay() != null) {
                 Screen orgScreen = mc.currentScreen;
                 try {
                     mc.currentScreen = gui.toMinecraft();
-                    mc.overlay.render(
+                    mc.getOverlay().render(
                             //#if MC>=11600
                             new MatrixStack(),
                             //#endif

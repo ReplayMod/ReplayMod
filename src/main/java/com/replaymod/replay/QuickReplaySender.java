@@ -99,6 +99,18 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
             @Override
             protected Packet<?> decode(com.github.steveice10.netty.buffer.ByteBuf byteBuf) throws IOException {
                 int packetId = new ByteBufNetInput(byteBuf).readVarInt();
+                int size = byteBuf.readableBytes();
+                if (buf.length < size) {
+                    buf = new byte[size];
+                }
+                byteBuf.readBytes(buf, 0, size);
+                ByteBuf wrappedBuf = Unpooled.wrappedBuffer(buf);
+                wrappedBuf.writerIndex(size);
+                PacketByteBuf packetByteBuf = new PacketByteBuf(wrappedBuf);
+
+                //#if MC>=11700
+                //$$ return NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId, packetByteBuf);
+                //#else
                 //#if MC>=11500
                 Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
                 //#else
@@ -110,16 +122,10 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 //$$ }
                 //#endif
                 if (mcPacket != null) {
-                    int size = byteBuf.readableBytes();
-                    if (buf.length < size) {
-                        buf = new byte[size];
-                    }
-                    byteBuf.readBytes(buf, 0, size);
-                    ByteBuf wrappedBuf = Unpooled.wrappedBuffer(buf);
-                    wrappedBuf.writerIndex(size);
-                    mcPacket.read(new PacketByteBuf(wrappedBuf));
+                    mcPacket.read(packetByteBuf);
                 }
                 return mcPacket;
+                //#endif
             }
 
             @Override
@@ -220,7 +226,12 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 //$$ GameMode.SPECTATOR
                 //#endif
         ));
-        ctx.fireChannelRead(new PlayerPositionLookS2CPacket(0, 0, 0, 0, 0, Collections.emptySet(), 0));
+        ctx.fireChannelRead(new PlayerPositionLookS2CPacket(
+                0, 0, 0, 0, 0, Collections.emptySet(), 0
+                //#if MC>=11700
+                //$$ , true
+                //#endif
+        ));
     }
 
     @Override
