@@ -228,7 +228,7 @@ def shadeExclusions = {
     // Cannot just add these to the shade configuration because they'd be inherited by the compile configuration then
     exclude group: 'com.google.guava', module: 'guava-jdk5'
     exclude group: 'com.google.guava', module: 'guava' // provided by MC
-    exclude group: 'com.google.code.gson', module: 'gson' // provided by MC
+    exclude group: 'com.google.code.gson', module: 'gson' // provided by MC (or manually bundled for 1.11.2 and below)
 }
 
 dependencies {
@@ -310,6 +310,11 @@ dependencies {
                 exclude group: 'org.lwjgl', module: 'lwjgl' // comes with MC
             }
         }
+    }
+
+    if (mcVersion < 11200) {
+        // The version which MC ships is too old, we'll need to ship our own
+        shadow 'com.google.code.gson:gson:2.8.7'
     }
 
     shadow 'com.github.javagl.JglTF:jgltf-model:3af6de4'
