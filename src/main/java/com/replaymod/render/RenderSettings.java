@@ -1,6 +1,8 @@
 package com.replaymod.render;
 
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.replaymod.core.utils.FileTypeAdapter;
 import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import net.minecraft.client.resource.language.I18n;
@@ -146,6 +148,7 @@ public class RenderSettings {
     private final int videoHeight;
     private final int framesPerSecond;
     private final int bitRate;
+    @JsonAdapter(FileTypeAdapter.class)
     private final File outputFile;
 
     private final boolean renderNameTags;
