@@ -1,8 +1,6 @@
 //#if MC>=10904
 package com.replaymod.replay;
 
-import com.github.steveice10.packetlib.io.NetInput;
-import com.github.steveice10.packetlib.tcp.io.ByteBufNetInput;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -10,7 +8,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import com.replaymod.replaystudio.util.RandomAccessReplay;
+import com.replaymod.replaystudio.rar.RandomAccessReplay;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import io.netty.buffer.ByteBuf;
@@ -72,7 +70,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private final MinecraftClient mc = getMinecraft();
 
     private final ReplayModReplay mod;
-    private final RandomAccessReplay<Packet<?>> replay;
+    private final RandomAccessReplay replay;
     private final EventHandler eventHandler = new EventHandler();
     private ChannelHandlerContext ctx;
 
@@ -88,49 +86,48 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     private ListenableFuture<Void> initPromise;
 
-    private com.github.steveice10.netty.buffer.ByteBuf buf;
-    private NetInput bufInput;
-
     public QuickReplaySender(ReplayModReplay mod, ReplayFile replayFile) {
         this.mod = mod;
-        this.replay = new RandomAccessReplay<Packet<?>>(replayFile, getPacketTypeRegistry(false)) {
+        this.replay = new RandomAccessReplay(replayFile, getPacketTypeRegistry(false)) {
             private byte[] buf = new byte[0];
 
             @Override
-            protected Packet<?> decode(com.github.steveice10.netty.buffer.ByteBuf byteBuf) throws IOException {
-                int packetId = new ByteBufNetInput(byteBuf).readVarInt();
+            protected void dispatch(com.replaymod.replaystudio.protocol.Packet packet) {
+                com.github.steveice10.netty.buffer.ByteBuf byteBuf = packet.getBuf();
                 int size = byteBuf.readableBytes();
                 if (buf.length < size) {
                     buf = new byte[size];
                 }
-                byteBuf.readBytes(buf, 0, size);
+                byteBuf.getBytes(byteBuf.readerIndex(), buf, 0, size);
                 ByteBuf wrappedBuf = Unpooled.wrappedBuffer(buf);
                 wrappedBuf.writerIndex(size);
                 PacketByteBuf packetByteBuf = new PacketByteBuf(wrappedBuf);
 
+                Packet<?> mcPacket;
                 //#if MC>=11700
-                //$$ return NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId, packetByteBuf);
+                //$$ mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId(), packetByteBuf);
+                //#elseif MC>=11500
+                mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
                 //#else
-                //#if MC>=11500
-                Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
-                //#else
-                //$$ Packet<?> mcPacket;
                 //$$ try {
-                //$$     mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
+                //$$     mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
                 //$$ } catch (IllegalAccessException | InstantiationException e) {
-                //$$     throw new IOException(e);
+                //$$     e.printStackTrace();
+                //$$     return;
                 //$$ }
                 //#endif
                 if (mcPacket != null) {
-                    mcPacket.read(packetByteBuf);
-                }
-                return mcPacket;
-                //#endif
-            }
+                    //#if MC<11700
+                    try {
+                        mcPacket.read(packetByteBuf);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                    //#endif
 
-            @Override
-            protected void dispatch(Packet<?> packet) {
-                ctx.fireChannelRead(packet);
+                    ctx.fireChannelRead(mcPacket);
+                }
             }
         };
     }
