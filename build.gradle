@@ -36,7 +36,7 @@ buildscript {
         if (fabric) {
             classpath 'fabric-loom:fabric-loom.gradle.plugin:0.8-SNAPSHOT'
         } else if (mcVersion >= 11400) {
-            classpath('net.minecraftforge.gradle:ForgeGradle:5.+'){
+            classpath('net.minecraftforge.gradle:ForgeGradle:5.0.5') { // the FG people still haven't learned to not do breaking changes
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
             }
         } else if (mcVersion >= 10800) {
