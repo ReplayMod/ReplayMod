@@ -4,7 +4,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.render.gui.GuiRenderQueue;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
-import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.versions.Image;
@@ -44,6 +43,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -103,7 +103,7 @@ public class GuiReplayViewer extends GuiScreen {
             } else {
                 Iterator<Pair<File, List<RenderJob>>> replays = selected.stream()
                         .filter(it -> !it.renderQueue.isEmpty())
-                        .map(it -> new Pair<>(it.file, it.renderQueue))
+                        .map(it -> Pair.of(it.file, it.renderQueue))
                         .iterator();
                 GuiRenderQueue.processMultipleReplays(GuiReplayViewer.this, mod, replays, () -> {
                     loading = false;

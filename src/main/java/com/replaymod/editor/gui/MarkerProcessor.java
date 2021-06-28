@@ -12,9 +12,9 @@ import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import com.replaymod.replaystudio.stream.IteratorStream;
-import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import com.replaymod.replaystudio.util.Utils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -115,7 +115,7 @@ public class MarkerProcessor {
             try (ReplayFile inputReplayFile = mod.openReplay(path)) {
                 metaData = inputReplayFile.getMetaData();
             }
-            return Collections.singletonList(new Pair<>(path, metaData));
+            return Collections.singletonList(Pair.of(path, metaData));
         }
 
         String replayName = FilenameUtils.getBaseName(path.getFileName().toString());
@@ -249,7 +249,7 @@ public class MarkerProcessor {
 
                     outputReplayFile.save();
 
-                    outputPaths.add(new Pair(outputPath, metaData));
+                    outputPaths.add(Pair.of(outputPath, metaData));
                 }
             }
 
