@@ -352,6 +352,10 @@ dependencies {
         }
     }
 
+    if (mcVersion >= 11600) {
+        modCompileOnly 'com.github.IrisShaders:Iris:1.0.0'
+    }
+
     testImplementation 'junit:junit:4.11'
 }
 

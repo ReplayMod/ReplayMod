@@ -348,7 +348,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         renderButton.setEnabled(jobs.size() > 0);
         renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
 
-        String[] compatError = VideoRenderer.checkCompat();
+        String[] compatError = VideoRenderer.checkCompat(jobs.stream().map(RenderJob::getSettings));
         if (compatError != null) {
             renderButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
         }

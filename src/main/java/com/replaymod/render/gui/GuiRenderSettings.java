@@ -363,7 +363,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             videoHeight.setTextColor(Colors.RED);
         }
 
-        String[] compatError = VideoRenderer.checkCompat();
+        String[] compatError = VideoRenderer.checkCompat(save(false));
         if (resolutionError != null) {
             renderButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(resolutionError));
         } else if (compatError != null) {

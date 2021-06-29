@@ -20,6 +20,10 @@
     "Mixin_StabilizeCamera",
     "Mixin_Stereoscopic_Camera",
     "Mixin_Stereoscopic_HandRenderPass",
+    //#if MC>=11600
+    "Mixin_AddIrisOdsShaderUniforms",
+    "Mixin_LoadIrisOdsShaderPack",
+    //#endif
     //#if MC>=10800
     //#if MC>=11500
     "Mixin_BlockOnChunkRebuilds",

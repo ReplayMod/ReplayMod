@@ -105,8 +105,14 @@ public class Pipelines {
         ODSToBitmapProcessor processor = new ODSToBitmapProcessor(settings.getVideoWidth(),
                 settings.getVideoHeight(), settings.getSphericalFovX());
 
-        FrameCapturer<ODSOpenGlFrame> capturer =
-                new ODSFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
+        //#if MC>=11600
+        boolean iris = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("iris");
+        FrameCapturer<ODSOpenGlFrame> capturer = iris
+                ? new com.replaymod.render.capturer.IrisODSFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize())
+                : new ODSFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
+        //#else
+        //$$ FrameCapturer<ODSOpenGlFrame> capturer = new ODSFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
+        //#endif
         return new Pipeline<>(worldRenderer, capturer, processor, consumer);
     }
 

@@ -74,10 +74,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.Iterables.getLast;
 import static com.replaymod.core.versions.MCVer.*;
@@ -699,7 +701,11 @@ public class VideoRenderer implements RenderInfo {
         }
     }
 
-    public static String[] checkCompat() {
+    public static String[] checkCompat(Stream<RenderSettings> settings) {
+        return settings.map(VideoRenderer::checkCompat).filter(Objects::nonNull).findFirst().orElse(null);
+    }
+
+    public static String[] checkCompat(RenderSettings settings) {
         //#if FABRIC>=1
         if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium")) {
             return new String[] {
@@ -708,6 +714,17 @@ public class VideoRenderer implements RenderInfo {
                     "For now, you need to uninstall Sodium before rendering!"
             };
         }
+        //#if MC>=11700
+        //$$ if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS
+        //$$         && !net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("iris")) {
+        //$$     return new String[] {
+        //$$             "ODS export requires Iris to be installed for Minecraft 1.17 and above.",
+        //$$             "Note that it is nevertheless incompatible with other shaders and will simply replace them.",
+        //$$             "Get it from: https://irisshaders.net/",
+        //$$             "Use the Standalone version! Sodium is not currently compatible with rendering!",
+        //$$     };
+        //$$ }
+        //#endif
         //#endif
         return null;
     }
