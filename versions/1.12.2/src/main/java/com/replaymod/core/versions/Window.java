@@ -64,6 +64,6 @@ public class Window implements MainWindowAccessor {
     }
 
     public int getScaledHeight() {
-        return scaledResolution().getScaledWidth();
+        return scaledResolution().getScaledHeight();
     }
 }
