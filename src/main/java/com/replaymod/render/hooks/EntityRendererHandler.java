@@ -1,22 +1,22 @@
 package com.replaymod.render.hooks;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
+import com.replaymod.render.Setting;
 import com.replaymod.render.capturer.CaptureData;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
+import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 
-//#if MC>=11500
-import net.minecraft.client.util.math.MatrixStack;
-//#endif
-
 //#if MC>=11400
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
+import net.minecraft.util.Util;
 //#else
 //#if MC>=11400
 //$$ import net.minecraftforge.fml.hooks.BasicEventHooks;
@@ -38,9 +38,17 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
 
     public boolean omnidirectional;
 
+    private final long startTime;
+
     public EntityRendererHandler(RenderSettings settings, RenderInfo renderInfo) {
         this.settings = settings;
         this.renderInfo = renderInfo;
+
+        //#if MC>=11400
+        this.startTime = Util.getMeasuringTimeNano();
+        //#else
+        //$$ this.startTime = System.nanoTime();
+        //#endif
 
         on(PreRenderHandCallback.EVENT, () -> omnidirectional);
 
@@ -51,7 +59,14 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
     @Override
     public void renderWorld(final float partialTicks, CaptureData data) {
         this.data = data;
-        renderWorld(partialTicks, 0);
+        long offsetMillis;
+        if (ReplayMod.instance.getSettingsRegistry().get(Setting.FRAME_TIME_FROM_WORLD_TIME)) {
+            offsetMillis = ReplayModReplay.instance.getReplayHandler().getReplaySender().currentTimeStamp();
+        } else {
+            offsetMillis = renderInfo.getFramesDone() * 1_000L / settings.getFramesPerSecond();
+        }
+        long frameStartTimeNano = startTime + offsetMillis * 1_000_000L;
+        renderWorld(partialTicks, frameStartTimeNano);
     }
 
     public void renderWorld(float partialTicks, long finishTimeNano) {
