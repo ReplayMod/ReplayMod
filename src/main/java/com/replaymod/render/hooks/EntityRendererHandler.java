@@ -8,6 +8,7 @@ import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 
 //#if MC>=11500
 import net.minecraft.client.util.math.MatrixStack;
@@ -65,11 +66,26 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
         //#endif
 
         if (mc.world != null && mc.player != null) {
-            //#if MC>=11500
-            mc.gameRenderer.renderWorld(partialTicks, finishTimeNano, new MatrixStack());
-            //#else
-            //$$ mc.gameRenderer.renderWorld(partialTicks, finishTimeNano);
-            //#endif
+            Screen orgScreen = mc.currentScreen;
+            boolean orgPauseOnLostFocus = mc.options.pauseOnLostFocus;
+            try {
+                mc.currentScreen = null; // do not want to render the current screen (that'd just be the progress gui)
+                mc.options.pauseOnLostFocus = false; // do not want the pause menu to open if the window is unfocused
+
+                //#if MC>=11400
+                mc.gameRenderer.render(partialTicks, finishTimeNano, true);
+                //#else
+                //$$ mc.setIngameNotInFocus(); // this should already be the case but it somehow still sometimes is not
+                //#if MC>=10809
+                //$$ mc.entityRenderer.updateCameraAndRender(partialTicks, finishTimeNano);
+                //#else
+                //$$ mc.entityRenderer.updateCameraAndRender(partialTicks);
+                //#endif
+                //#endif
+            } finally {
+                mc.currentScreen = orgScreen;
+                mc.options.pauseOnLostFocus = orgPauseOnLostFocus;
+            }
         }
 
         //#if MC>=11400
