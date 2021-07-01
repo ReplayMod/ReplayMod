@@ -26,6 +26,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.ItemPickupAnimationS2CPacket;
@@ -339,7 +340,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 //#if MC>=10800
                 if (packet instanceof ResourcePackSendS2CPacket) {
-                    save(resourcePackRecorder.handleResourcePack((ResourcePackSendS2CPacket) packet));
+                    ClientConnection connection = ctx.pipeline().get(ClientConnection.class);
+                    save(resourcePackRecorder.handleResourcePack(connection, (ResourcePackSendS2CPacket) packet));
                     return;
                 }
                 //#else

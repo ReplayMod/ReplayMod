@@ -37,7 +37,6 @@ import java.util.concurrent.CompletableFuture;
 //#else
 //$$ import com.google.common.util.concurrent.ListenableFuture;
 //#endif
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.ClientConnection;
 //#else
 //$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
@@ -111,10 +110,8 @@ public class ResourcePackRecorder {
     }
 
 
-    public synchronized ResourcePackSendS2CPacket handleResourcePack(ResourcePackSendS2CPacket packet) {
+    public synchronized ResourcePackSendS2CPacket handleResourcePack(ClientConnection netManager, ResourcePackSendS2CPacket packet) {
         final int requestId = nextRequestId++;
-        final ClientPlayNetworkHandler netHandler = mc.getNetworkHandler();
-        final ClientConnection netManager = netHandler.getConnection();
         final String url = packet.getURL();
         final String hash = packet.getSHA1();
 
@@ -138,7 +135,7 @@ public class ResourcePackRecorder {
             final ServerInfo serverData = mc.getCurrentServerEntry();
             if (serverData != null && serverData.getResourcePack() == ServerInfo.ResourcePackState.ENABLED) {
                 netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
-                downloadResourcePackFuture(requestId, url, hash);
+                downloadResourcePackFuture(netManager, requestId, url, hash);
             } else if (serverData != null && serverData.getResourcePack() != ServerInfo.ResourcePackState.PROMPT) {
                 netManager.send(makeStatusPacket(hash, Status.DECLINED));
             } else {
@@ -156,7 +153,7 @@ public class ResourcePackRecorder {
                         }
                         if (result) {
                             netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
-                            downloadResourcePackFuture(requestId, url, hash);
+                            downloadResourcePackFuture(netManager, requestId, url, hash);
                         } else {
                             netManager.send(makeStatusPacket(hash, Status.DECLINED));
                         }
@@ -180,10 +177,10 @@ public class ResourcePackRecorder {
         );
     }
 
-    private void downloadResourcePackFuture(int requestId, String url, final String hash) {
+    private void downloadResourcePackFuture(ClientConnection connection, int requestId, String url, final String hash) {
         addCallback(downloadResourcePack(requestId, url, hash),
-                result -> mc.getNetworkHandler().sendPacket(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED)),
-                throwable -> mc.getNetworkHandler().sendPacket(makeStatusPacket(hash, Status.FAILED_DOWNLOAD)));
+                result -> connection.send(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED)),
+                throwable -> connection.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD)));
     }
 
     private
