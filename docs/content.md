@@ -585,6 +585,7 @@ In General, the Replay Mod _should_ be compatible with most Forge and Fabric Mod
 ### Shaders Mod [shaders]
 _Karyonix' Shaders Mod_ is no longer compatible with Minecraft Forge starting with 1.9.4. As such it is not compatible with the Replay Mod either.
 Please use _Optifine_ instead.
+If you are using 1.16+ it is recomended that you use [_Iris_](https://irisshaders.net/) instead of _optifine_ due to compatibilty problems caused by _optifine_ and _optifabric_.
 
 ### Custom Main Menu [custom-main-menu]
 The _Custom Main Menu_ mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
