@@ -1163,9 +1163,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             // 1.14+: The update issue remains but only for non-players and the unloading list bug appears to have been
             //        fixed (chunk unloading no longer removes the entities).
             // Get the chunk that will be unloaded
-            //#if MC>=11700
-            //$$ // From the looks of it, this may be fixed now (thanks to EntityChangeListener), guess we'll see
-            //#else
             //#if MC>=11400
             ClientWorld world = mc.world;
             ChunkManager chunkProvider = world.getChunkManager();
@@ -1183,9 +1180,17 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
                 List<Entity> entitiesInChunk = new ArrayList<>();
                 // Gather all entities in that chunk
+                //#if MC>=11700
+                //$$ for (Entity entity : mc.world.getEntities()) {
+                //$$     if (entity.getChunkPos().equals(chunk.getPos())) {
+                //$$         entitiesInChunk.add(entity);
+                //$$     }
+                //$$ }
+                //#else
                 for (Collection<Entity> entityList : chunk.getEntitySectionArray()) {
                     entitiesInChunk.addAll(entityList);
                 }
+                //#endif
                 for (Entity entity : entitiesInChunk) {
                     // Skip interpolation of position updates coming from server
                     // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
@@ -1200,7 +1205,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     }
 
                     // Check whether the entity has left the chunk
-                    //#if MC>=11404
+                    //#if MC>=11700
+                    //$$ // This is now handled automatically in Entity.setPos (called from tick())
+                    //#elseif MC>=11404
                     int chunkX = MathHelper.floor(entity.getX() / 16);
                     int chunkY = MathHelper.floor(entity.getY() / 16);
                     int chunkZ = MathHelper.floor(entity.getZ() / 16);
@@ -1262,7 +1269,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#endif
                 }
             }
-            //#endif
         }
         return p; // During synchronous playback everything is sent normally
     }
