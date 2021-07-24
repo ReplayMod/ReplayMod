@@ -110,7 +110,7 @@ By right-clicking, you will start spectating the entity. If you want to stop spe
 ## Controlling Time [time]
 ### Replay Speed [speed]
 ![](img/real-timeline.jpg)
-The **Play/Pause button**, **Speed Slider** and **Replay Timeline** hightlighted
+The **Play/Pause button**, **Speed Slider** and **Replay Timeline** highlighted
 
 In the upper left corner of you screen, there is a **Play/Pause button** (Shortcut: `P`), using which you can entirely pause the time of the Replay.  
 All Entities, Particles and Block Updates will be frozen until you resume. You can fly through a paused Replay as usual.
@@ -328,7 +328,7 @@ Please note that you should generally use a high resolution when exporting **Equ
 
 #### Video Encoding and Quality [quality]
 ![](img/quality-comparison.jpg)
-A comparison between the quality of the **MP4 Hight, Default and Potato** Quality Presets.
+A comparison between the quality of the **MP4 High, Default and Potato** Quality Presets.
 
 Below the **Render Method Dropdown**, there is another Dropdown Menu for **Encoding Presets**.
 
