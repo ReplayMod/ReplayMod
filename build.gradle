@@ -248,14 +248,7 @@ dependencies {
                 11604: '1.16.4+build.6:v2',
                 11700: '1.17+build.13:v2',
         ][mcVersion]
-        modImplementation 'net.fabricmc:fabric-loader:' + [
-                11404: '0.7.8+build.189',
-                11502: '0.7.8+build.189',
-                11601: '0.8.8+build.202',
-                11603: '0.9.1+build.205',
-                11604: '0.10.6+build.214',
-                11700: '0.11.3',
-        ][mcVersion]
+        modImplementation 'net.fabricmc:fabric-loader:0.11.6'
         def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
