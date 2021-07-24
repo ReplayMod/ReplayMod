@@ -23,6 +23,7 @@ import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.render.mixin.MainWindowAccessor;
 import com.replaymod.render.mixin.WorldRendererAccessor;
+import com.replaymod.render.utils.FlawlessFrames;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -707,11 +708,11 @@ public class VideoRenderer implements RenderInfo {
 
     public static String[] checkCompat(RenderSettings settings) {
         //#if FABRIC>=1
-        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium")) {
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium") && !FlawlessFrames.hasSodium()) {
             return new String[] {
-                    "Rendering is not currently supported while Sodium is installed.",
-                    "See https://github.com/ReplayMod/ReplayMod/issues/150",
-                    "For now, you need to uninstall Sodium before rendering!"
+                    "Rendering is not supported with your Sodium version.",
+                    "It is missing support for the FREX Flawless Frames API.",
+                    "Either update to the latest version or uninstall Sodium before rendering!",
             };
         }
         //#if MC>=11700
@@ -721,7 +722,6 @@ public class VideoRenderer implements RenderInfo {
         //$$             "ODS export requires Iris to be installed for Minecraft 1.17 and above.",
         //$$             "Note that it is nevertheless incompatible with other shaders and will simply replace them.",
         //$$             "Get it from: https://irisshaders.net/",
-        //$$             "Use the Standalone version! Sodium is not currently compatible with rendering!",
         //$$     };
         //$$ }
         //#endif
