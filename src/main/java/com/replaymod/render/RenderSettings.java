@@ -334,9 +334,13 @@ public class RenderSettings {
                     }
                 }
                 // Homebrew doesn't seem to reliably symlink its installed binaries either
-                File homebrewFolder = new File("/usr/local/Cellar/ffmpeg");
-                String[] homebrewVersions = homebrewFolder.list();
-                if (homebrewVersions != null) {
+                // and there's multiple locations for where Homebrew is.
+                for (String path : new String[]{"/usr/local", "/opt/homebrew"}) {
+                    File homebrewFolder = new File(path + "/Cellar/ffmpeg");
+                    String[] homebrewVersions = homebrewFolder.list();
+                    if (homebrewVersions == null) {
+                        continue;
+                    }
                     Optional<File> latestOpt = Arrays.stream(homebrewVersions)
                             .map(ComparableVersion::new) // Convert file name to comparable version
                             .sorted(Comparator.reverseOrder()) // Sort for latest version
