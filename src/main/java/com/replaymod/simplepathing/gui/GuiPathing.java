@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Result;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.pathing.gui.GuiKeyframeRepository;
 import com.replaymod.pathing.player.RealtimeTimelinePlayer;
@@ -101,8 +102,6 @@ public class GuiPathing {
     public final GuiButton renderButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            Timeline timeline = preparePathsForPlayback(false);
-            if (timeline == null) return;
             GuiScreen screen = GuiRenderSettings.createBaseScreen();
             new GuiRenderQueue(screen, replayHandler, () -> preparePathsForPlayback(false)) {
                 @Override
@@ -263,7 +262,10 @@ public class GuiPathing {
                 } else {
                     boolean ignoreTimeKeyframes = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
 
-                    Timeline timeline = preparePathsForPlayback(ignoreTimeKeyframes);
+                    Timeline timeline = preparePathsForPlayback(ignoreTimeKeyframes).okOrElse(err -> {
+                        GuiInfoPopup.open(overlay, err);
+                        return null;
+                    });
                     if (timeline == null) return;
 
                     Path timePath = new SPTimeline(timeline).getTimePath();
@@ -497,11 +499,12 @@ public class GuiPathing {
         }).start();
     }
 
-    private Timeline preparePathsForPlayback(boolean ignoreTimeKeyframes) {
+    private Result<Timeline, String[]> preparePathsForPlayback(boolean ignoreTimeKeyframes) {
         SPTimeline spTimeline = mod.getCurrentTimeline();
 
-        if (!validatePathsForPlayback(spTimeline, ignoreTimeKeyframes)) {
-            return null;
+        String[] errors = validatePathsForPlayback(spTimeline, ignoreTimeKeyframes);
+        if (errors != null) {
+            return Result.err(errors);
         }
 
         try {
@@ -509,24 +512,23 @@ public class GuiPathing {
             String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
             Timeline timeline = serialization.deserialize(serialized).get("");
             timeline.getPaths().forEach(Path::updateAll);
-            return timeline;
+            return Result.ok(timeline);
         } catch (Throwable t) {
             error(LOGGER, replayHandler.getOverlay(), CrashReport.create(t, "Cloning timeline"), () -> {});
-            return null;
+            return Result.err(null);
         }
     }
 
-    private boolean validatePathsForPlayback(SPTimeline timeline, boolean ignoreTimeKeyframes) {
+    private String[] validatePathsForPlayback(SPTimeline timeline, boolean ignoreTimeKeyframes) {
         timeline.getTimeline().getPaths().forEach(Path::updateAll);
 
         // Make sure there are at least two position keyframes
         if (timeline.getPositionPath().getSegments().isEmpty()) {
-            GuiInfoPopup.open(replayHandler.getOverlay(), "replaymod.chat.morekeyframes");
-            return false;
+            return new String[]{ "replaymod.chat.morekeyframes" };
         }
 
         if (ignoreTimeKeyframes) {
-            return true;
+            return null;
         }
 
         // Make sure time keyframes's values are monotonically increasing
@@ -535,22 +537,21 @@ public class GuiPathing {
             int time = keyframe.getValue(TimestampProperty.PROPERTY).orElseThrow(IllegalStateException::new);
             if (time < lastTime) {
                 // We are going backwards in time
-                GuiInfoPopup.open(replayHandler.getOverlay(),
+                return new String[]{
                         "replaymod.error.negativetime1",
                         "replaymod.error.negativetime2",
-                        "replaymod.error.negativetime3");
-                return false;
+                        "replaymod.error.negativetime3"
+                };
             }
             lastTime = time;
         }
 
         // Make sure there are at least two time keyframes
         if (timeline.getTimePath().getSegments().isEmpty()) {
-            GuiInfoPopup.open(replayHandler.getOverlay(), "replaymod.chat.morekeyframes");
-            return false;
+            return new String[]{ "replaymod.chat.morekeyframes" };
         }
 
-        return true;
+        return null;
     }
 
     public void zoomTimeline(double factor) {
