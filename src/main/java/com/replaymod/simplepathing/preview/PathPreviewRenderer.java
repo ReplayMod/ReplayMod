@@ -204,7 +204,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         } finally {
             popMatrix();
             //#if MC>=11700
-            GL11.glDisable(GL11.GL_BLEND);
+            //$$ GL11.glDisable(GL11.GL_BLEND);
             //#else
             GL11.glPopAttrib();
             //#endif

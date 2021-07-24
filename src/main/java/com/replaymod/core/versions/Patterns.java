@@ -347,12 +347,12 @@ class Patterns {
         //#endif
     }
     //#else
-    @Pattern private static void BufferBuilder_beginPosCol() {}
-    @Pattern private static void BufferBuilder_addPosCol() {}
-    @Pattern private static void BufferBuilder_beginPosTex() {}
-    @Pattern private static void BufferBuilder_addPosTex() {}
-    @Pattern private static void BufferBuilder_beginPosTexCol() {}
-    @Pattern private static void BufferBuilder_addPosTexCol() {}
+    //$$ @Pattern private static void BufferBuilder_beginPosCol() {}
+    //$$ @Pattern private static void BufferBuilder_addPosCol() {}
+    //$$ @Pattern private static void BufferBuilder_beginPosTex() {}
+    //$$ @Pattern private static void BufferBuilder_addPosTex() {}
+    //$$ @Pattern private static void BufferBuilder_beginPosTexCol() {}
+    //$$ @Pattern private static void BufferBuilder_addPosTexCol() {}
     //#endif
 
     @Pattern
