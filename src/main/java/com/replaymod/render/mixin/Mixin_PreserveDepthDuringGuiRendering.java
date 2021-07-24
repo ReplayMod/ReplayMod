@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(GameRenderer.class)
 public abstract class Mixin_PreserveDepthDuringGuiRendering {
     @ModifyArg(
-            //#if MC>=11700
+            //#if MC>=11400
             method = "render",
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V"), index = 0
             //#else
