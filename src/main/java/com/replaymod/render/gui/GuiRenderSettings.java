@@ -70,7 +70,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                         if (renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.BLEND) {
                             encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.BLEND);
                         } else {
-                            encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.MP4_DEFAULT);
+                            encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.MP4_CUSTOM);
                         }
                     }
                     updateInputs();
@@ -506,7 +506,8 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         }
         RenderSettings.EncodingPreset encodingPreset = settings.getEncodingPreset();
         /* encodingPreset can be null from a previously supported and later removed preset */
-        if (encodingPreset == null || !encodingPreset.isSupported()) {
+        boolean invalidEncodingPreset = encodingPreset == null || !encodingPreset.isSupported();
+        if (invalidEncodingPreset) {
             encodingPreset = getDefaultRenderSettings().getEncodingPreset();
         }
         encodingPresetDropdown.setSelected(encodingPreset);
@@ -555,7 +556,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         antiAliasingDropdown.setSelected(settings.getAntiAliasing());
         exportCommand.setText(settings.getExportCommand());
         String exportArguments = settings.getExportArguments();
-        if (exportArguments == null || settings.getEncodingPreset() == null) {
+        if (exportArguments == null || settings.getEncodingPreset() == null || invalidEncodingPreset) {
             // backwards compat, see RenderSettings#exportArguments
             exportArguments = encodingPreset.getValue();
         }
@@ -628,8 +629,8 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
     }
 
     private RenderSettings getDefaultRenderSettings() {
-        return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT, 1920, 1080, 60, 10 << 20, null,
-                true, false, false, false, null, 360, 180, false, false, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
+        return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_CUSTOM, 1920, 1080, 60, 10 << 20, null,
+                true, false, false, false, null, 360, 180, false, false, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_CUSTOM.getValue(), false);
     }
 
     @Override
