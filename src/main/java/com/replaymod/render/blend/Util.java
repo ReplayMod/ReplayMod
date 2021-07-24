@@ -39,7 +39,7 @@ public class Util {
         }
     }
 
-    private static FloatBuffer floatBuffer = GlAllocationUtils.allocateFloatBuffer(16);
+    private static FloatBuffer floatBuffer = GlAllocationUtils.allocateByteBuffer(16 * 4).asFloatBuffer();
     public static Matrix4f getGlMatrix(int matrix) {
         floatBuffer.clear();
         //#if MC>=11400
