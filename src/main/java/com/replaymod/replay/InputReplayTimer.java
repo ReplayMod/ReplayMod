@@ -1,15 +1,12 @@
 package com.replaymod.replay;
 
+import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderTickCounter;
-
-//#if MC>=11400
-import com.replaymod.core.ReplayMod;
-//#endif
 
 //#if MC>=11400
 import org.lwjgl.glfw.GLFW;
@@ -22,10 +19,7 @@ import org.lwjgl.glfw.GLFW;
 //$$ import java.io.IOException;
 //#else
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
-//$$ import cpw.mods.fml.common.eventhandler.Event;
 //$$ import net.minecraft.client.renderer.entity.RenderManager;
-//$$
-//$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
 //#endif
 //#endif
 
@@ -65,20 +59,15 @@ public class InputReplayTimer extends WrappedTimer {
                 //#endif
         );
 
-        // 1.7.10: We have to run the scheduled executables (ours only) because MC would only run them every tick
+        ReplayMod.instance.runTasks();
+
         //#if MC<=10710
-        //$$ FML_BUS.post(new RunScheduledTasks());
-        //$$
         //$$ // Code below only updates the current screen when a world and player is loaded. This may not be the case for
         //$$ // the GuiOpeningReplay screen resulting in a livelock.
         //$$ // To counteract that, we always update that screen (doesn't matter if we do it twice).
         //$$ if (mc.currentScreen instanceof GuiOpeningReplay) {
         //$$     mc.currentScreen.handleInput();
         //$$ }
-        //#endif
-
-        //#if MC>=11400
-        ReplayMod.instance.executor.runTasks();
         //#endif
 
         // If we are in a replay, we have to manually process key and mouse events as the
@@ -147,8 +136,4 @@ public class InputReplayTimer extends WrappedTimer {
             }
         }
     }
-
-    //#if MC<=10710
-    //$$ public static class RunScheduledTasks extends Event {}
-    //#endif
 }

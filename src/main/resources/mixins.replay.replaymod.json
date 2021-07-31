@@ -5,6 +5,7 @@
   "mixins": [],
   "server": [],
   "client": [
+    "Mixin_FixNPCSkinCaching",
     //#if MC>=11600
     "Mixin_MoveRealmsButton",
     //#endif

@@ -3,9 +3,15 @@ package com.replaymod.replay.camera;
 import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
+import com.replaymod.core.events.KeyBindingEventCallback;
+import com.replaymod.core.events.PreRenderCallback;
+import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.core.events.SettingsChangedCallback;
 import com.replaymod.replay.ReplayHandler;
+import com.replaymod.replay.events.RenderHotbarCallback;
+import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.Setting;
@@ -24,20 +30,12 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 
 //#if FABRIC>=1
-import com.replaymod.core.events.KeyBindingEventCallback;
-import com.replaymod.core.events.PreRenderCallback;
-import com.replaymod.core.events.PreRenderHandCallback;
-import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
-import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 //#else
-//$$ import com.replaymod.core.versions.MCVer;
 //$$ import net.minecraftforge.client.event.EntityViewRenderEvent;
 //$$ import net.minecraftforge.client.event.RenderGameOverlayEvent;
-//$$ import net.minecraftforge.client.event.RenderHandEvent;
 //$$ import net.minecraftforge.common.MinecraftForge;
 //$$ import net.minecraftforge.eventbus.api.EventPriority;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.event.TickEvent;
 //#endif
 
 //#if MC>=11400
@@ -51,7 +49,6 @@ import net.minecraft.util.hit.HitResult;
 //$$ import net.minecraft.util.math.RayTraceResult;
 //$$ import net.minecraft.util.text.ITextComponent;
 //$$ import net.minecraft.world.World;
-//$$ import net.minecraftforge.fml.common.gameevent.InputEvent;
 //$$
 //#if MC>=11400
 //$$ import net.minecraft.util.math.RayTraceFluidMode;
@@ -187,7 +184,7 @@ public class CameraEntity
      * @param z Delta in Z direction
      */
     public void moveCamera(double x, double y, double z) {
-        setCameraPosition(Entity_getX(this) + x, Entity_getY(this) + y, Entity_getZ(this) + z);
+        setCameraPosition(this.getX() + x, this.getY() + y, this.getZ() + z);
     }
 
     /**
@@ -200,7 +197,7 @@ public class CameraEntity
         this.lastRenderX = this.prevX = x;
         this.lastRenderY = this.prevY = y;
         this.lastRenderZ = this.prevZ = z;
-        Entity_setPos(this, x, y, z);
+        this.setPos(x, y, z);
         updateBoundingBox();
     }
 
@@ -211,8 +208,10 @@ public class CameraEntity
      * @param roll Roll in degrees
      */
     public void setCameraRotation(float yaw, float pitch, float roll) {
-        this.prevYaw = this.yaw = yaw;
-        this.prevPitch = this.pitch = pitch;
+        this.prevYaw = yaw;
+        this.prevPitch = pitch;
+        this.yaw = yaw;
+        this.pitch = pitch;
         this.roll = roll;
     }
 
@@ -241,7 +240,7 @@ public class CameraEntity
         this.prevZ = to.prevZ;
         this.prevYaw = to.prevYaw;
         this.prevPitch = to.prevPitch;
-        Entity_setPos(this, Entity_getX(to), Entity_getY(to), Entity_getZ(to));
+        this.setPos(to.getX(), to.getY(), to.getZ());
         this.yaw = to.yaw;
         this.pitch = to.pitch;
         this.lastRenderX = to.lastRenderX;
@@ -260,17 +259,18 @@ public class CameraEntity
         //#else
         //$$ this.boundingBox.setBB(AxisAlignedBB.getBoundingBox(
         //#endif
-                Entity_getX(this) - width / 2, Entity_getY(this), Entity_getZ(this) - width / 2,
-                Entity_getX(this) + width / 2, Entity_getY(this) + height, Entity_getZ(this) + width / 2));
+                this.getX() - width / 2, this.getY(), this.getZ() - width / 2,
+                this.getX() + width / 2, this.getY() + height, this.getZ() + width / 2));
     }
 
     @Override
     public void tick() {
         //#if MC>=10800
-        Entity view = getRenderViewEntity(this.client);
+        Entity view =
         //#else
-        //$$ EntityLivingBase view = getRenderViewEntity(this.mc);
+        //$$ EntityLivingBase view =
         //#endif
+            this.client.getCameraEntity();
         if (view != null) {
             // Make sure we're always spectating the right entity
             // This is important if the spectated player respawns as their
@@ -286,9 +286,9 @@ public class CameraEntity
                 }
                 view = this.world.getPlayerByUuid(spectating);
                 if (view != null) {
-                    setRenderViewEntity(this.client, view);
+                    this.client.setCameraEntity(view);
                 } else {
-                    setRenderViewEntity(this.client, this);
+                    this.client.setCameraEntity(this);
                     return;
                 }
             }
@@ -311,7 +311,7 @@ public class CameraEntity
 
     @Override
     public void setRotation(float yaw, float pitch) {
-        if (getRenderViewEntity(this.client) == this) {
+        if (this.client.getCameraEntity() == this) {
             // Only update camera rotation when the camera is the view
             super.setRotation(yaw, pitch);
         }
@@ -359,7 +359,7 @@ public class CameraEntity
     }
 
     private boolean falseUnlessSpectating(Function<Entity, Boolean> property) {
-        Entity view = getRenderViewEntity(this.client);
+        Entity view = this.client.getCameraEntity();
         if (view != null && view != this) {
             return property.apply(view);
         }
@@ -409,7 +409,7 @@ public class CameraEntity
     //#if MC>=10800
     @Override
     public float getSpeed() {
-        Entity view = getRenderViewEntity(this.client);
+        Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof AbstractClientPlayerEntity) {
             return ((AbstractClientPlayerEntity) view).getSpeed();
         }
@@ -424,7 +424,7 @@ public class CameraEntity
 
     @Override
     public boolean isInvisible() {
-        Entity view = getRenderViewEntity(this.client);
+        Entity view = this.client.getCameraEntity();
         if (view != this) {
             return view.isInvisible();
         }
@@ -433,7 +433,7 @@ public class CameraEntity
 
     @Override
     public Identifier getSkinTexture() {
-        Entity view = getRenderViewEntity(this.client);
+        Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof PlayerEntity) {
             return Utils.getResourceLocationForPlayerUUID(view.getUuid());
         }
@@ -452,7 +452,7 @@ public class CameraEntity
 
     @Override
     public boolean isPartVisible(PlayerModelPart modelPart) {
-        Entity view = getRenderViewEntity(this.client);
+        Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof PlayerEntity) {
             return ((PlayerEntity) view).isPartVisible(modelPart);
         }
@@ -462,7 +462,7 @@ public class CameraEntity
 
     @Override
     public float getHandSwingProgress(float renderPartialTicks) {
-        Entity view = getRenderViewEntity(this.client);
+        Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof PlayerEntity) {
             return ((PlayerEntity) view).getHandSwingProgress(renderPartialTicks);
         }
@@ -577,8 +577,13 @@ public class CameraEntity
     //#endif
 
     @Override
+    //#if MC>=11700
+    //$$ public void remove(RemovalReason reason) {
+    //$$     super.remove(reason);
+    //#else
     public void remove() {
         super.remove();
+    //#endif
         if (eventHandler != null) {
             eventHandler.unregister();
             eventHandler = null;
@@ -671,60 +676,27 @@ public class CameraEntity
 
         private EventHandler() {}
 
-        //#if FABRIC>=1
         { on(PreTickCallback.EVENT, this::onPreClientTick); }
         private void onPreClientTick() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onPreClientTick(TickEvent.ClientTickEvent event) {
-        //$$     if (event.phase != TickEvent.Phase.START) return;
-        //#endif
             updateArmYawAndPitch();
         }
 
-        //#if FABRIC>=1
         { on(PreRenderCallback.EVENT, this::onRenderUpdate); }
         private void onRenderUpdate() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onRenderUpdate(TickEvent.RenderTickEvent event) {
-        //$$     if (event.phase != TickEvent.Phase.START) return;
-        //#endif
             update();
         }
 
-        //#if FABRIC>=1
         { on(KeyBindingEventCallback.EVENT, CameraEntity.this::handleInputEvents); }
-        //#elseif MC<11400
-        //$$ @SubscribeEvent
-        //$$ public void onKeyEvent(InputEvent.KeyInputEvent event) {
-        //$$     handleInputEvents();
-        //$$ }
-        //$$
-        //$$ @SubscribeEvent
-        //$$ public void onMouseInput(InputEvent.MouseInputEvent event) {
-        //$$     handleInputEvents();
-        //$$ }
-        //#endif
 
-        //#if FABRIC>=1
         { on(RenderSpectatorCrosshairCallback.EVENT, this::shouldRenderSpectatorCrosshair); }
         private Boolean shouldRenderSpectatorCrosshair() {
             return canSpectate(mc.targetedEntity);
         }
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
-        //$$     // The crosshair should only render if targeted entity can actually be spectated
-        //$$     if (MCVer.getType(event) == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
-        //$$         event.setCanceled(!canSpectate(mc.pointedEntity));
-        //$$     }
-        //$$     // Hotbar should never be rendered
-        //$$     if (MCVer.getType(event) == RenderGameOverlayEvent.ElementType.HOTBAR) {
-        //$$         event.setCanceled(true);
-        //$$     }
-        //$$ }
-        //#endif
+
+        { on(RenderHotbarCallback.EVENT, this::shouldRenderHotbar); }
+        private Boolean shouldRenderHotbar() {
+            return false;
+        }
 
         { on(SettingsChangedCallback.EVENT, this::onSettingsChanged); }
         private void onSettingsChanged(SettingsRegistry registry, SettingsRegistry.SettingKey<?> key) {
@@ -737,35 +709,13 @@ public class CameraEntity
             }
         }
 
-        //#if FABRIC>=1
         { on(PreRenderHandCallback.EVENT, this::onRenderHand); }
         private boolean onRenderHand() {
             // Unless we are spectating another player, don't render our hand
-            if (getRenderViewEntity(mc) == CameraEntity.this || !(getRenderViewEntity(mc) instanceof PlayerEntity)) {
+            Entity view = mc.getCameraEntity();
+            if (view == CameraEntity.this || !(view instanceof PlayerEntity)) {
                 return true; // cancel hand rendering
             } else {
-                onRenderHandMonitor();
-                return false;
-            }
-        }
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onRenderHand(RenderHandEvent event) {
-        //$$     // Unless we are spectating another player, don't render our hand
-        //$$     if (getRenderViewEntity(mc) == CameraEntity.this || !(getRenderViewEntity(mc) instanceof PlayerEntity)) {
-        //$$         event.setCanceled(true);
-        //$$     }
-        //$$ }
-        //#endif
-
-        //#if FABRIC>=1
-        private void onRenderHandMonitor() {
-        //#else
-        //$$ @SubscribeEvent(priority = EventPriority.LOWEST)
-        //$$ public void onRenderHandMonitor(RenderHandEvent event) {
-        //#endif
-            Entity view = getRenderViewEntity(mc);
-            if (view instanceof PlayerEntity) {
                 PlayerEntity player = (PlayerEntity) view;
                 // When the spectated player has changed, force equip their items to prevent the equip animation
                 if (lastHandRendered != player) {
@@ -790,6 +740,7 @@ public class CameraEntity
                     mc.player.renderYaw = mc.player.lastRenderYaw = player.yaw;
                     mc.player.renderPitch = mc.player.lastRenderPitch = player.pitch;
                 }
+                return false;
             }
         }
 
@@ -817,7 +768,7 @@ public class CameraEntity
         //#else
         //$$ @SubscribeEvent
         //$$ public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
-        //$$     switch (MCVer.getType(event)) {
+        //$$     switch (event.getType()) {
         //$$         case ALL:
         //$$             heldItemTooltipsWasTrue = mc.gameSettings.heldItemTooltips;
         //$$             mc.gameSettings.heldItemTooltips = false;
@@ -853,7 +804,7 @@ public class CameraEntity
         //$$
         //$$ @SubscribeEvent
         //$$ public void postRenderGameOverlay(RenderGameOverlayEvent.Post event) {
-        //$$     if (MCVer.getType(event) != RenderGameOverlayEvent.ElementType.ALL) return;
+        //$$     if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
         //$$     mc.gameSettings.heldItemTooltips = heldItemTooltipsWasTrue;
         //$$ }
         //#endif

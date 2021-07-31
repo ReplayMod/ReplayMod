@@ -1,4 +1,3 @@
-//#if MC>=11400
 package com.replaymod.replay.events;
 
 import de.johni0702.minecraft.gui.utils.Event;
@@ -18,4 +17,3 @@ public interface RenderSpectatorCrosshairCallback {
 
     Boolean shouldRenderSpectatorCrosshair();
 }
-//#endif

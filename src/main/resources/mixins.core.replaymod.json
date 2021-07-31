@@ -4,9 +4,9 @@
   "mixins": [],
   "server": [],
   "client": [
+    "Mixin_ContextualKeyBindings",
     //#if MC>=11400
     "AbstractButtonWidgetAccessor",
-    "Mixin_ContextualKeyBindings",
     "MixinGameRenderer",
     "Mixin_HideDynamicResourcePacks",
     "Mixin_RegisterDynamicResourcePacks",

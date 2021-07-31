@@ -1,5 +1,6 @@
 package com.replaymod.render.capturer;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.rendering.Frame;
@@ -16,17 +17,9 @@ import org.lwjgl.opengl.GL12;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-//#if MC>=11400
-import com.replaymod.render.mixin.MainWindowAccessor;
-import static com.replaymod.core.versions.MCVer.getWindow;
-//#endif
-
-//#if MC>=10800
-import static com.mojang.blaze3d.platform.GlStateManager.*;
-//#else
-//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
-//#endif
-
+import static com.replaymod.core.versions.MCVer.popMatrix;
+import static com.replaymod.core.versions.MCVer.pushMatrix;
+import static com.replaymod.core.versions.MCVer.resizeMainWindow;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -36,7 +29,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     protected int framesDone;
     private Framebuffer frameBuffer;
 
-    private final MinecraftClient mc = MCVer.getMinecraft();
+    protected final MinecraftClient mc = MCVer.getMinecraft();
 
     public OpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo) {
         this.worldRenderer = worldRenderer;
@@ -85,17 +78,17 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     }
 
     protected OpenGlFrame renderFrame(int frameId, float partialTicks, D captureData) {
-        resize(getFrameWidth(), getFrameHeight());
+        resizeMainWindow(mc, getFrameWidth(), getFrameHeight());
 
         pushMatrix();
         frameBuffer().beginWrite(true);
 
-        clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+        GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                 //#if MC>=11400
                 , false
                 //#endif
         );
-        enableTexture();
+        GlStateManager.enableTexture();
 
         worldRenderer.renderWorld(partialTicks, captureData);
 
@@ -113,30 +106,6 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         buffer.rewind();
 
         return new OpenGlFrame(frameId, new Dimension(getFrameWidth(), getFrameHeight()), 4, buffer);
-    }
-
-    protected void resize(int width, int height) {
-        //#if MC>=11400
-        Framebuffer fb = mc.getFramebuffer();
-        if (fb.viewportWidth != width || fb.viewportHeight != height) {
-            fb.resize(width, height
-                    //#if MC>=11400
-                    , false
-                    //#endif
-            );
-        }
-        //noinspection ConstantConditions
-        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) getWindow(mc);
-        mainWindow.setFramebufferWidth(width);
-        mainWindow.setFramebufferHeight(height);
-        //#if MC>=11500
-        mc.gameRenderer.onResized(width, height);
-        //#endif
-        //#else
-        //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
-        //$$     mc.resize(width, height);
-        //$$ }
-        //#endif
     }
 
     @Override

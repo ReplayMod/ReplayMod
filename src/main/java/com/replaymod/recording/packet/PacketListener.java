@@ -20,13 +20,13 @@ import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
-import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.ItemPickupAnimationS2CPacket;
@@ -40,6 +40,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -163,8 +164,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         // to happen on the main thread so we can guarantee correct ordering of inbound and inject packets.
         // Otherwise, injected packets may end up further down the packet stream than they were supposed to and other
         // inbound packets which may rely on the injected packet would behave incorrectly when played back.
-        if (!MCVer.isOnMainThread()) {
-            MCVer.scheduleOnMainThread(() -> save(packet));
+        if (!mc.isOnThread()) {
+            mc.send(() -> save(packet));
             return;
         }
         try {
@@ -295,7 +296,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                     if (core.getSettingsRegistry().get(Setting.AUTO_POST_PROCESS) && !ReplayMod.isMinimalMode()) {
                         outputPaths = MarkerProcessor.apply(outputPath, guiSavingReplay.getProgressBar()::setProgress);
                     } else {
-                        outputPaths = Collections.singletonList(new Pair<>(outputPath, metaData));
+                        outputPaths = Collections.singletonList(Pair.of(outputPath, metaData));
                     }
                 } catch (Exception e) {
                     logger.error("Saving replay file:", e);
@@ -339,7 +340,8 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                 //#if MC>=10800
                 if (packet instanceof ResourcePackSendS2CPacket) {
-                    save(resourcePackRecorder.handleResourcePack((ResourcePackSendS2CPacket) packet));
+                    ClientConnection connection = ctx.pipeline().get(ClientConnection.class);
+                    save(resourcePackRecorder.handleResourcePack(connection, (ResourcePackSendS2CPacket) packet));
                     return;
                 }
                 //#else
@@ -488,15 +490,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     public void addMarker(String name, int timestamp) {
-        Entity view = getRenderViewEntity(mc);
+        Entity view = mc.getCameraEntity();
 
         Marker marker = new Marker();
         marker.setName(name);
         marker.setTime(timestamp);
         if (view != null) {
-            marker.setX(Entity_getX(view));
-            marker.setY(Entity_getY(view));
-            marker.setZ(Entity_getZ(view));
+            marker.setX(view.getX());
+            marker.setY(view.getY());
+            marker.setZ(view.getZ());
             marker.setYaw(view.yaw);
             marker.setPitch(view.pitch);
         }

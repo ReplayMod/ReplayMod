@@ -20,6 +20,7 @@ net.minecraft.network.play.server.SPacketSpawnMob dataManager field_149043_l
 net.minecraft.network.play.server.SPacketSpawnMob getDataManagerEntries() func_149027_c()
 net.minecraft.network.play.server.SPacketSpawnPlayer getDataManagerEntries() func_148944_c()
 net.minecraft.client.multiplayer.ServerList saveSingleServer() func_147414_b()
+net.minecraft.util.SoundEvent com.replaymod.core.versions.MCVer.SoundEvent
 
 net.minecraft.network.play.server.SPacketJoinGame net.minecraft.network.play.server.S01PacketJoinGame
 net.minecraft.network.play.server.SPacketChat net.minecraft.network.play.server.S02PacketChat

@@ -170,12 +170,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
         return this;
     }
 
-    //#if MC>=10800
-    private
-    //#else
-    //$$ public // All event handlers need to be public in 1.7.10
-    //#endif
-    class EventHandler extends EventRegistrations {
+    private class EventHandler extends EventRegistrations {
         { on(KeyBindingEventCallback.EVENT, this::onKeyBindingEvent); }
         private void onKeyBindingEvent() {
             GameOptions gameSettings = getMinecraft().options;

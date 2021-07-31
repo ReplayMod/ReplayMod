@@ -88,7 +88,7 @@ public class BlendState implements Exporter {
             } catch (IOException e) {
                 CrashReport report = CrashReport.create(e, "Setup of blend exporter");
                 CrashReportSection category = report.addElement("Exporter");
-                addDetail(category, "Exporter", exporter::toString);
+                category.add("Exporter", exporter::toString);
                 throw new CrashException(report);
             }
         }
@@ -102,7 +102,7 @@ public class BlendState implements Exporter {
             } catch (IOException e) {
                 CrashReport report = CrashReport.create(e, "Tear down of blend exporter");
                 CrashReportSection category = report.addElement("Exporter");
-                addDetail(category, "Exporter", exporter::toString);
+                category.add("Exporter", exporter::toString);
                 throw new CrashException(report);
             }
         }
@@ -139,8 +139,8 @@ public class BlendState implements Exporter {
             } catch (IOException e) {
                 CrashReport report = CrashReport.create(e, "Pre frame of blend exporter");
                 CrashReportSection category = report.addElement("Exporter");
-                addDetail(category, "Exporter", exporter::toString);
-                addDetail(category, "Frame", () -> String.valueOf(frame));
+                category.add("Exporter", exporter::toString);
+                category.add("Frame", () -> String.valueOf(frame));
                 throw new CrashException(report);
             }
         }
@@ -154,8 +154,8 @@ public class BlendState implements Exporter {
             } catch (IOException e) {
                 CrashReport report = CrashReport.create(e, "Post frame of blend exporter");
                 CrashReportSection category = report.addElement("Exporter");
-                addDetail(category, "Exporter", exporter::toString);
-                addDetail(category, "Frame", () -> String.valueOf(frame));
+                category.add("Exporter", exporter::toString);
+                category.add("Frame", () -> String.valueOf(frame));
                 throw new CrashException(report);
             }
         }

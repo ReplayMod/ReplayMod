@@ -12,6 +12,7 @@ import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
@@ -56,13 +57,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-
-//#if FABRIC>=1
-import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-//#else
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.event.TickEvent;
-//#endif
 
 //#if MC>=11600
 //#else
@@ -364,34 +358,24 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         }
     }
 
-    //#if MC>=10800
-    private
-    //#else
-    //$$ public // All event handlers need to be public in 1.7.10
-    //#endif
-    class EventHandler extends EventRegistrations {
-        //#if FABRIC>=1
+    private class EventHandler extends EventRegistrations {
         { on(PreTickCallback.EVENT, this::onWorldTick); }
         private void onWorldTick() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onWorldTick(TickEvent.ClientTickEvent event) {
-        //$$     // Unfortunately the WorldTickEvent doesn't seem to be emitted on the CLIENT side
-        //$$     if (event.phase != TickEvent.Phase.START) return;
-        //#endif
-
             // Spawning a player into an empty chunk (which we might do with the recording player)
             // prevents it from being moved by teleport packets (it essentially gets stuck) because
             // Entity#addedToChunk is not set and it is therefore not updated every tick.
             // To counteract this, we need to manually update it's position if it hasn't been added
             // to any chunk yet.
+            // The `updateNeeded` flag appears to have been removed in 1.17, so this should no longer be an issue.
+            //#if MC<11700
             if (mc.world != null) {
-                for (PlayerEntity playerEntity : playerEntities(mc.world)) {
+                for (PlayerEntity playerEntity : mc.world.getPlayers()) {
                     if (!playerEntity.updateNeeded && playerEntity instanceof OtherClientPlayerEntity) {
                         playerEntity.tickMovement();
                     }
                 }
             }
+            //#endif
         }
     }
 
@@ -432,11 +416,13 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 || p instanceof ExperienceOrbSpawnS2CPacket
                                 || p instanceof EntitiesDestroyS2CPacket) {
                             ClientWorld world = mc.world;
-                            //#if MC>=11400
+                            //#if MC>=11700
+                            //$$ // From the looks of it, this has now been resolved (thanks to EntityChangeListener)
+                            //#elseif MC>=11400
                             // Note: Not sure if it's still required but there's this really handy method anyway
                             world.finishRemovingEntities();
                             //#else
-                            //$$ Iterator<Entity> iter = loadedEntityList(world).iterator();
+                            //$$ Iterator<Entity> iter = world.loadedEntityList.iterator();
                             //$$ while (iter.hasNext()) {
                             //$$     Entity entity = iter.next();
                             //$$     if (entity.isDead) {
@@ -474,10 +460,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 }
                             }
                         };
-                        if (MCVer.isOnMainThread()) {
+                        if (mc.isOnThread()) {
                             doLightUpdates.run();
                         } else {
-                            MCVer.scheduleOnMainThread(doLightUpdates);
+                            mc.send(doLightUpdates);
                         }
                     }
                     //#endif
@@ -497,12 +483,16 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         int i = pb.readVarInt();
 
         NetworkState state = loginPhase ? NetworkState.LOGIN : NetworkState.PLAY;
+        //#if MC>=11700
+        //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
+        //#else
         //#if MC>=10800
         Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i);
         //#else
         //$$ Packet p = Packet.generatePacket(state.func_150755_b(), i);
         //#endif
         p.read(pb);
+        //#endif
 
         return p;
     }
@@ -761,8 +751,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
 
             if(cent != null) {
-                if(!allowMovement && !((Math.abs(Entity_getX(cent) - ppl.getX()) > TP_DISTANCE_LIMIT) ||
-                        (Math.abs(Entity_getZ(cent) - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                if(!allowMovement && !((Math.abs(cent.getX() - ppl.getX()) > TP_DISTANCE_LIMIT) ||
+                        (Math.abs(cent.getZ() - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
                     return null;
                 } else {
                     allowMovement = false;
@@ -773,7 +763,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 @Override
                 @SuppressWarnings("unchecked")
                 public void run() {
-                    if (mc.world == null || !isOnMainThread()) {
+                    if (mc.world == null || !mc.isOnThread()) {
                         ReplayMod.instance.runLater(this);
                         return;
                     }
@@ -1190,9 +1180,17 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
                 List<Entity> entitiesInChunk = new ArrayList<>();
                 // Gather all entities in that chunk
-                for (Collection<Entity> entityList : getEntityLists(chunk)) {
+                //#if MC>=11700
+                //$$ for (Entity entity : mc.world.getEntities()) {
+                //$$     if (entity.getChunkPos().equals(chunk.getPos())) {
+                //$$         entitiesInChunk.add(entity);
+                //$$     }
+                //$$ }
+                //#else
+                for (Collection<Entity> entityList : chunk.getEntitySectionArray()) {
                     entitiesInChunk.addAll(entityList);
                 }
+                //#endif
                 for (Entity entity : entitiesInChunk) {
                     // Skip interpolation of position updates coming from server
                     // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
@@ -1207,10 +1205,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     }
 
                     // Check whether the entity has left the chunk
-                    //#if MC>=11404
-                    int chunkX = MathHelper.floor(Entity_getX(entity) / 16);
-                    int chunkY = MathHelper.floor(Entity_getY(entity) / 16);
-                    int chunkZ = MathHelper.floor(Entity_getZ(entity) / 16);
+                    //#if MC>=11700
+                    //$$ // This is now handled automatically in Entity.setPos (called from tick())
+                    //#elseif MC>=11404
+                    int chunkX = MathHelper.floor(entity.getX() / 16);
+                    int chunkY = MathHelper.floor(entity.getY() / 16);
+                    int chunkZ = MathHelper.floor(entity.getZ() / 16);
                     if (entity.chunkX != chunkX || entity.chunkY != chunkY || entity.chunkZ != chunkZ) {
                         if (entity.updateNeeded) {
                             // Entity has left the chunk

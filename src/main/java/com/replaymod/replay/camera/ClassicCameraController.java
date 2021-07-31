@@ -1,9 +1,11 @@
 package com.replaymod.replay.camera;
 
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
 
-import static com.replaymod.core.versions.MCVer.*;
+import static net.minecraft.util.math.MathHelper.cos;
+import static net.minecraft.util.math.MathHelper.sin;
 
 // TODO: Marius is responsible for this. Please, someone clean it up.
 public class ClassicCameraController implements CameraController {
@@ -32,7 +34,7 @@ public class ClassicCameraController implements CameraController {
     public void update(float partialTicksPassed) {
         boolean forward = false, backward = false, left = false, right = false, up = false, down = false;
         speedup = false;
-        for(KeyBinding kb : getMinecraft().options.keysAll) {
+        for(KeyBinding kb : MinecraftClient.getInstance().options.keysAll) {
             if(!kb.isPressed()) continue;
             if(kb.getTranslationKey().equals("key.forward")) {
                 forward = true;

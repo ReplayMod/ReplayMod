@@ -3,18 +3,16 @@ package com.replaymod.replay;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.util.ScreenshotUtils;
 
+import static com.replaymod.core.versions.MCVer.popMatrix;
+import static com.replaymod.core.versions.MCVer.pushMatrix;
+
 //#if MC>=11500
 import net.minecraft.client.util.math.MatrixStack;
-//#endif
-
-//#if MC>=11400
-import static com.replaymod.core.versions.MCVer.getWindow;
 //#endif
 
 //#if MC<11400
@@ -55,18 +53,15 @@ public class NoGuiScreenshot {
                     return;
                 }
 
-                //#if MC>=11400
-                int frameWidth = getWindow(mc).getFramebufferWidth(), frameHeight = getWindow(mc).getFramebufferHeight();
-                //#else
-                //$$ int frameWidth = mc.displayWidth, frameHeight = mc.displayHeight;
-                //#endif
+                int frameWidth = mc.getWindow().getFramebufferWidth();
+                int frameHeight = mc.getWindow().getFramebufferHeight();
 
                 final boolean guiHidden = mc.options.hudHidden;
                 try {
                     mc.options.hudHidden = true;
 
                     // Render frame without GUI
-                    GlStateManager.pushMatrix();
+                    pushMatrix();
                     GlStateManager.clear(
                             16640
                             //#if MC>=11400
@@ -76,25 +71,26 @@ public class NoGuiScreenshot {
                     mc.getFramebuffer().beginWrite(true);
                     GlStateManager.enableTexture();
 
+                    float tickDelta = mc.getTickDelta();
                     //#if MC>=11500
-                    mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime(), new MatrixStack());
+                    mc.gameRenderer.renderWorld(tickDelta, System.nanoTime(), new MatrixStack());
                     //#else
                     //#if MC>=11400
-                    //$$ mc.gameRenderer.renderWorld(MCVer.getRenderPartialTicks(), System.nanoTime());
+                    //$$ mc.gameRenderer.renderWorld(tickDelta, System.nanoTime());
                     //#else
                     //#if MC>=10809
-                    //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks(), System.nanoTime());
+                    //$$ mc.entityRenderer.updateCameraAndRender(tickDelta, System.nanoTime());
                     //#else
-                    //$$ mc.entityRenderer.updateCameraAndRender(MCVer.getRenderPartialTicks());
+                    //$$ mc.entityRenderer.updateCameraAndRender(tickDelta);
                     //#endif
                     //#endif
                     //#endif
 
                     mc.getFramebuffer().endWrite();
-                    GlStateManager.popMatrix();
-                    GlStateManager.pushMatrix();
+                    popMatrix();
+                    pushMatrix();
                     mc.getFramebuffer().draw(frameWidth, frameHeight);
-                    GlStateManager.popMatrix();
+                    popMatrix();
                 } catch (Throwable t) {
                     future.setException(t);
                     return;
@@ -107,7 +103,12 @@ public class NoGuiScreenshot {
                 // Read it, create the screenshot and finish the future
                 try {
                     //#if MC>=11400
-                    Image image = new Image(ScreenshotUtils.takeScreenshot(frameWidth, frameHeight, mc.getFramebuffer()));
+                    Image image = new Image(ScreenshotUtils.takeScreenshot(
+                            //#if MC<11701
+                            frameWidth, frameHeight,
+                            //#endif
+                            mc.getFramebuffer()
+                    ));
                     //#else
                     //$$ // We're using Minecraft's ScreenShotHelper even though it writes the screenshot to
                     //$$ // disk for better maintainability

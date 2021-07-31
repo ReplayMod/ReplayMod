@@ -20,10 +20,13 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.replaymod.core.ReplayMod"
+      "com.replaymod.core.ReplayModBackend"
     ],
     "modmenu": [
       "com.replaymod.core.gui.ModMenuApiImpl"
+    ],
+    "frex_flawless_frames": [
+      "com.replaymod.render.utils.FlawlessFrames::registerConsumer"
     ],
     "preLaunch": [
       "com.replaymod.core.DummyChainLoadEntryPoint"

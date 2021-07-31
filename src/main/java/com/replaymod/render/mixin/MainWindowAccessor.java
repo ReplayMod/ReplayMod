@@ -1,4 +1,3 @@
-//#if MC>=11400
 package com.replaymod.render.mixin;
 
 import net.minecraft.client.util.Window;
@@ -8,8 +7,11 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(Window.class)
 public interface MainWindowAccessor {
     @Accessor
+    int getFramebufferWidth();
+    @Accessor
     void setFramebufferWidth(int value);
+    @Accessor
+    int getFramebufferHeight();
     @Accessor
     void setFramebufferHeight(int value);
 }
-//#endif

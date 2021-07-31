@@ -9,6 +9,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
+import net.minecraft.client.render.VertexFormats;
 import org.lwjgl.opengl.GL11;
 
 //#if MC>=11500
@@ -62,7 +63,9 @@ public class BlendMeshBuilder
     }
 
     @Override
-    //#if MC>=10809
+    //#if MC>=11700
+    //$$ public void begin(VertexFormat.DrawMode mode, VertexFormat vertexFormat) {
+    //#elseif MC>=10809
     public void begin(int mode, VertexFormat vertexFormat) {
     //#else
     //$$ public void startDrawing(int mode) {
@@ -82,7 +85,7 @@ public class BlendMeshBuilder
 
         if (!wellBehaved) {
             // In case the calling code finishes with Tessellator.getInstance().draw()
-            BufferBuilder_beginPosTexCol(mode);
+            Tessellator.getInstance().getBuffer().begin(mode, VertexFormats.POSITION_TEXTURE_COLOR);
         }
 
         //#if MC>=10809
@@ -147,7 +150,17 @@ public class BlendMeshBuilder
         //#endif
     }
 
-    public static DMesh addBufferToMesh(ByteBuffer buffer, int mode, VertexFormat vertexFormat, DMesh mesh, ReadableVector3f vertOffset) {
+    public static DMesh addBufferToMesh(
+            ByteBuffer buffer,
+            //#if MC>=11700
+            //$$ VertexFormat.DrawMode mode,
+            //#else
+            int mode,
+            //#endif
+            VertexFormat vertexFormat,
+            DMesh mesh,
+            ReadableVector3f vertOffset
+    ) {
         //#if MC>=11400
         int vertexCount = buffer.remaining() / vertexFormat.getVertexSize();
         //#else
@@ -156,7 +169,18 @@ public class BlendMeshBuilder
         return addBufferToMesh(buffer, vertexCount, mode, vertexFormat, mesh, vertOffset);
     }
 
-    public static DMesh addBufferToMesh(ByteBuffer buffer, int vertexCount, int mode, VertexFormat vertexFormat, DMesh mesh, ReadableVector3f vertOffset) {
+    public static DMesh addBufferToMesh(
+            ByteBuffer buffer,
+            int vertexCount,
+            //#if MC>=11700
+            //$$ VertexFormat.DrawMode mode,
+            //#else
+            int mode,
+            //#endif
+            VertexFormat vertexFormat,
+            DMesh mesh,
+            ReadableVector3f vertOffset
+    ) {
         if (mesh == null) {
             mesh = new DMesh();
         }
@@ -260,7 +284,11 @@ public class BlendMeshBuilder
 
         // Bundle vertices into shapes and add them to the mesh
         switch (mode) {
+            //#if MC>=11700
+            //$$ case TRIANGLES:
+            //#else
             case GL11.GL_TRIANGLES:
+            //#endif
                 for (int i = 0; i < vertices.size(); i+=3) {
                     mesh.addTriangle(
                             vertices.get(i    ),
@@ -276,7 +304,11 @@ public class BlendMeshBuilder
                     );
                 }
                 break;
+            //#if MC>=11700
+            //$$ case QUADS:
+            //#else
             case GL11.GL_QUADS:
+            //#endif
                 for (int i = 0; i < vertices.size(); i+=4) {
                     mesh.addQuad(
                             vertices.get(i    ),

@@ -19,7 +19,7 @@ pluginManagement {
 }
 
 val jGuiVersions = listOf(
-        "1.7.10",
+        // "1.7.10",
         "1.8",
         "1.8.9",
         "1.9.4",
@@ -28,10 +28,12 @@ val jGuiVersions = listOf(
         "1.14.4",
         "1.15.2",
         "1.16.1",
-        "1.16.4"
+        "1.16.4",
+        "1.17",
+        "1.17.1",
 )
 val replayModVersions = listOf(
-        "1.7.10",
+        // "1.7.10",
         "1.8",
         "1.8.9",
         "1.9.4",
@@ -45,7 +47,9 @@ val replayModVersions = listOf(
         "1.14.4",
         "1.15.2",
         "1.16.1",
-        "1.16.4"
+        "1.16.4",
+        "1.17",
+        "1.17.1",
 )
 
 rootProject.buildFileName = "root.gradle.kts"

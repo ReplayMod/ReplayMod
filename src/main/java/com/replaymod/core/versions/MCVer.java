@@ -1,43 +1,27 @@
 package com.replaymod.core.versions;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.mixin.GuiScreenAccessor;
-import com.replaymod.core.mixin.MinecraftAccessor;
+import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
+import com.replaymod.replaystudio.lib.viaversion.api.protocol.version.ProtocolVersion;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
-import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
-import com.replaymod.replaystudio.us.myles.ViaVersion.packets.State;
+import de.johni0702.minecraft.gui.MinecraftGuiRenderer;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.options.KeyBinding;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.util.crash.CrashReportSection;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 //#if MC>=11600
 import net.minecraft.resource.ResourcePackSource;
 //#endif
 
-//#if MC>=11500
-import net.minecraft.client.model.ModelPart.Cuboid;
-import java.util.ArrayList;
-//#else
-//$$ import net.minecraft.client.model.Box;
-//#endif
-
 //#if MC>=11400
-import com.replaymod.core.mixin.AbstractButtonWidgetAccessor;
+import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 
@@ -56,22 +40,10 @@ import net.minecraft.text.TranslatableText;
 //$$ import net.minecraft.realms.RealmsSharedConstants;
 //#endif
 
-//#if FABRIC>=1
-//#else
-//$$ import net.minecraft.entity.LivingEntity;
-//$$ import net.minecraftforge.client.event.GuiScreenEvent;
-//$$ import net.minecraftforge.client.event.RenderGameOverlayEvent;
-//$$ import net.minecraftforge.client.event.RenderLivingEvent;
-//$$ import net.minecraftforge.common.MinecraftForge;
-//$$ import net.minecraftforge.eventbus.api.IEventBus;
-//#endif
-
 //#if MC>=11400
-import net.minecraft.client.util.Window;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 //#else
-//$$ import net.minecraft.client.gui.ScaledResolution;
 //$$ import net.minecraft.client.resources.ResourcePackRepository;
 //$$ import net.minecraftforge.fml.client.FMLClientHandler;
 //$$ import org.apache.logging.log4j.LogManager;
@@ -80,28 +52,13 @@ import org.lwjgl.glfw.GLFW;
 //$$ import java.io.IOException;
 //#endif
 
-//#if MC>=11400
-import net.minecraft.client.sound.PositionedSoundInstance;
-//#else
-//$$ import net.minecraft.client.audio.PositionedSoundRecord;
-//#endif
-
 //#if MC>=10904
 import com.replaymod.render.blend.mixin.ParticleAccessor;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.Vec3d;
 //#endif
 
-//#if MC>=10809
-import net.minecraft.client.render.VertexFormats;
-//#else
-//$$ import net.minecraftforge.fml.common.FMLCommonHandler;
-//#endif
-
 //#if MC>=10800
-import net.minecraft.client.render.BufferBuilder;
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
 //#if MC<11500
@@ -109,28 +66,17 @@ import net.minecraft.client.render.VertexFormatElement;
 //#endif
 //#else
 //$$ import com.replaymod.core.mixin.ResourcePackRepositoryAccessor;
-//$$ import com.google.common.util.concurrent.Futures;
 //$$ import io.netty.handler.codec.DecoderException;
+//$$ import net.minecraft.client.renderer.entity.RenderManager;
 //$$ import net.minecraft.client.resources.FileResourcePack;
+//$$ import net.minecraft.network.PacketBuffer;
 //$$
 //$$ import static org.lwjgl.opengl.GL11.*;
 //#endif
 
-//#if FABRIC>=1
-import net.fabricmc.loader.api.FabricLoader;
-//#else
-//#if MC>=11400
-//$$ import net.minecraftforge.fml.ModList;
-//#else
-//$$ import net.minecraftforge.fml.common.Loader;
-//#endif
-//#endif
-
 import java.io.File;
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.Optional;
 
@@ -138,29 +84,6 @@ import java.util.Optional;
  * Abstraction over things that have changed between different MC versions.
  */
 public class MCVer {
-    private static Logger LOGGER = LogManager.getLogger();
-
-    //#if FABRIC<=0
-    //$$ public static IEventBus FORGE_BUS = MinecraftForge.EVENT_BUS;
-    //#if MC>=10809
-    //$$ public static IEventBus FML_BUS = FORGE_BUS;
-    //#else
-    //$$ public static EventBus FML_BUS = FMLCommonHandler.instance().bus();
-    //#endif
-    //#endif
-
-    public static boolean isModLoaded(String id) {
-        //#if FABRIC>=1
-        return FabricLoader.getInstance().isModLoaded(id.toLowerCase());
-        //#else
-        //#if MC>=11400
-        //$$ return ModList.get().isLoaded(id.toLowerCase());
-        //#else
-        //$$ return Loader.isModLoaded(id);
-        //#endif
-        //#endif
-    }
-
     public static int getProtocolVersion() {
         //#if MC>=11400
         return SharedConstants.getGameVersion().getProtocolVersion();
@@ -176,271 +99,33 @@ public class MCVer {
         );
     }
 
-    public static void addDetail(CrashReportSection category, String name, Callable<String> callable) {
-        //#if MC>=10904
-        //#if MC>=11200
-        category.add(name, callable::call);
-        //#else
-        //$$ category.setDetail(name, callable::call);
-        //#endif
-        //#else
-        //$$ category.addCrashSectionCallable(name, callable);
-        //#endif
-    }
-
-    public static double Entity_getX(Entity entity) {
-        //#if MC>=11500
-        return entity.getX();
-        //#else
-        //$$ return entity.x;
-        //#endif
-    }
-
-    public static double Entity_getY(Entity entity) {
-        //#if MC>=11500
-        return entity.getY();
-        //#else
-        //$$ return entity.y;
-        //#endif
-    }
-
-    public static double Entity_getZ(Entity entity) {
-        //#if MC>=11500
-        return entity.getZ();
-        //#else
-        //$$ return entity.z;
-        //#endif
-    }
-
-    public static void Entity_setPos(Entity entity, double x, double y, double z) {
-        //#if MC>=11500
-        entity.setPos(x, y, z);
-        //#else
-        //$$ entity.x = x;
-        //$$ entity.y = y;
-        //$$ entity.z = z;
-        //#endif
-    }
-
-    //#if MC>=11400
-    public static void width(AbstractButtonWidget button, int value) {
-        button.setWidth(value);
-    }
-
-    public static int width(AbstractButtonWidget button) {
-        return button.getWidth();
-    }
-
-    public static int height(AbstractButtonWidget button) {
-        return ((AbstractButtonWidgetAccessor) button).getHeight();
-    }
-    //#else
-    //$$ public static void width(GuiButton button, int value) {
-    //$$     button.width = value;
-    //$$ }
-    //$$
-    //$$ public static int width(GuiButton button) {
-    //$$     return button.width;
-    //$$ }
-    //$$
-    //$$ public static int height(GuiButton button) {
-    //$$     return button.height;
-    //$$ }
-    //#endif
-
-    //#if FABRIC<=0
-    //#if MC>=11400
-    //$$ public static void addButton(GuiScreenEvent.InitGuiEvent event, Widget button) {
-    //$$     event.addWidget(button);
-    //$$ }
-    //$$
-    //$$ public static void removeButton(GuiScreenEvent.InitGuiEvent event, Widget button) {
-    //$$     event.removeWidget(button);
-    //$$ }
-    //$$
-    //$$ public static List<Widget> getButtonList(GuiScreenEvent.InitGuiEvent event) {
-    //$$     return event.getWidgetList();
-    //$$ }
-    //$$
-    //$$ public static Widget getButton(GuiScreenEvent.ActionPerformedEvent event) {
-    //$$     return event.getButton();
-    //$$ }
-    //#else
-    //$$ public static void addButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
+    public static void resizeMainWindow(MinecraftClient mc, int width, int height) {
         //#if MC>=11400
-        //$$ event.addButton(button);
-        //#else
-        //$$ getButtonList(event).add(button);
+        Framebuffer fb = mc.getFramebuffer();
+        if (fb.viewportWidth != width || fb.viewportHeight != height) {
+            fb.resize(width, height, false);
+        }
+        //noinspection ConstantConditions
+        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) mc.getWindow();
+        mainWindow.setFramebufferWidth(width);
+        mainWindow.setFramebufferHeight(height);
+        //#if MC>=11500
+        mc.gameRenderer.onResized(width, height);
         //#endif
-    //$$ }
-    //$$
-    //$$ public static void removeButton(GuiScreenEvent.InitGuiEvent event, GuiButton button) {
-        //#if MC>=11400
-        //$$ event.removeButton(button);
         //#else
-        //$$ getButtonList(event).remove(button);
-        //#endif
-    //$$ }
-    //$$
-    //$$ @SuppressWarnings("unchecked")
-    //$$ public static List<GuiButton> getButtonList(GuiScreenEvent.InitGuiEvent event) {
-        //#if MC>=10904
-        //$$ return event.getButtonList();
-        //#else
-        //$$ return event.buttonList;
-        //#endif
-    //$$ }
-    //$$
-    //$$ public static GuiButton getButton(GuiScreenEvent.ActionPerformedEvent event) {
-        //#if MC>=10904
-        //$$ return event.getButton();
-        //#else
-        //$$ return event.button;
-        //#endif
-    //$$ }
-    //#endif
-    //$$
-    //$$ public static Screen getGui(GuiScreenEvent event) {
-        //#if MC>=10904
-        //$$ return event.getGui();
-        //#else
-        //$$ return event.gui;
-        //#endif
-    //$$ }
-    //$$
-    //$$ public static LivingEntity getEntity(RenderLivingEvent event) {
-        //#if MC>=10904
-        //$$ return event.getEntity();
-        //#else
-        //$$ return event.entity;
-        //#endif
-    //$$ }
-    //#endif
-
-    public static String readString(PacketByteBuf buffer, int max) {
-        //#if MC>=10800
-        return buffer.readString(max);
-        //#else
-        //$$ try {
-        //$$     return buffer.readStringFromBuffer(max);
-        //$$ } catch (IOException e) {
-        //$$     throw new DecoderException(e);
+        //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
+        //$$     mc.resize(width, height);
         //$$ }
         //#endif
     }
 
-    //#if FABRIC<=0
-    //$$ public static RenderGameOverlayEvent.ElementType getType(RenderGameOverlayEvent event) {
-        //#if MC>=10904
-        //$$ return event.getType();
-        //#else
-        //$$ return event.type;
-        //#endif
-    //$$ }
-    //#endif
-
-    //#if MC>=10800
-    public static Entity getRenderViewEntity(MinecraftClient mc) {
-        return mc.getCameraEntity();
-    }
-    //#else
-    //$$ public static EntityLivingBase getRenderViewEntity(Minecraft mc) {
-    //$$     return mc.renderViewEntity;
-    //$$ }
-    //#endif
-
-    //#if MC>=10800
-    public static void setRenderViewEntity(MinecraftClient mc, Entity entity) {
-        mc.setCameraEntity(entity);
-    }
-    //#else
-    //$$ public static void setRenderViewEntity(Minecraft mc, EntityLivingBase entity) {
-    //$$     mc.renderViewEntity = entity;
-    //$$ }
-    //#endif
-
-    public static Entity getRiddenEntity(Entity ridden) {
-        //#if MC>=10904
-        return ridden.getVehicle();
-        //#else
-        //$$ return ridden.ridingEntity;
-        //#endif
-    }
-
-    public static Iterable<Entity> loadedEntityList(ClientWorld world) {
-        //#if MC>=11400
-        return world.getEntities();
-        //#else
-        //$$ return world.loadedEntityList;
-        //#endif
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Collection<Entity>[] getEntityLists(WorldChunk chunk) {
-        //#if MC>=10800
-        return chunk.getEntitySectionArray();
-        //#else
-        //$$ return chunk.entityLists;
-        //#endif
-    }
-
-    @SuppressWarnings("unchecked")
-    //#if MC>=11500
-    public static List<Cuboid> cubeList(ModelPart modelRenderer) {
-        return new ArrayList<>(); // FIXME 1.15
-    }
-    //#else
-    //$$ public static List<Box> cubeList(ModelPart modelRenderer) {
-    //$$     return modelRenderer.boxes;
-    //$$ }
-    //#endif
-
-    @SuppressWarnings("unchecked")
-    public static List<PlayerEntity> playerEntities(World world) {
-        //#if MC>=11400
-        return (List) world.getPlayers();
-        //#else
-        //$$ return world.playerEntities;
-        //#endif
-    }
-
-    public static boolean isOnMainThread() {
-        //#if MC>=11400
-        return getMinecraft().isOnThread();
-        //#else
-        //$$ return getMinecraft().isCallingFromMinecraftThread();
-        //#endif
-    }
-
-    public static void scheduleOnMainThread(Runnable runnable) {
-        //#if MC>=11400
-        getMinecraft().send(runnable);
-        //#else
-        //$$ getMinecraft().addScheduledTask(runnable);
-        //#endif
-    }
-
-    //#if MC>=11400
-    public static Window getWindow(MinecraftClient mc) {
-        //#if MC>=11500
-        return mc.getWindow();
-        //#else
-        //$$ return mc.window;
-        //#endif
-    }
-    //#endif
-
-    //#if MC>=11400
-    public static Window newScaledResolution(MinecraftClient mc) {
-        return getWindow(mc);
-    }
-    //#else
-    //$$ public static ScaledResolution newScaledResolution(Minecraft mc) {
-    //#if MC>=10809
-    //$$ return new ScaledResolution(mc);
-    //#else
-    //$$ return new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-    //#endif
+    //#if MC<10800
+    //$$ public static String tryReadString(PacketBuffer buffer, int max) {
+    //$$     try {
+    //$$         return buffer.readStringFromBuffer(max);
+    //$$     } catch (IOException e) {
+    //$$         throw new DecoderException(e);
+    //$$     }
     //$$ }
     //#endif
 
@@ -502,97 +187,20 @@ public class MCVer {
     }
 
     //#if MC>=10800
-    public static BufferBuilder Tessellator_getBufferBuilder() {
-        return Tessellator.getInstance().getBuffer();
-    }
-    //#else
-    //$$ public static Tessellator Tessellator_getBufferBuilder() {
-    //$$     return Tessellator.instance;
-    //$$ }
-    //#endif
-
-    public static void BufferBuilder_beginPosCol(int mode) {
-        Tessellator_getBufferBuilder().begin(
-                mode
-                //#if MC>=10809
-                , VertexFormats.POSITION_COLOR
-                //#endif
-        );
-    }
-
-    public static void BufferBuilder_addPosCol(double x, double y, double z, int r, int g, int b, int a) {
-        //#if MC>=10809
-        Tessellator_getBufferBuilder().vertex(x, y, z).color(r, g, b, a).next();
-        //#else
-        //$$ Tessellator_getBufferBuilder().setColorRGBA(r, g, b, a);
-        //$$ Tessellator_getBufferBuilder().addVertex(x, y, z);
-        //#endif
-    }
-
-    public static void BufferBuilder_beginPosTex(int mode) {
-        Tessellator_getBufferBuilder().begin(
-                mode
-                //#if MC>=10809
-                , VertexFormats.POSITION_TEXTURE
-                //#endif
-        );
-    }
-
-    public static void BufferBuilder_addPosTex(double x, double y, double z, float u, float v) {
-        //#if MC>=10809
-        Tessellator_getBufferBuilder().vertex(x, y, z).texture(u, v).next();
-        //#else
-        //$$ Tessellator_getBufferBuilder().addVertexWithUV(x, y, z, u, v);
-        //#endif
-    }
-
-    public static void BufferBuilder_beginPosTexCol(int mode) {
-        Tessellator_getBufferBuilder().begin(
-                mode
-                //#if MC>=10809
-                , VertexFormats.POSITION_TEXTURE_COLOR
-                //#endif
-        );
-    }
-
-    public static void BufferBuilder_addPosTexCol(double x, double y, double z, float u, float v, int r, int g, int b, int a) {
-        //#if MC>=10809
-        Tessellator_getBufferBuilder().vertex(x, y, z).texture(u, v).color(r, g, b, a).next();
-        //#else
-        //$$ Tessellator_getBufferBuilder().setColorRGBA(r, g, b, a);
-        //$$ Tessellator_getBufferBuilder().addVertexWithUV(x, y, z, u, v);
-        //#endif
-    }
-
-    //#if MC>=10800
     @SuppressWarnings("unchecked")
     public static List<VertexFormatElement> getElements(VertexFormat vertexFormat) {
         return vertexFormat.getElements();
     }
     //#endif
 
-    public static Tessellator Tessellator_getInstance() {
-        //#if MC>=10800
-        return Tessellator.getInstance();
-        //#else
-        //$$ return Tessellator.instance;
-        //#endif
-    }
-
-    public static EntityRenderDispatcher getRenderManager() {
-        //#if MC>=10800
-        return getMinecraft().getEntityRenderDispatcher();
-        //#else
-        //$$ return RenderManager.instance;
-        //#endif
-    }
+    //#if MC<10800
+    //$$ public static RenderManager getRenderManager(@SuppressWarnings("unused") Minecraft mc) {
+    //$$     return RenderManager.instance;
+    //$$ }
+    //#endif
 
     public static MinecraftClient getMinecraft() {
         return MinecraftClient.getInstance();
-    }
-
-    public static float getRenderPartialTicks() {
-        return ((MinecraftAccessor) getMinecraft()).getTimer().tickDelta;
     }
 
     public static void addButton(
@@ -604,14 +212,15 @@ public class MCVer {
             //#endif
     ) {
         GuiScreenAccessor acc = (GuiScreenAccessor) screen;
-        acc.getButtons().add(button);
         //#if MC>=11400
-        acc.getChildren().add(button);
+        acc.invokeAddButton(button);
+        //#else
+        //$$ acc.getButtons().add(button);
         //#endif
     }
 
     //#if MC>=11400
-    public static Optional<AbstractButtonWidget> findButton(List<AbstractButtonWidget> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
+    public static Optional<AbstractButtonWidget> findButton(Iterable<AbstractButtonWidget> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
         //#if MC>=11600
         final TranslatableText message = new TranslatableText(text);
         //#else
@@ -621,11 +230,17 @@ public class MCVer {
             if (message.equals(b.getMessage())) {
                 return Optional.of(b);
             }
+            //#if MC>=11600
+            // Fuzzy match (copy does not include children)
+            if (b.getMessage() != null && b.getMessage().copy().equals(message)) {
+                return Optional.of(b);
+            }
+            //#endif
         }
         return Optional.empty();
     }
     //#else
-    //$$ public static Optional<GuiButton> findButton(List<GuiButton> buttonList, @SuppressWarnings("unused") String text, int id) {
+    //$$ public static Optional<GuiButton> findButton(Iterable<GuiButton> buttonList, @SuppressWarnings("unused") String text, int id) {
     //$$     for (GuiButton b : buttonList) {
     //$$         if (b.id == id) {
     //$$             return Optional.of(b);
@@ -671,26 +286,6 @@ public class MCVer {
         //#endif
     }
 
-    public static void bindTexture(Identifier texture) {
-        //#if MC>=11500
-        getMinecraft().getTextureManager().bindTexture(texture);
-        //#else
-        //#if MC>=11400
-        //$$ getMinecraft().getTextureManager().bindTexture(texture);
-        //#else
-        //$$ getMinecraft().renderEngine.bindTexture(texture);
-        //#endif
-        //#endif
-    }
-
-    public static float cos(float val) {
-        return MathHelper.cos(val);
-    }
-
-    public static float sin(float val) {
-        return MathHelper.sin(val);
-    }
-
     //#if MC>=10904
     // TODO: this can be inlined once https://github.com/SpongePowered/Mixin/issues/305 is fixed
     public static Vec3d getPosition(Particle particle, float partialTicks) {
@@ -734,50 +329,66 @@ public class MCVer {
 
     public static void openURL(URI url) {
         //#if MC>=11400
-        //#if MC>=11400
         Util.getOperatingSystem().open(url);
-        //#else
-        //$$ Util.getOSType().openURI(url);
-        //#endif
         //#else
         //$$ try {
         //$$     Desktop.getDesktop().browse(url);
         //$$ } catch (Throwable e) {
-        //$$     LOGGER.error("Failed to open URL: ", e);
+        //$$     LogManager.getLogger().error("Failed to open URL: ", e);
         //$$ }
         //#endif
     }
 
-    public static String getBoundKey(KeyBinding keyBinding) {
-        try {
-            //#if MC>=11600
-            return keyBinding.getBoundKeyLocalizedText().getString();
-            //#else
-            //#if MC>=11400
-            //$$ return keyBinding.getLocalizedName();
-            //#else
-            //$$ return Keyboard.getKeyName(keyBinding.getKeyCode());
-            //#endif
-            //#endif
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // Apparently windows likes to press strange keys, see https://www.replaymod.com/forum/thread/55
-            return "Unknown";
-        }
+    public static void pushMatrix() {
+        //#if MC>=11700
+        //$$ RenderSystem.getModelViewStack().push();
+        //#else
+        GlStateManager.pushMatrix();
+        //#endif
     }
 
-    public static void playSound(Identifier sound) {
-        getMinecraft().getSoundManager().play(
-                //#if MC>=11400
-                PositionedSoundInstance.master(new SoundEvent(sound), 1.0F)
-                //#elseif MC>=10904
-                //$$ PositionedSoundRecord.getMasterRecord(new SoundEvent(sound), 1.0F)
-                //#elseif MC>=10800
-                //$$ PositionedSoundRecord.create(sound, 1.0F)
-                //#else
-                //$$ PositionedSoundRecord.createPositionedSoundRecord(sound, 1.0F)
-                //#endif
-        );
+    public static void popMatrix() {
+        //#if MC>=11700
+        //$$ RenderSystem.getModelViewStack().pop();
+        //$$ RenderSystem.applyModelViewMatrix();
+        //#else
+        GlStateManager.popMatrix();
+        //#endif
     }
+
+    public static void emitLine(BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
+        emitLine(buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
+    }
+
+    public static void emitLine(BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
+        int r = color >> 24 & 0xff;
+        int g = color >> 16 & 0xff;
+        int b = color >> 8 & 0xff;
+        int a = color & 0xff;
+        //#if MC>=11700
+        //$$ Vector3f n = Vector3f.sub(p2, p1, null);
+        //#endif
+        buffer.vertex(p1.x, p1.y, p1.z)
+                .color(r, g, b, a)
+                //#if MC>=11700
+                //$$ .normal(n.x, n.y, n.z)
+                //#endif
+                .next();
+        buffer.vertex(p2.x, p2.y, p2.z)
+                .color(r, g, b, a)
+                //#if MC>=11700
+                //$$ .normal(n.x, n.y, n.z)
+                //#endif
+                .next();
+    }
+
+    public static void bindTexture(Identifier id) {
+        new MinecraftGuiRenderer(null).bindTexture(id);
+    }
+
+    //#if MC<10900
+    //$$ public static class SoundEvent {}
+    //#endif
 
     //#if MC>=11400
     private static Boolean hasOptifine;

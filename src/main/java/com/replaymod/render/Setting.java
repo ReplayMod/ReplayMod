@@ -7,4 +7,6 @@ public final class Setting<T> {
             new SettingsRegistry.SettingKeys<>("advanced", "renderPath", null, "./replay_videos/");
     public static final SettingsRegistry.SettingKey<Boolean> SKIP_POST_RENDER_GUI =
             new SettingsRegistry.SettingKeys<>("advanced", "skipPostRenderGui", null, false);
+    public static final SettingsRegistry.SettingKey<Boolean> FRAME_TIME_FROM_WORLD_TIME =
+            new SettingsRegistry.SettingKeys<>("render", "frameTimeFromWorldTime", null, false);
 }

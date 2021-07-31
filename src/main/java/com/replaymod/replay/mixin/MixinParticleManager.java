@@ -3,6 +3,7 @@ package com.replaymod.replay.mixin;
 //#if MC>=10904
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,12 +20,8 @@ import java.util.Queue;
 
 @Mixin(ParticleManager.class)
 public abstract class MixinParticleManager {
-    @Shadow
-    //#if MC>=11400
+    @Final @Shadow
     private Queue<Particle> newParticles;
-    //#else
-    //$$ private Queue<Particle> queueEntityFX;
-    //#endif
 
     /**
      * This method additionally clears the queue of particles to be added when the world is changed.
@@ -42,11 +39,7 @@ public abstract class MixinParticleManager {
             //$$ World world,
             //#endif
             CallbackInfo ci) {
-        //#if MC>=11400
         this.newParticles.clear();
-        //#else
-        //$$ this.queueEntityFX.clear();
-        //#endif
     }
 }
 //#endif

@@ -1,13 +1,9 @@
 package com.replaymod.replay.gui.screen;
 
-import com.google.common.base.Supplier;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.render.gui.GuiRenderQueue;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
-import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.versions.Image;
@@ -47,6 +43,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -63,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
@@ -105,7 +103,7 @@ public class GuiReplayViewer extends GuiScreen {
             } else {
                 Iterator<Pair<File, List<RenderJob>>> replays = selected.stream()
                         .filter(it -> !it.renderQueue.isEmpty())
-                        .map(it -> new Pair<>(it.file, it.renderQueue))
+                        .map(it -> Pair.of(it.file, it.renderQueue))
                         .iterator();
                 GuiRenderQueue.processMultipleReplays(GuiReplayViewer.this, mod, replays, () -> {
                     loading = false;
@@ -151,67 +149,46 @@ public class GuiReplayViewer extends GuiScreen {
                 popup.getYesButton().setEnabled(!nameField.getText().isEmpty()
                         && !new File(file.getParentFile(), Utils.replayNameToFileName(nameField.getText())).exists());
             });
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(Boolean delete) {
-                    if (delete) {
-                        // Sanitize their input
-                        String name = nameField.getText().trim();
-                        // This file is what they want
-                        File targetFile = new File(file.getParentFile(), Utils.replayNameToFileName(name));
-                        try {
-                            // Finally, try to move it
-                            FileUtils.moveFile(file, targetFile);
-                        } catch (IOException e) {
-                            // We failed (might also be their OS)
-                            e.printStackTrace();
-                            getMinecraft().openScreen(new NoticeScreen(
-                                    //#if MC>=11400
-                                    GuiReplayViewer.this::display,
-                                    new TranslatableText("replaymod.gui.viewer.delete.failed1"),
-                                    new TranslatableText("replaymod.gui.viewer.delete.failed2")
-                                    //#else
-                                    //$$ I18n.format("replaymod.gui.viewer.delete.failed1"),
-                                    //$$ I18n.format("replaymod.gui.viewer.delete.failed2")
-                                    //#endif
-                            ));
-                            return;
-                        }
-                        list.load();
-                    }
+            popup.onAccept(() -> {
+                // Sanitize their input
+                String newName = nameField.getText().trim();
+                // This file is what they want
+                File targetFile = new File(file.getParentFile(), Utils.replayNameToFileName(newName));
+                try {
+                    // Finally, try to move it
+                    FileUtils.moveFile(file, targetFile);
+                } catch (IOException e) {
+                    // We failed (might also be their OS)
+                    e.printStackTrace();
+                    getMinecraft().openScreen(new NoticeScreen(
+                            //#if MC>=11400
+                            GuiReplayViewer.this::display,
+                            new TranslatableText("replaymod.gui.viewer.delete.failed1"),
+                            new TranslatableText("replaymod.gui.viewer.delete.failed2")
+                            //#else
+                            //$$ I18n.format("replaymod.gui.viewer.delete.failed1"),
+                            //$$ I18n.format("replaymod.gui.viewer.delete.failed2")
+                            //#endif
+                    ));
+                    return;
                 }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    t.printStackTrace();
-                }
+                list.load();
             });
         }
     }).setSize(73, 20).setI18nLabel("replaymod.gui.rename").setDisabled();
     public final GuiButton deleteButton = new GuiButton().onClick(() -> {
         for (GuiReplayEntry entry : list.getSelected()) {
             String name = entry.name.getText();
-            GuiYesNoPopup popup = GuiYesNoPopup.open(GuiReplayViewer.this,
+            GuiYesNoPopup.open(GuiReplayViewer.this,
                     new GuiLabel().setI18nText("replaymod.gui.viewer.delete.linea").setColor(Colors.BLACK),
                     new GuiLabel().setI18nText("replaymod.gui.viewer.delete.lineb", name + Formatting.RESET).setColor(Colors.BLACK)
-            ).setYesI18nLabel("replaymod.gui.delete").setNoI18nLabel("replaymod.gui.cancel");
-            Futures.addCallback(popup.getFuture(), new FutureCallback<Boolean>() {
-                @Override
-                public void onSuccess(Boolean delete) {
-                    if (delete) {
-                        try {
-                            FileUtils.forceDelete(entry.file);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        list.load();
-                    }
+            ).setYesI18nLabel("replaymod.gui.delete").setNoI18nLabel("replaymod.gui.cancel").onAccept(() -> {
+                try {
+                    FileUtils.forceDelete(entry.file);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    t.printStackTrace();
-                }
+                list.load();
             });
         }
     }).setSize(73, 20).setI18nLabel("replaymod.gui.delete").setDisabled();
@@ -283,7 +260,7 @@ public class GuiReplayViewer extends GuiScreen {
             loadButton.setTooltip(new GuiTooltip().setText(tooltipLines));
             loadButton.setEnabled(!jobs.isEmpty());
 
-            String[] compatError = VideoRenderer.checkCompat();
+            String[] compatError = VideoRenderer.checkCompat(jobs.stream().map(RenderJob::getSettings));
             if (compatError != null) {
                 loadButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
             }

@@ -21,7 +21,7 @@ buildscript {
         if (!fabric) {
             maven {
                 name = "forge"
-                url = "https://files.minecraftforge.net/maven"
+                url = "https://maven.minecraftforge.net"
             }
         }
         maven {
@@ -32,21 +32,21 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.2'
+        classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.5-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.8-SNAPSHOT'
         } else if (mcVersion >= 11400) {
-            classpath('net.minecraftforge.gradle:ForgeGradle:3.+'){
+            classpath('net.minecraftforge.gradle:ForgeGradle:5.0.5') { // the FG people still haven't learned to not do breaking changes
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
             }
         } else if (mcVersion >= 10800) {
             classpath('com.github.ReplayMod:ForgeGradle:' + (
-                    mcVersion >= 11200 ? 'b64de9c' : // FG 2.3
-                    mcVersion >= 10904 ? '5bb7a53' : // FG 2.2
-                                         'fc1eabc'   // FG 2.1
+                    mcVersion >= 11200 ? '34ab703' : // FG 2.3
+                    mcVersion >= 10904 ? '5d1e8d8' : // FG 2.2
+                                         'd1a7165'   // FG 2.1
             ) + ':all')
         } else {
-            classpath 'com.github.ReplayMod:ForgeGradle:5fca6853:all' // FG 1.2
+            classpath 'com.github.ReplayMod:ForgeGradle:a8a9e0ca:all' // FG 1.2
         }
     }
 }
@@ -102,12 +102,16 @@ preprocess {
             ".vert": PreprocessTask.DEFAULT_KEYWORDS,
             ".frag": PreprocessTask.DEFAULT_KEYWORDS,
     ])
+
+    patternAnnotation.set("com.replaymod.gradle.remap.Pattern")
 }
 
 def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = targetCompatibility = mcVersion >= 11700 ? 16 : 1.8
+tasks.withType(JavaCompile).configureEach {
+    options.release = mcVersion >= 11700 ? 16 : 8
+}
 
 if (mcVersion >= 11400) {
     sourceSets {
@@ -122,7 +126,9 @@ archivesBaseName = "replaymod"
 if (FABRIC) {
     minecraft {
         refmapName = 'mixins.replaymod.refmap.json'
-        autoGenIDERuns = true
+        runConfigs.all {
+            ideConfigGenerated = true
+        }
     }
 } else {
     minecraft {
@@ -198,6 +204,12 @@ repositories {
         url = "https://maven.fabricmc.net/"
     }
     maven {
+        url 'https://maven.terraformersmc.com/releases/'
+        content {
+            includeGroup 'com.terraformersmc'
+        }
+    }
+    maven {
         url 'https://jitpack.io'
         content {
             includeGroupByRegex 'com\\.github\\..*'
@@ -208,17 +220,17 @@ repositories {
 configurations {
     // Include dep in fat jar without relocation and, when forge supports it, without exploding (TODO)
     shade
-    compile.extendsFrom shade
+    implementation.extendsFrom shade
     // Include dep in fat jar with relocation and minimization
     shadow
-    compile.extendsFrom shadow
+    implementation.extendsFrom shadow
 }
 
 def shadeExclusions = {
     // Cannot just add these to the shade configuration because they'd be inherited by the compile configuration then
     exclude group: 'com.google.guava', module: 'guava-jdk5'
     exclude group: 'com.google.guava', module: 'guava' // provided by MC
-    exclude group: 'com.google.code.gson', module: 'gson' // provided by MC
+    exclude group: 'com.google.code.gson', module: 'gson' // provided by MC (or manually bundled for 1.11.2 and below)
 }
 
 dependencies {
@@ -229,6 +241,8 @@ dependencies {
                 11601: '1.16.1',
                 11603: '1.16.3',
                 11604: '1.16.4',
+                11700: '1.17',
+                11701: '1.17.1',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -236,20 +250,18 @@ dependencies {
                 11601: '1.16.1+build.17:v2',
                 11603: '1.16.3+build.1:v2',
                 11604: '1.16.4+build.6:v2',
+                11700: '1.17+build.13:v2',
+                11701: '1.17.1+build.29:v2',
         ][mcVersion]
-        modCompile 'net.fabricmc:fabric-loader:' + [
-                11404: '0.7.8+build.189',
-                11502: '0.7.8+build.189',
-                11601: '0.8.8+build.202',
-                11603: '0.9.1+build.205',
-                11604: '0.10.6+build.214',
-        ][mcVersion]
+        modImplementation 'net.fabricmc:fabric-loader:0.11.6'
         def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
                 11601: '0.14.0+build.371-1.16',
                 11603: '0.17.1+build.394-1.16',
                 11604: '0.25.1+build.416-1.16',
+                11700: '0.36.0+1.17',
+                11701: '0.37.1+1.17',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -260,8 +272,11 @@ dependencies {
         if (mcVersion >= 11600) {
             fabricApiModules.add("key-binding-api-v1")
         }
+        if (mcVersion >= 11700) {
+            fabricApiModules.add("networking-api-v1")
+        }
         fabricApiModules.each { module ->
-            modCompile fabricApi.module("fabric-$module", fabricApiVersion)
+            modImplementation fabricApi.module("fabric-$module", fabricApiVersion)
             include fabricApi.module("fabric-$module", fabricApiVersion)
         }
     }
@@ -302,6 +317,11 @@ dependencies {
         }
     }
 
+    if (mcVersion < 11200) {
+        // The version which MC ships is too old, we'll need to ship our own
+        shadow 'com.google.code.gson:gson:2.8.7'
+    }
+
     shadow 'com.github.javagl.JglTF:jgltf-model:3af6de4'
 
     if (FABRIC) {
@@ -312,7 +332,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:a1f82a7", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:a67fb11", shadeExclusions
 
     implementation(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
@@ -320,17 +340,22 @@ dependencies {
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 11602) {
-            // TODO re-add to runtime once available
-            modCompileOnly 'io.github.prospector:modmenu:1.14.0+build.24'
+        if (mcVersion >= 11700) {
+            modImplementation 'com.terraformersmc:modmenu:2.0.0-beta.7'
+        } else if (mcVersion >= 11602) {
+            modImplementation 'com.terraformersmc:modmenu:1.16.8'
         } else if (mcVersion >= 11600) {
-            modCompile 'io.github.prospector:modmenu:1.14.0+build.24'
+            modImplementation 'io.github.prospector:modmenu:1.14.0+build.24'
         } else {
-            modCompile 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
+            modImplementation 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
         }
     }
 
-    testCompile 'junit:junit:4.11'
+    if (mcVersion >= 11600) {
+        modCompileOnly 'com.github.IrisShaders:Iris:1.0.0'
+    }
+
+    testImplementation 'junit:junit:4.11'
 }
 
 if (mcVersion <= 10710) {
@@ -422,8 +447,12 @@ task configureRelocation() {
     }
 }
 
-tasks.removeByName('shadowJar') // we want to base our shadowed jar on the reobfJar output, not the sourceSet output
-task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+// we want to base our shadowed jar on the reobfJar output, not the sourceSet output
+// Tried tasks.replace but that does not actually seem to replace everything.
+tasks.shadowJar.doFirst {
+    throw new GradleException("Wrong task! You want to run 'bundleJar' instead.")
+}
+tasks.register('bundleJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
     from { (FABRIC ? tasks.remapJar : tasks.jar).archiveFile.get() }
     dependsOn { FABRIC ? tasks.remapJar : (mcVersion >= 10800 ? tasks.reobfJar : tasks.reobf) }
 
@@ -469,7 +498,7 @@ task shadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar)
         exclude(dependency('.*spongepowered:mixin:.*'))
     }
 }
-tasks.assemble.dependsOn tasks.shadowJar
+tasks.assemble.dependsOn tasks.bundleJar
 
 jar {
     classifier = 'raw'
@@ -482,6 +511,15 @@ jar {
                     'FMLCorePluginContainsFMLMod': 'true',
                     'FMLCorePlugin': 'com.replaymod.core.LoadingPlugin',
                     'FMLAT': 'replaymod_at.cfg'
+        }
+    }
+
+    if (mcVersion >= 11700) {
+        // Workaround a mixin bug which generates invalid refmaps for the `addDrawableChild` invoker
+        filesMatching("mixins.replaymod.refmap.json") {
+            it.filter {
+                it.replace("addDrawableChild(L/;)L/;", "method_37063(Lnet/minecraft/class_364;)Lnet/minecraft/class_364;")
+            }
         }
     }
 }

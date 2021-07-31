@@ -1,5 +1,6 @@
 package com.replaymod.render.rendering;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.WrappedTimer;
@@ -8,6 +9,7 @@ import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.CameraPathExporter;
+import com.replaymod.render.PNGWriter;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.FFmpegWriter;
@@ -17,8 +19,11 @@ import com.replaymod.render.events.ReplayRenderCallback;
 import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
+import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
+import com.replaymod.render.mixin.MainWindowAccessor;
 import com.replaymod.render.mixin.WorldRendererAccessor;
+import com.replaymod.render.utils.FlawlessFrames;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -28,10 +33,20 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.util.Window;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
+import org.lwjgl.glfw.GLFW;
+
+//#if MC>=11700
+//$$ import net.minecraft.client.gl.WindowFramebuffer;
+//$$ import net.minecraft.client.render.DiffuseLighting;
+//$$ import net.minecraft.util.math.Matrix4f;
+//#endif
 
 //#if MC>=11600
 import net.minecraft.client.util.math.MatrixStack;
@@ -39,39 +54,33 @@ import net.minecraft.client.util.math.MatrixStack;
 
 //#if MC>=11500
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.util.Window;
 import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
 import com.replaymod.render.EXRWriter;
-import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.client.gui.screen.Screen;
-import org.lwjgl.glfw.GLFW;
 import java.util.concurrent.CompletableFuture;
 //#else
-//$$ import net.minecraft.client.gui.ScaledResolution;
 //$$ import org.lwjgl.input.Mouse;
 //$$ import org.lwjgl.opengl.Display;
-//$$ import static com.replaymod.core.versions.MCVer.newScaledResolution;
 //#endif
 
 //#if MC>=10800
-import com.replaymod.render.hooks.ChunkLoadingRenderGlobal;
-import static com.mojang.blaze3d.platform.GlStateManager.*;
 //#else
 //$$ import com.replaymod.replay.gui.screen.GuiOpeningReplay;
-//$$ import static com.replaymod.core.versions.MCVer.GlStateManager.*;
 //#endif
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.Iterables.getLast;
 import static com.replaymod.core.versions.MCVer.*;
@@ -80,6 +89,7 @@ import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class VideoRenderer implements RenderInfo {
+    private static final Identifier SOUND_RENDER_SUCCESS = new Identifier("replaymod", "render_success");
     private final MinecraftClient mc = MCVer.getMinecraft();
     private final RenderSettings settings;
     private final ReplayHandler replayHandler;
@@ -95,9 +105,7 @@ public class VideoRenderer implements RenderInfo {
 
     private TimelinePlayer timelinePlayer;
     private Future<Void> timelinePlayerFuture;
-    //#if MC>=10800
-    private ChunkLoadingRenderGlobal chunkLoadingRenderGlobal;
-    //#endif
+    private ForceChunkLoadingHook forceChunkLoadingHook;
     //#if MC<10800
     //$$ private GuiOpeningReplay guiOpeningReplay;
     //#endif
@@ -126,15 +134,17 @@ public class VideoRenderer implements RenderInfo {
         } else {
             FrameConsumer<BitmapFrame> frameConsumer;
             if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
-                ffmpegWriter = null;
                 //#if MC>=11400
                 frameConsumer = new EXRWriter(settings.getOutputFile().toPath());
                 //#else
                 //$$ throw new UnsupportedOperationException("EXR requires LWJGL3");
                 //#endif
+            } else if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.PNG) {
+                frameConsumer = new PNGWriter(settings.getOutputFile().toPath());
             } else {
-                frameConsumer = ffmpegWriter = new FFmpegWriter(this);
+                frameConsumer = new FFmpegWriter(this);
             }
+            ffmpegWriter = frameConsumer instanceof FFmpegWriter ? (FFmpegWriter) frameConsumer : null;
             FrameConsumer<BitmapFrame> previewingFrameConsumer = new FrameConsumer<BitmapFrame>() {
                 @Override
                 public void consume(Map<Channel, BitmapFrame> channels) {
@@ -234,19 +244,11 @@ public class VideoRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
-        //#if MC>=11400
-        int displayWidthBefore = getWindow(mc).getFramebufferWidth();
-        int displayHeightBefore = getWindow(mc).getFramebufferHeight();
-        //noinspection ConstantConditions
-        MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
+        MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.getWindow();
+        int displayWidthBefore = acc.getFramebufferWidth();
+        int displayHeightBefore = acc.getFramebufferHeight();
         acc.setFramebufferWidth(displayWidth);
         acc.setFramebufferHeight(displayHeight);
-        //#else
-        //$$ int displayWidthBefore = mc.displayWidth;
-        //$$ int displayHeightBefore = mc.displayHeight;
-        //$$ mc.displayWidth = displayWidth;
-        //$$ mc.displayHeight = displayHeight;
-        //#endif
 
         if (!settings.isHighPerformance() || framesDone % fps == 0) {
             while (drawGui() && paused) {
@@ -287,13 +289,8 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // change Minecraft's display size back
-        //#if MC>=11400
         acc.setFramebufferWidth(displayWidthBefore);
         acc.setFramebufferHeight(displayHeightBefore);
-        //#else
-        //$$ mc.displayWidth = displayWidthBefore;
-        //$$ mc.displayHeight = displayHeightBefore;
-        //#endif
 
         if (cameraPathExporter != null) {
             cameraPathExporter.recordFrame(timer.tickDelta);
@@ -366,21 +363,20 @@ public class VideoRenderer implements RenderInfo {
 
         updateDisplaySize();
 
-        //#if MC<=10809
-        //$$ ScaledResolution scaled = newScaledResolution(mc);
-        //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
-        //#endif
+        gui.toMinecraft().init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
 
-        //#if MC>=10800
-        chunkLoadingRenderGlobal = new ChunkLoadingRenderGlobal(mc.worldRenderer);
-        //#endif
+        forceChunkLoadingHook = new ForceChunkLoadingHook(mc.worldRenderer);
 
         // Set up our own framebuffer to render the GUI to
+        //#if MC>=11700
+        //$$ guiFramebuffer = new WindowFramebuffer(displayWidth, displayHeight);
+        //#else
         guiFramebuffer = new Framebuffer(displayWidth, displayHeight, true
                 //#if MC>=11400
                 , false
                 //#endif
         );
+        //#endif
     }
 
     private void finish() {
@@ -408,11 +404,7 @@ public class VideoRenderer implements RenderInfo {
             mc.options.setSoundVolume(entry.getKey(), entry.getValue());
         }
         mc.openScreen(null);
-        //#if MC>=10800
-        if (chunkLoadingRenderGlobal != null) {
-            chunkLoadingRenderGlobal.uninstall();
-        }
-        //#endif
+        forceChunkLoadingHook.uninstall();
 
         if (!hasFailed() && cameraPathExporter != null) {
             try {
@@ -422,7 +414,7 @@ public class VideoRenderer implements RenderInfo {
             }
         }
 
-        MCVer.playSound(new Identifier("replaymod", "render_success"));
+        mc.getSoundManager().play(PositionedSoundInstance.master(new SoundEvent(SOUND_RENDER_SUCCESS), 1));
 
         try {
             if (!hasFailed() && ffmpegWriter != null) {
@@ -433,28 +425,13 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
-        //#if MC>=11400
-        mc.getFramebuffer().resize(displayWidth, displayHeight
-                //#if MC>=11400
-                , false
-                //#endif
-        );
-        //noinspection ConstantConditions
-        MainWindowAccessor acc = (MainWindowAccessor) (Object) getWindow(mc);
-        acc.setFramebufferWidth(displayWidth);
-        acc.setFramebufferHeight(displayHeight);
-        //#if MC>=11500
-        mc.gameRenderer.onResized(displayWidth, displayHeight);
-        //#endif
-        //#else
-        //$$ mc.resize(displayWidth, displayHeight);
-        //#endif
+        resizeMainWindow(mc, displayWidth, displayHeight);
     }
 
     private void executeTaskQueue() {
         //#if MC>=11400
         while (true) {
-            while (mc.overlay != null) {
+            while (mc.getOverlay() != null) {
                 drawGui();
                 ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
             }
@@ -500,12 +477,9 @@ public class VideoRenderer implements RenderInfo {
     }
 
     public boolean drawGui() {
+        Window window = mc.getWindow();
         do {
-            //#if MC>=11400
-            if (GLFW.glfwWindowShouldClose(getWindow(mc).getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
-            //#else
-            //$$ if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
-            //#endif
+            if (GLFW.glfwWindowShouldClose(window.getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
                 return false;
             }
 
@@ -524,26 +498,41 @@ public class VideoRenderer implements RenderInfo {
             }
 
             pushMatrix();
-            clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+            GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                     //#if MC>=11400
                     , false
                     //#endif
             );
-            enableTexture();
+            GlStateManager.enableTexture();
             guiFramebuffer.beginWrite(true);
 
             //#if MC>=11500
-            Window window = getWindow(mc);
             RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+            //#if MC>=11700
+            //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
+            //$$         0,
+            //$$         (float) (window.getFramebufferWidth() / window.getScaleFactor()),
+            //$$         0,
+            //$$         (float) (window.getFramebufferHeight() / window.getScaleFactor()),
+            //$$         1000,
+            //$$         3000
+            //$$ ));
+            //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
+            //$$ matrixStack.loadIdentity();
+            //$$ matrixStack.translate(0, 0, -2000);
+            //$$ RenderSystem.applyModelViewMatrix();
+            //$$ DiffuseLighting.enableGuiDepthLighting();
+            //#else
             RenderSystem.matrixMode(GL11.GL_PROJECTION);
             RenderSystem.loadIdentity();
             RenderSystem.ortho(0, window.getFramebufferWidth() / window.getScaleFactor(), window.getFramebufferHeight() / window.getScaleFactor(), 0, 1000, 3000);
             RenderSystem.matrixMode(GL11.GL_MODELVIEW);
             RenderSystem.loadIdentity();
             RenderSystem.translatef(0, 0, -2000);
+            //#endif
             //#else
             //#if MC>=11400
-            //$$ getWindow(mc).method_4493(
+            //$$ window.method_4493(
                     //#if MC>=11400
                     //$$ false
                     //#endif
@@ -553,12 +542,7 @@ public class VideoRenderer implements RenderInfo {
             //#endif
             //#endif
 
-            //#if MC>=11400
-            gui.toMinecraft().init(mc, getWindow(mc).getScaledWidth(), getWindow(mc).getScaledHeight());
-            //#else
-            //$$ ScaledResolution scaled = newScaledResolution(mc);
-            //$$ gui.toMinecraft().setWorldAndResolution(mc, scaled.getScaledWidth(), scaled.getScaledHeight());
-            //#endif
+            gui.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
 
             // Events are polled on 1.13+ in mainWindow.update which is called later
             //#if MC<11400
@@ -576,14 +560,14 @@ public class VideoRenderer implements RenderInfo {
             //#endif
 
             //#if MC>=11400
-            int mouseX = (int) mc.mouse.getX() * getWindow(mc).getScaledWidth() / displayWidth;
-            int mouseY = (int) mc.mouse.getY() * getWindow(mc).getScaledHeight() / displayHeight;
+            int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / displayWidth;
+            int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / displayHeight;
 
-            if (mc.overlay != null) {
+            if (mc.getOverlay() != null) {
                 Screen orgScreen = mc.currentScreen;
                 try {
                     mc.currentScreen = gui.toMinecraft();
-                    mc.overlay.render(
+                    mc.getOverlay().render(
                             //#if MC>=11600
                             new MatrixStack(),
                             //#endif
@@ -600,8 +584,8 @@ public class VideoRenderer implements RenderInfo {
                         mouseX, mouseY, 0);
             }
             //#else
-            //$$ int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;
-            //$$ int mouseY = scaled.getScaledHeight() - Mouse.getY() * scaled.getScaledHeight() / mc.displayHeight - 1;
+            //$$ int mouseX = Mouse.getX() * window.getScaledWidth() / mc.displayWidth;
+            //$$ int mouseY = window.getScaledHeight() - Mouse.getY() * window.getScaledHeight() / mc.displayHeight - 1;
             //$$
             //$$ gui.toMinecraft().updateScreen();
             //$$ gui.toMinecraft().drawScreen(mouseX, mouseY, 0);
@@ -614,10 +598,10 @@ public class VideoRenderer implements RenderInfo {
             popMatrix();
 
             //#if MC>=11500
-            getWindow(mc).swapBuffers();
+            window.swapBuffers();
             //#else
             //#if MC>=11400
-            //$$ getWindow(mc).setFullscreen(false);
+            //$$ window.setFullscreen(false);
             //#else
             //$$ // if not in high performance mode, update the gui size if screen size changed
             //$$ // otherwise just swap the progress gui to screen
@@ -647,13 +631,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private boolean displaySizeChanged() {
-        //#if MC>=11400
-        int realWidth = getWindow(mc).getWidth();
-        int realHeight = getWindow(mc).getHeight();
-        //#else
-        //$$ int realWidth = Display.getWidth();
-        //$$ int realHeight = Display.getHeight();
-        //#endif
+        int realWidth = mc.getWindow().getWidth();
+        int realHeight = mc.getWindow().getHeight();
         if (realWidth == 0 || realHeight == 0) {
             // These can be zero on Windows if minimized.
             // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
@@ -663,13 +642,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void updateDisplaySize() {
-        //#if MC>=11400
-        displayWidth = getWindow(mc).getWidth();
-        displayHeight = getWindow(mc).getHeight();
-        //#else
-        //$$ displayWidth = Display.getWidth();
-        //$$ displayHeight = Display.getHeight();
-        //#endif
+        displayWidth = mc.getWindow().getWidth();
+        displayHeight = mc.getWindow().getHeight();
     }
 
     public int getFramesDone() {
@@ -728,15 +702,29 @@ public class VideoRenderer implements RenderInfo {
         }
     }
 
-    public static String[] checkCompat() {
+    public static String[] checkCompat(Stream<RenderSettings> settings) {
+        return settings.map(VideoRenderer::checkCompat).filter(Objects::nonNull).findFirst().orElse(null);
+    }
+
+    public static String[] checkCompat(RenderSettings settings) {
         //#if FABRIC>=1
-        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium")) {
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium") && !FlawlessFrames.hasSodium()) {
             return new String[] {
-                    "Rendering is not currently supported while Sodium is installed.",
-                    "See https://github.com/ReplayMod/ReplayMod/issues/150",
-                    "For now, you need to uninstall Sodium before rendering!"
+                    "Rendering is not supported with your Sodium version.",
+                    "It is missing support for the FREX Flawless Frames API.",
+                    "Either update to the latest version or uninstall Sodium before rendering!",
             };
         }
+        //#if MC>=11700
+        //$$ if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS
+        //$$         && !net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("iris")) {
+        //$$     return new String[] {
+        //$$             "ODS export requires Iris to be installed for Minecraft 1.17 and above.",
+        //$$             "Note that it is nevertheless incompatible with other shaders and will simply replace them.",
+        //$$             "Get it from: https://irisshaders.net/",
+        //$$     };
+        //$$ }
+        //#endif
         //#endif
         return null;
     }

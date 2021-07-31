@@ -1,8 +1,6 @@
 //#if MC>=10904
 package com.replaymod.replay;
 
-import com.github.steveice10.packetlib.io.NetInput;
-import com.github.steveice10.packetlib.tcp.io.ByteBufNetInput;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -10,59 +8,26 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import com.replaymod.replaystudio.util.RandomAccessReplay;
+import com.replaymod.replaystudio.rar.RandomAccessReplay;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 
-//#if FABRIC>=1
-import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-//#else
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$ import net.minecraftforge.event.TickEvent;
-//$$
-//$$ import static com.replaymod.core.versions.MCVer.FML_BUS;
-//#endif
-
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.function.Consumer;
-
-//#if MC>=11602
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
-//#endif
-
-//#if MC>=11600
-import net.minecraft.world.World;
-//#else
-//$$ import net.minecraft.world.level.LevelGeneratorType;
-//#endif
-//#if MC>=11400
-import net.minecraft.world.dimension.DimensionType;
-//#else
-//$$ import net.minecraft.world.EnumDifficulty;
-//#endif
 
 //#if MC>=11200
 import com.replaymod.core.utils.WrappedTimer;
-//#endif
-
-//#if MC>=11002
-import net.minecraft.world.GameMode;
-//#else
-//$$ import net.minecraft.world.WorldSettings.GameType;
 //#endif
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
@@ -80,7 +45,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private final MinecraftClient mc = getMinecraft();
 
     private final ReplayModReplay mod;
-    private final RandomAccessReplay<Packet<?>> replay;
+    private final RandomAccessReplay replay;
     private final EventHandler eventHandler = new EventHandler();
     private ChannelHandlerContext ctx;
 
@@ -96,43 +61,48 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     private ListenableFuture<Void> initPromise;
 
-    private com.github.steveice10.netty.buffer.ByteBuf buf;
-    private NetInput bufInput;
-
     public QuickReplaySender(ReplayModReplay mod, ReplayFile replayFile) {
         this.mod = mod;
-        this.replay = new RandomAccessReplay<Packet<?>>(replayFile, getPacketTypeRegistry(false)) {
+        this.replay = new RandomAccessReplay(replayFile, getPacketTypeRegistry(false)) {
             private byte[] buf = new byte[0];
 
             @Override
-            protected Packet<?> decode(com.github.steveice10.netty.buffer.ByteBuf byteBuf) throws IOException {
-                int packetId = new ByteBufNetInput(byteBuf).readVarInt();
-                //#if MC>=11500
-                Packet<?> mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
+            protected void dispatch(com.replaymod.replaystudio.protocol.Packet packet) {
+                com.github.steveice10.netty.buffer.ByteBuf byteBuf = packet.getBuf();
+                int size = byteBuf.readableBytes();
+                if (buf.length < size) {
+                    buf = new byte[size];
+                }
+                byteBuf.getBytes(byteBuf.readerIndex(), buf, 0, size);
+                ByteBuf wrappedBuf = Unpooled.wrappedBuffer(buf);
+                wrappedBuf.writerIndex(size);
+                PacketByteBuf packetByteBuf = new PacketByteBuf(wrappedBuf);
+
+                Packet<?> mcPacket;
+                //#if MC>=11700
+                //$$ mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId(), packetByteBuf);
+                //#elseif MC>=11500
+                mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
                 //#else
-                //$$ Packet<?> mcPacket;
                 //$$ try {
-                //$$     mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
+                //$$     mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
                 //$$ } catch (IllegalAccessException | InstantiationException e) {
-                //$$     throw new IOException(e);
+                //$$     e.printStackTrace();
+                //$$     return;
                 //$$ }
                 //#endif
                 if (mcPacket != null) {
-                    int size = byteBuf.readableBytes();
-                    if (buf.length < size) {
-                        buf = new byte[size];
+                    //#if MC<11700
+                    try {
+                        mcPacket.read(packetByteBuf);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return;
                     }
-                    byteBuf.readBytes(buf, 0, size);
-                    ByteBuf wrappedBuf = Unpooled.wrappedBuffer(buf);
-                    wrappedBuf.writerIndex(size);
-                    mcPacket.read(new PacketByteBuf(wrappedBuf));
-                }
-                return mcPacket;
-            }
+                    //#endif
 
-            @Override
-            protected void dispatch(Packet<?> packet) {
-                ctx.fireChannelRead(packet);
+                    ctx.fireChannelRead(mcPacket);
+                }
             }
         };
     }
@@ -198,37 +168,6 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     public void restart() {
         replay.reset();
-        ctx.fireChannelRead(new PlayerRespawnS2CPacket(
-                //#if MC>=11600
-                //#if MC>=11602
-                DimensionType.addRegistryDefaults(new DynamicRegistryManager.Impl()).get(Registry.DIMENSION_TYPE_KEY).get(DimensionType.OVERWORLD_REGISTRY_KEY),
-                //#else
-                //$$ DimensionType.OVERWORLD_REGISTRY_KEY,
-                //#endif
-                World.OVERWORLD,
-                0,
-                GameMode.SPECTATOR,
-                GameMode.SPECTATOR,
-                false,
-                false,
-                false
-                //#else
-                //#if MC>=11400
-                //$$ DimensionType.OVERWORLD,
-                //#else
-                //$$ 0,
-                //#endif
-                //#if MC>=11500
-                //$$ 0,
-                //#endif
-                //#if MC<11400
-                //$$ EnumDifficulty.NORMAL,
-                //#endif
-                //$$ LevelGeneratorType.DEFAULT,
-                //$$ GameMode.SPECTATOR
-                //#endif
-        ));
-        ctx.fireChannelRead(new PlayerPositionLookS2CPacket(0, 0, 0, 0, 0, Collections.emptySet(), 0));
     }
 
     @Override
@@ -285,14 +224,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     }
 
     private class EventHandler extends EventRegistrations {
-        //#if FABRIC>=1
         { on(PreTickCallback.EVENT, this::onTick); }
         private void onTick() {
-        //#else
-        //$$ @SubscribeEvent
-        //$$ public void onTick(TickEvent.ClientTickEvent event) {
-        //$$     if (event.phase != TickEvent.Phase.START) return;
-        //#endif
             if (!asyncMode || paused()) return;
 
             long now = System.currentTimeMillis();

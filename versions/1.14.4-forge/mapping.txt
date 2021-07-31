@@ -4,6 +4,8 @@ net.minecraft.resources.AbstractResourcePack net.minecraft.client.resources.Abst
 net.minecraft.resources.FolderPack net.minecraft.client.resources.FolderResourcePack
 net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository
 net.minecraft.client.renderer.chunk.ChunkRenderTask net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator
+net.minecraft.client.settings.AbstractOption net.minecraft.client.settings.GameSettings.Options
+net.minecraft.client.settings.AbstractOption func_216728_a() setValueMax()
 net.minecraftforge.eventbus.api.SubscribeEvent net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 net.minecraftforge.eventbus.api.EventPriority net.minecraftforge.fml.common.eventhandler.EventPriority
 net.minecraftforge.eventbus.api.Cancelable net.minecraftforge.fml.common.eventhandler.Cancelable
@@ -12,6 +14,12 @@ net.minecraft.crash.ReportedException net.minecraft.util.ReportedException
 net.minecraftforge.eventbus.api.IEventBus net.minecraftforge.fml.common.eventhandler.EventBus
 net.minecraft.network.play.server.SPacketEntity.Move net.minecraft.network.play.server.SPacketEntity.S17PacketEntityLookMove
 net.minecraftforge.fml.network.NetworkRegistry net.minecraftforge.fml.common.network.NetworkRegistry
+net.minecraft.client.particle.ParticleManager queue queueEntityFX
+org.apache.maven.artifact.versioning.ComparableVersion net.minecraftforge.fml.common.versioning.ComparableVersion
+org.lwjgl.glfw.GLFW com.replaymod.core.versions.GLFW
+net.minecraft.client.MainWindow com.replaymod.core.versions.Window
+net.minecraft.client.audio.SimpleSound net.minecraft.client.audio.PositionedSoundRecord
+net.minecraft.client.gui.IngameGui net.minecraft.client.gui.GuiIngame
 
 net.minecraft.resources.FolderPack getInputStream() getInputStreamByName()
 net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()
@@ -176,7 +184,6 @@ net.minecraft.client.gui.screen.Screen removed() onGuiClosed()
 net.minecraft.client.gui.screen.Screen renderBackground() drawDefaultBackground()
 net.minecraft.client.gui.screen.Screen renderDirtBackground() drawBackground()
 net.minecraft.client.gui.hud.ChatHud net.minecraft.client.gui.GuiNewChat
-net.minecraft.client.gui.hud.InGameHud net.minecraft.client.gui.GuiIngame
 net.minecraft.client.GameSettings net.minecraft.client.settings.GameSettings
 net.minecraft.client.GameSettings debugEnabled showDebugInfo
 net.minecraft.client.GameSettings viewDistance renderDistanceChunks

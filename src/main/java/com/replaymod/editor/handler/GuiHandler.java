@@ -1,6 +1,5 @@
 package com.replaymod.editor.handler;
 
-import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.editor.ReplayModEditor;
 import com.replaymod.editor.gui.GuiEditReplay;
@@ -8,31 +7,15 @@ import com.replaymod.replay.gui.screen.GuiReplayViewer;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiButton;
-import net.minecraft.util.crash.CrashReport;
-
-//#if FABRIC>=1
+import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
-import java.util.List;
-//#else
-//$$ import net.minecraftforge.client.event.GuiScreenEvent;
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//#endif
+import net.minecraft.util.crash.CrashReport;
 
 import java.io.IOException;
 
-import static com.replaymod.core.versions.MCVer.*;
-
 public class GuiHandler extends EventRegistrations {
-    //#if FABRIC>=1
-    { on(InitScreenCallback.EVENT, this::injectIntoReplayViewer); }
-    public void injectIntoReplayViewer(Screen vanillaGuiScreen, List<AbstractButtonWidget> buttonList) {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void injectIntoReplayViewer(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     net.minecraft.client.gui.screen.Screen vanillaGuiScreen = getGui(event);
-    //#endif
+    { on(InitScreenCallback.EVENT, (vanillaGuiScreen, buttonList) -> injectIntoReplayViewer(vanillaGuiScreen)); }
+    public void injectIntoReplayViewer(net.minecraft.client.gui.screen.Screen vanillaGuiScreen) {
         AbstractGuiScreen guiScreen = GuiScreen.from(vanillaGuiScreen);
         if (!(guiScreen instanceof GuiReplayViewer)) {
             return;

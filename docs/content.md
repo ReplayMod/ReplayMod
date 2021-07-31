@@ -358,7 +358,8 @@ There are **7 Encoding Presets** you can choose from:
   While these video files are of perfect quality, most **non-FFmpeg-based video players and video editing software** (e.g. QuickTime Player, Sony Vegas and Adobe Premiere) can't play these videos. Therefore, you should instead use the **MP4 - High Quality** preset in most cases.
 - **PNG Sequence**  
   Exports the sequence as individual frames in the **PNG Format**.  
-  **Warning:** This can create a huge amount of files, so make sure to save them in a separate folder.
+  The images are of perfect quality.
+  Depth map images are 32-bit float encoded in the 8-bit components in BGRA order and will need some kind of post-processing to be useful in most editors.
 - **OpenEXR Sequence** (Minecraft 1.14 and above)  
   Exports the sequence as individual frames in the **OpenEXR Format**.
   The images are of perfect quality and may contain

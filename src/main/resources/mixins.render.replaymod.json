@@ -5,9 +5,25 @@
   "server": [],
   "client": [
     "Mixin_ChromaKeyColorSky",
+    "Mixin_ChromaKeyDisableFog",
     "Mixin_ChromaKeyForceSky",
-    "Mixin_CubicRotation",
+    "Mixin_ForceChunkLoading",
+    "Mixin_HideNameTags",
+    "Mixin_HideNameTags_LivingEntity",
+    "Mixin_Omnidirectional_Camera",
+    "Mixin_Omnidirectional_DisableFrustumCulling",
+    "Mixin_Omnidirectional_Rotation",
+    "Mixin_Omnidirectional_SkipHand",
+    "Mixin_PreserveDepthDuringGuiRendering",
     "Mixin_SkipBlockOutlinesDuringRender",
+    "Mixin_SkipHudDuringRender",
+    "Mixin_StabilizeCamera",
+    "Mixin_Stereoscopic_Camera",
+    "Mixin_Stereoscopic_HandRenderPass",
+    //#if MC>=11600
+    "Mixin_AddIrisOdsShaderUniforms",
+    "Mixin_LoadIrisOdsShaderPack",
+    //#endif
     //#if MC>=10800
     //#if MC>=11500
     "Mixin_BlockOnChunkRebuilds",
@@ -15,30 +31,22 @@
     //$$ "ChunkRenderDispatcherAccessor",
     //$$ "MixinChunkRenderWorker",
     //#endif
-    "Mixin_ForceChunkLoading",
     //#endif
     //#if MC>=11400
     "Mixin_PreserveDepthDuringHandRendering",
     "Mixin_WindowsWorkaroundForTinyEXRNatives",
-    "MainWindowAccessor",
     //#endif
+    "MainWindowAccessor",
     "WorldRendererAccessor",
     //#if MC>=10904
     "MixinParticleManager",
     //#else
     //$$ "MixinEffectRenderer",
-    //$$ "MixinRendererLivingEntity",
     //#endif
-    "MixinCamera",
     "MixinEntityRenderer",
-    //#if MC>=11400
-    "MixinFogRenderer",
-    //#endif
-    //#if MC>=10800
+    //#if MC>=10800 && MC<11700
     "MixinGlStateManager",
     //#endif
-    "MixinFrustum",
-    "MixinRender",
     //#if MC>=10800
     //#else
     //$$ "MixinOpenGlHelper",

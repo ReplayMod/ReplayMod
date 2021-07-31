@@ -1,6 +1,5 @@
 package com.replaymod.render.blend;
 
-import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
 import com.replaymod.render.frame.BitmapFrame;
@@ -8,6 +7,7 @@ import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.FrameCapturer;
 import com.replaymod.render.utils.ByteBufferPool;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
+import net.minecraft.client.MinecraftClient;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -37,7 +37,7 @@ public class BlendFrameCapturer implements FrameCapturer<BitmapFrame> {
         renderInfo.updateForNextFrame();
 
         BlendState.getState().preFrame(framesDone);
-        worldRenderer.renderWorld(MCVer.getRenderPartialTicks(), null);
+        worldRenderer.renderWorld(MinecraftClient.getInstance().getTickDelta(), null);
         BlendState.getState().postFrame(framesDone);
 
         BitmapFrame frame = new BitmapFrame(framesDone++, new Dimension(0, 0), 0, ByteBufferPool.allocate(0));

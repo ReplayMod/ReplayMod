@@ -7,7 +7,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
+import com.replaymod.replaystudio.lib.viaversion.api.protocol.version.ProtocolVersion;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiScrollable;
@@ -245,18 +245,10 @@ public class Utils {
 
         logger.trace("Opening crash report popup GUI");
         GuiCrashReportPopup popup = new GuiCrashReportPopup(container, crashReportStr);
-        Futures.addCallback(popup.getFuture(), new FutureCallback<Void>() {
-            @Override
-            public void onSuccess(@Nullable Void result) {
-                logger.trace("Crash report popup closed");
-                if (onClose != null) {
-                    onClose.run();
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                logger.error("During error popup:", t);
+        popup.onClosed(() -> {
+            logger.trace("Crash report popup closed");
+            if (onClose != null) {
+                onClose.run();
             }
         });
         return popup;
@@ -329,18 +321,10 @@ public class Utils {
         LOGGER.trace("Minimal mode active, denying action, opening popup");
 
         MinimalModeUnsupportedPopup popup = new MinimalModeUnsupportedPopup(container);
-        Futures.addCallback(popup.getFuture(), new FutureCallback<Void>() {
-            @Override
-            public void onSuccess(@Nullable Void result) {
-                LOGGER.trace("Minimal mode popup closed");
-                if (onPopupClosed != null) {
-                    onPopupClosed.run();
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                LOGGER.error("During minimal mode popup:", t);
+        popup.onClosed(() -> {
+            LOGGER.trace("Minimal mode popup closed");
+            if (onPopupClosed != null) {
+                onPopupClosed.run();
             }
         });
         return false;
@@ -353,7 +337,7 @@ public class Utils {
 
             ProtocolVersion latestVersion = ProtocolVersion.getProtocols()
                     .stream()
-                    .max(Comparator.comparing(ProtocolVersion::getId))
+                    .max(Comparator.comparing(ProtocolVersion::getVersion))
                     .orElseThrow(RuntimeException::new);
             getInfo().addElements(new VerticalLayout.Data(0.5),
                     new GuiLabel()

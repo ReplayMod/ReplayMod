@@ -1,10 +1,13 @@
 package com.replaymod.render;
 
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.replaymod.core.utils.FileTypeAdapter;
 import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.Util;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,16 +21,6 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import static com.replaymod.render.ReplayModRender.LOGGER;
-
-//#if MC>=11400
-import org.apache.maven.artifact.versioning.ComparableVersion;
-//#else
-//#if MC>=10800
-//$$ import net.minecraftforge.fml.common.versioning.ComparableVersion;
-//#else
-//$$ import cpw.mods.fml.common.versioning.ComparableVersion;
-//#endif
-//#endif
 
 public class RenderSettings {
     public enum RenderMethod {
@@ -69,8 +62,6 @@ public class RenderSettings {
     public enum EncodingPreset {
         MP4_CUSTOM("-an -c:v libx264 -b:v %BITRATE% -pix_fmt yuv420p \"%FILENAME%\"", "mp4"),
 
-        MP4_DEFAULT("-an -c:v libx264 -preset ultrafast -pix_fmt yuv420p \"%FILENAME%\"", "mp4"),
-
         MP4_POTATO("-an -c:v libx264 -preset ultrafast -crf 51 -pix_fmt yuv420p \"%FILENAME%\"", "mp4"),
 
         WEBM_CUSTOM("-an -c:v libvpx -b:v %BITRATE% -pix_fmt yuv420p \"%FILENAME%\"", "webm"),
@@ -81,7 +72,7 @@ public class RenderSettings {
 
         EXR(null, "exr"),
 
-        PNG("\"%FILENAME%-%06d.png\"", "png");
+        PNG(null, "png");
 
         private final String preset;
         private final String fileExtension;
@@ -155,6 +146,7 @@ public class RenderSettings {
     private final int videoHeight;
     private final int framesPerSecond;
     private final int bitRate;
+    @JsonAdapter(FileTypeAdapter.class)
     private final File outputFile;
 
     private final boolean renderNameTags;
@@ -342,9 +334,13 @@ public class RenderSettings {
                     }
                 }
                 // Homebrew doesn't seem to reliably symlink its installed binaries either
-                File homebrewFolder = new File("/usr/local/Cellar/ffmpeg");
-                String[] homebrewVersions = homebrewFolder.list();
-                if (homebrewVersions != null) {
+                // and there's multiple locations for where Homebrew is.
+                for (String path : new String[]{"/usr/local", "/opt/homebrew"}) {
+                    File homebrewFolder = new File(path + "/Cellar/ffmpeg");
+                    String[] homebrewVersions = homebrewFolder.list();
+                    if (homebrewVersions == null) {
+                        continue;
+                    }
                     Optional<File> latestOpt = Arrays.stream(homebrewVersions)
                             .map(ComparableVersion::new) // Convert file name to comparable version
                             .sorted(Comparator.reverseOrder()) // Sort for latest version

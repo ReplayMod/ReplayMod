@@ -19,7 +19,6 @@ import net.minecraft.util.crash.CrashException;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import static com.replaymod.core.versions.MCVer.addDetail;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 
 public class GuiExportFailed extends GuiScreen {
@@ -33,8 +32,8 @@ public class GuiExportFailed extends GuiScreen {
             // If they haven't, then this is probably a faulty ffmpeg installation and there's nothing we can do
             CrashReport crashReport = CrashReport.create(e, "Exporting video");
             CrashReportSection details = crashReport.addElement("Export details");
-            addDetail(details, "Settings", settings::toString);
-            addDetail(details, "FFmpeg log", e::getLog);
+            details.add("Settings", settings::toString);
+            details.add("FFmpeg log", e::getLog);
             throw new CrashException(crashReport);
         } else {
             // If they have, ask them whether it was intentional

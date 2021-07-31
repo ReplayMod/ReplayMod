@@ -1,8 +1,6 @@
 package com.replaymod.render.gui;
 
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -39,7 +37,6 @@ import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -73,7 +70,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                         if (renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.BLEND) {
                             encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.BLEND);
                         } else {
-                            encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.MP4_DEFAULT);
+                            encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.MP4_CUSTOM);
                         }
                     }
                     updateInputs();
@@ -131,25 +128,13 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                     encodingPresetDropdown.getSelectedValue().getFileExtension());
             popup.setFolder(getParentFile(outputFile));
             popup.setFileName(outputFile.getName());
-            Futures.addCallback(
-                    popup.getFuture(),
-                    new FutureCallback<File>() {
-                        @Override
-                        public void onSuccess(@Nullable File result) {
-                            if (result != null) {
-                                if (!result.getName().equals(outputFile.getName())) {
-                                    userDefinedOutputFileName = true;
-                                }
-                                outputFile = result;
-                                outputFileButton.setLabel(result.getName());
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Throwable t) {
-                            throw new RuntimeException(t);
-                        }
-                    });
+            popup.onAccept(file -> {
+                if (!file.getName().equals(outputFile.getName())) {
+                    userDefinedOutputFileName = true;
+                }
+                outputFile = file;
+                outputFileButton.setLabel(file.getName());
+            });
         }
     });
 
@@ -378,7 +363,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             videoHeight.setTextColor(Colors.RED);
         }
 
-        String[] compatError = VideoRenderer.checkCompat();
+        String[] compatError = VideoRenderer.checkCompat(save(false));
         if (resolutionError != null) {
             renderButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(resolutionError));
         } else if (compatError != null) {
@@ -401,10 +386,10 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             case CUBIC:
             case EQUIRECTANGULAR:
             case ODS:
-                stabilizePanel.forEach(IGuiCheckbox.class).setEnabled();
+                stabilizePanel.invokeAll(IGuiCheckbox.class, GuiElement::setEnabled);
                 break;
             default:
-                stabilizePanel.forEach(IGuiCheckbox.class).setDisabled();
+                stabilizePanel.invokeAll(IGuiCheckbox.class, GuiElement::setDisabled);
         }
 
         // Enable/Disable Spherical FOV slider
@@ -421,8 +406,9 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
 
         // Enable/Disable various options for blend export
         boolean isEXR = encodingPresetDropdown.getSelectedValue() == RenderSettings.EncodingPreset.EXR;
+        boolean isPNG = encodingPresetDropdown.getSelectedValue() == RenderSettings.EncodingPreset.PNG;
         boolean isBlend = renderMethod == RenderSettings.RenderMethod.BLEND;
-        boolean isFFmpeg = !isBlend && !isEXR;
+        boolean isFFmpeg = !isBlend && !isEXR && !isPNG;
         if (isBlend) {
             videoWidth.setDisabled();
             videoHeight.setDisabled();
@@ -432,11 +418,11 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         exportArguments.setEnabled(isFFmpeg);
         antiAliasingDropdown.setEnabled(isFFmpeg);
 
-        if (isEXR) {
+        if (isEXR || isPNG) {
             depthMap.setEnabled().setTooltip(null);
         } else {
             depthMap.setDisabled().setTooltip(new GuiTooltip().setColor(Colors.RED)
-                    .setI18nText("replaymod.gui.rendersettings.depthmap.onlyexr"));
+                    .setI18nText("replaymod.gui.rendersettings.depthmap.only_exr_or_png"));
         }
 
         // Enable/Disable export args reset button
@@ -520,7 +506,8 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         }
         RenderSettings.EncodingPreset encodingPreset = settings.getEncodingPreset();
         /* encodingPreset can be null from a previously supported and later removed preset */
-        if (encodingPreset == null || !encodingPreset.isSupported()) {
+        boolean invalidEncodingPreset = encodingPreset == null || !encodingPreset.isSupported();
+        if (invalidEncodingPreset) {
             encodingPreset = getDefaultRenderSettings().getEncodingPreset();
         }
         encodingPresetDropdown.setSelected(encodingPreset);
@@ -569,7 +556,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         antiAliasingDropdown.setSelected(settings.getAntiAliasing());
         exportCommand.setText(settings.getExportCommand());
         String exportArguments = settings.getExportArguments();
-        if (exportArguments == null || settings.getEncodingPreset() == null) {
+        if (exportArguments == null || settings.getEncodingPreset() == null || invalidEncodingPreset) {
             // backwards compat, see RenderSettings#exportArguments
             exportArguments = encodingPreset.getValue();
         }
@@ -642,8 +629,8 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
     }
 
     private RenderSettings getDefaultRenderSettings() {
-        return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_DEFAULT, 1920, 1080, 60, 10 << 20, null,
-                true, false, false, false, null, 360, 180, false, false, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_DEFAULT.getValue(), false);
+        return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_CUSTOM, 1920, 1080, 60, 20 << 20, null,
+                true, false, false, false, null, 360, 180, false, false, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_CUSTOM.getValue(), false);
     }
 
     @Override

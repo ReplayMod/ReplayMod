@@ -14,22 +14,12 @@ import de.johni0702.minecraft.gui.element.GuiToggleButton;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
+import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
 import net.minecraft.client.gui.screen.AddServerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.resource.language.I18n;
-
-//#if FABRIC>=1
-import de.johni0702.minecraft.gui.versions.callbacks.InitScreenCallback;
-import net.minecraft.client.gui.screen.Screen;
-//#else
-//$$ import net.minecraftforge.client.event.GuiScreenEvent;
-//$$ import net.minecraftforge.common.MinecraftForge;
-//$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
-//$$
-//$$ import static com.replaymod.core.versions.MCVer.getGui;
-//#endif
 
 public class GuiHandler extends EventRegistrations {
 
@@ -39,14 +29,8 @@ public class GuiHandler extends EventRegistrations {
         this.mod = mod;
     }
 
-    //#if FABRIC>=1
     { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
-    private void onGuiInit(Screen gui) {
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
-    //$$     net.minecraft.client.gui.screen.Screen gui = getGui(event);
-    //#endif
+    private void onGuiInit(net.minecraft.client.gui.screen.Screen gui) {
         if (gui instanceof SelectWorldScreen || gui instanceof MultiplayerScreen) {
             boolean sp = gui instanceof SelectWorldScreen;
             SettingsRegistry settingsRegistry = mod.getSettingsRegistry();

@@ -11,6 +11,7 @@ import com.replaymod.render.blend.mixin.ParticleAccessor;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
+import org.lwjgl.opengl.GL11;
 
 //#if MC>=11400
 import net.minecraft.util.math.Vec3d;
@@ -169,7 +170,7 @@ public class ParticlesExporter implements Exporter {
         builder.setReverseOffset(offset);
         builder.setWellBehaved(true);
         //#if MC>=10809
-        builder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR_LIGHT);
+        builder.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE_COLOR_LIGHT);
         //#else
         //$$ builder.startDrawingQuads();
         //#endif

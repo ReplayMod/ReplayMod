@@ -31,6 +31,10 @@ net.minecraftforge.fml.common.network.handshake.FMLHandshakeMessage.RegistryData
 net.minecraftforge.fml.common.network.internal.FMLProxyPacket cpw.mods.fml.common.network.internal.FMLProxyPacket
 net.minecraftforge.fml.common.network.NetworkRegistry cpw.mods.fml.common.network.NetworkRegistry
 net.minecraftforge.fml.common.gameevent.InputEvent cpw.mods.fml.common.gameevent.InputEvent
+net.minecraftforge.fml.common.versioning.ComparableVersion cpw.mods.fml.common.versioning.ComparableVersion
 net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer net.minecraft.client.renderer.tileentity.RenderEndPortal
 net.minecraft.network.play.server.S3FPacketCustomPayload getChannelName() func_149169_c()
 net.minecraft.network.play.server.S01PacketJoinGame getEntityId() func_149197_c()
+net.minecraft.client.network.NetHandlerLoginClient networkManager field_147393_d
+net.minecraft.client.renderer.WorldRenderer com.replaymod.core.versions.BufferBuilder
+net.minecraft.client.renderer.vertex.DefaultVertexFormats com.replaymod.core.versions.BufferBuilder.VertexFormats

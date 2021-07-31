@@ -2,6 +2,7 @@ package com.replaymod.render.gui;
 
 import com.google.common.collect.Iterables;
 import com.replaymod.core.ReplayMod;
+import com.replaymod.core.utils.Result;
 import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.RenderSettings;
@@ -14,7 +15,6 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.ReplaySender;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.replay.ReplayFile;
-import com.replaymod.replaystudio.us.myles.ViaVersion.api.Pair;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
 import de.johni0702.minecraft.gui.container.AbstractGuiClickableContainer;
@@ -31,6 +31,7 @@ import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.GridLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
+import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
@@ -39,6 +40,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,7 +90,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     private final AbstractGuiScreen<?> container;
     private final ReplayHandler replayHandler;
     private final Set<Entry> selectedEntries = new HashSet<>();
-    private final Supplier<Timeline> timelineSupplier;
+    private final Supplier<Result<Timeline, String[]>> timelineSupplier;
     private boolean opened;
 
     {
@@ -113,7 +115,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     private final ReplayModRender mod = ReplayModRender.instance;
     private final List<RenderJob> jobs = mod.getRenderQueue();
 
-    public GuiRenderQueue(AbstractGuiScreen<?> container, ReplayHandler replayHandler, Supplier<Timeline> timelineSupplier) {
+    public GuiRenderQueue(AbstractGuiScreen<?> container, ReplayHandler replayHandler, Supplier<Result<Timeline, String[]>> timelineSupplier) {
         super(container);
         this.container = container;
         this.replayHandler = replayHandler;
@@ -127,7 +129,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
             list.getListPanel().addElements(null, new Entry(renderJob));
         }
 
-        addButton.onClick(this::addButtonClicked);
+        addButton.onClick(() -> addButtonClicked().ifErr(lines -> GuiInfoPopup.open(container, lines)));
 
         editButton.onClick(() -> {
             Entry job = selectedEntries.iterator().next();
@@ -267,15 +269,12 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         });
     }
 
-    private GuiRenderSettings addButtonClicked() {
-        Timeline timeline = timelineSupplier.get();
-        if (timeline != null) {
+    private Result<GuiRenderSettings, String[]> addButtonClicked() {
+        return timelineSupplier.get().mapOk(timeline -> {
             GuiRenderSettings popup = addJob(timeline);
             popup.open();
             return popup;
-        } else {
-            return null;
-        }
+        });
     }
 
     public GuiRenderSettings addJob(Timeline timeline) {
@@ -317,9 +316,8 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     @Override
     public void open() {
         if (jobs.isEmpty() && timelineSupplier != null) {
-            if (addButtonClicked() == null) {
-                close();
-            }
+            addButtonClicked().ifErr(lines ->
+                    GuiInfoPopup.open(container, lines).onClosed(this::close));
             return;
         }
 
@@ -348,7 +346,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         renderButton.setEnabled(jobs.size() > 0);
         renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
 
-        String[] compatError = VideoRenderer.checkCompat();
+        String[] compatError = VideoRenderer.checkCompat(jobs.stream().map(RenderJob::getSettings));
         if (compatError != null) {
             renderButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
         }

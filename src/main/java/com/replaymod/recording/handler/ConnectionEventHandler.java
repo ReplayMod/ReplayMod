@@ -3,6 +3,7 @@ package com.replaymod.recording.handler;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.utils.Utils;
+import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.ServerInfoExt;
 import com.replaymod.recording.Setting;
@@ -137,7 +138,7 @@ public class ConnectionEventHandler {
             metaData.setCustomServerName(serverName);
             metaData.setGenerator("ReplayMod v" + ReplayMod.instance.getVersion());
             metaData.setDate(System.currentTimeMillis());
-            metaData.setMcVersion(ReplayMod.getMinecraftVersion());
+            metaData.setMcVersion(ReplayMod.instance.getMinecraftVersion());
             packetListener = new PacketListener(core, outputPath, replayFile, metaData);
             Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
             channel.pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
