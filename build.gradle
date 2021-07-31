@@ -109,6 +109,9 @@ preprocess {
 def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
 
 sourceCompatibility = targetCompatibility = mcVersion >= 11700 ? 16 : 1.8
+tasks.withType(JavaCompile).configureEach {
+    options.release = mcVersion >= 11700 ? 16 : 8
+}
 
 if (mcVersion >= 11400) {
     sourceSets {
