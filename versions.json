@@ -1,8 +1,8 @@
 {
     "homepage": "https://www.replaymod.com/download/",
     "promos": {
-        "1.7.10-latest": "1.7.10-2.6.0",
-        "1.7.10-recommended": "1.7.10-2.6.0",
+        "1.7.10-latest": "1.7.10-2.5.2",
+        "1.7.10-recommended": "1.7.10-2.5.2",
         "1.8-latest": "1.8-2.6.0",
         "1.8-recommended": "1.8-2.6.0",
         "1.8.9-latest": "1.8.9-2.6.0",
@@ -43,7 +43,6 @@
         "1.17.1-recommended": "1.17.1-2.6.0"
     },
     "1.7.10": {
-        "1.7.10-2.6.0": "See https://www.replaymod.com/changelog.txt",
         "1.7.10-2.5.2": "See https://www.replaymod.com/changelog.txt",
         "1.7.10-2.5.1": "See https://www.replaymod.com/changelog.txt",
         "1.7.10-2.5.0": "See https://www.replaymod.com/changelog.txt",
