@@ -159,6 +159,7 @@ public class RenderSettings {
     private final boolean injectSphericalMetadata;
     private final boolean depthMap;
     private final boolean cameraPathExport;
+    private final boolean afterEffectsCameraPathExport;
     private final AntiAliasing antiAliasing;
 
     private final String exportCommand;
@@ -191,6 +192,7 @@ public class RenderSettings {
             boolean injectSphericalMetadata,
             boolean depthMap,
             boolean cameraPathExport,
+            boolean afterEffectsCameraPathExport,
             AntiAliasing antiAliasing,
             String exportCommand,
             String exportArguments,
@@ -213,6 +215,7 @@ public class RenderSettings {
         this.injectSphericalMetadata = injectSphericalMetadata;
         this.depthMap = depthMap;
         this.cameraPathExport = cameraPathExport;
+        this.afterEffectsCameraPathExport = afterEffectsCameraPathExport;
         this.antiAliasing = antiAliasing;
         this.exportCommand = exportCommand;
         this.exportArguments = exportArguments;
@@ -238,6 +241,7 @@ public class RenderSettings {
                 injectSphericalMetadata,
                 depthMap,
                 cameraPathExport,
+                afterEffectsCameraPathExport,
                 antiAliasing,
                 exportCommand,
                 exportArguments,
@@ -424,6 +428,10 @@ public class RenderSettings {
         return cameraPathExport;
     }
 
+    public boolean isAfterEffectsCameraPathExport() {
+        return afterEffectsCameraPathExport;
+    }
+
     public AntiAliasing getAntiAliasing() {
         return antiAliasing;
     }
@@ -460,6 +468,7 @@ public class RenderSettings {
                 ", injectSphericalMetadata=" + injectSphericalMetadata +
                 ", depthMap=" + depthMap +
                 ", cameraPathExport=" + cameraPathExport +
+                ", afterEffectscameraPathExport=" + afterEffectsCameraPathExport +
                 ", antiAliasing=" + antiAliasing +
                 ", exportCommand='" + exportCommand + '\'' +
                 ", exportArgumentsPreBgra='" + exportArgumentsPreBgra + '\'' +
