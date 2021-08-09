@@ -3,6 +3,7 @@ package com.replaymod.simplepathing.gui;
 import com.udojava.evalex.Expression;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.utils.Consumer;
+import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 
 import java.math.BigDecimal;
 
@@ -21,8 +22,10 @@ public class GuiExpressionTextField extends GuiTextField {
     private boolean verify(){
         try{
             getExpression().setPrecision(precision).eval();
+            setTextColor(ReadableColor.WHITE);
             return expressionValid = true;
         } catch (Expression.ExpressionException | ArithmeticException | NumberFormatException e){
+            setTextColor(ReadableColor.RED);
             return expressionValid = false;
         }
     }
