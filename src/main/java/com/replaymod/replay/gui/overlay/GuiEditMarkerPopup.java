@@ -1,6 +1,7 @@
 package com.replaymod.replay.gui.overlay;
 
 import com.google.common.base.Strings;
+import com.replaymod.simplepathing.gui.GuiExpressionTextField;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.*;
@@ -14,14 +15,11 @@ import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replaystudio.data.Marker;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import java.util.function.Consumer;
 
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
-    private static GuiTextField newGuiNumberField() {
-        return new GuiTextField().setSize(150, 20);
+    private static GuiExpressionTextField newGuiExpressionTextField() {
+        return new GuiExpressionTextField().setSize(150, 20);
     }
 
 
@@ -29,17 +27,17 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
 
     public final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.editkeyframe.title.marker");
 
-    public final GuiTextField nameField = new GuiTextField().setSize(150, 20);
+    public final GuiExpressionTextField nameField = new GuiExpressionTextField().setSize(150, 20);
     // TODO: Replace with a min/sec/msec field
-    public final GuiTextField timeField = newGuiNumberField();
+    public final GuiExpressionTextField timeField = newGuiExpressionTextField();
 
-    public final GuiTextField xField = newGuiNumberField();
-    public final GuiTextField yField = newGuiNumberField();
-    public final GuiTextField zField = newGuiNumberField();
+    public final GuiExpressionTextField xField = newGuiExpressionTextField();
+    public final GuiExpressionTextField yField = newGuiExpressionTextField();
+    public final GuiExpressionTextField zField = newGuiExpressionTextField();
 
-    public final GuiTextField yawField = newGuiNumberField();
-    public final GuiTextField pitchField = newGuiNumberField();
-    public final GuiTextField rollField = newGuiNumberField();
+    public final GuiExpressionTextField yawField = newGuiExpressionTextField();
+    public final GuiExpressionTextField pitchField = newGuiExpressionTextField();
+    public final GuiExpressionTextField rollField = newGuiExpressionTextField();
 
     public final GuiPanel inputs = GuiPanel.builder()
             .layout(new GridLayout().setColumns(2).setSpacingX(7).setSpacingY(3))
@@ -64,23 +62,20 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
     public final GuiButton saveButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-            ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("JavaScript");
 
             Marker marker = new Marker();
             marker.setName(Strings.emptyToNull(nameField.getText()));
-            try {
 
-                marker.setTime((Integer) scriptEngine.eval(timeField.getText()));
-                marker.setX((double) scriptEngine.eval(xField.getText()));
-                marker.setY((double) scriptEngine.eval(yField.getText()));
-                marker.setZ((double) scriptEngine.eval(zField.getText()));
-                marker.setYaw((float) scriptEngine.eval(yawField.getText()));
-                marker.setPitch((float) scriptEngine.eval(pitchField.getText()));
-                marker.setRoll((float) scriptEngine.eval(rollField.getText()));
-                onSave.accept(marker);
-                close();
-            } catch (ScriptException ignored) {}
+            marker.setTime(timeField.getInt());
+            marker.setX(xField.getDouble());
+            marker.setY(yField.getDouble());
+            marker.setZ(zField.getDouble());
+            marker.setYaw(yawField.getFloat());
+            marker.setPitch(pitchField.getFloat());
+            marker.setRoll(rollField.getFloat());
+            onSave.accept(marker);
+            close();
+
 
 
         }

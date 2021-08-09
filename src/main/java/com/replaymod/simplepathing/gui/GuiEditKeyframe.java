@@ -34,6 +34,7 @@ import net.minecraft.client.resource.language.I18n;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,16 +44,14 @@ import com.replaymod.core.versions.MCVer.Keyboard;
 //$$ import org.lwjgl.input.Keyboard;
 //#endif
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
 public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements Typeable {
-    private static GuiTextField newGuiNumberField() {
-        return new GuiTextField();
+    private static GuiExpressionTextField newGuiExpressionTextField() {
+        return new GuiExpressionTextField();
     }
+
+    DecimalFormat df = new DecimalFormat("###.#####");
 
     protected static final Logger logger = LogManager.getLogger();
 
@@ -66,9 +65,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
     public final GuiPanel inputs = new GuiPanel();
 
-    public final GuiTextField timeMinField = newGuiNumberField().setSize(30, 20);
-    public final GuiTextField timeSecField = newGuiNumberField().setSize(20, 20);
-    public final GuiTextField timeMSecField = newGuiNumberField().setSize(30, 20);
+    public final GuiExpressionTextField timeMinField = newGuiExpressionTextField().setSize(50, 20);
+    public final GuiExpressionTextField timeSecField = newGuiExpressionTextField().setSize(50, 20);
+    public final GuiExpressionTextField timeMSecField = newGuiExpressionTextField().setSize(50, 20);
 
     public final GuiPanel timePanel = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3))
@@ -96,12 +95,11 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
     protected boolean canSave() {
         try {
+            long timeMin = timeMinField.getLong();
+            long timeSec = timeSecField.getLong();
+            long timeMSec = timeMSecField.getLong();
 
-            long timeMin = new Expression(timeMinField.getText()).setPrecision(20).eval().longValueExact();
-            long timeSec = new Expression(timeSecField.getText()).setPrecision(20).eval().longValueExact();
-            long timeMsec = new Expression(timeMSecField.getText()).setPrecision(20).eval().longValueExact();
-
-            long newTime = (timeMin * 60 + timeSec) * 1000 + timeMsec;
+            long newTime = (timeMin * 60 + timeSec) * 1000 + timeMSec;
 
             if (newTime < 0 || newTime > guiPathing.timeline.getLength()) {
                 return false;
@@ -126,12 +124,12 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         saveButton.onClick(() -> {
 
             try {
-                long timeMin = new Expression(timeMinField.getText()).setPrecision(20).eval().longValueExact();
-                long timeSec = new Expression(timeSecField.getText()).setPrecision(20).eval().longValueExact();
-                long timeMsec = new Expression(timeMSecField.getText()).setPrecision(20).eval().longValueExact();
+                long timeMin = timeMinField.getLong();
+                long timeSec = timeSecField.getLong();
+                long timeMSec = timeMSecField.getLong();
 
                 Change change = save();
-                long newTime = (timeMin * 60 + timeSec) * 1000 + timeMsec;
+                long newTime = (timeMin * 60 + timeSec) * 1000 + timeMSec;
                 if (newTime != time) {
                     change = CombinedChange.createFromApplied(change,
                             gui.getMod().getCurrentTimeline().moveKeyframe(path, time, newTime));
@@ -184,9 +182,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     }
 
     public static class Time extends GuiEditKeyframe<Time> {
-        public final GuiTextField timestampMinField = newGuiNumberField().setSize(30, 20);
-        public final GuiTextField timestampSecField = newGuiNumberField().setSize(20, 20);
-        public final GuiTextField timestampMSecField = newGuiNumberField().setSize(30, 20);
+        public final GuiExpressionTextField timestampMinField = newGuiExpressionTextField().setSize(50, 20);
+        public final GuiExpressionTextField timestampSecField = newGuiExpressionTextField().setSize(50, 20);
+        public final GuiExpressionTextField timestampMSecField = newGuiExpressionTextField().setSize(50, 20);
 
         {
             inputs.setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3))
@@ -220,11 +218,11 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         @Override
         protected Change save() throws Expression.ExpressionException, ArithmeticException {
 
-            long timeMin = new Expression(timestampMinField.getText()).setPrecision(20).eval().longValueExact();
-            long timeSec = new Expression(timestampSecField.getText()).setPrecision(20).eval().longValueExact();
-            long timeMsec = new Expression(timestampMSecField.getText()).setPrecision(20).eval().longValueExact();
+            long timeMin = timestampMinField.getLong();
+            long timeSec = timestampSecField.getLong();
+            long timeMSec = timestampMSecField.getLong();
 
-            int time = (int) ((timeMin * 60 + timeSec) * 1000 + timeMsec);
+            int time = (int) ((timeMin * 60 + timeSec) * 1000 + timeMSec);
 
             return guiPathing.getMod().getCurrentTimeline().updateTimeKeyframe(keyframe.getTime(), time);
 
@@ -234,11 +232,11 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         protected boolean canSave(){
             try {
 
-                long timeMin = new Expression(timeMinField.getText()).setPrecision(20).eval().longValueExact();
-                long timeSec = new Expression(timeSecField.getText()).setPrecision(20).eval().longValueExact();
-                long timeMsec = new Expression(timeMSecField.getText()).setPrecision(20).eval().longValueExact();
+                long timeMin = timestampMinField.getLong();
+                long timeSec = timestampSecField.getLong();
+                long timeMSec = timestampMSecField.getLong();
 
-                long time = (timeMin * 60 + timeSec) * 1000 + timeMsec;
+                long time = (timeMin * 60 + timeSec) * 1000 + timeMSec;
 
                 if (time < 0) { //TODO add check to make sure time isn't longer than the replay
                     return false;
@@ -255,13 +253,13 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     }
 
     public static class Position extends GuiEditKeyframe<Position> {
-        public final GuiTextField xField = newGuiNumberField().setSize(60, 20);
-        public final GuiTextField yField = newGuiNumberField().setSize(60, 20);
-        public final GuiTextField zField = newGuiNumberField().setSize(60, 20);
+        public final GuiExpressionTextField xField = newGuiExpressionTextField().setSize(90, 20);
+        public final GuiExpressionTextField yField = newGuiExpressionTextField().setSize(90, 20);
+        public final GuiExpressionTextField zField = newGuiExpressionTextField().setSize(90, 20);
 
-        public final GuiTextField yawField = newGuiNumberField().setSize(60, 20);
-        public final GuiTextField pitchField = newGuiNumberField().setSize(60, 20);
-        public final GuiTextField rollField = newGuiNumberField().setSize(60, 20);
+        public final GuiExpressionTextField yawField = newGuiExpressionTextField().setSize(90, 20);
+        public final GuiExpressionTextField pitchField = newGuiExpressionTextField().setSize(90, 20);
+        public final GuiExpressionTextField rollField = newGuiExpressionTextField().setSize(90, 20);
 
         public final InterpolationPanel interpolationPanel = new InterpolationPanel();
 
@@ -286,14 +284,14 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
             Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
             this.keyframe.getValue(CameraProperties.POSITION).ifPresent(pos -> {
-                xField.setText(String.valueOf(pos.getLeft()));
-                yField.setText(String.valueOf(pos.getMiddle()));
-                zField.setText(String.valueOf(pos.getRight()));
+                xField.setText(df.format(pos.getLeft()));
+                yField.setText(df.format(pos.getMiddle()));
+                zField.setText(df.format(pos.getRight()));
             });
             this.keyframe.getValue(CameraProperties.ROTATION).ifPresent(rot -> {
-                yawField.setText(String.valueOf(rot.getLeft()));
-                pitchField.setText(String.valueOf(rot.getMiddle()));
-                rollField.setText(String.valueOf(rot.getRight()));
+                yawField.setText(df.format(rot.getLeft()));
+                pitchField.setText(df.format(rot.getMiddle()));
+                rollField.setText(df.format(rot.getRight()));
             });
 
             xField.onTextChanged(updateSaveButtonState);
@@ -310,28 +308,25 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
         @Override
         protected boolean canSave(){
-            try {
-                new Expression(xField.getText()).setPrecision(14).eval();
-                new Expression(yField.getText()).setPrecision(14).eval();
-                new Expression(zField.getText()).setPrecision(14).eval();
-                new Expression(yawField.getText()).setPrecision(11).eval();
-                new Expression(pitchField.getText()).setPrecision(11).eval();
-                new Expression(rollField.getText()).setPrecision(11).eval();
-                return super.canSave();
-            } catch (Expression.ExpressionException | ArithmeticException e) {
-                return false;
-            }
+            boolean invalid;
+            invalid = !xField.setPrecision(14).isVerified();
+            invalid = invalid | !yField.setPrecision(14).isVerified();
+            invalid = invalid | !zField.setPrecision(14).isVerified();
+            invalid = invalid | !yawField.setPrecision(11).isVerified();
+            invalid = invalid | !pitchField.setPrecision(11).isVerified();
+            invalid = invalid | !rollField.setPrecision(11).isVerified();
+            if(invalid) return false; else return super.canSave();
         }
 
         @Override
         protected Change save() throws Expression.ExpressionException, ArithmeticException {
 
-            double x = new Expression(xField.getText()).setPrecision(14).eval().doubleValue();
-            double y = new Expression(yField.getText()).setPrecision(14).eval().doubleValue();
-            double z = new Expression(zField.getText()).setPrecision(14).eval().doubleValue();
-            float yaw = new Expression(yawField.getText()).setPrecision(11).eval().floatValue();
-            float pitch = new Expression(pitchField.getText()).setPrecision(11).eval().floatValue();
-            float roll = new Expression(rollField.getText()).setPrecision(11).eval().floatValue();
+            double x = xField.setPrecision(14).getDouble();
+            double y = yField.setPrecision(14).getDouble();
+            double z = zField.setPrecision(14).getDouble();
+            float yaw = yawField.setPrecision(11).getFloat();
+            float pitch = pitchField.setPrecision(11).getFloat();
+            float roll = rollField.setPrecision(11).getFloat();
 
             SPTimeline timeline = guiPathing.getMod().getCurrentTimeline();
             Change positionChange = timeline.updatePositionKeyframe(time, x, y, z, yaw, pitch, roll);
