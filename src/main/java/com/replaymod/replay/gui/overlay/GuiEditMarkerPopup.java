@@ -14,12 +14,16 @@ import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replaystudio.data.Marker;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import java.util.function.Consumer;
 
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
-    private static GuiNumberField newGuiNumberField() {
-        return new GuiNumberField().setSize(150, 20).setValidateOnFocusChange(true);
+    private static GuiTextField newGuiNumberField() {
+        return new GuiTextField().setSize(150, 20);
     }
+
 
     private final Consumer<Marker> onSave;
 
@@ -27,15 +31,15 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
 
     public final GuiTextField nameField = new GuiTextField().setSize(150, 20);
     // TODO: Replace with a min/sec/msec field
-    public final GuiNumberField timeField = newGuiNumberField().setPrecision(0);
+    public final GuiTextField timeField = newGuiNumberField();
 
-    public final GuiNumberField xField = newGuiNumberField().setPrecision(10);
-    public final GuiNumberField yField = newGuiNumberField().setPrecision(10);
-    public final GuiNumberField zField = newGuiNumberField().setPrecision(10);
+    public final GuiTextField xField = newGuiNumberField();
+    public final GuiTextField yField = newGuiNumberField();
+    public final GuiTextField zField = newGuiNumberField();
 
-    public final GuiNumberField yawField = newGuiNumberField().setPrecision(5);
-    public final GuiNumberField pitchField = newGuiNumberField().setPrecision(5);
-    public final GuiNumberField rollField = newGuiNumberField().setPrecision(5);
+    public final GuiTextField yawField = newGuiNumberField();
+    public final GuiTextField pitchField = newGuiNumberField();
+    public final GuiTextField rollField = newGuiNumberField();
 
     public final GuiPanel inputs = GuiPanel.builder()
             .layout(new GridLayout().setColumns(2).setSpacingX(7).setSpacingY(3))
@@ -60,26 +64,31 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
     public final GuiButton saveButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
+            ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+            ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("JavaScript");
+
             Marker marker = new Marker();
             marker.setName(Strings.emptyToNull(nameField.getText()));
-            marker.setTime(timeField.getInteger());
-            marker.setX(xField.getDouble());
-            marker.setY(yField.getDouble());
-            marker.setZ(zField.getDouble());
-            marker.setYaw(yawField.getFloat());
-            marker.setPitch(pitchField.getFloat());
-            marker.setRoll(rollField.getFloat());
-            onSave.accept(marker);
-            close();
+            try {
+
+                marker.setTime((Integer) scriptEngine.eval(timeField.getText()));
+                marker.setX((double) scriptEngine.eval(xField.getText()));
+                marker.setY((double) scriptEngine.eval(yField.getText()));
+                marker.setZ((double) scriptEngine.eval(zField.getText()));
+                marker.setYaw((float) scriptEngine.eval(yawField.getText()));
+                marker.setPitch((float) scriptEngine.eval(pitchField.getText()));
+                marker.setRoll((float) scriptEngine.eval(rollField.getText()));
+                onSave.accept(marker);
+                close();
+            } catch (ScriptException ignored) {}
+
+
         }
     }).setSize(150, 20).setI18nLabel("replaymod.gui.save");
 
-    public final GuiButton cancelButton = new GuiButton().onClick(new Runnable() {
-        @Override
-        public void run() {
-            close();
-        }
-    }).setSize(150, 20).setI18nLabel("replaymod.gui.cancel");
+
+
+    public final GuiButton cancelButton = new GuiButton().onClick(() -> close()).setSize(150, 20).setI18nLabel("replaymod.gui.cancel");
 
     public final GuiPanel buttons = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(7))
@@ -96,13 +105,13 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
         popup.invokeAll(IGuiLabel.class, e -> e.setColor(Colors.BLACK));
 
         nameField.setText(Strings.nullToEmpty(marker.getName()));
-        timeField.setValue(marker.getTime());
-        xField.setValue(marker.getX());
-        yField.setValue(marker.getY());
-        zField.setValue(marker.getZ());
-        yawField.setValue(marker.getYaw());
-        pitchField.setValue(marker.getPitch());
-        rollField.setValue(marker.getRoll());
+        timeField.setText(String.valueOf(marker.getTime()));
+        xField.setText(String.valueOf(marker.getX()));
+        yField.setText(String.valueOf(marker.getY()));
+        zField.setText(String.valueOf(marker.getZ()));
+        yawField.setText(String.valueOf(marker.getYaw()));
+        pitchField.setText(String.valueOf(marker.getPitch()));
+        rollField.setText(String.valueOf(marker.getRoll()));
     }
 
     @Override
@@ -123,4 +132,6 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
         }
         return false;
     }
+
+
 }
