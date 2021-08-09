@@ -15,9 +15,12 @@ import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replaystudio.data.Marker;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 
+import java.text.DecimalFormat;
 import java.util.function.Consumer;
 
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
+    DecimalFormat df = new DecimalFormat("###.#####");
+
     private static GuiExpressionTextField newGuiExpressionTextField() {
         return new GuiExpressionTextField().setSize(150, 20);
     }
@@ -108,12 +111,12 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
 
         nameField.setText(Strings.nullToEmpty(marker.getName()));
         timeField.setText(String.valueOf(marker.getTime()));
-        xField.setText(String.valueOf(marker.getX()));
-        yField.setText(String.valueOf(marker.getY()));
-        zField.setText(String.valueOf(marker.getZ()));
-        yawField.setText(String.valueOf(marker.getYaw()));
-        pitchField.setText(String.valueOf(marker.getPitch()));
-        rollField.setText(String.valueOf(marker.getRoll()));
+        xField.setText(df.format(marker.getX()));
+        yField.setText(df.format(marker.getY()));
+        zField.setText(df.format(marker.getZ()));
+        yawField.setText(df.format(marker.getYaw()));
+        pitchField.setText(df.format(marker.getPitch()));
+        rollField.setText(df.format(marker.getRoll()));
     }
 
     @Override
