@@ -105,7 +105,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 return false;
             }
             return newTime == keyframe.getTime() || path.getKeyframe(newTime) == null;
-        } catch (Expression.ExpressionException | ArithmeticException e) { return false; }
+        } catch (Expression.ExpressionException | ArithmeticException | NumberFormatException e) { return false; }
     }
 
     public GuiEditKeyframe(GuiPathing gui, SPPath path, long time, String type) {
@@ -139,7 +139,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 }
                 gui.getMod().getCurrentTimeline().getTimeline().pushChange(change);
                 close();
-            } catch (Expression.ExpressionException | ArithmeticException ignored) { }
+            } catch (Expression.ExpressionException | ArithmeticException | NumberFormatException ignored) { }
 
 
         });
@@ -216,7 +216,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         }
 
         @Override
-        protected Change save() throws Expression.ExpressionException, ArithmeticException {
+        protected Change save() throws Expression.ExpressionException, ArithmeticException, NumberFormatException {
 
             long timeMin = timestampMinField.getLong();
             long timeSec = timestampSecField.getLong();
@@ -243,7 +243,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 } else {
                     return super.canSave();
                 }
-            } catch (Expression.ExpressionException | ArithmeticException e) { return false; }
+            } catch (Expression.ExpressionException | ArithmeticException | NumberFormatException e) { return false; }
         }
 
         @Override
@@ -308,18 +308,21 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
         @Override
         protected boolean canSave(){
-            boolean invalid;
-            invalid = !xField.setPrecision(14).isVerified();
-            invalid = invalid | !yField.setPrecision(14).isVerified();
-            invalid = invalid | !zField.setPrecision(14).isVerified();
-            invalid = invalid | !yawField.setPrecision(11).isVerified();
-            invalid = invalid | !pitchField.setPrecision(11).isVerified();
-            invalid = invalid | !rollField.setPrecision(11).isVerified();
-            if(invalid) return false; else return super.canSave();
+
+            if(xField.setPrecision(14).isExpressionValid() &&
+                    yField.setPrecision(14).isExpressionValid() &&
+                    zField.setPrecision(14).isExpressionValid() &&
+                    yawField.setPrecision(11).isExpressionValid() &&
+                    pitchField.setPrecision(11).isExpressionValid() &&
+                    rollField.setPrecision(11).isExpressionValid()){
+                return super.canSave();
+            } else {
+                return false;
+            }
         }
 
         @Override
-        protected Change save() throws Expression.ExpressionException, ArithmeticException {
+        protected Change save() throws Expression.ExpressionException, ArithmeticException, NumberFormatException  {
 
             double x = xField.setPrecision(14).getDouble();
             double y = yField.setPrecision(14).getDouble();

@@ -22,22 +22,44 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
         return new GuiExpressionTextField().setSize(150, 20);
     }
 
-
     private final Consumer<Marker> onSave;
+
+    public final GuiButton saveButton = new GuiButton().onClick(new Runnable() {
+        @Override
+        public void run() {
+            Marker marker = new Marker();
+            marker.setName(Strings.emptyToNull(nameField.getText()));
+
+            marker.setTime(timeField.getInt());
+            marker.setX(xField.getDouble());
+            marker.setY(yField.getDouble());
+            marker.setZ(zField.getDouble());
+            marker.setYaw(yawField.getFloat());
+            marker.setPitch(pitchField.getFloat());
+            marker.setRoll(rollField.getFloat());
+            onSave.accept(marker);
+            close();
+
+        }
+    }).setSize(150, 20).setI18nLabel("replaymod.gui.save");
 
     public final GuiLabel title = new GuiLabel().setI18nText("replaymod.gui.editkeyframe.title.marker");
 
-    public final GuiExpressionTextField nameField = new GuiExpressionTextField().setSize(150, 20);
+    public final GuiTextField nameField = new GuiTextField().setSize(150, 20);
     // TODO: Replace with a min/sec/msec field
     public final GuiExpressionTextField timeField = newGuiExpressionTextField();
 
-    public final GuiExpressionTextField xField = newGuiExpressionTextField();
-    public final GuiExpressionTextField yField = newGuiExpressionTextField();
-    public final GuiExpressionTextField zField = newGuiExpressionTextField();
 
-    public final GuiExpressionTextField yawField = newGuiExpressionTextField();
-    public final GuiExpressionTextField pitchField = newGuiExpressionTextField();
-    public final GuiExpressionTextField rollField = newGuiExpressionTextField();
+
+    de.johni0702.minecraft.gui.utils.Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
+
+    public final GuiExpressionTextField xField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionTextField yField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionTextField zField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+
+    public final GuiExpressionTextField yawField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionTextField pitchField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionTextField rollField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
 
     public final GuiPanel inputs = GuiPanel.builder()
             .layout(new GridLayout().setColumns(2).setSpacingX(7).setSpacingY(3))
@@ -59,35 +81,20 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
             .with(rollField, new GridLayout.Data(1, 0.5))
             .build();
 
-    public final GuiButton saveButton = new GuiButton().onClick(new Runnable() {
-        @Override
-        public void run() {
-
-            Marker marker = new Marker();
-            marker.setName(Strings.emptyToNull(nameField.getText()));
-
-            marker.setTime(timeField.getInt());
-            marker.setX(xField.getDouble());
-            marker.setY(yField.getDouble());
-            marker.setZ(zField.getDouble());
-            marker.setYaw(yawField.getFloat());
-            marker.setPitch(pitchField.getFloat());
-            marker.setRoll(rollField.getFloat());
-            onSave.accept(marker);
-            close();
-
-
-
-        }
-    }).setSize(150, 20).setI18nLabel("replaymod.gui.save");
-
-
 
     public final GuiButton cancelButton = new GuiButton().onClick(() -> close()).setSize(150, 20).setI18nLabel("replaymod.gui.cancel");
 
     public final GuiPanel buttons = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER).setSpacing(7))
             .addElements(new HorizontalLayout.Data(0.5), saveButton, cancelButton);
+
+    private boolean canSave() {
+
+        return timeField.isExpressionValid() && xField.isExpressionValid() &&
+                yField.isExpressionValid() && zField.isExpressionValid() &&
+                yawField.isExpressionValid() && pitchField.isExpressionValid() &&
+                rollField.isExpressionValid();
+    }
 
     public GuiEditMarkerPopup(GuiContainer container, Marker marker, Consumer<Marker> onSave) {
         super(container);

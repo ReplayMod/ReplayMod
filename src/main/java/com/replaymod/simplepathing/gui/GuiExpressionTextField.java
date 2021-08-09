@@ -2,36 +2,36 @@ package com.replaymod.simplepathing.gui;
 
 import com.udojava.evalex.Expression;
 import de.johni0702.minecraft.gui.element.GuiTextField;
+import de.johni0702.minecraft.gui.utils.Consumer;
 
 import java.math.BigDecimal;
 
 public class GuiExpressionTextField extends GuiTextField {
 
-    private Boolean verified = null;
+    private Boolean expressionValid = null;
     private int precision = 20;
 
     @Override
     protected void onTextChanged(String from) {
+        verify();
         super.onTextChanged(from);
 
-        verify();
-
     }
 
-    private void verify(){
+    private boolean verify(){
         try{
             getExpression().setPrecision(precision).eval();
-            verified = true;
-        } catch (Expression.ExpressionException | ArithmeticException e){
-            verified = false;
+            return expressionValid = true;
+        } catch (Expression.ExpressionException | ArithmeticException | NumberFormatException e){
+            return expressionValid = false;
         }
     }
 
-    public boolean isVerified(){
-        if(verified == null){
+    public boolean isExpressionValid(){
+        if(expressionValid == null){
             verify();
         }
-        return verified;
+        return expressionValid;
     }
 
     public GuiExpressionTextField setPrecision(int precision) {
@@ -43,28 +43,33 @@ public class GuiExpressionTextField extends GuiTextField {
         return new Expression(getText());
     }
 
-    public BigDecimal getBigDecimal() throws Expression.ExpressionException, ArithmeticException {
+    public BigDecimal getBigDecimal() throws Expression.ExpressionException, ArithmeticException, NumberFormatException {
         return getExpression().setPrecision(precision).eval();
     }
 
-    public long getLong() throws Expression.ExpressionException, ArithmeticException {
+    public long getLong() throws Expression.ExpressionException, ArithmeticException, NumberFormatException  {
         return  getBigDecimal().longValueExact();
     }
 
-    public double getDouble() throws Expression.ExpressionException, ArithmeticException {
+    public double getDouble() throws Expression.ExpressionException, ArithmeticException, NumberFormatException  {
         return  getBigDecimal().doubleValue();
     }
 
-    public float getFloat() throws Expression.ExpressionException, ArithmeticException {
+    public float getFloat() throws Expression.ExpressionException, ArithmeticException, NumberFormatException  {
         return  getBigDecimal().floatValue();
     }
 
-    public int getInt() throws Expression.ExpressionException, ArithmeticException {
+    public int getInt() throws Expression.ExpressionException, ArithmeticException, NumberFormatException  {
         return  getBigDecimal().intValue();
     }
 
     @Override
     public GuiExpressionTextField setSize(int width, int height){
         return (GuiExpressionTextField) super.setSize(width,height);
+    }
+
+    @Override
+    public GuiExpressionTextField onTextChanged(Consumer<String> textChanged) {
+        return (GuiExpressionTextField) super.onTextChanged(textChanged);
     }
 }
