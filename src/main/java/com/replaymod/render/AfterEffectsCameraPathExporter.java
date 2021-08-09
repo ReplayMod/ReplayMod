@@ -120,16 +120,16 @@ public class AfterEffectsCameraPathExporter {
                 "app.endUndoGroup();";
 
         Path videoPath = settings.getOutputFile().toPath();
-        Path txtBasePath = Files.isDirectory(videoPath)
+        Path jsxBasePath = Files.isDirectory(videoPath)
                 ? videoPath.resolve("AfterEffectsCamera.jsx")
                 : videoPath.resolveSibling(FilenameUtils.getBaseName(videoPath.getFileName().toString()) + ".jsx");
-        Path txtPath = txtBasePath;
-        for (int i = 0; Files.exists(txtPath); i++) {
-            String baseName = FilenameUtils.getBaseName(txtBasePath.getFileName().toString());
-            txtPath = txtBasePath.resolveSibling(baseName + "." + i + ".jsx");
+        Path jsxPath = jsxBasePath;
+        for (int i = 0; Files.exists(jsxPath); i++) {
+            String baseName = FilenameUtils.getBaseName(jsxBasePath.getFileName().toString());
+            jsxPath = jsxBasePath.resolveSibling(baseName + "." + i + ".jsx");
         }
 
-        File file = txtPath.toFile();
+        File file = jsxPath.toFile();
 
         FileOutputStream fos = new FileOutputStream(file);
         BufferedOutputStream bos = new BufferedOutputStream(fos);
