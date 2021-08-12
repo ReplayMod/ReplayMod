@@ -7,7 +7,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 
 import java.math.BigDecimal;
 
-public class GuiExpressionTextField extends GuiTextField {
+public class GuiExpressionField extends GuiTextField {
 
     private Boolean expressionValid = null;
     private int precision = 20;
@@ -37,7 +37,7 @@ public class GuiExpressionTextField extends GuiTextField {
         return expressionValid;
     }
 
-    public GuiExpressionTextField setPrecision(int precision) {
+    public GuiExpressionField setPrecision(int precision) {
         this.precision = precision;
         return this;
     }
@@ -67,12 +67,12 @@ public class GuiExpressionTextField extends GuiTextField {
     }
 
     @Override
-    public GuiExpressionTextField setSize(int width, int height){
-        return (GuiExpressionTextField) super.setSize(width,height);
+    public GuiExpressionField setSize(int width, int height){
+        return (GuiExpressionField) super.setSize(width,height);
     }
 
     @Override
-    public GuiExpressionTextField onTextChanged(Consumer<String> textChanged) {
-        return (GuiExpressionTextField) super.onTextChanged(textChanged);
+    public GuiExpressionField onTextChanged(Consumer<String> textChanged) {
+        return (GuiExpressionField) super.onTextChanged(textChanged);
     }
 }

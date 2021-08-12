@@ -1,7 +1,7 @@
 package com.replaymod.replay.gui.overlay;
 
 import com.google.common.base.Strings;
-import com.replaymod.simplepathing.gui.GuiExpressionTextField;
+import com.replaymod.simplepathing.gui.GuiExpressionField;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.element.*;
@@ -21,8 +21,8 @@ import java.util.function.Consumer;
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
     DecimalFormat df = new DecimalFormat("###.#####");
 
-    private static GuiExpressionTextField newGuiExpressionTextField() {
-        return new GuiExpressionTextField().setSize(150, 20);
+    private static GuiExpressionField newGuiExpressionTextField() {
+        return new GuiExpressionField().setSize(150, 20);
     }
 
     private final Consumer<Marker> onSave;
@@ -50,19 +50,19 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
 
     public final GuiTextField nameField = new GuiTextField().setSize(150, 20);
     // TODO: Replace with a min/sec/msec field
-    public final GuiExpressionTextField timeField = newGuiExpressionTextField();
+    public final GuiExpressionField timeField = newGuiExpressionTextField();
 
 
 
     de.johni0702.minecraft.gui.utils.Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
 
-    public final GuiExpressionTextField xField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
-    public final GuiExpressionTextField yField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
-    public final GuiExpressionTextField zField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField xField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField yField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField zField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
 
-    public final GuiExpressionTextField yawField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
-    public final GuiExpressionTextField pitchField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
-    public final GuiExpressionTextField rollField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField yawField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField pitchField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField rollField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
 
     public final GuiPanel inputs = GuiPanel.builder()
             .layout(new GridLayout().setColumns(2).setSpacingX(7).setSpacingY(3))
