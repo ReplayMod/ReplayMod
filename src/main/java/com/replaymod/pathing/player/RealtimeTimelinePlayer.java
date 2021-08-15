@@ -3,6 +3,7 @@ package com.replaymod.pathing.player;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replaystudio.pathing.path.Timeline;
+import net.minecraft.client.MinecraftClient;
 
 /**
  * Timeline player using the system time.
@@ -21,6 +22,9 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
      */
     private long startTime;
 
+    private boolean loadingResources;
+    private long timeBeforeResourceLoading;
+
     public RealtimeTimelinePlayer(ReplayHandler replayHandler) {
         super(replayHandler);
     }
@@ -28,6 +32,7 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
     @Override
     public ListenableFuture<Void> start(Timeline timeline) {
         firstFrame = true;
+        loadingResources = false;
         return super.start(timeline);
     }
 
@@ -35,9 +40,25 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
     public void onTick() {
         if (secondFrame) {
             secondFrame = false;
-            startTime = System.currentTimeMillis();
+            startTime = System.currentTimeMillis() - startOffset;
         }
+
+        //#if MC>=11400
+        if (MinecraftClient.getInstance().getOverlay() != null) {
+            if (!loadingResources) {
+                timeBeforeResourceLoading = getTimePassed();
+                loadingResources = true;
+            }
+            super.onTick();
+            return;
+        } else if (loadingResources && !firstFrame) {
+            startTime = System.currentTimeMillis() - timeBeforeResourceLoading;
+            loadingResources = false;
+        }
+        //#endif
+
         super.onTick();
+
         if (firstFrame) {
             firstFrame = false;
             secondFrame = true;
@@ -46,6 +67,8 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
 
     @Override
     public long getTimePassed() {
-        return startOffset + (firstFrame ? 0 : System.currentTimeMillis() - startTime);
+        if (firstFrame) return 0;
+        if (loadingResources) return timeBeforeResourceLoading;
+        return System.currentTimeMillis() - startTime;
     }
 }
