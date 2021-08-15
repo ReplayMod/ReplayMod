@@ -10,6 +10,7 @@ import com.replaymod.core.events.SettingsChangedCallback;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.events.RenderHotbarCallback;
 import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
+import com.replaymod.replay.mixin.EntityPlayerAccessor;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import com.replaymod.core.utils.Utils;
@@ -24,6 +25,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
@@ -617,6 +619,43 @@ public class CameraEntity
 
         //#if MC>=10800
         this.noClip = this.isSpectator();
+        //#endif
+
+        syncInventory();
+    }
+
+    private final PlayerInventory originalInventory = this.inventory;
+
+    // If we are spectating a player, "steal" its inventory so the rendering code knows what item(s) to render
+    // and if we aren't, then reset ours.
+    private void syncInventory() {
+        Entity view = this.client.getCameraEntity();
+        PlayerEntity viewPlayer = view != this && view instanceof PlayerEntity ? (PlayerEntity) view : null;
+        EntityPlayerAccessor cameraA = (EntityPlayerAccessor) this;
+        EntityPlayerAccessor viewPlayerA = (EntityPlayerAccessor) viewPlayer;
+
+        //#if MC>=11100
+        ItemStack empty = ItemStack.EMPTY;
+        //#else
+        //$$ ItemStack empty = null;
+        //#endif
+
+        // TODO switch to replacing the entire inventory for 1.14+ as well, should be easier and faster
+        //#if MC>=11400
+        this.equipStack(EquipmentSlot.HEAD, viewPlayer != null ? viewPlayer.getEquippedStack(EquipmentSlot.HEAD) : empty);
+        this.equipStack(EquipmentSlot.MAINHAND, viewPlayer != null ? viewPlayer.getEquippedStack(EquipmentSlot.MAINHAND) : empty);
+        this.equipStack(EquipmentSlot.OFFHAND, viewPlayer != null ? viewPlayer.getEquippedStack(EquipmentSlot.OFFHAND) : empty);
+        //#else
+        //$$ this.inventory = viewPlayer != null ? viewPlayer.inventory : originalInventory;
+        //#endif
+
+        //#if MC>=10904
+        cameraA.setItemStackMainHand(viewPlayerA != null ? viewPlayerA.getItemStackMainHand() : empty);
+        this.preferredHand = viewPlayer != null ? viewPlayer.preferredHand : Hand.MAIN_HAND;
+        cameraA.setActiveItemStackUseCount(viewPlayerA != null ? viewPlayerA.getActiveItemStackUseCount() : 0);
+        //#else
+        //$$ cameraA.setItemInUse(viewPlayerA != null ? viewPlayerA.getItemInUse() : empty);
+        //$$ cameraA.setItemInUseCount(viewPlayerA != null ? viewPlayerA.getItemInUseCount() : 0);
         //#endif
     }
 
