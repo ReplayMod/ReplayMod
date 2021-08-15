@@ -4,6 +4,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.replaymod.core.utils.FileTypeAdapter;
 import com.replaymod.core.versions.MCVer;
+import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.Util;
@@ -153,7 +154,7 @@ public class RenderSettings {
     private final boolean stabilizeYaw;
     private final boolean stabilizePitch;
     private final boolean stabilizeRoll;
-    private final ReadableColor chromaKeyingColor;
+    private final Color chromaKeyingColor;
     private final int sphericalFovX;
     private final int sphericalFovY;
     private final boolean injectSphericalMetadata;
@@ -207,7 +208,7 @@ public class RenderSettings {
         this.stabilizeYaw = stabilizeYaw;
         this.stabilizePitch = stabilizePitch;
         this.stabilizeRoll = stabilizeRoll;
-        this.chromaKeyingColor = chromaKeyingColor;
+        this.chromaKeyingColor = chromaKeyingColor == null ? null : new Color(chromaKeyingColor);
         this.sphericalFovX = sphericalFovX;
         this.sphericalFovY = sphericalFovY;
         this.injectSphericalMetadata = injectSphericalMetadata;

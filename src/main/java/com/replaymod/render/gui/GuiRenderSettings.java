@@ -31,7 +31,6 @@ import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.Utils;
 import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
-import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.resource.language.I18n;
@@ -333,7 +332,6 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         try {
             settings = new GsonBuilder()
                     .registerTypeAdapter(RenderSettings.class, (InstanceCreator<RenderSettings>) type -> getDefaultRenderSettings())
-                    .registerTypeAdapter(ReadableColor.class, new Gson().getAdapter(Color.class))
                     .create().fromJson(json, RenderSettings.class);
         } catch (JsonSyntaxException e) {
             LOGGER.error("Parsing render settings:", e);
