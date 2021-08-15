@@ -34,7 +34,7 @@ import java.util.Optional;
 import static com.replaymod.core.versions.MCVer.emitLine;
 import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
-import static de.johni0702.minecraft.gui.versions.MCVer.setScissorState;
+import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 
 //#if MC>=11700
 //$$ import com.mojang.blaze3d.systems.RenderSystem;
@@ -176,7 +176,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
                     //#endif
                     pushScissorState();
-                    setScissorState(false);
+                    setScissorDisabled();
                     GL11.glLineWidth(2);
                     tessellator.draw();
                     popScissorState();
