@@ -174,6 +174,32 @@ public class RenderSettings {
 
     private final boolean highPerformance;
 
+    public RenderSettings() {
+        this(
+                RenderSettings.RenderMethod.DEFAULT,
+                RenderSettings.EncodingPreset.MP4_CUSTOM,
+                1920,
+                1080,
+                60,
+                20 << 20,
+                null,
+                true,
+                false,
+                false,
+                false,
+                null,
+                360,
+                180,
+                false,
+                false,
+                false,
+                RenderSettings.AntiAliasing.NONE,
+                "",
+                RenderSettings.EncodingPreset.MP4_CUSTOM.getValue(),
+                false
+        );
+    }
+
     public RenderSettings(
             RenderMethod renderMethod,
             EncodingPreset encodingPreset,

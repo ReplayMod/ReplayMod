@@ -2,8 +2,6 @@ package com.replaymod.render.gui;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.InstanceCreator;
 import com.google.gson.JsonSyntaxException;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.render.RenderSettings;
@@ -330,15 +328,13 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         }
         RenderSettings settings = null;
         try {
-            settings = new GsonBuilder()
-                    .registerTypeAdapter(RenderSettings.class, (InstanceCreator<RenderSettings>) type -> getDefaultRenderSettings())
-                    .create().fromJson(json, RenderSettings.class);
+            settings = new Gson().fromJson(json, RenderSettings.class);
         } catch (JsonSyntaxException e) {
             LOGGER.error("Parsing render settings:", e);
             LOGGER.error("Raw JSON: {}", json);
         }
         if (settings == null) {
-            settings = getDefaultRenderSettings();
+            settings = new RenderSettings();
         }
         load(settings);
     }
@@ -506,7 +502,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         /* encodingPreset can be null from a previously supported and later removed preset */
         boolean invalidEncodingPreset = encodingPreset == null || !encodingPreset.isSupported();
         if (invalidEncodingPreset) {
-            encodingPreset = getDefaultRenderSettings().getEncodingPreset();
+            encodingPreset = new RenderSettings().getEncodingPreset();
         }
         encodingPresetDropdown.setSelected(encodingPreset);
         videoWidth.setValue(settings.getTargetVideoWidth());
@@ -624,11 +620,6 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
 
     protected Path getSettingsPath() {
         return ReplayModRender.instance.getRenderSettingsPath();
-    }
-
-    private RenderSettings getDefaultRenderSettings() {
-        return new RenderSettings(RenderSettings.RenderMethod.DEFAULT, RenderSettings.EncodingPreset.MP4_CUSTOM, 1920, 1080, 60, 20 << 20, null,
-                true, false, false, false, null, 360, 180, false, false, false, RenderSettings.AntiAliasing.NONE, "", RenderSettings.EncodingPreset.MP4_CUSTOM.getValue(), false);
     }
 
     @Override
