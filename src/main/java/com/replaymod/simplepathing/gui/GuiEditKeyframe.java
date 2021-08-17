@@ -47,7 +47,7 @@ import com.replaymod.core.versions.MCVer.Keyboard;
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
 public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements Typeable {
-    private static GuiExpressionField newGuiExpressionTextField() {
+    private static GuiExpressionField newGuiExpressionField() {
         return new GuiExpressionField();
     }
 
@@ -65,9 +65,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
     public final GuiPanel inputs = new GuiPanel();
 
-    public final GuiExpressionField timeMinField = newGuiExpressionTextField().setSize(50, 20);
-    public final GuiExpressionField timeSecField = newGuiExpressionTextField().setSize(50, 20);
-    public final GuiExpressionField timeMSecField = newGuiExpressionTextField().setSize(50, 20);
+    public final GuiExpressionField timeMinField = newGuiExpressionField().setSize(50, 20);
+    public final GuiExpressionField timeSecField = newGuiExpressionField().setSize(50, 20);
+    public final GuiExpressionField timeMSecField = newGuiExpressionField().setSize(50, 20);
 
     public final GuiPanel timePanel = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3))
@@ -177,9 +177,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     }
 
     public static class Time extends GuiEditKeyframe<Time> {
-        public final GuiExpressionField timestampMinField = newGuiExpressionTextField().setSize(50, 20);
-        public final GuiExpressionField timestampSecField = newGuiExpressionTextField().setSize(50, 20);
-        public final GuiExpressionField timestampMSecField = newGuiExpressionTextField().setSize(50, 20);
+        public final GuiExpressionField timestampMinField = newGuiExpressionField().setSize(50, 20);
+        public final GuiExpressionField timestampSecField = newGuiExpressionField().setSize(50, 20);
+        public final GuiExpressionField timestampMSecField = newGuiExpressionField().setSize(50, 20);
 
         {
             inputs.setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3))
@@ -248,13 +248,13 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     }
 
     public static class Position extends GuiEditKeyframe<Position> {
-        public final GuiExpressionField xField = newGuiExpressionTextField().setSize(90, 20);
-        public final GuiExpressionField yField = newGuiExpressionTextField().setSize(90, 20);
-        public final GuiExpressionField zField = newGuiExpressionTextField().setSize(90, 20);
+        public final GuiExpressionField xField = newGuiExpressionField().setSize(90, 20);
+        public final GuiExpressionField yField = newGuiExpressionField().setSize(90, 20);
+        public final GuiExpressionField zField = newGuiExpressionField().setSize(90, 20);
 
-        public final GuiExpressionField yawField = newGuiExpressionTextField().setSize(90, 20);
-        public final GuiExpressionField pitchField = newGuiExpressionTextField().setSize(90, 20);
-        public final GuiExpressionField rollField = newGuiExpressionTextField().setSize(90, 20);
+        public final GuiExpressionField yawField = newGuiExpressionField().setSize(90, 20);
+        public final GuiExpressionField pitchField = newGuiExpressionField().setSize(90, 20);
+        public final GuiExpressionField rollField = newGuiExpressionField().setSize(90, 20);
 
         public final InterpolationPanel interpolationPanel = new InterpolationPanel();
 

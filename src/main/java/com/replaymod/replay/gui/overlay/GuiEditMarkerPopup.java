@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> implements Typeable {
     DecimalFormat df = new DecimalFormat("###.#####");
 
-    private static GuiExpressionField newGuiExpressionTextField() {
+    private static GuiExpressionField newGuiExpressionField() {
         return new GuiExpressionField().setSize(150, 20);
     }
 
@@ -50,19 +50,19 @@ public class GuiEditMarkerPopup extends AbstractGuiPopup<GuiEditMarkerPopup> imp
 
     public final GuiTextField nameField = new GuiTextField().setSize(150, 20);
     // TODO: Replace with a min/sec/msec field
-    public final GuiExpressionField timeField = newGuiExpressionTextField();
+    public final GuiExpressionField timeField = newGuiExpressionField();
 
 
 
     de.johni0702.minecraft.gui.utils.Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
 
-    public final GuiExpressionField xField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
-    public final GuiExpressionField yField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
-    public final GuiExpressionField zField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField xField = newGuiExpressionField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField yField = newGuiExpressionField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField zField = newGuiExpressionField().onTextChanged(updateSaveButtonState);
 
-    public final GuiExpressionField yawField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
-    public final GuiExpressionField pitchField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
-    public final GuiExpressionField rollField = newGuiExpressionTextField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField yawField = newGuiExpressionField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField pitchField = newGuiExpressionField().onTextChanged(updateSaveButtonState);
+    public final GuiExpressionField rollField = newGuiExpressionField().onTextChanged(updateSaveButtonState);
 
     public final GuiPanel inputs = GuiPanel.builder()
             .layout(new GridLayout().setColumns(2).setSpacingX(7).setSpacingY(3))
