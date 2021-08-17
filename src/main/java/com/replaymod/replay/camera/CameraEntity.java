@@ -251,6 +251,26 @@ public class CameraEntity
         updateBoundingBox();
     }
 
+    //#if MC>=11400
+    @Override
+    public float getYaw(float tickDelta) {
+        Entity view = this.client.getCameraEntity();
+        if (view != null && view != this) {
+            return this.prevYaw + (this.yaw - this.prevYaw) * tickDelta;
+        }
+        return super.getYaw(tickDelta);
+    }
+
+    @Override
+    public float getPitch(float tickDelta) {
+        Entity view = this.client.getCameraEntity();
+        if (view != null && view != this) {
+            return this.prevPitch + (this.pitch - this.prevPitch) * tickDelta;
+        }
+        return super.getPitch(tickDelta);
+    }
+    //#endif
+
     private void updateBoundingBox() {
         //#if MC>=11400
         float width = getWidth();
