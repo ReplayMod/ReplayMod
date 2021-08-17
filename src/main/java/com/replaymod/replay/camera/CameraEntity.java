@@ -22,6 +22,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -248,6 +249,14 @@ public class CameraEntity
         this.lastRenderX = to.lastRenderX;
         this.lastRenderY = to.lastRenderY + yOffset;
         this.lastRenderZ = to.lastRenderZ;
+        if (to instanceof LivingEntity) {
+            LivingEntity toLiving = (LivingEntity) to;
+            this.headYaw = toLiving.headYaw;
+            this.prevHeadYaw = toLiving.prevHeadYaw;
+        } else {
+            this.headYaw = to.yaw;
+            this.prevHeadYaw = to.prevYaw;
+        }
         updateBoundingBox();
     }
 
@@ -256,7 +265,7 @@ public class CameraEntity
     public float getYaw(float tickDelta) {
         Entity view = this.client.getCameraEntity();
         if (view != null && view != this) {
-            return this.prevYaw + (this.yaw - this.prevYaw) * tickDelta;
+            return this.prevHeadYaw + (this.headYaw - this.prevHeadYaw) * tickDelta;
         }
         return super.getYaw(tickDelta);
     }
@@ -698,7 +707,7 @@ public class CameraEntity
         this.lastRenderYaw = this.renderYaw;
         this.lastRenderPitch = this.renderPitch;
         this.renderPitch = this.renderPitch +  (this.pitch - this.renderPitch) * 0.5f;
-        this.renderYaw = this.renderYaw +  (this.yaw - this.renderYaw) * 0.5f;
+        this.renderYaw = this.renderYaw +  (this.headYaw - this.renderYaw) * 0.5f;
     }
 
     public boolean canSpectate(Entity e) {
