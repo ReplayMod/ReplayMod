@@ -31,8 +31,6 @@ public class ScreenshotRenderer implements RenderInfo {
             Window window = mc.getWindow();
             int widthBefore = window.getFramebufferWidth();
             int heightBefore = window.getFramebufferHeight();
-            boolean hideGUIBefore = mc.options.hudHidden;
-            mc.options.hudHidden = true;
 
             ForceChunkLoadingHook clrg = new ForceChunkLoadingHook(mc.worldRenderer);
 
@@ -46,7 +44,6 @@ public class ScreenshotRenderer implements RenderInfo {
 
             clrg.uninstall();
 
-            mc.options.hudHidden = hideGUIBefore;
             resizeMainWindow(mc, widthBefore, heightBefore);
             return true;
         } catch (OutOfMemoryError e) {

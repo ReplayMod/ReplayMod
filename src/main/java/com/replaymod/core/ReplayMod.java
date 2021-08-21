@@ -325,6 +325,18 @@ public class ReplayMod implements Module, Scheduler {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            // Cleanup leftover no_recover files
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(getReplayFolder())) {
+                for (Path path : paths) {
+                    String name = path.getFileName().toString();
+                    if (name.endsWith(".no_recover")) {
+                        Files.delete(path);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         });
     }
 

@@ -8,8 +8,7 @@
     //#if MC>=11400
     "AbstractButtonWidgetAccessor",
     "MixinGameRenderer",
-    "Mixin_HideDynamicResourcePacks",
-    "Mixin_RegisterDynamicResourcePacks",
+    "Mixin_InjectDynamicResourcePacks",
     //#endif
     //#if MC>=11400
     "MixinMouse",

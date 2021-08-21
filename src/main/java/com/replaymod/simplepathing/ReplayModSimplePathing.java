@@ -150,9 +150,9 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             synchronized (replayFile) {
                 Timeline timeline = replayFile.getTimelines(new SPTimeline()).get("");
                 if (timeline != null) {
-                    setCurrentTimeline(new SPTimeline(timeline));
+                    setCurrentTimeline(new SPTimeline(timeline), false);
                 } else {
-                    setCurrentTimeline(new SPTimeline());
+                    setCurrentTimeline(new SPTimeline(), false);
                 }
             }
         } catch (IOException e) {
@@ -225,8 +225,16 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     }
 
     public void setCurrentTimeline(SPTimeline newTimeline) {
+        setCurrentTimeline(newTimeline, true);
+    }
+
+    private void setCurrentTimeline(SPTimeline newTimeline, boolean save) {
         selectedPath = null;
         currentTimeline = newTimeline;
+        if (!save) {
+            lastTimeline = newTimeline;
+            lastChange = newTimeline.getTimeline().peekUndoStack();
+        }
         updateDefaultInterpolatorType();
     }
 
@@ -254,18 +262,21 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
 
     private final AtomicInteger lastSaveId = new AtomicInteger();
     private ExecutorService saveService;
+    private SPTimeline lastTimeline;
     private Change lastChange;
     private void maybeSaveTimeline(ReplayFile replayFile) {
         SPTimeline spTimeline = currentTimeline;
         if (spTimeline == null || saveService == null) {
+            lastTimeline = null;
             lastChange = null;
             return;
         }
 
         Change latestChange = spTimeline.getTimeline().peekUndoStack();
-        if (latestChange == null || latestChange == lastChange) {
+        if (spTimeline == lastTimeline && latestChange == lastChange) {
             return;
         }
+        lastTimeline = spTimeline;
         lastChange = latestChange;
 
         // Clone the timeline for async saving

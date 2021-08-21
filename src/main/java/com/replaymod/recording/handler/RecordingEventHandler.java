@@ -166,8 +166,14 @@ public class RecordingEventHandler extends EventRegistrations {
             lastY = player.getY();
             lastZ = player.getZ();
 
+            //#if MC>=10904
+            final double maxRelDist = 8.0;
+            //#else
+            //$$ final double maxRelDist = 4.0;
+            //#endif
+
             Packet packet;
-            if (force || Math.abs(dx) > 8.0 || Math.abs(dy) > 8.0 || Math.abs(dz) > 8.0) {
+            if (force || Math.abs(dx) > maxRelDist || Math.abs(dy) > maxRelDist || Math.abs(dz) > maxRelDist) {
                 //#if MC>=10800
                 packet = new EntityPositionS2CPacket(player);
                 //#else

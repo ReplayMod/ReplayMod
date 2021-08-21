@@ -68,6 +68,12 @@ fun command(vararg cmd: Any): List<String> {
 }
 
 fun generateVersionsJson(): Map<String, Any> {
+    val versionComparator = compareBy<String>(
+        { (it.split(".").getOrNull(0) ?: "0").toInt() },
+        { (it.split(".").getOrNull(1) ?: "0").toInt() },
+        { (it.split(".").getOrNull(2) ?: "0").toInt() }
+    )
+
     // Find all tag-style releases by listing all tags
     val tagVersions = command("git", "for-each-ref", "--sort=taggerdate", "--format=%(refname:short)", "refs/tags")
 
@@ -85,6 +91,9 @@ fun generateVersionsJson(): Map<String, Any> {
                 .filter { it != "core" }
                 // Internal project used to automatically remap from Forge 1.12.2 to Fabric 1.14.4
                 .filter { it != "1.14.4-forge" }
+                // We dropped 1.7.10 with the Gradle 7 update but still kept its source in case someone
+                // volunteers to update FG 1.2 to Gradle 7.
+                .filterNot { it == "1.7.10" && versionComparator.compare(version, "2.6.0") >= 0 }
         mcVersions.map { "$it-$version" }
     }.flatten()
 
@@ -92,11 +101,7 @@ fun generateVersionsJson(): Map<String, Any> {
     val mcVersions = versions
             .map {it.substring(0, it.indexOf("-"))}
             .distinct()
-            .sortedWith(compareBy(
-                    { (it.split(".").getOrNull(0) ?: "0").toInt() },
-                    { (it.split(".").getOrNull(1) ?: "0").toInt() },
-                    { (it.split(".").getOrNull(2) ?: "0").toInt() }
-            ))
+            .sortedWith(versionComparator)
 
     val promos = mutableMapOf<String, String>()
     val root = mutableMapOf<String, Any>(
@@ -124,6 +129,14 @@ fun generateVersionsJson(): Map<String, Any> {
         }
     }
     return root
+}
+
+val writeVersionsJson by tasks.registering {
+    doLast {
+        val versionsRoot = generateVersionsJson()
+        val versionsJson = JsonOutput.prettyPrint(JsonOutput.toJson(versionsRoot))
+        File("versions.json").writeText(versionsJson)
+    }
 }
 
 val doRelease by tasks.registering {
