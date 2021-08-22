@@ -9,6 +9,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -212,6 +213,15 @@ class Patterns {
         return passenger.getVehicle();
         //#else
         //$$ return passenger.ridingEntity;
+        //#endif
+    }
+
+    @Pattern
+    private static PlayerInventory getInventory(PlayerEntity entity) {
+        //#if MC>=11700
+        //$$ return entity.getInventory();
+        //#else
+        return entity.inventory;
         //#endif
     }
 
