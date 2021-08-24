@@ -2,8 +2,9 @@ import groovy.json.JsonOutput
 import java.io.ByteArrayOutputStream
 
 plugins {
+    kotlin("jvm") version "1.5.21" apply false
     id("fabric-loom") version "0.8-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "123fb7a"
+    id("com.replaymod.preprocess") version "ff216cd"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 

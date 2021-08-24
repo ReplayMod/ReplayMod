@@ -59,6 +59,7 @@ if (['1.10.2', '1.11', '1.11.2'].contains(jGuiVersion)) jGuiVersion = '1.9.4'
 if (['1.12.1', '1.12.2'].contains(jGuiVersion)) jGuiVersion = '1.12'
 def jGui = project.evaluationDependsOn(":jGui:$jGuiVersion")
 
+apply plugin: 'kotlin'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 if (mcVersion >= 10800) {
@@ -111,6 +112,12 @@ def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mc
 sourceCompatibility = targetCompatibility = mcVersion >= 11700 ? 16 : 1.8
 tasks.withType(JavaCompile).configureEach {
     options.release = mcVersion >= 11700 ? 16 : 8
+}
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = mcVersion >= 11700 ? 16 : 1.8
+        freeCompilerArgs = ["-Xjvm-default=all"]
+    }
 }
 
 if (mcVersion >= 11400) {
@@ -302,6 +309,10 @@ dependencies {
         annotationProcessor 'org.ow2.asm:asm-tree:6.2'
         annotationProcessor 'org.apache.logging.log4j:log4j-core:2.0-beta9'
     }
+
+    shadow platform('org.jetbrains.kotlin:kotlin-bom')
+    shadow 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+
     shadow 'com.googlecode.mp4parser:isoparser:1.1.7'
     shadow 'org.apache.commons:commons-exec:1.3'
     shadow 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0', shadeExclusions
@@ -442,6 +453,10 @@ task configureRelocation() {
                     }
                 }
             }
+            // Kotlin will be filtered out because of the string constants shadow bug workaround, but we definitely need
+            // it and luckily that package is fairly distinct and unlikely to be in random string constants.
+            pkgs << 'kotlin'
+
             pkgs
         }.flatten().unique()
         configureRelocationOutput.write(pkgs.join('\n'))
@@ -494,6 +509,9 @@ tasks.register('bundleJar', com.github.jengelman.gradle.plugins.shadow.tasks.Sha
         // MC ships this
         exclude 'it/unimi/dsi/fastutil/**'
     }
+
+    // These are only required for kotlin-reflect which we are not going to use
+    exclude '**/*.kotlin_metadata'
 
     minimize {
         exclude(dependency('.*spongepowered:mixin:.*'))
