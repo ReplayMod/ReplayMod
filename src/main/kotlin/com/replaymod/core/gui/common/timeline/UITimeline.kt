@@ -137,11 +137,13 @@ class UITimeline : UIContainer() {
         }
 
         override fun visitImpl(visitor: ConstraintVisitor, type: ConstraintType) {
+            /** Can only visit the direct parent, but that's of no use to us and generates misleading errors.
             when (type) {
                 ConstraintType.X -> visitor.visitParent(ConstraintType.X)
                 ConstraintType.WIDTH -> visitor.visitParent(ConstraintType.WIDTH)
                 else -> throw IllegalArgumentException(type.prettyName)
             }
+             */
         }
     }
 

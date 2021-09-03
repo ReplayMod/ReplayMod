@@ -91,7 +91,7 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             if (guiPathing != null) guiPathing.clearKeyframesButtonPressed();
         }, true);
         keySyncTime = core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
-            if (guiPathing != null) guiPathing.syncTimeButtonPressed();
+            if (guiPathing != null) guiPathing.kt.syncTimeButtonPressed();
         }, true);
         SettingsRegistry settingsRegistry = core.getSettingsRegistry();
         keySyncTime.registerAutoActivationSupport(settingsRegistry.get(Setting.AUTO_SYNC), active -> {

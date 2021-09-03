@@ -180,7 +180,7 @@ public class PathPreviewRenderer extends EventRegistrations {
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             GL11.glEnable(GL11.GL_DEPTH_TEST);
 
-            int time = guiPathing.timeline.getCursorPosition();
+            long time = guiPathing.kt.getTimeline().getCursor().getPositionMillis();
             Optional<Integer> entityId = path.getValue(SpectatorProperty.PROPERTY, time);
             if (entityId.isPresent()) {
                 // Spectating an entity

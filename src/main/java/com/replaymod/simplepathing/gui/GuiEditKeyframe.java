@@ -101,7 +101,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
             long newTime = (timeMin * 60 + timeSec) * 1000 + timeMSec;
 
-            if (newTime < 0 || newTime > guiPathing.timeline.getLength()) {
+            if (newTime < 0 || newTime > guiPathing.kt.getTimeline().getLengthMillis()) {
                 return false;
             }
             return newTime == keyframe.getTime() || path.getKeyframe(newTime) == null;
