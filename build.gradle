@@ -227,10 +227,8 @@ repositories {
 configurations {
     // Include dep in fat jar without relocation and, when forge supports it, without exploding (TODO)
     shade
-    implementation.extendsFrom shade
     // Include dep in fat jar with relocation and minimization
     shadow
-    implementation.extendsFrom shadow
 }
 
 def shadeExclusions = {
@@ -299,9 +297,9 @@ dependencies {
         def mixinVersion = mcVersion >= 11200 ? '0.8.2' : '0.7.11-SNAPSHOT'
         annotationProcessor "org.spongepowered:mixin:$mixinVersion"
         compileOnly "org.spongepowered:mixin:$mixinVersion"
-        shade("org.spongepowered:mixin:$mixinVersion") {
+        implementation(shade("org.spongepowered:mixin:$mixinVersion") {
             transitive = false // deps should all be bundled with MC
-        }
+        })
 
         // Mixin needs these (and depends on them but for some reason that's not enough. FG, did you do that?)
         annotationProcessor 'com.google.code.gson:gson:2.2.4'
@@ -310,45 +308,47 @@ dependencies {
         annotationProcessor 'org.apache.logging.log4j:log4j-core:2.0-beta9'
     }
 
-    shadow platform('org.jetbrains.kotlin:kotlin-bom')
-    shadow 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    implementation(shadow(platform('org.jetbrains.kotlin:kotlin-bom')))
+    implementation(shadow('org.jetbrains.kotlin:kotlin-stdlib-jdk8'))
 
-    shadow 'com.googlecode.mp4parser:isoparser:1.1.7'
-    shadow 'org.apache.commons:commons-exec:1.3'
-    shadow 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0', shadeExclusions
-    shadow 'com.google.api-client:google-api-client-gson:1.20.0', shadeExclusions
-    shadow 'com.google.api-client:google-api-client-java6:1.20.0', shadeExclusions
-    shadow 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
+    implementation(shadow('com.googlecode.mp4parser:isoparser:1.1.7'))
+    implementation(shadow('org.apache.commons:commons-exec:1.3'))
+    implementation(shadow('com.google.apis:google-api-services-youtube:v3-rev178-1.22.0', shadeExclusions))
+    implementation(shadow('com.google.api-client:google-api-client-gson:1.20.0', shadeExclusions))
+    implementation(shadow('com.google.api-client:google-api-client-java6:1.20.0', shadeExclusions))
+    implementation(shadow('com.google.oauth-client:google-oauth-client-jetty:1.20.0'))
 
     if (mcVersion >= 11400) { // need lwjgl 3
         for (suffix in ['', ':natives-linux', ':natives-windows', ':natives-macos']) {
-            shadow('org.lwjgl:lwjgl-tinyexr:3.2.2' + suffix) {
+            implementation(shadow('org.lwjgl:lwjgl-tinyexr:3.2.2' + suffix) {
                 exclude group: 'org.lwjgl', module: 'lwjgl' // comes with MC
-            }
+            })
         }
     }
 
     if (mcVersion < 11200) {
         // The version which MC ships is too old, we'll need to ship our own
-        shadow 'com.google.code.gson:gson:2.8.7'
+        implementation(shadow('com.google.code.gson:gson:2.8.7'))
     }
 
-    shadow 'com.github.javagl.JglTF:jgltf-model:3af6de4'
+    implementation(shadow('com.github.javagl.JglTF:jgltf-model:3af6de4'))
 
     if (FABRIC) {
-        shadow 'org.apache.maven:maven-artifact:3.6.1'
+        implementation(shadow('org.apache.maven:maven-artifact:3.6.1'))
     }
 
-    shadow 'org.aspectj:aspectjrt:1.8.2'
+    implementation(shadow('org.aspectj:aspectjrt:1.8.2'))
 
-    shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
+    implementation(shadow('com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'))
 
-    shadow "com.github.ReplayMod:ReplayStudio:c9de2f5", shadeExclusions
+    implementation(shadow('com.udojava:EvalEx:2.6'))
+
+    implementation(shadow("com.github.ReplayMod:ReplayStudio:c9de2f5", shadeExclusions))
 
     implementation(jGui){
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
     }
-    shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
+    implementation(shadow('com.github.ReplayMod:lwjgl-utils:27dcd66'))
 
     if (FABRIC) {
         if (mcVersion >= 11700) {
@@ -367,7 +367,6 @@ dependencies {
     }
 
     testImplementation 'junit:junit:4.11'
-    shadow 'com.udojava:EvalEx:2.6'
 }
 
 if (mcVersion <= 10710) {
