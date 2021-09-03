@@ -116,7 +116,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         jvmTarget = mcVersion >= 11700 ? 16 : 1.8
-        freeCompilerArgs = ["-Xjvm-default=all"]
+        freeCompilerArgs = ["-Xjvm-default=all", "-Xopt-in=kotlin.time.ExperimentalTime"]
     }
 }
 
@@ -222,6 +222,13 @@ repositories {
             includeGroupByRegex 'com\\.github\\..*'
         }
     }
+    maven {
+        // url 'https://repo.essential.gg'
+        url 'https://repo.sk1er.club/repository/maven-public'
+        content {
+            includeGroup 'gg.essential'
+        }
+    }
 }
 
 configurations {
@@ -310,6 +317,24 @@ dependencies {
 
     implementation(shadow(platform('org.jetbrains.kotlin:kotlin-bom')))
     implementation(shadow('org.jetbrains.kotlin:kotlin-stdlib-jdk8'))
+
+    // TODO will need to port this to all the versions later, for now let's just guess the closest and hope for the best
+    String elementaMcVersion
+    if (mcVersion >= 11700) {
+        elementaMcVersion = '1.17.1'
+    } else if (mcVersion >= 11400) {
+        elementaMcVersion = '1.16.2'
+    } else if (mcVersion >= 11000) {
+        elementaMcVersion = '1.12.2'
+    } else {
+        elementaMcVersion = '1.8.9'
+    }
+    def elementaVersion = '391'
+    if (fabric) {
+        modImplementation(shadow("gg.essential:elementa-$elementaMcVersion-fabric:$elementaVersion"))
+    } else {
+        implementation(shadow("gg.essential:elementa-$elementaMcVersion-forge:$elementaVersion"))
+    }
 
     implementation(shadow('com.googlecode.mp4parser:isoparser:1.1.7'))
     implementation(shadow('org.apache.commons:commons-exec:1.3'))
