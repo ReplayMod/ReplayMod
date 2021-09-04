@@ -186,7 +186,7 @@ class GuiPathingKt(
 
     val timeline by UITimeline().constrain {
         x = SiblingConstraint(5f)
-        width = FillConstraint(false) - basicWidthConstraint { zoomButtonPanel.getWidth() } - 2.pixels
+        width = FillConstraint(false)
         height = 20.pixels
     }.apply {
         enableIndicators()
@@ -209,14 +209,25 @@ class GuiPathingKt(
         }
     } childOf secondRow
 
-    private val scrollbar by UITexturedScrollBar().constrain {
+    private val belowTimeline by UIContainer().constrain {
         x = 0.pixels boundTo timeline
         y = SiblingConstraint(1f) boundTo timeline
         width = CopyConstraintFloat() boundTo timeline
         height = 9.pixels
+    } childOf window
+
+    private val belowTimelineButtons by UIContainer().constrain {
+        width = ChildBasedSizeConstraint()
+        height = 100.percent
+    } childOf belowTimeline
+
+    private val scrollbar by UITexturedScrollBar().constrain {
+        x = SiblingConstraint(2f)
+        width = FillConstraint(useSiblings = false)
+        height = 100.percent
     }.apply {
         timeline.content.setHorizontalScrollBarComponent(grip)
-    } childOf window
+    } childOf belowTimeline
 
     private val timelineTime by UITimelineTime(timeline).constrain {
         x = 0.pixels boundTo timeline
@@ -225,13 +236,8 @@ class GuiPathingKt(
         height = 8.pixels
     } childOf window
 
-    private val zoomButtonPanel by UIContainer().constrain {
-        x = 0.pixels(alignOpposite = true)
-        width = ChildBasedMaxSizeConstraint()
-        height = ChildBasedSizeConstraint()
-    } childOf secondRow
-
     private val zoomInButton by UIButton().constrain {
+        x = SiblingConstraint(2f)
         width = 9.pixels
         height = 9.pixels
     }.texture(ReplayMod.TEXTURE, UITexture.TextureData.ofSize(40, 20, 9, 9)) {
@@ -239,10 +245,10 @@ class GuiPathingKt(
         addLine("replaymod.gui.ingame.menu.zoomin".i18n())
     }.onMouseClick {
         timeline.zoom.set { it * 2 / 3 }
-    } childOf zoomButtonPanel
+    } childOf belowTimelineButtons
 
     private val zoomOutButton by UIButton().constrain {
-        y = SiblingConstraint(2f)
+        x = SiblingConstraint(2f)
         width = 9.pixels
         height = 9.pixels
     }.texture(ReplayMod.TEXTURE, UITexture.TextureData.ofSize(40, 30, 9, 9)) {
@@ -250,7 +256,7 @@ class GuiPathingKt(
         addLine("replaymod.gui.ingame.menu.zoomout".i18n())
     }.onMouseClick {
         timeline.zoom.set { it * 3 / 2 }
-    } childOf zoomButtonPanel
+    } childOf belowTimelineButtons
 
     private val positionKeyframePanel by UIPositionKeyframePanel(state).apply {
         overlay.kt.bottomRightPanel.insertChildAt(toggleButton, 0)
