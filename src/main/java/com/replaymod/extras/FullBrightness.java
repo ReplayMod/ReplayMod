@@ -8,9 +8,7 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
-import de.johni0702.minecraft.gui.element.GuiImage;
-import de.johni0702.minecraft.gui.element.IGuiImage;
-import de.johni0702.minecraft.gui.layout.HorizontalLayout;
+import com.replaymod.replay.gui.overlay.UIStatusIndicator;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -20,7 +18,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
     private ReplayMod core;
     private ReplayModReplay module;
 
-    private final IGuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 90, 20, 19, 16).setSize(19, 16);
+    private final UIStatusIndicator indicator = new UIStatusIndicator(90, 20);
 
     private MinecraftClient mc;
     private boolean active;
@@ -108,9 +106,9 @@ public class FullBrightness extends EventRegistrations implements Extra {
     { on(ReplayOpenedCallback.EVENT, replayHandler -> updateIndicator(replayHandler.getOverlay())); }
     private void updateIndicator(GuiReplayOverlay overlay) {
         if (active) {
-            overlay.statusIndicatorPanel.addElements(new HorizontalLayout.Data(1), indicator);
+            overlay.kt.getBottomLeftPanel().addChild(indicator);
         } else {
-            overlay.statusIndicatorPanel.removeElement(indicator);
+            overlay.kt.getBottomLeftPanel().removeChild(indicator);
         }
     }
 

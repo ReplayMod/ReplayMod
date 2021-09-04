@@ -12,6 +12,14 @@ import gg.essential.elementa.dsl.*
 class GuiReplayOverlayKt {
     val window = Window(ElementaVersion.V1, 60)
 
+    val bottomLeftPanel by UIContainer().constrain {
+        x = 6.pixels(alignOpposite = false)
+        y = 6.pixels(alignOpposite = true)
+        // Children will be next to each other
+        width = ChildBasedSizeConstraint()
+        height = ChildBasedMaxSizeConstraint()
+    } childOf window
+
     val bottomRightPanel by UIContainer().constrain {
         x = 6.pixels(alignOpposite = true)
         y = 6.pixels(alignOpposite = true)
