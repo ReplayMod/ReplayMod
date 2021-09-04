@@ -1,7 +1,9 @@
 /**
  * Based on Elementa's AbstractTextInput but with more stuff exposed and certain changes so we can get it to behave just
  * like we need it to:
+ * - Add `isCursorAtAbsoluteStart`
  * - Remove the `private` from TextOperation implementations' fields
+ * - Remove the `protected` from `activateAction`
  *
  * MIT License
  *
@@ -61,7 +63,7 @@ abstract class AbstractTextInput(
             field = value
         }
     protected var updateAction: (text: String) -> Unit = {}
-    protected var activateAction: (text: String) -> Unit = {}
+    var activateAction: (text: String) -> Unit = {}
 
     protected val textualLines = mutableListOf(TextualLine("", 0..0))
     protected val visualLines = mutableListOf(VisualLine("", 0))
@@ -766,6 +768,9 @@ abstract class AbstractTextInput(
             )
         }
     }
+
+    val isCursorAtAbsoluteStart: Boolean
+        get() = cursor.isAtAbsoluteStart
 
     override fun animationFrame() {
         super.animationFrame()

@@ -19,6 +19,7 @@ import com.replaymod.replay.ReplayHandler
 import com.replaymod.simplepathing.SPTimeline
 import com.replaymod.simplepathing.SPTimeline.SPPath
 import com.replaymod.simplepathing.Setting
+import com.replaymod.simplepathing.gui.panels.UIPositionKeyframePanel
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.constraints.*
@@ -250,6 +251,10 @@ class GuiPathingKt(
     }.onMouseClick {
         timeline.zoom.set { it * 3 / 2 }
     } childOf zoomButtonPanel
+
+    private val positionKeyframePanel by UIPositionKeyframePanel(state).apply {
+        overlay.kt.bottomRightPanel.insertChildAt(toggleButton, 0)
+    } hiddenChildOf window
 
     init {
         val speedValue = window.pollingState { overlay.speedSlider.value }
