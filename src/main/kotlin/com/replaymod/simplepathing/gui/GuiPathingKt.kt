@@ -20,6 +20,7 @@ import com.replaymod.simplepathing.SPTimeline
 import com.replaymod.simplepathing.SPTimeline.SPPath
 import com.replaymod.simplepathing.Setting
 import com.replaymod.simplepathing.gui.panels.UIPositionKeyframePanel
+import com.replaymod.simplepathing.gui.panels.UITimePanel
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.constraints.*
@@ -260,6 +261,15 @@ class GuiPathingKt(
 
     private val positionKeyframePanel by UIPositionKeyframePanel(state).apply {
         overlay.kt.bottomRightPanel.insertChildAt(toggleButton, 0)
+    } hiddenChildOf window
+
+    private val timePanel by UITimePanel(state).constrain {
+        x = 0.pixels boundTo belowTimeline
+        y = SiblingConstraint(1f) boundTo belowTimeline
+    }.apply {
+        belowTimelineButtons.insertChildAt(toggleButton.constrain {
+            x = SiblingConstraint(2f)
+        }, 0)
     } hiddenChildOf window
 
     init {
