@@ -17,14 +17,10 @@ import com.replaymod.simplepathing.SPTimeline;
 import com.replaymod.simplepathing.SPTimeline.SPPath;
 import com.replaymod.simplepathing.Setting;
 import com.replaymod.simplepathing.properties.ExplicitInterpolationProperty;
+import com.udojava.evalex.Expression;
 import de.johni0702.minecraft.gui.container.AbstractGuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
-import de.johni0702.minecraft.gui.element.GuiButton;
-import de.johni0702.minecraft.gui.element.GuiLabel;
-import de.johni0702.minecraft.gui.element.GuiNumberField;
-import de.johni0702.minecraft.gui.element.GuiTooltip;
-import de.johni0702.minecraft.gui.element.IGuiClickable;
-import de.johni0702.minecraft.gui.element.IGuiLabel;
+import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.element.advanced.GuiDropdownMenu;
 import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
@@ -38,6 +34,7 @@ import net.minecraft.client.resource.language.I18n;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Optional;
 
@@ -50,9 +47,11 @@ import com.replaymod.core.versions.MCVer.Keyboard;
 import static de.johni0702.minecraft.gui.utils.Utils.link;
 
 public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends AbstractGuiPopup<T> implements Typeable {
-    private static GuiNumberField newGuiNumberField() {
-        return new GuiNumberField().setPrecision(0).setValidateOnFocusChange(true);
+    private static GuiExpressionField newGuiExpressionField() {
+        return new GuiExpressionField();
     }
+
+    DecimalFormat df = new DecimalFormat("###.#####");
 
     protected static final Logger logger = LogManager.getLogger();
 
@@ -66,9 +65,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
     public final GuiPanel inputs = new GuiPanel();
 
-    public final GuiNumberField timeMinField = newGuiNumberField().setSize(30, 20).setMinValue(0);
-    public final GuiNumberField timeSecField = newGuiNumberField().setSize(20, 20).setMinValue(0).setMaxValue(59);
-    public final GuiNumberField timeMSecField = newGuiNumberField().setSize(30, 20).setMinValue(0).setMaxValue(999);
+    public final GuiExpressionField timeMinField = newGuiExpressionField().setSize(50, 20);
+    public final GuiExpressionField timeSecField = newGuiExpressionField().setSize(50, 20);
+    public final GuiExpressionField timeMSecField = newGuiExpressionField().setSize(50, 20);
 
     public final GuiPanel timePanel = new GuiPanel()
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3))
@@ -94,6 +93,21 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
                 .addElements(new VerticalLayout.Data(0.5, false), title, inputs, timePanel, buttons);
     }
 
+    protected boolean canSave() {
+        try {
+            long timeMin = timeMinField.getLong();
+            long timeSec = timeSecField.getLong();
+            long timeMSec = timeMSecField.getLong();
+
+            long newTime = (timeMin * 60 + timeSec) * 1000 + timeMSec;
+
+            if (newTime < 0 || newTime > guiPathing.timeline.getLength()) {
+                return false;
+            }
+            return newTime == keyframe.getTime() || path.getKeyframe(newTime) == null;
+        } catch (Expression.ExpressionException | ArithmeticException | NumberFormatException e) { return false; }
+    }
+
     public GuiEditKeyframe(GuiPathing gui, SPPath path, long time, String type) {
         super(ReplayModReplay.instance.getReplayHandler().getOverlay());
         this.guiPathing = gui;
@@ -102,14 +116,18 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         this.keyframe = this.path.getKeyframe(time);
 
         Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
-        timeMinField.setValue(time / 1000 / 60).onTextChanged(updateSaveButtonState);
-        timeSecField.setValue(time / 1000 % 60).onTextChanged(updateSaveButtonState);
-        timeMSecField.setValue(time % 1000).onTextChanged(updateSaveButtonState);
+        timeMinField.setText(String.valueOf(time / 1000 / 60)).onTextChanged(updateSaveButtonState);
+        timeSecField.setText(String.valueOf(time / 1000 % 60)).onTextChanged(updateSaveButtonState);
+        timeMSecField.setText(String.valueOf(time % 1000)).onTextChanged(updateSaveButtonState);
 
         title.setI18nText("replaymod.gui.editkeyframe.title." + type);
         saveButton.onClick(() -> {
+            long timeMin = timeMinField.getLong();
+            long timeSec = timeSecField.getLong();
+            long timeMSec = timeMSecField.getLong();
+
             Change change = save();
-            long newTime = (timeMinField.getInteger() * 60 + timeSecField.getInteger()) * 1000 + timeMSecField.getInteger();
+            long newTime = (timeMin * 60 + timeSec) * 1000 + timeMSec;
             if (newTime != time) {
                 change = CombinedChange.createFromApplied(change,
                         gui.getMod().getCurrentTimeline().moveKeyframe(path, time, newTime));
@@ -120,17 +138,6 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             gui.getMod().getCurrentTimeline().getTimeline().pushChange(change);
             close();
         });
-    }
-
-    private boolean canSave() {
-        long newTime = (timeMinField.getInteger() * 60 + timeSecField.getInteger()) * 1000 + timeMSecField.getInteger();
-        if (newTime < 0 || newTime > guiPathing.timeline.getLength()) {
-            return false;
-        }
-        if (newTime != keyframe.getTime() && path.getKeyframe(newTime) != null) {
-            return false;
-        }
-        return true;
     }
 
     @Override
@@ -170,9 +177,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     }
 
     public static class Time extends GuiEditKeyframe<Time> {
-        public final GuiNumberField timestampMinField = newGuiNumberField().setSize(30, 20).setMinValue(0);
-        public final GuiNumberField timestampSecField = newGuiNumberField().setSize(20, 20).setMinValue(0).setMaxValue(59);
-        public final GuiNumberField timestampMSecField = newGuiNumberField().setSize(30, 20).setMinValue(0).setMaxValue(999);
+        public final GuiExpressionField timestampMinField = newGuiExpressionField().setSize(50, 20);
+        public final GuiExpressionField timestampSecField = newGuiExpressionField().setSize(50, 20);
+        public final GuiExpressionField timestampMSecField = newGuiExpressionField().setSize(50, 20);
 
         {
             inputs.setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(3))
@@ -187,10 +194,16 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             super(gui, path, keyframe, "time");
 
             this.keyframe.getValue(TimestampProperty.PROPERTY).ifPresent(time -> {
-                timestampMinField.setValue(time / 1000 / 60);
-                timestampSecField.setValue(time / 1000 % 60);
-                timestampMSecField.setValue(time % 1000);
+                timestampMinField.setText(String.valueOf(time / 1000 / 60));
+                timestampSecField.setText(String.valueOf(time / 1000 % 60));
+                timestampMSecField.setText(String.valueOf(time % 1000));
             });
+
+            Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
+
+            timestampMinField.onTextChanged(updateSaveButtonState);
+            timestampMSecField.onTextChanged(updateSaveButtonState);
+            timestampMSecField.onTextChanged(updateSaveButtonState);
 
             link(timestampMinField, timestampSecField, timestampMSecField, timeMinField, timeSecField, timeMSecField);
 
@@ -198,10 +211,34 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         }
 
         @Override
-        protected Change save() {
-            int time = (timestampMinField.getInteger() * 60 + timestampSecField.getInteger()) * 1000
-                    + timestampMSecField.getInteger();
+        protected Change save() throws Expression.ExpressionException, ArithmeticException, NumberFormatException {
+
+            long timeMin = timestampMinField.getLong();
+            long timeSec = timestampSecField.getLong();
+            long timeMSec = timestampMSecField.getLong();
+
+            int time = (int) ((timeMin * 60 + timeSec) * 1000 + timeMSec);
+
             return guiPathing.getMod().getCurrentTimeline().updateTimeKeyframe(keyframe.getTime(), time);
+
+        }
+
+        @Override
+        protected boolean canSave(){
+            try {
+
+                long timeMin = timestampMinField.getLong();
+                long timeSec = timestampSecField.getLong();
+                long timeMSec = timestampMSecField.getLong();
+
+                long time = (timeMin * 60 + timeSec) * 1000 + timeMSec;
+
+                if (time < 0) { //TODO add check to make sure time isn't longer than the replay
+                    return false;
+                } else {
+                    return super.canSave();
+                }
+            } catch (Expression.ExpressionException | ArithmeticException | NumberFormatException e) { return false; }
         }
 
         @Override
@@ -211,13 +248,13 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
     }
 
     public static class Position extends GuiEditKeyframe<Position> {
-        public final GuiNumberField xField = newGuiNumberField().setSize(60, 20).setPrecision(5);
-        public final GuiNumberField yField = newGuiNumberField().setSize(60, 20).setPrecision(5);
-        public final GuiNumberField zField = newGuiNumberField().setSize(60, 20).setPrecision(5);
+        public final GuiExpressionField xField = newGuiExpressionField().setSize(90, 20);
+        public final GuiExpressionField yField = newGuiExpressionField().setSize(90, 20);
+        public final GuiExpressionField zField = newGuiExpressionField().setSize(90, 20);
 
-        public final GuiNumberField yawField = newGuiNumberField().setSize(60, 20).setPrecision(5);
-        public final GuiNumberField pitchField = newGuiNumberField().setSize(60, 20).setPrecision(5);
-        public final GuiNumberField rollField = newGuiNumberField().setSize(60, 20).setPrecision(5);
+        public final GuiExpressionField yawField = newGuiExpressionField().setSize(90, 20);
+        public final GuiExpressionField pitchField = newGuiExpressionField().setSize(90, 20);
+        public final GuiExpressionField rollField = newGuiExpressionField().setSize(90, 20);
 
         public final InterpolationPanel interpolationPanel = new InterpolationPanel();
 
@@ -239,16 +276,25 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         public Position(GuiPathing gui, SPPath path, long keyframe) {
             super(gui, path, keyframe, "pos");
 
+
+            Consumer<String> updateSaveButtonState = s -> saveButton.setEnabled(canSave());
             this.keyframe.getValue(CameraProperties.POSITION).ifPresent(pos -> {
-                xField.setValue(pos.getLeft());
-                yField.setValue(pos.getMiddle());
-                zField.setValue(pos.getRight());
+                xField.setText(df.format(pos.getLeft()));
+                yField.setText(df.format(pos.getMiddle()));
+                zField.setText(df.format(pos.getRight()));
             });
             this.keyframe.getValue(CameraProperties.ROTATION).ifPresent(rot -> {
-                yawField.setValue(rot.getLeft());
-                pitchField.setValue(rot.getMiddle());
-                rollField.setValue(rot.getRight());
+                yawField.setText(df.format(rot.getLeft()));
+                pitchField.setText(df.format(rot.getMiddle()));
+                rollField.setText(df.format(rot.getRight()));
             });
+
+            xField.onTextChanged(updateSaveButtonState);
+            yField.onTextChanged(updateSaveButtonState);
+            zField.onTextChanged(updateSaveButtonState);
+            yawField.onTextChanged(updateSaveButtonState);
+            pitchField.onTextChanged(updateSaveButtonState);
+            rollField.onTextChanged(updateSaveButtonState);
 
             link(xField, yField, zField, yawField, pitchField, rollField, timeMinField, timeSecField, timeMSecField);
 
@@ -256,12 +302,32 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         }
 
         @Override
-        protected Change save() {
+        protected boolean canSave(){
+
+            if(xField.setPrecision(14).isExpressionValid() &&
+                    yField.setPrecision(14).isExpressionValid() &&
+                    zField.setPrecision(14).isExpressionValid() &&
+                    yawField.setPrecision(11).isExpressionValid() &&
+                    pitchField.setPrecision(11).isExpressionValid() &&
+                    rollField.setPrecision(11).isExpressionValid()){
+                return super.canSave();
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        protected Change save() throws Expression.ExpressionException, ArithmeticException, NumberFormatException  {
+
+            double x = xField.setPrecision(14).getDouble();
+            double y = yField.setPrecision(14).getDouble();
+            double z = zField.setPrecision(14).getDouble();
+            float yaw = yawField.setPrecision(11).getFloat();
+            float pitch = pitchField.setPrecision(11).getFloat();
+            float roll = rollField.setPrecision(11).getFloat();
+
             SPTimeline timeline = guiPathing.getMod().getCurrentTimeline();
-            Change positionChange = timeline.updatePositionKeyframe(time,
-                    xField.getDouble(), yField.getDouble(), zField.getDouble(),
-                    yawField.getFloat(), pitchField.getFloat(), rollField.getFloat()
-            );
+            Change positionChange = timeline.updatePositionKeyframe(time, x, y, z, yaw, pitch, roll);
             if (interpolationPanel.getSettingsPanel() == null) {
                 // The last keyframe doesn't have interpolator settings because there is no segment following it
                 return positionChange;
@@ -273,6 +339,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
             } else {
                 return CombinedChange.createFromApplied(positionChange, timeline.setInterpolator(time, interpolator));
             }
+
         }
 
         @Override
