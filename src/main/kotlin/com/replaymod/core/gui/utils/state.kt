@@ -50,3 +50,7 @@ fun <S> State<S>.bindTransition(update: (done: () -> Unit, oldState: S, newState
     }
     onSetValue(::onStateChanged)
 }
+
+fun <A, B, C> State<A>.zip(b: State<B>, c: State<C>): State<Triple<A, B, C>> = zip(b).zip(c).map { values ->
+    Triple(values.first.first, values.first.second, values.second)
+}

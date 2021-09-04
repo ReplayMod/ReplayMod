@@ -46,7 +46,9 @@ class UITimelineKeyframes(
             height = ChildBasedSizeConstraint()
         }
 
-        state.timeKeyframes.zip(state.selectionTimeKeyframes).onSetValueAndNow { (keyframes, selection) ->
+        val speed = pollingState { state.gui.java.overlay.speedSliderValue }
+
+        state.timeKeyframes.zip(state.selectionTimeKeyframes, speed).onSetValueAndNow { (keyframes, selection, speed) ->
             val row = rows[1]
             row.clearChildren()
 
@@ -57,9 +59,20 @@ class UITimelineKeyframes(
                 val lineEffect = LineToReplayTimelineEffect(replayTimeline, replayTime)
                 UIKeyframe(time, KeyframeType.TIME, time in selection) effect lineEffect childOf row
 
+                val segmentSpeed = if (prevTime != time) (replayTime - prevReplayTime) / (time - prevTime) else speed
+
                 // Draw red quads on time path segments that would require time going backwards
                 if (prevReplayTime > replayTime) {
                     UISegment(prevTime, time, Color.RED) childOf row
+                } else if ((segmentSpeed / speed - 1).absoluteValue > 0.01) {
+                    // Draw white/green/yellow quads on paused/slower/faster path segments
+                    UISegment(prevTime, time, when {
+                        segmentSpeed == 0.0 -> Color.WHITE
+                        segmentSpeed < speed -> Color.GREEN
+                        else -> Color.YELLOW
+                    }).addTooltip {
+                        addLine("Replay Speed: %.2fx".format(segmentSpeed))
+                    } childOf row
                 }
                 prevTime = time
                 prevReplayTime = replayTime
