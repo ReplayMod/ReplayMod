@@ -1,16 +1,18 @@
 package com.replaymod.simplepathing.gui;
 
 import com.udojava.evalex.Expression;
+import com.udojava.evalex.ExpressionSettings;
 import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableColor;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 public class GuiExpressionField extends GuiTextField {
 
     private Boolean expressionValid = null;
-    private int precision = 20;
+    private MathContext mathContext = new MathContext(20);
 
     @Override
     protected void onTextChanged(String from) {
@@ -21,7 +23,7 @@ public class GuiExpressionField extends GuiTextField {
 
     private boolean verify(){
         try{
-            getExpression().setPrecision(precision).eval();
+            getExpression().eval();
             setTextColor(ReadableColor.WHITE);
             return expressionValid = true;
         } catch (Expression.ExpressionException | ArithmeticException | NumberFormatException e){
@@ -38,20 +40,20 @@ public class GuiExpressionField extends GuiTextField {
     }
 
     public GuiExpressionField setPrecision(int precision) {
-        this.precision = precision;
+        this.mathContext = new MathContext(precision);
         return this;
     }
 
     public Expression getExpression() {
-        return new Expression(getText());
+        return new Expression(getText(), mathContext);
     }
 
     public BigDecimal getBigDecimal() throws Expression.ExpressionException, ArithmeticException, NumberFormatException {
-        return getExpression().setPrecision(precision).eval();
+        return getExpression().eval();
     }
 
     public long getLong() throws Expression.ExpressionException, ArithmeticException, NumberFormatException  {
-        return  getBigDecimal().longValueExact();
+        return  getBigDecimal().longValue();
     }
 
     public double getDouble() throws Expression.ExpressionException, ArithmeticException, NumberFormatException  {
