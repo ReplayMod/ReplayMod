@@ -1,6 +1,6 @@
 package com.replaymod.simplepathing.gui
 
-import com.replaymod.core.gui.common.LazyState
+import com.replaymod.core.gui.common.lazy
 import com.replaymod.core.utils.associateNotNull
 import com.replaymod.core.utils.kt
 import com.replaymod.core.utils.orNull
@@ -11,6 +11,7 @@ import com.replaymod.pathing.properties.TimestampProperty
 import com.replaymod.replaystudio.pathing.change.Change
 import com.replaymod.simplepathing.ReplayModSimplePathing
 import com.replaymod.simplepathing.SPTimeline
+import gg.essential.elementa.state.BasicState
 import kotlin.time.Duration
 
 class KeyframeState(
@@ -20,9 +21,9 @@ class KeyframeState(
     private var lastTimeline: SPTimeline? = null
     private var lastChange: Change? = null
 
-    val selection = LazyState(Selection(emptySet(), emptySet()))
-    val timeKeyframes = LazyState(emptyMap<Duration, TimeKeyframe>())
-    val positionKeyframes = LazyState(emptyMap<Duration, PositionKeyframe>())
+    val selection = BasicState(Selection(emptySet(), emptySet())).lazy()
+    val timeKeyframes = BasicState(emptyMap<Duration, TimeKeyframe>()).lazy()
+    val positionKeyframes = BasicState(emptyMap<Duration, PositionKeyframe>()).lazy()
 
     val selectionPositionKeyframes = selection.map { it.positionKeyframes }
     val selectionTimeKeyframes = selection.map { it.timeKeyframes }

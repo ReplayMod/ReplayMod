@@ -1,13 +1,14 @@
 package com.replaymod.core.gui.common.timeline
 
-import com.replaymod.core.gui.common.BoundedState
 import com.replaymod.core.gui.common.UITexture
+import com.replaymod.core.gui.common.bounded
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.dsl.*
+import gg.essential.elementa.state.BasicState
 import kotlin.time.Duration
 
 class UITimelineCursor(val timeline: UITimeline) : UIContainer() {
-    val position = BoundedState(Duration.ZERO) { it.coerceIn(Duration.ZERO..timeline.length.get()) }
+    val position = BasicState(Duration.ZERO).bounded { it.coerceIn(Duration.ZERO..timeline.length.get()) }
 
     val positionMillis get() = position.get().inWholeMilliseconds
 

@@ -1,25 +1,39 @@
 package com.replaymod.core.gui.common
 
-import gg.essential.elementa.state.BasicState
+import gg.essential.elementa.state.State
 
-class LazyState<T>(value: T) : BasicState<T>(value) {
+fun <S : State<T>, T> S.lazy() = LazyState(this)
+fun <S : State<T>, T> S.bounded(constrain: (value: T) -> T) = BoundedState(this, constrain)
+
+open class DelegatingState<S : State<T>, T>(val inner: S) : State<T>() {
+    init {
+        @Suppress("LeakingThis")
+        inner.onSetValue(this::notifyListeners)
+    }
+
+    protected open fun notifyListeners(value: T) {
+        super.set(value)
+    }
+
+    override fun get(): T = inner.get()
+    override fun set(value: T) = inner.set(value)
+}
+
+class LazyState<S : State<T>, T>(inner: S) : DelegatingState<S, T>(inner) {
     private var dirty = false
 
-    override fun set(value: T) {
-        if (value == valueBacker) return
-        valueBacker = value
+    override fun notifyListeners(value: T) {
         dirty = true
     }
 
     fun flush() {
         if (!dirty) return
-        val value = get()
-        listeners.forEach { it(value) }
+        super.notifyListeners(get())
     }
 }
 
-class BoundedState<T>(value: T, private val constrain: (value: T) -> T) : BasicState<T>(value) {
-    override fun set(value: T) {
-        super.set(constrain(value))
-    }
+class BoundedState<S: State<T>, T>(inner: S, private val constrain: (value: T) -> T) : DelegatingState<S, T>(inner) {
+    override fun notifyListeners(value: T) = super.notifyListeners(constrain(value))
+    override fun get(): T = constrain(super.get())
+    override fun set(value: T) = super.set(constrain(value))
 }
