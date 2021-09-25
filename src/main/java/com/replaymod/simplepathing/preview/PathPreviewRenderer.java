@@ -266,7 +266,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         float posY = 0f;
         float size = 10f / ReplayMod.TEXTURE_SIZE;
 
-        if (mod.isSelected(keyframe)) {
+        if (mod.isSelected(SPTimeline.SPPath.POSITION, keyframe.getTime())) {
             posY += size;
         }
 

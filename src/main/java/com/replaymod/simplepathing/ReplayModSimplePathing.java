@@ -5,6 +5,8 @@ import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedCallback;
+import com.replaymod.simplepathing.gui.KeyframeState;
+import com.replaymod.simplepathing.gui.KeyframeType;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
@@ -15,7 +17,6 @@ import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.change.Change;
-import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.pathing.serialize.TimelineSerialization;
 import com.replaymod.replaystudio.replay.ReplayFile;
@@ -99,20 +100,20 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             settingsRegistry.save();
         });
         core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, () ->
-                guiPathing != null && guiPathing.deleteButtonPressed());
+                guiPathing != null && guiPathing.kt.deleteButtonPressed());
         keyPositionKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positionkeyframe", Keyboard.KEY_I, () -> {
-            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, false);
+            if (guiPathing != null) guiPathing.kt.toggleKeyframe(KeyframeType.POSITION);
         }, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positiononlykeyframe", 0, () -> {
-            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, true);
+            if (guiPathing != null) guiPathing.kt.toggleKeyframe(KeyframeType.POSITION, true);
         }, true);
         keyTimeKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.timekeyframe", Keyboard.KEY_O, () -> {
-            if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.TIME, false);
+            if (guiPathing != null) guiPathing.kt.toggleKeyframe(KeyframeType.TIME);
         }, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.bothkeyframes", 0, () -> {
             if (guiPathing != null) {
-                guiPathing.toggleKeyframe(SPPath.TIME, false);
-                guiPathing.toggleKeyframe(SPPath.POSITION, false);
+                guiPathing.kt.toggleKeyframe(KeyframeType.TIME);
+                guiPathing.kt.toggleKeyframe(KeyframeType.POSITION);
             }
         }, true);
         core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_Z, () -> {
@@ -188,7 +189,6 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     private void onReplayClosed() {
         currentTimeline = null;
         guiPathing = null;
-        selectedPath = null;
     }
 
     private GuiReplayOverlay getReplayOverlay() {
@@ -197,31 +197,25 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
 
     private SPTimeline currentTimeline;
 
-    private SPPath selectedPath;
-    private long selectedTime;
-
+    @Deprecated
     public SPPath getSelectedPath() {
-        if (getReplayOverlay().timeline.getSelectedMarker() != null) {
-            selectedPath = null;
-            selectedTime = 0;
-        }
-        return selectedPath;
+        return this.guiPathing == null ? null : this.guiPathing.kt.getState().getSelectedPath();
     }
 
+    @Deprecated
     public long getSelectedTime() {
-        return selectedTime;
+        return this.guiPathing == null ? 0 : this.guiPathing.kt.getState().getSelectedTime();
     }
 
-    public boolean isSelected(Keyframe keyframe) {
-        return getSelectedPath() != null && currentTimeline.getKeyframe(selectedPath, selectedTime) == keyframe;
+    public boolean isSelected(SPPath path, long time) {
+        if (this.guiPathing == null) return false;
+        return this.guiPathing.kt.getState().isSelected(path, time);
     }
 
+    @Deprecated
     public void setSelected(SPPath path, long time) {
-        selectedPath = path;
-        selectedTime = time;
-        if (selectedPath != null) {
-            getReplayOverlay().timeline.setSelectedMarker(null);
-        }
+        if (this.guiPathing == null) return;
+        this.guiPathing.kt.getState().setSelected(path, time);
     }
 
     public void setCurrentTimeline(SPTimeline newTimeline) {
@@ -229,13 +223,17 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     }
 
     private void setCurrentTimeline(SPTimeline newTimeline, boolean save) {
-        selectedPath = null;
         currentTimeline = newTimeline;
         if (!save) {
             lastTimeline = newTimeline;
             lastChange = newTimeline.getTimeline().peekUndoStack();
         }
         updateDefaultInterpolatorType();
+        if (this.guiPathing != null) {
+            KeyframeState state = this.guiPathing.kt.getState();
+            state.getSelection().set(KeyframeState.Selection.EMPTY);
+            state.update();
+        }
     }
 
     public void clearCurrentTimeline() {

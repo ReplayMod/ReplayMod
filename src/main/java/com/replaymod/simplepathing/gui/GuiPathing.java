@@ -12,7 +12,6 @@ import com.replaymod.pathing.properties.CameraProperties;
 import com.replaymod.pathing.properties.SpectatorProperty;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.replay.ReplayHandler;
-import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
 import com.replaymod.replaystudio.pathing.path.Keyframe;
 import com.replaymod.replaystudio.pathing.path.Path;
@@ -26,10 +25,8 @@ import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
-import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 import de.johni0702.minecraft.gui.popup.GuiYesNoPopup;
 import de.johni0702.minecraft.gui.utils.Colors;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -108,14 +105,6 @@ public class GuiPathing {
                 mod.getCurrentTimeline().setEntityTracker(entityTracker);
             }
         });
-    }
-
-    public boolean deleteButtonPressed() {
-        if (mod.getSelectedPath() != null) {
-            toggleKeyframe(mod.getSelectedPath(), false);
-            return true;
-        }
-        return false;
     }
 
     private void startLoadingEntityTracker() {
@@ -238,65 +227,6 @@ public class GuiPathing {
             mod.getCurrentTimeline().setEntityTracker(entityTracker);
         }
         return true;
-    }
-
-    /**
-     * Called when either one of the property buttons is pressed.
-     * @param path {@code TIME} for the time property button, {@code POSITION} for the place property button
-     * @param neverSpectator when true, will insert a position keyframe even when currently spectating an entity
-     */
-    public void toggleKeyframe(SPPath path, boolean neverSpectator) {
-        LOGGER.debug("Updating keyframe on path {}" + path);
-        if (!loadEntityTracker(() -> toggleKeyframe(path, neverSpectator))) return;
-
-        int time = (int) kt.getTimeline().getCursor().getPositionMillis();
-        SPTimeline timeline = mod.getCurrentTimeline();
-
-        if (timeline.getPositionPath().getKeyframes().isEmpty() &&
-                timeline.getTimePath().getKeyframes().isEmpty() &&
-                time > 1000) {
-            String text = I18n.translate("replaymod.gui.ingame.first_keyframe_not_at_start_warning");
-            GuiInfoPopup.open(overlay, text.split("\\\\n"));
-        }
-
-        switch (path) {
-            case TIME:
-                if (mod.getSelectedPath() == path) {
-                    LOGGER.debug("Selected keyframe is time keyframe -> removing keyframe");
-                    timeline.removeTimeKeyframe(mod.getSelectedTime());
-                    mod.setSelected(null, 0);
-                } else if (timeline.isTimeKeyframe(time)) {
-                    LOGGER.debug("Keyframe at cursor position is time keyframe -> removing keyframe");
-                    timeline.removeTimeKeyframe(time);
-                    mod.setSelected(null, 0);
-                } else {
-                    LOGGER.debug("No time keyframe found -> adding new keyframe");
-                    timeline.addTimeKeyframe(time, replayHandler.getReplaySender().currentTimeStamp());
-                    mod.setSelected(path, time);
-                }
-                break;
-            case POSITION:
-                if (mod.getSelectedPath() == path) {
-                    LOGGER.debug("Selected keyframe is position keyframe -> removing keyframe");
-                    timeline.removePositionKeyframe(mod.getSelectedTime());
-                    mod.setSelected(null, 0);
-                } else if (timeline.isPositionKeyframe(time)) {
-                    LOGGER.debug("Keyframe at cursor position is position keyframe -> removing keyframe");
-                    timeline.removePositionKeyframe(time);
-                    mod.setSelected(null, 0);
-                } else {
-                    LOGGER.debug("No position keyframe found -> adding new keyframe");
-                    CameraEntity camera = replayHandler.getCameraEntity();
-                    int spectatedId = -1;
-                    if (!replayHandler.isCameraView() && !neverSpectator) {
-                        spectatedId = replayHandler.getOverlay().getMinecraft().getCameraEntity().getEntityId();
-                    }
-                    timeline.addPositionKeyframe(time, camera.getX(), camera.getY(), camera.getZ(),
-                            camera.yaw, camera.pitch, camera.roll, spectatedId);
-                    mod.setSelected(path, time);
-                }
-                break;
-        }
     }
 
     public ReplayModSimplePathing getMod() {

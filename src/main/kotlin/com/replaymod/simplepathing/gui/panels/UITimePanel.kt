@@ -4,8 +4,9 @@ import com.replaymod.core.gui.common.UIButton
 import com.replaymod.core.gui.common.input.*
 import com.replaymod.core.gui.utils.*
 import com.replaymod.core.utils.i18n
-import com.replaymod.simplepathing.SPTimeline
 import com.replaymod.simplepathing.gui.KeyframeState
+import com.replaymod.simplepathing.gui.moveKeyframes
+import com.replaymod.simplepathing.gui.moveTimeKeyframes
 import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
@@ -109,15 +110,11 @@ class UITimePanel(
     }.apply {
         input.onActivate {
             val newReplayTime = input.value
-            val selection = state.selectedTimeKeyframes.get().entries.firstOrNull()
-            if (selection != null) {
-                val (videoTime, keyframe) = (selection)
-                if (keyframe.replayTime != newReplayTime) {
-                    val timeline = state.mod.currentTimeline
-                    timeline.timeline.pushChange(timeline.updateTimeKeyframe(
-                        videoTime.inWholeMilliseconds,
-                        newReplayTime.inWholeMilliseconds.toInt(),
-                    ))
+            val oldReplayTime = state.selectedTimeKeyframes.get().values.firstOrNull()?.replayTime
+            if (oldReplayTime != null) {
+                if (oldReplayTime != newReplayTime) {
+                    val change = state.moveTimeKeyframes(state.selection.get(), newReplayTime - oldReplayTime)
+                    state.mod.currentTimeline.timeline.pushChange(change)
                 }
             } else {
                 state.gui.replayHandler.doJump(newReplayTime.inWholeMilliseconds.toInt(), true)
@@ -137,17 +134,15 @@ class UITimePanel(
     }.apply {
         input.onActivate {
             val newVideoTime = input.value
-            val selection = state.selectedTimeKeyframes.get().entries.firstOrNull()
-            if (selection != null) {
-                val (oldVideoTime, _) = selection
+            val oldVideoTime = state.selectedTimeKeyframes.get().keys.firstOrNull()
+            if (oldVideoTime != null) {
                 if (newVideoTime != oldVideoTime) {
+                    val timeKeyframes = KeyframeState.Selection.EMPTY.mutate {
+                        timeKeyframes += state.selectionTimeKeyframes.get()
+                    }
                     val timeline = state.mod.currentTimeline
-                    timeline.timeline.pushChange(timeline.moveKeyframe(
-                        SPTimeline.SPPath.TIME,
-                        oldVideoTime.inWholeMilliseconds,
-                        newVideoTime.inWholeMilliseconds,
-                    ))
-                    state.mod.setSelected(SPTimeline.SPPath.TIME, newVideoTime.inWholeMilliseconds)
+                    val change = state.moveKeyframes(timeKeyframes, newVideoTime - oldVideoTime)
+                    timeline.timeline.pushChange(change)
                 }
             } else {
                 state.gui.timeline.cursor.position.set(newVideoTime)

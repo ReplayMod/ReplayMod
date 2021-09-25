@@ -19,6 +19,7 @@ import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.effects.Effect
 import gg.essential.elementa.effects.ScissorEffect
+import gg.essential.universal.UKeyboard
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexFormats
@@ -132,23 +133,13 @@ class UITimelineKeyframes(
                 dragging.change?.undo(spTimeline.timeline)
 
                 // Compute new time
-                val oldTime = dragging.keyframe
-                var newTime = (oldTime + parentOfType<UITimeline>()!!.unit.get() * diff.toDouble())
-                    .coerceAtLeast(Duration.ZERO)
+                val deltaTime = parentOfType<UITimeline>()!!.unit.get() * diff.toDouble()
 
-                // If there already is a keyframe at the target time, then increase the time by one until there is none
-                while (spTimeline.getKeyframe(path, newTime.inWholeMilliseconds) != null) {
-                    newTime += Duration.Companion.milliseconds(1)
-                }
+                // Move keyframe to new position and store change for later undoing / pushing to history
+                dragging.change = state.moveKeyframes(dragging.selection, deltaTime)
 
-                // Move keyframe to new position and
-                // store change for later undoing / pushing to history
-                dragging.change =
-                    spTimeline.moveKeyframe(path, oldTime.inWholeMilliseconds, newTime.inWholeMilliseconds)
+                // Refresh keyframe state (required because we do not yet commit the Change)
                 state.refreshKeyframes()
-
-                // Selected keyframe has been moved
-                state.mod.setSelected(path, newTime.inWholeMilliseconds)
             }
 
             onMouseRelease {
@@ -159,7 +150,7 @@ class UITimelineKeyframes(
         }
 
         data class Dragging(
-            val keyframe: Duration,
+            val selection: KeyframeState.Selection,
             val mouseX: Float,
             var passedThreshold: Boolean = false,
             /**
@@ -187,10 +178,41 @@ class UITimelineKeyframes(
                 height = 5.pixels
             }
 
+            // Will be selected on mouse release except if we ended up dragging instead
+            var delayedSelect: Pair<KeyframeState.Selection, Row.Dragging>? = null
+            onMouseRelease {
+                val (selection, dragging) = delayedSelect.also { delayedSelect = null } ?: return@onMouseRelease
+                if (!dragging.passedThreshold) {
+                    state.selection.set(selection)
+                }
+            }
+
             onLeftClick(1) { event ->
                 event.stopImmediatePropagation()
-                state.mod.setSelected(type.path, time.inWholeMilliseconds)
-                parentOfType<Row>()?.dragging = Row.Dragging(time, event.absoluteX)
+                val row = parentOfType<Row>()
+                val selection = state.selection.get()
+                when {
+                    // When Shift or Ctrl (cause Shift moves the camera) is held
+                    UKeyboard.isShiftKeyDown() || UKeyboard.isCtrlKeyDown() -> {
+                        // flip the selection state of this keyframe
+                        state.selection.set(selection.mutate { this[type.path].toggle(time) })
+                        row?.dragging = null
+                    }
+                    // If multiple keyframes are selected and this is one of them
+                    selection.size > 1 && time in selection[type.path] -> {
+                        // We need delay the selection in case the user wants to drag all of them around
+                        delayedSelect = Pair(
+                            KeyframeState.Selection.single(type.path, time),
+                            Row.Dragging(selection, event.absoluteX).also { row?.dragging = it },
+                        )
+                    }
+                    else -> {
+                        // Otherwise, select this keyframe and get ready for dragging
+                        val newSelection = KeyframeState.Selection.single(type.path, time)
+                        state.selection.set(newSelection)
+                        row?.dragging = Row.Dragging(newSelection, event.absoluteX)
+                    }
+                }
             }
             onLeftClick(2) { event ->
                 event.stopImmediatePropagation()

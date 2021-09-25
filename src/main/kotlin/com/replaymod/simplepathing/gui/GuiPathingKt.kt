@@ -10,12 +10,13 @@ import com.replaymod.core.gui.common.scrollbar.UITexturedScrollBar
 import com.replaymod.core.gui.common.timeline.UITimeline
 import com.replaymod.core.gui.common.timeline.UITimelineTime
 import com.replaymod.core.gui.utils.*
-import com.replaymod.core.utils.*
+import com.replaymod.core.utils.i18n
 import com.replaymod.core.versions.MCVer.Keyboard
 import com.replaymod.pathing.player.RealtimeTimelinePlayer
 import com.replaymod.render.gui.GuiRenderQueue
 import com.replaymod.render.gui.GuiRenderSettings
 import com.replaymod.replay.ReplayHandler
+import com.replaymod.replaystudio.pathing.change.CombinedChange
 import com.replaymod.simplepathing.SPTimeline
 import com.replaymod.simplepathing.SPTimeline.SPPath
 import com.replaymod.simplepathing.Setting
@@ -26,6 +27,7 @@ import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.state.State
+import net.minecraft.client.resource.language.I18n
 import java.util.concurrent.CancellationException
 import kotlin.time.Duration
 
@@ -33,7 +35,7 @@ class GuiPathingKt(
     val java: GuiPathing,
     val replayHandler: ReplayHandler,
 ) {
-    private val state = KeyframeState(java.mod, this)
+    val state = KeyframeState(java.mod, this)
     private val overlay = replayHandler.overlay
     private val mod = java.mod
     private val core = mod.core
@@ -136,9 +138,7 @@ class GuiPathingKt(
     )
 
     private val positionKeyframeButtonType = window.pollingState(PositionButtonType()) {
-        val time = state.selectedPositionKeyframes.get().keys.firstOrNull()
-            ?: timeline.cursor.position.get()
-        val keyframe = state.positionKeyframes.get()[time]
+        val keyframe = state.selectedPositionKeyframes.get().values.firstOrNull()
         PositionButtonType(when {
             keyframe?.entityId != null -> KeyframeType.SPECTATOR
             keyframe == null && !replayHandler.isCameraView -> KeyframeType.SPECTATOR
@@ -159,13 +159,11 @@ class GuiPathingKt(
             })
         }
     }.onMouseClick {
-        java.toggleKeyframe(SPPath.POSITION, false)
+        toggleKeyframe(positionKeyframeButtonType.get().type)
     } childOf secondRow
 
     private val timeKeyframePresent: State<Boolean> = window.pollingState(false) {
-        val time = state.selectedTimeKeyframes.get().keys.firstOrNull()
-            ?: timeline.cursor.position.get()
-        val keyframe = state.timeKeyframes.get()[time]
+        val keyframe = state.selectedTimeKeyframes.get().values.firstOrNull()
         keyframe != null
     }
 
@@ -182,7 +180,7 @@ class GuiPathingKt(
             })
         }
     }.onMouseClick {
-        java.toggleKeyframe(SPPath.TIME, false)
+        toggleKeyframe(KeyframeType.TIME)
     } childOf secondRow
 
     val timeline by UITimeline().constrain {
@@ -200,7 +198,7 @@ class GuiPathingKt(
     }.onLeftMouse { mouseX, _ ->
         val time = getTimeAt(mouseX)
         cursor.position.set(time)
-        mod.setSelected(null, 0)
+        state.selection.set(KeyframeState.Selection.EMPTY)
     }.onLeftClick {
         it.stopImmediatePropagation()
     }.onAnimationFrame {
@@ -313,6 +311,69 @@ class GuiPathingKt(
         timeline.cursor.position.set(keyframeCursor + cursorPassed)
         timeline.cursor.ensureVisibleWithPadding()
         // Deselect keyframe to allow the user to add a new one right away
-        mod.setSelected(null, 0)
+        state.selection.set(KeyframeState.Selection.EMPTY)
+    }
+
+    @JvmOverloads
+    fun toggleKeyframe(type: KeyframeType, neverSpectator: Boolean = false) {
+        val path = type.path
+        val time = timeline.cursor.position.get()
+        val timeline = mod.currentTimeline
+
+        if (state.keyframes.values.all { it.get().isEmpty() } && time > Duration.seconds(1)) {
+            val text = I18n.translate("replaymod.gui.ingame.first_keyframe_not_at_start_warning")
+            GuiInfoPopup.open(overlay, *text.split("\\n").toTypedArray())
+        }
+
+        val selection = state.selection.get()[path]
+        if (selection.isEmpty()) {
+            // Nothing selected, create new keyframe
+
+            // If a keyframe is already present at this time, cannot add another one
+            if (time in state[path].get()) {
+                return
+            }
+
+            when (path) {
+                SPPath.TIME -> {
+                    timeline.addTimeKeyframe(time.inWholeMilliseconds, replayHandler.replaySender.currentTimeStamp())
+                }
+                SPPath.POSITION -> {
+                    val camera = replayHandler.cameraEntity
+                    var spectatedId = -1
+                    if (!replayHandler.isCameraView && !neverSpectator) {
+                        spectatedId = replayHandler.overlay.minecraft.getCameraEntity()!!.entityId
+                    }
+                    timeline.addPositionKeyframe(time.inWholeMilliseconds,
+                        camera.x, camera.y, camera.z,
+                        camera.yaw, camera.pitch, camera.roll,
+                        spectatedId)
+                }
+            }
+        } else {
+            // Keyframe(s) selected, remove them
+            state.selection.set { it.mutate { this[path].clear() } }
+            val changes = selection.map { timeline.removeKeyframe(path, it.inWholeMilliseconds) }
+            timeline.timeline.pushChange(CombinedChange.createFromApplied(*changes.toTypedArray()))
+        }
+
+        state.update()
+    }
+
+    fun deleteButtonPressed(): Boolean {
+        val timeline = mod.currentTimeline ?: return false
+
+        val selection = state.selection.get().toMap()
+        if (selection.all { it.value.isEmpty() }) {
+            return false
+        }
+
+        state.selection.set(KeyframeState.Selection.EMPTY)
+        val changes = selection.flatMap { (path, keyframes) ->
+            keyframes.map { timeline.removeKeyframe(path, it.inWholeMilliseconds) }
+        }
+        timeline.timeline.pushChange(CombinedChange.createFromApplied(*changes.toTypedArray()))
+
+        return true
     }
 }

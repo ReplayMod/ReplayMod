@@ -6,12 +6,16 @@ import com.replaymod.core.gui.utils.Resources
 import com.replaymod.core.gui.utils.hiddenChildOf
 import com.replaymod.core.gui.utils.onSetValueAndNow
 import com.replaymod.core.utils.i18n
+import com.replaymod.core.utils.toVector3f
 import com.replaymod.core.utils.transpose
 import com.replaymod.replay.gui.overlay.panels.UIToggleablePanel
 import com.replaymod.replaystudio.pathing.change.Change
 import com.replaymod.replaystudio.pathing.change.CombinedChange
 import com.replaymod.simplepathing.SPTimeline
 import com.replaymod.simplepathing.gui.KeyframeState
+import com.replaymod.simplepathing.gui.moveKeyframes
+import com.replaymod.simplepathing.gui.movePosKeyframes
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.components.UIText
@@ -118,23 +122,26 @@ class UIPositionKeyframePanel(
     }
 
     private fun apply() {
-        val time = state.selectedPositionKeyframes.get().keys.firstOrNull() ?: return
+        val selection = state.selection.get()
+        val (time, keyframe) = state.selectedPositionKeyframes.get().entries.firstOrNull() ?: return
+        val (pos, rot) = keyframe
 
         val timeline = state.mod.currentTimeline
-        var change: Change = timeline.updatePositionKeyframe(
-            time.inWholeMilliseconds,
-            translateX.value, translateY.value, translateZ.value,
-            rotateX.value.toFloat(), rotateY.value.toFloat(), rotateZ.value.toFloat(),
+        val newPos = Triple(translateX.value, translateY.value, translateZ.value)
+        val newRot = Triple(rotateX.value, rotateY.value, rotateZ.value)
+        var change = state.movePosKeyframes(selection,
+            Vector3f.sub(newPos.toVector3f(), pos.toVector3f(), null),
+            Vector3f.sub(newRot.toVector3f(), rot.toVector3f(), null),
         )
 
         val newTime = timeField.input.value
         if (newTime != time) {
             change = CombinedChange.createFromApplied(
                 change,
-                timeline.moveKeyframe(SPTimeline.SPPath.POSITION, time.inWholeMilliseconds, newTime.inWholeMilliseconds)
+                state.moveKeyframes(selection, newTime - time)
             )
-            state.mod.setSelected(SPTimeline.SPPath.POSITION, newTime.inWholeMilliseconds)
         }
+
         timeline.timeline.pushChange(change)
     }
 
