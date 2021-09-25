@@ -1,6 +1,7 @@
 package com.replaymod.core.gui.common
 
 import gg.essential.elementa.UIComponent
+import gg.essential.elementa.components.UIBlock
 import gg.essential.elementa.components.UIImage
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.constraints.CenterConstraint
@@ -8,6 +9,7 @@ import gg.essential.elementa.dsl.*
 import gg.essential.elementa.state.BasicState
 import gg.essential.elementa.state.State
 import gg.essential.elementa.state.toConstraint
+import gg.essential.elementa.utils.invisible
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.MinecraftClient
@@ -43,7 +45,12 @@ class UIButton : UIComponent() {
         constrain {
             width = 200.pixels
             height = 20.pixels
+            color = Color.WHITE.invisible().toConstraint()
         }
+    }
+
+    fun label(text: String) = label {
+        bindText(BasicState(text))
     }
 
     fun label(configure: UIText.() -> Unit) = apply {
@@ -97,7 +104,9 @@ class UIButton : UIComponent() {
         val bottom = getBottom().toDouble()
 
         UGraphics.bindTexture(0, WIDGETS_TEXTURE)
-        UI4Slice.draw(matrixStack, left, right, top, bottom, getColor(), background.get())
+        UI4Slice.draw(matrixStack, left, right, top, bottom, Color.WHITE, background.get())
+
+        UIBlock.drawBlock(matrixStack, getColor(), left + 1, top + 1, right - 1, bottom - 1)
 
         super.draw(matrixStack)
     }

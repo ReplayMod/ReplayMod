@@ -21,6 +21,7 @@ import com.replaymod.simplepathing.SPTimeline
 import com.replaymod.simplepathing.SPTimeline.SPPath
 import com.replaymod.simplepathing.Setting
 import com.replaymod.simplepathing.gui.panels.UIPositionKeyframePanel
+import com.replaymod.simplepathing.gui.panels.UIPositionOffsetPanel
 import com.replaymod.simplepathing.gui.panels.UITimePanel
 import de.johni0702.minecraft.gui.popup.GuiInfoPopup
 import gg.essential.elementa.components.UIContainer
@@ -268,6 +269,14 @@ class GuiPathingKt(
         belowTimelineButtons.insertChildAt(toggleButton.constrain {
             x = SiblingConstraint(2f)
         }, 0)
+    } hiddenChildOf window
+
+    val positionOffsetPanel by UIPositionOffsetPanel(window, state).apply {
+        toggleButton.constrain {
+            x = SiblingConstraint(4f)
+            y = 0.pixels(alignOpposite = true)
+        }
+        overlay.kt.bottomLeftPanel.insertChildAt(toggleButton, 0)
     } hiddenChildOf window
 
     init {

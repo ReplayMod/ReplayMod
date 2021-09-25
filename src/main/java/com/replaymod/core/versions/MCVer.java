@@ -430,6 +430,7 @@ public class MCVer {
         //#if MC>=11400
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
         public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
+        public static final int KEY_LALT = GLFW.GLFW_KEY_LEFT_ALT;
         public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
         public static final int KEY_HOME = GLFW.GLFW_KEY_HOME;
         public static final int KEY_END = GLFW.GLFW_KEY_END;
@@ -437,6 +438,8 @@ public class MCVer {
         public static final int KEY_DOWN = GLFW.GLFW_KEY_DOWN;
         public static final int KEY_LEFT = GLFW.GLFW_KEY_LEFT;
         public static final int KEY_RIGHT = GLFW.GLFW_KEY_RIGHT;
+        public static final int KEY_PAGE_UP = GLFW.GLFW_KEY_PAGE_UP;
+        public static final int KEY_PAGE_DOWN = GLFW.GLFW_KEY_PAGE_DOWN;
         public static final int KEY_BACK = GLFW.GLFW_KEY_BACKSPACE;
         public static final int KEY_DELETE = GLFW.GLFW_KEY_DELETE;
         public static final int KEY_RETURN = GLFW.GLFW_KEY_ENTER;
@@ -471,6 +474,7 @@ public class MCVer {
         //#else
         //$$ public static final int KEY_LCONTROL = org.lwjgl.input.Keyboard.KEY_LCONTROL;
         //$$ public static final int KEY_LSHIFT = org.lwjgl.input.Keyboard.KEY_LSHIFT;
+        //$$ public static final int KEY_LALT = org.lwjgl.input.Keyboard.KEY_LALT;
         //$$ public static final int KEY_ESCAPE = org.lwjgl.input.Keyboard.KEY_ESCAPE;
         //$$ public static final int KEY_HOME = org.lwjgl.input.Keyboard.KEY_HOME;
         //$$ public static final int KEY_END = org.lwjgl.input.Keyboard.KEY_END;
@@ -478,6 +482,8 @@ public class MCVer {
         //$$ public static final int KEY_DOWN = org.lwjgl.input.Keyboard.KEY_DOWN;
         //$$ public static final int KEY_LEFT = org.lwjgl.input.Keyboard.KEY_LEFT;
         //$$ public static final int KEY_RIGHT = org.lwjgl.input.Keyboard.KEY_RIGHT;
+        //$$ public static final int KEY_PAGE_UP = org.lwjgl.input.Keyboard.KEY_PRIOR;
+        //$$ public static final int KEY_PAGE_DOWN = org.lwjgl.input.Keyboard.KEY_NEXT;
         //$$ public static final int KEY_BACK = org.lwjgl.input.Keyboard.KEY_BACK;
         //$$ public static final int KEY_DELETE = org.lwjgl.input.Keyboard.KEY_DELETE;
         //$$ public static final int KEY_RETURN = org.lwjgl.input.Keyboard.KEY_RETURN;

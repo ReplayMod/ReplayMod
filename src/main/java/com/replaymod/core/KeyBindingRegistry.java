@@ -176,6 +176,10 @@ public class KeyBindingRegistry extends EventRegistrations {
             //#endif
         }
 
+        public boolean isPressed() {
+            return keyBinding.isPressed();
+        }
+
         public void trigger() {
             KeyBindingAccessor acc = (KeyBindingAccessor) keyBinding;
             acc.setPressTime(acc.getPressTime() + 1);

@@ -4,6 +4,7 @@ import com.replaymod.core.gui.common.elementa.UITextInput
 import com.replaymod.core.gui.utils.hiddenChildOf
 import gg.essential.elementa.components.UIContainer
 import gg.essential.elementa.dsl.*
+import java.math.BigDecimal
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
@@ -71,6 +72,12 @@ class UIInputOrExpressionField<T: UITextInput>(
             UIInputField(input),
             { "%.3f".format(Locale.ROOT, value.toDouble(TimeUnit.SECONDS)) },
             { value = Duration.seconds(it) },
+        )
+
+        fun forDecimalInput(input: UIDecimalInput = UIDecimalInput()) = UIInputOrExpressionField(
+            UIInputField(input),
+            { getText() },
+            { value = BigDecimal(it) },
         )
     }
 }

@@ -46,6 +46,14 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     public KeyBindingRegistry.Binding keyTimeKeyframe;
     public KeyBindingRegistry.Binding keySyncTime;
 
+    public KeyBindingRegistry.Binding keyRotationMode;
+    public KeyBindingRegistry.Binding keyPlusX;
+    public KeyBindingRegistry.Binding keyPlusY;
+    public KeyBindingRegistry.Binding keyPlusZ;
+    public KeyBindingRegistry.Binding keyMinusX;
+    public KeyBindingRegistry.Binding keyMinusY;
+    public KeyBindingRegistry.Binding keyMinusZ;
+
     public static Logger LOGGER = LogManager.getLogger();
 
     private GuiPathing guiPathing;
@@ -116,6 +124,27 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
                 guiPathing.kt.toggleKeyframe(KeyframeType.POSITION);
             }
         }, true);
+
+        keyRotationMode = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.offset.rotation", Keyboard.KEY_LALT, () -> {}, true);
+        keyPlusX = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.offset.px", Keyboard.KEY_RIGHT, () -> {
+            if (guiPathing != null) guiPathing.kt.getPositionOffsetPanel().getPlusXButton().activate();
+        }, true);
+        keyPlusY = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.offset.py", Keyboard.KEY_PAGE_UP, () -> {
+            if (guiPathing != null) guiPathing.kt.getPositionOffsetPanel().getPlusYButton().activate();
+        }, true);
+        keyPlusZ = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.offset.pz", Keyboard.KEY_UP, () -> {
+            if (guiPathing != null) guiPathing.kt.getPositionOffsetPanel().getPlusZButton().activate();
+        }, true);
+        keyMinusX = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.offset.mx", Keyboard.KEY_LEFT, () -> {
+            if (guiPathing != null) guiPathing.kt.getPositionOffsetPanel().getMinusXButton().activate();
+        }, true);
+        keyMinusY = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.offset.my", Keyboard.KEY_PAGE_DOWN, () -> {
+            if (guiPathing != null) guiPathing.kt.getPositionOffsetPanel().getMinusYButton().activate();
+        }, true);
+        keyMinusZ = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.offset.mz", Keyboard.KEY_DOWN, () -> {
+            if (guiPathing != null) guiPathing.kt.getPositionOffsetPanel().getMinusZButton().activate();
+        }, true);
+
         core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_Z, () -> {
             if (Screen.hasControlDown() && currentTimeline != null) {
                 Timeline timeline = currentTimeline.getTimeline();
