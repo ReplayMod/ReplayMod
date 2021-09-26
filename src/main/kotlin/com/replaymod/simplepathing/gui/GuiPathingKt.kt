@@ -50,6 +50,14 @@ class GuiPathingKt(
 
     init {
         window.onAnimationFrame { state.update() }
+
+        window.onBoxSelection { components, _ ->
+            state.selection.set(KeyframeState.Selection.EMPTY.mutate {
+                for (keyframe in components.filterIsInstance<UITimelineKeyframes.UIKeyframe>()) {
+                    this[keyframe.type.path] += keyframe.time
+                }
+            })
+        }
     }
 
     private val secondRow by UIContainer().constrain {

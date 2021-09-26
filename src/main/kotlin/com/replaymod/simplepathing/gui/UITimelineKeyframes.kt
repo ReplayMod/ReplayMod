@@ -165,7 +165,7 @@ class UITimelineKeyframes(
         val time: Duration,
         val type: KeyframeType,
         val selected: Boolean,
-    ) : UIContainer() {
+    ) : UIContainer(), BoxSelectable {
         val icon by UITexture(ReplayMod.TEXTURE, type.timelineIcon.offset(if (selected) 5 else 0, 0)).constrain {
             width = 100.percent
             height = 100.percent
