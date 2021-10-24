@@ -308,7 +308,8 @@ Common Video Resolutions for **Default Rendering** are:
 
 - 720p - 1280 * 720
 - 1080p - 1920 * 1080
-- 4k - 3840 * 2160
+- 4K - 3840 * 2160
+- 8K - 7680 * 4320
 
 ---
 
@@ -337,24 +338,23 @@ Below the **Render Method Dropdown**, there is another Dropdown Menu for **Encod
 There are **7 Encoding Presets** you can choose from:
 
 - **MP4 - Default Quality**  
-  Renders an **MP4 video** encoded with the **x264 codec** in **Default Quality**.
+  Renders an **MP4 video** encoded with the **x264 encoder** in **Default Quality**.
   This is default Encoding Preset, as it exports a video with good quality and a relativly low file size.
 - **MP4 - High Quality**  
-  Renders an **MP4 video** encoded with the **x264 codec** in **High Quality**.
+  Renders an **MP4 video** encoded with the **x264 encoder** in **High Quality**.
   Rendered videos have a relatively high file size, but their quality is almost lossless. This is useful for video producers who have to encode (render) their footage several times.
 - **MP4 - Potato Quality**  
-  Renders an **MP4 video** encoded with the **x264 codec** in **Very Low Quality**.
+  Renders an **MP4 video** encoded with the **x264 encoder** in **Very Low Quality**.
   While the video itself looks really bad, the file size is tiny and therefore this preset can be used for test renders.
 - **MP4 - Custom Bitrate**  
   If this Preset is chosen, the **Bitrate Input Field** gets enabled and you can define the video's bitrate yourself.
-  The rendered video is an **MP4 video** encoded with the **x264 codec**.
+  The rendered video is an **MP4 video** encoded with the **x264 encoder**.
 - **WEBM - Custom Bitrate**  
   If this Preset is chosen, the **Bitrate Input Field** gets enabled and you can define the video's bitrate yourself.
-  The rendered video is a **webm video** encoded with the **vp8 codec**.  
-  **webm video files** are useful if you want to upload footage directly to streaming services like YouTube, 
-  as they usually don't have to convert **vp8-encoded videos** when processing them.
+  The rendered video is a **webm video** encoded with the **vp8 codec**.
+  This is not recommended, because it likely will look worse than MP4 due to outdated encoder.
 - **MKV - Lossless**  
-  Renders an **MKV video** encoded with the **x264 codec** in **Lossless Quality**.
+  Renders an **MKV video** encoded with the **x264 encoder** in **Lossless Quality**.
   While these video files are of perfect quality, most **non-FFmpeg-based video players and video editing software** (e.g. QuickTime Player, Sony Vegas and Adobe Premiere) can't play these videos. Therefore, you should instead use the **MP4 - High Quality** preset in most cases.
 - **PNG Sequence**  
   Exports the sequence as individual frames in the **PNG Format**.  
