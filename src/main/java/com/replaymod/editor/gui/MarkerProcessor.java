@@ -4,6 +4,7 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replaystudio.PacketData;
 import com.replaymod.replaystudio.data.Marker;
+import com.replaymod.replaystudio.filter.DimensionTracker;
 import com.replaymod.replaystudio.filter.SquashFilter;
 import com.replaymod.replaystudio.filter.StreamFilter;
 import com.replaymod.replaystudio.io.ReplayInputStream;
@@ -122,7 +123,8 @@ public class MarkerProcessor {
         int splitCounter = 0;
 
         PacketTypeRegistry registry = MCVer.getPacketTypeRegistry(true);
-        SquashFilter squashFilter = new SquashFilter();
+        DimensionTracker dimensionTracker = new DimensionTracker();
+        SquashFilter squashFilter = new SquashFilter(null, null);
 
         List<Pair<Path, ReplayMetaData>> outputPaths = new ArrayList<>();
 
@@ -180,7 +182,7 @@ public class MarkerProcessor {
                                         cutFilter.release();
                                     }
                                     startCutOffset = nextMarker.getTime();
-                                    cutFilter = new SquashFilter();
+                                    cutFilter = new SquashFilter(dimensionTracker);
                                 } else if (MARKER_NAME_END_CUT.equals(nextMarker.getName())) {
                                     timeOffset += nextMarker.getTime() - startCutOffset;
                                     if (cutFilter != null) {
@@ -208,6 +210,7 @@ public class MarkerProcessor {
                                 continue;
                             }
 
+                            dimensionTracker.onPacket(null, nextPacket);
                             if (hasFurtherOutputs) {
                                 squashFilter.onPacket(null, nextPacket);
                             }

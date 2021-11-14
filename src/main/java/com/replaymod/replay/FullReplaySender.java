@@ -604,14 +604,19 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#if MC>=11400
             p = new GameJoinS2CPacket(
                     entId,
+                    //#if MC>=11800
+                    //$$ packet.hardcore(),
+                    //#endif
                     GameMode.SPECTATOR,
                     //#if MC>=11600
                     GameMode.SPECTATOR,
                     //#endif
+                    //#if MC<11800
                     //#if MC>=11500
                     packet.getSha256Seed(),
                     //#endif
                     false,
+                    //#endif
                     //#if MC>=11600
                     //#if MC>=11603
                     packet.getDimensionIds(),
@@ -626,11 +631,17 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#else
                     //$$ packet.getDimension(),
                     //#endif
+                    //#if MC>=11800
+                    //$$ packet.sha256Seed(),
+                    //#endif
                     0, // max players (has no getter -> never actually used)
                     //#if MC<11600
                     //$$ packet.getGeneratorType(),
                     //#endif
                     packet.getViewDistance(),
+                    //#if MC>=11800
+                    //$$ packet.simulationDistance(),
+                    //#endif
                     packet.hasReducedDebugInfo()
                     //#if MC>=11500
                     , packet.showsDeathScreen()

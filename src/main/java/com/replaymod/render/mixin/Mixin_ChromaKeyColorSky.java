@@ -20,7 +20,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class Mixin_ChromaKeyColorSky {
     @Shadow @Final private MinecraftClient client;
 
-    //#if MC>=11400 || 10710>=MC
+    //#if MC>=11800
+    //$$ @Inject(method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLjava/lang/Runnable;)V",
+    //$$         at = @At(value = "INVOKE", target = "Ljava/lang/Runnable;run()V", remap = false, shift = At.Shift.AFTER),
+    //$$         cancellable = true)
+    //#elseif MC>=11400 || 10710>=MC
     @Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "renderSky(FI)V", at = @At("HEAD"), cancellable = true)

@@ -243,6 +243,7 @@ dependencies {
                 11604: '1.16.4',
                 11700: '1.17',
                 11701: '1.17.1',
+                11800: '1.18-pre1',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -252,8 +253,9 @@ dependencies {
                 11604: '1.16.4+build.6:v2',
                 11700: '1.17+build.13:v2',
                 11701: '1.17.1+build.29:v2',
+                11800: '1.18-pre1+build.5:v2',
         ][mcVersion]
-        modImplementation 'net.fabricmc:fabric-loader:0.11.6'
+        modImplementation 'net.fabricmc:fabric-loader:0.12.5'
         def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
@@ -262,6 +264,7 @@ dependencies {
                 11604: '0.25.1+build.416-1.16',
                 11700: '0.36.0+1.17',
                 11701: '0.37.1+1.17',
+                11800: '0.42.2+1.18',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -332,7 +335,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:c9de2f5", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:a5a92b6", shadeExclusions
 
     implementation(FABRIC ? dependencies.project(path: jGui.path, configuration: "namedElements") : jGui) {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
@@ -340,7 +343,9 @@ dependencies {
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 11700) {
+        if (mcVersion >= 11800) {
+            modImplementation 'com.terraformersmc:modmenu:3.0.0'
+        } else if (mcVersion >= 11700) {
             modImplementation 'com.terraformersmc:modmenu:2.0.0-beta.7'
         } else if (mcVersion >= 11602) {
             modImplementation 'com.terraformersmc:modmenu:1.16.8'

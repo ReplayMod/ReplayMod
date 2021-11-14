@@ -1,5 +1,8 @@
 package com.replaymod.core.versions;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.gradle.remap.Pattern;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
@@ -21,6 +24,12 @@ import net.minecraft.world.chunk.WorldChunk;
 //#if MC>=11700
 //#else
 import org.lwjgl.opengl.GL11;
+//#endif
+
+//#if MC>=11600
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Matrix4f;
+//#else
 //#endif
 
 //#if MC>=11400
@@ -507,6 +516,28 @@ class Patterns {
         //$$ { float $angle = angle; com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(new net.minecraft.util.math.Quaternion(new net.minecraft.util.math.Vec3f(x, y, z), $angle, true)); }
         //#else
         GL11.glRotatef(angle, x, y, z);
+        //#endif
+    }
+
+    // FIXME preprocessor bug: there are mappings for this, not sure why it doesn't remap by itself
+    //#if MC>=11600
+    @Pattern
+    private static Matrix4f getPositionMatrix(MatrixStack.Entry stack) {
+        //#if MC>=11800
+        //$$ return stack.getPositionMatrix();
+        //#else
+        return stack.getModel();
+        //#endif
+    }
+    //#endif
+
+    @SuppressWarnings("rawtypes") // preprocessor bug: doesn't work with generics
+    @Pattern
+    private static void Futures_addCallback(ListenableFuture future, FutureCallback callback) {
+        //#if MC>=11800
+        //$$ Futures.addCallback(future, callback, Runnable::run);
+        //#else
+        Futures.addCallback(future, callback);
         //#endif
     }
 }
