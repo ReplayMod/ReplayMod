@@ -34,7 +34,7 @@ buildscript {
     dependencies {
         classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.8-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.10-SNAPSHOT'
         } else if (mcVersion >= 11400) {
             classpath('net.minecraftforge.gradle:ForgeGradle:5.0.5') { // the FG people still haven't learned to not do breaking changes
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
@@ -124,8 +124,8 @@ group= "com.replaymod"
 archivesBaseName = "replaymod"
 
 if (FABRIC) {
-    minecraft {
-        refmapName = 'mixins.replaymod.refmap.json'
+    loom {
+        mixin.defaultRefmapName.set('mixins.replaymod.refmap.json')
         runConfigs.all {
             ideConfigGenerated = true
         }
@@ -334,7 +334,7 @@ dependencies {
 
     shadow "com.github.ReplayMod:ReplayStudio:c9de2f5", shadeExclusions
 
-    implementation(jGui){
+    implementation(FABRIC ? dependencies.project(path: jGui.path, configuration: "namedElements") : jGui) {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
     }
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
