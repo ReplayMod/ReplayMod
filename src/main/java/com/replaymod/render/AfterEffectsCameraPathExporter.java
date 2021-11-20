@@ -63,8 +63,8 @@ public class AfterEffectsCameraPathExporter {
         float x = (float) vec.getX();
         float y = (float) vec.getY();
         float z = (float) vec.getZ();
-        float yaw = (float) Math.toRadians(camera.getYaw());
-        float pitch = -(float) Math.toRadians(camera.getPitch());
+        float yaw = camera.getYaw();
+        float pitch = camera.getPitch();
         //#else
         //#if MC>=10800
         //$$ float eyeHeight = entity.getEyeHeight();
@@ -77,13 +77,17 @@ public class AfterEffectsCameraPathExporter {
         //$$ float yaw = entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * tickDelta;
         //$$ float pitch = entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * tickDelta;
         //#endif
-        float roll = (float) Math.toRadians(entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0);
+        float roll = entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0;
 
         float zoom = (float) (settings.getTargetVideoHeight()/(Math.tan(Math.toRadians(mc.options.fov/2))*2));
 
-        x = (float) (-x * 100.0 / aspect + settings.getTargetVideoWidth() / 2.0);
-        y = (float) (-y * 100.0 + settings.getTargetVideoHeight() / 2.0);
-        z = (float) (z * 100.0);
+        yaw = (float) Math.toRadians(yaw);
+        pitch = (float) -Math.toRadians(pitch);
+        roll = (float) Math.toRadians(roll);
+
+        x = -x * 100;
+        y = -y * 100;
+        z = z * 100;
 
         if(framesDone == 1) {
             xOffset = x;
