@@ -194,6 +194,7 @@ public class RenderSettings {
                 false,
                 false,
                 false,
+                false,
                 RenderSettings.AntiAliasing.NONE,
                 "",
                 RenderSettings.EncodingPreset.MP4_CUSTOM.getValue(),
