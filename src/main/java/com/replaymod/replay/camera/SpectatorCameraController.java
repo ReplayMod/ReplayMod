@@ -1,15 +1,9 @@
 package com.replaymod.replay.camera;
 
 import com.replaymod.replay.ReplayModReplay;
-import com.replaymod.replay.mixin.EntityPlayerAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-
-//#if MC>=11400
-import net.minecraft.entity.EquipmentSlot;
-//#endif
 
 //#if MC>=11400
 //#else
@@ -55,27 +49,6 @@ public class SpectatorCameraController implements CameraController {
         Entity view = mc.getCameraEntity();
         if (view != null && view != camera) {
             camera.setCameraPosRot(mc.getCameraEntity());
-            // If it's a player, also 'steal' its inventory so the rendering code knows what item to render
-            if (view instanceof PlayerEntity) {
-                PlayerEntity viewPlayer = (PlayerEntity) view;
-                //#if MC>=11400
-                camera.equipStack(EquipmentSlot.HEAD, viewPlayer.getEquippedStack(EquipmentSlot.HEAD));
-                camera.equipStack(EquipmentSlot.MAINHAND, viewPlayer.getEquippedStack(EquipmentSlot.MAINHAND));
-                camera.equipStack(EquipmentSlot.OFFHAND, viewPlayer.getEquippedStack(EquipmentSlot.OFFHAND));
-                //#else
-                //$$ camera.inventory = viewPlayer.inventory;
-                //#endif
-                EntityPlayerAccessor cameraA = (EntityPlayerAccessor) camera;
-                EntityPlayerAccessor viewPlayerA = (EntityPlayerAccessor) viewPlayer;
-                //#if MC>=10904
-                cameraA.setItemStackMainHand(viewPlayerA.getItemStackMainHand());
-                camera.preferredHand = viewPlayer.preferredHand;
-                cameraA.setActiveItemStackUseCount(viewPlayerA.getActiveItemStackUseCount());
-                //#else
-                //$$ cameraA.setItemInUse(viewPlayerA.getItemInUse());
-                //$$ cameraA.setItemInUseCount(viewPlayerA.getItemInUseCount());
-                //#endif
-            }
         }
     }
 

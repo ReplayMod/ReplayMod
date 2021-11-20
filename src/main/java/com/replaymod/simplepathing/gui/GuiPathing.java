@@ -102,6 +102,7 @@ public class GuiPathing {
     public final GuiButton renderButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
+            abortPathPlayback();
             GuiScreen screen = GuiRenderSettings.createBaseScreen();
             new GuiRenderQueue(screen, replayHandler, () -> preparePathsForPlayback(false)) {
                 @Override
@@ -378,7 +379,21 @@ public class GuiPathing {
         startLoadingEntityTracker();
     }
 
+    private void abortPathPlayback() {
+        if (!player.isActive()) {
+            return;
+        }
+
+        ListenableFuture<Void> future = player.getFuture();
+        if (!future.isDone() && !future.isCancelled()) {
+            future.cancel(false);
+        }
+        // Tear down of the player might only happen the next tick after it was cancelled
+        player.onTick();
+    }
+
     public void keyframeRepoButtonPressed() {
+        abortPathPlayback();
         try {
             GuiKeyframeRepository gui = new GuiKeyframeRepository(
                     mod.getCurrentTimeline(), replayHandler.getReplayFile(), mod.getCurrentTimeline().getTimeline());

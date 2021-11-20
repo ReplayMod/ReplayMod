@@ -18,12 +18,25 @@ import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 public class GuiBackgroundProcesses extends EventRegistrations {
     private GuiPanel panel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(10));
+    private boolean reentrant;
 
     { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
     private void onGuiInit(net.minecraft.client.gui.screen.Screen guiScreen) {
         if (guiScreen != getMinecraft().currentScreen) return; // people tend to construct GuiScreens without opening them
 
-        VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(guiScreen);
+        VanillaGuiScreen vanillaGui;
+        // TODO Workaround for #473 and #501 where another mod opens a new gui in response to the MCGuiScreen.init we
+        //      call from VanillaGuiScreen.register.
+        //      Ideally, we don't have an hidden inner MCGuiScreen and instead have a common parent class for
+        //      AbstractGuiScreen, AbstractGuiOverlay and VanillaGuiScreen which deals with the common things. That's
+        //      quite a bit of changes though, so I'll keep that for 2.7 and have this workaround until then.
+        if (reentrant) return;
+        try {
+            reentrant = true;
+            vanillaGui = VanillaGuiScreen.wrap(guiScreen);
+        } finally {
+            reentrant = false;
+        }
         vanillaGui.setLayout(new CustomLayout<GuiScreen>(vanillaGui.getLayout()) {
             @Override
             protected void layout(GuiScreen container, int width, int height) {
