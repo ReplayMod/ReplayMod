@@ -2,13 +2,11 @@ package com.replaymod.render;
 
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.camera.CameraEntity;
-import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Quaternion;
-import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector4f;
+import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.Matrix4f;
 import org.apache.commons.io.FilenameUtils;
 
 //#if MC>=11400
@@ -22,7 +20,6 @@ import java.nio.file.Path;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import static net.minecraft.util.math.MathHelper.clamp;
 
 public class AfterEffectsCameraPathExporter {
 
@@ -31,11 +28,16 @@ public class AfterEffectsCameraPathExporter {
     private int framesDone;
     private final StringBuilder cameraTranslation = new StringBuilder();
     private final StringBuilder cameraRotation = new StringBuilder();
+    private final StringBuilder cameraZoom = new StringBuilder();
     private final StringBuilder times = new StringBuilder();
 
     private float aspect;
 
     private int totalFrames;
+    private float xOffset = 0;
+    private float yOffset = 0;
+    private float zOffset = 0;
+
 
     public AfterEffectsCameraPathExporter(RenderSettings settings) {
         this.settings = settings;
@@ -61,8 +63,8 @@ public class AfterEffectsCameraPathExporter {
         float x = (float) vec.getX();
         float y = (float) vec.getY();
         float z = (float) vec.getZ();
-        float yaw = camera.getYaw();
-        float pitch = camera.getPitch();
+        float yaw = (float) Math.toRadians(camera.getYaw());
+        float pitch = -(float) Math.toRadians(camera.getPitch());
         //#else
         //#if MC>=10800
         //$$ float eyeHeight = entity.getEyeHeight();
@@ -75,27 +77,144 @@ public class AfterEffectsCameraPathExporter {
         //$$ float yaw = entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * tickDelta;
         //$$ float pitch = entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * tickDelta;
         //#endif
-        float roll = entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0;
+        float roll = (float) Math.toRadians(entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0);
+
+        float zoom = (float) (settings.getTargetVideoHeight()/(Math.tan(Math.toRadians(mc.options.fov/2))*2));
 
         x = (float) (-x * 100.0 / aspect + settings.getTargetVideoWidth() / 2.0);
         y = (float) (-y * 100.0 + settings.getTargetVideoHeight() / 2.0);
         z = (float) (z * 100.0);
-        pitch = -(float) pitch;
-        yaw = -(float) yaw;
-        roll = (float) -roll;
 
+        if(framesDone == 1) {
+            xOffset = x;
+            yOffset = y;
+            zOffset = z;
+        }
+        x = x - xOffset;
+        y = y - yOffset;
+        z = z - zOffset;
+
+        float c1 = (float) cos( roll / 2 );
+        float c2 = (float) cos( pitch / 2 );
+        float c3 = (float) cos( yaw / 2 );
+
+        float s1 = (float) sin( roll / 2 );
+        float s2 = (float) sin( pitch / 2 );
+        float s3 = (float) sin( yaw / 2 );
+        Quaternion quaternion = new Quaternion(
+                s1 * c2 * c3 - c1 * s2 * s3,
+                c1 * s2 * c3 + s1 * c2 * s3,
+                c1 * c2 * s3 - s1 * s2 * c3,
+                c1 * c2 * c3 + s1 * s2 * s3);
+
+        Matrix4f matrix = makeRotationFromQuaternion(quaternion);
+
+        float[] newRotation = setFromRotationMatrix(matrix);
 
         times.append((float)framesDone/(float)settings.getFramesPerSecond()).append(',');
         cameraTranslation.append('[').append(x).append(',').append(y).append(',').append(z).append("],");
-        cameraRotation.append('[').append(pitch).append(',').append(yaw).append(',').append(roll).append("],");
+        cameraRotation.append('[').append(Math.toDegrees(newRotation[1])).append(',')
+                .append(Math.toDegrees(newRotation[2])).append(',')
+                .append(Math.toDegrees(newRotation[0])).append("],");
+        cameraZoom.append('[').append(zoom).append("],");
+
 
         framesDone++;
     }
 
-    public void finish() throws IOException {
-        
-        float zoom = (float) (settings.getTargetVideoHeight()/(Math.tan(mc.options.fov/2)*2));
+    /*
+    ------------------ BEGIN MIT LICENSE SECTION ------------------
+    The MIT License
 
+    Copyright © 2010-2021 three.js authors
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+     */
+
+    public Matrix4f makeRotationFromQuaternion(Quaternion q) {
+        return this.compose( new Vector3f( 0, 0, 0), q, new Vector3f(1, 1, 1));
+    }
+
+    public Matrix4f compose(Vector3f position, Quaternion quaternion, Vector3f scale) {
+        Matrix4f m = new Matrix4f();
+
+        float x = quaternion.x, y = quaternion.y, z = quaternion.z, w = quaternion.w;
+        float x2 = x + x,	y2 = y + y, z2 = z + z;
+        float xx = x * x2, xy = x * y2, xz = x * z2;
+        float yy = y * y2, yz = y * z2, zz = z * z2;
+        float wx = w * x2, wy = w * y2, wz = w * z2;
+
+        float sx = scale.x, sy = scale.y, sz = scale.z;
+
+        m.m00 = ( 1 - ( yy + zz ) ) * sx;
+        m.m01 = ( xy + wz ) * sx;
+        m.m02 = ( xz - wy ) * sx;
+        m.m03 = 0;
+
+        m.m10 = ( xy - wz ) * sy;
+        m.m11 = ( 1 - ( xx + zz ) ) * sy;
+        m.m12 = ( yz + wx ) * sy;
+        m.m13 = 0;
+
+        m.m20 = ( xz + wy ) * sz;
+        m.m21 = ( yz - wx ) * sz;
+        m.m22 = ( 1 - ( xx + yy ) ) * sz;
+        m.m23 = 0;
+
+        m.m30 = position.x;
+        m.m31 = position.y;
+        m.m32 = position.z;
+        m.m33 = 1;
+
+        return m;
+
+    }
+
+    private float[] setFromRotationMatrix(Matrix4f m) {
+        // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+        float m11 = m.m00, m12 = m.m10, m13 = m.m20;
+        float m21 = m.m01, m22 = m.m11, m23 = m.m21;
+        float m31 = m.m02, m32 = m.m12, m33 = m.m22;
+
+        float x, y, z;
+
+        z = (float) Math.asin( clamp( m21, - 1, 1 ) );
+        if ( Math.abs( m21 ) < 0.9999999 ) {
+            x = (float) Math.atan2( - m23, m22 );
+            y = (float) Math.atan2( - m31, m11 );
+        } else {
+            x = 0;
+            y = (float) Math.atan2( m13, m33 );
+
+        }
+
+        return new float[]{x, y, z};
+    }
+
+    //------------------ END MIT LICENSE SECTION ------------------
+
+    //clamp value to range [min, max]
+    private float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(value, max));
+    }
+
+    public void finish() throws IOException {
         String combinedData = "#target AfterEffects\n" +
                 "\n" +
                 "function createCameraFromReplayMod(){\n" +
@@ -108,7 +227,7 @@ public class AfterEffectsCameraPathExporter {
                 "Camera.autoOrient = AutoOrientType.NO_AUTO_ORIENT;\n" +
                 "Camera.property(\"position\").setValuesAtTimes([" + times + "],[" + cameraTranslation + "]);\n" +
                 "Camera.property(\"orientation\").setValuesAtTimes(["  + times + "],[" + cameraRotation + "]);\n" +
-                "Camera.property(\"zoom\").setValue(" + zoom + ");\n" +
+                "Camera.property(\"zoom\").setValuesAtTimes(["  + times + "],[" + cameraZoom + "]);\n" +
                 "\n" +
                 "\n" +
                 "\n" +
