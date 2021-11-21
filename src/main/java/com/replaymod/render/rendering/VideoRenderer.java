@@ -295,16 +295,19 @@ public class VideoRenderer implements RenderInfo {
         acc.setFramebufferWidth(displayWidthBefore);
         acc.setFramebufferHeight(displayHeightBefore);
 
+        framesDone++;
+        return timer.tickDelta;
+    }
+
+    @Override
+    public void updatePostRender(float tickDelta) {
         if (cameraPathExporter != null) {
-            cameraPathExporter.recordFrame(timer.tickDelta);
+            cameraPathExporter.recordFrame(tickDelta);
         }
 
         if (afterEffectsCameraPathExporter != null) {
-            afterEffectsCameraPathExporter.recordFrame(timer.tickDelta);
+            afterEffectsCameraPathExporter.recordFrame(tickDelta);
         }
-
-        framesDone++;
-        return timer.tickDelta;
     }
 
     @Override

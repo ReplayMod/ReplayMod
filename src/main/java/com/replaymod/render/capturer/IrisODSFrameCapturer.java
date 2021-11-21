@@ -59,6 +59,9 @@ public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
             }
 
             @Override
+            public void updatePostRender(float tickDelta) {}
+
+            @Override
             public RenderSettings getRenderSettings() {
                 return renderInfo.getRenderSettings();
             }
