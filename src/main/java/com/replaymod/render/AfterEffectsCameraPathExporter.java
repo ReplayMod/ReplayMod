@@ -89,7 +89,7 @@ public class AfterEffectsCameraPathExporter {
         y = -y * 100;
         z = z * 100;
 
-        if(framesDone == 1) {
+        if(framesDone == 0) {
             xOffset = x;
             yOffset = y;
             zOffset = z;
@@ -223,9 +223,9 @@ public class AfterEffectsCameraPathExporter {
                 "\n" +
                 "function createCameraFromReplayMod(){\n" +
                 "\n" +
-                "var compName = prompt(\"Enter name for a new composition that will include your camera\",\"\",\"Composition's Name\");\n" +
+                "var compName = prompt(\"Enter name for a new composition that will include your camera\",\""+ settings.getOutputFile().getName() + "\",\"Composition's Name\");\n" +
                 "if (compName){\n" +
-                "var newComp = app.project.items.addComp(compName, " + settings.getTargetVideoWidth() + ", " + + settings.getTargetVideoHeight() + ", 1.0, " + totalFrames/settings.getFramesPerSecond() + ", " + settings.getFramesPerSecond()+ ");\n" +
+                "var newComp = app.project.items.addComp(compName, " + settings.getTargetVideoWidth() + ", " + + settings.getTargetVideoHeight() + ", 1.0, " + totalFrames/(float)settings.getFramesPerSecond() + ", " + settings.getFramesPerSecond()+ ");\n" +
                 "\n" +
                 "var Camera = newComp.layers.addCamera(\"Camera\",[0,0]);\n" +
                 "Camera.autoOrient = AutoOrientType.NO_AUTO_ORIENT;\n" +
