@@ -81,19 +81,35 @@ public class AfterEffectsCameraPathExporter {
 
         float zoom = (float) (settings.getTargetVideoHeight()/(Math.tan(Math.toRadians(mc.options.fov/2))*2));
 
-        yaw = (float) Math.toRadians(yaw);
-        pitch = (float) -Math.toRadians(pitch);
-        roll = (float) Math.toRadians(roll);
-
         x = -x * 100;
         y = -y * 100;
         z = z * 100;
 
         if(framesDone == 0) {
-            xOffset = x;
-            yOffset = y;
-            zOffset = z;
+            yOffset = y + 100;
+            yaw = (yaw + 180) % 360 - 180; //ensure yaw is in between -180 & 180
+            if(yaw >= -180 && yaw < -135){
+                xOffset = x + 100;
+                zOffset = z;
+            } else if(yaw >= -135 && yaw < -45){
+                xOffset = x + 100;
+                zOffset = z;
+            } else if (yaw >= -45 && yaw < 45) {
+                xOffset = x;
+                zOffset = z + 100;
+            } else if (yaw >= 45 && yaw < 135) {
+                xOffset = x - 100;
+                zOffset = z;
+            } else /*yaw >= 135 && yaw < 180 */ {
+                xOffset = x;
+                zOffset = z - 100;
+            }
         }
+
+        yaw = (float) Math.toRadians(yaw);
+        pitch = (float) -Math.toRadians(pitch);
+        roll = (float) Math.toRadians(roll);
+
         x = x - xOffset;
         y = y - yOffset;
         z = z - zOffset;
