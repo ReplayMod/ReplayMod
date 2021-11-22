@@ -45,7 +45,7 @@ public class AfterEffectsCameraPathExporter {
     }
 
     public void setup(int totalFrames) {
-        aspect = (float)settings.getTargetVideoWidth()/(float)settings.getTargetVideoHeight();
+        aspect = (float) settings.getTargetVideoWidth() / (float) settings.getTargetVideoHeight();
 
         this.totalFrames = totalFrames;
     }
@@ -79,19 +79,19 @@ public class AfterEffectsCameraPathExporter {
         //#endif
         float roll = entity instanceof CameraEntity ? ((CameraEntity) entity).roll : 0;
 
-        float zoom = (float) (settings.getTargetVideoHeight()/(Math.tan(Math.toRadians(mc.options.fov/2))*2));
+        float zoom = (float) (settings.getTargetVideoHeight() / (Math.tan(Math.toRadians(mc.options.fov / 2)) * 2));
 
         x = -x * 100;
         y = -y * 100;
         z = z * 100;
 
-        if(framesDone == 0) {
+        if (framesDone == 0) {
             yOffset = y + 100;
             yaw = (yaw + 180) % 360 - 180; //ensure yaw is in between -180 & 180
-            if(yaw >= -180 && yaw < -135){
+            if (yaw >= -180 && yaw < -135) {
                 xOffset = x + 100;
                 zOffset = z;
-            } else if(yaw >= -135 && yaw < -45){
+            } else if (yaw >= -135 && yaw < -45) {
                 xOffset = x + 100;
                 zOffset = z;
             } else if (yaw >= -45 && yaw < 45) {
@@ -114,13 +114,13 @@ public class AfterEffectsCameraPathExporter {
         y = y - yOffset;
         z = z - zOffset;
 
-        float c1 = (float) cos( roll / 2 );
-        float c2 = (float) cos( pitch / 2 );
-        float c3 = (float) cos( yaw / 2 );
+        float c1 = (float) cos(roll / 2);
+        float c2 = (float) cos(pitch / 2);
+        float c3 = (float) cos(yaw / 2);
 
-        float s1 = (float) sin( roll / 2 );
-        float s2 = (float) sin( pitch / 2 );
-        float s3 = (float) sin( yaw / 2 );
+        float s1 = (float) sin(roll / 2);
+        float s2 = (float) sin(pitch / 2);
+        float s3 = (float) sin(yaw / 2);
         Quaternion quaternion = new Quaternion(
                 s1 * c2 * c3 - c1 * s2 * s3,
                 c1 * s2 * c3 + s1 * c2 * s3,
@@ -131,7 +131,7 @@ public class AfterEffectsCameraPathExporter {
 
         float[] newRotation = setFromRotationMatrix(matrix);
 
-        times.append((float)framesDone/(float)settings.getFramesPerSecond()).append(',');
+        times.append((float) framesDone / (float) settings.getFramesPerSecond()).append(',');
         cameraTranslation.append('[').append(x).append(',').append(y).append(',').append(z).append("],");
         cameraRotation.append('[').append(Math.toDegrees(newRotation[1])).append(',')
                 .append(Math.toDegrees(newRotation[2])).append(',')
@@ -168,33 +168,33 @@ public class AfterEffectsCameraPathExporter {
      */
 
     public Matrix4f makeRotationFromQuaternion(Quaternion q) {
-        return this.compose( new Vector3f( 0, 0, 0), q, new Vector3f(1, 1, 1));
+        return this.compose(new Vector3f(0, 0, 0), q, new Vector3f(1, 1, 1));
     }
 
     public Matrix4f compose(Vector3f position, Quaternion quaternion, Vector3f scale) {
         Matrix4f m = new Matrix4f();
 
         float x = quaternion.x, y = quaternion.y, z = quaternion.z, w = quaternion.w;
-        float x2 = x + x,	y2 = y + y, z2 = z + z;
+        float x2 = x + x, y2 = y + y, z2 = z + z;
         float xx = x * x2, xy = x * y2, xz = x * z2;
         float yy = y * y2, yz = y * z2, zz = z * z2;
         float wx = w * x2, wy = w * y2, wz = w * z2;
 
         float sx = scale.x, sy = scale.y, sz = scale.z;
 
-        m.m00 = ( 1 - ( yy + zz ) ) * sx;
-        m.m01 = ( xy + wz ) * sx;
-        m.m02 = ( xz - wy ) * sx;
+        m.m00 = (1 - (yy + zz)) * sx;
+        m.m01 = (xy + wz) * sx;
+        m.m02 = (xz - wy) * sx;
         m.m03 = 0;
 
-        m.m10 = ( xy - wz ) * sy;
-        m.m11 = ( 1 - ( xx + zz ) ) * sy;
-        m.m12 = ( yz + wx ) * sy;
+        m.m10 = (xy - wz) * sy;
+        m.m11 = (1 - (xx + zz)) * sy;
+        m.m12 = (yz + wx) * sy;
         m.m13 = 0;
 
-        m.m20 = ( xz + wy ) * sz;
-        m.m21 = ( yz - wx ) * sz;
-        m.m22 = ( 1 - ( xx + yy ) ) * sz;
+        m.m20 = (xz + wy) * sz;
+        m.m21 = (yz - wx) * sz;
+        m.m22 = (1 - (xx + yy)) * sz;
         m.m23 = 0;
 
         m.m30 = position.x;
@@ -214,13 +214,13 @@ public class AfterEffectsCameraPathExporter {
 
         float x, y, z;
 
-        z = (float) Math.asin( clamp( m21, - 1, 1 ) );
-        if ( Math.abs( m21 ) < 0.9999999 ) {
-            x = (float) Math.atan2( - m23, m22 );
-            y = (float) Math.atan2( - m31, m11 );
+        z = (float) Math.asin(clamp(m21, -1, 1));
+        if (Math.abs(m21) < 0.9999999) {
+            x = (float) Math.atan2(-m23, m22);
+            y = (float) Math.atan2(-m31, m11);
         } else {
             x = 0;
-            y = (float) Math.atan2( m13, m33 );
+            y = (float) Math.atan2(m13, m33);
 
         }
 
@@ -239,15 +239,15 @@ public class AfterEffectsCameraPathExporter {
                 "\n" +
                 "function createCameraFromReplayMod(){\n" +
                 "\n" +
-                "var compName = prompt(\"Enter name for a new composition that will include your camera\",\""+ settings.getOutputFile().getName() + "\",\"Composition's Name\");\n" +
+                "var compName = prompt(\"Enter name for a new composition that will include your camera\",\"" + settings.getOutputFile().getName() + "\",\"Composition's Name\");\n" +
                 "if (compName){\n" +
-                "var newComp = app.project.items.addComp(compName, " + settings.getTargetVideoWidth() + ", " + + settings.getTargetVideoHeight() + ", 1.0, " + totalFrames/(float)settings.getFramesPerSecond() + ", " + settings.getFramesPerSecond()+ ");\n" +
+                "var newComp = app.project.items.addComp(compName, " + settings.getTargetVideoWidth() + ", " + settings.getTargetVideoHeight() + ", 1.0, " + totalFrames / (float) settings.getFramesPerSecond() + ", " + settings.getFramesPerSecond() + ");\n" +
                 "\n" +
                 "var Camera = newComp.layers.addCamera(\"Camera\",[0,0]);\n" +
                 "Camera.autoOrient = AutoOrientType.NO_AUTO_ORIENT;\n" +
                 "Camera.property(\"position\").setValuesAtTimes([" + times + "],[" + cameraTranslation + "]);\n" +
-                "Camera.property(\"orientation\").setValuesAtTimes(["  + times + "],[" + cameraRotation + "]);\n" +
-                "Camera.property(\"zoom\").setValuesAtTimes(["  + times + "],[" + cameraZoom + "]);\n" +
+                "Camera.property(\"orientation\").setValuesAtTimes([" + times + "],[" + cameraRotation + "]);\n" +
+                "Camera.property(\"zoom\").setValuesAtTimes([" + times + "],[" + cameraZoom + "]);\n" +
                 "\n" +
                 "\n" +
                 "\n" +
