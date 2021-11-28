@@ -49,7 +49,7 @@ public class MarkerProcessor {
     public static final String MARKER_NAME_SPLIT = "_RM_SPLIT";
 
     private static boolean hasWork(Path path) throws IOException {
-        try (ReplayFile inputReplayFile = ReplayMod.instance.openReplay(path)) {
+        try (ReplayFile inputReplayFile = ReplayMod.instance.files.open(path)) {
             return inputReplayFile.getMarkers().or(HashSet::new).stream().anyMatch(m -> m.getName() != null && m.getName().startsWith("_RM_"));
         }
     }
@@ -113,7 +113,7 @@ public class MarkerProcessor {
         ReplayMod mod = ReplayMod.instance;
         if (!hasWork(path)) {
             ReplayMetaData metaData;
-            try (ReplayFile inputReplayFile = mod.openReplay(path)) {
+            try (ReplayFile inputReplayFile = mod.files.open(path)) {
                 metaData = inputReplayFile.getMetaData();
             }
             return Collections.singletonList(Pair.of(path, metaData));
@@ -128,7 +128,7 @@ public class MarkerProcessor {
 
         List<Pair<Path, ReplayMetaData>> outputPaths = new ArrayList<>();
 
-        Path rawFolder = ReplayMod.instance.getRawReplayFolder();
+        Path rawFolder = ReplayMod.instance.folders.getRawReplayFolder();
         Path inputPath = rawFolder.resolve(path.getFileName());
         for (int i = 1; Files.exists(inputPath); i++) {
             inputPath = inputPath.resolveSibling(replayName + "." + i + ".mcpr");
@@ -136,7 +136,7 @@ public class MarkerProcessor {
         Files.createDirectories(inputPath.getParent());
         Files.move(path, inputPath);
 
-        try (ReplayFile inputReplayFile = mod.openReplay(inputPath)) {
+        try (ReplayFile inputReplayFile = mod.files.open(inputPath)) {
             List<Marker> markers = inputReplayFile.getMarkers().or(HashSet::new)
                     .stream().sorted(Comparator.comparing(Marker::getTime)).collect(Collectors.toList());
             Iterator<Marker> markerIterator = markers.iterator();
@@ -153,7 +153,7 @@ public class MarkerProcessor {
 
             while (nextPacket != null && outputFileSuffixes.hasNext()) {
                 Path outputPath = path.resolveSibling(replayName + outputFileSuffixes.next() + ".mcpr");
-                try (ReplayFile outputReplayFile = mod.openReplay(null, outputPath)) {
+                try (ReplayFile outputReplayFile = mod.files.open(null, outputPath)) {
                     long duration = 0;
                     Set<Marker> outputMarkers = new HashSet<>();
                     ReplayMetaData metaData = inputReplayFile.getMetaData();
