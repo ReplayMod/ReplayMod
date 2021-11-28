@@ -3,6 +3,7 @@ package com.replaymod.core.versions;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.gradle.remap.Pattern;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
@@ -13,6 +14,8 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.util.crash.CrashException;
+import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -540,6 +543,24 @@ class Patterns {
         //$$ Futures.addCallback(future, callback, Runnable::run);
         //#else
         Futures.addCallback(future, callback);
+        //#endif
+    }
+
+    @Pattern
+    private static void setCrashReport(MinecraftClient mc, CrashReport report) {
+        //#if MC>=11800
+        //$$ mc.setCrashReportSupplier(() -> report);
+        //#else
+        mc.setCrashReport(report);
+        //#endif
+    }
+
+    @Pattern
+    private static CrashException crashReportToException(MinecraftClient mc) {
+        //#if MC>=11800
+        //$$ return new CrashException(((MinecraftAccessor) mc).getCrashReporter().get());
+        //#else
+        return new CrashException(((MinecraftAccessor) mc).getCrashReporter());
         //#endif
     }
 }

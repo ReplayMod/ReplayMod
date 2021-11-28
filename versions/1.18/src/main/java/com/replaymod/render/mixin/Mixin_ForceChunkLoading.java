@@ -11,6 +11,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.chunk.ChunkBuilder;
+import net.minecraft.client.render.chunk.ChunkRendererRegionBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
@@ -45,11 +46,11 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
     @Shadow @Final private MinecraftClient client;
 
-    @Shadow @Final private ObjectArrayList<ChunkInfoAccessor> field_34807;
+    @Shadow @Final private ObjectArrayList<ChunkInfoAccessor> chunkInfos;
 
     @Shadow private boolean field_34810;
 
-    @Shadow @Final private BlockingQueue<ChunkBuilder.BuiltChunk> field_34816;
+    @Shadow @Final private BlockingQueue<ChunkBuilder.BuiltChunk> builtChunks;
 
     @Shadow private Future<?> field_34808;
 
@@ -63,6 +64,8 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
         }
 
         assert this.client.player != null;
+
+        ChunkRendererRegionBuilder chunkRendererRegionBuilder = new ChunkRendererRegionBuilder();
 
         do {
             // Determine which chunks shall be visible
@@ -84,14 +87,14 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
             // Schedule all chunks which need rebuilding (we schedule even important rebuilds because we wait for
             // all of them anyway and this way we can take advantage of threading)
-            for (ChunkInfoAccessor chunkInfo : this.field_34807) {
+            for (ChunkInfoAccessor chunkInfo : this.chunkInfos) {
                 ChunkBuilder.BuiltChunk builtChunk = chunkInfo.getChunk();
                 if (!builtChunk.needsRebuild()) {
                     continue;
                 }
                 // MC sometimes schedules invalid chunks when you're outside of loaded chunks (e.g. y > 256)
                 if (builtChunk.shouldBuild()) {
-                    builtChunk.scheduleRebuild(this.chunkBuilder);
+                    builtChunk.scheduleRebuild(this.chunkBuilder, chunkRendererRegionBuilder);
                 }
                 builtChunk.cancelRebuild();
             }
@@ -100,6 +103,6 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             this.field_34810 |= ((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.chunkBuilder).uploadEverythingBlocking();
 
             // Repeat until no more updates are needed
-        } while (this.field_34810 || !this.field_34816.isEmpty());
+        } while (this.field_34810 || !this.builtChunks.isEmpty());
     }
 }

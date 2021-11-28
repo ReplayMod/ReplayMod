@@ -10,6 +10,10 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Queue;
 
+//#if MC>=11800
+//$$ import java.util.function.Supplier;
+//#endif
+
 //#if MC>=11400
 import java.util.concurrent.CompletableFuture;
 //#endif
@@ -49,7 +53,11 @@ public interface MinecraftAccessor {
     //#endif
 
     @Accessor("crashReport")
+    //#if MC>=11800
+    //$$ Supplier<CrashReport> getCrashReporter();
+    //#else
     CrashReport getCrashReporter();
+    //#endif
 
     //#if MC<11400
     //$$ @Accessor
