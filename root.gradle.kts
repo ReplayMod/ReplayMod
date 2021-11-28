@@ -212,7 +212,7 @@ preprocess {
     mc11701.link(mc11700)
     mc11700.link(mc11604, file("versions/mapping-fabric-1.17-1.16.4.txt"))
     mc11604.link(mc11601)
-    mc11601.link(mc11502)
+    mc11601.link(mc11502, file("versions/mapping-fabric-1.16.1-1.15.2.txt"))
     mc11502.link(mc11404, file("versions/mapping-fabric-1.15.2-1.14.4.txt"))
     mc11404.link(mc11404Forge, file("versions/mapping-1.14.4-fabric-forge.txt"))
     mc11404Forge.link(mc11202, file("versions/1.14.4-forge/mapping.txt"))

@@ -365,6 +365,11 @@ public class CameraEntity
     public boolean isSubmergedIn(Tag<Fluid> fluid) {
         return falseUnlessSpectating(entity -> entity.isSubmergedIn(fluid));
     }
+
+    @Override
+    public float getUnderwaterVisibility() {
+        return falseUnlessSpectating(__ -> true) ? super.getUnderwaterVisibility() : 1f;
+    }
     //#else
     //#if MC>=10800
     //$$ @Override
