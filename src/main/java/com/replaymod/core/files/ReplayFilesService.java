@@ -17,9 +17,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ReplayFilesService {
     private final ReplayFoldersService folders;
+    private final Set<Path> lockedPaths = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public ReplayFilesService(ReplayFoldersService folders) {
         this.folders = folders;
@@ -30,12 +35,39 @@ public class ReplayFilesService {
     }
 
     public ReplayFile open(Path input, Path output) throws IOException {
-        return new ZipReplayFile(
-                new ReplayStudio(),
-                input != null ? input.toFile() : null,
-                output.toFile(),
-                folders.getCachePathForReplay(output).toFile()
-        );
+        Path realInput = input != null ? input.toAbsolutePath().normalize() : null;
+        Path realOutput = output.toAbsolutePath().normalize();
+
+        if (realInput != null && !lockedPaths.add(realInput)) {
+            throw new FileLockedException(realInput);
+        }
+        if (!Objects.equals(realInput, realOutput) && !lockedPaths.add(realOutput)) {
+            if (realInput != null) {
+                lockedPaths.remove(realInput);
+            }
+            throw new FileLockedException(realOutput);
+        }
+
+        Runnable onClose = () -> {
+            if (realInput != null) {
+                lockedPaths.remove(realInput);
+            }
+            lockedPaths.remove(realOutput);
+        };
+
+        ReplayFile replayFile;
+        try {
+            replayFile = new ZipReplayFile(
+                    new ReplayStudio(),
+                    realInput != null ? realInput.toFile() : null,
+                    realOutput.toFile(),
+                    folders.getCachePathForReplay(realOutput).toFile()
+            );
+        } catch (IOException e) {
+            onClose.run();
+            throw e;
+        }
+        return new ManagedReplayFile(replayFile, onClose);
     }
 
     public void initialScan(ReplayMod core) {
@@ -149,6 +181,12 @@ public class ReplayFilesService {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static class FileLockedException extends IOException {
+        public FileLockedException(Path path) {
+            super(path.toString());
         }
     }
 }
