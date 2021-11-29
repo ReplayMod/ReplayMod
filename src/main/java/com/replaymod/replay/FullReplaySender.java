@@ -55,6 +55,7 @@ import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
 import net.minecraft.network.packet.s2c.play.StatisticsS2CPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -1205,15 +1206,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 for (Entity entity : entitiesInChunk) {
                     // Skip interpolation of position updates coming from server
                     // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
-                    // Needs to be called at least 4 times thanks to
-                    // EntityOtherPlayerMP#otherPlayerMPPosRotationIncrements (max vanilla value is 3)
-                    for (int i = 0; i < 4; i++) {
-                        //#if MC>=11400
-                        entity.tick();
-                        //#else
-                        //$$ entity.onUpdate();
-                        //#endif
-                    }
+                    forcePositionForVehicleAndSelf(entity);
 
                     // Check whether the entity has left the chunk
                     //#if MC>=11700
@@ -1282,6 +1275,26 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
         return p; // During synchronous playback everything is sent normally
+    }
+
+    private void forcePositionForVehicleAndSelf(Entity entity) {
+        Entity vehicle = entity.getVehicle();
+        if (vehicle != null) {
+            forcePositionForVehicleAndSelf(vehicle);
+        }
+
+        // Skip interpolation of position updates coming from server
+        // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
+        int ticks = 0;
+        Vec3d prevPos;
+        do {
+            prevPos = entity.getPos();
+            if (vehicle != null) {
+                entity.tickRiding();
+            } else {
+                entity.tick();
+            }
+        } while (prevPos.squaredDistanceTo(entity.getPos()) > 0.0001 && ticks++ < 100);
     }
 
     private static final class PacketData {

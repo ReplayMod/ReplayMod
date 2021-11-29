@@ -1,5 +1,6 @@
 net.minecraft.stats.StatisticsManager net.minecraft.stats.StatFileWriter
 net.minecraft.init.MobEffects net.minecraft.potion.Potion
+net.minecraft.util.math.Vec3d net.minecraft.util.Vec3
 net.minecraft.util.text.TextComponentString net.minecraft.util.ChatComponentText
 net.minecraft.util.text.TextComponentTranslation net.minecraft.util.ChatComponentTranslation
 net.minecraft.util.text.Style net.minecraft.util.ChatStyle
