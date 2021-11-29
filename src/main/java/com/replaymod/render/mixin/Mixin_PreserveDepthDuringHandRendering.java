@@ -10,7 +10,12 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(GameRenderer.class)
 public abstract class Mixin_PreserveDepthDuringHandRendering {
     @ModifyArg(
+            // FIXME preprocessor bug: 1.8.9 uses method with `(FJ)V` when just name would be enough
+            //#if MC>=10809
             method = "renderWorld",
+            //#else
+            //$$ method = "updateCameraAndRender(F)V",
+            //#endif
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V"),
             index = 0
     )

@@ -27,14 +27,15 @@ import net.minecraft.client.render.WorldRenderer;
 public abstract class Mixin_ChromaKeyForceSky {
     @Shadow @Final private MinecraftClient client;
 
+    // FIXME preprocessor bug: should be able to remap these
     //#if MC>=11500
     @ModifyConstant(method = "render", constant = @Constant(intValue = 4))
-    //#else
-    //#if MC>=11400
+    //#elseif MC>=11400
     //$$ @ModifyConstant(method = "renderCenter", constant = @Constant(intValue = 4))
-    //#else
+    //#elseif MC>=10809
     //$$ @ModifyConstant(method = "updateCameraAndRender(FJ)V", constant = @Constant(intValue = 4))
-    //#endif
+    //#else
+    //$$ @ModifyConstant(method = "updateCameraAndRender(F)V", constant = @Constant(intValue = 4))
     //#endif
     private int forceSkyWhenChromaKeying(int value) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) this.client.gameRenderer).replayModRender_getHandler();
