@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(WorldRenderer.class)
 public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
@@ -53,6 +54,10 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
     @Shadow @Final private BlockingQueue<ChunkBuilder.BuiltChunk> builtChunks;
 
     @Shadow private Future<?> field_34808;
+
+    @Shadow @Final private AtomicBoolean field_34809;
+
+    @Shadow protected abstract void applyFrustum(Frustum par1);
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;setupTerrain(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;ZZ)V"))
     private void forceAllChunks(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
@@ -83,6 +88,12 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
                 } catch (TimeoutException e) {
                     e.printStackTrace();
                 }
+            }
+
+            // If that async processing did change the chunk graph, we need to re-apply the frustum (otherwise this is
+            // only done in the next setupTerrain call, which not happen this frame)
+            if (this.field_34809.compareAndSet(true, false)) {
+                this.applyFrustum((new Frustum(frustum)).method_38557(8)); // call based on the one in setupTerrain
             }
 
             // Schedule all chunks which need rebuilding (we schedule even important rebuilds because we wait for
