@@ -529,6 +529,8 @@ class Patterns {
         return stack.getModel();
         //#endif
     }
+    //#else
+    //$$ private static void getPositionMatrix() {}
     //#endif
 
     @SuppressWarnings("rawtypes") // preprocessor bug: doesn't work with generics
