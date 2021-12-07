@@ -81,10 +81,14 @@ public class RenderJob {
             }
             try (InputStream in = optIn.get();
                  InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-                return new GsonBuilder()
+                List<RenderJob> jobs = new GsonBuilder()
                         .registerTypeAdapter(Timeline.class, new TimelineTypeAdapter())
                         .create()
                         .fromJson(reader, new TypeToken<List<RenderJob>>(){}.getType());
+                if (jobs == null) {
+                    jobs = new ArrayList<>();
+                }
+                return jobs;
             }
         }
     }
