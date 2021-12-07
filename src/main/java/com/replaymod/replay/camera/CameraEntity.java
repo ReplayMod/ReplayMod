@@ -248,6 +248,7 @@ public class CameraEntity
         this.lastRenderX = to.lastRenderX;
         this.lastRenderY = to.lastRenderY + yOffset;
         this.lastRenderZ = to.lastRenderZ;
+        this.wrapArmYaw();
         updateBoundingBox();
     }
 
@@ -703,7 +704,35 @@ public class CameraEntity
         this.lastRenderYaw = this.renderYaw;
         this.lastRenderPitch = this.renderPitch;
         this.renderPitch = this.renderPitch +  (this.pitch - this.renderPitch) * 0.5f;
-        this.renderYaw = this.renderYaw +  (this.yaw - this.renderYaw) * 0.5f;
+        this.renderYaw = this.renderYaw + wrapDegrees(this.yaw - this.renderYaw) * 0.5f;
+        this.wrapArmYaw();
+    }
+
+    /**
+     * Minecraft renders the arm offset based on the difference between {@link #yaw} and {@link #renderYaw}. It does not
+     * wrap around the difference though, so if {@link #yaw} just wrapped around from 350 to 10 but {@link #renderYaw}
+     * is still at 355, then the difference will be inappropriately large. To fix this, we always wrap the
+     * {@link #renderYaw} such that it is no more than 180 degrees away from {@link #yaw}, even if that requires going
+     * outside the normal range.
+     */
+    private void wrapArmYaw() {
+        this.renderYaw = wrapDegreesTo(this.renderYaw, this.yaw);
+        this.lastRenderYaw = wrapDegreesTo(this.lastRenderYaw, this.renderYaw);
+    }
+
+    private static float wrapDegreesTo(float value, float towardsValue) {
+        while (towardsValue - value < -180) {
+            value -= 360;
+        }
+        while (towardsValue - value >= 180) {
+            value += 360;
+        }
+        return value;
+    }
+
+    private static float wrapDegrees(float value) {
+        value %= 360;
+        return wrapDegreesTo(value, 0);
     }
 
     public boolean canSpectate(Entity e) {
