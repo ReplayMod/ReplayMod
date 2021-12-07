@@ -21,6 +21,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
@@ -561,6 +562,15 @@ class Patterns {
         //$$ return new CrashException(((MinecraftAccessor) mc).getCrashReporter().get());
         //#else
         return new CrashException(((MinecraftAccessor) mc).getCrashReporter());
+        //#endif
+    }
+
+    @Pattern
+    private static Vec3d getTrackedPosition(Entity entity) {
+        //#if MC>=11604
+        return entity.getTrackedPosition();
+        //#else
+        //$$ return com.replaymod.core.versions.MCVer.getTrackedPosition(entity);
         //#endif
     }
 }

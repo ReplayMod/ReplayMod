@@ -5,6 +5,8 @@
   "mixins": [],
   "server": [],
   "client": [
+    "entity_tracking.Mixin_EntityExt",
+    "entity_tracking.Mixin_FixPartialUpdates",
     "Mixin_FixNPCSkinCaching",
     //#if MC>=11800
     //$$ "Mixin_FixEntityNotTracking",
