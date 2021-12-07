@@ -17,6 +17,8 @@
     //#if MC>=11400
     "MixinCamera",
     "MixinInGameHud",
+    //#else
+    //$$ "Mixin_FixHandOffsetTickDelta",
     //#endif
     "ClientWorldAccessor",
     "EntityLivingBaseAccessor",
