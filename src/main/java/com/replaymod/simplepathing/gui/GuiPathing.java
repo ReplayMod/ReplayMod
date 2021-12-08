@@ -451,14 +451,14 @@ public class GuiPathing {
         prevTime = time;
     }
 
-    public void syncTimeButtonPressed() {
+    private Integer computeSyncTime(int cursor) {
         // Current replay time
         int time = replayHandler.getReplaySender().currentTimeStamp();
-        // Position of the cursor
-        int cursor = timeline.getCursorPosition();
         // Get the last time keyframe before the cursor
-        mod.getCurrentTimeline().getTimePath().getKeyframes().stream()
-                .filter(it -> it.getTime() <= cursor).reduce((__, last) -> last).ifPresent(keyframe -> {
+        Keyframe keyframe = mod.getCurrentTimeline().getTimePath().getKeyframes().stream()
+                .filter(it -> it.getTime() <= cursor).reduce((__, last) -> last)
+                .orElse(null);
+        if (keyframe != null) {
             // Cursor position at the keyframe
             int keyframeCursor = (int) keyframe.getTime();
             // Replay time at the keyframe
@@ -470,11 +470,49 @@ public class GuiPathing {
             double speed = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? 1 : replayHandler.getOverlay().getSpeedSliderValue();
             // Cursor time passed
             int cursorPassed = (int) (timePassed / speed);
-            // Move cursor to new position
-            timeline.setCursorPosition(keyframeCursor + cursorPassed).ensureCursorVisibleWithPadding();
-            // Deselect keyframe to allow the user to add a new one right away
-            mod.setSelected(null, 0);
-        });
+            // Return new position
+            return keyframeCursor + cursorPassed;
+        } else {
+            // No keyframes before cursor
+            return null;
+        }
+    }
+
+    public void syncTimeButtonPressed() {
+        // Position of the cursor
+        int cursor = timeline.getCursorPosition();
+
+        // Update cursor once
+        Integer updatedCursor = computeSyncTime(cursor);
+        if (updatedCursor == null) {
+            return; // no keyframes before cursor, nothing we can do
+        }
+        cursor = updatedCursor;
+
+        // Repeatedly update until we find a fix point
+        while (true) {
+            updatedCursor = computeSyncTime(cursor);
+            if (updatedCursor == null) {
+                // Cursor has gotten stuck before in front of all keyframes.
+                // Let's just use the last value we got, this shouldn't happen with ordinary timelines anyway.
+                break;
+            }
+            if (updatedCursor == cursor) {
+                // Found the fix point, we can stop now
+                break;
+            }
+            if (updatedCursor < cursor) {
+                // We've gone backwards, we'll likely get stuck in a loop, so abort the whole thing
+                return;
+            }
+            // Found a new position, take it, repeat
+            cursor = updatedCursor;
+        }
+
+        // Move cursor to new position
+        timeline.setCursorPosition(cursor).ensureCursorVisibleWithPadding();
+        // Deselect keyframe to allow the user to add a new one right away
+        mod.setSelected(null, 0);
     }
 
     public boolean deleteButtonPressed() {
