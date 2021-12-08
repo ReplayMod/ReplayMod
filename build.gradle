@@ -335,7 +335,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:8cfd22c", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:70f59ef", shadeExclusions
 
     implementation(FABRIC ? dependencies.project(path: jGui.path, configuration: "namedElements") : jGui) {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
