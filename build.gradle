@@ -244,6 +244,7 @@ dependencies {
                 11700: '1.17',
                 11701: '1.17.1',
                 11800: '1.18',
+                11801: '1.18.1',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -254,6 +255,7 @@ dependencies {
                 11700: '1.17+build.13:v2',
                 11701: '1.17.1+build.29:v2',
                 11800: '1.18+build.1:v2',
+                11801: '1.18.1+build.1:v2',
         ][mcVersion]
         modImplementation 'net.fabricmc:fabric-loader:0.12.5'
         def fabricApiVersion = [
@@ -265,6 +267,7 @@ dependencies {
                 11700: '0.36.0+1.17',
                 11701: '0.37.1+1.17',
                 11800: '0.43.1+1.18',
+                11801: '0.43.1+1.18',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
