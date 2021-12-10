@@ -307,6 +307,23 @@ public class SPTimeline implements PathingRegistry {
         timeline.pushChange(change);
     }
 
+    public Change removeKeyframe(SPPath spPath, long time) {
+        LOGGER.debug("Removing {} keyframe at {}", spPath, time);
+
+        Path path = getPath(spPath);
+        Keyframe keyframe = path.getKeyframe(time);
+
+        Preconditions.checkState(keyframe != null, "No keyframe at that time");
+
+        Change change = create(path, keyframe);
+        change.apply(timeline);
+
+        Change specPosUpdate = updateSpectatorPositions();
+        specPosUpdate.apply(timeline);
+
+        return CombinedChange.createFromApplied(change, specPosUpdate);
+    }
+
     public Change setInterpolatorToDefault(long time) {
         LOGGER.debug("Setting interpolator of position keyframe at {} to the default", time);
 

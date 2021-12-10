@@ -159,7 +159,7 @@ public class ReplayModReplay implements Module {
     }
 
     public void startReplay(File file) throws IOException {
-        startReplay(core.openReplay(file.toPath()));
+        startReplay(core.files.open(file.toPath()));
     }
 
     public void startReplay(ReplayFile replayFile) throws IOException {

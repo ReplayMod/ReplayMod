@@ -1,6 +1,5 @@
 package com.replaymod.extras.playeroverview;
 
-import com.google.common.base.Optional;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.core.utils.Utils;
@@ -10,6 +9,7 @@ import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.events.ReplayClosedCallback;
 import com.replaymod.replay.events.ReplayOpenedCallback;
+import com.replaymod.replaystudio.lib.guava.base.Optional;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;

@@ -41,12 +41,10 @@ import java.util.Collections;
 //#endif
 
 //#if MC>=10904
-import com.replaymod.recording.mixin.EntityLivingBaseAccessor;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.data.DataTracker;
 import net.minecraft.util.Hand;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -73,10 +71,6 @@ public class RecordingEventHandler extends EventRegistrations {
     private boolean wasSleeping;
     private int lastRiding = -1;
     private Integer rotationYawHeadBefore;
-    //#if MC>=10904
-    private boolean wasHandActive;
-    private Hand lastActiveHand;
-    //#endif
 
     public RecordingEventHandler(PacketListener packetListener) {
         this.packetListener = packetListener;
@@ -334,18 +328,6 @@ public class RecordingEventHandler extends EventRegistrations {
                 packetListener.save(new EntityAnimationS2CPacket(player, 2));
                 wasSleeping = false;
             }
-
-            //#if MC>=10904
-            // Active hand (e.g. eating, drinking, blocking)
-            if (player.isUsingItem() ^ wasHandActive || player.getActiveHand() != lastActiveHand) {
-                wasHandActive = player.isUsingItem();
-                lastActiveHand = player.getActiveHand();
-                DataTracker dataManager = new DataTracker(null);
-                int state = (wasHandActive ? 1 : 0) | (lastActiveHand == Hand.OFF_HAND ? 2 : 0);
-                dataManager.startTracking(EntityLivingBaseAccessor.getLivingFlags(), (byte) state);
-                packetListener.save(new EntityTrackerUpdateS2CPacket(player.getEntityId(), dataManager, true));
-            }
-            //#endif
 
         } catch(Exception e1) {
             e1.printStackTrace();

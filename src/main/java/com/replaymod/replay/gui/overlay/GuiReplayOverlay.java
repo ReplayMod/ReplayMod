@@ -3,6 +3,7 @@ package com.replaymod.replay.gui.overlay;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.KeyEventCallback;
+import com.replaymod.core.gui.common.GuiWindow;
 import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
@@ -31,6 +32,9 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
 
     private final ReplayModReplay mod = ReplayModReplay.instance;
 
+    public final GuiReplayOverlayKt kt = new GuiReplayOverlayKt();
+    public final GuiWindow guiWindow = new GuiWindow(this, kt.getWindow());
+
     public final GuiPanel topPanel = new GuiPanel(this)
             .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.LEFT).setSpacing(5));
     public final GuiButton playPauseButton = new GuiButton() {
@@ -57,7 +61,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
      * when they're active.
      */
     public final GuiPanel statusIndicatorPanel = new GuiPanel(this).setSize(100, 16)
-            .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.RIGHT).setSpacing(5));
+            .setLayout(new HorizontalLayout(HorizontalLayout.Alignment.LEFT).setSpacing(5));
 
     private final EventHandler eventHandler = new EventHandler();
     private boolean hidden;
@@ -78,8 +82,11 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
                 pos(topPanel, 10, 10);
                 size(topPanel, width - 20, 20);
 
-                pos(statusIndicatorPanel, width / 2, height - 21);
+                pos(statusIndicatorPanel, 5, height - 21);
                 width(statusIndicatorPanel, width / 2 - 5);
+
+                pos(guiWindow, 0, 0);
+                size(guiWindow, width, height);
             }
         });
 

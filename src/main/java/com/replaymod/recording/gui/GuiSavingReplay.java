@@ -154,7 +154,7 @@ public class GuiSavingReplay {
         }
 
         try {
-            Path replaysFolder = core.getReplayFolder();
+            Path replaysFolder = core.folders.getReplayFolder();
             Path newPath = replaysFolder.resolve(Utils.replayNameToFileName(newName));
             for (int i = 1; Files.exists(newPath); i++) {
                 newPath = replaysFolder.resolve(Utils.replayNameToFileName(newName + " (" + i + ")"));

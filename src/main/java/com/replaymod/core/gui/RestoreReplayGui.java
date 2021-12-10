@@ -108,7 +108,7 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
     }
 
     private void tryRecover(Consumer<Float> progress) throws IOException {
-        ReplayFile replayFile = ReplayMod.instance.openReplay(file.toPath());
+        ReplayFile replayFile = ReplayMod.instance.files.open(file.toPath());
         // Commit all not-yet-committed files into the main zip file.
         // If we don't do this, then re-writing packet data below can actually overwrite uncommitted packet data!
         replayFile.save();

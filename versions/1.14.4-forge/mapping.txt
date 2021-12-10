@@ -27,6 +27,7 @@ net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()
 net.minecraft.util.text.ITextComponent getString() getUnformattedText()
 net.minecraft.network.play.server.SPacketRespawn func_212643_b() getDimensionID()
 net.minecraft.client.Minecraft getPackFinder() getResourcePackRepository()
+net.minecraft.entity.Entity getPositionVec() getPositionVector()
 
 net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent addWidget() addButton()
 net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent removeWidget() removeButton()

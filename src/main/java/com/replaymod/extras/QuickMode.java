@@ -6,14 +6,13 @@ import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayOpenedCallback;
 import com.replaymod.replay.gui.overlay.GuiReplayOverlay;
-import de.johni0702.minecraft.gui.element.GuiImage;
-import de.johni0702.minecraft.gui.layout.HorizontalLayout;
+import com.replaymod.replay.gui.overlay.UIStatusIndicator;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 
 public class QuickMode extends EventRegistrations implements Extra {
     private ReplayModReplay module;
 
-    private final GuiImage indicator = new GuiImage().setTexture(ReplayMod.TEXTURE, 40, 100, 16, 16).setSize(16, 16);
+    private final UIStatusIndicator indicator = new UIStatusIndicator(40, 100);
 
     @Override
     public void register(final ReplayMod mod) {
@@ -44,9 +43,9 @@ public class QuickMode extends EventRegistrations implements Extra {
 
     private void updateIndicator(GuiReplayOverlay overlay, boolean enabled) {
         if (enabled) {
-            overlay.statusIndicatorPanel.addElements(new HorizontalLayout.Data(1), indicator);
+            overlay.kt.getBottomLeftPanel().addChild(indicator);
         } else {
-            overlay.statusIndicatorPanel.removeElement(indicator);
+            overlay.kt.getBottomLeftPanel().removeChild(indicator);
         }
     }
 }

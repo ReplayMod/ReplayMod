@@ -1,5 +1,9 @@
 package com.replaymod.core.versions;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.gradle.remap.Pattern;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
@@ -10,17 +14,26 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.util.crash.CrashException;
+import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
 //#if MC>=11700
 //#else
 import org.lwjgl.opengl.GL11;
+//#endif
+
+//#if MC>=11600
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Matrix4f;
+//#else
 //#endif
 
 //#if MC>=11400
@@ -507,6 +520,57 @@ class Patterns {
         //$$ { float $angle = angle; com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(new net.minecraft.util.math.Quaternion(new net.minecraft.util.math.Vec3f(x, y, z), $angle, true)); }
         //#else
         GL11.glRotatef(angle, x, y, z);
+        //#endif
+    }
+
+    // FIXME preprocessor bug: there are mappings for this, not sure why it doesn't remap by itself
+    //#if MC>=11600
+    @Pattern
+    private static Matrix4f getPositionMatrix(MatrixStack.Entry stack) {
+        //#if MC>=11800
+        //$$ return stack.getPositionMatrix();
+        //#else
+        return stack.getModel();
+        //#endif
+    }
+    //#else
+    //$$ private static void getPositionMatrix() {}
+    //#endif
+
+    @SuppressWarnings("rawtypes") // preprocessor bug: doesn't work with generics
+    @Pattern
+    private static void Futures_addCallback(ListenableFuture future, FutureCallback callback) {
+        //#if MC>=11800
+        //$$ Futures.addCallback(future, callback, Runnable::run);
+        //#else
+        Futures.addCallback(future, callback);
+        //#endif
+    }
+
+    @Pattern
+    private static void setCrashReport(MinecraftClient mc, CrashReport report) {
+        //#if MC>=11800
+        //$$ mc.setCrashReportSupplier(() -> report);
+        //#else
+        mc.setCrashReport(report);
+        //#endif
+    }
+
+    @Pattern
+    private static CrashException crashReportToException(MinecraftClient mc) {
+        //#if MC>=11800
+        //$$ return new CrashException(((MinecraftAccessor) mc).getCrashReporter().get());
+        //#else
+        return new CrashException(((MinecraftAccessor) mc).getCrashReporter());
+        //#endif
+    }
+
+    @Pattern
+    private static Vec3d getTrackedPosition(Entity entity) {
+        //#if MC>=11604
+        return entity.getTrackedPosition();
+        //#else
+        //$$ return com.replaymod.core.versions.MCVer.getTrackedPosition(entity);
         //#endif
     }
 }
