@@ -4,6 +4,9 @@
   "mixins": [],
   "server": [],
   "client": [
+    //#if MC>=11800
+    //$$ "ChunkInfoAccessor",
+    //#endif
     "Mixin_ChromaKeyColorSky",
     "Mixin_ChromaKeyDisableFog",
     "Mixin_ChromaKeyForceSky",

@@ -228,7 +228,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         ReplayHandler replayHandler;
         ReplayFile replayFile = null;
         try {
-            replayFile = mod.getCore().openReplay(next.getKey().toPath());
+            replayFile = mod.getCore().files.open(next.getKey().toPath());
             replayHandler = mod.startReplay(replayFile, true, false);
         } catch (IOException e) {
             Utils.error(LOGGER, container, CrashReport.create(e, "Opening replay"), () -> {});

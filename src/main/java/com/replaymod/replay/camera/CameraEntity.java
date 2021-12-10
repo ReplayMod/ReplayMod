@@ -22,7 +22,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -249,14 +248,7 @@ public class CameraEntity
         this.lastRenderX = to.lastRenderX;
         this.lastRenderY = to.lastRenderY + yOffset;
         this.lastRenderZ = to.lastRenderZ;
-        if (to instanceof LivingEntity) {
-            LivingEntity toLiving = (LivingEntity) to;
-            this.headYaw = toLiving.headYaw;
-            this.prevHeadYaw = toLiving.prevHeadYaw;
-        } else {
-            this.headYaw = to.yaw;
-            this.prevHeadYaw = to.prevYaw;
-        }
+        this.wrapArmYaw();
         updateBoundingBox();
     }
 
@@ -265,7 +257,7 @@ public class CameraEntity
     public float getYaw(float tickDelta) {
         Entity view = this.client.getCameraEntity();
         if (view != null && view != this) {
-            return this.prevHeadYaw + (this.headYaw - this.prevHeadYaw) * tickDelta;
+            return this.prevYaw + (this.yaw - this.prevYaw) * tickDelta;
         }
         return super.getYaw(tickDelta);
     }
@@ -364,6 +356,11 @@ public class CameraEntity
     @Override
     public boolean isSubmergedIn(Tag<Fluid> fluid) {
         return falseUnlessSpectating(entity -> entity.isSubmergedIn(fluid));
+    }
+
+    @Override
+    public float getUnderwaterVisibility() {
+        return falseUnlessSpectating(__ -> true) ? super.getUnderwaterVisibility() : 1f;
     }
     //#else
     //#if MC>=10800
@@ -707,7 +704,35 @@ public class CameraEntity
         this.lastRenderYaw = this.renderYaw;
         this.lastRenderPitch = this.renderPitch;
         this.renderPitch = this.renderPitch +  (this.pitch - this.renderPitch) * 0.5f;
-        this.renderYaw = this.renderYaw +  (this.headYaw - this.renderYaw) * 0.5f;
+        this.renderYaw = this.renderYaw + wrapDegrees(this.yaw - this.renderYaw) * 0.5f;
+        this.wrapArmYaw();
+    }
+
+    /**
+     * Minecraft renders the arm offset based on the difference between {@link #yaw} and {@link #renderYaw}. It does not
+     * wrap around the difference though, so if {@link #yaw} just wrapped around from 350 to 10 but {@link #renderYaw}
+     * is still at 355, then the difference will be inappropriately large. To fix this, we always wrap the
+     * {@link #renderYaw} such that it is no more than 180 degrees away from {@link #yaw}, even if that requires going
+     * outside the normal range.
+     */
+    private void wrapArmYaw() {
+        this.renderYaw = wrapDegreesTo(this.renderYaw, this.yaw);
+        this.lastRenderYaw = wrapDegreesTo(this.lastRenderYaw, this.renderYaw);
+    }
+
+    private static float wrapDegreesTo(float value, float towardsValue) {
+        while (towardsValue - value < -180) {
+            value -= 360;
+        }
+        while (towardsValue - value >= 180) {
+            value += 360;
+        }
+        return value;
+    }
+
+    private static float wrapDegrees(float value) {
+        value %= 360;
+        return wrapDegreesTo(value, 0);
     }
 
     public boolean canSpectate(Entity e) {

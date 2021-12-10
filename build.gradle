@@ -34,7 +34,7 @@ buildscript {
     dependencies {
         classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.8-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.10-SNAPSHOT'
         } else if (mcVersion >= 11400) {
             classpath('net.minecraftforge.gradle:ForgeGradle:5.0.5') { // the FG people still haven't learned to not do breaking changes
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
@@ -43,7 +43,7 @@ buildscript {
             classpath('com.github.ReplayMod:ForgeGradle:' + (
                     mcVersion >= 11200 ? '34ab703' : // FG 2.3
                     mcVersion >= 10904 ? '5d1e8d8' : // FG 2.2
-                                         'd1a7165'   // FG 2.1
+                                         'ceb83c0'   // FG 2.1
             ) + ':all')
         } else {
             classpath 'com.github.ReplayMod:ForgeGradle:a8a9e0ca:all' // FG 1.2
@@ -108,9 +108,9 @@ preprocess {
 
 def mcVersionStr = "${(int)(mcVersion/10000)}.${(int)(mcVersion/100)%100}" + (mcVersion%100==0 ? '' : ".${mcVersion%100}")
 
-sourceCompatibility = targetCompatibility = mcVersion >= 11700 ? 16 : 1.8
+sourceCompatibility = targetCompatibility = mcVersion >= 11800 ? 17 : mcVersion >= 11700 ? 16 : 1.8
 tasks.withType(JavaCompile).configureEach {
-    options.release = mcVersion >= 11700 ? 16 : 8
+    options.release = mcVersion >= 11800 ? 17 : mcVersion >= 11700 ? 16 : 8
 }
 
 if (mcVersion >= 11400) {
@@ -124,8 +124,8 @@ group= "com.replaymod"
 archivesBaseName = "replaymod"
 
 if (FABRIC) {
-    minecraft {
-        refmapName = 'mixins.replaymod.refmap.json'
+    loom {
+        mixin.defaultRefmapName.set('mixins.replaymod.refmap.json')
         runConfigs.all {
             ideConfigGenerated = true
         }
@@ -243,6 +243,8 @@ dependencies {
                 11604: '1.16.4',
                 11700: '1.17',
                 11701: '1.17.1',
+                11800: '1.18',
+                11801: '1.18.1',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -252,8 +254,10 @@ dependencies {
                 11604: '1.16.4+build.6:v2',
                 11700: '1.17+build.13:v2',
                 11701: '1.17.1+build.29:v2',
+                11800: '1.18+build.1:v2',
+                11801: '1.18.1+build.1:v2',
         ][mcVersion]
-        modImplementation 'net.fabricmc:fabric-loader:0.11.6'
+        modImplementation 'net.fabricmc:fabric-loader:0.12.5'
         def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
@@ -262,6 +266,8 @@ dependencies {
                 11604: '0.25.1+build.416-1.16',
                 11700: '0.36.0+1.17',
                 11701: '0.37.1+1.17',
+                11800: '0.43.1+1.18',
+                11801: '0.43.1+1.18',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -332,15 +338,17 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:c9de2f5", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:70f59ef", shadeExclusions
 
-    implementation(jGui){
+    implementation(FABRIC ? dependencies.project(path: jGui.path, configuration: "namedElements") : jGui) {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
     }
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 11700) {
+        if (mcVersion >= 11800) {
+            modImplementation 'com.terraformersmc:modmenu:3.0.0'
+        } else if (mcVersion >= 11700) {
             modImplementation 'com.terraformersmc:modmenu:2.0.0-beta.7'
         } else if (mcVersion >= 11602) {
             modImplementation 'com.terraformersmc:modmenu:1.16.8'
