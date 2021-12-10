@@ -280,7 +280,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
                         // We still have the replay, so we just save it (at least for a few weeks) in case they change their mind
                         String replayName = FilenameUtils.getBaseName(outputPath.getFileName().toString());
-                        Path rawFolder = ReplayMod.instance.getRawReplayFolder();
+                        Path rawFolder = ReplayMod.instance.folders.getRawReplayFolder();
                         Path rawPath = rawFolder.resolve(outputPath.getFileName());
                         for (int i = 1; Files.exists(rawPath); i++) {
                             rawPath = rawPath.resolveSibling(replayName + "." + i + ".mcpr");

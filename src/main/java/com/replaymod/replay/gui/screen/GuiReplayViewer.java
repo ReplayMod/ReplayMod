@@ -118,7 +118,7 @@ public class GuiReplayViewer extends GuiScreen {
         @Override
         public void run() {
             try {
-                File folder = mod.getCore().getReplayFolder().toFile();
+                File folder = mod.getCore().folders.getReplayFolder().toFile();
 
                 MCVer.openFile(folder);
             } catch (IOException e) {
@@ -221,7 +221,7 @@ public class GuiReplayViewer extends GuiScreen {
         this.mod = mod;
 
         try {
-            list.setFolder(mod.getCore().getReplayFolder().toFile());
+            list.setFolder(mod.getCore().folders.getReplayFolder().toFile());
         } catch (IOException e) {
             throw new CrashException(CrashReport.create(e, "Getting replay folder"));
         }
@@ -370,7 +370,7 @@ public class GuiReplayViewer extends GuiScreen {
                 Arrays.sort(files, Comparator.<File>comparingLong(f -> lastModified.computeIfAbsent(f, File::lastModified)).reversed());
                 for (final File file : files) {
                     if (Thread.interrupted()) break;
-                    try (ReplayFile replayFile = ReplayMod.instance.openReplay(file.toPath())) {
+                    try (ReplayFile replayFile = ReplayMod.instance.files.open(file.toPath())) {
                         final Image thumb = Optional.ofNullable(replayFile.getThumbBytes().orNull()).flatMap(stream -> {
                             try (InputStream in = stream) {
                                 return Optional.of(Image.read(in));

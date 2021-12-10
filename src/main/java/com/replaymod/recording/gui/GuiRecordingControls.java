@@ -87,6 +87,9 @@ public class GuiRecordingControls extends EventRegistrations {
         if (!(guiScreen instanceof GameMenuScreen)) {
             return;
         }
+        if (buttonList.isEmpty()) {
+            return; // menu-less pause (F3+Esc)
+        }
         Function<Integer, Integer> yPos =
                 MCVer.findButton(buttonList, "menu.returnToMenu", 1)
                         .map(Optional::of)

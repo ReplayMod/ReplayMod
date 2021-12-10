@@ -13,6 +13,12 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.Vec3d;
+
+//#if MC>=11604
+//#else
+//$$ import net.minecraft.entity.Entity;
+//#endif
 
 //#if MC>=11600
 import net.minecraft.resource.ResourcePackSource;
@@ -55,7 +61,6 @@ import org.lwjgl.glfw.GLFW;
 //#if MC>=10904
 import com.replaymod.render.blend.mixin.ParticleAccessor;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.util.math.Vec3d;
 //#endif
 
 //#if MC>=10800
@@ -295,6 +300,12 @@ public class MCVer {
         double z = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * partialTicks;
         return new Vec3d(x, y, z);
     }
+    //#endif
+
+    //#if MC<=11601
+    //$$ public static Vec3d getTrackedPosition(Entity entity) {
+    //$$     return new Vec3d(entity.trackedX, entity.trackedY, entity.trackedZ);
+    //$$ }
     //#endif
 
     public static void openFile(File file) {

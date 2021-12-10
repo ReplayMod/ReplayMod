@@ -1,12 +1,12 @@
 package com.replaymod.render.utils;
 
-import com.google.common.base.Optional;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.replaymod.render.RenderSettings;
+import com.replaymod.replaystudio.lib.guava.base.Optional;
 import com.replaymod.replaystudio.pathing.PathingRegistry;
 import com.replaymod.replaystudio.pathing.path.Timeline;
 import com.replaymod.replaystudio.pathing.serialize.TimelineSerialization;
@@ -81,10 +81,14 @@ public class RenderJob {
             }
             try (InputStream in = optIn.get();
                  InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-                return new GsonBuilder()
+                List<RenderJob> jobs = new GsonBuilder()
                         .registerTypeAdapter(Timeline.class, new TimelineTypeAdapter())
                         .create()
                         .fromJson(reader, new TypeToken<List<RenderJob>>(){}.getType());
+                if (jobs == null) {
+                    jobs = new ArrayList<>();
+                }
+                return jobs;
             }
         }
     }

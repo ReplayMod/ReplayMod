@@ -322,14 +322,12 @@ class GuiPathingKt(
         player.onTick()
     }
 
-    fun syncTimeButtonPressed() {
+    private fun computeSyncTime(cursor: Duration): Duration? {
         // Current replay time
         val currentReplayTime = Duration.milliseconds(replayHandler.replaySender.currentTimeStamp())
-        // Position of the cursor
-        val cursor = timeline.cursor.position.get()
         // Get the last time keyframe before the cursor
         val (keyframeCursor, keyframe) = state.timeKeyframes.get().entries.findLast { (time, _) -> time <= cursor }
-            ?: return
+            ?: return null
         val keyframeReplayTime = keyframe.replayTime
         // Replay time passed
         val replayTimePassed = currentReplayTime - keyframeReplayTime
@@ -337,8 +335,39 @@ class GuiPathingKt(
         val speed = if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) 1.0 else overlay.speedSliderValue
         // Cursor time passed
         val cursorPassed = replayTimePassed / speed
+        // Return new position
+        return keyframeCursor + cursorPassed
+    }
+
+    fun syncTimeButtonPressed() {
+        // Position of the cursor
+        var cursor = timeline.cursor.position.get()
+
+
+        // Update cursor once
+        cursor = computeSyncTime(cursor)
+            ?: return  // no keyframes before cursor, nothing we can do
+
+        // Repeatedly update until we find a fix point
+        while (true) {
+            // If the cursor has gotten stuck before in front of all keyframes,
+            // let's just use the last value we got, this shouldn't happen with ordinary timelines anyway.
+            val updatedCursor = computeSyncTime(cursor) ?: break
+
+            if (updatedCursor == cursor) {
+                // Found the fix point, we can stop now
+                break
+            }
+            if (updatedCursor < cursor) {
+                // We've gone backwards, we'll likely get stuck in a loop, so abort the whole thing
+                return
+            }
+            // Found a new position, take it, repeat
+            cursor = updatedCursor
+        }
+
         // Move cursor to new position
-        timeline.cursor.position.set(keyframeCursor + cursorPassed)
+        timeline.cursor.position.set(cursor)
         timeline.cursor.ensureVisibleWithPadding()
         // Deselect keyframe to allow the user to add a new one right away
         state.selection.set(KeyframeState.Selection.EMPTY)

@@ -5,14 +5,22 @@
   "mixins": [],
   "server": [],
   "client": [
+    "entity_tracking.Mixin_EntityExt",
+    "entity_tracking.Mixin_FixPartialUpdates",
     "Mixin_FixNPCSkinCaching",
+    //#if MC>=11800
+    //$$ "Mixin_FixEntityNotTracking",
+    //#endif
     //#if MC>=11600
     "Mixin_MoveRealmsButton",
     //#endif
     //#if MC>=11400
     "MixinCamera",
     "MixinInGameHud",
+    //#else
+    //$$ "Mixin_FixHandOffsetTickDelta",
     //#endif
+    "ClientWorldAccessor",
     "EntityLivingBaseAccessor",
     //#if MC>=11400
     "Mixin_ShowSpectatedHand_NoOF",

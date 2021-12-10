@@ -67,7 +67,7 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
 
     @Override
     public long getTimePassed() {
-        if (firstFrame) return 0;
+        if (firstFrame) return startOffset;
         if (loadingResources) return timeBeforeResourceLoading;
         return System.currentTimeMillis() - startTime;
     }

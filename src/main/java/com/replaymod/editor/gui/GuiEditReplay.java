@@ -60,7 +60,7 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
         super(container);
         this.inputPath = inputPath;
 
-        try (ReplayFile replayFile = ReplayMod.instance.openReplay(inputPath)) {
+        try (ReplayFile replayFile = ReplayMod.instance.files.open(inputPath)) {
             markers = replayFile.getMarkers().or(HashSet::new);
             timeline = new EditTimeline(new HashSet<>(markers), markers -> this.markers = markers);
             timeline.setSize(300, 20)
@@ -147,7 +147,7 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
         ProgressPopup progressPopup = new ProgressPopup(this);
 
         new Thread(() -> {
-            try (ReplayFile replayFile = ReplayMod.instance.openReplay(inputPath)) {
+            try (ReplayFile replayFile = ReplayMod.instance.files.open(inputPath)) {
                 replayFile.writeMarkers(markers);
                 replayFile.save();
             } catch (IOException e) {

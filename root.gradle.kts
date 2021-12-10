@@ -3,8 +3,8 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     kotlin("jvm") version "1.5.21" apply false
-    id("fabric-loom") version "0.8-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "ff216cd"
+    id("fabric-loom") version "0.10-SNAPSHOT" apply false
+    id("com.replaymod.preprocess") version "7746c47"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
@@ -190,6 +190,7 @@ val doRelease by tasks.registering {
 defaultTasks("bundleJar")
 
 preprocess {
+    val mc11801 = createNode("1.18.1", 11801, "yarn")
     val mc11701 = createNode("1.17.1", 11701, "yarn")
     val mc11700 = createNode("1.17", 11700, "yarn")
     val mc11604 = createNode("1.16.4", 11604, "yarn")
@@ -208,10 +209,11 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc11801.link(mc11701, file("versions/mapping-fabric-1.18.1-1.17.1.txt"))
     mc11701.link(mc11700)
     mc11700.link(mc11604, file("versions/mapping-fabric-1.17-1.16.4.txt"))
     mc11604.link(mc11601)
-    mc11601.link(mc11502)
+    mc11601.link(mc11502, file("versions/mapping-fabric-1.16.1-1.15.2.txt"))
     mc11502.link(mc11404, file("versions/mapping-fabric-1.15.2-1.14.4.txt"))
     mc11404.link(mc11404Forge, file("versions/mapping-1.14.4-fabric-forge.txt"))
     mc11404Forge.link(mc11202, file("versions/1.14.4-forge/mapping.txt"))
