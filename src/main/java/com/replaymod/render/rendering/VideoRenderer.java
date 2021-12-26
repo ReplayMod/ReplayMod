@@ -119,6 +119,7 @@ public class VideoRenderer implements RenderInfo {
     private volatile Throwable failureCause;
 
     private Framebuffer guiFramebuffer;
+    private int displayWidth, displayHeight;
     private int framebufferWidth, framebufferHeight;
 
     public VideoRenderer(RenderSettings settings, ReplayHandler replayHandler, Timeline timeline) throws IOException {
