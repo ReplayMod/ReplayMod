@@ -631,8 +631,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private boolean displaySizeChanged() {
-        int realWidth = mc.getWindow().getWidth();
-        int realHeight = mc.getWindow().getHeight();
+        int realWidth = mc.getWindow().getFramebufferWidth();
+        int realHeight = mc.getWindow().getFramebufferHeight();
         if (realWidth == 0 || realHeight == 0) {
             // These can be zero on Windows if minimized.
             // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
@@ -642,8 +642,8 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void updateDisplaySize() {
-        displayWidth = mc.getWindow().getWidth();
-        displayHeight = mc.getWindow().getHeight();
+        displayWidth = mc.getWindow().getFramebufferWidth();
+        displayHeight = mc.getWindow().getFramebufferHeight();
     }
 
     public int getFramesDone() {
