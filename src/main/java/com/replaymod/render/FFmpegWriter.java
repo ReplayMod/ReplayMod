@@ -6,22 +6,18 @@ import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.ByteBufferPool;
-import com.replaymod.render.utils.StreamPipe;
+import com.zaxxer.nuprocess.NuAbstractProcessHandler;
+import com.zaxxer.nuprocess.NuProcess;
+import com.zaxxer.nuprocess.NuProcessBuilder;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -32,9 +28,7 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
 
     private final VideoRenderer renderer;
     private final RenderSettings settings;
-    private final Process process;
-    private final OutputStream outputStream;
-    private final WritableByteChannel channel;
+    private final NuProcess process;
     private final String commandArgs;
     private volatile boolean aborted;
 
@@ -65,28 +59,23 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
             LOGGER.error("Failed to parse ffmpeg command line:", e);
             throw new FFmpegStartupException(settings, e.getLocalizedMessage());
         }
-        try {
-            process = new ProcessBuilder(cmdline).directory(outputFolder).start();
-        } catch (IOException e) {
-            throw new NoFFmpegException(e);
-        }
+
         File exportLogFile = new File(MCVer.getMinecraft().runDirectory, "export.log");
         OutputStream exportLogOut = new TeeOutputStream(new FileOutputStream(exportLogFile), ffmpegLog);
-        new StreamPipe(process.getInputStream(), exportLogOut).start();
-        new StreamPipe(process.getErrorStream(), exportLogOut).start();
-        outputStream = process.getOutputStream();
-        channel = Channels.newChannel(outputStream);
+
+        NuProcessBuilder processBuilder =  new NuProcessBuilder(cmdline);
+        processBuilder.setCwd(outputFolder.toPath());
+        processBuilder.setProcessListener(new FFmpegProcessHandler(exportLogOut));
+        process = processBuilder.start();
     }
 
     @Override
     public void close() throws IOException {
-        IOUtils.closeQuietly(outputStream);
-
         long startTime = System.nanoTime();
         long rem = TimeUnit.SECONDS.toNanos(30);
         do {
             try {
-                process.exitValue();
+                process.destroy(false);
                 break;
             } catch(IllegalThreadStateException ex) {
                 if (rem > 0) {
@@ -101,7 +90,11 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
             rem = TimeUnit.SECONDS.toNanos(30) - (System.nanoTime() - startTime);
         } while (rem > 0);
 
-        process.destroy();
+        process.destroy(false);
+    }
+
+    public boolean pendingWrites() {
+        return process.hasPendingWrites();
     }
 
     @Override
@@ -109,7 +102,7 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
         BitmapFrame frame = channels.get(Channel.BRGA);
         try {
             checkSize(frame.getSize());
-            channel.write(frame.getByteBuffer());
+            process.writeStdin(frame.getByteBuffer().duplicate());
         } catch (Throwable t) {
             if (aborted) {
                 return;
@@ -180,5 +173,40 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
         public String getLog() {
             return log;
         }
+    }
+}
+
+class FFmpegProcessHandler extends NuAbstractProcessHandler {
+
+    private final OutputStream ffmpegLog;
+
+    FFmpegProcessHandler(OutputStream logStream) {
+        this.ffmpegLog = logStream;
+    }
+
+    @Override
+    public void onStderr(ByteBuffer buffer, boolean closed) {
+        try {
+            byte[] bytes = new byte[buffer.remaining()];
+            buffer.get(bytes);
+            ffmpegLog.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        super.onStderr(buffer, closed);
+    }
+
+    @Override
+    public void onStdout(ByteBuffer buffer, boolean closed) {
+        try {
+            byte[] bytes = new byte[buffer.remaining()];
+            buffer.get(bytes);
+            ffmpegLog.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        super.onStdout(buffer, closed);
     }
 }

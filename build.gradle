@@ -334,6 +334,8 @@ dependencies {
         shadow 'org.apache.maven:maven-artifact:3.6.1'
     }
 
+    shadow 'com.zaxxer:nuprocess:2.0.2'
+
     shadow 'org.aspectj:aspectjrt:1.8.2'
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
