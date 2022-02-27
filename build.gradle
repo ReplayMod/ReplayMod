@@ -353,9 +353,11 @@ dependencies {
         } else if (mcVersion >= 11602) {
             modImplementation 'com.terraformersmc:modmenu:1.16.8'
         } else if (mcVersion >= 11600) {
-            modImplementation 'io.github.prospector:modmenu:1.14.0+build.24'
+            modImplementation('com.terraformersmc:modmenu:1.14.15') {
+                exclude module: 'fabric-resource-loader-v0' // inappropriate version for 1.16.1
+            }
         } else {
-            modImplementation 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
+            modImplementation 'com.terraformersmc:modmenu:1.10.6'
         }
     }
 
