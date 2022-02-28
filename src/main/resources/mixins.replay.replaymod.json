@@ -23,6 +23,7 @@
     "ClientWorldAccessor",
     "EntityLivingBaseAccessor",
     //#if MC>=11400
+    "Mixin_ShowSpectatedHand_Iris",
     "Mixin_ShowSpectatedHand_NoOF",
     "Mixin_ShowSpectatedHand_OF",
     //#else
