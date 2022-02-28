@@ -57,6 +57,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -355,5 +358,15 @@ public class Utils {
     public static <T> T configure(T instance, Consumer<T> configure) {
         configure.accept(instance);
         return instance;
+    }
+
+    /**
+     * Like {@link Files#createDirectories(Path, FileAttribute[])} but doesn't explode if it's a symlink.
+     */
+    public static Path ensureDirectoryExists(Path path) throws IOException {
+        // Who in their right mind thought the default behavior of throwing when the target is a link to a directory
+        // was the preferred behavior?! Everyone has to fall for this at least once to learn it...
+        // https://bugs.openjdk.java.net/browse/JDK-8130464
+        return Files.createDirectories(Files.exists(path) ? path.toRealPath() : path);
     }
 }

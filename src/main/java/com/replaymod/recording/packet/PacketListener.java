@@ -285,7 +285,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                         for (int i = 1; Files.exists(rawPath); i++) {
                             rawPath = rawPath.resolveSibling(replayName + "." + i + ".mcpr");
                         }
-                        Files.createDirectories(rawPath.getParent());
                         replayFile.saveTo(rawPath.toFile());
                         replayFile.close();
 
