@@ -37,7 +37,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -181,17 +180,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
                 videoRenderer.renderVideo();
             } catch (FFmpegWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
-                NoticeScreen errorScreen = new NoticeScreen(
-                        //#if MC>=11400
-                        container::display,
-                        new TranslatableText("replaymod.gui.rendering.error.title"),
-                        new TranslatableText("replaymod.gui.rendering.error.message")
-                        //#else
-                        //$$ I18n.format("replaymod.gui.rendering.error.title"),
-                        //$$ I18n.format("replaymod.gui.rendering.error.message")
-                        //#endif
-                );
-                mc.openScreen(errorScreen);
+                mc.openScreen(new GuiNoFfmpeg(container::display).toMinecraft());
                 return;
             } catch (FFmpegWriter.FFmpegStartupException e) {
                 int jobsToSkip = jobsDone;

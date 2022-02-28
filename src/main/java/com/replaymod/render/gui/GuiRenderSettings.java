@@ -30,7 +30,6 @@ import de.johni0702.minecraft.gui.utils.Utils;
 import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 
@@ -240,17 +239,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                 videoRenderer.renderVideo();
             } catch (FFmpegWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
-                NoticeScreen errorScreen = new NoticeScreen(
-                        //#if MC>=11400
-                        getScreen()::display,
-                        new TranslatableText("replaymod.gui.rendering.error.title"),
-                        new TranslatableText("replaymod.gui.rendering.error.message")
-                        //#else
-                        //$$ I18n.format("replaymod.gui.rendering.error.title"),
-                        //$$ I18n.format("replaymod.gui.rendering.error.message")
-                        //#endif
-                );
-                getMinecraft().openScreen(errorScreen);
+                getMinecraft().openScreen(new GuiNoFfmpeg(getScreen()::display).toMinecraft());
             } catch (FFmpegWriter.FFmpegStartupException e) {
                 GuiExportFailed.tryToRecover(e, newSettings -> {
                     // Update settings with fixed ffmpeg arguments
