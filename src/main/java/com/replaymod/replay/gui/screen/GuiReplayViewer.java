@@ -95,8 +95,10 @@ public class GuiReplayViewer extends GuiScreen {
 
             List<GuiReplayEntry> selected = list.getSelected();
             if (selected.size() == 1) {
+                File file = selected.get(0).file;
+                LOGGER.info("Opening replay in viewer: " + file);
                 try {
-                    mod.startReplay(selected.get(0).file);
+                    mod.startReplay(file);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

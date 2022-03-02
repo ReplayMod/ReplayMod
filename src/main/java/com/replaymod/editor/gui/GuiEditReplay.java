@@ -21,6 +21,8 @@ import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.util.crash.CrashReport;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -31,6 +33,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     private final Path inputPath;
 
     private final EditTimeline timeline;
@@ -59,6 +63,8 @@ public class GuiEditReplay extends AbstractGuiPopup<GuiEditReplay> {
     protected GuiEditReplay(GuiContainer container, Path inputPath) throws IOException {
         super(container);
         this.inputPath = inputPath;
+
+        LOGGER.info("Opening replay in editor: " + inputPath);
 
         try (ReplayFile replayFile = ReplayMod.instance.files.open(inputPath)) {
             markers = replayFile.getMarkers().or(HashSet::new);
