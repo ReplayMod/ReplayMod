@@ -55,10 +55,12 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileAttribute;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -169,8 +171,45 @@ public class Utils {
 
     private static final PercentEscaper REPLAY_NAME_ENCODER = new PercentEscaper(".-_ ", false);
 
-    public static String replayNameToFileName(String replayName) {
-        return REPLAY_NAME_ENCODER.escape(replayName) + ".mcpr";
+    public static Path replayNameToPath(Path folder, String replayName) {
+        // If we can, prefer directly using the replay name as the file name
+        if (isUsable(folder, replayName + ".mcpr")) {
+            return folder.resolve(replayName + ".mcpr");
+        } else {
+            // otherwise, fall back to percent encoding
+            return folder.resolve(REPLAY_NAME_ENCODER.escape(replayName) + ".mcpr");
+        }
+    }
+
+    /**
+     * Checks whether a given file name is actually usable with the file system / operating system at the given folder.
+     */
+    private static boolean isUsable(Path folder, String fileName) {
+        Path path = folder.resolve(fileName);
+        if (Files.exists(path)) {
+            return true; // if it already exits, it's definitely usable
+        }
+
+        // Otherwise, there's no sure way to know, so we just gotta try
+        try (OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.CREATE_NEW)) {
+            outputStream.flush();
+        } catch (IOException e) {
+            return false;
+        }
+
+        // Looking good, but now we gotta clean up that mess (and Anti-Virus / Cloud Sync are know to lock them)
+        int attempts = 0;
+        while (true) {
+            try {
+                Files.delete(path);
+                return true;
+            } catch (IOException e) {
+                if (attempts++ > 100) {
+                    LOGGER.warn("Repeatedly failed to clean up temporary test file at " + path + ": ", e);
+                    return false; // while we were able to use it, it's taken now and we can't get it back
+                }
+            }
+        }
     }
 
     public static String fileNameToReplayName(String fileName) {
