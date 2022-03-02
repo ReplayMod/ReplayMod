@@ -19,9 +19,11 @@ import java.util.Map;
 public class PNGWriter implements FrameConsumer<BitmapFrame> {
 
     private final Path outputFolder;
+    private final boolean keepAlpha;
 
-    public PNGWriter(Path outputFolder) throws IOException {
+    public PNGWriter(Path outputFolder, boolean keepAlpha) throws IOException {
         this.outputFolder = outputFolder;
+        this.keepAlpha = keepAlpha;
 
         Files.createDirectories(outputFolder);
     }
@@ -47,6 +49,7 @@ public class PNGWriter implements FrameConsumer<BitmapFrame> {
     }
 
     private void withImage(BitmapFrame frame, IOConsumer<Image> consumer) throws IOException {
+        byte alphaMask = (byte) (keepAlpha ? 0 : 0xff);
         ByteBuffer buffer = frame.getByteBuffer();
         ReadableDimension size = frame.getSize();
         int width = size.getWidth();
@@ -58,7 +61,7 @@ public class PNGWriter implements FrameConsumer<BitmapFrame> {
                     byte g = buffer.get();
                     byte r = buffer.get();
                     byte a = buffer.get();
-                    image.setRGBA(x, y, r, g, b, a);
+                    image.setRGBA(x, y, r, g, b, a | alphaMask);
                 }
             }
             consumer.accept(image);

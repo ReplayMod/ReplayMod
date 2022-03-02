@@ -40,7 +40,7 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
                 new GuiLabel().setI18nText("replaymod.gui.advancedscreenshots.resolution"), videoResolutionPanel,
                 new GuiLabel().setI18nText("replaymod.gui.rendersettings.outputfile"), outputFileButton);
 
-        resetChildren(advancedPanel).addElements(null, nametagCheckbox, new GuiPanel().setLayout(
+        resetChildren(advancedPanel).addElements(null, nametagCheckbox, alphaCheckbox , new GuiPanel().setLayout(
                 new GridLayout().setCellsEqualSize(false).setColumns(2).setSpacingX(5).setSpacingY(15))
                 .addElements(new GridLayout.Data(0, 0.5),
                         new GuiLabel().setI18nText("replaymod.gui.rendersettings.stabilizecamera"), stabilizePanel,

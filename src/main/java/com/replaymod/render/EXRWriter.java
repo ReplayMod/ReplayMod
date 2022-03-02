@@ -28,9 +28,11 @@ import static org.lwjgl.util.tinyexr.TinyEXR.*;
 public class EXRWriter implements FrameConsumer<BitmapFrame> {
 
     private final Path outputFolder;
+    private final boolean keepAlpha;
 
-    public EXRWriter(Path outputFolder) throws IOException {
+    public EXRWriter(Path outputFolder, boolean keepAlpha) throws IOException {
         this.outputFolder = outputFolder;
+        this.keepAlpha = keepAlpha;
 
         Files.createDirectories(outputFolder);
     }
@@ -92,11 +94,15 @@ public class EXRWriter implements FrameConsumer<BitmapFrame> {
                     bgrChannels[(i + 3) % 4] = channel;
                 }
             }
+
+            int alphaMask = keepAlpha ? 0 : 0xff;
+
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
-                    for (FloatBuffer channel : bgrChannels) {
-                        channel.put(((int) bgra.get() & 0xff) / 255f);
-                    }
+                    bgrChannels[0].put(((int) bgra.get() & 0xff) / 255f); // b
+                    bgrChannels[1].put(((int) bgra.get() & 0xff) / 255f); // g
+                    bgrChannels[2].put(((int) bgra.get() & 0xff) / 255f); // r
+                    bgrChannels[3].put(((int) bgra.get() & 0xff | alphaMask) / 255f); // a
                 }
             }
             if (depthFrame != null && depthChannel != null) {

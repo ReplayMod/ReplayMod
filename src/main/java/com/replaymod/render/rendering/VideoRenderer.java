@@ -136,12 +136,12 @@ public class VideoRenderer implements RenderInfo {
             FrameConsumer<BitmapFrame> frameConsumer;
             if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
                 //#if MC>=11400
-                frameConsumer = new EXRWriter(settings.getOutputFile().toPath());
+                frameConsumer = new EXRWriter(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
                 //#else
                 //$$ throw new UnsupportedOperationException("EXR requires LWJGL3");
                 //#endif
             } else if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.PNG) {
-                frameConsumer = new PNGWriter(settings.getOutputFile().toPath());
+                frameConsumer = new PNGWriter(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
             } else {
                 frameConsumer = new FFmpegWriter(this);
             }
