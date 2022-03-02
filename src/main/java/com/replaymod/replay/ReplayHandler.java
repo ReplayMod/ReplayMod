@@ -603,6 +603,7 @@ public class ReplayHandler {
                 // Render our please-wait-screen
                 GuiScreen guiScreen = new GuiScreen();
                 guiScreen.setBackground(AbstractGuiScreen.Background.DIRT);
+                guiScreen.setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER));
                 guiScreen.addElements(new HorizontalLayout.Data(0.5),
                         new GuiLabel().setI18nText("replaymod.gui.pleasewait"));
 
