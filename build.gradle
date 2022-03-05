@@ -362,7 +362,9 @@ dependencies {
     }
 
     if (mcVersion >= 11600) {
-        modCompileOnly 'com.github.IrisShaders:Iris:1.0.0'
+        modCompileOnly("com.github.IrisShaders:Iris:1.18.x~v1.2.0") {
+            transitive = false // we do not want to upgrade our libs, we only need this to compile our mixins
+        }
     }
 
     testImplementation 'junit:junit:4.11'

@@ -28,6 +28,7 @@ public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
     public static IrisODSFrameCapturer INSTANCE;
     private final CubicPboOpenGlFrameCapturer left, right;
     private final String prevShaderPack;
+    private final boolean prevShadersEnabled;
     private int direction;
     private boolean isLeftEye;
 
@@ -67,13 +68,16 @@ public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         right = new CubicStereoFrameCapturer(worldRenderer, fakeInfo, frameSize);
 
         INSTANCE = this;
-        prevShaderPack = Iris.getIrisConfig().getShaderPackName().orElse(null);
-        setShaderPack(SHADER_PACK_NAME);
+        IrisConfig irisConfig = Iris.getIrisConfig();
+        prevShaderPack = irisConfig.getShaderPackName().orElse(null);
+        prevShadersEnabled = irisConfig.areShadersEnabled();
+        setShaderPack(SHADER_PACK_NAME, true);
     }
 
-    private static void setShaderPack(String name) {
+    private static void setShaderPack(String name, boolean enabled) {
         IrisConfig irisConfig = Iris.getIrisConfig();
         irisConfig.setShaderPackName(name);
+        irisConfig.setShadersEnabled(enabled);
         try {
             irisConfig.save();
             Iris.reload();
@@ -121,7 +125,7 @@ public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         left.close();
         right.close();
         INSTANCE = null;
-        setShaderPack(prevShaderPack);
+        setShaderPack(prevShaderPack, prevShadersEnabled);
     }
 
     private class CubicStereoFrameCapturer extends CubicPboOpenGlFrameCapturer {
