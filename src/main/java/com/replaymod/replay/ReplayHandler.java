@@ -534,6 +534,10 @@ public class ReplayHandler {
     }
 
     public void doJump(int targetTime, boolean retainCameraPosition) {
+        if (!getReplaySender().isAsyncMode()) {
+            return; // path playback, rendering, etc. -> no jumping allowed
+        }
+
         //#if MC>=10904
         if (getReplaySender() == quickReplaySender) {
             // Always round to full tick
