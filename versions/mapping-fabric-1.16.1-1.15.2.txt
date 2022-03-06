@@ -1,1 +1,2 @@
 net.minecraft.client.network.ClientPlayerEntity getUnderwaterVisibility() method_3140()
+net.minecraft.client.render.GameRenderer getBasicProjectionMatrix() method_22973()
