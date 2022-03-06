@@ -14,7 +14,6 @@
     "Mixin_HideNameTags",
     "Mixin_HideNameTags_LivingEntity",
     "Mixin_Omnidirectional_Camera",
-    "Mixin_Omnidirectional_DisableFrustumCulling",
     "Mixin_Omnidirectional_Rotation",
     "Mixin_PreserveDepthDuringGuiRendering",
     "Mixin_SkipBlockOutlinesDuringRender",
