@@ -16,7 +16,6 @@
     "Mixin_Omnidirectional_Camera",
     "Mixin_Omnidirectional_DisableFrustumCulling",
     "Mixin_Omnidirectional_Rotation",
-    "Mixin_Omnidirectional_SkipHand",
     "Mixin_PreserveDepthDuringGuiRendering",
     "Mixin_SkipBlockOutlinesDuringRender",
     "Mixin_SkipHudDuringRender",
@@ -39,6 +38,7 @@
     "Mixin_PreserveDepthDuringHandRendering",
     "Mixin_WindowsWorkaroundForTinyEXRNatives",
     //#endif
+    "GameRendererAccessor",
     "MainWindowAccessor",
     "WorldRendererAccessor",
     //#if MC>=10904
