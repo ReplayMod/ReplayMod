@@ -1,4 +1,4 @@
-//#if MC>=10904
+//#if MC>=10800
 package com.replaymod.replay;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -78,7 +78,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 wrappedBuf.writerIndex(size);
                 PacketByteBuf packetByteBuf = new PacketByteBuf(wrappedBuf);
 
+                //#if MC>=10809
                 Packet<?> mcPacket;
+                //#else
+                //$$ Packet mcPacket;
+                //#endif
                 //#if MC>=11700
                 //$$ mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId(), packetByteBuf);
                 //#elseif MC>=11500
