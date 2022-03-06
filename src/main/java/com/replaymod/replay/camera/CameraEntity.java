@@ -31,6 +31,10 @@ import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 
+//#if MC>=11802
+//$$ import net.minecraft.tag.TagKey;
+//#endif
+
 //#if FABRIC>=1
 //#else
 //$$ import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -354,7 +358,13 @@ public class CameraEntity
 
     //#if MC>=11400
     @Override
-    public boolean isSubmergedIn(Tag<Fluid> fluid) {
+    public boolean isSubmergedIn(
+            //#if MC>=11802
+            //$$ TagKey<Fluid> fluid
+            //#else
+            Tag<Fluid> fluid
+            //#endif
+    ) {
         return falseUnlessSpectating(entity -> entity.isSubmergedIn(fluid));
     }
 
