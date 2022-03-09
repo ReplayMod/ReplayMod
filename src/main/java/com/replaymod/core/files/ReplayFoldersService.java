@@ -10,6 +10,8 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static com.replaymod.core.utils.Utils.ensureDirectoryExists;
+
 public class ReplayFoldersService {
     private final Path mcDir = MinecraftClient.getInstance().runDirectory.toPath();
     private final SettingsRegistry settings;
@@ -19,14 +21,14 @@ public class ReplayFoldersService {
     }
 
     public Path getReplayFolder() throws IOException {
-        return Files.createDirectories(mcDir.resolve(settings.get(Setting.RECORDING_PATH)));
+        return ensureDirectoryExists(mcDir.resolve(settings.get(Setting.RECORDING_PATH)));
     }
 
     /**
      * Folder into which replay backups are saved before the MarkerProcessor is unleashed.
      */
     public Path getRawReplayFolder() throws IOException {
-        return Files.createDirectories(getReplayFolder().resolve("raw"));
+        return ensureDirectoryExists(getReplayFolder().resolve("raw"));
     }
 
     /**
@@ -34,7 +36,7 @@ public class ReplayFoldersService {
      * Distinct from the main folder, so they cannot be opened while they are still saving.
      */
     public Path getRecordingFolder() throws IOException {
-        return Files.createDirectories(getReplayFolder().resolve("recording"));
+        return ensureDirectoryExists(getReplayFolder().resolve("recording"));
     }
 
     /**
@@ -42,7 +44,7 @@ public class ReplayFoldersService {
      * Distinct from the recording folder cause people kept confusing them with recordings.
      */
     public Path getCacheFolder() throws IOException {
-        Path path = Files.createDirectories(mcDir.resolve(settings.get(Setting.CACHE_PATH)));
+        Path path = ensureDirectoryExists(mcDir.resolve(settings.get(Setting.CACHE_PATH)));
         try {
             Files.setAttribute(path, "dos:hidden", true);
         } catch (UnsupportedOperationException ignored) {

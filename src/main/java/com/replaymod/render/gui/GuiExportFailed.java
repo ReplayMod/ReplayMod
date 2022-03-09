@@ -90,6 +90,7 @@ public class GuiExportFailed extends GuiScreen {
                     oldSettings.getBitRate(),
                     oldSettings.getOutputFile(),
                     oldSettings.isRenderNameTags(),
+                    oldSettings.isIncludeAlphaChannel(),
                     oldSettings.isStabilizeYaw(),
                     oldSettings.isStabilizePitch(),
                     oldSettings.isStabilizeRoll(),

@@ -141,7 +141,7 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
 
     @Override
     public void tick() {
-        long current = System.currentTimeMillis();
+        long current = System.nanoTime() / 1_000_000;
 
         //first, update the total render time (only if rendering is not paused and has already started)
         if(!renderer.isPaused() && renderer.getFramesDone() > 0 && prevTime > -1) {

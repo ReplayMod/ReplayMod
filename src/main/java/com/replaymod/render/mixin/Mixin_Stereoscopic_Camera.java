@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(GameRenderer.class)
 public abstract class Mixin_Stereoscopic_Camera implements EntityRendererHandler.IEntityRenderer {
-    @Inject(method = "method_22973", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getBasicProjectionMatrix", at = @At("RETURN"), cancellable = true)
     private void replayModRender_setupStereoscopicProjection(CallbackInfoReturnable<Matrix4f> ci) {
         if (replayModRender_getHandler() != null) {
             Matrix4f offset;

@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+//#if FABRIC
+import net.fabricmc.loader.api.FabricLoader;
+//#endif
+
 //#if MC>=11400
 import java.io.InputStream;
 //#else
@@ -34,6 +38,9 @@ public class ReplayModMixinConfigPlugin implements IMixinConfigPlugin {
 
     private final Logger logger = LogManager.getLogger("replaymod/mixin");
     private final boolean hasOF = hasClass("optifine.OptiFineForgeTweaker") || hasClass("me.modmuss50.optifabric.mod.Optifabric");
+    //#if FABRIC
+    private final boolean hasIris = FabricLoader.getInstance().isModLoaded("iris");
+    //#endif
 
     {
         logger.debug("hasOF: " + hasOF);
@@ -49,6 +56,9 @@ public class ReplayModMixinConfigPlugin implements IMixinConfigPlugin {
         }
         if (mixinClassName.endsWith("_OF")) return hasOF;
         if (mixinClassName.endsWith("_NoOF")) return !hasOF;
+        //#if FABRIC
+        if (mixinClassName.endsWith("_Iris")) return hasIris;
+        //#endif
         return true;
     }
 

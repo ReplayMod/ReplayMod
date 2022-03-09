@@ -304,7 +304,7 @@ public class MCVer {
 
     //#if MC<=11601
     //$$ public static Vec3d getTrackedPosition(Entity entity) {
-    //$$     return new Vec3d(entity.trackedX, entity.trackedY, entity.trackedZ);
+    //$$     return new Vec3d(entity.trackedX / 4096.0, entity.trackedY / 4096.0, entity.trackedZ / 4096.0);
     //$$ }
     //#endif
 

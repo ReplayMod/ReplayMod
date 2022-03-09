@@ -22,6 +22,7 @@ import java.nio.file.WatchService;
 import java.util.List;
 import java.util.Map;
 
+import static com.replaymod.core.utils.Utils.ensureDirectoryExists;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 class SettingsRegistryBackend {
@@ -179,7 +180,7 @@ class SettingsRegistryBackend {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String config = gson.toJson(root);
         try {
-            Files.createDirectories(configFile.getParent());
+            ensureDirectoryExists(configFile.getParent());
             Files.write(configFile, config.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
