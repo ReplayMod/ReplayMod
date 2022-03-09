@@ -472,7 +472,7 @@ When you first enable **Quick Mode** in a replay, an internal reference of certa
 As a side effect, certain features like particles and second skin layers will not be rendered in the preview.
 By default, **Quick Mode** is toggled with `Q`.
 
-**Quick Mode** is available in ReplayMod for Minecraft 1.9.4 and up.
+**Quick Mode** is available in ReplayMod for Minecraft 1.8.x and up.
 
 ## Player Overview [overview]
 ![](img/player-overview.jpg)
