@@ -125,6 +125,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replaystudio.util.Utils.readInt;
@@ -349,6 +352,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             return;
         }
         terminate = true;
+        syncSender.shutdown();
         events.unregister();
         try {
             channelInactive(ctx);
@@ -403,53 +407,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         super.channelRead(ctx, p);
                     }
 
-                    // If we do not give minecraft time to tick, there will be dead entity artifacts left in the world
-                    // Therefore we have to remove all loaded, dead entities manually if we are in sync mode.
-                    // We do this after every SpawnX packet and after the destroy entities packet.
-                    if (!asyncMode && mc.world != null) {
-                        if (p instanceof PlayerSpawnS2CPacket
-                                || p instanceof EntitySpawnS2CPacket
-                                || p instanceof MobSpawnS2CPacket
-                                //#if MC<11600
-                                //$$ || p instanceof EntitySpawnGlobalS2CPacket
-                                //#endif
-                                || p instanceof PaintingSpawnS2CPacket
-                                || p instanceof ExperienceOrbSpawnS2CPacket
-                                || p instanceof EntitiesDestroyS2CPacket) {
-                            ClientWorld world = mc.world;
-                            //#if MC>=11700
-                            //$$ // From the looks of it, this has now been resolved (thanks to EntityChangeListener)
-                            //#elseif MC>=11400
-                            // Note: Not sure if it's still required but there's this really handy method anyway
-                            world.finishRemovingEntities();
-                            //#else
-                            //$$ Iterator<Entity> iter = world.loadedEntityList.iterator();
-                            //$$ while (iter.hasNext()) {
-                            //$$     Entity entity = iter.next();
-                            //$$     if (entity.isDead) {
-                            //$$         int chunkX = entity.chunkCoordX;
-                            //$$         int chunkY = entity.chunkCoordZ;
-                            //$$
-                                    //#if MC>=11400
-                                    //$$ if (entity.addedToChunk && world.getChunkProvider().provideChunk(chunkX, chunkY, false, false) != null) {
-                                    //#else
-                                    //#if MC>=10904
-                                    //$$ if (entity.addedToChunk && world.getChunkProvider().getLoadedChunk(chunkX, chunkY) != null) {
-                                    //#else
-                                    //$$ if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
-                                    //#endif
-                                    //#endif
-                            //$$             world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);
-                            //$$         }
-                            //$$
-                            //$$         iter.remove();
-                            //$$         world.onEntityRemoved(entity);
-                            //$$     }
-                            //$$
-                            //$$ }
-                            //#endif
-                        }
-                    }
+                    maybeRemoveDeadEntities(p);
 
                     //#if MC>=11400
                     if (p instanceof ChunkDataS2CPacket) {
@@ -502,6 +460,69 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //#endif
 
         return p;
+    }
+
+    // If we do not give minecraft time to tick, there will be dead entity artifacts left in the world
+    // Therefore we have to remove all loaded, dead entities manually if we are in sync mode.
+    // We do this after every SpawnX packet and after the destroy entities packet.
+    private void maybeRemoveDeadEntities(Packet packet) {
+        if (asyncMode) {
+            return; // MC should have enough time to tick
+        }
+
+        boolean relevantPacket = packet instanceof PlayerSpawnS2CPacket
+                || packet instanceof EntitySpawnS2CPacket
+                || packet instanceof MobSpawnS2CPacket
+                //#if MC<11600
+                //$$ || packet instanceof EntitySpawnGlobalS2CPacket
+                //#endif
+                || packet instanceof PaintingSpawnS2CPacket
+                || packet instanceof ExperienceOrbSpawnS2CPacket
+                || packet instanceof EntitiesDestroyS2CPacket;
+        if (!relevantPacket) {
+            return; // don't want to do it too often, only when there's likely to be a dead entity
+        }
+
+        mc.send(() -> {
+            ClientWorld world = mc.world;
+            if (world != null) {
+                removeDeadEntities(world);
+            }
+        });
+    }
+
+    private void removeDeadEntities(ClientWorld world) {
+        //#if MC>=11700
+        //$$ // From the looks of it, this has now been resolved (thanks to EntityChangeListener)
+        //#elseif MC>=11400
+        // Note: Not sure if it's still required but there's this really handy method anyway
+        world.finishRemovingEntities();
+        //#else
+        //$$ Iterator<Entity> iter = world.loadedEntityList.iterator();
+        //$$ while (iter.hasNext()) {
+        //$$     Entity entity = iter.next();
+        //$$     if (entity.isDead) {
+        //$$         int chunkX = entity.chunkCoordX;
+        //$$         int chunkY = entity.chunkCoordZ;
+        //$$
+                //#if MC>=11400
+                //$$ if (entity.addedToChunk && world.getChunkProvider().provideChunk(chunkX, chunkY, false, false) != null) {
+                //#else
+                //#if MC>=10904
+                //$$ if (entity.addedToChunk && world.getChunkProvider().getLoadedChunk(chunkX, chunkY) != null) {
+                //#else
+                //$$ if (entity.addedToChunk && world.getChunkProvider().chunkExists(chunkX, chunkY)) {
+                //#endif
+                //#endif
+        //$$             world.getChunkFromChunkCoords(chunkX, chunkY).removeEntity(entity);
+        //$$         }
+        //$$
+        //$$         iter.remove();
+        //$$         world.onEntityRemoved(entity);
+        //$$     }
+        //$$
+        //$$ }
+        //#endif
     }
 
     /**
@@ -627,7 +648,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#if MC>=11600
                     //#if MC>=11603
                     packet.getDimensionIds(),
+                    //#if MC>=11800
+                    //$$ packet.registryManager(),
+                    //#else
                     (net.minecraft.util.registry.DynamicRegistryManager.Impl) packet.getRegistryManager(),
+                    //#endif
                     packet.getDimensionType(),
                     //#else
                     //$$ packet.method_29443(),
@@ -824,7 +849,13 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
-        return asyncMode ? processPacketAsync(p) : processPacketSync(p);
+        if (asyncMode) {
+            return processPacketAsync(p);
+        } else {
+            Packet fp = p;
+            mc.send(() -> processPacketSync(fp));
+            return p;
+        }
     }
 
     @Override
@@ -1085,6 +1116,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     //        Synchronous packet processing                //
     /////////////////////////////////////////////////////////
 
+    // Even in sync mode, we send from another thread because mods may rely on that
+    private final ExecutorService syncSender = Executors.newSingleThreadExecutor(runnable ->
+            new Thread(runnable, "replaymod-sync-sender"));
+
     /**
      * Sends all packets until the specified timestamp is reached (inclusive).
      * If the timestamp is smaller than the last packet sent, the replay is restarted from the beginning.
@@ -1093,6 +1128,36 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     @Override
     public void sendPacketsTill(int timestamp) {
         Preconditions.checkState(!asyncMode, "This method cannot be used in async mode. Use jumpToTime(int) instead.");
+
+        // Submit our target to the sender thread and track its progress
+        AtomicBoolean doneSending = new AtomicBoolean();
+        syncSender.submit(() -> {
+            try {
+                doSendPacketsTill(timestamp);
+            } finally {
+                doneSending.set(true);
+            }
+        });
+
+        // Drain the task queue while we are sending (in case a mod blocks the io thread waiting for the main thread)
+        while (!doneSending.get()) {
+            executeTaskQueue();
+
+            // Wait until the sender thread has made progress
+            try {
+                //noinspection BusyWait
+                Thread.sleep(0, 100_000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+
+        // Everything has been sent, drain the queue one last time
+        executeTaskQueue();
+    }
+
+    private void doSendPacketsTill(int timestamp) {
         try {
             while (ctx == null && !terminate) { // Make sure channel is ready
                 Thread.sleep(10);
@@ -1112,7 +1177,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     loginPhase = true;
                     startFromBeginning = false;
                     nextPacket = null;
-                    replayHandler.restartedReplay();
+                    ReplayMod.instance.runSync(replayHandler::restartedReplay);
                 }
 
                 if (replayIn == null) {
@@ -1159,7 +1224,30 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         }
     }
 
-    protected Packet processPacketSync(Packet p) {
+    private void executeTaskQueue() {
+        //#if MC>=11400
+        ((MCVer.MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
+        //#else
+        //$$ java.util.Queue<java.util.concurrent.FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
+        //$$
+        //$$ // Live-lock detection: if we already hold the lock, then the sender thread will never be able to queue its
+        //$$ // tasks
+        //$$ if (Thread.holdsLock(scheduledTasks)) {
+        //$$     throw new IllegalStateException("Task queue already locked. " +
+        //$$             "You may want to use `Scheduler.runLaterWithoutLock` to run while the lock is not taken.");
+        //$$ }
+        //$$
+        //$$ //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        //$$ synchronized (scheduledTasks) {
+        //$$     while (!scheduledTasks.isEmpty()) {
+        //$$         scheduledTasks.poll().run();
+        //$$     }
+        //$$ }
+        //#endif
+        ReplayMod.instance.runTasks();
+    }
+
+    protected void processPacketSync(Packet p) {
         //#if MC>=10904
         if (p instanceof UnloadChunkS2CPacket) {
             UnloadChunkS2CPacket packet = (UnloadChunkS2CPacket) p;
@@ -1280,7 +1368,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 }
             }
         }
-        return p; // During synchronous playback everything is sent normally
     }
 
     private void forcePositionForVehicleAndSelf(Entity entity) {

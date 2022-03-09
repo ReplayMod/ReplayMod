@@ -30,7 +30,6 @@ import de.johni0702.minecraft.gui.utils.Utils;
 import de.johni0702.minecraft.gui.utils.lwjgl.Color;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.util.crash.CrashReport;
 
@@ -149,6 +148,9 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
     public final GuiCheckbox nametagCheckbox = new GuiCheckbox()
             .setI18nLabel("replaymod.gui.rendersettings.nametags");
 
+    public final GuiCheckbox alphaCheckbox = new GuiCheckbox()
+            .setI18nLabel("replaymod.gui.rendersettings.includealpha");
+
     public final GuiPanel stabilizePanel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(10));
     public final GuiCheckbox stabilizeYaw = new GuiCheckbox(stabilizePanel)
             .setI18nLabel("replaymod.gui.yaw");
@@ -188,7 +190,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             .setSize(200, 20).setValues(RenderSettings.AntiAliasing.values()).setSelected(RenderSettings.AntiAliasing.NONE);
 
     public final GuiPanel advancedPanel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(15))
-            .addElements(null, nametagCheckbox, new GuiPanel().setLayout(
+            .addElements(null, nametagCheckbox, alphaCheckbox, new GuiPanel().setLayout(
                     new GridLayout().setCellsEqualSize(false).setColumns(2).setSpacingX(5).setSpacingY(15))
                     .addElements(new GridLayout.Data(0, 0.5),
                             new GuiLabel().setI18nText("replaymod.gui.rendersettings.stabilizecamera"), stabilizePanel,
@@ -240,17 +242,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                 videoRenderer.renderVideo();
             } catch (FFmpegWriter.NoFFmpegException e) {
                 LOGGER.error("Rendering video:", e);
-                NoticeScreen errorScreen = new NoticeScreen(
-                        //#if MC>=11400
-                        getScreen()::display,
-                        new TranslatableText("replaymod.gui.rendering.error.title"),
-                        new TranslatableText("replaymod.gui.rendering.error.message")
-                        //#else
-                        //$$ I18n.format("replaymod.gui.rendering.error.title"),
-                        //$$ I18n.format("replaymod.gui.rendering.error.message")
-                        //#endif
-                );
-                getMinecraft().openScreen(errorScreen);
+                getMinecraft().openScreen(new GuiNoFfmpeg(getScreen()::display).toMinecraft());
             } catch (FFmpegWriter.FFmpegStartupException e) {
                 GuiExportFailed.tryToRecover(e, newSettings -> {
                     // Update settings with fixed ffmpeg arguments
@@ -533,6 +525,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         }
         outputFileButton.setLabel(this.outputFile.getName());
         nametagCheckbox.setChecked(settings.isRenderNameTags());
+        alphaCheckbox.setChecked(settings.isIncludeAlphaChannel());
         stabilizeYaw.setChecked(settings.isStabilizeYaw());
         stabilizePitch.setChecked(settings.isStabilizePitch());
         stabilizeRoll.setChecked(settings.isStabilizeRoll());
@@ -571,6 +564,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                 bitRateField.getInteger() << (10 * bitRateUnit.getSelected()),
                 serialize && !userDefinedOutputFileName ? getParentFile(outputFile) : outputFile,
                 nametagCheckbox.isChecked(),
+                alphaCheckbox.isChecked(),
                 stabilizeYaw.isChecked() && (serialize || stabilizeYaw.isEnabled()),
                 stabilizePitch.isChecked() && (serialize || stabilizePitch.isEnabled()),
                 stabilizeRoll.isChecked() && (serialize || stabilizeRoll.isEnabled()),

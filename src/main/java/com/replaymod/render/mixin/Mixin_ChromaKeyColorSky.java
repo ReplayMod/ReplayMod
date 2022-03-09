@@ -21,7 +21,12 @@ public abstract class Mixin_ChromaKeyColorSky {
     @Shadow @Final private MinecraftClient client;
 
     //#if MC>=11800
-    //$$ @Inject(method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLjava/lang/Runnable;)V",
+    //$$ @Inject(
+            //#if MC>=11802
+            //$$ method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
+            //#else
+            //$$ method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLjava/lang/Runnable;)V",
+            //#endif
     //$$         at = @At(value = "INVOKE", target = "Ljava/lang/Runnable;run()V", remap = false, shift = At.Shift.AFTER),
     //$$         cancellable = true)
     //#elseif MC>=11400 || 10710>=MC

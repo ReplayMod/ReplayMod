@@ -69,7 +69,7 @@ import net.minecraft.entity.LivingEntity;
 //$$ import io.netty.channel.ChannelOutboundHandlerAdapter;
 //#endif
 
-//#if MC<10904
+//#if MC<10800
 //$$ import de.johni0702.minecraft.gui.element.GuiLabel;
 //$$ import de.johni0702.minecraft.gui.popup.GuiInfoPopup;
 //$$ import de.johni0702.minecraft.gui.utils.Colors;
@@ -119,11 +119,11 @@ public class ReplayHandler {
      * Decodes and sends packets into channel.
      */
     private final FullReplaySender fullReplaySender;
-    //#if MC>=10904
+    //#if MC>=10800
     private final QuickReplaySender quickReplaySender;
     private boolean quickMode = false;
     //#else
-    //$$ private static final String QUICK_MODE_MIN_MC = "1.9.4";
+    //$$ private static final String QUICK_MODE_MIN_MC = "1.8";
     //#endif
 
     /**
@@ -160,7 +160,7 @@ public class ReplayHandler {
         markers = replayFile.getMarkers().or(Collections.emptySet());
 
         fullReplaySender = new FullReplaySender(this, replayFile, false);
-        //#if MC>=10904
+        //#if MC>=10800
         quickReplaySender = new QuickReplaySender(ReplayModReplay.instance, replayFile);
         //#endif
 
@@ -206,7 +206,7 @@ public class ReplayHandler {
         ReplayClosingCallback.EVENT.invoker().replayClosing(this);
 
         fullReplaySender.terminateReplay();
-        //#if MC>=10904
+        //#if MC>=10800
         if (quickMode) {
             quickReplaySender.unregister();
         }
@@ -308,7 +308,7 @@ public class ReplayHandler {
         //$$ channel = new EmbeddedChannel(dummyHandler);
         //$$ channel.pipeline().remove(dummyHandler);
         //#endif
-        //#if MC>=10904
+        //#if MC>=10800
         channel.pipeline().addLast("ReplayModReplay_quickReplaySender", quickReplaySender);
         //#endif
         channel.pipeline().addLast("ReplayModReplay_replaySender", fullReplaySender);
@@ -329,7 +329,7 @@ public class ReplayHandler {
     }
 
     public ReplaySender getReplaySender() {
-        //#if MC>=10904
+        //#if MC>=10800
         return quickMode ? quickReplaySender : fullReplaySender;
         //#else
         //$$ return fullReplaySender;
@@ -340,7 +340,7 @@ public class ReplayHandler {
         return overlay;
     }
 
-    //#if MC>=10904
+    //#if MC>=10800
     public void ensureQuickModeInitialized(Runnable andThen) {
         if (Utils.ifMinimalModeDoPopup(overlay, () -> {})) return;
         ListenableFuture<Void> future = quickReplaySender.getInitializationPromise();
@@ -534,7 +534,11 @@ public class ReplayHandler {
     }
 
     public void doJump(int targetTime, boolean retainCameraPosition) {
-        //#if MC>=10904
+        if (!getReplaySender().isAsyncMode()) {
+            return; // path playback, rendering, etc. -> no jumping allowed
+        }
+
+        //#if MC>=10800
         if (getReplaySender() == quickReplaySender) {
             // Always round to full tick
             targetTime = targetTime + targetTime % 50;
@@ -603,6 +607,7 @@ public class ReplayHandler {
                 // Render our please-wait-screen
                 GuiScreen guiScreen = new GuiScreen();
                 guiScreen.setBackground(AbstractGuiScreen.Background.DIRT);
+                guiScreen.setLayout(new HorizontalLayout(HorizontalLayout.Alignment.CENTER));
                 guiScreen.addElements(new HorizontalLayout.Data(0.5),
                         new GuiLabel().setI18nText("replaymod.gui.pleasewait"));
 

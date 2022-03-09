@@ -56,11 +56,16 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
                     new GuiLabel().setI18nText("replaymod.gui.restorereplay1"),
                     new GuiLabel().setI18nText("replaymod.gui.restorereplay2", Files.getNameWithoutExtension(file.getName())),
                     new GuiLabel().setI18nText("replaymod.gui.restorereplay3"));
+
+        LOGGER.info("Found partially saved replay, offering recovery: " + file);
+
         yesButton.onClick(() -> {
+            LOGGER.info("Attempting recovery: " + file);
             recoverInBackground();
             parent.display();
         });
         noButton.onClick(() -> {
+            LOGGER.info("Recovery rejected, marking for deletion: " + file);
             try {
                 File tmp = new File(file.getParentFile(), file.getName() + ".tmp");
                 File deleted = new File(file.getParentFile(), file.getName() + ".del");

@@ -14,9 +14,48 @@ uniform int direction;
 
 const float eyeDistance = 0.14;
 
+void orient(vec4 position, int orientation) {
+    float z;
+    if (orientation == 0) { // LEFT
+        z = position.z;
+        position.z = position.x;
+        position.x = -z;
+    } else if (orientation == 1) { // RIGHT
+        z = position.z;
+        position.z = -position.x;
+        position.x = z;
+    } else if (orientation == 2) { // FRONT
+        // No changes required
+    } else if (orientation == 3) { // BACK
+        position.x = -position.x;
+        position.z = -position.z;
+    } else if (orientation == 4) { // TOP
+        z = position.z;
+        position.z = -position.y;
+        position.y = z;
+    } else if (orientation == 5) { // BOTTOM
+        z = position.z;
+        position.z = position.y;
+        position.y = -z;
+    }
+}
+
+void orientInverse(vec4 position, int orientation) {
+    if (orientation < 2) {
+        orient(position, 1 - orientation); // LEFT and RIGHT flip
+    } else if (orientation < 4) {
+        orient(position, orientation); // FRONT and BACK are their own inverses
+    } else {
+        orient(position, (1 - (orientation - 4)) + 4); // TOP and BOTTOM flip
+    }
+}
+
 void main() {
     // Transform to view space
     vec4 position = gl_ModelViewMatrix * gl_Vertex;
+
+    // Undo the camera rotation, so we always apply our stereo effect looking in the same direction
+    orientInverse(position, direction);
 
     // Distort for ODS
     //  O := The origin
@@ -39,30 +78,8 @@ void main() {
     // Calculate the vector between O and T and finally move the vertex by that vector
     position -= vec4(distTO * sin(angOT), 0, distTO * cos(angOT), 0);
 
-    // Rotate for different cubic views
-    float z;
-    if (direction == 0) { // LEFT
-            z = position.z;
-            position.z = position.x;
-            position.x = -z;
-    } else if (direction == 1) { // RIGHT
-            z = position.z;
-            position.z = -position.x;
-            position.x = z;
-    } else if (direction == 2) { // FRONT
-            // No changes required
-    } else if (direction == 3) { // BACK
-            position.x = -position.x;
-            position.z = -position.z;
-    } else if (direction == 4) { // TOP
-            z = position.z;
-            position.z = -position.y;
-            position.y = z;
-    } else if (direction == 5) { // BOTTOM
-            z = position.z;
-            position.z = position.y;
-            position.y = -z;
-    }
+    // Rotate back into the correct cubic view
+    orient(position, direction);
 
     // Transform to screen space
 	gl_Position = gl_ProjectionMatrix * position;

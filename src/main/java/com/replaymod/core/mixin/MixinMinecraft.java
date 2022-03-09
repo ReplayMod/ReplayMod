@@ -63,6 +63,7 @@ public abstract class MixinMinecraft
         PostRenderCallback.EVENT.invoker().postRender();
     }
     //#else
+    //$$ @Shadow long systemTime;
     //#if MC>=10904
     //$$ @Shadow protected abstract void runTickKeyboard() throws IOException;
     //$$ @Shadow protected abstract void runTickMouse() throws IOException;
@@ -80,6 +81,8 @@ public abstract class MixinMinecraft
     //$$ public void replayModRunTickMouse() {
     //$$     try {
     //$$         runTickMouse();
+    //$$         // Update last tick time (MC ignores inputs when there hasn't been a tick in 200ms)
+    //$$         systemTime = Minecraft.getSystemTime();
     //$$     } catch (IOException e) {
     //$$         e.printStackTrace();
     //$$     }
@@ -94,7 +97,12 @@ public abstract class MixinMinecraft
     //$$
     //$$ @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;sendClickBlockToController(Z)V"), cancellable = true)
     //$$ private void doEarlyReturnFromRunTick(CallbackInfo ci) {
-    //$$     if (earlyReturn) ci.cancel();
+    //$$     if (earlyReturn) {
+    //$$         ci.cancel();
+    //$$
+    //$$         // Update last tick time (MC ignores inputs when there hasn't been a tick in 200ms)
+    //$$         systemTime = Minecraft.getSystemTime();
+    //$$     }
     //$$ }
     //#endif
     //$$ @Redirect(

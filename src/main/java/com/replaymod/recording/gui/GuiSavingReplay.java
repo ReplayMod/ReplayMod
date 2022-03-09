@@ -155,9 +155,9 @@ public class GuiSavingReplay {
 
         try {
             Path replaysFolder = core.folders.getReplayFolder();
-            Path newPath = replaysFolder.resolve(Utils.replayNameToFileName(newName));
+            Path newPath = Utils.replayNameToPath(replaysFolder, newName);
             for (int i = 1; Files.exists(newPath); i++) {
-                newPath = replaysFolder.resolve(Utils.replayNameToFileName(newName + " (" + i + ")"));
+                newPath = Utils.replayNameToPath(replaysFolder, newName + " (" + i + ")");
             }
             Files.move(path, newPath);
         } catch (IOException e) {

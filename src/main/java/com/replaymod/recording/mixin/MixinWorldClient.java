@@ -16,6 +16,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=11802
+//$$ import net.minecraft.util.registry.RegistryEntry;
+//#endif
+
 //#if MC>=11600
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.MutableWorldProperties;
@@ -52,7 +56,12 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
                                //#if MC<11602
                                //$$ RegistryKey<DimensionType> registryKey2,
                                //#endif
-                               DimensionType dimensionType, Supplier<Profiler> profiler, boolean bl, boolean bl2, long l) {
+                               //#if MC>=11802
+                               //$$ RegistryEntry<DimensionType> dimensionType,
+                               //#else
+                               DimensionType dimensionType,
+                               //#endif
+                               Supplier<Profiler> profiler, boolean bl, boolean bl2, long l) {
         super(mutableWorldProperties, registryKey,
                 //#if MC<11602
                 //$$ registryKey2,

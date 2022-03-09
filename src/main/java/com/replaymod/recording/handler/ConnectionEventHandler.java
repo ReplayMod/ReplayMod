@@ -127,7 +127,7 @@ public class ConnectionEventHandler {
             }
 
             String name = sdf.format(Calendar.getInstance().getTime());
-            Path outputPath = core.folders.getRecordingFolder().resolve(Utils.replayNameToFileName(name));
+            Path outputPath = Utils.replayNameToPath(core.folders.getRecordingFolder(), name);
             ReplayFile replayFile = core.files.open(outputPath);
 
             replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());

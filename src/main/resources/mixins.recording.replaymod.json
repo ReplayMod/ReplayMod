@@ -11,8 +11,10 @@
     "SPacketSpawnMobAccessor",
     "SPacketSpawnPlayerAccessor",
     "MixinServerInfo",
-    //#if MC>=11400
+    //#if MC>=10800
     "MixinDownloadingPackFinder",
+    //#endif
+    //#if MC>=11400
     "MixinMouseHelper",
     //#endif
     //#if MC>=10904

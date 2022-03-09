@@ -8,6 +8,7 @@ import com.replaymod.render.Setting;
 import com.replaymod.render.capturer.CaptureData;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.WorldRenderer;
+import com.replaymod.render.mixin.GameRendererAccessor;
 import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
@@ -81,11 +82,16 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
         //#endif
 
         if (mc.world != null && mc.player != null) {
+            GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
             Screen orgScreen = mc.currentScreen;
             boolean orgPauseOnLostFocus = mc.options.pauseOnLostFocus;
+            boolean orgRenderHand = gameRenderer.getRenderHand();
             try {
                 mc.currentScreen = null; // do not want to render the current screen (that'd just be the progress gui)
                 mc.options.pauseOnLostFocus = false; // do not want the pause menu to open if the window is unfocused
+                if (omnidirectional) {
+                    gameRenderer.setRenderHand(false); // makes no sense, we wouldn't even know where to put it
+                }
 
                 //#if MC>=11400
                 mc.gameRenderer.render(partialTicks, finishTimeNano, true);
@@ -100,6 +106,7 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             } finally {
                 mc.currentScreen = orgScreen;
                 mc.options.pauseOnLostFocus = orgPauseOnLostFocus;
+                gameRenderer.setRenderHand(orgRenderHand);
             }
         }
 
