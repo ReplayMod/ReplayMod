@@ -81,6 +81,8 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
             for (D data : this.data) {
                 renderFrame(framesDone, partialTicks, data);
             }
+
+            renderInfo.updatePostRender(partialTicks);
         }
 
         framesDone++;

@@ -29,6 +29,7 @@ public class StereoscopicOpenGlFrameCapturer
         OpenGlFrame left = renderFrame(frameId, partialTicks, Data.LEFT_EYE);
         OpenGlFrame right = renderFrame(frameId, partialTicks, Data.RIGHT_EYE);
         StereoscopicOpenGlFrame frame = new StereoscopicOpenGlFrame(left, right);
+        renderInfo.updatePostRender(partialTicks);
         return Collections.singletonMap(Channel.BRGA, frame);
     }
 }

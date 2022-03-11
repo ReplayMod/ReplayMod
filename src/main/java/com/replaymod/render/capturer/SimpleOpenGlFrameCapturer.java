@@ -16,6 +16,7 @@ public class SimpleOpenGlFrameCapturer extends OpenGlFrameCapturer<OpenGlFrame, 
     public Map<Channel, OpenGlFrame> process() {
         float partialTicks = renderInfo.updateForNextFrame();
         OpenGlFrame frame = renderFrame(framesDone++, partialTicks);
+        renderInfo.updatePostRender(partialTicks);
         return Collections.singletonMap(Channel.BRGA, frame);
     }
 }

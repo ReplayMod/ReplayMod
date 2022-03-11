@@ -12,5 +12,7 @@ public interface RenderInfo {
 
     float updateForNextFrame();
 
+    void updatePostRender(float tickDelta);
+
     RenderSettings getRenderSettings();
 }

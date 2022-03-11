@@ -34,11 +34,13 @@ public class BlendFrameCapturer implements FrameCapturer<BitmapFrame> {
             BlendState.getState().setup();
         }
 
-        renderInfo.updateForNextFrame();
+        float tickDelta = renderInfo.updateForNextFrame();
 
         BlendState.getState().preFrame(framesDone);
         worldRenderer.renderWorld(MinecraftClient.getInstance().getTickDelta(), null);
         BlendState.getState().postFrame(framesDone);
+
+        renderInfo.updatePostRender(tickDelta);
 
         BitmapFrame frame = new BitmapFrame(framesDone++, new Dimension(0, 0), 0, ByteBufferPool.allocate(0));
         return Collections.singletonMap(Channel.BRGA, frame);

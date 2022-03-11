@@ -77,6 +77,11 @@ public class ScreenshotRenderer implements RenderInfo {
     }
 
     @Override
+    public void updatePostRender(float tickDelta) {
+        // nothing to do
+    }
+
+    @Override
     public RenderSettings getRenderSettings() {
         return settings;
     }

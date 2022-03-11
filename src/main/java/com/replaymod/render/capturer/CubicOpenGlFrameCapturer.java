@@ -38,6 +38,7 @@ public class CubicOpenGlFrameCapturer extends OpenGlFrameCapturer<CubicOpenGlFra
                 renderFrame(frameId, partialTicks, Data.BACK),
                 renderFrame(frameId, partialTicks, Data.TOP),
                 renderFrame(frameId, partialTicks, Data.BOTTOM));
+        renderInfo.updatePostRender(partialTicks);
         return Collections.singletonMap(Channel.BRGA, frame);
     }
 }
