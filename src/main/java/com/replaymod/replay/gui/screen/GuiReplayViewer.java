@@ -49,6 +49,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,8 +97,10 @@ public class GuiReplayViewer extends GuiScreen {
 
             List<GuiReplayEntry> selected = list.getSelected();
             if (selected.size() == 1) {
+                File file = selected.get(0).file;
+                LOGGER.info("Opening replay in viewer: " + file);
                 try {
-                    mod.startReplay(selected.get(0).file);
+                    mod.startReplay(file);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -130,8 +134,8 @@ public class GuiReplayViewer extends GuiScreen {
     public final GuiButton renameButton = new GuiButton().onClick(new Runnable() {
         @Override
         public void run() {
-            final File file = list.getSelected().get(0).file;
-            String name = Utils.fileNameToReplayName(file.getName());
+            final Path path = list.getSelected().get(0).file.toPath();
+            String name = Utils.fileNameToReplayName(path.getFileName().toString());
             final GuiTextField nameField = new GuiTextField().setSize(200, 20).setFocused(true).setText(name);
             final GuiYesNoPopup popup = GuiYesNoPopup.open(GuiReplayViewer.this,
                     new GuiLabel().setI18nText("replaymod.gui.viewer.rename.name").setColor(Colors.BLACK),
@@ -147,16 +151,16 @@ public class GuiReplayViewer extends GuiScreen {
                 }
             }).onTextChanged(obj -> {
                 popup.getYesButton().setEnabled(!nameField.getText().isEmpty()
-                        && !new File(file.getParentFile(), Utils.replayNameToFileName(nameField.getText())).exists());
+                        && Files.notExists(Utils.replayNameToPath(path.getParent(), nameField.getText())));
             });
             popup.onAccept(() -> {
                 // Sanitize their input
                 String newName = nameField.getText().trim();
                 // This file is what they want
-                File targetFile = new File(file.getParentFile(), Utils.replayNameToFileName(newName));
+                Path targetPath = Utils.replayNameToPath(path.getParent(), newName);
                 try {
                     // Finally, try to move it
-                    FileUtils.moveFile(file, targetFile);
+                    Files.move(path, targetPath);
                 } catch (IOException e) {
                     // We failed (might also be their OS)
                     e.printStackTrace();

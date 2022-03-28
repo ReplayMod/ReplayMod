@@ -1,4 +1,4 @@
-//#if MC>=10904
+//#if MC>=10800
 package com.replaymod.replay;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -78,7 +78,11 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 wrappedBuf.writerIndex(size);
                 PacketByteBuf packetByteBuf = new PacketByteBuf(wrappedBuf);
 
+                //#if MC>=10809
                 Packet<?> mcPacket;
+                //#else
+                //$$ Packet mcPacket;
+                //#endif
                 //#if MC>=11700
                 //$$ mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId(), packetByteBuf);
                 //#elseif MC>=11500
@@ -137,13 +141,13 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 LOGGER.info("Initialized quick replay sender in " + (System.currentTimeMillis() - start) + "ms");
             } catch (Throwable e) {
                 LOGGER.error("Initializing quick replay sender:", e);
-                mod.getCore().runLater(() -> {
+                mod.getCore().runLaterWithoutLock(() -> {
                     mod.getCore().printWarningToChat("Error initializing quick replay sender: %s", e.getLocalizedMessage());
                     promise.setException(e);
                 });
                 return;
             }
-            mod.getCore().runLater(() -> promise.set(null));
+            mod.getCore().runLaterWithoutLock(() -> promise.set(null));
         }).start();
         return promise;
     }

@@ -34,6 +34,11 @@ public class Window implements MainWindowAccessor {
         mc.displayHeight = value;
     }
 
+    @Override
+    public void invokeUpdateFramebufferSize() {
+        // no-op, pre-LWJGL3 MC doesn't differentiate between window and framebuffer size
+    }
+
     public long getHandle() {
         return 0;
     }

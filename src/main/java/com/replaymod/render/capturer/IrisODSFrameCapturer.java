@@ -1,7 +1,6 @@
 //#if MC>=11600
 package com.replaymod.render.capturer;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
@@ -16,18 +15,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.replaymod.core.versions.MCVer.popMatrix;
-import static com.replaymod.core.versions.MCVer.pushMatrix;
-import static com.replaymod.core.versions.MCVer.resizeMainWindow;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-
 public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
     public static final String SHADER_PACK_NAME = "assets/replaymod/iris/ods";
     public static IrisODSFrameCapturer INSTANCE;
     private final CubicPboOpenGlFrameCapturer left, right;
     private final String prevShaderPack;
+    private final boolean prevShadersEnabled;
     private int direction;
     private boolean isLeftEye;
 
@@ -67,13 +61,16 @@ public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         right = new CubicStereoFrameCapturer(worldRenderer, fakeInfo, frameSize);
 
         INSTANCE = this;
-        prevShaderPack = Iris.getIrisConfig().getShaderPackName().orElse(null);
-        setShaderPack(SHADER_PACK_NAME);
+        IrisConfig irisConfig = Iris.getIrisConfig();
+        prevShaderPack = irisConfig.getShaderPackName().orElse(null);
+        prevShadersEnabled = irisConfig.areShadersEnabled();
+        setShaderPack(SHADER_PACK_NAME, true);
     }
 
-    private static void setShaderPack(String name) {
+    private static void setShaderPack(String name, boolean enabled) {
         IrisConfig irisConfig = Iris.getIrisConfig();
         irisConfig.setShaderPackName(name);
+        irisConfig.setShadersEnabled(enabled);
         try {
             irisConfig.save();
             Iris.reload();
@@ -121,7 +118,7 @@ public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
         left.close();
         right.close();
         INSTANCE = null;
-        setShaderPack(prevShaderPack);
+        setShaderPack(prevShaderPack, prevShadersEnabled);
     }
 
     private class CubicStereoFrameCapturer extends CubicPboOpenGlFrameCapturer {
@@ -131,25 +128,8 @@ public class IrisODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
 
         @Override
         protected OpenGlFrame renderFrame(int frameId, float partialTicks, CubicOpenGlFrameCapturer.Data captureData) {
-            resizeMainWindow(mc, getFrameWidth(), getFrameHeight());
-
-            pushMatrix();
-            frameBuffer().beginWrite(true);
-
-            GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-                    //#if MC>=11400
-                    , false
-                    //#endif
-            );
-            GlStateManager.enableTexture();
-
             direction = captureData.ordinal();
-            worldRenderer.renderWorld(partialTicks, null);
-
-            frameBuffer().endWrite();
-            popMatrix();
-
-            return captureFrame(frameId, captureData);
+            return super.renderFrame(frameId, partialTicks, captureData);
         }
     }
 }

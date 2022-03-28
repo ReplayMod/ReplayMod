@@ -18,7 +18,7 @@ public abstract class MixinGuiSpectator {
     //$$ @Inject(method = "func_175260_a", at = @At("HEAD"), cancellable = true)
     //#endif
     public void isInReplay(
-            //#if MC>=11400
+            //#if MC>=11400 && MC<11802
             double i,
             //#else
             //$$ int i,

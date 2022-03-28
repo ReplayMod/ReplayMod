@@ -85,23 +85,23 @@ public class Mixin_FixPartialUpdates {
     @Unique
     private Entity entity;
 
-    @ModifyVariable(method = "onEntityUpdate", at = @At(value = "INVOKE", target = ENTITY_UPDATE), ordinal = 0)
+    @ModifyVariable(method = { "onEntityUpdate", "onEntityPosition" }, at = @At(value = "INVOKE", target = ENTITY_UPDATE), ordinal = 0)
     private Entity captureEntity(Entity entity) {
         return this.entity = entity;
     }
 
-    @Inject(method = "onEntityUpdate", at = @At("RETURN"))
+    @Inject(method = { "onEntityUpdate", "onEntityPosition" }, at = @At("RETURN"))
     private void resetEntityField(CallbackInfo ci) {
         this.entity = null;
     }
 
-    @ModifyArg(method = "onEntityUpdate", at = @At(value = "INVOKE", target = ENTITY_UPDATE), index = 3)
+    @ModifyArg(method = { "onEntityUpdate", "onEntityPosition" }, at = @At(value = "INVOKE", target = ENTITY_UPDATE), index = 3)
     private float captureTrackedYaw(float value) {
         ((EntityExt) this.entity).replaymod$setTrackedYaw(value);
         return value;
     }
 
-    @ModifyArg(method = "onEntityUpdate", at = @At(value = "INVOKE", target = ENTITY_UPDATE), index = 4)
+    @ModifyArg(method = { "onEntityUpdate", "onEntityPosition" }, at = @At(value = "INVOKE", target = ENTITY_UPDATE), index = 4)
     private float captureTrackedPitch(float value) {
         ((EntityExt) this.entity).replaymod$setTrackedPitch(value);
         return value;

@@ -7,6 +7,8 @@
   "client": [
     "entity_tracking.Mixin_EntityExt",
     "entity_tracking.Mixin_FixPartialUpdates",
+    "world_border.Mixin_UseReplayTime_ForMovement",
+    "world_border.Mixin_UseReplayTime_ForTexture",
     "Mixin_FixNPCSkinCaching",
     //#if MC>=11800
     //$$ "Mixin_FixEntityNotTracking",
@@ -23,6 +25,7 @@
     "ClientWorldAccessor",
     "EntityLivingBaseAccessor",
     //#if MC>=11400
+    "Mixin_ShowSpectatedHand_Iris",
     "Mixin_ShowSpectatedHand_NoOF",
     "Mixin_ShowSpectatedHand_OF",
     //#else

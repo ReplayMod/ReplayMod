@@ -151,6 +151,7 @@ public class RenderSettings {
     private final File outputFile;
 
     private final boolean renderNameTags;
+    private final boolean includeAlphaChannel;
     private final boolean stabilizeYaw;
     private final boolean stabilizePitch;
     private final boolean stabilizeRoll;
@@ -187,6 +188,7 @@ public class RenderSettings {
                 false,
                 false,
                 false,
+                false,
                 null,
                 360,
                 180,
@@ -209,6 +211,7 @@ public class RenderSettings {
             int bitRate,
             File outputFile,
             boolean renderNameTags,
+            boolean includeAlphaChannel,
             boolean stabilizeYaw,
             boolean stabilizePitch,
             boolean stabilizeRoll,
@@ -231,6 +234,7 @@ public class RenderSettings {
         this.bitRate = bitRate;
         this.outputFile = outputFile;
         this.renderNameTags = renderNameTags;
+        this.includeAlphaChannel = includeAlphaChannel;
         this.stabilizeYaw = stabilizeYaw;
         this.stabilizePitch = stabilizePitch;
         this.stabilizeRoll = stabilizeRoll;
@@ -256,6 +260,7 @@ public class RenderSettings {
                 bitRate,
                 outputFile,
                 renderNameTags,
+                includeAlphaChannel,
                 stabilizeYaw,
                 stabilizePitch,
                 stabilizeRoll,
@@ -415,6 +420,10 @@ public class RenderSettings {
         return renderNameTags;
     }
 
+    public boolean isIncludeAlphaChannel() {
+        return includeAlphaChannel;
+    }
+
     public boolean isStabilizeYaw() {
         return stabilizeYaw;
     }
@@ -478,6 +487,7 @@ public class RenderSettings {
                 ", bitRate=" + bitRate +
                 ", outputFile=" + outputFile +
                 ", renderNameTags=" + renderNameTags +
+                ", includeAlphaChannel=" + includeAlphaChannel +
                 ", stabilizeYaw=" + stabilizeYaw +
                 ", stabilizePitch=" + stabilizePitch +
                 ", stabilizeRoll=" + stabilizeRoll +

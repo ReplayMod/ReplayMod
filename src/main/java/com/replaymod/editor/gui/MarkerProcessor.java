@@ -133,7 +133,6 @@ public class MarkerProcessor {
         for (int i = 1; Files.exists(inputPath); i++) {
             inputPath = inputPath.resolveSibling(replayName + "." + i + ".mcpr");
         }
-        Files.createDirectories(inputPath.getParent());
         Files.move(path, inputPath);
 
         try (ReplayFile inputReplayFile = mod.files.open(inputPath)) {

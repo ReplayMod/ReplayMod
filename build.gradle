@@ -257,6 +257,7 @@ dependencies {
                 11701: '1.17.1',
                 11800: '1.18',
                 11801: '1.18.1',
+                11802: '1.18.2',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -268,6 +269,7 @@ dependencies {
                 11701: '1.17.1+build.29:v2',
                 11800: '1.18+build.1:v2',
                 11801: '1.18.1+build.1:v2',
+                11802: '1.18.2+build.1:v2',
         ][mcVersion]
         modImplementation 'net.fabricmc:fabric-loader:0.12.5'
         def fabricApiVersion = [
@@ -280,6 +282,7 @@ dependencies {
                 11701: '0.37.1+1.17',
                 11800: '0.43.1+1.18',
                 11801: '0.43.1+1.18',
+                11802: '0.47.9+1.18.2',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -374,7 +377,7 @@ dependencies {
 
     implementation(shadow('com.udojava:EvalEx:2.6'))
 
-    implementation(shadow("com.github.ReplayMod:ReplayStudio:70f59ef", shadeExclusions))
+    implementation(shadow("com.github.ReplayMod:ReplayStudio:b5539d1", shadeExclusions))
 
     implementation(FABRIC ? dependencies.project(path: jGui.path, configuration: "namedElements") : jGui) {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
@@ -382,21 +385,27 @@ dependencies {
     implementation(shadow('com.github.ReplayMod:lwjgl-utils:27dcd66'))
 
     if (FABRIC) {
-        if (mcVersion >= 11800) {
+        if (mcVersion >= 11802) {
+            modImplementation 'com.terraformersmc:modmenu:3.1.0'
+        } else if (mcVersion >= 11800) {
             modImplementation 'com.terraformersmc:modmenu:3.0.0'
         } else if (mcVersion >= 11700) {
             modImplementation 'com.terraformersmc:modmenu:2.0.0-beta.7'
         } else if (mcVersion >= 11602) {
             modImplementation 'com.terraformersmc:modmenu:1.16.8'
         } else if (mcVersion >= 11600) {
-            modImplementation 'io.github.prospector:modmenu:1.14.0+build.24'
+            modImplementation('com.terraformersmc:modmenu:1.14.15') {
+                exclude module: 'fabric-resource-loader-v0' // inappropriate version for 1.16.1
+            }
         } else {
-            modImplementation 'io.github.prospector.modmenu:ModMenu:1.6.2-92'
+            modImplementation 'com.terraformersmc:modmenu:1.10.6'
         }
     }
 
     if (mcVersion >= 11600) {
-        modCompileOnly 'com.github.IrisShaders:Iris:1.0.0'
+        modCompileOnly("com.github.IrisShaders:Iris:1.18.x~v1.2.0") {
+            transitive = false // we do not want to upgrade our libs, we only need this to compile our mixins
+        }
     }
 
     testImplementation 'junit:junit:4.11'
