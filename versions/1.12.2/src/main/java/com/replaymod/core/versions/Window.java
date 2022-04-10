@@ -8,7 +8,6 @@ import org.lwjgl.opengl.Display;
 public class Window implements MainWindowAccessor {
 
     private final Minecraft mc;
-    private ScaledResolution scaledResolution;
 
     public Window(Minecraft mc) {
         this.mc = mc;
@@ -52,16 +51,11 @@ public class Window implements MainWindowAccessor {
     }
 
     private ScaledResolution scaledResolution() {
-        ScaledResolution scaledResolution = this.scaledResolution;
-        if (scaledResolution == null) {
-            //#if MC>=10809
-            scaledResolution = new ScaledResolution(mc);
-            //#else
-            //$$ scaledResolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-            //#endif
-            this.scaledResolution = scaledResolution;
-        }
-        return scaledResolution;
+        //#if MC>=10809
+        return new ScaledResolution(mc);
+        //#else
+        //$$ return new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+        //#endif
     }
 
     public int getScaledWidth() {
