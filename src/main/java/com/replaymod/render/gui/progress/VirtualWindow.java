@@ -1,0 +1,150 @@
+package com.replaymod.render.gui.progress;
+
+import com.replaymod.render.mixin.MainWindowAccessor;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.util.Window;
+
+//#if MC>=11700
+//$$ import net.minecraft.client.gl.WindowFramebuffer;
+//#endif
+
+public class VirtualWindow {
+    private final MinecraftClient mc;
+    private final Window window;
+    private final MainWindowAccessor acc;
+
+    private final Framebuffer guiFramebuffer;
+    private int displayWidth, displayHeight;
+    private int framebufferWidth, framebufferHeight;
+
+    private int gameWidth, gameHeight;
+
+
+    public VirtualWindow(MinecraftClient mc) {
+        this.mc = mc;
+        this.window = mc.getWindow();
+        this.acc = (MainWindowAccessor) (Object) this.window;
+
+        updateDisplaySize();
+        updateFramebufferSize();
+
+        //#if MC>=11700
+        //$$ guiFramebuffer = new WindowFramebuffer(framebufferWidth, framebufferHeight);
+        //#else
+        guiFramebuffer = new Framebuffer(framebufferWidth, framebufferHeight, true
+                //#if MC>=11400
+                , false
+                //#endif
+        );
+        //#endif
+    }
+
+    public void bind() {
+        gameWidth = acc.getFramebufferWidth();
+        gameHeight = acc.getFramebufferHeight();
+        acc.setFramebufferWidth(framebufferWidth);
+        acc.setFramebufferHeight(framebufferHeight);
+    }
+
+    public void unbind() {
+        acc.setFramebufferWidth(gameWidth);
+        acc.setFramebufferHeight(gameHeight);
+    }
+
+    public void beginWrite() {
+        guiFramebuffer.beginWrite(true);
+    }
+
+    public void endWrite() {
+        guiFramebuffer.endWrite();
+    }
+
+    public void flip() {
+        guiFramebuffer.draw(framebufferWidth, framebufferHeight);
+
+        //#if MC>=11500
+        window.swapBuffers();
+        //#else
+        //#if MC>=11400
+        //$$ window.setFullscreen(false);
+        //#else
+        //#if MC>=10800
+        //$$ mc.updateDisplay();
+        //#else
+        //$$ mc.resetSize();
+        //#endif
+        //#endif
+        //#endif
+    }
+
+    public void updateSize() {
+        // Check if display size has changes and force recalculate GUI framebuffer size.
+        if (displaySizeChanged()) {
+            updateDisplaySize();
+            acc.invokeUpdateFramebufferSize();
+        }
+
+        // Resize the GUI framebuffer if the display size changed
+        if (framebufferSizeChanged()) {
+            updateFramebufferSize();
+            //#if MC>=11400
+            guiFramebuffer.resize(framebufferWidth, framebufferHeight
+                    //#if MC>=11400
+                    , false
+                    //#endif
+            );
+            //#else
+            //$$ guiFramebuffer.createBindFramebuffer(framebufferWidth, framebufferHeight);
+            //#endif
+        }
+    }
+
+    private boolean displaySizeChanged() {
+        int realWidth = mc.getWindow().getWidth();
+        int realHeight = mc.getWindow().getHeight();
+        if (realWidth == 0 || realHeight == 0) {
+            // These can be zero on Windows if minimized.
+            // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
+            return false;
+        }
+        return displayWidth != realWidth || displayHeight != realHeight;
+    }
+
+    private boolean framebufferSizeChanged() {
+        int realWidth = mc.getWindow().getFramebufferWidth();
+        int realHeight = mc.getWindow().getFramebufferHeight();
+        if (realWidth == 0 || realHeight == 0) {
+            // These can be zero on Windows if minimized.
+            // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
+            return false;
+        }
+        return framebufferWidth != realWidth || framebufferHeight != realHeight;
+    }
+
+    private void updateDisplaySize() {
+        displayWidth = mc.getWindow().getWidth();
+        displayHeight = mc.getWindow().getHeight();
+    }
+
+    private void updateFramebufferSize() {
+        framebufferWidth = mc.getWindow().getFramebufferWidth();
+        framebufferHeight = mc.getWindow().getFramebufferHeight();
+    }
+
+    public int getDisplayWidth() {
+        return displayWidth;
+    }
+
+    public int getDisplayHeight() {
+        return displayHeight;
+    }
+
+    public int getFramebufferWidth() {
+        return framebufferWidth;
+    }
+
+    public int getFramebufferHeight() {
+        return framebufferHeight;
+    }
+}

@@ -6,7 +6,6 @@ import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
-import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.CameraPathExporter;
 import com.replaymod.render.PNGWriter;
@@ -19,9 +18,9 @@ import com.replaymod.render.events.ReplayRenderCallback;
 import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
+import com.replaymod.render.gui.progress.VirtualWindow;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
-import com.replaymod.render.mixin.MainWindowAccessor;
 import com.replaymod.render.mixin.WorldRendererAccessor;
 import com.replaymod.render.utils.FlawlessFrames;
 import com.replaymod.replay.ReplayHandler;
@@ -32,7 +31,6 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.GLX;
-import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.Window;
 import net.minecraft.sound.SoundEvent;
@@ -43,7 +41,6 @@ import net.minecraft.client.render.RenderTickCounter;
 import org.lwjgl.glfw.GLFW;
 
 //#if MC>=11700
-//$$ import net.minecraft.client.gl.WindowFramebuffer;
 //$$ import net.minecraft.client.render.DiffuseLighting;
 //$$ import net.minecraft.util.math.Matrix4f;
 //#endif
@@ -113,14 +110,11 @@ public class VideoRenderer implements RenderInfo {
     private int framesDone;
     private int totalFrames;
 
+    private final VirtualWindow guiWindow = new VirtualWindow(mc);
     private final GuiVideoRenderer gui;
     private boolean paused;
     private boolean cancelled;
     private volatile Throwable failureCause;
-
-    private Framebuffer guiFramebuffer;
-    private int displayWidth, displayHeight;
-    private int framebufferWidth, framebufferHeight;
 
     public VideoRenderer(RenderSettings settings, ReplayHandler replayHandler, Timeline timeline) throws IOException {
         this.settings = settings;
@@ -245,11 +239,7 @@ public class VideoRenderer implements RenderInfo {
     @Override
     public float updateForNextFrame() {
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
-        MainWindowAccessor acc = (MainWindowAccessor) (Object) mc.getWindow();
-        int framebufferWidthBefore = acc.getFramebufferWidth();
-        int framebufferHeightBefore = acc.getFramebufferHeight();
-        acc.setFramebufferWidth(framebufferWidth);
-        acc.setFramebufferHeight(framebufferHeight);
+        guiWindow.bind();
 
         if (!settings.isHighPerformance() || framesDone % fps == 0) {
             while (drawGui() && paused) {
@@ -290,8 +280,7 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // change Minecraft's display size back
-        acc.setFramebufferWidth(framebufferWidthBefore);
-        acc.setFramebufferHeight(framebufferHeightBefore);
+        guiWindow.unbind();
 
         if (cameraPathExporter != null) {
             cameraPathExporter.recordFrame(timer.tickDelta);
@@ -362,23 +351,9 @@ public class VideoRenderer implements RenderInfo {
             cameraPathExporter.setup(totalFrames);
         }
 
-        updateDisplaySize();
-        updateFramebufferSize();
-
         gui.toMinecraft().init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
 
         forceChunkLoadingHook = new ForceChunkLoadingHook(mc.worldRenderer);
-
-        // Set up our own framebuffer to render the GUI to
-        //#if MC>=11700
-        //$$ guiFramebuffer = new WindowFramebuffer(framebufferWidth, framebufferHeight);
-        //#else
-        guiFramebuffer = new Framebuffer(framebufferWidth, framebufferHeight, true
-                //#if MC>=11400
-                , false
-                //#endif
-        );
-        //#endif
     }
 
     private void finish() {
@@ -427,7 +402,7 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
-        resizeMainWindow(mc, framebufferWidth, framebufferHeight);
+        resizeMainWindow(mc, guiWindow.getFramebufferWidth(), guiWindow.getFramebufferHeight());
     }
 
     private void executeTaskQueue() {
@@ -485,25 +460,7 @@ public class VideoRenderer implements RenderInfo {
                 return false;
             }
 
-            // Check if display size has changes and force recalculate GUI framebuffer size.
-            if (displaySizeChanged()) {
-                updateDisplaySize();
-                ((MainWindowAccessor) (Object) window).invokeUpdateFramebufferSize();
-            }
-
-            // Resize the GUI framebuffer if the display size changed
-            if (framebufferSizeChanged()) {
-                updateFramebufferSize();
-                //#if MC>=11400
-                guiFramebuffer.resize(framebufferWidth, framebufferHeight
-                        //#if MC>=11400
-                        , false
-                        //#endif
-                );
-                //#else
-                //$$ guiFramebuffer.createBindFramebuffer(framebufferWidth, framebufferHeight);
-                //#endif
-            }
+            guiWindow.updateSize();
 
             pushMatrix();
             GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
@@ -512,7 +469,7 @@ public class VideoRenderer implements RenderInfo {
                     //#endif
             );
             GlStateManager.enableTexture();
-            guiFramebuffer.beginWrite(true);
+            guiWindow.beginWrite();
 
             //#if MC>=11500
             RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
@@ -568,8 +525,8 @@ public class VideoRenderer implements RenderInfo {
             //#endif
 
             //#if MC>=11400
-            int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / displayWidth;
-            int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / displayHeight;
+            int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / guiWindow.getDisplayWidth();
+            int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / guiWindow.getDisplayHeight();
 
             if (mc.getOverlay() != null) {
                 Screen orgScreen = mc.currentScreen;
@@ -599,31 +556,12 @@ public class VideoRenderer implements RenderInfo {
             //$$ gui.toMinecraft().drawScreen(mouseX, mouseY, 0);
             //#endif
 
-            guiFramebuffer.endWrite();
+            guiWindow.endWrite();
             popMatrix();
             pushMatrix();
-            guiFramebuffer.draw(framebufferWidth, framebufferHeight);
+            guiWindow.flip();
             popMatrix();
 
-            //#if MC>=11500
-            window.swapBuffers();
-            //#else
-            //#if MC>=11400
-            //$$ window.setFullscreen(false);
-            //#else
-            //$$ // if not in high performance mode, update the gui size if screen size changed
-            //$$ // otherwise just swap the progress gui to screen
-            //$$ if (settings.isHighPerformance()) {
-            //$$     Display.update();
-            //$$ } else {
-                //#if MC>=10800
-                //$$ mc.updateDisplay();
-                //#else
-                //$$ mc.resetSize();
-                //#endif
-            //$$ }
-            //#endif
-            //#endif
             //#if MC>=11400
             if (mc.mouse.isCursorLocked()) {
                 mc.mouse.unlockCursor();
@@ -636,38 +574,6 @@ public class VideoRenderer implements RenderInfo {
 
             return !hasFailed() && !cancelled;
         } while (true);
-    }
-
-    private boolean displaySizeChanged() {
-        int realWidth = mc.getWindow().getWidth();
-        int realHeight = mc.getWindow().getHeight();
-        if (realWidth == 0 || realHeight == 0) {
-            // These can be zero on Windows if minimized.
-            // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
-            return false;
-        }
-        return displayWidth != realWidth || displayHeight != realHeight;
-    }
-
-    private boolean framebufferSizeChanged() {
-        int realWidth = mc.getWindow().getFramebufferWidth();
-        int realHeight = mc.getWindow().getFramebufferHeight();
-        if (realWidth == 0 || realHeight == 0) {
-            // These can be zero on Windows if minimized.
-            // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
-            return false;
-        }
-        return framebufferWidth != realWidth || framebufferHeight != realHeight;
-    }
-
-    private void updateDisplaySize() {
-        displayWidth = mc.getWindow().getWidth();
-        displayHeight = mc.getWindow().getHeight();
-    }
-
-    private void updateFramebufferSize() {
-        framebufferWidth = mc.getWindow().getFramebufferWidth();
-        framebufferHeight = mc.getWindow().getFramebufferHeight();
     }
 
     public int getFramesDone() {
