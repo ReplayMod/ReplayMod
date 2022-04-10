@@ -16,7 +16,6 @@ public class VirtualWindow implements Closeable {
     private final MainWindowAccessor acc;
 
     private final Framebuffer guiFramebuffer;
-    private int displayWidth, displayHeight;
     private int framebufferWidth, framebufferHeight;
 
     private int gameWidth, gameHeight;
@@ -27,7 +26,6 @@ public class VirtualWindow implements Closeable {
         this.window = mc.getWindow();
         this.acc = (MainWindowAccessor) (Object) this.window;
 
-        updateDisplaySize();
         updateFramebufferSize();
 
         //#if MC>=11700
@@ -85,12 +83,6 @@ public class VirtualWindow implements Closeable {
     }
 
     public void updateSize() {
-        // Check if display size has changes and force recalculate GUI framebuffer size.
-        if (displaySizeChanged()) {
-            updateDisplaySize();
-            acc.invokeUpdateFramebufferSize();
-        }
-
         // Resize the GUI framebuffer if the display size changed
         if (framebufferSizeChanged()) {
             updateFramebufferSize();
@@ -106,17 +98,6 @@ public class VirtualWindow implements Closeable {
         }
     }
 
-    private boolean displaySizeChanged() {
-        int realWidth = mc.getWindow().getWidth();
-        int realHeight = mc.getWindow().getHeight();
-        if (realWidth == 0 || realHeight == 0) {
-            // These can be zero on Windows if minimized.
-            // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
-            return false;
-        }
-        return displayWidth != realWidth || displayHeight != realHeight;
-    }
-
     private boolean framebufferSizeChanged() {
         int realWidth = mc.getWindow().getFramebufferWidth();
         int realHeight = mc.getWindow().getFramebufferHeight();
@@ -128,22 +109,9 @@ public class VirtualWindow implements Closeable {
         return framebufferWidth != realWidth || framebufferHeight != realHeight;
     }
 
-    private void updateDisplaySize() {
-        displayWidth = mc.getWindow().getWidth();
-        displayHeight = mc.getWindow().getHeight();
-    }
-
     private void updateFramebufferSize() {
         framebufferWidth = mc.getWindow().getFramebufferWidth();
         framebufferHeight = mc.getWindow().getFramebufferHeight();
-    }
-
-    public int getDisplayWidth() {
-        return displayWidth;
-    }
-
-    public int getDisplayHeight() {
-        return displayHeight;
     }
 
     public int getFramebufferWidth() {

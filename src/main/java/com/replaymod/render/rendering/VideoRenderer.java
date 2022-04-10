@@ -527,8 +527,8 @@ public class VideoRenderer implements RenderInfo {
             //#endif
 
             //#if MC>=11400
-            int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / guiWindow.getDisplayWidth();
-            int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / guiWindow.getDisplayHeight();
+            int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / Math.max(window.getWidth(), 1);
+            int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / Math.max(window.getHeight(), 1);
 
             if (mc.getOverlay() != null) {
                 Screen orgScreen = mc.currentScreen;
