@@ -462,8 +462,6 @@ public class VideoRenderer implements RenderInfo {
                 return false;
             }
 
-            guiWindow.updateSize();
-
             pushMatrix();
             GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                     //#if MC>=11400

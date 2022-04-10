@@ -15,6 +15,4 @@ public interface MainWindowAccessor {
     int getFramebufferHeight();
     @Accessor("displayHeight")
     void setFramebufferHeight(int value);
-    @Invoker
-    void invokeUpdateFramebufferSize();
 }

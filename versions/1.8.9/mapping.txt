@@ -1,3 +1,4 @@
+net.minecraft.client.gui.GuiScreen onResize() func_175273_b()
 net.minecraft.entity.player.EntityPlayer isWearing() func_175148_a()
 net.minecraft.client.renderer.WorldRenderer begin() startDrawing()
 net.minecraft.network.play.server.S38PacketPlayerListItem getAction() func_179768_b()

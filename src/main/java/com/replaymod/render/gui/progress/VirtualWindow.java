@@ -1,5 +1,6 @@
 package com.replaymod.render.gui.progress;
 
+import com.replaymod.render.hooks.MinecraftClientExt;
 import com.replaymod.render.mixin.MainWindowAccessor;
 import de.johni0702.minecraft.gui.function.Closeable;
 import net.minecraft.client.MinecraftClient;
@@ -16,6 +17,7 @@ public class VirtualWindow implements Closeable {
     private final MainWindowAccessor acc;
 
     private final Framebuffer guiFramebuffer;
+    private boolean isBound;
     private int framebufferWidth, framebufferHeight;
 
     private int gameWidth, gameHeight;
@@ -26,7 +28,8 @@ public class VirtualWindow implements Closeable {
         this.window = mc.getWindow();
         this.acc = (MainWindowAccessor) (Object) this.window;
 
-        updateFramebufferSize();
+        framebufferWidth = acc.getFramebufferWidth();
+        framebufferHeight = acc.getFramebufferHeight();
 
         //#if MC>=11700
         //$$ guiFramebuffer = new WindowFramebuffer(framebufferWidth, framebufferHeight);
@@ -37,11 +40,15 @@ public class VirtualWindow implements Closeable {
                 //#endif
         );
         //#endif
+
+        MinecraftClientExt.get(mc).setWindowDelegate(this);
     }
 
     @Override
     public void close() {
         guiFramebuffer.delete();
+
+        MinecraftClientExt.get(mc).setWindowDelegate(null);
     }
 
     public void bind() {
@@ -49,11 +56,13 @@ public class VirtualWindow implements Closeable {
         gameHeight = acc.getFramebufferHeight();
         acc.setFramebufferWidth(framebufferWidth);
         acc.setFramebufferHeight(framebufferHeight);
+        isBound = true;
     }
 
     public void unbind() {
         acc.setFramebufferWidth(gameWidth);
         acc.setFramebufferHeight(gameHeight);
+        isBound = false;
     }
 
     public void beginWrite() {
@@ -82,36 +91,45 @@ public class VirtualWindow implements Closeable {
         //#endif
     }
 
-    public void updateSize() {
-        // Resize the GUI framebuffer if the display size changed
-        if (framebufferSizeChanged()) {
-            updateFramebufferSize();
-            //#if MC>=11400
-            guiFramebuffer.resize(framebufferWidth, framebufferHeight
-                    //#if MC>=11400
-                    , false
-                    //#endif
-            );
-            //#else
-            //$$ guiFramebuffer.createBindFramebuffer(framebufferWidth, framebufferHeight);
-            //#endif
-        }
-    }
-
-    private boolean framebufferSizeChanged() {
-        int realWidth = mc.getWindow().getFramebufferWidth();
-        int realHeight = mc.getWindow().getFramebufferHeight();
-        if (realWidth == 0 || realHeight == 0) {
+    /**
+     * Updates the size of the window's framebuffer. Must only be called while this window is bound.
+     */
+    public void onResolutionChanged(int newWidth, int newHeight) {
+        if (newWidth == 0 || newHeight == 0) {
             // These can be zero on Windows if minimized.
             // Creating zero-sized framebuffers however will throw an error, so we never want to switch to zero values.
-            return false;
+            return;
         }
-        return framebufferWidth != realWidth || framebufferHeight != realHeight;
+
+        if (framebufferWidth == newWidth && framebufferHeight == newHeight) {
+            return; // size is unchanged, nothing to do
+        }
+
+        framebufferWidth = newWidth;
+        framebufferHeight = newHeight;
+
+        //#if MC>=11400
+        guiFramebuffer.resize(newWidth, newHeight
+                //#if MC>=11400
+                , false
+                //#endif
+        );
+        //#else
+        //$$ guiFramebuffer.createBindFramebuffer(newWidth, newHeight);
+        //#endif
+
+        applyScaleFactor();
+        if (mc.currentScreen != null) {
+            mc.currentScreen.resize(mc, window.getScaledWidth(), window.getScaledHeight());
+        }
     }
 
-    private void updateFramebufferSize() {
-        framebufferWidth = mc.getWindow().getFramebufferWidth();
-        framebufferHeight = mc.getWindow().getFramebufferHeight();
+    private void applyScaleFactor() {
+        //#if MC>=11400
+        window.setScaleFactor(window.calculateScaleFactor(mc.options.guiScale, mc.forcesUnicodeFont()));
+        //#else
+        //$$ // Nothing to do, ScaledResolution re-computes the scale factor every time it is created
+        //#endif
     }
 
     public int getFramebufferWidth() {
@@ -120,5 +138,9 @@ public class VirtualWindow implements Closeable {
 
     public int getFramebufferHeight() {
         return framebufferHeight;
+    }
+
+    public boolean isBound() {
+        return isBound;
     }
 }

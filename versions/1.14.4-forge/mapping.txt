@@ -181,6 +181,7 @@ net.minecraft.client.gui.screen.Screen hasShiftDown() isShiftKeyDown()
 net.minecraft.client.gui.screen.Screen init() setWorldAndResolution()
 net.minecraft.client.gui.screen.Screen minecraft mc
 net.minecraft.client.gui.screen.Screen net.minecraft.client.gui.GuiScreen
+net.minecraft.client.gui.screen.Screen resize() onResize()
 net.minecraft.client.gui.screen.Screen passEvents allowUserInput
 net.minecraft.client.gui.screen.Screen removed() onGuiClosed()
 net.minecraft.client.gui.screen.Screen renderBackground() drawDefaultBackground()
