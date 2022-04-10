@@ -585,6 +585,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#else
             //$$ String channelName = packet.getChannelName();
             //#endif
+            String channelNameStr = channelName.toString();
+
+            if (channelNameStr.startsWith("fabric-screen-handler-api-v")) {
+                return null; // we do not want to show modded screens which got opened for the recording player
+            }
+
             // On 1.14+ there's a dedicated OpenWrittenBookS2CPacket now
             //#if MC<11400
             //#if MC>=11400
