@@ -186,6 +186,10 @@ public class Utils {
      * Checks whether a given file name is actually usable with the file system / operating system at the given folder.
      */
     private static boolean isUsable(Path folder, String fileName) {
+        if (fileName.contains(folder.getFileSystem().getSeparator())) {
+            return false; // file name contains the name separator, definitely not usable
+        }
+
         Path path;
         try {
             path = folder.resolve(fileName);
