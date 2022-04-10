@@ -56,12 +56,14 @@ public class VirtualWindow implements Closeable {
         gameHeight = acc.getFramebufferHeight();
         acc.setFramebufferWidth(framebufferWidth);
         acc.setFramebufferHeight(framebufferHeight);
+        applyScaleFactor();
         isBound = true;
     }
 
     public void unbind() {
         acc.setFramebufferWidth(gameWidth);
         acc.setFramebufferHeight(gameHeight);
+        applyScaleFactor();
         isBound = false;
     }
 
