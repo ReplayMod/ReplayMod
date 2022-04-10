@@ -363,6 +363,8 @@ public class VideoRenderer implements RenderInfo {
         // Tear down of the timeline player might only happen the next tick after it was cancelled
         timelinePlayer.onTick();
 
+        guiWindow.close();
+
         // FBOs are always used in 1.14+
         //#if MC<11400
         //$$ if (!OpenGlHelper.isFramebufferEnabled()) {

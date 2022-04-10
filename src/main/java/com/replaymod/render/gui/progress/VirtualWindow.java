@@ -1,6 +1,7 @@
 package com.replaymod.render.gui.progress;
 
 import com.replaymod.render.mixin.MainWindowAccessor;
+import de.johni0702.minecraft.gui.function.Closeable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.util.Window;
@@ -9,7 +10,7 @@ import net.minecraft.client.util.Window;
 //$$ import net.minecraft.client.gl.WindowFramebuffer;
 //#endif
 
-public class VirtualWindow {
+public class VirtualWindow implements Closeable {
     private final MinecraftClient mc;
     private final Window window;
     private final MainWindowAccessor acc;
@@ -38,6 +39,11 @@ public class VirtualWindow {
                 //#endif
         );
         //#endif
+    }
+
+    @Override
+    public void close() {
+        guiFramebuffer.delete();
     }
 
     public void bind() {
