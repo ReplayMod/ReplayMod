@@ -21,6 +21,7 @@
     "Mixin_StabilizeCamera",
     "Mixin_Stereoscopic_Camera",
     "Mixin_Stereoscopic_HandRenderPass",
+    "Mixin_SuppressFramebufferResizeDuringRender",
     //#if MC>=11600
     "Mixin_AddIrisOdsShaderUniforms",
     "Mixin_LoadIrisOdsShaderPack",

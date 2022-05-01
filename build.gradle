@@ -377,7 +377,7 @@ dependencies {
 
     implementation(shadow('com.udojava:EvalEx:2.6'))
 
-    implementation(shadow("com.github.ReplayMod:ReplayStudio:b5539d1", shadeExclusions))
+    implementation(shadow("com.github.ReplayMod:ReplayStudio:6fc8e20", shadeExclusions))
 
     implementation(FABRIC ? dependencies.project(path: jGui.path, configuration: "namedElements") : jGui) {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those

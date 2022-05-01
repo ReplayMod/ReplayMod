@@ -59,6 +59,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileAttribute;
@@ -185,7 +186,16 @@ public class Utils {
      * Checks whether a given file name is actually usable with the file system / operating system at the given folder.
      */
     private static boolean isUsable(Path folder, String fileName) {
-        Path path = folder.resolve(fileName);
+        if (fileName.contains(folder.getFileSystem().getSeparator())) {
+            return false; // file name contains the name separator, definitely not usable
+        }
+
+        Path path;
+        try {
+            path = folder.resolve(fileName);
+        } catch (InvalidPathException e) {
+            return false; // file name contains invalid characters, definitely not usable
+        }
         if (Files.exists(path)) {
             return true; // if it already exits, it's definitely usable
         }
