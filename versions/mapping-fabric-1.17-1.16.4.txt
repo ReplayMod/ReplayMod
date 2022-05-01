@@ -1,4 +1,6 @@
 com.mojang.blaze3d.systems.RenderSystem com.mojang.blaze3d.platform.GlStateManager
+com.mojang.blaze3d.systems.RenderSystem setShaderFogStart() fogStart()
+com.mojang.blaze3d.systems.RenderSystem setShaderFogEnd() fogEnd()
 net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket getDimensionType() method_29445()
 net.minecraft.entity.Entity getId() getEntityId()
 net.minecraft.client.network.ClientPlayerEntity init() net.minecraft.entity.player.PlayerEntity afterSpawn()
