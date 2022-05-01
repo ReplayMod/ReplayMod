@@ -688,6 +688,7 @@ public class CameraEntity
         //#if MC>=10904
         cameraA.setItemStackMainHand(viewPlayerA != null ? viewPlayerA.getItemStackMainHand() : empty);
         this.preferredHand = viewPlayer != null ? viewPlayer.preferredHand : Hand.MAIN_HAND;
+        this.activeItemStack = viewPlayer != null ? viewPlayer.getActiveItem() : empty;
         cameraA.setActiveItemStackUseCount(viewPlayerA != null ? viewPlayerA.getActiveItemStackUseCount() : 0);
         //#else
         //$$ cameraA.setItemInUse(viewPlayerA != null ? viewPlayerA.getItemInUse() : empty);
