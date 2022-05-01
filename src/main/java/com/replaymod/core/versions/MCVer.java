@@ -27,9 +27,9 @@ import net.minecraft.resource.ResourcePackSource;
 //#if MC>=11400
 import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
+import net.minecraft.client.util.Window;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -106,17 +106,10 @@ public class MCVer {
 
     public static void resizeMainWindow(MinecraftClient mc, int width, int height) {
         //#if MC>=11400
-        Framebuffer fb = mc.getFramebuffer();
-        if (fb.viewportWidth != width || fb.viewportHeight != height) {
-            fb.resize(width, height, false);
-        }
+        Window window = mc.getWindow();
+        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) window;
         //noinspection ConstantConditions
-        MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) mc.getWindow();
-        mainWindow.setFramebufferWidth(width);
-        mainWindow.setFramebufferHeight(height);
-        //#if MC>=11500
-        mc.gameRenderer.onResized(width, height);
-        //#endif
+        mainWindow.invokeOnFramebufferSizeChanged(window.getHandle(), width, height);
         //#else
         //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
         //$$     mc.resize(width, height);

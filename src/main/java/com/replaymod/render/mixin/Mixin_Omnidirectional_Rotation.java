@@ -83,6 +83,8 @@ public abstract class Mixin_Omnidirectional_Rotation {
             //#else
             //$$ GL11.glRotatef(angle, x, y, 0);
             //#endif
+
+            getMinecraft().worldRenderer.scheduleTerrainUpdate();
         }
         //#if MC<11500
         //$$ if (getHandler() != null && getHandler().omnidirectional) {
