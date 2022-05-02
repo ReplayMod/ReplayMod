@@ -6,7 +6,6 @@ import gg.essential.elementa.state.State
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
 import gg.essential.universal.shader.BlendState
-import net.minecraft.client.render.VertexFormats
 import net.minecraft.util.Identifier
 import java.awt.Color
 
@@ -56,26 +55,26 @@ class UI9Slice(
             val alpha = color.alpha.toFloat() / 255f
             val buffer = UGraphics.getFromTessellator()
 
-            buffer.beginWithDefaultShader(UGraphics.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE)
+            buffer.beginWithDefaultShader(UGraphics.DrawMode.QUADS, UGraphics.CommonVertexFormats.POSITION_TEXTURE_COLOR)
 
             fun UGraphics.texS(u: Double, v: Double) = tex(u / data.textureWidth, v / data.textureHeight)
 
             fun drawTexturedRect(x: Double, y: Double, u: Double, v: Double, width: Double, height: Double) {
                 buffer.pos(matrixStack, x, y + height, 0.0)
-                    .color(red, green, blue, alpha)
                     .texS(u, v + height)
+                    .color(red, green, blue, alpha)
                     .endVertex()
                 buffer.pos(matrixStack, x + width, y + height, 0.0)
-                    .color(red, green, blue, alpha)
                     .texS(u + width, v + height)
+                    .color(red, green, blue, alpha)
                     .endVertex()
                 buffer.pos(matrixStack, x + width, y, 0.0)
-                    .color(red, green, blue, alpha)
                     .texS(u + width, v)
+                    .color(red, green, blue, alpha)
                     .endVertex()
                 buffer.pos(matrixStack, x, y, 0.0)
-                    .color(red, green, blue, alpha)
                     .texS(u, v)
+                    .color(red, green, blue, alpha)
                     .endVertex()
             }
 

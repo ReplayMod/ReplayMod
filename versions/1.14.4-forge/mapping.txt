@@ -1,3 +1,5 @@
+net.minecraft.util.SoundEvents net.minecraft.init.SoundEvents
+net.minecraft.util.SharedConstants net.minecraft.util.ChatAllowedCharacters
 net.minecraft.entity.player.PlayerInventory net.minecraft.entity.player.InventoryPlayer
 net.minecraft.potion.EffectInstance net.minecraft.potion.PotionEffect
 net.minecraft.client.gui.screen.AddServerScreen net.minecraft.client.gui.GuiScreenAddServer

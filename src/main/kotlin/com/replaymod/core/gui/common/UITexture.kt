@@ -6,7 +6,6 @@ import gg.essential.elementa.state.State
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
 import gg.essential.universal.shader.BlendState
-import net.minecraft.client.render.VertexFormats
 import net.minecraft.util.Identifier
 import java.awt.Color
 
@@ -51,26 +50,26 @@ class UITexture(
             UGraphics.enableAlpha()
 
             val buffer = UGraphics.getFromTessellator()
-            buffer.beginWithDefaultShader(UGraphics.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE)
+            buffer.beginWithDefaultShader(UGraphics.DrawMode.QUADS, UGraphics.CommonVertexFormats.POSITION_TEXTURE_COLOR)
             with(data) {
                 with(color) {
                     fun UGraphics.texS(u: Double, v: Double) = tex(u / textureWidth, v / textureHeight)
 
                     buffer.pos(matrixStack, l, b, 0.0)
-                        .color(red, green, blue, alpha)
                         .texS(lt, bt)
+                        .color(red, green, blue, alpha)
                         .endVertex()
                     buffer.pos(matrixStack, r, b, 0.0)
-                        .color(red, green, blue, alpha)
                         .texS(rt, bt)
+                        .color(red, green, blue, alpha)
                         .endVertex()
                     buffer.pos(matrixStack, r, t, 0.0)
-                        .color(red, green, blue, alpha)
                         .texS(rt, tt)
+                        .color(red, green, blue, alpha)
                         .endVertex()
                     buffer.pos(matrixStack, l, t, 0.0)
-                        .color(red, green, blue, alpha)
                         .texS(lt, tt)
+                        .color(red, green, blue, alpha)
                         .endVertex()
                 }
             }

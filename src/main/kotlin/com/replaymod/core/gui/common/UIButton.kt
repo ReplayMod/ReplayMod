@@ -14,7 +14,6 @@ import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.sound.PositionedSoundInstance
-import net.minecraft.sound.SoundEvents
 import net.minecraft.util.Identifier
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -112,8 +111,8 @@ class UIButton : UIComponent() {
     }
 
     companion object {
-        //#if MC>=11900
-        private val BUTTON_SOUND = SoundEvents.UI_BUTTON_CLICK
+        //#if MC>=10900
+        private val BUTTON_SOUND = net.minecraft.sound.SoundEvents.UI_BUTTON_CLICK
         //#else
         //$$ private val BUTTON_SOUND = ResourceLocation("gui.button.press")
         //#endif

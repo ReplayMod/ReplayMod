@@ -478,7 +478,7 @@ public class MCVer {
         //#else
         //$$ public static final int KEY_LCONTROL = org.lwjgl.input.Keyboard.KEY_LCONTROL;
         //$$ public static final int KEY_LSHIFT = org.lwjgl.input.Keyboard.KEY_LSHIFT;
-        //$$ public static final int KEY_LALT = org.lwjgl.input.Keyboard.KEY_LALT;
+        //$$ public static final int KEY_LALT = org.lwjgl.input.Keyboard.KEY_LMENU;
         //$$ public static final int KEY_ESCAPE = org.lwjgl.input.Keyboard.KEY_ESCAPE;
         //$$ public static final int KEY_HOME = org.lwjgl.input.Keyboard.KEY_HOME;
         //$$ public static final int KEY_END = org.lwjgl.input.Keyboard.KEY_END;

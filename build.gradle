@@ -97,6 +97,7 @@ preprocess {
 
     keywords.set([
             ".java": PreprocessTask.DEFAULT_KEYWORDS,
+            ".kt": PreprocessTask.DEFAULT_KEYWORDS,
             ".json": PreprocessTask.DEFAULT_KEYWORDS,
             ".mcmeta": PreprocessTask.DEFAULT_KEYWORDS,
             ".cfg": PreprocessTask.CFG_KEYWORDS,
@@ -338,7 +339,7 @@ dependencies {
     } else {
         elementaMcVersion = '1.8.9'
     }
-    def elementaVersion = '391'
+    def elementaVersion = '458+pull-58'
     if (fabric) {
         modImplementation(shadow("gg.essential:elementa-$elementaMcVersion-fabric:$elementaVersion"))
     } else {

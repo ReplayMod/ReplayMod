@@ -119,7 +119,11 @@ class GuiPathingKt(
                     }
                     overlay.isCloseable = true
                 }
+            //#if MC>=11800
+            //$$ }, Runnable::run)
+            //#else
             })
+            //#endif
         }
     } childOf secondRow
 
@@ -401,7 +405,12 @@ class GuiPathingKt(
                     val camera = replayHandler.cameraEntity
                     var spectatedId = -1
                     if (!replayHandler.isCameraView && !neverSpectator) {
+                        // FIXME preprocessor bug: there are mappings for this
+                        //#if MC>=11700
+                        // spectatedId = replayHandler.overlay.minecraft.getCameraEntity()!!.id
+                        //#else
                         spectatedId = replayHandler.overlay.minecraft.getCameraEntity()!!.entityId
+                        //#endif
                     }
                     timeline.addPositionKeyframe(time.inWholeMilliseconds,
                         camera.x, camera.y, camera.z,

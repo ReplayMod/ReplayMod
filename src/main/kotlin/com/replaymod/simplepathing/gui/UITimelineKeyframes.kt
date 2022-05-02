@@ -19,10 +19,10 @@ import gg.essential.elementa.constraints.*
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.effects.Effect
 import gg.essential.elementa.effects.ScissorEffect
+import gg.essential.universal.UGraphics
 import gg.essential.universal.UKeyboard
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.render.Tessellator
-import net.minecraft.client.render.VertexFormats
 import org.lwjgl.opengl.GL11
 import java.awt.Color
 import kotlin.math.absoluteValue
@@ -271,9 +271,13 @@ class UITimelineKeyframes(
             val keyframeX = boundComponent.getLeft() + boundComponent.getWidth() / 2
 
             val color = -0xffff01
-            val tessellator = Tessellator.getInstance()
-            val buffer = tessellator.buffer
-            buffer.begin(GL11.GL_LINE_STRIP, VertexFormats.POSITION_COLOR)
+            val tessellator = UGraphics.getFromTessellator()
+            val buffer = Tessellator.getInstance().buffer
+            //#if MC>=11700
+            //$$ tessellator.beginWithActiveShader(UGraphics.DrawMode.LINE_STRIP, net.minecraft.client.render.VertexFormats.LINES)
+            //#else
+            tessellator.beginWithActiveShader(UGraphics.DrawMode.LINE_STRIP, UGraphics.CommonVertexFormats.POSITION_COLOR)
+            //#endif
 
             // Start just below the top border of the replay timeline
             val p1 = Vector2f(replayTimelineLeft + positionXReplayTimeline, (replayTimelineTop + BORDER_TOP).toFloat())
@@ -289,7 +293,7 @@ class UITimelineKeyframes(
             MCVer.emitLine(buffer, p3, p4, color)
 
             //#if MC>=11700
-            //$$ RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+            //$$ com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.render.GameRenderer::getRenderTypeLinesShader)
             //#else
             GL11.glEnable(GL11.GL_LINE_SMOOTH)
             GL11.glDisable(GL11.GL_TEXTURE_2D)
@@ -297,7 +301,7 @@ class UITimelineKeyframes(
             GL11.glLineWidth(2f)
 
             scissorEffect.beforeDraw(matrixStack)
-            tessellator.draw()
+            tessellator.drawDirect()
             scissorEffect.afterDraw(matrixStack)
 
             //#if MC<11700
