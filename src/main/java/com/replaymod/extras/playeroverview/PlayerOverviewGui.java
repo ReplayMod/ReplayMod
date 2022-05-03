@@ -12,6 +12,7 @@ import de.johni0702.minecraft.gui.container.GuiVerticalList;
 import de.johni0702.minecraft.gui.element.GuiCheckbox;
 import de.johni0702.minecraft.gui.element.GuiImage;
 import de.johni0702.minecraft.gui.element.GuiLabel;
+import de.johni0702.minecraft.gui.element.GuiTextField;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.IGuiCheckbox;
 import de.johni0702.minecraft.gui.function.Closeable;
@@ -33,14 +34,18 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.client.render.entity.PlayerModelPart;
 //#endif
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public class PlayerOverviewGui extends GuiScreen implements Closeable {
     protected static final int ENTRY_WIDTH = 200;
 
     public final GuiPanel contentPanel = new GuiPanel(this).setBackgroundColor(Colors.DARK_TRANSPARENT);
+    public final GuiTextField searchField = new GuiTextField(contentPanel)
+            .setI18nHint("replaymod.gui.playeroverview.search");
     public final GuiLabel spectateLabel = new GuiLabel(contentPanel)
             .setI18nText("replaymod.gui.playeroverview.spectate");
     public final GuiLabel visibleLabel = new GuiLabel(contentPanel)
@@ -76,8 +81,10 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
         contentPanel.setLayout(new CustomLayout<GuiPanel>() {
             @Override
             protected void layout(GuiPanel container, int width, int height) {
-                pos(spectateLabel, 10, 10);
-                pos(visibleLabel, width - 10 - width(visibleLabel), 10);
+                pos(searchField, 10, 10);
+                size(searchField, width - 10 - 5, 20);
+                pos(spectateLabel, 10, 10 + height(searchField) + y(searchField));
+                pos(visibleLabel, width - 10 - width(visibleLabel), 10 + height(searchField) + y(searchField));
                 pos(playersScrollable, 10, y(spectateLabel) + height(spectateLabel) + 5);
                 size(playersScrollable, width - 10 - 5, height - 15 - height(saveCheckbox) - y(playersScrollable));
                 pos(saveCheckbox, 10, height - 10 - height(saveCheckbox));
@@ -88,13 +95,54 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
     }
 
     private final PlayerOverview extra;
+    private final List<PlayerEntity> players;
 
     public PlayerOverviewGui(final PlayerOverview extra, List<PlayerEntity> players) {
         this.extra = extra;
+        this.players = players;
 
         Collections.sort(players, new PlayerComparator()); // Sort by name, spectators last
+        displayPlayerData();
+
+        saveCheckbox.setChecked(extra.isSavingEnabled()).onClick(new Runnable() {
+            @Override
+            public void run() {
+                extra.setSavingEnabled(saveCheckbox.isChecked());
+            }
+        });
+
+        searchField.onTextChanged(changed -> {
+            playersScrollable.setOffsetY(0); // Reset scrolling
+            displayPlayerData();
+        });
+
+        ReplayModReplay.instance.getReplayHandler().getOverlay().setVisible(false);
+    }
+
+    private void displayPlayerData() {
+        // If playersScrollable already has content, clear it out.
+        GuiPanel container = playersScrollable.getListPanel();
+        new ArrayList<>(container.getChildren()).forEach(container::removeElement);
+
         for (final PlayerEntity p : players) {
             final Identifier texture = Utils.getResourceLocationForPlayerUUID(p.getUuid());
+            GuiLabel label = new GuiLabel().setText(
+                    //#if MC>=11400
+                    p.getName().asString()
+                    //#else
+                    //#if MC>=10800
+                    //$$ p.getName()
+                    //#else
+                    //$$ p.getDisplayName()
+                    //#endif
+                    //#endif
+            ).setColor(isSpectator(p) ? Colors.DKGREY : Colors.WHITE);
+
+            // Skip players that don't match filter criteria - ignore casing on search
+            if(!searchField.getText().isEmpty() && !label.getText().toLowerCase(Locale.ROOT).contains(searchField.getText().toLowerCase(Locale.ROOT))) {
+                continue;
+            }
+
             final GuiClickable panel = new GuiClickable().setLayout(new HorizontalLayout().setSpacing(2)).addElements(
                     new HorizontalLayout.Data(0.5), new GuiImage() {
                         @Override
@@ -103,28 +151,18 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                             renderer.drawTexturedRect(0, 0, 8, 8, 16, 16, 8, 8, 64, 64);
                             //#if MC>=10809
                             if (p.isPartVisible(PlayerModelPart.HAT)) {
-                            //#else
-                            //#if MC>=10800
-                            //$$ if (p.func_175148_a(EnumPlayerModelParts.HAT)) {
-                            //#else
-                            //$$ {
-                            //#endif
-                            //#endif
+                                //#else
+                                //#if MC>=10800
+                                //$$ if (p.func_175148_a(EnumPlayerModelParts.HAT)) {
+                                //#else
+                                //$$ {
+                                //#endif
+                                //#endif
                                 renderer.drawTexturedRect(0, 0, 40, 8, size.getWidth(), size.getHeight(), 8, 8, 64, 64);
                             }
                         }
                     }.setSize(16, 16),
-                    new GuiLabel().setText(
-                            //#if MC>=11400
-                            p.getName().asString()
-                            //#else
-                            //#if MC>=10800
-                            //$$ p.getName()
-                            //#else
-                            //$$ p.getDisplayName()
-                            //#endif
-                            //#endif
-                    ).setColor(isSpectator(p) ? Colors.DKGREY : Colors.WHITE)
+                    label
             ).onClick(new Runnable() {
                 @Override
                 public void run() {
@@ -151,14 +189,6 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
                 }
             }).addElements(null, panel, checkbox);
         }
-        saveCheckbox.setChecked(extra.isSavingEnabled()).onClick(new Runnable() {
-            @Override
-            public void run() {
-                extra.setSavingEnabled(saveCheckbox.isChecked());
-            }
-        });
-
-        ReplayModReplay.instance.getReplayHandler().getOverlay().setVisible(false);
     }
 
     @Override
