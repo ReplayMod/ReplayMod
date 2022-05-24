@@ -279,9 +279,11 @@ dependencies {
                 "resource-loader-v0",
         ]
         if (mcVersion >= 11600) {
+            fabricApiModules.remove("keybindings-v0")
             fabricApiModules.add("key-binding-api-v1")
         }
         if (mcVersion >= 11700) {
+            fabricApiModules.remove("networking-v0")
             fabricApiModules.add("networking-api-v1")
         }
         fabricApiModules.each { module ->
