@@ -34,7 +34,7 @@ buildscript {
     dependencies {
         classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.10-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.11-SNAPSHOT'
         } else if (mcVersion >= 11400) {
             classpath('net.minecraftforge.gradle:ForgeGradle:5.0.5') { // the FG people still haven't learned to not do breaking changes
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
@@ -246,6 +246,7 @@ dependencies {
                 11800: '1.18',
                 11801: '1.18.1',
                 11802: '1.18.2',
+                11900: '1.19-pre3',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -258,8 +259,9 @@ dependencies {
                 11800: '1.18+build.1:v2',
                 11801: '1.18.1+build.1:v2',
                 11802: '1.18.2+build.1:v2',
+                11900: '1.19-pre3+build.3:v2',
         ][mcVersion]
-        modImplementation 'net.fabricmc:fabric-loader:0.12.5'
+        modImplementation 'net.fabricmc:fabric-loader:0.14.6'
         def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
@@ -271,6 +273,7 @@ dependencies {
                 11800: '0.43.1+1.18',
                 11801: '0.43.1+1.18',
                 11802: '0.47.9+1.18.2',
+                11900: '0.53.4+1.19',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -351,7 +354,9 @@ dependencies {
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 11802) {
+        if (mcVersion >= 11900) {
+            modCompileOnly 'com.terraformersmc:modmenu:3.1.0' // FIXME update
+        } else if (mcVersion >= 11802) {
             modImplementation 'com.terraformersmc:modmenu:3.1.0'
         } else if (mcVersion >= 11800) {
             modImplementation 'com.terraformersmc:modmenu:3.0.0'

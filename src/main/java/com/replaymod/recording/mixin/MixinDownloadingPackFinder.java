@@ -33,7 +33,11 @@ public abstract class MixinDownloadingPackFinder implements ResourcePackRecorder
     }
 
     //#if MC>=10800
+    //#if MC>=11900
+    //$$ @Inject(method = "loadServerPack(Ljava/io/File;Lnet/minecraft/resource/ResourcePackSource;)Ljava/util/concurrent/CompletableFuture;", at = @At("HEAD"))
+    //#else
     @Inject(method = "loadServerPack", at = @At("HEAD"))
+    //#endif
     private void recordDownloadedPack(
             File file,
             //#if MC>=11600

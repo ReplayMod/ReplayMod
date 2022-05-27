@@ -13,8 +13,6 @@ import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.recording.Setting;
 import com.replaymod.recording.gui.GuiSavingReplay;
 import com.replaymod.recording.handler.ConnectionEventHandler;
-import com.replaymod.recording.mixin.SPacketSpawnMobAccessor;
-import com.replaymod.recording.mixin.SPacketSpawnPlayerAccessor;
 import com.replaymod.replaystudio.PacketData;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
@@ -30,7 +28,6 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.ItemPickupAnimationS2CPacket;
-import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
@@ -43,6 +40,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC>=11500
+//#else
+//$$ import com.replaymod.recording.mixin.SPacketSpawnMobAccessor;
+//$$ import com.replaymod.recording.mixin.SPacketSpawnPlayerAccessor;
+//$$ import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
+//#endif
 
 //#if MC>=11400
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;

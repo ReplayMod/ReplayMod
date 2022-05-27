@@ -1,0 +1,4 @@
+# FIXME remap should be able to map these without us explicitly declaring them
+net.minecraft.client.render.WorldRenderer fullUpdateFuture field_34808
+net.minecraft.client.render.WorldRenderer updateFinished field_34809
+net.minecraft.client.render.WorldRenderer shouldUpdate field_34810

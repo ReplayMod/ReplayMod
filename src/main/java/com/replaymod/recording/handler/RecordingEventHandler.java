@@ -42,12 +42,9 @@ import java.util.Collections;
 
 //#if MC>=10904
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.util.Hand;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 //#endif
 
 //#if MC>=10800
@@ -91,7 +88,7 @@ public class RecordingEventHandler extends EventRegistrations {
         }
     }
 
-    //#if MC>=11400
+    //#if MC>=10904
     public void onPacket(Packet<?> packet) {
         packetListener.save(packet);
     }
@@ -112,16 +109,6 @@ public class RecordingEventHandler extends EventRegistrations {
     }
 
     //#if MC>=10904
-    public void onClientSound(SoundEvent sound, SoundCategory category,
-                              double x, double y, double z, float volume, float pitch) {
-        try {
-            // Send to all other players in ServerWorldEventHandler#playSoundToAllNearExcept
-            packetListener.save(new PlaySoundS2CPacket(sound, category, x, y, z, volume, pitch));
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void onClientEffect(int type, BlockPos pos, int data) {
         try {
             // Send to all other players in ServerWorldEventHandler#playEvent
