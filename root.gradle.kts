@@ -2,9 +2,9 @@ import groovy.json.JsonOutput
 import java.io.ByteArrayOutputStream
 
 plugins {
-    id("fabric-loom") version "0.11-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "48e02ad"
+    id("gg.essential.multi-version.root")
     id("com.github.hierynomus.license") version "0.15.0"
+    kotlin("jvm") version "1.9.24" apply false // workaround for EGT crashing without
 }
 
 val latestVersion = file("version.txt").readLines().first()
@@ -35,6 +35,13 @@ subprojects {
             maven("https://jitpack.io")
         }
     }
+
+    if (name == "jGui") {
+        return@subprojects
+    }
+    val (_, minor) = name.split("-")[0].split(".")
+    val fabric = minor.toInt() >= 14 && !name.endsWith("-forge")
+    extra.set("loom.platform", if (fabric) "fabric" else "forge")
 
     afterEvaluate {
         val projectBundleJar = project.tasks.findByName("bundleJar")
@@ -91,8 +98,11 @@ fun generateVersionsJson(): Map<String, Any> {
                 .filter { it != "core" }
                 // Internal project used to automatically remap from Forge 1.12.2 to Fabric 1.14.4
                 .filter { it != "1.14.4-forge" }
+                // We dropped 1.8 with the switch to archloom but still kept its source in case someone
+                // volunteers to make it build again
+                .filterNot { it == "1.8" && versionComparator.compare(version, "2.6.16") >= 0 }
                 // We dropped 1.7.10 with the Gradle 7 update but still kept its source in case someone
-                // volunteers to update FG 1.2 to Gradle 7.
+                // volunteers to ~~update FG 1.2 to Gradle 7~~ make it work with archloom.
                 .filterNot { it == "1.7.10" && versionComparator.compare(version, "2.6.0") >= 0 }
         val versions = mcVersions.map { "$it-$version" }.toMutableList()
         when (version) {

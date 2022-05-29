@@ -101,7 +101,7 @@ public class EXRWriter implements FrameConsumer<BitmapFrame> {
             for (int i = 0; i < numChannels; i++) {
                 FloatBuffer channel = images.slice();
                 channel.position(width * height * i);
-                imagePointers.put(i, channel.slice());
+                imagePointers.put(i, memAddress(channel));
                 if (i == 4) {
                     depthChannel = channel;
                 } else {
@@ -125,8 +125,8 @@ public class EXRWriter implements FrameConsumer<BitmapFrame> {
 
             int ret = SaveEXRImageToFile(image, header, path.toString(), err);
             if (ret != TINYEXR_SUCCESS) {
-                String message = err.getStringASCII(0);
-                FreeEXRErrorMessage(err.getByteBuffer(0));
+                String message = memASCII(err.get(0));
+                nFreeEXRErrorMessage(err.get(0));
                 throw new IOException(message);
             }
         } catch (Throwable t) {

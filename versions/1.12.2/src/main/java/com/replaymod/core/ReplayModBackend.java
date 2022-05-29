@@ -27,8 +27,6 @@ import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 @Mod(modid = ReplayMod.MOD_ID,
         useMetadata = true,
-        version = "@MOD_VERSION@",
-        acceptedMinecraftVersions = "@MC_VERSION@",
         acceptableRemoteVersions = "*",
         //#if MC>=10800
         clientSideOnly = true,

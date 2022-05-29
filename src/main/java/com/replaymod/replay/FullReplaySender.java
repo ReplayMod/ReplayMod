@@ -404,7 +404,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             if (mc.world != null) {
                 for (PlayerEntity playerEntity : mc.world.getPlayers()) {
                     if (!playerEntity.updateNeeded && playerEntity instanceof OtherClientPlayerEntity) {
+                        // FIXME preprocessor should (and used to) be able to map this
+                        //#if MC>=11400
                         playerEntity.tickMovement();
+                        //#else
+                        //$$ playerEntity.onLivingUpdate();
+                        //#endif
                     }
                 }
             }

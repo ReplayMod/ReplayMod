@@ -4,7 +4,7 @@
     "name": "Replay Mod",
     "description": "A Mod which allows you to record, replay and share your Minecraft experience.",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "${mcVersionStr}",
     "url": "https://replaymod.com",
     "updateUrl": "https://replaymod.com/download",
     "authorList": [
@@ -20,7 +20,7 @@
     "name": "Replay Mod - Recording",
     "description": "Recording Module of the ReplayMod",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "${mcVersionStr}",
     "url": "https://replaymod.com",
     "updateUrl": "https://replaymod.com/download",
     "authorList": [
@@ -37,7 +37,7 @@
     "name": "Replay Mod - Replay",
     "description": "Replay Module of the ReplayMod",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "${mcVersionStr}",
     "url": "https://replaymod.com",
     "updateUrl": "https://replaymod.com/download",
     "authorList": [
@@ -54,7 +54,7 @@
     "name": "Replay Mod - Simple Pathing",
     "description": "Simple Pathing Module of the ReplayMod - aka the original pathing",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "${mcVersionStr}",
     "url": "https://replaymod.com",
     "updateUrl": "https://replaymod.com/download",
     "authorList": [
@@ -71,7 +71,7 @@
     "name": "Replay Mod - Render",
     "description": "Render Module of the ReplayMod",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "${mcVersionStr}",
     "url": "https://replaymod.com",
     "updateUrl": "https://replaymod.com/download",
     "authorList": [
@@ -88,7 +88,7 @@
     "name": "Replay Mod - Replay Editor",
     "description": "Replay Editor Module of the ReplayMod",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "${mcVersionStr}",
     "url": "https://replaymod.com",
     "updateUrl": "https://replaymod.com/download",
     "authorList": [
@@ -105,7 +105,7 @@
     "name": "Replay Mod - Extras",
     "description": "Extras Module of the ReplayMod - Small but neat additions",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "${mcVersionStr}",
     "url": "https://replaymod.com",
     "updateUrl": "https://replaymod.com/download",
     "authorList": [
@@ -122,7 +122,7 @@
       "name": "Replay Mod - Compatibility",
       "description": "Compatibility Module of the ReplayMod - Adds compatibility with other mods",
       "version": "${version}",
-      "mcversion": "${mcversion}",
+      "mcversion": "${mcVersionStr}",
       "url": "https://replaymod.com",
       "updateUrl": "https://replaymod.com/download",
       "authorList": [
