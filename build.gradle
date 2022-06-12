@@ -246,7 +246,7 @@ dependencies {
                 11800: '1.18',
                 11801: '1.18.1',
                 11802: '1.18.2',
-                11900: '1.19-pre3',
+                11900: '1.19',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -259,7 +259,7 @@ dependencies {
                 11800: '1.18+build.1:v2',
                 11801: '1.18.1+build.1:v2',
                 11802: '1.18.2+build.1:v2',
-                11900: '1.19-pre3+build.3:v2',
+                11900: '1.19+build.2:v2',
         ][mcVersion]
         modImplementation 'net.fabricmc:fabric-loader:0.14.6'
         def fabricApiVersion = [
@@ -273,7 +273,7 @@ dependencies {
                 11800: '0.43.1+1.18',
                 11801: '0.43.1+1.18',
                 11802: '0.47.9+1.18.2',
-                11900: '0.53.4+1.19',
+                11900: '0.55.3+1.19',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -346,7 +346,10 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:6fc8e20", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:39debfe", shadeExclusions
+
+    // FIXME this should be pulled in by ReplayStudio, and IntelliJ sees it, but javac for some reason does not
+    implementation 'com.github.viaversion:opennbt:0a02214' // 2.0-SNAPSHOT (ViaVersion Edition)
 
     implementation(FABRIC ? dependencies.project(path: jGui.path, configuration: "namedElements") : jGui) {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
