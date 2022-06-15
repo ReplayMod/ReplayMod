@@ -3,7 +3,6 @@ package com.replaymod.recording.handler;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.utils.Utils;
-import com.replaymod.core.versions.MCVer;
 import com.replaymod.editor.gui.MarkerProcessor;
 import com.replaymod.recording.ServerInfoExt;
 import com.replaymod.recording.Setting;
@@ -43,7 +42,6 @@ import static com.replaymod.core.versions.MCVer.getMinecraft;
  */
 public class ConnectionEventHandler {
 
-    private static final String packetHandlerKey = "packet_handler";
     private static final String DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
     private static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
     private static final MinecraftClient mc = getMinecraft();
@@ -141,7 +139,13 @@ public class ConnectionEventHandler {
             metaData.setMcVersion(ReplayMod.instance.getMinecraftVersion());
             packetListener = new PacketListener(core, outputPath, replayFile, metaData);
             Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
-            channel.pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
+            if (channel.pipeline().get(PacketListener.DECODER_KEY) != null) {
+                // Regular channel, we'll inject our recorder directly before the decoder
+                channel.pipeline().addBefore(PacketListener.DECODER_KEY, PacketListener.RAW_RECORDER_KEY, packetListener);
+            } else {
+                // Integrated server passes packets directly, there's no splitting, decompression or decoding
+                channel.pipeline().addFirst(PacketListener.RAW_RECORDER_KEY, packetListener);
+            }
 
             recordingEventHandler = new RecordingEventHandler(packetListener);
             recordingEventHandler.register();

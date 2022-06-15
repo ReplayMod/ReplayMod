@@ -8,6 +8,7 @@
     "EntityLivingBaseAccessor",
     "IntegratedServerAccessor",
     "NetworkManagerAccessor",
+    "MixinClientConnection",
     //#if MC<11500
     //$$ "SPacketSpawnMobAccessor",
     //$$ "SPacketSpawnPlayerAccessor",
