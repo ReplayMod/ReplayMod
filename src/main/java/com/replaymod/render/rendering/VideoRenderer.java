@@ -642,7 +642,7 @@ public class VideoRenderer implements RenderInfo {
             return new String[] {
                     "Rendering is not supported with your Sodium version.",
                     "It is missing support for the FREX Flawless Frames API.",
-                    "Either update to the latest version or uninstall Sodium before rendering!",
+                    "Either use the Sodium build from replaymod.com or uninstall Sodium before rendering!",
             };
         }
         //#if MC>=11700
