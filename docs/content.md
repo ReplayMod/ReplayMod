@@ -619,7 +619,7 @@ The _Baritone_ mod can cause a crash when you're trying to load a replay. If you
 Minecraft may crash if you try to use _RandomPatches_ together with ReplayMod. Try removing RandomPatches if Minecraft crashes on startup.
 
 ### Sodium [sodium]
-ReplayMod can record when _Sodium_ is installed but will crash during render. Disable Sodium before rendering, it can be re-enabled after that.
+ReplayMod can record when _Sodium_ is installed, but currently lacks the FREX Flawless Frames API to render. A modified build of _Sodium_, that supports this API, is available from the ReplayMod downloads, by clicking the `Click to show compatible Sodium versions` button.
 
 ### Resource Loader [resourceloader]
 The _Resource Loader_ mod is not compatible with ReplayMod.
