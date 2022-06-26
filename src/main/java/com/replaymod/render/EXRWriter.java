@@ -135,4 +135,9 @@ public class EXRWriter implements FrameConsumer<BitmapFrame> {
     @Override
     public void close() {
     }
+
+    @Override
+    public boolean isParallelCapable() {
+        return true;
+    }
 }

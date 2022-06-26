@@ -128,6 +128,11 @@ public class Pipelines {
             @Override
             public void close() {
             }
+
+            @Override
+            public boolean isParallelCapable() {
+                return true;
+            }
         };
         return new Pipeline<>(worldRenderer, capturer, new DummyProcessor<>(), consumer);
     }

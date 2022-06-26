@@ -10,6 +10,7 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -25,8 +26,6 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
     private final FrameCapturer<R> capturer;
     private final FrameProcessor<R, P> processor;
     private final GlToAbsoluteDepthProcessor depthProcessor;
-    private int consumerNextFrame;
-    private final Object consumerLock = new Object();
     private final FrameConsumer<P> consumer;
 
     private volatile boolean abort;
@@ -35,7 +34,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
         this.worldRenderer = worldRenderer;
         this.capturer = capturer;
         this.processor = processor;
-        this.consumer = consumer;
+        this.consumer = new ParallelSafeConsumer<>(consumer);
 
         float near = 0.05f;
         float far = getMinecraft().options.viewDistance * 16 * 4;
@@ -44,7 +43,6 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
     @Override
     public synchronized void run() {
-        consumerNextFrame = 0;
         int processors = Runtime.getRuntime().availableProcessors();
         int processThreads = Math.max(1, processors - 2); // One processor for the main thread and one for ffmpeg, sorry OS :(
         ExecutorService processService = new ThreadPoolExecutor(processThreads, processThreads,
@@ -106,7 +104,6 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
         @Override
         public void run() {
             try {
-                Integer frameId = null;
                 Map<Channel, P> processedChannels = new HashMap<>();
                 for (Map.Entry<Channel, R> entry : rawChannels.entrySet()) {
                     P processedFrame = processor.process(entry.getValue());
@@ -114,27 +111,57 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
                         depthProcessor.process((BitmapFrame) processedFrame);
                     }
                     processedChannels.put(entry.getKey(), processedFrame);
-                    frameId = processedFrame.getFrameId();
                 }
-                if (frameId == null) {
+                if (processedChannels.isEmpty()) {
                     return;
                 }
-                synchronized (consumerLock) {
-                    while (consumerNextFrame != frameId) {
-                        try {
-                            consumerLock.wait();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                    consumer.consume(processedChannels);
-                    consumerNextFrame++;
-                    consumerLock.notifyAll();
-                }
+                consumer.consume(processedChannels);
             } catch (Throwable t) {
                 CrashReport crashReport = CrashReport.create(t, "Processing frame");
                 MCVer.getMinecraft().setCrashReport(crashReport);
             }
+        }
+    }
+
+    private static class ParallelSafeConsumer<P extends Frame> implements FrameConsumer<P> {
+        private final FrameConsumer<P> inner;
+
+        private int nextFrame;
+        private final Object lock = new Object();
+
+        private ParallelSafeConsumer(FrameConsumer<P> inner) {
+            this.inner = inner;
+        }
+
+        @Override
+        public void consume(Map<Channel, P> channels) {
+            if (inner.isParallelCapable()) {
+                inner.consume(channels);
+            } else {
+                int frameId = channels.values().iterator().next().getFrameId();
+                synchronized (lock) {
+                    while (nextFrame != frameId) {
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    inner.consume(channels);
+                    nextFrame++;
+                    lock.notifyAll();
+                }
+            }
+        }
+
+        @Override
+        public boolean isParallelCapable() {
+            return true;
+        }
+
+        @Override
+        public void close() throws IOException {
+            inner.close();
         }
     }
 }

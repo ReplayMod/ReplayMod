@@ -137,11 +137,19 @@ public class VideoRenderer implements RenderInfo {
             }
             ffmpegWriter = frameConsumer instanceof FFmpegWriter ? (FFmpegWriter) frameConsumer : null;
             FrameConsumer<BitmapFrame> previewingFrameConsumer = new FrameConsumer<BitmapFrame>() {
+                private int lastFrameId = -1;
+
                 @Override
                 public void consume(Map<Channel, BitmapFrame> channels) {
                     BitmapFrame bgra = channels.get(Channel.BRGA);
                     if (bgra != null) {
-                        gui.updatePreview(bgra.getByteBuffer(), bgra.getSize());
+                        synchronized (this) {
+                            int frameId = bgra.getFrameId();
+                            if (lastFrameId < frameId) {
+                                lastFrameId = frameId;
+                                gui.updatePreview(bgra.getByteBuffer(), bgra.getSize());
+                            }
+                        }
                     }
                     frameConsumer.consume(channels);
                 }
@@ -149,6 +157,11 @@ public class VideoRenderer implements RenderInfo {
                 @Override
                 public void close() throws IOException {
                     frameConsumer.close();
+                }
+
+                @Override
+                public boolean isParallelCapable() {
+                    return frameConsumer.isParallelCapable();
                 }
             };
             this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this, previewingFrameConsumer);

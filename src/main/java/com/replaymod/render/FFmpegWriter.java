@@ -134,6 +134,11 @@ public class FFmpegWriter implements FrameConsumer<BitmapFrame> {
         }
     }
 
+    @Override
+    public boolean isParallelCapable() {
+        return false;
+    }
+
     private void checkSize(ReadableDimension size) {
         checkSize(size.getWidth(), size.getHeight());
     }
