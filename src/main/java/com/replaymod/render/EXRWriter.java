@@ -35,6 +35,11 @@ public class EXRWriter implements FrameConsumer<BitmapFrame> {
         );
     }
 
+    // Compression is pretty slow, so we'll only use it when we've got enough cpu cores to make up for that
+    private static final int COMPRESSION = Runtime.getRuntime().availableProcessors() >= 8
+            ? TINYEXR_COMPRESSIONTYPE_ZIPS
+            : TINYEXR_COMPRESSIONTYPE_NONE;
+
     private final Path outputFolder;
     private final boolean keepAlpha;
 
@@ -71,6 +76,7 @@ public class EXRWriter implements FrameConsumer<BitmapFrame> {
             header.channels(channelInfos);
             header.pixel_types(pixelTypes);
             header.requested_pixel_types(requestedPixelTypes);
+            header.compression_type(COMPRESSION);
 
             // Some readers ignore this, so we use the most expected order
             memASCII("A", true, channelInfos.get(0).name());
