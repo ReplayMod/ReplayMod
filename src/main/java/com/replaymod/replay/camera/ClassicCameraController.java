@@ -9,9 +9,9 @@ import static net.minecraft.util.math.MathHelper.sin;
 
 // TODO: Marius is responsible for this. Please, someone clean it up.
 public class ClassicCameraController implements CameraController {
-    private static final double SPEED_CHANGE = 0.5;
     private static final double LOWER_SPEED = 2;
     private static final double UPPER_SPEED = 20;
+    private static final double SPEED_CHANGE = (UPPER_SPEED - LOWER_SPEED) / 2000;
 
     private final CameraEntity camera;
 
