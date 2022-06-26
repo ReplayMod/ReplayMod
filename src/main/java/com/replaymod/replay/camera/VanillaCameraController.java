@@ -9,7 +9,7 @@ import net.minecraft.client.options.KeyBinding;
  * Camera controller performing vanilla creative-like camera movements.
  */
 public class VanillaCameraController implements CameraController {
-    private static final int MAX_SPEED = 1000;
+    private static final int MAX_SPEED = 2000;
     private static final int MIN_SPEED = -1000;
 
     private static final Vector3f[] DIRECTIONS = new Vector3f[]{

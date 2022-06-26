@@ -14,7 +14,11 @@ import net.minecraft.util.crash.CrashException;
 
 //#if FABRIC>=1
 import com.replaymod.core.versions.LangResourcePack;
-import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
+//#if MC>=11600
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+//#else
+//$$ import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
+//#endif
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import static com.replaymod.core.ReplayMod.MOD_ID;
@@ -35,8 +39,8 @@ import java.util.function.Supplier;
 
 public class KeyBindingRegistry extends EventRegistrations {
     private static final String CATEGORY = "replaymod.title";
-    //#if FABRIC>=1
-    static { net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.addCategory(CATEGORY); }
+    //#if FABRIC>=1 && MC<11600
+    //$$ static { net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.addCategory(CATEGORY); }
     //#endif
 
     private final Map<String, Binding> bindings = new HashMap<>();
@@ -63,9 +67,15 @@ public class KeyBindingRegistry extends EventRegistrations {
                 keyCode = -1;
             }
             Identifier id = new Identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
-            FabricKeyBinding fabricKeyBinding = FabricKeyBinding.Builder.create(id, InputUtil.Type.KEYSYM, keyCode, CATEGORY).build();
-            net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.register(fabricKeyBinding);
-            KeyBinding keyBinding = fabricKeyBinding;
+            //#if MC>=11600
+            String key = String.format("key.%s.%s", id.getNamespace(), id.getPath());
+            KeyBinding keyBinding = new KeyBinding(key, InputUtil.Type.KEYSYM, keyCode, CATEGORY);
+            KeyBindingHelper.registerKeyBinding(keyBinding);
+            //#else
+            //$$ FabricKeyBinding fabricKeyBinding = FabricKeyBinding.Builder.create(id, InputUtil.Type.KEYSYM, keyCode, CATEGORY).build();
+            //$$ net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.register(fabricKeyBinding);
+            //$$ KeyBinding keyBinding = fabricKeyBinding;
+            //#endif
             //#else
             //$$ KeyBinding keyBinding = new KeyBinding(name, keyCode, CATEGORY);
             //$$ ClientRegistry.registerKeyBinding(keyBinding);

@@ -158,8 +158,12 @@ public class LangResourcePack extends AbstractFileResourcePack {
             String namespace,
             //#endif
             String path,
+            //#if MC>=11900
+            //$$ Predicate<Identifier> filter
+            //#else
             int maxDepth,
             Predicate<String> filter
+            //#endif
     ) {
         if (resourcePackType == ResourceType.CLIENT_RESOURCES && "lang".equals(path)) {
             Path base = baseLangPath();
@@ -174,8 +178,13 @@ public class LangResourcePack extends AbstractFileResourcePack {
                         .map(LANG_FILE_NAME_PATTERN::matcher)
                         .filter(Matcher::matches)
                         .map(matcher -> String.format("%s_%s.json", matcher.group(1), matcher.group(1)))
-                        .filter(filter::test)
+                        //#if MC<11900
+                        .filter(filter)
+                        //#endif
                         .map(name -> new Identifier(ReplayMod.MOD_ID, "lang/" + name))
+                        //#if MC>=11900
+                        //$$ .filter(filter)
+                        //#endif
                         .collect(Collectors.toList());
             } catch (IOException e) {
                 e.printStackTrace();

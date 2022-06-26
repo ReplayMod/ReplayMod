@@ -31,10 +31,6 @@ import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 
-//#if MC>=11802
-//$$ import net.minecraft.tag.TagKey;
-//#endif
-
 //#if FABRIC>=1
 //#else
 //$$ import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -47,7 +43,11 @@ import net.minecraft.util.math.Box;
 //#if MC>=11400
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.Fluid;
+//#if MC>=11802
+//$$ import net.minecraft.tag.TagKey;
+//#else
 import net.minecraft.tag.Tag;
+//#endif
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 //#else
@@ -547,7 +547,11 @@ public class CameraEntity
 
     //#if MC>=11400
     @Override
+    //#if MC>=11900
+    //$$ public void onEquipStack(EquipmentSlot slot, ItemStack stack, ItemStack itemStack) {
+    //#else
     protected void onEquipStack(ItemStack itemStack_1) {
+    //#endif
         // Suppress equip sounds
     }
     //#endif

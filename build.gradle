@@ -1,4 +1,5 @@
 import com.replaymod.gradle.preprocess.PreprocessTask
+import static gg.essential.gradle.util.PrebundleKt.prebundle
 
 buildscript {
     def mcVersion
@@ -18,23 +19,23 @@ buildscript {
             name = "fabric"
             url = "https://maven.fabricmc.net/"
         }
-        if (!fabric) {
-            maven {
-                name = "forge"
-                url = "https://maven.minecraftforge.net"
-            }
+        maven {
+            name = "forge"
+            url = "https://maven.minecraftforge.net"
         }
         maven {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
         maven { url 'https://jitpack.io' }
+        maven { url "https://maven.architectury.dev" }
+        maven { url "https://repo.essential.gg/repository/maven-public" }
     }
 
     dependencies {
         classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
         if (fabric) {
-            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.10-SNAPSHOT'
+            classpath 'fabric-loom:fabric-loom.gradle.plugin:0.11-SNAPSHOT'
         } else if (mcVersion >= 11400) {
             classpath('net.minecraftforge.gradle:ForgeGradle:5.0.5') { // the FG people still haven't learned to not do breaking changes
                 exclude group: 'trove', module: 'trove' // preprocessor/idea requires more recent one
@@ -48,6 +49,7 @@ buildscript {
         } else {
             classpath 'com.github.ReplayMod:ForgeGradle:a8a9e0ca:all' // FG 1.2
         }
+        classpath 'gg.essential:essential-gradle-toolkit:0.1.10'
     }
 }
 
@@ -246,6 +248,7 @@ dependencies {
                 11800: '1.18',
                 11801: '1.18.1',
                 11802: '1.18.2',
+                11900: '1.19',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -258,8 +261,9 @@ dependencies {
                 11800: '1.18+build.1:v2',
                 11801: '1.18.1+build.1:v2',
                 11802: '1.18.2+build.1:v2',
+                11900: '1.19+build.2:v2',
         ][mcVersion]
-        modImplementation 'net.fabricmc:fabric-loader:0.12.5'
+        modImplementation 'net.fabricmc:fabric-loader:0.14.6'
         def fabricApiVersion = [
                 11404: '0.4.3+build.247-1.14',
                 11502: '0.5.1+build.294-1.15',
@@ -271,6 +275,7 @@ dependencies {
                 11800: '0.43.1+1.18',
                 11801: '0.43.1+1.18',
                 11802: '0.47.9+1.18.2',
+                11900: '0.55.3+1.19',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -279,9 +284,11 @@ dependencies {
                 "resource-loader-v0",
         ]
         if (mcVersion >= 11600) {
+            fabricApiModules.remove("keybindings-v0")
             fabricApiModules.add("key-binding-api-v1")
         }
         if (mcVersion >= 11700) {
+            fabricApiModules.remove("networking-v0")
             fabricApiModules.add("networking-api-v1")
         }
         fabricApiModules.each { module ->
@@ -318,13 +325,13 @@ dependencies {
     shadow 'com.google.api-client:google-api-client-java6:1.20.0', shadeExclusions
     shadow 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
 
-    if (mcVersion >= 11400) { // need lwjgl 3
-        for (suffix in ['', ':natives-linux', ':natives-windows', ':natives-macos']) {
-            shadow('org.lwjgl:lwjgl-tinyexr:3.2.2' + suffix) {
-                exclude group: 'org.lwjgl', module: 'lwjgl' // comes with MC
-            }
-        }
+    def lwjgl = configurations.create("lwjgl")
+    for (suffix in ['', ':natives-linux', ':natives-windows', ':natives-macos', ':natives-macos-arm64']) {
+        add(lwjgl.name, 'org.lwjgl:lwjgl:3.3.1' + suffix)
+        add(lwjgl.name, 'org.lwjgl:lwjgl-tinyexr:3.3.1' + suffix)
     }
+    compileOnly('org.lwjgl:lwjgl-tinyexr:3.3.1')
+    shadow(prebundle(project, lwjgl, "com/replaymod/render/utils/lwjgl.jar", {}))
 
     if (mcVersion < 11200) {
         // The version which MC ships is too old, we'll need to ship our own
@@ -341,7 +348,10 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:6fc8e20", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:74d8465", shadeExclusions
+
+    // FIXME this should be pulled in by ReplayStudio, and IntelliJ sees it, but javac for some reason does not
+    implementation 'com.github.viaversion:opennbt:0a02214' // 2.0-SNAPSHOT (ViaVersion Edition)
 
     implementation(FABRIC ? dependencies.project(path: jGui.path, configuration: "namedElements") : jGui) {
         transitive = false // FG 1.2 puts all MC deps into the compile configuration and we don't want to shade those
@@ -349,7 +359,9 @@ dependencies {
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 11802) {
+        if (mcVersion >= 11900) {
+            modCompileOnly 'com.terraformersmc:modmenu:3.1.0' // FIXME update
+        } else if (mcVersion >= 11802) {
             modImplementation 'com.terraformersmc:modmenu:3.1.0'
         } else if (mcVersion >= 11800) {
             modImplementation 'com.terraformersmc:modmenu:3.0.0'

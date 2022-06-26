@@ -124,7 +124,7 @@ public class MarkerProcessor {
 
         PacketTypeRegistry registry = MCVer.getPacketTypeRegistry(true);
         DimensionTracker dimensionTracker = new DimensionTracker();
-        SquashFilter squashFilter = new SquashFilter(null, null);
+        SquashFilter squashFilter = new SquashFilter(null, null, null);
 
         List<Pair<Path, ReplayMetaData>> outputPaths = new ArrayList<>();
 

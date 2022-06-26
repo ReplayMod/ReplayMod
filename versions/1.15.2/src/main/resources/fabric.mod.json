@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "replaymod",
+  "version": "${version}",
+
+  "name": "Replay Mod",
+  "description": "A Mod which allows you to record, replay and share your Minecraft experience.",
+  "authors": [
+    "CrushedPixel",
+    "johni0702"
+  ],
+  "contact": {
+    "homepage": "https://replaymod.com/",
+    "sources": "https://github.com/ReplayMod/ReplayMod"
+  },
+
+  "license": "GPL-3.0-or-later",
+  "icon": "assets/replaymod/favicon_logo.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.replaymod.core.ReplayModBackend"
+    ],
+    "modmenu": [
+      "com.replaymod.core.gui.ModMenuApiImpl"
+    ],
+    "frex_flawless_frames": [
+      "com.replaymod.render.utils.FlawlessFrames::registerConsumer"
+    ],
+    "preLaunch": [
+      "com.replaymod.core.DummyChainLoadEntryPoint"
+    ],
+    "mm:early_risers": [
+      "com.replaymod.core.ReplayModMMLauncher"
+    ]
+  },
+  "mixins": [
+    "mixins.jgui.json",
+    "mixins.nonmmlauncher.replaymod.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.0",
+    "fabric-networking-v0": "*",
+    "fabric-keybindings-v0": "*",
+    "fabric-resource-loader-v0": "*"
+  },
+
+  "conflicts": {
+    "iris": "<1.1.3"
+  },
+
+  "custom": {
+    "mm:early_risers": [
+      "com.replaymod.core.ReplayModMMLauncher"
+    ],
+    "modmenu:clientsideOnly": true
+  }
+}

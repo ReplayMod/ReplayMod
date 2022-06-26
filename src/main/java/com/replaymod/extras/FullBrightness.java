@@ -72,7 +72,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
             Type type = getType();
             if (type == Type.Gamma || type == Type.Both) {
                 originalGamma = mc.options.gamma;
-                mc.options.gamma = 1000;
+                mc.options.gamma = 1000.0;
             }
             if (type == Type.NightVision || type == Type.Both) {
                 if (mc.player != null) {

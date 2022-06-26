@@ -7,4 +7,6 @@ public interface FrameConsumer<P extends Frame> extends Closeable {
 
     void consume(Map<Channel, P> channels);
 
+    boolean isParallelCapable();
+
 }

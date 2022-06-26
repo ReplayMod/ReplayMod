@@ -3,7 +3,6 @@ package com.replaymod.render.mixin;
 //#if MC>=10904
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.render.blend.BlendState;
-import com.replaymod.render.blend.exporters.ParticlesExporter;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
@@ -11,6 +10,11 @@ import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+//#if MC>=11900
+//#else
+import com.replaymod.render.blend.exporters.ParticlesExporter;
+//#endif
 
 //#if MC>=11500
 import net.minecraft.client.render.VertexConsumer;
@@ -52,10 +56,12 @@ public abstract class MixinParticleManager {
     }
 
     private void buildGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
+        //#if MC<11900
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
             blendState.get(ParticlesExporter.class).onRender(particle, partialTicks);
         }
+        //#endif
         particle.buildGeometry(vertexConsumer, camera, partialTicks);
     }
     //#else

@@ -42,12 +42,9 @@ import java.util.Collections;
 
 //#if MC>=10904
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.util.Hand;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 //#endif
 
 //#if MC>=10800
@@ -91,7 +88,7 @@ public class RecordingEventHandler extends EventRegistrations {
         }
     }
 
-    //#if MC>=11400
+    //#if MC>=10904
     public void onPacket(Packet<?> packet) {
         packetListener.save(packet);
     }
@@ -112,16 +109,6 @@ public class RecordingEventHandler extends EventRegistrations {
     }
 
     //#if MC>=10904
-    public void onClientSound(SoundEvent sound, SoundCategory category,
-                              double x, double y, double z, float volume, float pitch) {
-        try {
-            // Send to all other players in ServerWorldEventHandler#playSoundToAllNearExcept
-            packetListener.save(new PlaySoundS2CPacket(sound, category, x, y, z, volume, pitch));
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void onClientEffect(int type, BlockPos pos, int data) {
         try {
             // Send to all other players in ServerWorldEventHandler#playEvent
@@ -333,99 +320,6 @@ public class RecordingEventHandler extends EventRegistrations {
             e1.printStackTrace();
         }
     }
-
-    //#if FABRIC>=1
-    // FIXME fabric
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void onPickupItem(ItemPickupEvent event) {
-    //$$     try {
-            //#if MC>=11100
-            //#if MC>=11200
-            //#if MC>=11400
-            //$$ ItemStack stack = event.getStack();
-            //$$ packetListener.save(new SCollectItemPacket(
-            //$$         event.getOriginalEntity().getEntityId(),
-            //$$         event.getPlayer().getEntityId(),
-            //$$         event.getStack().getCount()
-            //$$ ));
-            //#else
-            //$$ packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId(),
-            //$$         event.pickedUp.getItem().getMaxStackSize()));
-            //#endif
-            //#else
-            //$$ packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId(),
-            //$$         event.pickedUp.getEntityItem().getMaxStackSize()));
-            //#endif
-            //#else
-            //$$ packetListener.save(new SPacketCollectItem(event.pickedUp.getEntityId(), event.player.getEntityId()));
-            //#endif
-    //$$     } catch(Exception e) {
-    //$$         e.printStackTrace();
-    //$$     }
-    //$$ }
-    //#endif
-
-    //#if MC>=11400
-    // FIXME fabric
-    //#else
-    //$$ @SubscribeEvent
-    //$$ public void onSleep(PlayerSleepInBedEvent event) {
-    //$$     try {
-            //#if MC>=10904
-            //$$ if (event.getEntityPlayer() != mc.player) {
-            //$$     return;
-            //$$ }
-            //$$
-            //$$ packetListener.save(new SPacketUseBed(event.getEntityPlayer(), event.getPos()));
-            //#else
-            //$$ if (event.entityPlayer != mc.thePlayer) {
-            //$$     return;
-            //$$ }
-            //$$
-            //$$ packetListener.save(new S0APacketUseBed(event.entityPlayer,
-                    //#if MC>=10800
-                    //$$ event.pos
-                    //#else
-                    //$$ event.x, event.y, event.z
-                    //#endif
-            //$$ ));
-            //#endif
-    //$$
-    //$$         wasSleeping = true;
-    //$$
-    //$$     } catch(Exception e) {
-    //$$         e.printStackTrace();
-    //$$     }
-    //$$ }
-    //#endif
-
-    /* FIXME event not (yet?) on 1.13
-    @SubscribeEvent
-    public void enterMinecart(MinecartInteractEvent event) {
-        try {
-            //#if MC>=10904
-            if(event.getEntity() != mc.player) {
-                return;
-            }
-
-            packetListener.save(new SPacketEntityAttach(event.getPlayer(), event.getMinecart()));
-
-            lastRiding = event.getMinecart().getEntityId();
-            //#else
-            //$$ if(event.entity != mc.thePlayer) {
-            //$$     return;
-            //$$ }
-            //$$
-            //$$ packetListener.save(new S1BPacketEntityAttach(0, event.player, event.minecart));
-            //$$
-            //$$ lastRiding = event.minecart.getEntityId();
-            //#endif
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-    */
 
     //#if MC>=10800
     public void onBlockBreakAnim(int breakerId, BlockPos pos, int progress) {
