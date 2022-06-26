@@ -8,6 +8,7 @@ import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.CameraPathExporter;
+import com.replaymod.render.EXRWriter;
 import com.replaymod.render.PNGWriter;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
@@ -55,7 +56,6 @@ import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11400
-import com.replaymod.render.EXRWriter;
 import net.minecraft.client.gui.screen.Screen;
 import java.util.concurrent.CompletableFuture;
 //#else
@@ -129,11 +129,7 @@ public class VideoRenderer implements RenderInfo {
         } else {
             FrameConsumer<BitmapFrame> frameConsumer;
             if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
-                //#if MC>=11400
-                frameConsumer = new EXRWriter(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
-                //#else
-                //$$ throw new UnsupportedOperationException("EXR requires LWJGL3");
-                //#endif
+                frameConsumer = EXRWriter.create(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
             } else if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.PNG) {
                 frameConsumer = new PNGWriter(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
             } else {

@@ -1,4 +1,3 @@
-//#if MC>=11400
 package com.replaymod.render;
 
 import com.replaymod.core.versions.MCVer;
@@ -6,6 +5,7 @@ import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.rendering.Channel;
 import com.replaymod.render.rendering.FrameConsumer;
 import com.replaymod.render.utils.ByteBufferPool;
+import com.replaymod.render.utils.Lwjgl3Loader;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.util.crash.CrashReport;
 import org.lwjgl.PointerBuffer;
@@ -26,6 +26,14 @@ import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.util.tinyexr.TinyEXR.*;
 
 public class EXRWriter implements FrameConsumer<BitmapFrame> {
+
+    public static FrameConsumer<BitmapFrame> create(Path outputFolder, boolean keepAlpha) {
+        return Lwjgl3Loader.createFrameConsumer(
+                EXRWriter.class,
+                new Class[]{ Path.class, boolean.class },
+                new Object[]{ outputFolder, keepAlpha }
+        );
+    }
 
     private final Path outputFolder;
     private final boolean keepAlpha;
@@ -128,4 +136,3 @@ public class EXRWriter implements FrameConsumer<BitmapFrame> {
     public void close() {
     }
 }
-//#endif
