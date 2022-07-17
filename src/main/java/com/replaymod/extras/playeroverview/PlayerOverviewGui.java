@@ -1,6 +1,5 @@
 package com.replaymod.extras.playeroverview;
 
-import com.replaymod.core.utils.Utils;
 import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
@@ -20,6 +19,7 @@ import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 
@@ -94,7 +94,8 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
 
         Collections.sort(players, new PlayerComparator()); // Sort by name, spectators last
         for (final PlayerEntity p : players) {
-            final Identifier texture = Utils.getResourceLocationForPlayerUUID(p.getUuid());
+            if (!(p instanceof AbstractClientPlayerEntity)) continue;
+            final Identifier texture = ((AbstractClientPlayerEntity) p).getSkinTexture();
             final GuiClickable panel = new GuiClickable().setLayout(new HorizontalLayout().setSpacing(2)).addElements(
                     new HorizontalLayout.Data(0.5), new GuiImage() {
                         @Override

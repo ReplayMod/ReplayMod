@@ -472,8 +472,8 @@ public class CameraEntity
     @Override
     public Identifier getSkinTexture() {
         Entity view = this.client.getCameraEntity();
-        if (view != this && view instanceof PlayerEntity) {
-            return Utils.getResourceLocationForPlayerUUID(view.getUuid());
+        if (view != this && view instanceof AbstractClientPlayerEntity) {
+            return ((AbstractClientPlayerEntity) view).getSkinTexture();
         }
         return super.getSkinTexture();
     }
