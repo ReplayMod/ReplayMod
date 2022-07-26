@@ -35,7 +35,7 @@ It has by now acquired a lot more sophisticated features to make it as noninvasi
 Please read the [preprocessor's README](https://github.com/ReplayMod/preprocessor/blob/master/README.md) to understand how it works.
 
 ### Versioning
-The ReplayMod uses the versioning scheme outlined [here](http://mcforge.readthedocs.io/en/latest/conventions/versioning/)
+The ReplayMod uses the versioning scheme outlined [here](https://web.archive.org/web/20161103080129/http://mcforge.readthedocs.io/en/latest/conventions/versioning/)
 with three changes:
 - No `MAJORAPI`, the ReplayMod does not provide any external API
 - "Updating to a new Minecraft version" should not increment `MAJORMOD`, we maintain one version of the ReplayMod
