@@ -8,8 +8,11 @@
     "EntityLivingBaseAccessor",
     "IntegratedServerAccessor",
     "NetworkManagerAccessor",
-    "SPacketSpawnMobAccessor",
-    "SPacketSpawnPlayerAccessor",
+    "MixinClientConnection",
+    //#if MC<11500
+    //$$ "SPacketSpawnMobAccessor",
+    //$$ "SPacketSpawnPlayerAccessor",
+    //#endif
     "MixinServerInfo",
     //#if MC>=10800
     "MixinDownloadingPackFinder",

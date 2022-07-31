@@ -63,4 +63,9 @@ public class ScreenshotWriter implements FrameConsumer<BitmapFrame> {
     public void close() throws IOException {
 
     }
+
+    @Override
+    public boolean isParallelCapable() {
+        return false;
+    }
 }

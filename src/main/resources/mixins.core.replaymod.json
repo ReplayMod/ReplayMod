@@ -18,10 +18,12 @@
     //#endif
     "MixinKeyboardListener",
     "MixinMinecraft",
-    "GuiMainMenuAccessor",
     "GuiScreenAccessor",
     "KeyBindingAccessor",
     "MinecraftAccessor",
+    //#if MC>=11900
+    //$$ "SimpleOptionAccessor",
+    //#endif
     "TimerAccessor"
   ],
   "compatibilityLevel": "JAVA_8",

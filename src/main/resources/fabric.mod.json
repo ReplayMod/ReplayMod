@@ -43,7 +43,7 @@
   "depends": {
     "fabricloader": ">=0.7.0",
     "fabric-networking-v0": "*",
-    "fabric-keybindings-v0": "*",
+    "fabric-key-binding-api-v1": "*",
     "fabric-resource-loader-v0": "*"
   },
 

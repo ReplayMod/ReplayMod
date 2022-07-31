@@ -3,8 +3,8 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     kotlin("jvm") version "1.5.21" apply false
-    id("fabric-loom") version "0.10-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "7746c47"
+    id("fabric-loom") version "0.11-SNAPSHOT" apply false
+    id("com.replaymod.preprocess") version "48e02ad"
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
@@ -190,6 +190,8 @@ val doRelease by tasks.registering {
 defaultTasks("bundleJar")
 
 preprocess {
+    val mc11901 = createNode("1.19.1", 11901, "yarn")
+    val mc11900 = createNode("1.19", 11900, "yarn")
     val mc11802 = createNode("1.18.2", 11802, "yarn")
     val mc11801 = createNode("1.18.1", 11801, "yarn")
     val mc11701 = createNode("1.17.1", 11701, "yarn")
@@ -210,6 +212,8 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc11901.link(mc11900)
+    mc11900.link(mc11802, file("versions/mapping-fabric-1.19-1.18.2.txt"))
     mc11802.link(mc11801)
     mc11801.link(mc11701, file("versions/mapping-fabric-1.18.1-1.17.1.txt"))
     mc11701.link(mc11700)

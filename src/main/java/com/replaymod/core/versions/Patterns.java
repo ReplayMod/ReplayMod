@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.gradle.remap.Pattern;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.texture.TextureManager;
@@ -14,6 +15,12 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.resource.Resource;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
@@ -43,6 +50,10 @@ import net.minecraft.client.util.Window;
 //$$ import net.minecraft.client.gui.GuiButton;
 //#endif
 
+//#if MC>=11100
+import net.minecraft.util.collection.DefaultedList;
+//#endif
+
 //#if MC>=10904
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.crash.CrashCallable;
@@ -61,6 +72,7 @@ import net.minecraft.client.render.BufferBuilder;
 //$$ import net.minecraft.entity.EntityLivingBase;
 //#endif
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -549,7 +561,9 @@ class Patterns {
 
     @Pattern
     private static void setCrashReport(MinecraftClient mc, CrashReport report) {
-        //#if MC>=11800
+        //#if MC>=11900
+        //$$ mc.setCrashReportSupplier(report);
+        //#elseif MC>=11800
         //$$ mc.setCrashReportSupplier(() -> report);
         //#else
         mc.setCrashReport(report);
@@ -571,6 +585,102 @@ class Patterns {
         return entity.getTrackedPosition();
         //#else
         //$$ return com.replaymod.core.versions.MCVer.getTrackedPosition(entity);
+        //#endif
+    }
+
+    @Pattern
+    private static Text newTextLiteral(String str) {
+        //#if MC>=11900
+        //$$ return net.minecraft.text.Text.literal(str);
+        //#else
+        return new LiteralText(str);
+        //#endif
+    }
+
+    @Pattern
+    private static Text newTextTranslatable(String key, Object...args) {
+        //#if MC>=11900
+        //$$ return net.minecraft.text.Text.translatable(key, args);
+        //#else
+        return new TranslatableText(key, args);
+        //#endif
+    }
+
+    //#if MC>=11500
+    @Pattern
+    private static Vec3d getTrackedPos(Entity entity) {
+        //#if MC>=11900
+        //$$ return entity.getTrackedPosition().withDelta(0, 0, 0);
+        //#else
+        return entity.getTrackedPosition();
+        //#endif
+    }
+    //#else
+    //$$ @Pattern private static void getTrackedPos() {}
+    //#endif
+
+    @Pattern
+    private static void setGamma(GameOptions options, double value) {
+        //#if MC>=11900
+        //$$ ((com.replaymod.core.mixin.SimpleOptionAccessor<Double>) (Object) options.getGamma()).setRawValue(value);
+        //#elseif MC>=11400
+        options.gamma = value;
+        //#else
+        //$$ options.gammaSetting = (float) value;
+        //#endif
+    }
+
+    @Pattern
+    private static double getGamma(GameOptions options) {
+        //#if MC>=11900
+        //$$ return options.getGamma().getValue();
+        //#else
+        return options.gamma;
+        //#endif
+    }
+
+    @Pattern
+    private static int getViewDistance(GameOptions options) {
+        //#if MC>=11900
+        //$$ return options.getViewDistance().getValue();
+        //#else
+        return options.viewDistance;
+        //#endif
+    }
+
+    @Pattern
+    private static double getFov(GameOptions options) {
+        //#if MC>=11900
+        //$$ return options.getFov().getValue();
+        //#else
+        return options.fov;
+        //#endif
+    }
+
+    @Pattern
+    private static int getGuiScale(GameOptions options) {
+        //#if MC>=11900
+        //$$ return options.getGuiScale().getValue();
+        //#else
+        return options.guiScale;
+        //#endif
+    }
+
+    @Pattern
+    private static Resource getResource(ResourceManager manager, Identifier id) throws IOException {
+        //#if MC>=11900
+        //$$ return manager.getResourceOrThrow(id);
+        //#else
+        return manager.getResource(id);
+        //#endif
+    }
+
+    @Pattern
+    private static List<ItemStack> DefaultedList_ofSize_ItemStack_Empty(int size) {
+        //#if MC>=11100
+        return DefaultedList.ofSize(size, ItemStack.EMPTY);
+        //#else
+        //$$ return java.util.Arrays.asList(new ItemStack[size]);
         //#endif
     }
 }

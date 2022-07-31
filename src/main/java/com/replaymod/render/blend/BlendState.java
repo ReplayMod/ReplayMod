@@ -2,7 +2,7 @@ package com.replaymod.render.blend;
 
 import com.replaymod.render.blend.data.DScene;
 import com.replaymod.render.blend.data.Serializer;
-//#if MC>=10800
+//#if MC>=10800 && MC<11900
 // FIXME 1.15
 //#if MC<11500
 //$$ import com.replaymod.render.blend.exporters.ChunkExporter;
@@ -53,7 +53,7 @@ public class BlendState implements Exporter {
         this.blenderFile = BlenderFactory.newBlenderFile(file);
         this.factory = new BlenderFactory(blenderFile);
 
-        //#if MC>=10800
+        //#if MC>=10800 && MC<11900
         RenderState renderState = new RenderState(this);
         register(renderState);
         // FIXME 1.15

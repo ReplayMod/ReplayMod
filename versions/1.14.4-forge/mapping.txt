@@ -5,6 +5,8 @@ net.minecraft.potion.EffectInstance net.minecraft.potion.PotionEffect
 net.minecraft.client.gui.screen.AddServerScreen net.minecraft.client.gui.GuiScreenAddServer
 net.minecraft.resources.AbstractResourcePack net.minecraft.client.resources.AbstractResourcePack
 net.minecraft.resources.FolderPack net.minecraft.client.resources.FolderResourcePack
+net.minecraft.resources.IResource net.minecraft.client.resources.IResource
+net.minecraft.resources.IResourceManager net.minecraft.client.resources.IResourceManager
 net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository
 net.minecraft.client.renderer.chunk.ChunkRenderTask net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator
 net.minecraft.client.settings.AbstractOption net.minecraft.client.settings.GameSettings.Options
@@ -23,6 +25,7 @@ org.lwjgl.glfw.GLFW com.replaymod.core.versions.GLFW
 net.minecraft.client.MainWindow com.replaymod.core.versions.Window
 net.minecraft.client.audio.SimpleSound net.minecraft.client.audio.PositionedSoundRecord
 net.minecraft.client.gui.IngameGui net.minecraft.client.gui.GuiIngame
+net.minecraft.util.HandSide net.minecraft.util.EnumHandSide
 
 net.minecraft.resources.FolderPack getInputStream() getInputStreamByName()
 net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()

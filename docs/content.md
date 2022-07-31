@@ -582,7 +582,10 @@ In General, the Replay Mod _should_ be compatible with most Forge and Fabric Mod
 
 ### Shaders Mod [shaders]
 _Karyonix' Shaders Mod_ is no longer compatible with Minecraft Forge starting with 1.9.4. As such it is not compatible with the Replay Mod either.
-Please use _Optifine_ instead.
+
+Below Minecraft 1.16 you can try _Optifine_ instead. Note however, that official support has ended and many versions break ReplayMod.
+
+On Minecraft 1.16.5 and up you can use _Iris_, which is fully supported. For the time being, you will have to use it with the custom _Sodium_ provided on our download page. The fix it includes is pending for the official version.
 
 ### Custom Main Menu [custom-main-menu]
 The _Custom Main Menu_ mod is often used in mod packs to customize their Main Menu with a button layout fitting the background image, links to their website / bug tracker and similar.
@@ -619,7 +622,7 @@ The _Baritone_ mod can cause a crash when you're trying to load a replay. If you
 Minecraft may crash if you try to use _RandomPatches_ together with ReplayMod. Try removing RandomPatches if Minecraft crashes on startup.
 
 ### Sodium [sodium]
-ReplayMod can record when _Sodium_ is installed but will crash during render. Disable Sodium before rendering, it can be re-enabled after that.
+ReplayMod can record when _Sodium_ is installed, but currently lacks the FREX Flawless Frames API to render. A modified build of _Sodium_, that supports this API, is available from the ReplayMod downloads, by clicking the `Click to show compatible Sodium versions` button.
 
 ### Resource Loader [resourceloader]
 The _Resource Loader_ mod is not compatible with ReplayMod.

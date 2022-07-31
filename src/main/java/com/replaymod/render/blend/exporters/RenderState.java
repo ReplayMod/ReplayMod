@@ -1,4 +1,4 @@
-//#if MC>=10800
+//#if MC>=10800 && MC<11900
 package com.replaymod.render.blend.exporters;
 
 import com.replaymod.render.blend.BlendState;

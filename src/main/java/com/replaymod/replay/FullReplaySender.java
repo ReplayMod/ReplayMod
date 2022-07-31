@@ -44,8 +44,6 @@ import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerPropertyUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.HealthUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
-import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
-import net.minecraft.network.packet.s2c.play.PaintingSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerAbilitiesS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
@@ -58,6 +56,13 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
+//#if MC>=11900
+//$$ import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
+//#else
+import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
+import net.minecraft.network.packet.s2c.play.PaintingSpawnS2CPacket;
+//#endif
 
 //#if MC>=11600
 //#else
@@ -262,6 +267,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
     /**
      * Whether to allow (process) the next player movement packet.
+     *
+     * Must only be accessed from the main thread.
      */
     protected boolean allowMovement;
 
@@ -472,11 +479,13 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         boolean relevantPacket = packet instanceof PlayerSpawnS2CPacket
                 || packet instanceof EntitySpawnS2CPacket
+                //#if MC<11900
                 || packet instanceof MobSpawnS2CPacket
+                || packet instanceof PaintingSpawnS2CPacket
+                //#endif
                 //#if MC<11600
                 //$$ || packet instanceof EntitySpawnGlobalS2CPacket
                 //#endif
-                || packet instanceof PaintingSpawnS2CPacket
                 || packet instanceof ExperienceOrbSpawnS2CPacket
                 || packet instanceof EntitiesDestroyS2CPacket;
         if (!relevantPacket) {
@@ -632,7 +641,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         if(p instanceof GameJoinS2CPacket) {
             GameJoinS2CPacket packet = (GameJoinS2CPacket) p;
             int entId = packet.getEntityId();
-            allowMovement = true;
+            schedulePacketHandler(() -> allowMovement = true);
             actualID = entId;
             entId = -1789435; // Camera entity id should be negative which is an invalid id and can't be used by servers
             //#if MC>=11400
@@ -687,6 +696,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#if MC>=11600
                     , packet.isDebugWorld()
                     , packet.isFlatWorld()
+                    //#endif
+                    //#if MC>=11900
+                    //$$ , java.util.Optional.empty()
                     //#endif
             );
             //#else
@@ -744,6 +756,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //$$ respawn.getGeneratorType(),
                     //$$ GameMode.SPECTATOR
                     //#endif
+                    //#if MC>=11900
+                    //$$ , java.util.Optional.empty()
+                    //#endif
             );
             //#else
             //#if MC>=10809
@@ -760,7 +775,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#endif
             //#endif
 
-            allowMovement = true;
+            schedulePacketHandler(() -> allowMovement = true);
         }
 
         if(p instanceof PlayerPositionLookS2CPacket) {
@@ -775,8 +790,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             });
 
             if(replayHandler.shouldSuppressCameraMovements()) return null;
-
-            CameraEntity cent = replayHandler.getCameraEntity();
 
             //#if MC>=10800
             //#if MC>=11400
@@ -799,28 +812,30 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
             //#endif
 
-            if(cent != null) {
-                if(!allowMovement && !((Math.abs(cent.getX() - ppl.getX()) > TP_DISTANCE_LIMIT) ||
-                        (Math.abs(cent.getZ() - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
-                    return null;
-                } else {
-                    allowMovement = false;
-                }
-            }
-
-            new Runnable() {
+            schedulePacketHandler(new Runnable() {
                 @Override
                 @SuppressWarnings("unchecked")
                 public void run() {
+                    // FIXME: world shouldn't ever be null at this point, now that we use the packet queue
+                    //        probably fine to remove on the next non-patch version (don't want to break stuff now)
                     if (mc.world == null || !mc.isOnThread()) {
                         ReplayMod.instance.runLater(this);
                         return;
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
+                    if (!allowMovement && !((Math.abs(cent.getX() - ppl.getX()) > TP_DISTANCE_LIMIT) ||
+                            (Math.abs(cent.getZ() - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                        return;
+                    } else {
+                        allowMovement = false;
+                    }
                     cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
+                    cent.setCameraRotation(ppl.getYaw(), ppl.getPitch(), cent.roll);
                 }
-            }.run();
+            });
+
+            return null;
         }
 
         if(p instanceof GameStateChangeS2CPacket) {
@@ -849,7 +864,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
+        //#if MC>=11900
+        //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket) {
+        //#else
         if (p instanceof GameMessageS2CPacket) {
+        //#endif
             if (!ReplayModReplay.instance.getCore().getSettingsRegistry().get(Setting.SHOW_CHAT)) {
                 return null;
             }
@@ -1251,6 +1270,22 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         //$$ }
         //#endif
         ReplayMod.instance.runTasks();
+    }
+
+    /**
+     * Runs the given runnable on the main thread as if it was a packet handler.
+     * Note that the packet handler queue has different behavior than the standard ReplayMod queue.
+     */
+    private void schedulePacketHandler(Runnable runnable) {
+        if (mc.isOnThread()) {
+            runnable.run();
+        } else {
+            //#if MC>=11400
+            mc.execute(runnable);
+            //#else
+            //$$ mc.addScheduledTask(runnable);
+            //#endif
+        }
     }
 
     protected void processPacketSync(Packet p) {

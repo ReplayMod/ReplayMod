@@ -64,11 +64,11 @@ public class GuiHandler extends EventRegistrations {
             mod.getReplayHandler().getReplaySender().setReplaySpeed(0);
 
             //#if MC>=11600
-            final TranslatableText BUTTON_OPTIONS = new TranslatableText("menu.options");
-            final TranslatableText BUTTON_EXIT_SERVER = new TranslatableText("menu.disconnect");
-            final TranslatableText BUTTON_ADVANCEMENTS = new TranslatableText("gui.advancements");
-            final TranslatableText BUTTON_STATS = new TranslatableText("gui.stats");
-            final TranslatableText BUTTON_OPEN_TO_LAN = new TranslatableText("menu.shareToLan");
+            final Text BUTTON_OPTIONS = new TranslatableText("menu.options");
+            final Text BUTTON_EXIT_SERVER = new TranslatableText("menu.disconnect");
+            final Text BUTTON_ADVANCEMENTS = new TranslatableText("gui.advancements");
+            final Text BUTTON_STATS = new TranslatableText("gui.stats");
+            final Text BUTTON_OPEN_TO_LAN = new TranslatableText("menu.shareToLan");
             //#else
             //#if MC>=11400
             //$$ final String BUTTON_OPTIONS = I18n.translate("menu.options");
@@ -138,7 +138,7 @@ public class GuiHandler extends EventRegistrations {
                     //#if MC<11400
                     //$$ openToLan = b;
                     //#endif
-                //#if MC>=11400
+                //#if MC>=11400 && MC<11901
                 } else if (id.equals(BUTTON_OPTIONS)) {
                     //#if MC>=11400
                     b.setWidth(204);

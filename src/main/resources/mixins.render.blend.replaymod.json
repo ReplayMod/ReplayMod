@@ -20,10 +20,12 @@
     "ItemRendererAccessor",
     //#endif
     "ParticleAccessor",
+    //#if MC<11900
     "MixinRenderGlobal",
     "MixinRenderItem",
     "MixinRenderLivingBase",
     "MixinRenderManager"
+    //#endif
     //#endif
   ],
   "compatibilityLevel": "JAVA_8",

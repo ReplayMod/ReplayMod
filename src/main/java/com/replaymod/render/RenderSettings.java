@@ -105,13 +105,6 @@ public class RenderSettings {
         public boolean isSupported() {
             if (this == BLEND) {
                 return RenderMethod.BLEND.isSupported();
-            } else if (this == EXR) {
-                // Need LJWGL 3
-                //#if MC>=11400
-                return true;
-                //#else
-                //$$ return false;
-                //#endif
             } else {
                 return true;
             }

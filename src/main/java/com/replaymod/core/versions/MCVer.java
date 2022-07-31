@@ -34,6 +34,7 @@ import net.minecraft.client.util.Window;
 import java.util.concurrent.CompletableFuture;
 
 //#if MC>=11600
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 //#else
 //$$ import net.minecraft.client.resource.language.I18n;
@@ -220,7 +221,7 @@ public class MCVer {
     //#if MC>=11400
     public static Optional<AbstractButtonWidget> findButton(Iterable<AbstractButtonWidget> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
         //#if MC>=11600
-        final TranslatableText message = new TranslatableText(text);
+        final Text message = new TranslatableText(text);
         //#else
         //$$ final String message = I18n.translate(text);
         //#endif

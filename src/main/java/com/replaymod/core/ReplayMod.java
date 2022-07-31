@@ -18,7 +18,6 @@ import com.replaymod.replaystudio.studio.ReplayStudio;
 import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.options.Option;
 import net.minecraft.resource.DirectoryResourcePack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
@@ -36,6 +35,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+
+//#if MC>=11900
+//#else
+import net.minecraft.client.options.Option;
+//#endif
 
 public class ReplayMod implements Module, Scheduler {
 
@@ -162,7 +166,8 @@ public class ReplayMod implements Module, Scheduler {
         keyBindingRegistry.register();
 
         // 1.7.10 crashes when render distance > 16
-        //#if MC>=10800
+        // Post 1.19 this has become non-trivial to do, install Sodium+Bobby or OptiFine if you need it
+        //#if MC>=10800 && MC<11900
         if (!MCVer.hasOptifine()) {
             Option.RENDER_DISTANCE.setMax(64f);
         }

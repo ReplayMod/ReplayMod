@@ -11,6 +11,11 @@ import net.minecraft.client.resource.ClientBuiltinResourcePackProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+//#if MC>=11900
+//$$ import java.net.MalformedURLException;
+//$$ import java.net.URL;
+//#endif
+
 //#if MC>=11400
 import net.minecraft.text.TranslatableText;
 //#else
@@ -192,7 +197,18 @@ public class ResourcePackRecorder {
     downloadResourcePack(final int requestId, String url, String hash) {
         ClientBuiltinResourcePackProvider packFinder = mc.getResourcePackDownloader();
         ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file, requestId));
-        //#if MC>=11700
+        //#if MC>=11900
+        //$$ try {
+        //$$     URL theUrl = new URL(url);
+        //$$     String protocol = theUrl.getProtocol();
+        //$$     if (!"http".equals(protocol) && !"https".equals(protocol)) {
+        //$$         throw new MalformedURLException("Unsupported protocol.");
+        //$$     }
+        //$$     return packFinder.download(theUrl, hash, true);
+        //$$ } catch (MalformedURLException e) {
+        //$$     return CompletableFuture.failedFuture(e);
+        //$$ }
+        //#elseif MC>=11700
         //$$ return packFinder.download(url, hash, true);
         //#else
         return packFinder.download(url, hash);
