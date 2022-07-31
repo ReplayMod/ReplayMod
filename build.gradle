@@ -249,6 +249,7 @@ dependencies {
                 11801: '1.18.1',
                 11802: '1.18.2',
                 11900: '1.19',
+                11901: '1.19.1',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -262,6 +263,7 @@ dependencies {
                 11801: '1.18.1+build.1:v2',
                 11802: '1.18.2+build.1:v2',
                 11900: '1.19+build.2:v2',
+                11901: '1.19.1+build.5:v2',
         ][mcVersion]
         modImplementation 'net.fabricmc:fabric-loader:0.14.6'
         def fabricApiVersion = [
@@ -276,6 +278,7 @@ dependencies {
                 11801: '0.43.1+1.18',
                 11802: '0.47.9+1.18.2',
                 11900: '0.55.3+1.19',
+                11901: '0.58.5+1.19.1',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -348,7 +351,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:74d8465", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:b2c999d", shadeExclusions
 
     // FIXME this should be pulled in by ReplayStudio, and IntelliJ sees it, but javac for some reason does not
     implementation 'com.github.viaversion:opennbt:0a02214' // 2.0-SNAPSHOT (ViaVersion Edition)
