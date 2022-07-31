@@ -58,6 +58,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 //#if MC>=11900
+//$$ import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 //#else
 import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.PaintingSpawnS2CPacket;
@@ -861,7 +862,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
+        //#if MC>=11900
+        //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket) {
+        //#else
         if (p instanceof GameMessageS2CPacket) {
+        //#endif
             if (!ReplayModReplay.instance.getCore().getSettingsRegistry().get(Setting.SHOW_CHAT)) {
                 return null;
             }
