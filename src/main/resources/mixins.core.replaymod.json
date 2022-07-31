@@ -18,7 +18,6 @@
     //#endif
     "MixinKeyboardListener",
     "MixinMinecraft",
-    "GuiMainMenuAccessor",
     "GuiScreenAccessor",
     "KeyBindingAccessor",
     "MinecraftAccessor",
