@@ -40,6 +40,10 @@ import java.util.Collections;
 //$$ import net.minecraft.network.play.server.SPacketUseBed;
 //#endif
 
+//#if MC>=11100
+import net.minecraft.util.collection.DefaultedList;
+//#endif
+
 //#if MC>=10904
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
@@ -53,6 +57,7 @@ import net.minecraft.util.math.BlockPos;
 //$$ import net.minecraft.util.MathHelper;
 //#endif
 
+import java.util.List;
 import java.util.Objects;
 
 import static com.replaymod.core.versions.MCVer.*;
@@ -63,7 +68,7 @@ public class RecordingEventHandler extends EventRegistrations {
     private final PacketListener packetListener;
 
     private Double lastX, lastY, lastZ;
-    private ItemStack[] playerItems = new ItemStack[6];
+    private final List<ItemStack> playerItems = DefaultedList.ofSize(6, ItemStack.EMPTY);
     private int ticksSinceLastCorrection;
     private boolean wasSleeping;
     private int lastRiding = -1;
@@ -260,8 +265,8 @@ public class RecordingEventHandler extends EventRegistrations {
             //$$     ItemStack stack = player.getEquipmentInSlot(slot);
             //$$     int index = slot;
             //#endif
-                if (playerItems[index] != stack) {
-                    playerItems[index] = stack;
+                if (!ItemStack.areEqual(playerItems.get(index), stack)) {
+                    playerItems.set(index, stack);
                     //#if MC>=11600
                     packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), Collections.singletonList(Pair.of(slot, stack))));
                     //#else

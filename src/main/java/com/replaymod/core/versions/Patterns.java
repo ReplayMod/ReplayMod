@@ -15,6 +15,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.text.LiteralText;
@@ -47,6 +48,10 @@ import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.util.Window;
 //#else
 //$$ import net.minecraft.client.gui.GuiButton;
+//#endif
+
+//#if MC>=11100
+import net.minecraft.util.collection.DefaultedList;
 //#endif
 
 //#if MC>=10904
@@ -667,6 +672,15 @@ class Patterns {
         //$$ return manager.getResourceOrThrow(id);
         //#else
         return manager.getResource(id);
+        //#endif
+    }
+
+    @Pattern
+    private static List<ItemStack> DefaultedList_ofSize_ItemStack_Empty(int size) {
+        //#if MC>=11100
+        return DefaultedList.ofSize(size, ItemStack.EMPTY);
+        //#else
+        //$$ return java.util.Arrays.asList(new ItemStack[size]);
         //#endif
     }
 }
