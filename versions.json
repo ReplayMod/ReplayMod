@@ -46,7 +46,9 @@
         "1.18.2-latest": "1.18.2-2.6.7",
         "1.18.2-recommended": "1.18.2-2.6.7",
         "1.19-latest": "1.19-2.6.7",
-        "1.19-recommended": "1.19-2.6.7"
+        "1.19-recommended": "1.19-2.6.7",
+        "1.19.1-latest": "1.19.1-2.6.7",
+        "1.19.1-recommended": "1.19.1-2.6.7"
     },
     "1.7.10": {
         "1.7.10-2.5.2": "See https://www.replaymod.com/changelog.txt",
@@ -592,5 +594,8 @@
     "1.19": {
         "1.19-2.6.7": "See https://www.replaymod.com/changelog.txt",
         "1.19-2.6.6": "See https://www.replaymod.com/changelog.txt"
+    },
+    "1.19.1": {
+        "1.19.1-2.6.7": "See https://www.replaymod.com/changelog.txt"
     }
 }
