@@ -254,8 +254,14 @@ public class RecordingEventHandler extends EventRegistrations {
             //#if MC>=10904
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                 ItemStack stack = player.getEquippedStack(slot);
-                if (playerItems[slot.ordinal()] != stack) {
-                    playerItems[slot.ordinal()] = stack;
+                int index = slot.ordinal();
+            //#else
+            //$$ for (int slot = 0; slot < 5; slot++) {
+            //$$     ItemStack stack = player.getEquipmentInSlot(slot);
+            //$$     int index = slot;
+            //#endif
+                if (playerItems[index] != stack) {
+                    playerItems[index] = stack;
                     //#if MC>=11600
                     packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), Collections.singletonList(Pair.of(slot, stack))));
                     //#else
@@ -263,37 +269,6 @@ public class RecordingEventHandler extends EventRegistrations {
                     //#endif
                 }
             }
-            //#else
-            //$$ if(playerItems[0] != mc.thePlayer.getHeldItem()) {
-            //$$     playerItems[0] = mc.thePlayer.getHeldItem();
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 0, playerItems[0]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //$$
-            //$$ if(playerItems[1] != mc.thePlayer.inventory.armorInventory[0]) {
-            //$$     playerItems[1] = mc.thePlayer.inventory.armorInventory[0];
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 1, playerItems[1]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //$$
-            //$$ if(playerItems[2] != mc.thePlayer.inventory.armorInventory[1]) {
-            //$$     playerItems[2] = mc.thePlayer.inventory.armorInventory[1];
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 2, playerItems[2]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //$$
-            //$$ if(playerItems[3] != mc.thePlayer.inventory.armorInventory[2]) {
-            //$$     playerItems[3] = mc.thePlayer.inventory.armorInventory[2];
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 3, playerItems[3]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //$$
-            //$$ if(playerItems[4] != mc.thePlayer.inventory.armorInventory[3]) {
-            //$$     playerItems[4] = mc.thePlayer.inventory.armorInventory[3];
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 4, playerItems[4]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //#endif
 
             //Leaving Ride
 
