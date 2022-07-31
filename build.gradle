@@ -362,8 +362,10 @@ dependencies {
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 11900) {
-            modCompileOnly 'com.terraformersmc:modmenu:3.1.0' // FIXME update
+        if (mcVersion >= 11901) {
+            modImplementation 'com.terraformersmc:modmenu:4.0.5'
+        } else if (mcVersion >= 11900) {
+            modImplementation 'com.terraformersmc:modmenu:4.0.4'
         } else if (mcVersion >= 11802) {
             modImplementation 'com.terraformersmc:modmenu:3.1.0'
         } else if (mcVersion >= 11800) {
