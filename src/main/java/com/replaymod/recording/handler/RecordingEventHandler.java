@@ -266,6 +266,9 @@ public class RecordingEventHandler extends EventRegistrations {
             //$$     int index = slot;
             //#endif
                 if (!ItemStack.areEqual(playerItems.get(index), stack)) {
+                    // ItemStack has internal mutability, so we need to make a copy now if we want to compare its
+                    // current state with future states (e.g. dropping on modern versions will set the count to zero).
+                    stack = stack != null ? stack.copy() : null;
                     playerItems.set(index, stack);
                     //#if MC>=11600
                     packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), Collections.singletonList(Pair.of(slot, stack))));
