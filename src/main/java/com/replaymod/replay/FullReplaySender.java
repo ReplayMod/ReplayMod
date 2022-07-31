@@ -832,8 +832,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                     CameraEntity cent = replayHandler.getCameraEntity();
                     cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
+                    cent.setCameraRotation(ppl.getYaw(), ppl.getPitch(), cent.roll);
                 }
             }.run();
+
+            return null;
         }
 
         if(p instanceof GameStateChangeS2CPacket) {
