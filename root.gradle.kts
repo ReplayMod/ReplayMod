@@ -94,7 +94,11 @@ fun generateVersionsJson(): Map<String, Any> {
                 // We dropped 1.7.10 with the Gradle 7 update but still kept its source in case someone
                 // volunteers to update FG 1.2 to Gradle 7.
                 .filterNot { it == "1.7.10" && versionComparator.compare(version, "2.6.0") >= 0 }
-        mcVersions.map { "$it-$version" }
+        val versions = mcVersions.map { "$it-$version" }.toMutableList()
+        when (version) {
+            "2.6.7" -> versions.add("1.19.1-2.6.7") // forgot to add the .gitkeep file before merging
+        }
+        versions
     }.flatten()
 
     val versions = commitVersions + tagVersions.reversed()
