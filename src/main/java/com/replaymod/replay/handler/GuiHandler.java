@@ -138,7 +138,7 @@ public class GuiHandler extends EventRegistrations {
                     //#if MC<11400
                     //$$ openToLan = b;
                     //#endif
-                //#if MC>=11400
+                //#if MC>=11400 && MC<11901
                 } else if (id.equals(BUTTON_OPTIONS)) {
                     //#if MC>=11400
                     b.setWidth(204);

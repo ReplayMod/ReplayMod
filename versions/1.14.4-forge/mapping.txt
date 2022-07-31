@@ -23,6 +23,7 @@ org.lwjgl.glfw.GLFW com.replaymod.core.versions.GLFW
 net.minecraft.client.MainWindow com.replaymod.core.versions.Window
 net.minecraft.client.audio.SimpleSound net.minecraft.client.audio.PositionedSoundRecord
 net.minecraft.client.gui.IngameGui net.minecraft.client.gui.GuiIngame
+net.minecraft.util.HandSide net.minecraft.util.EnumHandSide
 
 net.minecraft.resources.FolderPack getInputStream() getInputStreamByName()
 net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()

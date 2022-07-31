@@ -8,6 +8,8 @@ net.minecraft.network.play.server.S48PacketResourcePackSend getHash() func_17978
 net.minecraft.network.play.server.S08PacketPlayerPosLook getX() func_148932_c()
 net.minecraft.network.play.server.S08PacketPlayerPosLook getY() func_148928_d()
 net.minecraft.network.play.server.S08PacketPlayerPosLook getZ() func_148933_e()
+net.minecraft.network.play.server.S08PacketPlayerPosLook getYaw() func_148931_f()
+net.minecraft.network.play.server.S08PacketPlayerPosLook getPitch() func_148930_g()
 net.minecraft.network.play.server.S2BPacketChangeGameState getGameState() func_149138_c()
 net.minecraft.network.play.server.S0EPacketSpawnObject getType() func_148993_l()
 net.minecraft.network.play.server.S21PacketChunkData getChunkX() func_149273_e()

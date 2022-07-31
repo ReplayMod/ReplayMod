@@ -40,6 +40,10 @@ import java.util.Collections;
 //$$ import net.minecraft.network.play.server.SPacketUseBed;
 //#endif
 
+//#if MC>=11100
+import net.minecraft.util.collection.DefaultedList;
+//#endif
+
 //#if MC>=10904
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
@@ -53,6 +57,7 @@ import net.minecraft.util.math.BlockPos;
 //$$ import net.minecraft.util.MathHelper;
 //#endif
 
+import java.util.List;
 import java.util.Objects;
 
 import static com.replaymod.core.versions.MCVer.*;
@@ -63,7 +68,7 @@ public class RecordingEventHandler extends EventRegistrations {
     private final PacketListener packetListener;
 
     private Double lastX, lastY, lastZ;
-    private ItemStack[] playerItems = new ItemStack[6];
+    private final List<ItemStack> playerItems = DefaultedList.ofSize(6, ItemStack.EMPTY);
     private int ticksSinceLastCorrection;
     private boolean wasSleeping;
     private int lastRiding = -1;
@@ -254,8 +259,17 @@ public class RecordingEventHandler extends EventRegistrations {
             //#if MC>=10904
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                 ItemStack stack = player.getEquippedStack(slot);
-                if (playerItems[slot.ordinal()] != stack) {
-                    playerItems[slot.ordinal()] = stack;
+                int index = slot.ordinal();
+            //#else
+            //$$ for (int slot = 0; slot < 5; slot++) {
+            //$$     ItemStack stack = player.getEquipmentInSlot(slot);
+            //$$     int index = slot;
+            //#endif
+                if (!ItemStack.areEqual(playerItems.get(index), stack)) {
+                    // ItemStack has internal mutability, so we need to make a copy now if we want to compare its
+                    // current state with future states (e.g. dropping on modern versions will set the count to zero).
+                    stack = stack != null ? stack.copy() : null;
+                    playerItems.set(index, stack);
                     //#if MC>=11600
                     packetListener.save(new EntityEquipmentUpdateS2CPacket(player.getEntityId(), Collections.singletonList(Pair.of(slot, stack))));
                     //#else
@@ -263,37 +277,6 @@ public class RecordingEventHandler extends EventRegistrations {
                     //#endif
                 }
             }
-            //#else
-            //$$ if(playerItems[0] != mc.thePlayer.getHeldItem()) {
-            //$$     playerItems[0] = mc.thePlayer.getHeldItem();
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 0, playerItems[0]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //$$
-            //$$ if(playerItems[1] != mc.thePlayer.inventory.armorInventory[0]) {
-            //$$     playerItems[1] = mc.thePlayer.inventory.armorInventory[0];
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 1, playerItems[1]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //$$
-            //$$ if(playerItems[2] != mc.thePlayer.inventory.armorInventory[1]) {
-            //$$     playerItems[2] = mc.thePlayer.inventory.armorInventory[1];
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 2, playerItems[2]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //$$
-            //$$ if(playerItems[3] != mc.thePlayer.inventory.armorInventory[2]) {
-            //$$     playerItems[3] = mc.thePlayer.inventory.armorInventory[2];
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 3, playerItems[3]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //$$
-            //$$ if(playerItems[4] != mc.thePlayer.inventory.armorInventory[3]) {
-            //$$     playerItems[4] = mc.thePlayer.inventory.armorInventory[3];
-            //$$     S04PacketEntityEquipment pee = new S04PacketEntityEquipment(player.getEntityId(), 4, playerItems[4]);
-            //$$     packetListener.save(pee);
-            //$$ }
-            //#endif
 
             //Leaving Ride
 

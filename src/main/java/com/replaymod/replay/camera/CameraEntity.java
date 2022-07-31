@@ -73,6 +73,7 @@ import net.minecraft.client.recipebook.ClientRecipeBook;
 //$$ import net.minecraft.stats.RecipeBook;
 //#endif
 //#endif
+import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 //#endif
 
@@ -472,8 +473,8 @@ public class CameraEntity
     @Override
     public Identifier getSkinTexture() {
         Entity view = this.client.getCameraEntity();
-        if (view != this && view instanceof PlayerEntity) {
-            return Utils.getResourceLocationForPlayerUUID(view.getUuid());
+        if (view != this && view instanceof AbstractClientPlayerEntity) {
+            return ((AbstractClientPlayerEntity) view).getSkinTexture();
         }
         return super.getSkinTexture();
     }
@@ -495,6 +496,17 @@ public class CameraEntity
             return ((PlayerEntity) view).isPartVisible(modelPart);
         }
         return super.isPartVisible(modelPart);
+    }
+    //#endif
+
+    //#if MC>=10904
+    @Override
+    public Arm getMainArm() {
+        Entity view = this.client.getCameraEntity();
+        if (view != this && view instanceof PlayerEntity) {
+            return ((PlayerEntity) view).getMainArm();
+        }
+        return super.getMainArm();
     }
     //#endif
 
