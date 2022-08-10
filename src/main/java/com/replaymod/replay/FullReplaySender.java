@@ -57,6 +57,10 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+//#if MC>=11901
+//$$ import net.minecraft.network.packet.s2c.play.MessageHeaderS2CPacket;
+//#endif
+
 //#if MC>=11900
 //$$ import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 //#else
@@ -864,7 +868,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
-        //#if MC>=11900
+        //#if MC>=11901
+        //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof MessageHeaderS2CPacket) {
+        //#elseif MC>=11900
         //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket) {
         //#else
         if (p instanceof GameMessageS2CPacket) {
