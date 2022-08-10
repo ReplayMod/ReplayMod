@@ -704,6 +704,13 @@ public class ReplayHandler {
                         //#else
                         //$$ .processReceivedPackets();
                         //#endif
+
+                // If the packets we just sent somehow caused the client to disconnect, then the above connection tick
+                // call will have unloaded the world, and we'll have to abort what we were doing.
+                if (mc.world == null) {
+                    return;
+                }
+
                 for (Entity entity : mc.world.getEntities()) {
                     skipTeleportInterpolation(entity);
                     entity.lastRenderX = entity.prevX = entity.getX();
