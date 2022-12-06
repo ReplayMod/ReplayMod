@@ -61,7 +61,11 @@ public abstract class MixinNetHandlerPlayClient {
         if (mcStatic.player == null) return;
 
         RecordingEventHandler handler = getRecordingEventHandler();
+        //#if MC>=11903
+        //$$ if (handler != null && packet.getActions().contains(PlayerListS2CPacket.Action.ADD_PLAYER)) {
+        //#else
         if (handler != null && packet.getAction() == PlayerListS2CPacket.Action.ADD_PLAYER) {
+        //#endif
             // We cannot reference SPacketPlayerListItem.AddPlayerData directly for complicated (and yet to be
             // resolved) reasons (see https://github.com/MinecraftForge/ForgeGradle/issues/472), so we use ReplayStudio
             // to parse it instead.

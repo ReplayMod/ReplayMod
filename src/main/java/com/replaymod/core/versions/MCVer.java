@@ -15,6 +15,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
 
+//#if MC>=11700
+//$$ import net.minecraft.util.math.Matrix4f;
+//#endif
+
 //#if MC>=11604
 //#else
 //$$ import net.minecraft.entity.Entity;
@@ -27,6 +31,8 @@ import net.minecraft.resource.ResourcePackSource;
 //#if MC>=11400
 import com.replaymod.render.mixin.MainWindowAccessor;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.util.Window;
@@ -219,13 +225,23 @@ public class MCVer {
     }
 
     //#if MC>=11400
-    public static Optional<AbstractButtonWidget> findButton(Iterable<AbstractButtonWidget> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
+    public static Optional<AbstractButtonWidget> findButton(Iterable<? extends Element> buttonList, @SuppressWarnings("unused") String text, @SuppressWarnings("unused") int id) {
         //#if MC>=11600
         final Text message = new TranslatableText(text);
         //#else
         //$$ final String message = I18n.translate(text);
         //#endif
-        for (AbstractButtonWidget b : buttonList) {
+        for (Element e : buttonList) {
+            if (e instanceof ParentElement) {
+                Optional<AbstractButtonWidget> button = findButton(((ParentElement) e).children(), text, id);
+                if (button.isPresent()) {
+                    return button;
+                }
+            }
+            if (!(e instanceof AbstractButtonWidget)) {
+                continue;
+            }
+            AbstractButtonWidget b = (AbstractButtonWidget) e;
             if (message.equals(b.getMessage())) {
                 return Optional.of(b);
             }
@@ -360,6 +376,24 @@ public class MCVer {
         GlStateManager.popMatrix();
         //#endif
     }
+
+    //#if MC>=11700
+    //$$ public static net.minecraft.util.math.Quaternion quaternion(float angle, net.minecraft.util.math.Vec3f axis) {
+        //#if MC>=11903
+        //$$ return new org.joml.Quaternionf().fromAxisAngleDeg(axis.x, axis.y, axis.z, angle);
+        //#else
+        //$$ return new net.minecraft.util.math.Quaternion(axis, angle, true);
+        //#endif
+    //$$ }
+    //$$
+    //$$ public static Matrix4f ortho(float left, float right, float top, float bottom, float zNear, float zFar) {
+        //#if MC>=11903
+        //$$ return new Matrix4f().ortho(left, right, bottom, top, zNear, zFar);
+        //#else
+        //$$ return Matrix4f.projectionMatrix(left, right, top, bottom, zNear, zFar);
+        //#endif
+    //$$ }
+    //#endif
 
     public static void emitLine(BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
         emitLine(buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);

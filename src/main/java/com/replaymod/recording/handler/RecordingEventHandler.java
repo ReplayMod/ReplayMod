@@ -32,7 +32,6 @@ import net.minecraft.server.integrated.IntegratedServer;
 
 //#if MC>=11600
 import com.mojang.datafixers.util.Pair;
-import java.util.Collections;
 //#endif
 
 //#if MC>=11400
@@ -57,6 +56,7 @@ import net.minecraft.util.math.BlockPos;
 //$$ import net.minecraft.util.MathHelper;
 //#endif
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -104,7 +104,9 @@ public class RecordingEventHandler extends EventRegistrations {
             ClientPlayerEntity player = mc.player;
             assert player != null;
             packetListener.save(new PlayerSpawnS2CPacket(player));
-            //#if MC>=11500
+            //#if MC>=11903
+            //$$ packetListener.save(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker().getChangedEntries()));
+            //#elseif MC>=11500
             packetListener.save(new EntityTrackerUpdateS2CPacket(player.getEntityId(), player.getDataTracker(), true));
             //#endif
             lastX = lastY = lastZ = null;
