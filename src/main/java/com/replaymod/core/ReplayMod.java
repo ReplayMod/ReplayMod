@@ -115,7 +115,10 @@ public class ReplayMod implements Module, Scheduler {
     private static DirectoryResourcePack createJGuiResourcePack() {
         File folder = new File("../jGui/src/main/resources");
         if (!folder.exists()) {
-            return null;
+            folder = new File("../../../jGui/src/main/resources");
+            if (!folder.exists()) {
+                return null;
+            }
         }
         return new DirectoryResourcePack(folder) {
             @Override
