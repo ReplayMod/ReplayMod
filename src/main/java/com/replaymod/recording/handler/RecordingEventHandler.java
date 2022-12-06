@@ -108,6 +108,13 @@ public class RecordingEventHandler extends EventRegistrations {
             packetListener.save(new EntityTrackerUpdateS2CPacket(player.getEntityId(), player.getDataTracker(), true));
             //#endif
             lastX = lastY = lastZ = null;
+            //#if MC>=11100
+            playerItems.clear();
+            //#else
+            //$$ Collections.fill(playerItems, null);
+            //#endif
+            lastRiding = -1;
+            wasSleeping = false;
         } catch(Exception e) {
             e.printStackTrace();
         }
