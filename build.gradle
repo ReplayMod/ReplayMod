@@ -386,8 +386,10 @@ dependencies {
             modImplementation('com.terraformersmc:modmenu:1.14.15') {
                 exclude module: 'fabric-resource-loader-v0' // inappropriate version for 1.16.1
             }
-        } else {
+        } else if (mcVersion >= 11500) {
             modImplementation 'com.terraformersmc:modmenu:1.10.6'
+        } else {
+            modCompileOnly 'com.terraformersmc:modmenu:1.10.6'
         }
     }
 
