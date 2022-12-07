@@ -15,8 +15,10 @@ public abstract class Mixin_PreserveDepthDuringHandRendering {
             //#else
             //$$ method = "renderWorldPass",
             //#endif
-            //#if MC>=11400
+            //#if MC>=11500
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V"),
+            //#elseif MC>=11400
+            //$$ at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;clear(IZ)V", ordinal = 1),
             //#else
             //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;clear(I)V", ordinal = 1),
             //#endif
