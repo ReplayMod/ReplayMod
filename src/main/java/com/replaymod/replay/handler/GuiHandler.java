@@ -195,7 +195,8 @@ public class GuiHandler extends EventRegistrations {
         buttons.stream()
                 .filter(button -> button.x <= xEnd && button.x + button.getWidth() >= xStart)
                 .filter(button -> button.y <= yEnd && button.y + button.getHeight() >= yStart)
-                .forEach(button -> button.y += moveBy);
+                // FIXME remap bug: needs the {} to recognize the setter (it also doesn't understand +=)
+                .forEach(button -> { button.y = button.y + moveBy; });
     }
 
     { on(InitScreenCallback.EVENT, (screen, buttons) -> ensureReplayStopped(screen)); }
@@ -416,6 +417,9 @@ public class GuiHandler extends EventRegistrations {
                     //#endif
                     //#if MC>=11400
                     , self -> onClick.accept((InjectedButton) self)
+                    //#endif
+                    //#if MC>=11903
+                    //$$ , DEFAULT_NARRATION_SUPPLIER
                     //#endif
             );
             this.guiScreen = guiScreen;

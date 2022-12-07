@@ -17,6 +17,7 @@ net.minecraft.util.math.BlockPos net.minecraft.util.BlockPos
 net.minecraft.client.gui.GuiWorldSelection net.minecraft.client.gui.GuiSelectWorld
 net.minecraft.util.math.AxisAlignedBB net.minecraft.util.AxisAlignedBB
 net.minecraft.util.math.RayTraceResult net.minecraft.util.MovingObjectPosition
+net.minecraft.client.renderer.Matrix4f net.minecraft.util.Matrix4f
 net.minecraft.client.renderer.RenderItem net.minecraft.client.renderer.entity.RenderItem
 net.minecraft.network.play.server.SPacketSpawnMob dataManager field_149043_l
 net.minecraft.network.play.server.SPacketSpawnMob getDataManagerEntries() func_149027_c()

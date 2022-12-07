@@ -10,13 +10,18 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(GameRenderer.class)
 public abstract class Mixin_PreserveDepthDuringHandRendering {
     @ModifyArg(
-            // FIXME preprocessor bug: 1.8.9 uses method with `(FJ)V` when just name would be enough
-            //#if MC>=10809
+            //#if MC>=11400
             method = "renderWorld",
             //#else
-            //$$ method = "updateCameraAndRender(F)V",
+            //$$ method = "renderWorldPass",
             //#endif
+            //#if MC>=11500
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V"),
+            //#elseif MC>=11400
+            //$$ at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;clear(IZ)V", ordinal = 1),
+            //#else
+            //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;clear(I)V", ordinal = 1),
+            //#endif
             index = 0
     )
     private int replayModRender_skipClearWhenRecordingDepth(int mask) {

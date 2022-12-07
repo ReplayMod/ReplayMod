@@ -295,6 +295,11 @@ public class ReplayHandler {
                 networkManager,
                 mc,
                 null
+                //#if MC>=11903
+                //$$ , null
+                //$$ , false
+                //$$ , null
+                //#endif
                 //#if MC>=11400
                 , it -> {}
                 //#endif
