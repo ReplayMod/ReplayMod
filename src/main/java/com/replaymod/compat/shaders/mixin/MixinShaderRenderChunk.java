@@ -1,4 +1,4 @@
-//#if MC>=10800
+//#if MC>=10800 && MC<11800
 package com.replaymod.compat.shaders.mixin;
 
 import com.replaymod.render.hooks.EntityRendererHandler;
