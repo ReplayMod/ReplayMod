@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -39,13 +40,16 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=11600
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Quaternion;
 //#else
 //#endif
 
 //#if MC>=11400
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.util.Window;
+import net.minecraft.util.registry.Registry;
 //#else
 //$$ import net.minecraft.client.gui.GuiButton;
 //#endif
@@ -162,6 +166,42 @@ class Patterns {
         entity.setPos(x, y, z);
         //#else
         //$$ { net.minecraft.entity.Entity self = entity; self.x = x; self.y = y; self.z = z; }
+        //#endif
+    }
+
+    @Pattern
+    private static int getX(AbstractButtonWidget button) {
+        //#if MC>=11903
+        //$$ return button.getX();
+        //#else
+        return button.x;
+        //#endif
+    }
+
+    @Pattern
+    private static int getY(AbstractButtonWidget button) {
+        //#if MC>=11903
+        //$$ return button.getY();
+        //#else
+        return button.y;
+        //#endif
+    }
+
+    @Pattern
+    private static void setX(AbstractButtonWidget button, int value) {
+        //#if MC>=11903
+        //$$ button.setX(value);
+        //#else
+        button.x = value;
+        //#endif
+    }
+
+    @Pattern
+    private static void setY(AbstractButtonWidget button, int value) {
+        //#if MC>=11903
+        //$$ button.setY(value);
+        //#else
+        button.y = value;
         //#endif
     }
 
@@ -529,7 +569,7 @@ class Patterns {
     @Pattern
     private static void GL11_glRotatef(float angle, float x, float y, float z) {
         //#if MC>=11700
-        //$$ { float $angle = angle; com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(new net.minecraft.util.math.Quaternion(new net.minecraft.util.math.Vec3f(x, y, z), $angle, true)); }
+        //$$ com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(angle, new net.minecraft.util.math.Vec3f(x, y, z)));
         //#else
         GL11.glRotatef(angle, x, y, z);
         //#endif
@@ -683,4 +723,178 @@ class Patterns {
         //$$ return java.util.Arrays.asList(new ItemStack[size]);
         //#endif
     }
+
+    @Pattern
+    private static void setSoundVolume(GameOptions options, SoundCategory category, float value) {
+        //#if MC>=11903
+        //$$ options.getSoundVolumeOption(category).setValue((double) value);
+        //#else
+        options.setSoundVolume(category, value);
+        //#endif
+    }
+
+    //#if MC>=10900
+    @Pattern
+    private static SoundEvent SoundEvent_of(Identifier identifier) {
+        //#if MC>=11903
+        //$$ return SoundEvent.of(identifier);
+        //#else
+        return new SoundEvent(identifier);
+        //#endif
+    }
+    //#else
+    //$$ @Pattern private static void SoundEvent_of() {}
+    //#endif
+
+    //#if MC>=11600
+    @Pattern
+    private static Vector3f POSITIVE_X() {
+        //#if MC>=11903
+        //$$ return new org.joml.Vector3f(1, 0, 0);
+        //#else
+        return Vector3f.POSITIVE_X;
+        //#endif
+    }
+
+    @Pattern
+    private static Vector3f POSITIVE_Y() {
+        //#if MC>=11903
+        //$$ return new org.joml.Vector3f(0, 1, 0);
+        //#else
+        return Vector3f.POSITIVE_Y;
+        //#endif
+    }
+
+    @Pattern
+    private static Vector3f POSITIVE_Z() {
+        //#if MC>=11903
+        //$$ return new org.joml.Vector3f(0, 0, 1);
+        //#else
+        return Vector3f.POSITIVE_Z;
+        //#endif
+    }
+
+    @Pattern
+    private static Quaternion getDegreesQuaternion(Vector3f axis, float angle) {
+        //#if MC>=11903
+        //$$ return new org.joml.Quaternionf().fromAxisAngleDeg(axis, angle);
+        //#else
+        return axis.getDegreesQuaternion(angle);
+        //#endif
+    }
+
+    @Pattern
+    private static void Quaternion_mul(Quaternion left, Quaternion right) {
+        //#if MC>=11903
+        //$$ left.mul(right);
+        //#else
+        left.hamiltonProduct(right);
+        //#endif
+    }
+
+    @Pattern
+    private static float Quaternion_getX(Quaternion q) {
+        //#if MC>=11903
+        //$$ return q.x;
+        //#else
+        return q.getX();
+        //#endif
+    }
+
+    @Pattern
+    private static float Quaternion_getY(Quaternion q) {
+        //#if MC>=11903
+        //$$ return q.y;
+        //#else
+        return q.getY();
+        //#endif
+    }
+
+    @Pattern
+    private static float Quaternion_getZ(Quaternion q) {
+        //#if MC>=11903
+        //$$ return q.z;
+        //#else
+        return q.getZ();
+        //#endif
+    }
+
+    @Pattern
+    private static float Quaternion_getW(Quaternion q) {
+        //#if MC>=11903
+        //$$ return q.w;
+        //#else
+        return q.getW();
+        //#endif
+    }
+
+    @Pattern
+    private static Quaternion Quaternion_copy(Quaternion source) {
+        //#if MC>=11903
+        //$$ return new org.joml.Quaternionf(source);
+        //#else
+        return source.copy();
+        //#endif
+    }
+    //#else
+    //$$ @Pattern private static void POSITIVE_X() {}
+    //$$ @Pattern private static void POSITIVE_Y() {}
+    //$$ @Pattern private static void POSITIVE_Z() {}
+    //$$ @Pattern private static void getDegreesQuaternion() {}
+    //$$ @Pattern private static void Quaternion_mul() {}
+    //$$ @Pattern private static void Quaternion_getX() {}
+    //$$ @Pattern private static void Quaternion_getY() {}
+    //$$ @Pattern private static void Quaternion_getZ() {}
+    //$$ @Pattern private static void Quaternion_getW() {}
+    //$$ @Pattern private static void Quaternion_copy() {}
+    //#endif
+
+    //#if MC>=11600
+    @Pattern
+    private static void Matrix4f_multiply(Matrix4f left, Matrix4f right) {
+        //#if MC>=11903
+        //$$ left.mul(right);
+        //#else
+        left.multiply(right);
+        //#endif
+    }
+
+    @Pattern
+    private static Matrix4f Matrix4f_translate(float x, float y, float z) {
+        //#if MC>=11903
+        //$$ return new Matrix4f().translation(x, y, z);
+        //#else
+        return Matrix4f.translate(x, y, z);
+        //#endif
+    }
+    //#else
+    //$$ @Pattern private static void Matrix4f_multiply() {}
+    //$$ @Pattern private static void Matrix4f_translate() {}
+    //#endif
+
+    //#if MC>=11700
+    //$$ @Pattern
+    //$$ private static Matrix4f Matrix4f_perspectiveMatrix(float left, float right, float top, float bottom, float zNear, float zFar) {
+        //#if MC>=11903
+        //$$ return com.replaymod.core.versions.MCVer.ortho(left, right, top, bottom, zNear, zFar);
+        //#else
+        //$$ return Matrix4f.projectionMatrix(left, right, top, bottom, zNear, zFar);
+        //#endif
+    //$$ }
+    //#else
+    @Pattern private static void Matrix4f_perspectiveMatrix() {}
+    //#endif
+
+    //#if MC>=11400
+    @Pattern
+    private static Registry<? extends Registry<?>> REGISTRIES() {
+        //#if MC>=11903
+        //$$ return net.minecraft.registry.Registries.REGISTRIES;
+        //#else
+        return Registry.REGISTRIES;
+        //#endif
+    }
+    //#else
+    //$$ @Pattern private static void REGISTRIES() {}
+    //#endif
 }

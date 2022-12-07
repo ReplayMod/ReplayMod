@@ -115,9 +115,16 @@ public class ReplayMod implements Module, Scheduler {
     private static DirectoryResourcePack createJGuiResourcePack() {
         File folder = new File("../jGui/src/main/resources");
         if (!folder.exists()) {
-            return null;
+            folder = new File("../../../jGui/src/main/resources");
+            if (!folder.exists()) {
+                return null;
+            }
         }
+        //#if MC>=11903
+        //$$ return new DirectoryResourcePack(JGUI_RESOURCE_PACK_NAME, folder.toPath(), true) {
+        //#else
         return new DirectoryResourcePack(folder) {
+        //#endif
             @Override
             //#if MC>=11400
             public String getName() {
@@ -127,22 +134,36 @@ public class ReplayMod implements Module, Scheduler {
                 return JGUI_RESOURCE_PACK_NAME;
             }
 
+            //#if MC>=11903
+            //$$ @Override
+            //$$ public net.minecraft.resource.InputSupplier<InputStream> openRoot(String... segments) {
+            //$$     if (segments.length == 1 && segments[0].equals("pack.mcmeta")) {
+            //$$         return () -> new ByteArrayInputStream(generatePackMeta());
+            //$$     }
+            //$$     return super.openRoot(segments);
+            //$$ }
+            //#else
             @Override
             protected InputStream openFile(String resourceName) throws IOException {
                 try {
                     return super.openFile(resourceName);
                 } catch (IOException e) {
                     if ("pack.mcmeta".equals(resourceName)) {
-                        //#if MC>=11400
-                        int version = 4;
-                        //#else
-                        //$$ int version = 1;
-                        //#endif
-                        return new ByteArrayInputStream(("{\"pack\": {\"description\": \"dummy pack for jGui resources in dev-env\", \"pack_format\": "
-                                + version + "}}").getBytes(StandardCharsets.UTF_8));
+                        return new ByteArrayInputStream(generatePackMeta());
                     }
                     throw e;
                 }
+            }
+            //#endif
+
+            private byte[] generatePackMeta() {
+                //#if MC>=11400
+                int version = 4;
+                //#else
+                //$$ int version = 1;
+                //#endif
+                return ("{\"pack\": {\"description\": \"dummy pack for jGui resources in dev-env\", \"pack_format\": "
+                        + version + "}}").getBytes(StandardCharsets.UTF_8);
             }
         };
     }

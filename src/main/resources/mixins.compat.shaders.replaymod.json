@@ -7,9 +7,11 @@
     //#if MC>=11500
     "MixinChunkVisibility",
     //#endif
+    //#if MC>=10800 && MC<11800
+    "MixinShaderRenderChunk",
+    //#endif
     //#if MC>=10800
     "MixinShaderEntityRenderer",
-    "MixinShaderRenderChunk",
     //#else
     //$$ "MixinShaders",
     //#endif

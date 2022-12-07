@@ -111,7 +111,10 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     // but are instead played directly by the client. The server only sends these sounds to
     // other clients so we have to record them manually.
     // E.g. Block place sounds
-    //#if MC>=11900
+    //#if MC>=11903
+    //$$ @Inject(method = "playSound(Lnet/minecraft/entity/player/PlayerEntity;DDDLnet/minecraft/registry/entry/RegistryEntry;Lnet/minecraft/sound/SoundCategory;FFJ)V",
+    //$$         at = @At("HEAD"))
+    //#elseif MC>=11900
     //$$ @Inject(method = "playSound(Lnet/minecraft/entity/player/PlayerEntity;DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FFJ)V",
     //$$         at = @At("HEAD"))
     //#elseif MC>=11400
@@ -127,7 +130,13 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     //$$         at = @At("HEAD"))
     //#endif
     public void replayModRecording_recordClientSound(
-            PlayerEntity player, double x, double y, double z, SoundEvent sound, SoundCategory category,
+            PlayerEntity player, double x, double y, double z,
+            //#if MC>=11903
+            //$$ RegistryEntry<SoundEvent> sound,
+            //#else
+            SoundEvent sound,
+            //#endif
+            SoundCategory category,
             float volume, float pitch,
             //#if MC>=11900
             //$$ long seed,

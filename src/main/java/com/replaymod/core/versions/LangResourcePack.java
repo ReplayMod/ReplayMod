@@ -4,7 +4,6 @@ package com.replaymod.core.versions;
 import com.google.gson.Gson;
 import com.replaymod.core.ReplayMod;
 import net.minecraft.resource.AbstractFileResourcePack;
-import net.minecraft.resource.ResourceNotFoundException;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
@@ -16,21 +15,28 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 //#if FABRIC>=1
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 //#else
+//#endif
+
+//#if MC>=11903
+//$$ import java.util.Objects;
+//$$ import net.minecraft.resource.InputSupplier;
 //#endif
 
 //#if MC>=11400
@@ -58,7 +64,11 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
     private final Path basePath;
     public LangResourcePack() {
+        //#if MC>=11903
+        //$$ super(NAME, true);
+        //#else
         super(new File(NAME));
+        //#endif
 
         //#if FABRIC>=1
         ModContainer container = FabricLoader.getInstance().getModContainer(ReplayMod.MOD_ID).orElseThrow(IllegalAccessError::new);
@@ -110,14 +120,45 @@ public class LangResourcePack extends AbstractFileResourcePack {
         return value;
     }
 
+    //#if MC>=11903
+    //$$ @Override
+    //$$ public InputSupplier<InputStream> openRoot(String... segments) {
+    //$$     byte[] bytes;
+    //$$     try {
+    //$$         bytes = readFile(String.join("/", segments));
+    //$$     } catch (IOException e) {
+    //$$         throw new RuntimeException(e);
+    //$$     }
+    //$$     if (bytes == null) {
+    //$$         return null;
+    //$$     }
+    //$$     return () -> new ByteArrayInputStream(bytes);
+    //$$ }
+    //#endif
+
+    //#if MC>=11903
+    //$$ @Override
+    //$$ public InputSupplier<InputStream> open(ResourceType type, Identifier id) {
+    //$$     return openRoot(type.getDirectory(), id.getNamespace(), id.getPath());
+    //$$ }
+    //#else
     @Override
     protected InputStream openFile(String path) throws IOException {
+        byte[] bytes = readFile(path);
+        if (bytes == null) {
+            throw new net.minecraft.resource.ResourceNotFoundException(this.base, path);
+        }
+        return new ByteArrayInputStream(bytes);
+    }
+    //#endif
+
+    private byte[] readFile(String path) throws IOException {
         if ("pack.mcmeta".equals(path)) {
-            return new ByteArrayInputStream("{\"pack\": {\"description\": \"ReplayMod language files\", \"pack_format\": 4}}".getBytes(StandardCharsets.UTF_8));
+            return "{\"pack\": {\"description\": \"ReplayMod language files\", \"pack_format\": 4}}".getBytes(StandardCharsets.UTF_8);
         }
 
         Path langPath = langPath(path);
-        if (langPath == null) throw new ResourceNotFoundException(this.base, path);
+        if (langPath == null) return null;
 
         List<String> langFile;
         try (InputStream in = Files.newInputStream(langPath)) {
@@ -141,16 +182,25 @@ public class LangResourcePack extends AbstractFileResourcePack {
             properties.put(key, value);
         }
 
-        return new ByteArrayInputStream(GSON.toJson(properties).getBytes(StandardCharsets.UTF_8));
+        return GSON.toJson(properties).getBytes(StandardCharsets.UTF_8);
     }
 
+    //#if MC>=11903
+    //#else
     @Override
     protected boolean containsFile(String path) {
         Path langPath = langPath(path);
         return langPath != null && Files.exists(langPath);
     }
+    //#endif
 
 
+    //#if MC>=11903
+    //$$ @Override
+    //$$ public void findResources(ResourceType type, String namespace, String prefix, ResultConsumer consumer) {
+    //$$     findResources(type, prefix, id -> consumer.accept(id, () -> new ByteArrayInputStream(Objects.requireNonNull(readFile(id.getPath())))));
+    //$$ }
+    //#else
     @Override
     public Collection<Identifier> findResources(
             ResourceType resourcePackType,
@@ -162,36 +212,42 @@ public class LangResourcePack extends AbstractFileResourcePack {
             //$$ Predicate<Identifier> filter
             //#else
             int maxDepth,
-            Predicate<String> filter
+            Predicate<String> pathFilter
             //#endif
     ) {
-        if (resourcePackType == ResourceType.CLIENT_RESOURCES && "lang".equals(path)) {
-            Path base = baseLangPath();
-            //#if MC<11400
-            //$$ if (base == null) return Collections.emptyList();
-            //#endif
-            try {
-                return Files.walk(base, 1)
-                        .skip(1)
-                        .filter(Files::isRegularFile)
-                        .map(Path::getFileName).map(Path::toString)
-                        .map(LANG_FILE_NAME_PATTERN::matcher)
-                        .filter(Matcher::matches)
-                        .map(matcher -> String.format("%s_%s.json", matcher.group(1), matcher.group(1)))
-                        //#if MC<11900
-                        .filter(filter)
-                        //#endif
-                        .map(name -> new Identifier(ReplayMod.MOD_ID, "lang/" + name))
-                        //#if MC>=11900
-                        //$$ .filter(filter)
-                        //#endif
-                        .collect(Collectors.toList());
-            } catch (IOException e) {
-                e.printStackTrace();
-                return Collections.emptyList();
+        //#if MC<11900
+        Predicate<Identifier> filter = id -> pathFilter.test(id.getPath());
+        //#endif
+
+        List<Identifier> result = new ArrayList<>();
+        findResources(resourcePackType, path, id -> {
+            if (filter.test(id)) {
+                result.add(id);
             }
-        } else {
-            return Collections.emptyList();
+        });
+        return result;
+    }
+    //#endif
+
+    private void findResources(ResourceType type, String path, Consumer<Identifier> consumer) {
+        if (type != ResourceType.CLIENT_RESOURCES) return;
+        if (!"lang".equals(path)) return;
+        Path base = baseLangPath();
+        //#if MC<11400
+        //$$ if (base == null) return;
+        //#endif
+        try (Stream<Path> stream = Files.walk(base, 1)) {
+            stream
+                    .skip(1)
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName).map(Path::toString)
+                    .map(LANG_FILE_NAME_PATTERN::matcher)
+                    .filter(Matcher::matches)
+                    .map(matcher -> String.format("%s_%s.json", matcher.group(1), matcher.group(1)))
+                    .map(name -> new Identifier(ReplayMod.MOD_ID, "lang/" + name))
+                    .forEach(consumer);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

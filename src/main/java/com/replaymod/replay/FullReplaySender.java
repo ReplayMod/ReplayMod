@@ -57,6 +57,14 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+//#if MC>=11903
+//$$ import net.minecraft.network.packet.s2c.play.ProfilelessChatMessageS2CPacket;
+//#endif
+
+//#if MC==11901 || MC==11902
+//$$ import net.minecraft.network.packet.s2c.play.MessageHeaderS2CPacket;
+//#endif
+
 //#if MC>=11900
 //$$ import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 //#else
@@ -751,7 +759,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     GameMode.SPECTATOR,
                     respawn.isDebugWorld(),
                     respawn.isFlatWorld(),
-                    respawn.isWritingErrorSkippable()
+                    //#if MC>=11903
+                    //$$ (byte) 0
+                    //#else
+                    false
+                    //#endif
                     //#else
                     //$$ respawn.getGeneratorType(),
                     //$$ GameMode.SPECTATOR
@@ -864,7 +876,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
-        //#if MC>=11900
+        //#if MC>=11903
+        //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof ProfilelessChatMessageS2CPacket) {
+        //#elseif MC==11901 || MC==11902
+        //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket || p instanceof MessageHeaderS2CPacket) {
+        //#elseif MC>=11900
         //$$ if (p instanceof GameMessageS2CPacket || p instanceof ChatMessageS2CPacket) {
         //#else
         if (p instanceof GameMessageS2CPacket) {
