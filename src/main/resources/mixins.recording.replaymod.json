@@ -5,6 +5,7 @@
   "server": [],
   "client": [
     "AddServerScreenAccessor",
+    "ClientLoginNetworkHandlerAccessor",
     "EntityLivingBaseAccessor",
     "IntegratedServerAccessor",
     "NetworkManagerAccessor",
