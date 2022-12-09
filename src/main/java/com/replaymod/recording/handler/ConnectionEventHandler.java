@@ -19,6 +19,10 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.Logger;
 
+//#if MC>=11900
+//$$ import com.replaymod.recording.mixin.ClientLoginNetworkHandlerAccessor;
+//#endif
+
 //#if MC>=11600
 import net.minecraft.world.World;
 //#else
@@ -88,6 +92,15 @@ public class ConnectionEventHandler {
                 }
             }
 
+            ServerInfo serverInfo;
+            //#if MC>=11903
+            //$$ serverInfo = networkManager.getPacketListener() instanceof ClientLoginNetworkHandlerAccessor loginNetworkHandler
+            //$$         ? loginNetworkHandler.getServerInfo()
+            //$$         : null;
+            //#else
+            serverInfo = mc.getCurrentServerEntry();
+            //#endif
+
             String worldName;
             String serverName = null;
             boolean autoStart = core.getSettingsRegistry().get(Setting.AUTO_START_RECORDING);
@@ -98,8 +111,12 @@ public class ConnectionEventHandler {
                 //$$ worldName = mc.getServer().getLevelName();
                 //#endif
                 serverName = worldName;
-            } else if (mc.getCurrentServerEntry() != null) {
-                ServerInfo serverInfo = mc.getCurrentServerEntry();
+            //#if MC>=11100
+            } else if (mc.isConnectedToRealms()) {
+                // we can't access the server name without tapping too deep in the Realms Library
+                worldName = "A Realms Server";
+            //#endif
+            } else if (serverInfo != null) {
                 worldName = serverInfo.address;
                 if (!I18n.translate("selectServer.defaultName").equals(serverInfo.name)) {
                     serverName = serverInfo.name;
@@ -109,11 +126,6 @@ public class ConnectionEventHandler {
                 if (autoStartServer != null) {
                     autoStart = autoStartServer;
                 }
-            //#if MC>=11100
-            } else if (mc.isConnectedToRealms()) {
-                // we can't access the server name without tapping too deep in the Realms Library
-                worldName = "A Realms Server";
-            //#endif
             } else {
                 logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
                 return;
