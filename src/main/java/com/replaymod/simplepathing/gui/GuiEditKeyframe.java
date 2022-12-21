@@ -95,11 +95,11 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
     protected boolean canSave() {
         try {
-            long timeMin = timeMinField.getLong();
-            long timeSec = timeSecField.getLong();
-            long timeMSec = timeMSecField.getLong();
+            double timeMin = timeMinField.getDouble();
+            double timeSec = timeSecField.getDouble();
+            double timeMSec = timeMSecField.getDouble();
 
-            long newTime = (timeMin * 60 + timeSec) * 1000 + timeMSec;
+            long newTime = (long) ((timeMin * 60 + timeSec) * 1000 + timeMSec);
 
             if (newTime < 0 || newTime > guiPathing.kt.getTimeline().getLengthMillis()) {
                 return false;
@@ -122,12 +122,12 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
         title.setI18nText("replaymod.gui.editkeyframe.title." + type);
         saveButton.onClick(() -> {
-            long timeMin = timeMinField.getLong();
-            long timeSec = timeSecField.getLong();
-            long timeMSec = timeMSecField.getLong();
+            double timeMin = timeMinField.getDouble();
+            double timeSec = timeSecField.getDouble();
+            double timeMSec = timeMSecField.getDouble();
 
             Change change = save();
-            long newTime = (timeMin * 60 + timeSec) * 1000 + timeMSec;
+            long newTime = (long) ((timeMin * 60 + timeSec) * 1000 + timeMSec);
             if (newTime != time) {
                 change = CombinedChange.createFromApplied(change,
                         gui.getMod().getCurrentTimeline().moveKeyframe(path, time, newTime));
@@ -213,9 +213,9 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         @Override
         protected Change save() throws Expression.ExpressionException, ArithmeticException, NumberFormatException {
 
-            long timeMin = timestampMinField.getLong();
-            long timeSec = timestampSecField.getLong();
-            long timeMSec = timestampMSecField.getLong();
+            double timeMin = timestampMinField.getDouble();
+            double timeSec = timestampSecField.getDouble();
+            double timeMSec = timestampMSecField.getDouble();
 
             int time = (int) ((timeMin * 60 + timeSec) * 1000 + timeMSec);
 
@@ -227,11 +227,11 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
         protected boolean canSave(){
             try {
 
-                long timeMin = timestampMinField.getLong();
-                long timeSec = timestampSecField.getLong();
-                long timeMSec = timestampMSecField.getLong();
+                double timeMin = timestampMinField.getDouble();
+                double timeSec = timestampSecField.getDouble();
+                double timeMSec = timestampMSecField.getDouble();
 
-                long time = (timeMin * 60 + timeSec) * 1000 + timeMSec;
+                long time = (long) ((timeMin * 60 + timeSec) * 1000 + timeMSec);
 
                 if (time < 0) { //TODO add check to make sure time isn't longer than the replay
                     return false;
