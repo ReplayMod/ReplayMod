@@ -2,6 +2,7 @@ package com.replaymod.core;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.SharedConstants;
 
 import static com.replaymod.core.ReplayMod.MOD_ID;
 
@@ -20,7 +21,7 @@ public class ReplayModBackend implements ClientModInitializer {
     }
 
     public String getMinecraftVersion() {
-        return mod.getMinecraft().getGame().getVersion().getName();
+        return SharedConstants.getGameVersion().getName();
     }
 
     public boolean isModLoaded(String id) {

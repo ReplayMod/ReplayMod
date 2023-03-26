@@ -33,6 +33,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.util.Window;
+import net.minecraft.network.NetworkState;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -40,6 +41,10 @@ import net.minecraft.network.ClientConnection;
 
 import java.io.IOException;
 import java.util.*;
+
+//#if MC>=11904
+//$$ import net.minecraft.network.PacketBundler;
+//#endif
 
 //#if MC>=11700
 //$$ import net.minecraft.client.render.DiffuseLighting;
@@ -317,8 +322,15 @@ public class ReplayHandler {
         channel.pipeline().addLast("ReplayModReplay_quickReplaySender", quickReplaySender);
         //#endif
         channel.pipeline().addLast("ReplayModReplay_replaySender", fullReplaySender);
+        //#if MC>=11904
+        //$$ channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
+        //#endif
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
+
+        // MC usually transitions from handshake to login via the packets it sends.
+        // We don't send any packets (there is no server to receive them), so we need to switch manually.
+        networkManager.setState(NetworkState.LOGIN);
 
         //#if MC>=11400
         ((MinecraftAccessor) mc).setConnection(networkManager);
@@ -626,7 +638,9 @@ public class ReplayHandler {
                         , true
                         //#endif
                 );
+                //#if MC<11904
                 GlStateManager.enableTexture();
+                //#endif
                 mc.getFramebuffer().beginWrite(true);
                 Window window = mc.getWindow();
                 //#if MC>=11500

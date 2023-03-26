@@ -6,7 +6,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.util.profiler.Profiler;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -21,87 +20,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //$$ import net.minecraft.util.registry.RegistryEntry;
 //#endif
 
-//#if MC>=11600
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.MutableWorldProperties;
-import java.util.function.Supplier;
-//#else
-//$$ import net.minecraft.world.level.LevelProperties;
-//#endif
-
-//#if MC>=11400
-import net.minecraft.world.chunk.ChunkManager;
-//#if MC<11600
-//$$ import net.minecraft.world.dimension.Dimension;
-//#endif
-import net.minecraft.world.dimension.DimensionType;
-import java.util.function.BiFunction;
-//#else
-//$$ import net.minecraft.world.storage.ISaveHandler;
-//#if MC>=11400
-//$$ import net.minecraft.world.dimension.Dimension;
-//$$ import net.minecraft.world.storage.WorldSavedDataStorage;
-//#else
-//$$ import net.minecraft.world.WorldProvider;
-//#endif
-//#endif
-
 
 @Mixin(ClientWorld.class)
 public abstract class MixinWorldClient extends World implements RecordingEventHandler.RecordingEventSender {
     @Shadow
     private MinecraftClient client;
 
-    //#if MC>=11600
-    protected MixinWorldClient(MutableWorldProperties mutableWorldProperties, RegistryKey<World> registryKey,
-                               //#if MC<11602
-                               //$$ RegistryKey<DimensionType> registryKey2,
-                               //#endif
-                               //#if MC>=11802
-                               //$$ RegistryEntry<DimensionType> dimensionType,
-                               //#else
-                               DimensionType dimensionType,
-                               //#endif
-                               Supplier<Profiler> profiler, boolean bl, boolean bl2, long l
-                               //#if MC>=11900
-                               //$$ , int maxChainedNeighborUpdates
-                               //#endif
-    ) {
-        super(mutableWorldProperties, registryKey,
-                //#if MC<11602
-                //$$ registryKey2,
-                //#endif
-                dimensionType, profiler, bl, bl2, l
-                //#if MC>=11900
-                //$$ , maxChainedNeighborUpdates
-                //#endif
-        );
+    @SuppressWarnings("ConstantConditions")
+    protected MixinWorldClient() {
+        //#if MC>=11904
+        //$$ super(null, null, null, null, null, false, false, 0, 0);
+        //#elseif MC>=11900
+        //$$ super(null, null, null, null, false, false, 0, 0);
+        //#elseif MC>=11602
+        super(null, null, null, null, false, false, 0);
+        //#elseif MC>=11600
+        //$$ super(null, null, null, null, null, false, false, 0);
+        //#else
+        //$$ super(null, null, null, null, false);
+        //#endif
     }
-    //#else
-    //#if MC>=11400
-    //$$ protected MixinWorldClient(LevelProperties levelProperties_1, DimensionType dimensionType_1, BiFunction<World, Dimension, ChunkManager> biFunction_1, Profiler profiler_1, boolean boolean_1) {
-    //$$     super(levelProperties_1, dimensionType_1, biFunction_1, profiler_1, boolean_1);
-    //$$ }
-    //#else
-    //$$ protected MixinWorldClient(ISaveHandler saveHandlerIn,
-                               //#if MC>=11400
-                               //$$ WorldSavedDataStorage mapStorage,
-                               //#endif
-    //$$                            WorldInfo info,
-                               //#if MC>=11400
-                               //$$ Dimension providerIn,
-                               //#else
-                               //$$ WorldProvider providerIn,
-                               //#endif
-    //$$                            Profiler profilerIn, boolean client) {
-    //$$     super(saveHandlerIn,
-                //#if MC>=11400
-                //$$ mapStorage,
-                //#endif
-    //$$             info, providerIn, profilerIn, client);
-    //$$ }
-    //#endif
-    //#endif
 
     private RecordingEventHandler replayModRecording_getRecordingEventHandler() {
         return ((RecordingEventHandler.RecordingEventSender) this.client.worldRenderer).getRecordingEventHandler();

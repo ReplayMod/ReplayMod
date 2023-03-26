@@ -57,6 +57,10 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+//#if MC>=11904
+//$$ import net.minecraft.network.packet.s2c.play.PositionFlag;
+//#endif
+
 //#if MC>=11903
 //$$ import net.minecraft.network.packet.s2c.play.ProfilelessChatMessageS2CPacket;
 //#endif
@@ -804,7 +808,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             if(replayHandler.shouldSuppressCameraMovements()) return null;
 
             //#if MC>=10800
-            //#if MC>=11400
+            //#if MC>=11904
+            //$$ for (PositionFlag relative : ppl.getFlags()) {
+            //$$     if (relative == PositionFlag.X || relative == PositionFlag.Y || relative == PositionFlag.Z) {
+            //#elseif MC>=11400
             for (PlayerPositionLookS2CPacket.Flag relative : ppl.getFlags()) {
                 if (relative == PlayerPositionLookS2CPacket.Flag.X
                         || relative == PlayerPositionLookS2CPacket.Flag.Y
