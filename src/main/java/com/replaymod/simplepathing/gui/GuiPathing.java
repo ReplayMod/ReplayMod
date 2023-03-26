@@ -395,8 +395,11 @@ public class GuiPathing {
     public void keyframeRepoButtonPressed() {
         abortPathPlayback();
         try {
+            TimelineSerialization serialization = new TimelineSerialization(mod.getCurrentTimeline(), null);
+            String serialized = serialization.serialize(Collections.singletonMap("", mod.getCurrentTimeline().getTimeline()));
+            Timeline currentTimeline = serialization.deserialize(serialized).get("");
             GuiKeyframeRepository gui = new GuiKeyframeRepository(
-                    mod.getCurrentTimeline(), replayHandler.getReplayFile(), mod.getCurrentTimeline().getTimeline());
+                    mod.getCurrentTimeline(), replayHandler.getReplayFile(), currentTimeline);
             Futures.addCallback(gui.getFuture(), new FutureCallback<Timeline>() {
                 @Override
                 public void onSuccess(Timeline result) {

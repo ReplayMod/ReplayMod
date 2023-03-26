@@ -69,7 +69,9 @@ public class NoGuiScreenshot {
                             //#endif
                     );
                     mc.getFramebuffer().beginWrite(true);
+                    //#if MC<11904
                     GlStateManager.enableTexture();
+                    //#endif
 
                     float tickDelta = mc.getTickDelta();
                     //#if MC>=11500

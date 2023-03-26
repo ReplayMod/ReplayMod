@@ -20,6 +20,14 @@ public class Mixin_FixEntityNotTracking {
     private void updatePositionIfNotTracked(Entity entity) {
         if (entity != null && entity.world instanceof ClientWorldAccessor world) {
             if (!world.getEntityList().has(entity)) {
+                // This only applies to entities that are server-controlled.
+                // You wouldn't think this check is necessary but for some stupid reason Spigot sends entities before
+                // chunks, so we must not update the entity if it is being ridden by the client player because those
+                // will fall into the void and die (client-side only ofc).
+                if (entity.isLogicalSideForUpdatingMovement()) {
+                    return;
+                }
+
                 // Skip interpolation of position updates coming from server
                 // (See: newX in EntityLivingBase or otherPlayerMPX in EntityOtherPlayerMP)
                 int ticks = 0;

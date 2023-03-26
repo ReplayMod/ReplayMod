@@ -69,6 +69,11 @@ import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replaystudio.util.Utils.writeInt;
 import static java.util.Objects.requireNonNull;
 
+//#if MC>=11904
+//$$ import net.minecraft.network.PacketBundleHandler;
+//$$ import java.util.ArrayList;
+//#endif
+
 @ChannelHandler.Sharable // so we can re-order it
 public class PacketListener extends ChannelInboundHandlerAdapter {
 
@@ -341,7 +346,25 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         } else if (msg instanceof net.minecraft.network.Packet) {
             // for integrated server connections MC is passing the packet objects directly, so we need to encode them
             // ourselves to be able to store them
+            //#if MC>=11904
+            //$$ PacketBundleHandler bundleHandler = ctx.channel().attr(PacketBundleHandler.KEY).get().getBundler(NetworkSide.CLIENTBOUND);
+            //$$ List<Packet> packets = new ArrayList<>(1);
+            //$$ bundleHandler.forEachPacket((net.minecraft.network.packet.Packet<?>) msg, unbundledPacket -> {
+            //$$     try {
+            //$$         packets.add(encodeMcPacket(connectionState, unbundledPacket));
+            //$$     } catch (Exception e) {
+            //$$         throw new RuntimeException(e);
+            //$$     }
+            //$$ });
+            //$$ if (packets.size() > 1) {
+            //$$     packets.forEach(this::save);
+            //$$     super.channelRead(ctx, msg);
+            //$$     return;
+            //$$ }
+            //$$ packet = packets.isEmpty() ? null : packets.get(0);
+            //#else
             packet = encodeMcPacket(connectionState, (net.minecraft.network.Packet) msg);
+            //#endif
         }
 
         if (packet != null) {

@@ -477,7 +477,9 @@ public class VideoRenderer implements RenderInfo {
                     , false
                     //#endif
             );
+            //#if MC<11904
             GlStateManager.enableTexture();
+            //#endif
             guiWindow.beginWrite();
 
             //#if MC>=11500
