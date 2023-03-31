@@ -193,7 +193,7 @@ val doRelease by tasks.registering {
 defaultTasks("bundleJar")
 
 preprocess {
-    val mc11904 = createNode("1.19.4", 11904, "yarn")
+    val mc11904 = createNode("1.20-alpha.23.13.a", 11904, "yarn")
     val mc11903 = createNode("1.19.3", 11903, "yarn")
     val mc11902 = createNode("1.19.2", 11902, "yarn")
     val mc11901 = createNode("1.19.1", 11901, "yarn")
