@@ -5,7 +5,6 @@ import com.replaymod.core.mixin.GuiScreenAccessor;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.version.ProtocolVersion;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
-import de.johni0702.minecraft.gui.MinecraftGuiRenderer;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
@@ -422,7 +421,7 @@ public class MCVer {
     }
 
     public static void bindTexture(Identifier id) {
-        new MinecraftGuiRenderer(null).bindTexture(id);
+        de.johni0702.minecraft.gui.versions.MCVer.bindTexture(id);
     }
 
     //#if MC<10900
