@@ -275,8 +275,8 @@ dependencies {
                 11502: '0.5.1+build.294-1.15',
                 11601: '0.14.0+build.371-1.16',
                 11603: '0.17.1+build.394-1.16',
-                11604: '0.25.1+build.416-1.16',
-                11701: '0.37.1+1.17',
+                11604: '0.42.0+1.16',
+                11701: '0.46.1+1.17',
                 11800: '0.43.1+1.18',
                 11801: '0.43.1+1.18',
                 11802: '0.47.9+1.18.2',
@@ -295,6 +295,9 @@ dependencies {
         if (mcVersion >= 11600) {
             fabricApiModules.remove("keybindings-v0")
             fabricApiModules.add("key-binding-api-v1")
+        }
+        if (mcVersion >= 11604) {
+            fabricApiModules.add("screen-api-v1")
         }
         if (mcVersion >= 11700) {
             fabricApiModules.remove("networking-v0")
