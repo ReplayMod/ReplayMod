@@ -332,7 +332,12 @@ public class CameraEntity
     public void afterSpawn() {
         // Make sure our world is up-to-date in case of world changes
         if (this.client.world != null) {
+            // FIXME cannot use Patters because `setWorld` is `protected` in 1.20
+            //#if MC>=12000
+            //$$ this.setWorld(this.client.world);
+            //#else
             this.world = this.client.world;
+            //#endif
         }
         super.afterSpawn();
     }

@@ -9,11 +9,16 @@ import de.johni0702.minecraft.gui.versions.callbacks.RenderHudCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.math.MatrixStack;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
 import static com.replaymod.core.ReplayMod.TEXTURE_SIZE;
 import static com.mojang.blaze3d.platform.GlStateManager.*;
+
+//#if MC>=12000
+//$$ import net.minecraft.client.gui.DrawContext;
+//#else
+import net.minecraft.client.util.math.MatrixStack;
+//#endif
 
 /**
  * Renders overlay during recording.
@@ -33,7 +38,11 @@ public class GuiRecordingOverlay extends EventRegistrations {
      * Render the recording icon and text in the top left corner of the screen.
      */
     { on(RenderHudCallback.EVENT, (stack, partialTicks) -> renderRecordingIndicator(stack)); }
+    //#if MC>=12000
+    //$$ private void renderRecordingIndicator(DrawContext stack) {
+    //#else
     private void renderRecordingIndicator(MatrixStack stack) {
+    //#endif
         if (guiControls.isStopped()) return;
         if (settingsRegistry.get(Setting.INDICATOR)) {
             TextRenderer fontRenderer = mc.textRenderer;

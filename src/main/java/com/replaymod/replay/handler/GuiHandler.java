@@ -16,6 +16,10 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 
+//#if MC>=12000
+//$$ import net.minecraft.client.gui.DrawContext;
+//#endif
+
 //#if MC>=11904
 //#else
 import net.minecraft.client.MinecraftClient;
@@ -316,7 +320,10 @@ public class GuiHandler extends EventRegistrations {
                     this::onButton
             ) {
                 @Override
-                //#if MC>=11904
+                //#if MC>=12000
+                //$$ public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+                //$$     super.renderButton(context, mouseX, mouseY, delta);
+                //#elseif MC>=11904
                 //$$ public void renderButton(MatrixStack context, int mouseX, int mouseY, float delta) {
                 //$$     super.renderButton(context, mouseX, mouseY, delta);
                 //#else

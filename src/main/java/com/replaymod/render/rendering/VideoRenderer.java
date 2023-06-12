@@ -41,6 +41,11 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.client.render.RenderTickCounter;
 import org.lwjgl.glfw.GLFW;
 
+//#if MC>=12000
+//$$ import com.mojang.blaze3d.systems.VertexSorter;
+//$$ import net.minecraft.client.gui.DrawContext;
+//#endif
+
 //#if MC>=11700
 //$$ import net.minecraft.client.render.DiffuseLighting;
 //$$ import net.minecraft.util.math.Matrix4f;
@@ -492,7 +497,11 @@ public class VideoRenderer implements RenderInfo {
             //$$         (float) (window.getFramebufferHeight() / window.getScaleFactor()),
             //$$         1000,
             //$$         3000
-            //$$ ));
+            //$$     )
+                    //#if MC>=12000
+                    //$$ , VertexSorter.BY_Z
+                    //#endif
+            //$$ );
             //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
             //$$ matrixStack.loadIdentity();
             //$$ matrixStack.translate(0, 0, -2000);
@@ -544,7 +553,9 @@ public class VideoRenderer implements RenderInfo {
                 try {
                     mc.currentScreen = gui.toMinecraft();
                     mc.getOverlay().render(
-                            //#if MC>=11600
+                            //#if MC>=12000
+                            //$$ new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
+                            //#elseif MC>=11600
                             new MatrixStack(),
                             //#endif
                             mouseX, mouseY, 0);
@@ -554,7 +565,9 @@ public class VideoRenderer implements RenderInfo {
             } else {
                 gui.toMinecraft().tick();
                 gui.toMinecraft().render(
-                        //#if MC>=11600
+                        //#if MC>=12000
+                        //$$ new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
+                        //#elseif MC>=11600
                         new MatrixStack(),
                         //#endif
                         mouseX, mouseY, 0);
