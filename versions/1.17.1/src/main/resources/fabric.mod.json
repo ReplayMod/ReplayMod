@@ -29,7 +29,8 @@
       "com.replaymod.render.utils.FlawlessFrames::registerConsumer"
     ],
     "preLaunch": [
-      "com.replaymod.core.DummyChainLoadEntryPoint"
+      "com.replaymod.core.DummyChainLoadEntryPoint",
+      "com.replaymod.core.MixinExtrasInit"
     ],
     "mm:early_risers": [
       "com.replaymod.core.ReplayModMMLauncher"
