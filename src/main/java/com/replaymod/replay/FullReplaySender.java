@@ -440,7 +440,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 //#endif
                                 LightingProvider provider = world.getChunkManager().getLightingProvider();
                                 while (provider.hasUpdates()) {
+                                    //#if MC>=12000
+                                    //$$ provider.doLightUpdates();
+                                    //#else
                                     provider.doLightUpdates(Integer.MAX_VALUE, true, true);
+                                    //#endif
                                 }
                             }
                         };
@@ -712,6 +716,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#if MC>=11900
                     //$$ , java.util.Optional.empty()
                     //#endif
+                    //#if MC>=12000
+                    //$$ , packet.portalCooldown()
+                    //#endif
             );
             //#else
             //#if MC>=10800
@@ -774,6 +781,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#endif
                     //#if MC>=11900
                     //$$ , java.util.Optional.empty()
+                    //#endif
+                    //#if MC>=12000
+                    //$$ , respawn.getPortalCooldown()
                     //#endif
             );
             //#else

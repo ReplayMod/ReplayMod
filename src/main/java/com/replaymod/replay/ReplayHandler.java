@@ -42,6 +42,11 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
+//#if MC>=12000
+//$$ import com.mojang.blaze3d.systems.VertexSorter;
+//$$ import net.minecraft.client.gui.DrawContext;
+//#endif
+
 //#if MC>=11904
 //$$ import net.minecraft.network.PacketBundler;
 //#endif
@@ -653,7 +658,11 @@ public class ReplayHandler {
                 //$$         (float) (window.getFramebufferHeight() / window.getScaleFactor()),
                 //$$         1000,
                 //$$         3000
-                //$$ ));
+                //$$     )
+                        //#if MC>=12000
+                        //$$ , VertexSorter.BY_Z
+                        //#endif
+                //$$ );
                 //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
                 //$$ matrixStack.loadIdentity();
                 //$$ matrixStack.translate(0, 0, -2000);
@@ -676,7 +685,9 @@ public class ReplayHandler {
                 //#endif
 
                 guiScreen.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
-                //#if MC>=11600
+                //#if MC>=12000
+                //$$ guiScreen.toMinecraft().render(new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()), 0, 0, 0);
+                //#elseif MC>=11600
                 guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
                 //#else
                 //#if MC>=11400

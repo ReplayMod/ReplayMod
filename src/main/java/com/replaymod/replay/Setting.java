@@ -12,6 +12,7 @@ public final class Setting<T> extends SettingsRegistry.SettingKeys<T> {
     public static final SettingsRegistry.MultipleChoiceSettingKeys<String> CAMERA =
             new SettingsRegistry.MultipleChoiceSettingKeys<>(
                     "replay", "camera", "replaymod.gui.settings.camera", "replaymod.camera.classic");
+    public static final Setting<Boolean> LEGACY_MAIN_MENU_BUTTON = new Setting<>("legacyMainMenuButton", false);
     public static final SettingsRegistry.MultipleChoiceSettingKeys<String> MAIN_MENU_BUTTON =
             new SettingsRegistry.MultipleChoiceSettingKeys<>(
                     "replay", "mainMenuButton", null, MainMenuButtonPosition.DEFAULT.name());

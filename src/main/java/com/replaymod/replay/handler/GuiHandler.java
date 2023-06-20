@@ -16,6 +16,27 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 
+//#if MC>=12000
+//$$ import net.minecraft.client.gui.DrawContext;
+//#endif
+
+//#if MC>=11904
+//#else
+import net.minecraft.client.MinecraftClient;
+//#endif
+
+//#if MC>=11903
+//$$ import net.minecraft.client.gui.tooltip.Tooltip;
+//#endif
+
+//#if MC>=11604
+import de.johni0702.minecraft.gui.MinecraftGuiRenderer;
+import net.fabricmc.fabric.api.client.screen.v1.Screens;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.client.util.math.MatrixStack;
+//#endif
+
 //#if MC>=11600
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -36,6 +57,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -124,6 +146,7 @@ public class GuiHandler extends EventRegistrations {
                             b.getWidth(),
                             b.getHeight(),
                             "replaymod.gui.exit",
+                            null,
                             this::onButton
                     ));
                 } else if (id.equals(BUTTON_ADVANCEMENTS)) {
@@ -226,6 +249,119 @@ public class GuiHandler extends EventRegistrations {
             return;
         }
 
+        //#if MC>=11604
+        if (mod.getCore().getSettingsRegistry().get(Setting.LEGACY_MAIN_MENU_BUTTON)) {
+            legacyInjectIntoMainMenu(guiScreen, buttonList);
+        } else {
+            properInjectIntoMainMenu(guiScreen);
+        }
+        //#else
+        //$$ legacyInjectIntoMainMenu(guiScreen, buttonList);
+        //#endif
+    }
+
+    //#if MC>=11604
+    private void properInjectIntoMainMenu(Screen screen) {
+        List<AbstractButtonWidget> buttonList = Screens.getButtons(screen);
+        MainMenuButtonPosition buttonPosition = MainMenuButtonPosition.valueOf(mod.getCore().getSettingsRegistry().get(Setting.MAIN_MENU_BUTTON));
+
+        // Workaround for FancyMenu v2 initializing the screen twice, likely fixed in v3
+        if (isFancyMenu2Installed()) {
+            for (AbstractButtonWidget button : buttonList) {
+                if (button instanceof InjectedButton) {
+                    return;
+                }
+            }
+        }
+
+        Point pos;
+        if (buttonPosition == MainMenuButtonPosition.BIG) {
+            int x = screen.width / 2 - 100;
+            // We want to position our button below the realms button
+            Optional<AbstractButtonWidget> targetButton = findButton(buttonList, "menu.online", 14)
+                    .map(Optional::of)
+                    // or, if someone removed the realms button, we'll alternatively take the multiplayer one
+                    .orElseGet(() -> findButton(buttonList, "menu.multiplayer", 2));
+
+            int y = targetButton
+                    // if we found some button, put our button at its position (we'll move it out of the way shortly)
+                    .map(it -> it.y)
+                    // and if we can't even find that one, then just guess
+                    .orElse(screen.height / 4 + 10 + 4 * 24);
+
+            // Move all buttons above or at our one upwards
+            moveAllButtonsInRect(buttonList,
+                    x, x + 200,
+                    Integer.MIN_VALUE, y,
+                    -24);
+
+            pos = new Point(x, y);
+        } else {
+            pos = determineButtonPos(buttonPosition, screen, buttonList);
+        }
+
+        AbstractButtonWidget replayViewerButton;
+        if (buttonPosition == MainMenuButtonPosition.BIG) {
+            replayViewerButton = new InjectedButton(
+                    screen, BUTTON_REPLAY_VIEWER,
+                    pos.getX(), pos.getY(),
+                    200, 20,
+                    "replaymod.gui.replayviewer",
+                    null,
+                    this::onButton
+            );
+        } else {
+            replayViewerButton = new InjectedButton(
+                    screen, BUTTON_REPLAY_VIEWER,
+                    pos.getX(), pos.getY(),
+                    20, 20,
+                    "",
+                    "replaymod.gui.replayviewer",
+                    this::onButton
+            ) {
+                @Override
+                //#if MC>=12000
+                //$$ public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+                //$$     super.renderButton(context, mouseX, mouseY, delta);
+                //#elseif MC>=11904
+                //$$ public void renderButton(MatrixStack context, int mouseX, int mouseY, float delta) {
+                //$$     super.renderButton(context, mouseX, mouseY, delta);
+                //#else
+                protected void renderBg(MatrixStack context, MinecraftClient client, int mouseX, int mouseY) {
+                    super.renderBg(context, client, mouseX, mouseY);
+                //#endif
+
+                    MinecraftGuiRenderer renderer = new MinecraftGuiRenderer(context);
+                    renderer.bindTexture(GuiReplayButton.ICON);
+                    renderer.drawTexturedRect(
+                            this.x + 3, this.y + 3,
+                            0, 0,
+                            this.width - 6, this.height - 6,
+                            1, 1,
+                            1, 1
+                    );
+                }
+            };
+        }
+
+        int index = determineButtonIndex(buttonList, replayViewerButton);
+        if (index != -1) {
+            buttonList.add(index, replayViewerButton);
+        } else {
+            buttonList.add(replayViewerButton);
+        }
+    }
+
+    private boolean isFancyMenu2Installed() {
+        ModContainer mod = FabricLoader.getInstance().getModContainer("fancymenu").orElse(null);
+        if (mod == null) {
+            return false;
+        }
+        return mod.getMetadata().getVersion().getFriendlyString().startsWith("2.");
+    }
+    //#endif
+
+    private void legacyInjectIntoMainMenu(Screen guiScreen, Collection<AbstractButtonWidget> buttonList) {
         boolean isCustomMainMenuMod = guiScreen.getClass().getName().endsWith("custommainmenu.gui.GuiFakeMain");
 
         MainMenuButtonPosition buttonPosition = MainMenuButtonPosition.valueOf(mod.getCore().getSettingsRegistry().get(Setting.MAIN_MENU_BUTTON));
@@ -280,6 +416,7 @@ public class GuiHandler extends EventRegistrations {
                 200,
                 20,
                 "replaymod.gui.replayviewer",
+                null,
                 this::onButton
         );
         //#if FABRIC<=0
@@ -356,6 +493,27 @@ public class GuiHandler extends EventRegistrations {
         }
     }
 
+    private int determineButtonIndex(Collection<AbstractButtonWidget> buttons, AbstractButtonWidget button) {
+        AbstractButtonWidget best = null;
+        int bestIndex = -1;
+
+        int index = 0;
+        for (AbstractButtonWidget other : buttons) {
+            if (other.y > button.y || other.y == button.y && other.x > button.x) {
+                index++;
+                continue;
+            }
+
+            if (best == null || other.y > best.y || other.y == best.y && other.x > best.x) {
+                best = other;
+                bestIndex = index + 1;
+            }
+
+            index++;
+        }
+        return bestIndex;
+    }
+
     //#if MC>=11400
     private void onButton(InjectedButton button) {
         Screen guiScreen = button.guiScreen;
@@ -396,6 +554,7 @@ public class GuiHandler extends EventRegistrations {
         public final int id;
         private Consumer<InjectedButton> onClick;
         public InjectedButton(Screen guiScreen, int buttonId, int x, int y, int width, int height, String buttonText,
+                              String tooltip,
                               //#if MC>=11400
                               Consumer<InjectedButton> onClick
                               //#else
@@ -418,6 +577,11 @@ public class GuiHandler extends EventRegistrations {
                     //#if MC>=11400
                     , self -> onClick.accept((InjectedButton) self)
                     //#endif
+                    //#if MC>=11600 && MC<11903
+                    , tooltip != null
+                            ? (button, matrices, mouseX, mouseY) -> guiScreen.renderTooltip(matrices, new TranslatableText(tooltip), mouseX, mouseY)
+                            : EMPTY
+                    //#endif
                     //#if MC>=11903
                     //$$ , DEFAULT_NARRATION_SUPPLIER
                     //#endif
@@ -428,6 +592,12 @@ public class GuiHandler extends EventRegistrations {
             this.onClick = onClick;
             //#else
             //$$ this.onClick = null;
+            //#endif
+
+            //#if MC>=11903
+            //$$ if (tooltip != null) {
+            //$$     setTooltip(Tooltip.of(Text.translatable(tooltip)));
+            //$$ }
             //#endif
         }
 

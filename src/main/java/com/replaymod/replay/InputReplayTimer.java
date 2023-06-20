@@ -5,6 +5,7 @@ import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraEntity;
+import de.johni0702.minecraft.gui.versions.ScreenExt;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderTickCounter;
 
@@ -78,7 +79,7 @@ public class InputReplayTimer extends WrappedTimer {
         // tick speed may vary or there may not be any ticks at all (when the replay is paused)
         if (mod.getReplayHandler() != null && mc.world != null && mc.player != null) {
             //#if MC>=11400
-            if (mc.currentScreen == null || mc.currentScreen.passEvents) {
+            if (mc.currentScreen == null || ((ScreenExt) mc.currentScreen).doesPassEvents()) {
                 GLFW.glfwPollEvents();
                 MCVer.processKeyBinds();
             }

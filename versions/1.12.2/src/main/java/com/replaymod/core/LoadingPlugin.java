@@ -30,6 +30,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
             MixinBootstrap.init();
         }
 
+        Mixins.addConfiguration("mixins.jgui.json");
         Mixins.addConfiguration("mixins.core.replaymod.json");
         Mixins.addConfiguration("mixins.recording.replaymod.json");
         Mixins.addConfiguration("mixins.render.replaymod.json");

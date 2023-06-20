@@ -897,4 +897,13 @@ class Patterns {
     //#else
     //$$ @Pattern private static void REGISTRIES() {}
     //#endif
+
+    @Pattern
+    public World getWorld(Entity entity) {
+        //#if MC>=12000
+        //$$ return entity.getWorld();
+        //#else
+        return entity.world;
+        //#endif
+    }
 }
