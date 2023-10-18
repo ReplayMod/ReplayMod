@@ -217,6 +217,17 @@ repositories {
             includeGroupByRegex 'com\\.github\\..*'
         }
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
 }
 
 configurations {
@@ -409,7 +420,7 @@ dependencies {
     }
 
     if (mcVersion >= 11600) {
-        modCompileOnly("com.github.IrisShaders:Iris:1.18.x~v1.2.0") {
+        modCompileOnly("maven.modrinth:iris:1.18.x-v1.2.0") {
             transitive = false // we do not want to upgrade our libs, we only need this to compile our mixins
         }
     }
