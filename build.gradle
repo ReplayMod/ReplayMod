@@ -312,10 +312,10 @@ dependencies {
         }
         if (mcVersion >= 11604) {
             fabricApiModules.add("screen-api-v1")
+            fabricApiModules.add("networking-api-v1")
         }
         if (mcVersion >= 11700) {
             fabricApiModules.remove("networking-v0")
-            fabricApiModules.add("networking-api-v1")
         }
         fabricApiModules.each { module ->
             modImplementation fabricApi.module("fabric-$module", fabricApiVersion)
