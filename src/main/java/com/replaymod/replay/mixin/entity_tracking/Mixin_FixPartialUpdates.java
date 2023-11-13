@@ -59,20 +59,24 @@ public class Mixin_FixPartialUpdates {
     //
     // Use correct position for rotation-only updates
     //
+    // Except for the special case of the entity riding another entity because of a second vanilla bug where it won't
+    // send tracked position updates to the client while the entity is riding...
+    // Nothing we can do in that case, fixing that would require modifying the server.
+    //
 
     @Redirect(method = "onEntityUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getX()D"))
     private double getTrackedX(Entity instance) {
-        return instance.getTrackedPosition().getX();
+        return instance.hasVehicle() ? instance.getX() : instance.getTrackedPosition().getX();
     }
 
     @Redirect(method = "onEntityUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getY()D"))
     private double getTrackedY(Entity instance) {
-        return instance.getTrackedPosition().getY();
+        return instance.hasVehicle() ? instance.getY() : instance.getTrackedPosition().getY();
     }
 
     @Redirect(method = "onEntityUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getZ()D"))
     private double getTrackedZ(Entity instance) {
-        return instance.getTrackedPosition().getZ();
+        return instance.hasVehicle() ? instance.getZ() : instance.getTrackedPosition().getZ();
     }
     //#endif
 
