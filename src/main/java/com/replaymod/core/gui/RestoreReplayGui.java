@@ -7,6 +7,7 @@ import com.replaymod.core.utils.Utils;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
+import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
 import de.johni0702.minecraft.gui.container.AbstractGuiScreen;
@@ -122,7 +123,7 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
         if (metaData != null && metaData.getDuration() == 0) {
             // Try to restore replay duration
             // We need to re-write the packet data in case there are any incomplete packets dangling at the end
-            try (ReplayInputStream in = replayFile.getPacketData(MCVer.getPacketTypeRegistry(true));
+            try (ReplayInputStream in = replayFile.getPacketData(MCVer.getPacketTypeRegistry(State.LOGIN));
                  ReplayOutputStream out = replayFile.writePacketData()) {
                 while (true) {
                     // To prevent failing at un-parsable packets and to support recovery in minimal mode,

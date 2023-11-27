@@ -264,6 +264,7 @@ dependencies {
                 11903: '1.19.3-rc3',
                 11904: '1.19.4',
                 12001: '1.20.1',
+                12002: '1.20.2',
         ][mcVersion]
         mappings 'net.fabricmc:yarn:' + [
                 11404: '1.14.4+build.16',
@@ -281,6 +282,7 @@ dependencies {
                 11903: '1.19.3-rc3+build.1:v2',
                 11904: '1.19.4+build.1:v2',
                 12001: '1.20.1+build.2:v2',
+                12002: '1.20.2+build.4:v2',
         ][mcVersion]
         modImplementation 'net.fabricmc:fabric-loader:0.14.11'
         def fabricApiVersion = [
@@ -299,6 +301,7 @@ dependencies {
                 11903: '0.68.1+1.19.3',
                 11904: '0.76.0+1.19.4',
                 12001: '0.83.1+1.20.1',
+                12002: '0.90.7+1.20.2',
         ][mcVersion]
         def fabricApiModules = [
                 "api-base",
@@ -379,7 +382,7 @@ dependencies {
 
     shadow 'com.github.ReplayMod.JavaBlend:2.79.0:a0696f8'
 
-    shadow "com.github.ReplayMod:ReplayStudio:a1e2b83", shadeExclusions
+    shadow "com.github.ReplayMod:ReplayStudio:e7a8ff7", shadeExclusions
 
     // FIXME this should be pulled in by ReplayStudio, and IntelliJ sees it, but javac for some reason does not
     implementation 'com.github.viaversion:opennbt:0a02214' // 2.0-SNAPSHOT (ViaVersion Edition)
@@ -390,7 +393,9 @@ dependencies {
     shadow 'com.github.ReplayMod:lwjgl-utils:27dcd66'
 
     if (FABRIC) {
-        if (mcVersion >= 12000) {
+        if (mcVersion >= 12002) {
+            modImplementation 'com.terraformersmc:modmenu:8.0.0'
+        } else if (mcVersion >= 12000) {
             modImplementation 'com.terraformersmc:modmenu:7.0.1'
         } else if (mcVersion >= 11904) {
             modImplementation 'com.terraformersmc:modmenu:6.1.0-rc.4'

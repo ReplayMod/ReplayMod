@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.gradle.remap.Pattern;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.render.VertexFormat;
@@ -16,6 +17,10 @@ import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.NetworkSide;
+import net.minecraft.network.NetworkState;
+import net.minecraft.network.Packet;
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.sound.SoundCategory;
@@ -59,6 +64,7 @@ import net.minecraft.util.collection.DefaultedList;
 //#endif
 
 //#if MC>=10904
+import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.crash.CrashCallable;
 //#else
@@ -904,6 +910,66 @@ class Patterns {
         //$$ return entity.getWorld();
         //#else
         return entity.world;
+        //#endif
+    }
+
+    @Pattern
+    public Object channel(CustomPayloadS2CPacket packet) {
+        //#if MC>=12002
+        //$$ return packet.payload().id();
+        //#else
+        return packet.getChannel();
+        //#endif
+    }
+
+    //#if MC>=10904
+    @Pattern
+    public Integer getPacketId(NetworkState state, NetworkSide side, Packet<?> packet) throws Exception {
+        //#if MC>=12002
+        //$$ return state.getHandler(side).getId(packet);
+        //#else
+        return state.getPacketId(side, packet);
+        //#endif
+    }
+
+    @Pattern
+    public int UnloadChunkPacket_getX(UnloadChunkS2CPacket packet) {
+        //#if MC>=12002
+        //$$ return packet.pos().x;
+        //#else
+        return packet.getX();
+        //#endif
+    }
+
+    @Pattern
+    public int UnloadChunkPacket_getZ(UnloadChunkS2CPacket packet) {
+        //#if MC>=12002
+        //$$ return packet.pos().z;
+        //#else
+        return packet.getZ();
+        //#endif
+    }
+    //#else
+    //$$ @Pattern public void getPacketId() {}
+    //$$ @Pattern public void UnloadChunkPacket_getZ() {}
+    //$$ @Pattern public void UnloadChunkPacket_getX() {}
+    //#endif
+
+    @Pattern
+    public Identifier getSkinTexture(AbstractClientPlayerEntity player) {
+        //#if MC>=12002
+        //$$ return player.getSkinTextures().texture();
+        //#else
+        return player.getSkinTexture();
+        //#endif
+    }
+
+    @Pattern
+    public boolean isDebugHudEnabled(MinecraftClient mc) {
+        //#if MC>=12002
+        //$$ return mc.getDebugHud().shouldShowDebugHud();
+        //#else
+        return mc.options.debugEnabled;
         //#endif
     }
 }

@@ -10,6 +10,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.network.NetworkState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
@@ -101,6 +102,40 @@ public class MCVer {
         //#else
         //$$ return RealmsSharedConstants.NETWORK_PROTOCOL_VERSION;
         //#endif
+    }
+
+    public static NetworkState asMc(State state) {
+        switch (state) {
+            case HANDSHAKE: return NetworkState.HANDSHAKING;
+            case STATUS: return NetworkState.STATUS;
+            case LOGIN: return NetworkState.LOGIN;
+            //#if MC>=12002
+            //$$ case CONFIGURATION: return NetworkState.CONFIGURATION;
+            //#endif
+            case PLAY: return NetworkState.PLAY;
+        }
+        throw new IllegalArgumentException("Unexpected value: " + state);
+    }
+
+    public static State fromMc(NetworkState mcState) {
+        switch (mcState) {
+            case HANDSHAKING: return State.HANDSHAKE;
+            case STATUS: return State.STATUS;
+            case LOGIN: return State.LOGIN;
+            //#if MC>=12002
+            //$$ case CONFIGURATION: return State.CONFIGURATION;
+            //#endif
+            case PLAY: return State.PLAY;
+        }
+        throw new IllegalArgumentException("Unexpected value: " + mcState);
+    }
+
+    public static PacketTypeRegistry getPacketTypeRegistry(NetworkState state) {
+        return getPacketTypeRegistry(fromMc(state));
+    }
+
+    public static PacketTypeRegistry getPacketTypeRegistry(State state) {
+        return PacketTypeRegistry.get(ProtocolVersion.getProtocol(getProtocolVersion()), state);
     }
 
     public static PacketTypeRegistry getPacketTypeRegistry(boolean loginPhase) {

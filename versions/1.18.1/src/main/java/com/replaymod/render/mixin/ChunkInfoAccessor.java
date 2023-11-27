@@ -1,4 +1,4 @@
-// 1.18+
+// 1.18 - 1.20.1
 package com.replaymod.render.mixin;
 
 import net.minecraft.client.render.chunk.ChunkBuilder;

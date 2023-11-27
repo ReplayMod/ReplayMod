@@ -10,6 +10,8 @@ import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
+import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
+import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
@@ -48,7 +50,6 @@ import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerAbilitiesS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
 import net.minecraft.network.packet.s2c.play.StatisticsS2CPacket;
 import net.minecraft.text.Text;
@@ -56,6 +57,14 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
+//#if MC>=12002
+//$$ import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
+//$$ import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
+//$$ import net.minecraft.network.packet.s2c.play.EnterReconfigurationS2CPacket;
+//#else
+import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
+//#endif
 
 //#if MC>=11904
 //$$ import net.minecraft.network.packet.s2c.play.PositionFlag;
@@ -238,9 +247,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     protected PacketData nextPacket;
 
     /**
-     * Whether we're currently reading packets from the login phase.
+     * Which protocol (state) we're currently in.
      */
-    private boolean loginPhase = true;
+    private PacketTypeRegistry registry = getPacketTypeRegistry(State.LOGIN);
 
     /**
      * Whether we need to restart the current replay. E.g. when jumping backwards in time
@@ -470,8 +479,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         int i = pb.readVarInt();
 
-        NetworkState state = loginPhase ? NetworkState.LOGIN : NetworkState.PLAY;
-        //#if MC>=11700
+        NetworkState state = asMc(registry.getState());
+        //#if MC>=12002
+        //$$ Packet p = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(i, pb);
+        //#elseif MC>=11700
         //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
         //#else
         //#if MC>=10800
@@ -493,8 +504,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             return; // MC should have enough time to tick
         }
 
-        boolean relevantPacket = packet instanceof PlayerSpawnS2CPacket
-                || packet instanceof EntitySpawnS2CPacket
+        boolean relevantPacket = packet instanceof EntitySpawnS2CPacket
+                //#if MC<12002
+                || packet instanceof PlayerSpawnS2CPacket
+                //#endif
                 //#if MC<11900
                 || packet instanceof MobSpawnS2CPacket
                 || packet instanceof PaintingSpawnS2CPacket
@@ -557,9 +570,20 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
      */
     protected Packet processPacket(Packet p) throws Exception {
         if (p instanceof LoginSuccessS2CPacket) {
-            loginPhase = false;
+            registry = registry.withLoginSuccess();
             return p;
         }
+        //#if MC>=12002
+        //$$ if (p instanceof ReadyS2CPacket) {
+        //$$     registry = registry.withState(State.PLAY);
+        //$$     return p;
+        //$$ }
+        //$$ if (p instanceof EnterReconfigurationS2CPacket) {
+        //$$     registry = registry.withState(State.CONFIGURATION);
+        //$$     hasWorldLoaded = false;
+        //$$     return p;
+        //$$ }
+        //#endif
 
         if (p instanceof CustomPayloadS2CPacket) {
             CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) p;
@@ -663,6 +687,17 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             //#if MC>=11400
             p = new GameJoinS2CPacket(
                     entId,
+                    //#if MC>=12002
+                    //$$ packet.hardcore(),
+                    //$$ packet.dimensionIds(),
+                    //$$ packet.maxPlayers(),
+                    //$$ packet.viewDistance(),
+                    //$$ packet.simulationDistance(),
+                    //$$ packet.reducedDebugInfo(),
+                    //$$ packet.showDeathScreen(),
+                    //$$ packet.doLimitedCrafting(),
+                    //$$ withSpectatorMode(packet.commonPlayerSpawnInfo())
+                    //#else
                     //#if MC>=11800
                     //$$ packet.hardcore(),
                     //#endif
@@ -719,6 +754,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#if MC>=12000
                     //$$ , packet.portalCooldown()
                     //#endif
+                    //#endif
             );
             //#else
             //#if MC>=10800
@@ -758,6 +794,10 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             PlayerRespawnS2CPacket respawn = (PlayerRespawnS2CPacket) p;
             //#if MC>=11400
             p = new PlayerRespawnS2CPacket(
+                    //#if MC>=12002
+                    //$$ withSpectatorMode(respawn.commonPlayerSpawnInfo()),
+                    //$$ (byte) 0
+                    //#else
                     //#if MC>=11600
                     respawn.method_29445(),
                     //#endif
@@ -784,6 +824,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //#endif
                     //#if MC>=12000
                     //$$ , respawn.getPortalCooldown()
+                    //#endif
                     //#endif
             );
             //#else
@@ -916,6 +957,22 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         }
     }
 
+    //#if MC>=12002
+    //$$ private CommonPlayerSpawnInfo withSpectatorMode(CommonPlayerSpawnInfo org) {
+    //$$     return new CommonPlayerSpawnInfo(
+    //$$             org.dimensionType(),
+    //$$             org.dimension(),
+    //$$             org.seed(),
+    //$$             GameMode.SPECTATOR,
+    //$$             GameMode.SPECTATOR,
+    //$$             org.isDebug(),
+    //$$             org.isFlat(),
+    //$$             org.lastDeathLocation(),
+    //$$             org.portalCooldown()
+    //$$     );
+    //$$ }
+    //#endif
+
     @Override
     @SuppressWarnings("unchecked")
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -1010,7 +1067,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 while (!terminate) {
                     synchronized (FullReplaySender.this) {
                         if (replayIn == null) {
-                            replayIn = replayFile.getPacketData(getPacketTypeRegistry(true));
+                            replayIn = replayFile.getPacketData(getPacketTypeRegistry(State.LOGIN));
                         }
                         // Packet loop
                         while (true) {
@@ -1037,7 +1094,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                                 // Read the next packet if we don't already have one
                                 if (nextPacket == null) {
-                                    nextPacket = new PacketData(replayIn, loginPhase);
+                                    nextPacket = new PacketData(replayIn);
                                 }
 
                                 int nextTimeStamp = nextPacket.timestamp;
@@ -1059,6 +1116,17 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 nextPacket = null;
 
                                 lastTimeStamp = nextTimeStamp;
+
+                                // MC as of 1.20.2 relies on autoRead, so it can update the connection state on the main
+                                // thread before the next packet is read. As such, we need to stall if that was just
+                                // enabled.
+                                // Might be safe to do the same on older versions too, but I'd rather not poke the
+                                // monster that is Forge networking.
+                                //#if MC>=12002
+                                //$$ while (!ctx.channel().config().isAutoRead()) {
+                                //$$     Thread.sleep(0, 100_000);
+                                //$$ }
+                                //#endif
 
                                 // In case we finished jumping
                                 // We need to check that we aren't planing to restart so we don't accidentally run this
@@ -1092,7 +1160,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         // Restart the replay.
                         hasWorldLoaded = false;
                         lastTimeStamp = 0;
-                        loginPhase = true;
+                        registry = getPacketTypeRegistry(State.LOGIN);
                         startFromBeginning = false;
                         nextPacket = null;
                         realTimeStart = System.currentTimeMillis();
@@ -1232,14 +1300,14 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         replayIn.close();
                         replayIn = null;
                     }
-                    loginPhase = true;
+                    registry = getPacketTypeRegistry(State.LOGIN);
                     startFromBeginning = false;
                     nextPacket = null;
                     ReplayMod.instance.runSync(replayHandler::restartedReplay);
                 }
 
                 if (replayIn == null) {
-                    replayIn = replayFile.getPacketData(getPacketTypeRegistry(true));
+                    replayIn = replayFile.getPacketData(getPacketTypeRegistry(State.LOGIN));
                 }
 
                 while (true) { // Send packets
@@ -1251,7 +1319,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             nextPacket = null;
                         } else {
                             // Otherwise read one from the input stream
-                            pd = new PacketData(replayIn, loginPhase);
+                            pd = new PacketData(replayIn);
                         }
 
                         int nextTimeStamp = pd.timestamp;
@@ -1263,6 +1331,17 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                         // Process packet
                         channelRead(ctx, pd.bytes);
+
+                        // MC as of 1.20.2 relies on autoRead, so it can update the connection state on the main
+                        // thread before the next packet is read. As such, we need to stall if that was just
+                        // enabled.
+                        // Might be safe to do the same on older versions too, but I'd rather not poke the
+                        // monster that is Forge networking.
+                        //#if MC>=12002
+                        //$$ while (!ctx.channel().config().isAutoRead()) {
+                        //$$     Thread.sleep(0, 100_000);
+                        //$$ }
+                        //#endif
                     } catch (EOFException eof) {
                         // Shit! We hit the end before finishing our job! What shall we do now?
                         // well, let's just pretend we're done...
@@ -1471,7 +1550,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         private final int timestamp;
         private final byte[] bytes;
 
-        PacketData(ReplayInputStream in, boolean loginPhase) throws IOException {
+        PacketData(ReplayInputStream in) throws IOException {
             if (ReplayMod.isMinimalMode()) {
                 // Minimal mode, we can only read our exact protocol version and cannot use ReplayStudio
                 timestamp = readInt(in);

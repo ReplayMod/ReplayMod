@@ -16,7 +16,6 @@ import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySetHeadYawS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
@@ -28,6 +27,12 @@ import net.minecraft.server.integrated.IntegratedServer;
 //$$ import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //$$ import net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent;
+//#endif
+
+//#if MC>=12002
+//$$ import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+//#else
+import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 //#endif
 
 //#if MC>=11600
@@ -103,7 +108,11 @@ public class RecordingEventHandler extends EventRegistrations {
         try {
             ClientPlayerEntity player = mc.player;
             assert player != null;
+            //#if MC>=12002
+            //$$ packetListener.save(new EntitySpawnS2CPacket(player));
+            //#else
             packetListener.save(new PlayerSpawnS2CPacket(player));
+            //#endif
             //#if MC>=11903
             //$$ packetListener.save(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker().getChangedEntries()));
             //#elseif MC>=11500

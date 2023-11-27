@@ -9,6 +9,7 @@ import com.replaymod.replaystudio.filter.SquashFilter;
 import com.replaymod.replaystudio.filter.StreamFilter;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.io.ReplayOutputStream;
+import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.replay.ReplayMetaData;
@@ -122,7 +123,7 @@ public class MarkerProcessor {
         String replayName = FilenameUtils.getBaseName(path.getFileName().toString());
         int splitCounter = 0;
 
-        PacketTypeRegistry registry = MCVer.getPacketTypeRegistry(true);
+        PacketTypeRegistry registry = MCVer.getPacketTypeRegistry(State.LOGIN);
         DimensionTracker dimensionTracker = new DimensionTracker();
         SquashFilter squashFilter = new SquashFilter(null, null, null);
 

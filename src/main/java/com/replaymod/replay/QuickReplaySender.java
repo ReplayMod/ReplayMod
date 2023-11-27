@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
+import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import com.replaymod.replaystudio.rar.RandomAccessReplay;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
@@ -30,6 +31,7 @@ import java.util.function.Consumer;
 import com.replaymod.core.utils.WrappedTimer;
 //#endif
 
+import static com.replaymod.core.versions.MCVer.asMc;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 import static com.replaymod.core.versions.MCVer.getPacketTypeRegistry;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
@@ -63,7 +65,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     public QuickReplaySender(ReplayModReplay mod, ReplayFile replayFile) {
         this.mod = mod;
-        this.replay = new RandomAccessReplay(replayFile, getPacketTypeRegistry(false)) {
+        this.replay = new RandomAccessReplay(replayFile, getPacketTypeRegistry(State.PLAY)) {
             private byte[] buf = new byte[0];
 
             @Override
@@ -78,18 +80,21 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 wrappedBuf.writerIndex(size);
                 PacketByteBuf packetByteBuf = new PacketByteBuf(wrappedBuf);
 
+                NetworkState state = asMc(packet.getRegistry().getState());
                 //#if MC>=10809
                 Packet<?> mcPacket;
                 //#else
                 //$$ Packet mcPacket;
                 //#endif
-                //#if MC>=11700
-                //$$ mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId(), packetByteBuf);
+                //#if MC>=12002
+                //$$ mcPacket = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(packet.getId(), packetByteBuf);
+                //#elseif MC>=11700
+                //$$ mcPacket = state.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId(), packetByteBuf);
                 //#elseif MC>=11500
-                mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
+                mcPacket = state.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
                 //#else
                 //$$ try {
-                //$$     mcPacket = NetworkState.PLAY.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
+                //$$     mcPacket = state.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
                 //$$ } catch (IllegalAccessException | InstantiationException e) {
                 //$$     e.printStackTrace();
                 //$$     return;
