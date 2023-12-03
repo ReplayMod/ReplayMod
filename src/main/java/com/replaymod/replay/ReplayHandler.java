@@ -42,6 +42,10 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
+//#if MC>=12003
+//$$ import net.minecraft.client.resource.server.ServerResourcePackManager;
+//#endif
+
 //#if MC>=12002
 //$$ import io.netty.channel.ChannelDuplexHandler;
 //$$ import io.netty.channel.ChannelPromise;
@@ -354,6 +358,10 @@ public class ReplayHandler {
 
         //#if MC>=11400
         ((MinecraftAccessor) mc).setConnection(networkManager);
+        //#endif
+
+        //#if MC>=12003
+        //$$ mc.getServerResourcePackProvider().init(networkManager, ServerResourcePackManager.AcceptanceStatus.ALLOWED);
         //#endif
     }
 

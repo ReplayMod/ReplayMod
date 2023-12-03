@@ -92,15 +92,23 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private static final MinecraftClient mc = getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
+    private static final ResourcePackSendS2CPacket RESOURCE_PACK_SEND_PACKET =
+            //#if MC>=12003
+            //$$ new ResourcePackSendS2CPacket(null, "", "", false, null)
+            //#elseif MC>=11700
+            //$$ new ResourcePackSendS2CPacket("", "", false, null)
+            //#else
+            new ResourcePackSendS2CPacket()
+            //#endif
+            ;
+    private static final int PACKET_ID_RESOURCE_PACK_SEND = getPacketId(NetworkState.PLAY, RESOURCE_PACK_SEND_PACKET);
+    //#if MC>=12002
+    //$$ private static final int PACKET_ID_CONFIG_RESOURCE_PACK_SEND = getPacketId(NetworkState.CONFIGURATION, RESOURCE_PACK_SEND_PACKET);
+    //#endif
     //#if MC>=11700
-    //$$ private static final int PACKET_ID_RESOURCE_PACK_SEND = getPacketId(NetworkState.PLAY, new ResourcePackSendS2CPacket("", "", false, null));
     //$$ private static final int PACKET_ID_LOGIN_COMPRESSION = getPacketId(NetworkState.LOGIN, new LoginCompressionS2CPacket(0));
     //#else
-    private static final int PACKET_ID_RESOURCE_PACK_SEND = getPacketId(NetworkState.PLAY, new ResourcePackSendS2CPacket());
     private static final int PACKET_ID_LOGIN_COMPRESSION = getPacketId(NetworkState.LOGIN, new LoginCompressionS2CPacket());
-    //#endif
-    //#if MC>=12002
-    //$$ private static final int PACKET_ID_CONFIG_RESOURCE_PACK_SEND = getPacketId(NetworkState.CONFIGURATION, new ResourcePackSendS2CPacket("", "", false, null));
     //#endif
     //#if MC<10904
     //$$ private static final int PACKET_ID_PLAY_COMPRESSION = getPacketId(EnumConnectionState.PLAY, new S46PacketSetCompressionLevel());
@@ -388,6 +396,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             ) {
                 ClientConnection connection = ctx.pipeline().get(ClientConnection.class);
                 save(resourcePackRecorder.handleResourcePack(connection, (ResourcePackSendS2CPacket) decodeMcPacket(packet)));
+                //#if MC>=12003
+                //$$ super.channelRead(ctx, msg);
+                //#endif
                 return;
             }
 
@@ -514,6 +525,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     public void setServerWasPaused() {
         this.serverWasPaused = true;
+    }
+
+    public ResourcePackRecorder getResourcePackRecorder() {
+        return resourcePackRecorder;
     }
 
     private class DecodedPacketListener extends ChannelInboundHandlerAdapter {

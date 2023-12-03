@@ -9,6 +9,7 @@ import net.minecraft.util.thread.TaskExecutor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -20,12 +21,28 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+//#if MC>=12003
+//$$ import net.minecraft.client.render.chunk.BlockBufferBuilderPool;
+//#endif
+
 @Mixin(ChunkBuilder.class)
 public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHook.IBlockOnChunkRebuilds {
+    //#if MC>=12003
+    //$$ @Shadow @Final private BlockBufferBuilderPool buffersPool;
+    //$$ @Unique
+    //$$ private int getAvailableBufferCount() {
+    //$$     return this.buffersPool.getAvailableBuilderCount();
+    //$$ }
+    //#else
     @Shadow @Final private Queue<BlockBufferBuilderStorage> threadBuffers;
+    @Unique
+    private int getAvailableBufferCount() {
+        return threadBuffers.size();
+    }
+    //#endif
 
     //#if MC>=11800
-    //$$ @org.spongepowered.asm.mixin.Unique
+    //$$ @Unique
     //$$ private boolean upload() {
     //$$     boolean anything = false;
     //$$     Runnable runnable;
@@ -52,12 +69,12 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void rememberTotalThreads(CallbackInfo ci) {
-        this.totalBufferCount = this.threadBuffers.size();
+        this.totalBufferCount = getAvailableBufferCount();
     }
 
     @Inject(method = "scheduleRunTasks", at = @At("RETURN"))
     private void notifyMainThreadIfEverythingIsDone(CallbackInfo ci) {
-        if (this.threadBuffers.size() == this.totalBufferCount) {
+        if (getAvailableBufferCount() == this.totalBufferCount) {
             // Looks like we're done, better notify the main thread in case the previous task didn't generate an upload
             this.waitingForWorkLock.lock();
             try {
@@ -84,7 +101,7 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
     private boolean waitForMainThreadWork() {
         boolean allDone = this.mailbox.<Boolean>ask(reply -> () -> {
             scheduleRunTasks();
-            reply.send(this.threadBuffers.size() == this.totalBufferCount);
+            reply.send(getAvailableBufferCount() == this.totalBufferCount);
         }).join();
 
         if (allDone) {

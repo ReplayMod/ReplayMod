@@ -1,7 +1,6 @@
 package com.replaymod.recording.packet;
 
 import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
@@ -10,6 +9,10 @@ import net.minecraft.client.options.ServerList;
 import net.minecraft.client.resource.ClientBuiltinResourcePackProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC>=12003
+//$$ import java.util.UUID;
+//#endif
 
 //#if MC>=11900
 //$$ import java.net.MalformedURLException;
@@ -55,6 +58,8 @@ import net.minecraft.network.ClientConnection;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,10 +80,10 @@ public class ResourcePackRecorder {
         this.replayFile = replayFile;
     }
 
-    public void recordResourcePack(File file, int requestId) {
+    public void recordResourcePack(Path file, int requestId) {
         try {
             // Read in resource pack file
-            byte[] bytes = Files.toByteArray(file);
+            byte[] bytes = Files.readAllBytes(file);
             // Check whether it is already known
             String hash = Hashing.sha1().hashBytes(bytes).toString();
             boolean doWrite = false; // Whether we are the first and have to write it
@@ -105,7 +110,24 @@ public class ResourcePackRecorder {
         }
     }
 
-    //#if MC>=10800
+    //#if MC>=12003
+    //$$ private final Map<UUID, Integer> mcIdToReplayId = new HashMap<>();
+    //$$
+    //$$ public synchronized ResourcePackSendS2CPacket handleResourcePack(ClientConnection netManager, ResourcePackSendS2CPacket packet) {
+    //$$     final int requestId = nextRequestId++;
+    //$$     mcIdToReplayId.put(packet.id(), requestId);
+    //$$     return new ResourcePackSendS2CPacket(packet.id(), "replay://" + requestId, "", packet.required(), packet.prompt());
+    //$$ }
+    //$$
+    //$$ public void recordResourcePack(Path file, UUID uuid) {
+    //$$     Integer id = mcIdToReplayId.get(uuid);
+    //$$     if (id == null) {
+    //$$         logger.warn("Got resource pack download for unexpected uuid " + uuid + " at " + file);
+    //$$         return;
+    //$$     }
+    //$$     recordResourcePack(file, id);
+    //$$ }
+    //#elseif MC>=10800
     public ResourcePackStatusC2SPacket makeStatusPacket(String hash, Status action) {
         //#if MC>=11002
         return new ResourcePackStatusC2SPacket(action);
@@ -128,7 +150,7 @@ public class ResourcePackRecorder {
             if (levelDir.isFile()) {
                 netManager.send(makeStatusPacket(hash, Status.ACCEPTED));
                 addCallback(setServerResourcePack(levelDir), result -> {
-                    recordResourcePack(levelDir, requestId);
+                    recordResourcePack(levelDir.toPath(), requestId);
                     netManager.send(makeStatusPacket(hash, Status.SUCCESSFULLY_LOADED));
                 }, throwable -> {
                     netManager.send(makeStatusPacket(hash, Status.FAILED_DOWNLOAD));
@@ -196,7 +218,7 @@ public class ResourcePackRecorder {
     //#endif
     downloadResourcePack(final int requestId, String url, String hash) {
         ClientBuiltinResourcePackProvider packFinder = mc.getResourcePackDownloader();
-        ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file, requestId));
+        ((IDownloadingPackFinder) packFinder).setRequestCallback(file -> recordResourcePack(file.toPath(), requestId));
         //#if MC>=11900
         //$$ try {
         //$$     URL theUrl = new URL(url);
@@ -286,7 +308,7 @@ public class ResourcePackRecorder {
     //$$                 acc.setActive(false);
     //$$                 acc.setPack(new FileResourcePack(file));
     //$$                 Minecraft.getMinecraft().scheduleResourcesRefresh();
-    //$$                 recordResourcePack(file, requestId);
+    //$$                 recordResourcePack(file.toPath(), requestId);
     //$$             }
     //$$         }
     //$$     }, hashmap, 50*1024*1024, guiScreen, Minecraft.getMinecraft().getProxy());

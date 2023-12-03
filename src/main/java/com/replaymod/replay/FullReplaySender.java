@@ -655,7 +655,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         if(p instanceof ResourcePackSendS2CPacket) {
             ResourcePackSendS2CPacket packet = (ResourcePackSendS2CPacket) p;
+            //#if MC>=12003
+            //$$ String url = packet.url();
+            //#else
             String url = packet.getURL();
+            //#endif
             if (url.startsWith("replay://")) {
         //#else
         //$$     String url;
@@ -671,7 +675,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         if (!file.exists()) {
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
+                        //#if MC>=12003
+                        //$$ mc.getServerResourcePackProvider().addResourcePack(packet.id(), file.toPath());
+                        //#else
                         setServerResourcePack(file);
+                        //#endif
                     }
                 }
                 return null;

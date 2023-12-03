@@ -8,7 +8,9 @@ import net.minecraft.client.render.RenderTickCounter;
  * Wrapper around the current timer that prevents the timer from advancing by itself.
  */
 public class ReplayTimer extends WrappedTimer {
-    //#if MC>=11400
+    //#if MC>=12003
+    //$$ private final RenderTickCounter state = new RenderTickCounter(0, 0, f -> f);
+    //#elseif MC>=11400
     private final RenderTickCounter state = new RenderTickCounter(0, 0);
     //#else
     //$$ private final Timer state = new Timer(0);

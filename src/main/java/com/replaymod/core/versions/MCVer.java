@@ -168,6 +168,7 @@ public class MCVer {
     //$$ }
     //#endif
 
+    //#if MC<12003
     public static
     //#if MC>=11400
     CompletableFuture<?>
@@ -195,6 +196,7 @@ public class MCVer {
         //#endif
         //#endif
     }
+    //#endif
 
     public static <T> void addCallback(
             //#if MC>=11400
