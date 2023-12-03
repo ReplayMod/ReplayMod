@@ -80,7 +80,7 @@ public class Utils {
     static {
         Image thumbnail;
         try {
-            thumbnail = Image.read(getResourceAsStream("/default_thumb.jpg"));
+            thumbnail = Image.read(getResourceAsStream("/default_thumb.png"));
         } catch (Exception e) {
             thumbnail = new Image(1, 1);
             e.printStackTrace();
