@@ -2,6 +2,7 @@ package com.replaymod.recording.mixin;
 
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.handler.RecordingEventHandler;
+import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
@@ -78,7 +79,7 @@ public abstract class MixinNetHandlerPlayClient {
                 byteBuf.readBytes(array);
 
                 for (PacketPlayerListEntry data : PacketPlayerListEntry.read(new Packet(
-                        MCVer.getPacketTypeRegistry(false), 0, PacketType.PlayerListEntry,
+                        MCVer.getPacketTypeRegistry(State.PLAY), 0, PacketType.PlayerListEntry,
                         com.github.steveice10.netty.buffer.Unpooled.wrappedBuffer(array)
                 ))) {
                     if (data.getUuid() == null) continue;

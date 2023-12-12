@@ -33,9 +33,15 @@ public class Lwjgl3Loader extends URLClassLoader {
         Path nativesDir = ReplayMod.instance.folders.getCacheFolder().resolve("lwjgl-natives");
 
         Class<?> configClass = Class.forName("org.lwjgl.system.Configuration", true, this);
-        Object extractDirField = configClass.getField("SHARED_LIBRARY_EXTRACT_DIRECTORY").get(null);
         Method setMethod = configClass.getMethod("set", Object.class);
-        setMethod.invoke(extractDirField, nativesDir.toAbsolutePath().toString());
+        setMethod.invoke(
+                configClass.getField("SHARED_LIBRARY_EXTRACT_DIRECTORY").get(null),
+                nativesDir.toAbsolutePath().toString()
+        );
+        setMethod.invoke(
+                configClass.getField("SHARED_LIBRARY_EXTRACT_PATH").get(null),
+                (Object) null
+        );
     }
 
     private boolean canBeSharedWithMc(String name) {

@@ -40,6 +40,10 @@ import net.minecraft.util.math.Box;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //#endif
 
+//#if MC>=12002
+//$$ import net.minecraft.client.util.SkinTextures;
+//#endif
+
 //#if MC>=11400
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.Fluid;
@@ -475,6 +479,16 @@ public class CameraEntity
         return super.isInvisible();
     }
 
+    //#if MC>=12002
+    //$$ @Override
+    //$$ public SkinTextures getSkinTextures() {
+    //$$     Entity view = this.client.getCameraEntity();
+    //$$     if (view != this && view instanceof AbstractClientPlayerEntity) {
+    //$$         return ((AbstractClientPlayerEntity) view).getSkinTextures();
+    //$$     }
+    //$$     return super.getSkinTextures();
+    //$$ }
+    //#else
     @Override
     public Identifier getSkinTexture() {
         Entity view = this.client.getCameraEntity();
@@ -493,7 +507,10 @@ public class CameraEntity
         }
         return super.getModel();
     }
+    //#endif
+    //#endif
 
+    //#if MC>=10800
     @Override
     public boolean isPartVisible(PlayerModelPart modelPart) {
         Entity view = this.client.getCameraEntity();

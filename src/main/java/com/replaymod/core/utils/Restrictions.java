@@ -6,7 +6,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 //#endif
 
-//#if MC<=10710
+//#if MC<=10710 || MC>=12002
 //$$ import io.netty.buffer.Unpooled;
 //#endif
 
@@ -26,7 +26,10 @@ public class Restrictions {
     private boolean onlyRecordingPlayer;
 
     public String handle(CustomPayloadS2CPacket packet) {
-        //#if MC>=10800
+        //#if MC>=12002
+        //$$ PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+        //$$ packet.write(buffer);
+        //#elseif MC>=10800
         PacketByteBuf buffer = packet.getData();
         //#else
         //$$ PacketBuffer buffer = new PacketBuffer(Unpooled.wrappedBuffer(packet.func_149168_d()));

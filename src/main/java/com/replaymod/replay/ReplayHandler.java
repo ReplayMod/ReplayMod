@@ -42,6 +42,17 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
+//#if MC>=12003
+//$$ import net.minecraft.client.resource.server.ServerResourcePackManager;
+//#endif
+
+//#if MC>=12002
+//$$ import io.netty.channel.ChannelDuplexHandler;
+//$$ import io.netty.channel.ChannelPromise;
+//$$ import net.minecraft.network.handler.NetworkStateTransitionHandler;
+//$$ import net.minecraft.network.packet.Packet;
+//#endif
+
 //#if MC>=12000
 //$$ import com.mojang.blaze3d.systems.VertexSorter;
 //$$ import net.minecraft.client.gui.DrawContext;
@@ -301,6 +312,36 @@ public class ReplayHandler {
         //$$ FMLClientHandler.instance().connectToRealmsServer(null, 0); // just to init the playClientBlock latch
         //#endif
 
+
+        //#if MC>=11200
+        channel = new EmbeddedChannel();
+        //#else
+        //$$ ChannelOutboundHandlerAdapter dummyHandler = new ChannelOutboundHandlerAdapter();
+        //$$ channel = new EmbeddedChannel(dummyHandler);
+        //$$ channel.pipeline().remove(dummyHandler);
+        //#endif
+        //#if MC>=10800
+        channel.pipeline().addLast("ReplayModReplay_quickReplaySender", quickReplaySender);
+        //#endif
+        channel.pipeline().addLast("ReplayModReplay_replaySender", fullReplaySender);
+        //#if MC>=12002
+        //$$ channel.pipeline().addLast("ReplayModReplay_transition", new DummyNetworkStateTransitionHandler());
+        //$$ channel.pipeline().addLast("bundler", new PacketBundler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
+        //#elseif MC>=11904
+        //$$ channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
+        //#endif
+        channel.pipeline().addLast("packet_handler", networkManager);
+        channel.pipeline().fireChannelActive();
+
+        // MC usually transitions from handshake to login via the packets it sends.
+        // We don't send any packets (there is no server to receive them), so we need to switch manually.
+        //#if MC>=12002
+        //$$ channel.attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY).set(NetworkState.LOGIN.getHandler(NetworkSide.CLIENTBOUND));
+        //$$ channel.attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY).set(NetworkState.LOGIN.getHandler(NetworkSide.SERVERBOUND));
+        //#else
+        networkManager.setState(NetworkState.LOGIN);
+        //#endif
+
         networkManager.setPacketListener(new ClientLoginNetworkHandler(
                 networkManager,
                 mc,
@@ -315,30 +356,12 @@ public class ReplayHandler {
                 //#endif
         ));
 
-
-        //#if MC>=11200
-        channel = new EmbeddedChannel();
-        //#else
-        //$$ ChannelOutboundHandlerAdapter dummyHandler = new ChannelOutboundHandlerAdapter();
-        //$$ channel = new EmbeddedChannel(dummyHandler);
-        //$$ channel.pipeline().remove(dummyHandler);
-        //#endif
-        //#if MC>=10800
-        channel.pipeline().addLast("ReplayModReplay_quickReplaySender", quickReplaySender);
-        //#endif
-        channel.pipeline().addLast("ReplayModReplay_replaySender", fullReplaySender);
-        //#if MC>=11904
-        //$$ channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
-        //#endif
-        channel.pipeline().addLast("packet_handler", networkManager);
-        channel.pipeline().fireChannelActive();
-
-        // MC usually transitions from handshake to login via the packets it sends.
-        // We don't send any packets (there is no server to receive them), so we need to switch manually.
-        networkManager.setState(NetworkState.LOGIN);
-
         //#if MC>=11400
         ((MinecraftAccessor) mc).setConnection(networkManager);
+        //#endif
+
+        //#if MC>=12003
+        //$$ mc.getServerResourcePackProvider().init(networkManager, ServerResourcePackManager.AcceptanceStatus.ALLOWED);
         //#endif
     }
 
@@ -787,4 +810,24 @@ public class ReplayHandler {
         //$$ }
         //#endif
     }
+
+    //#if MC>=12002
+    //$$ private static class DummyNetworkStateTransitionHandler extends ChannelDuplexHandler {
+    //$$     @Override
+    //$$     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    //$$         if (msg instanceof Packet<?> packet) {
+    //$$             NetworkStateTransitionHandler.handle(ctx.channel().attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY), packet);
+    //$$         }
+    //$$         super.channelRead(ctx, msg);
+    //$$     }
+    //$$
+    //$$     @Override
+    //$$     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    //$$         if (msg instanceof Packet<?> packet) {
+    //$$             NetworkStateTransitionHandler.handle(ctx.channel().attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY), packet);
+    //$$         }
+    //$$         super.write(ctx, msg, promise);
+    //$$     }
+    //$$ }
+    //#endif
 }

@@ -321,7 +321,11 @@ public class VideoRenderer implements RenderInfo {
         //#endif
         if (mc.options.debugEnabled) {
             debugInfoWasShown = true;
+            //#if MC>=12002
+            //$$ mc.getDebugHud().toggleDebugHud();
+            //#else
             mc.options.debugEnabled = false;
+            //#endif
         }
         //#if MC>=11400
         if (mc.mouse.isCursorLocked()) {
@@ -385,7 +389,13 @@ public class VideoRenderer implements RenderInfo {
         //$$     Display.setResizable(true);
         //$$ }
         //#endif
-        mc.options.debugEnabled = debugInfoWasShown;
+        if (debugInfoWasShown) {
+            //#if MC>=12002
+            //$$ mc.getDebugHud().toggleDebugHud();
+            //#else
+            mc.options.debugEnabled = true;
+            //#endif
+        }
         if (mouseWasGrabbed) {
             //#if MC>=11400
             mc.mouse.lockCursor();
