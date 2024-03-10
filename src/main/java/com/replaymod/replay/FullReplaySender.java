@@ -676,7 +676,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                             IOUtils.copy(replayFile.getResourcePack(hash).get(), new FileOutputStream(file));
                         }
                         //#if MC>=12003
-                        //$$ mc.getServerResourcePackProvider().addResourcePack(packet.id(), file.toPath());
+                        //$$ schedulePacketHandler(() -> mc.getServerResourcePackProvider().addResourcePack(packet.id(), file.toPath()));
                         //#else
                         setServerResourcePack(file);
                         //#endif
