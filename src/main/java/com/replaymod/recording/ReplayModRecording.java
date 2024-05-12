@@ -9,6 +9,7 @@ import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.handler.GuiHandler;
 import com.replaymod.recording.mixin.NetworkManagerAccessor;
 import com.replaymod.recording.packet.PacketListener;
+import com.replaymod.replay.ReplayHandler;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import net.minecraft.network.ClientConnection;
@@ -93,7 +94,7 @@ public class ReplayModRecording implements Module {
 
     public void initiateRecording(ClientConnection networkManager) {
         Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
-        if (channel.pipeline().get("ReplayModReplay_replaySender") != null) return;
+        if (channel.pipeline().get(ReplayHandler.PACKET_HANDLER_NAME) != null) return;
         //#if MC>=11400
         if (channel.hasAttr(ATTR_CHECKED)) return;
         channel.attr(ATTR_CHECKED).set(null);

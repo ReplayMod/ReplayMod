@@ -33,7 +33,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.util.Window;
+import net.minecraft.network.DecoderHandler;
 import net.minecraft.network.NetworkState;
+import net.minecraft.network.PacketEncoder;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -44,13 +46,6 @@ import java.util.*;
 
 //#if MC>=12003
 //$$ import net.minecraft.client.resource.server.ServerResourcePackManager;
-//#endif
-
-//#if MC>=12002
-//$$ import io.netty.channel.ChannelDuplexHandler;
-//$$ import io.netty.channel.ChannelPromise;
-//$$ import net.minecraft.network.handler.NetworkStateTransitionHandler;
-//$$ import net.minecraft.network.packet.Packet;
 //#endif
 
 //#if MC>=12000
@@ -129,6 +124,8 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class ReplayHandler {
 
+    public static final String PACKET_HANDLER_NAME = "ReplayModReplay_packetHandler";
+
     private static MinecraftClient mc = getMinecraft();
 
     /**
@@ -180,7 +177,7 @@ public class ReplayHandler {
 
         markers = replayFile.getMarkers().or(Collections.emptySet());
 
-        fullReplaySender = new FullReplaySender(this, replayFile, false);
+        fullReplaySender = new FullReplaySender(this, replayFile);
         //#if MC>=10800
         quickReplaySender = new QuickReplaySender(ReplayModReplay.instance, replayFile);
         //#endif
@@ -319,17 +316,25 @@ public class ReplayHandler {
         //$$ ChannelOutboundHandlerAdapter dummyHandler = new ChannelOutboundHandlerAdapter();
         //$$ channel = new EmbeddedChannel(dummyHandler);
         //$$ channel.pipeline().remove(dummyHandler);
+        //$$ channel.pipeline().removeLast();
         //#endif
-        //#if MC>=10800
-        channel.pipeline().addLast("ReplayModReplay_quickReplaySender", quickReplaySender);
-        //#endif
-        channel.pipeline().addLast("ReplayModReplay_replaySender", fullReplaySender);
+
+        quickReplaySender.setChannel(channel);
+        fullReplaySender.setChannel(channel);
+
         //#if MC>=12002
-        //$$ channel.pipeline().addLast("ReplayModReplay_transition", new DummyNetworkStateTransitionHandler());
+        //$$ channel.pipeline().addLast("decoder", new DecoderHandler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
+        //$$ channel.pipeline().addLast("encoder", new PacketEncoder(ClientConnection.SERVERBOUND_PROTOCOL_KEY));
+        //#else
+        channel.pipeline().addLast("decoder", new DecoderHandler(NetworkSide.CLIENTBOUND));
+        channel.pipeline().addLast("encoder", new PacketEncoder(NetworkSide.SERVERBOUND));
+        //#endif
+        //#if MC>=12002
         //$$ channel.pipeline().addLast("bundler", new PacketBundler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
         //#elseif MC>=11904
         //$$ channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
         //#endif
+        channel.pipeline().addLast(PACKET_HANDLER_NAME, quickMode ? quickReplaySender : fullReplaySender);
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
 
@@ -458,6 +463,8 @@ public class ReplayHandler {
         } else {
             targetCameraPosition = null;
         }
+
+        channel.pipeline().replace(PACKET_HANDLER_NAME, PACKET_HANDLER_NAME, quickMode ? quickReplaySender : fullReplaySender);
 
         if (quickMode) {
             quickReplaySender.register();
@@ -810,24 +817,4 @@ public class ReplayHandler {
         //$$ }
         //#endif
     }
-
-    //#if MC>=12002
-    //$$ private static class DummyNetworkStateTransitionHandler extends ChannelDuplexHandler {
-    //$$     @Override
-    //$$     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    //$$         if (msg instanceof Packet<?> packet) {
-    //$$             NetworkStateTransitionHandler.handle(ctx.channel().attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY), packet);
-    //$$         }
-    //$$         super.channelRead(ctx, msg);
-    //$$     }
-    //$$
-    //$$     @Override
-    //$$     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    //$$         if (msg instanceof Packet<?> packet) {
-    //$$             NetworkStateTransitionHandler.handle(ctx.channel().attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY), packet);
-    //$$         }
-    //$$         super.write(ctx, msg, promise);
-    //$$     }
-    //$$ }
-    //#endif
 }

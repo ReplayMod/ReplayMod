@@ -15,8 +15,8 @@ import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -28,9 +28,7 @@ import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
@@ -140,7 +138,6 @@ import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
 import net.minecraft.network.packet.s2c.play.ResourcePackSendS2CPacket;
 import net.minecraft.network.packet.s2c.play.SetCameraEntityS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
-import net.minecraft.network.NetworkSide;
 //#else
 //$$ import org.apache.commons.io.Charsets;
 //#endif
@@ -230,9 +227,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     protected ReplayFile replayFile;
 
     /**
-     * The channel handler context used to send packets to minecraft.
+     * The channel used to send packets to minecraft.
      */
-    protected ChannelHandlerContext ctx;
+    protected Channel channel;
 
     /**
      * The replay input stream from which new packets are read.
@@ -303,20 +300,17 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     /**
      * Create a new replay sender.
      * @param file The replay file
-     * @param asyncMode {@code true} for async mode, {@code false} otherwise
-     * @see #asyncMode
      */
-    public FullReplaySender(ReplayHandler replayHandler, ReplayFile file, boolean asyncMode) throws IOException {
+    public FullReplaySender(ReplayHandler replayHandler, ReplayFile file) throws IOException {
         this.replayHandler = replayHandler;
         this.replayFile = file;
-        this.asyncMode = asyncMode;
         this.replayLength = file.getMetaData().getDuration();
 
         events.register();
+    }
 
-        if (asyncMode) {
-            new Thread(asyncSender, "replaymod-async-sender").start();
-        }
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
     /**
@@ -383,8 +377,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         syncSender.shutdown();
         events.unregister();
         try {
-            channelInactive(ctx);
-            ctx.channel().pipeline().close();
+            channel.pipeline().fireChannelInactive();
+            channel.pipeline().close();
             FileUtils.deleteDirectory(tempResourcePackFolder);
         } catch(Exception e) {
             e.printStackTrace();
@@ -425,14 +419,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             return;
         }
 
-        // When a packet is sent directly, perform no filtering
-        if(msg instanceof Packet) {
-            super.channelRead(ctx, msg);
-        }
-
-        if (msg instanceof byte[]) {
+        if (msg instanceof Packet) {
             try {
-                Packet p = deserializePacket((byte[]) msg);
+                Packet p = (Packet) msg;
 
                 if (p != null) {
                     p = processPacket(p);
@@ -476,29 +465,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
-    }
-
-    private Packet deserializePacket(byte[] bytes) throws IOException, IllegalAccessException, InstantiationException {
-        ByteBuf bb = Unpooled.wrappedBuffer(bytes);
-        PacketByteBuf pb = new PacketByteBuf(bb);
-
-        int i = pb.readVarInt();
-
-        NetworkState state = asMc(registry.getState());
-        //#if MC>=12002
-        //$$ Packet p = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(i, pb);
-        //#elseif MC>=11700
-        //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
-        //#else
-        //#if MC>=10800
-        Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i);
-        //#else
-        //$$ Packet p = Packet.generatePacket(state.func_150755_b(), i);
-        //#endif
-        p.read(pb);
-        //#endif
-
-        return p;
     }
 
     // If we do not give minecraft time to tick, there will be dead entity artifacts left in the world
@@ -987,13 +953,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     //#endif
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        this.ctx = ctx;
-        super.channelActive(ctx);
-    }
-
-    @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         // The embedded channel's event loop will consider every thread to be in it and as such provides no
         // guarantees that only one thread is using the pipeline at any one time.
@@ -1073,9 +1032,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     private Runnable asyncSender = new Runnable() {
         public void run() {
             try {
-                while (ctx == null && !terminate) {
-                    Thread.sleep(10);
-                }
                 REPLAY_LOOP:
                 while (!terminate) {
                     synchronized (FullReplaySender.this) {
@@ -1125,7 +1081,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 }
 
                                 // Process packet
-                                channelRead(ctx, nextPacket.bytes);
+                                channel.pipeline().fireChannelRead(Unpooled.wrappedBuffer(nextPacket.bytes));
                                 nextPacket = null;
 
                                 lastTimeStamp = nextTimeStamp;
@@ -1136,7 +1092,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 // Might be safe to do the same on older versions too, but I'd rather not poke the
                                 // monster that is Forge networking.
                                 //#if MC>=12002
-                                //$$ while (!ctx.channel().config().isAutoRead()) {
+                                //$$ while (!channel.config().isAutoRead()) {
                                 //$$     Thread.sleep(0, 100_000);
                                 //$$ }
                                 //#endif
@@ -1298,10 +1254,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
     private void doSendPacketsTill(int timestamp) {
         try {
-            while (ctx == null && !terminate) { // Make sure channel is ready
-                Thread.sleep(10);
-            }
-
             synchronized (this) {
                 if (timestamp == lastTimeStamp) { // Do nothing if we're already there
                     return;
@@ -1343,7 +1295,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         }
 
                         // Process packet
-                        channelRead(ctx, pd.bytes);
+                        channel.pipeline().fireChannelRead(Unpooled.wrappedBuffer(pd.bytes));
 
                         // MC as of 1.20.2 relies on autoRead, so it can update the connection state on the main
                         // thread before the next packet is read. As such, we need to stall if that was just
@@ -1351,7 +1303,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         // Might be safe to do the same on older versions too, but I'd rather not poke the
                         // monster that is Forge networking.
                         //#if MC>=12002
-                        //$$ while (!ctx.channel().config().isAutoRead()) {
+                        //$$ while (!channel.config().isAutoRead()) {
                         //$$     Thread.sleep(0, 100_000);
                         //$$ }
                         //#endif
