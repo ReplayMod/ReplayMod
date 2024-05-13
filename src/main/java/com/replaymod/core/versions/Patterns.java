@@ -21,6 +21,7 @@ import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.sound.SoundCategory;
@@ -85,6 +86,7 @@ import net.minecraft.client.render.BufferBuilder;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 class Patterns {
     //#if MC>=10904
@@ -954,6 +956,15 @@ class Patterns {
     //$$ @Pattern public void UnloadChunkPacket_getZ() {}
     //$$ @Pattern public void UnloadChunkPacket_getX() {}
     //#endif
+
+    @Pattern
+    public UUID getId(PlayerListS2CPacket.Entry entry) {
+        //#if MC>=11903
+        //$$ return entry.profileId();
+        //#else
+        return entry.getProfile().getId();
+        //#endif
+    }
 
     @Pattern
     public Identifier getSkinTexture(AbstractClientPlayerEntity player) {
