@@ -73,7 +73,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replaystudio.util.Utils.writeInt;
-import static java.util.Objects.requireNonNull;
 
 //#if MC>=11904
 //$$ import net.minecraft.network.PacketBundleHandler;
@@ -92,28 +91,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private static final MinecraftClient mc = getMinecraft();
     private static final Logger logger = LogManager.getLogger();
 
-    private static final ResourcePackSendS2CPacket RESOURCE_PACK_SEND_PACKET =
-            //#if MC>=12003
-            //$$ new ResourcePackSendS2CPacket(null, "", "", false, null)
-            //#elseif MC>=11700
-            //$$ new ResourcePackSendS2CPacket("", "", false, null)
-            //#else
-            new ResourcePackSendS2CPacket()
-            //#endif
-            ;
-    private static final int PACKET_ID_RESOURCE_PACK_SEND = getPacketId(NetworkState.PLAY, RESOURCE_PACK_SEND_PACKET);
-    //#if MC>=12002
-    //$$ private static final int PACKET_ID_CONFIG_RESOURCE_PACK_SEND = getPacketId(NetworkState.CONFIGURATION, RESOURCE_PACK_SEND_PACKET);
-    //#endif
-    //#if MC>=11700
-    //$$ private static final int PACKET_ID_LOGIN_COMPRESSION = getPacketId(NetworkState.LOGIN, new LoginCompressionS2CPacket(0));
-    //#else
-    private static final int PACKET_ID_LOGIN_COMPRESSION = getPacketId(NetworkState.LOGIN, new LoginCompressionS2CPacket());
-    //#endif
-    //#if MC<10904
-    //$$ private static final int PACKET_ID_PLAY_COMPRESSION = getPacketId(EnumConnectionState.PLAY, new S46PacketSetCompressionLevel());
-    //#endif
-
     private final ReplayMod core;
     private final Path outputPath;
     private final ReplayFile replayFile;
@@ -126,6 +103,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     private ReplayMetaData metaData;
 
     private ChannelHandlerContext context = null;
+    private Packet currentRawPacket;
 
     private final long startTime;
     private long lastSentPacket;
@@ -199,17 +177,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             return;
         }
         try {
-            //#if MC>=11800
-            if (packet.getRegistry().getState() == State.LOGIN && packet.getId() == PACKET_ID_LOGIN_COMPRESSION) {
-                return; // Replay data is never compressed on the packet level
-            }
-            //#if MC<10904
-            //$$ if (packet.getRegistry().getState() == State.PLAY && packet.getId() == PACKET_ID_PLAY_COMPRESSION) {
-            //$$     return; // Replay data is never compressed on the packet level
-            //$$ }
-            //#endif
-            //#endif
-
             long now = System.currentTimeMillis();
             if (serverWasPaused) {
                 timePassedWhilePaused = now - startTime - lastSentPacket;
@@ -388,24 +355,15 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             //#endif
         }
 
-        if (packet != null) {
-            if (connectionState == NetworkState.PLAY && packet.getId() == PACKET_ID_RESOURCE_PACK_SEND
-                    //#if MC>=12002
-                    //$$ || connectionState == NetworkState.CONFIGURATION && packet.getId() == PACKET_ID_CONFIG_RESOURCE_PACK_SEND
-                    //#endif
-            ) {
-                ClientConnection connection = ctx.pipeline().get(ClientConnection.class);
-                save(resourcePackRecorder.handleResourcePack(connection, (ResourcePackSendS2CPacket) decodeMcPacket(packet)));
-                //#if MC>=12003
-                //$$ super.channelRead(ctx, msg);
-                //#endif
-                return;
+        currentRawPacket = packet;
+        try {
+            super.channelRead(ctx, msg);
+        } finally {
+            if (currentRawPacket != null) {
+                currentRawPacket.release();
+                currentRawPacket = null;
             }
-
-            save(packet);
         }
-
-        super.channelRead(ctx, msg);
     }
 
     private NetworkState getConnectionState() {
@@ -448,26 +406,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private static net.minecraft.network.Packet decodeMcPacket(Packet packet) throws IOException, IllegalAccessException, InstantiationException {
-        NetworkState connectionState = asMc(packet.getRegistry().getState());
-        int packetId = packet.getId();
-        PacketByteBuf packetBuf = new PacketByteBuf(Unpooled.wrappedBuffer(packet.getBuf().nioBuffer()));
-
-        //#if MC>=12002
-        //$$ return connectionState.getHandler(NetworkSide.CLIENTBOUND).createPacket(packetId, packetBuf);
-        //#elseif MC>=11700
-        //$$ return connectionState.getPacketHandler(NetworkSide.CLIENTBOUND, packetId, packetBuf);
-        //#else
-        //#if MC>=10800
-        net.minecraft.network.Packet p = connectionState.getPacketHandler(NetworkSide.CLIENTBOUND, packetId);
-        //#else
-        //$$ net.minecraft.network.Packet p = net.minecraft.network.Packet.generatePacket(connectionState.func_150755_b(), packetId);
-        //#endif
-        p.read(packetBuf);
-        return p;
-        //#endif
-    }
-
     private static Packet decodePacket(NetworkState connectionState, ByteBuf buf) {
         PacketByteBuf packetBuf = new PacketByteBuf(buf.slice());
         int packetId = packetBuf.readVarInt();
@@ -478,14 +416,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 packetId,
                 com.github.steveice10.netty.buffer.Unpooled.wrappedBuffer(bytes)
         );
-    }
-
-    private static int getPacketId(NetworkState networkState, net.minecraft.network.Packet packet) {
-        try {
-            return requireNonNull(networkState.getPacketId(NetworkSide.CLIENTBOUND, packet));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to determine packet id for " + packet.getClass(), e);
-        }
     }
 
     public void addMarker(String name) {
@@ -535,6 +465,17 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
+            if (msg instanceof LoginCompressionS2CPacket) {
+                super.channelRead(ctx, msg);
+                return;
+            }
+            //#if MC<10904
+            //$$ if (msg instanceof S46PacketSetCompressionLevel) {
+            //$$     super.channelRead(ctx, msg);
+            //$$     return;
+            //$$ }
+            //#endif
+
             if (msg instanceof CustomPayloadS2CPacket) {
                 CustomPayloadS2CPacket packet = (CustomPayloadS2CPacket) msg;
                 if (Restrictions.PLUGIN_CHANNEL.equals(packet.getChannel())) {
@@ -557,6 +498,20 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 uuids.add(uuid.toString());
                 metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
                 saveMetaData();
+            }
+
+            if (msg instanceof ResourcePackSendS2CPacket) {
+                ClientConnection connection = ctx.pipeline().get(ClientConnection.class);
+                save(resourcePackRecorder.handleResourcePack(connection, (ResourcePackSendS2CPacket) msg));
+                //#if MC>=12003
+                //$$ super.channelRead(ctx, msg);
+                //#endif
+                return;
+            }
+
+            if (currentRawPacket != null) {
+                save(currentRawPacket);
+                currentRawPacket = null;
             }
 
             super.channelRead(ctx, msg);
