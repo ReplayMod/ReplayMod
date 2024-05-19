@@ -219,22 +219,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        super.handlerAdded(ctx);
-
-        if (ctx.pipeline().get(DECODED_RECORDER_KEY) == null) {
-            if (ctx.pipeline().get(PacketListener.DECODER_KEY) != null) {
-                // Regular channel, we'll inject our decoded recorder directly after the decoder
-                ctx.pipeline().addAfter(DECODER_KEY, DECODED_RECORDER_KEY, new DecodedPacketListener());
-            } else {
-                // Integrated server passes packets directly, there's no splitting, decompression or decoding
-                // The decoded packet handler can just go directly behind this hand
-                ctx.pipeline().addAfter(RAW_RECORDER_KEY, DECODED_RECORDER_KEY, new DecodedPacketListener());
-            }
-        }
-    }
-
-    @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         metaData.setDuration((int) lastSentPacket);
         saveMetaData();
@@ -450,7 +434,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         return resourcePackRecorder;
     }
 
-    private class DecodedPacketListener extends ChannelInboundHandlerAdapter {
+    public class DecodedPacketListener extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 

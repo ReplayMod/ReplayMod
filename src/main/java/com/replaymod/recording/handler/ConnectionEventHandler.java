@@ -159,9 +159,11 @@ public class ConnectionEventHandler {
             if (channel.pipeline().get(PacketListener.DECODER_KEY) != null) {
                 // Regular channel, we'll inject our recorder directly before the decoder
                 channel.pipeline().addBefore(PacketListener.DECODER_KEY, PacketListener.RAW_RECORDER_KEY, packetListener);
+                channel.pipeline().addAfter(PacketListener.DECODER_KEY, PacketListener.DECODED_RECORDER_KEY, packetListener.new DecodedPacketListener());
             } else {
                 // Integrated server passes packets directly, there's no splitting, decompression or decoding
                 channel.pipeline().addFirst(PacketListener.RAW_RECORDER_KEY, packetListener);
+                channel.pipeline().addAfter(PacketListener.RAW_RECORDER_KEY, PacketListener.DECODED_RECORDER_KEY, packetListener.new DecodedPacketListener());
             }
 
             recordingEventHandler = new RecordingEventHandler(packetListener);
