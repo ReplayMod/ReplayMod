@@ -153,8 +153,9 @@ public class ConnectionEventHandler {
             metaData.setGenerator("ReplayMod v" + ReplayMod.instance.getVersion());
             metaData.setDate(System.currentTimeMillis());
             metaData.setMcVersion(ReplayMod.instance.getMinecraftVersion());
-            packetListener = new PacketListener(core, outputPath, replayFile, metaData);
+
             Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
+            packetListener = new PacketListener(core, channel, outputPath, replayFile, metaData);
             if (channel.pipeline().get(PacketListener.DECODER_KEY) != null) {
                 // Regular channel, we'll inject our recorder directly before the decoder
                 channel.pipeline().addBefore(PacketListener.DECODER_KEY, PacketListener.RAW_RECORDER_KEY, packetListener);

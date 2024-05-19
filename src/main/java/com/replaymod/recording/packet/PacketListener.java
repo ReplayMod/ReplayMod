@@ -22,6 +22,7 @@ import com.replaymod.replaystudio.replay.ReplayMetaData;
 import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -102,7 +103,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     private ReplayMetaData metaData;
 
-    private ChannelHandlerContext context = null;
+    private final Channel channel;
     private Packet currentRawPacket;
 
     private final long startTime;
@@ -116,8 +117,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
      */
     private final AtomicInteger lastSaveMetaDataId = new AtomicInteger();
 
-    public PacketListener(ReplayMod core, Path outputPath, ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
+    public PacketListener(ReplayMod core, Channel channel, Path outputPath, ReplayFile replayFile, ReplayMetaData metaData) throws IOException {
         this.core = core;
+        this.channel = channel;
         this.outputPath = outputPath;
         this.replayFile = replayFile;
         this.metaData = metaData;
@@ -309,15 +311,6 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if(ctx == null) {
-            if(context == null) {
-                return;
-            } else {
-                ctx = context;
-            }
-        }
-        this.context = ctx;
-
         NetworkState connectionState = getConnectionState();
 
         Packet packet = null;
@@ -367,16 +360,12 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     private NetworkState getConnectionState() {
-        ChannelHandlerContext ctx = context;
-        if (ctx == null) {
-            return NetworkState.LOGIN;
-        }
         //#if MC>=12002
         //$$ AttributeKey<NetworkState.PacketHandler<?>> key = ClientConnection.CLIENTBOUND_PROTOCOL_KEY;
-        //$$ return ctx.channel().attr(key).get().getState();
+        //$$ return channel.attr(key).get().getState();
         //#else
         AttributeKey<NetworkState> key = ClientConnection.ATTR_KEY_PROTOCOL;
-        return ctx.channel().attr(key).get();
+        return channel.attr(key).get();
         //#endif
     }
 
