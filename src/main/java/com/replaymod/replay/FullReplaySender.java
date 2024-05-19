@@ -17,10 +17,9 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
@@ -161,7 +160,7 @@ import static com.replaymod.replaystudio.util.Utils.readInt;
  * the replay restart from the beginning.
  */
 @Sharable
-public class FullReplaySender extends ChannelDuplexHandler implements ReplaySender {
+public class FullReplaySender extends ChannelInboundHandlerAdapter implements ReplaySender {
     /**
      * These packets are ignored completely during replay.
      */
@@ -951,25 +950,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     //$$     );
     //$$ }
     //#endif
-
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        // The embedded channel's event loop will consider every thread to be in it and as such provides no
-        // guarantees that only one thread is using the pipeline at any one time.
-        // For reading the replay sender (either sync or async) is the only thread ever writing.
-        // For writing it may very well happen that multiple threads want to use the pipline at the same time.
-        // It's unclear whether the EmbeddedChannel is supposed to be thread-safe (the behavior of the event loop
-        // does suggest that). However it seems like it either isn't (likely) or there is a race condition.
-        // See: https://www.replaymod.com/forum/thread/1752#post8045 (https://paste.replaymod.com/lotacatuwo)
-        // To work around this issue, we just outright drop all write/flush requests (they aren't needed anyway).
-        // This still leaves channel handlers upstream with the threading issue but they all seem to cope well with it.
-        promise.setSuccess();
-    }
-
-    @Override
-    public void flush(ChannelHandlerContext ctx) throws Exception {
-        // See write method above
-    }
 
     /**
      * Returns the speed of the replay. 1 being normal speed, 0.5 half and 2 twice as fast.

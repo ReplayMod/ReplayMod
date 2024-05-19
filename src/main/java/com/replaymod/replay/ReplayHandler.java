@@ -28,6 +28,8 @@ import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.popup.AbstractGuiPopup;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
@@ -318,6 +320,7 @@ public class ReplayHandler {
         //$$ channel.pipeline().remove(dummyHandler);
         //$$ channel.pipeline().removeLast();
         //#endif
+        channel.pipeline().addFirst("ReplayModReplay_head", new DropOutboundMessagesHandler());
 
         quickReplaySender.setChannel(channel);
         fullReplaySender.setChannel(channel);
@@ -816,5 +819,26 @@ public class ReplayHandler {
         //$$     e.rotationPitch = (float) ea.getOtherPlayerMPPitch();
         //$$ }
         //#endif
+    }
+
+    private static class DropOutboundMessagesHandler extends ChannelOutboundHandlerAdapter {
+        @Override
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+            // The embedded channel's event loop will consider every thread to be in it and as such provides no
+            // guarantees that only one thread is using the pipeline at any one time.
+            // For reading the replay sender (either sync or async) is the only thread ever writing.
+            // For writing it may very well happen that multiple threads want to use the pipline at the same time.
+            // It's unclear whether the EmbeddedChannel is supposed to be thread-safe (the behavior of the event loop
+            // does suggest that). However it seems like it either isn't (likely) or there is a race condition.
+            // See: https://www.replaymod.com/forum/thread/1752#post8045 (https://paste.replaymod.com/lotacatuwo)
+            // To work around this issue, we just outright drop all write/flush requests (they aren't needed anyway).
+            // This still leaves channel handlers upstream with the threading issue but they all seem to cope well with it.
+            promise.setSuccess();
+        }
+
+        @Override
+        public void flush(ChannelHandlerContext ctx) {
+            // See write method above
+        }
     }
 }
