@@ -46,6 +46,11 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
+//#if MC>=12006
+//$$ import net.minecraft.network.handler.NetworkStateTransitions;
+//$$ import net.minecraft.network.state.LoginStates;
+//#endif
+
 //#if MC>=12003
 //$$ import net.minecraft.client.resource.server.ServerResourcePackManager;
 //#endif
@@ -325,6 +330,10 @@ public class ReplayHandler {
         quickReplaySender.setChannel(channel);
         fullReplaySender.setChannel(channel);
 
+        //#if MC>=12006
+        //$$ channel.pipeline().addLast("inbound_config", new NetworkStateTransitions.InboundConfigurer());
+        //$$ channel.pipeline().addLast("outbound_config", new NetworkStateTransitions.OutboundConfigurer());
+        //#else
         //#if MC>=12002
         //$$ channel.pipeline().addLast("decoder", new DecoderHandler(ClientConnection.CLIENTBOUND_PROTOCOL_KEY));
         //$$ channel.pipeline().addLast("encoder", new PacketEncoder(ClientConnection.SERVERBOUND_PROTOCOL_KEY));
@@ -337,12 +346,19 @@ public class ReplayHandler {
         //#elseif MC>=11904
         //$$ channel.pipeline().addLast("bundler", new PacketBundler(NetworkSide.CLIENTBOUND));
         //#endif
+        //#endif
         channel.pipeline().addLast(PACKET_HANDLER_NAME, quickMode ? quickReplaySender : fullReplaySender);
         channel.pipeline().addLast("packet_handler", networkManager);
         channel.pipeline().fireChannelActive();
 
         // MC usually transitions from handshake to login via the packets it sends.
         // We don't send any packets (there is no server to receive them), so we need to switch manually.
+        //#if MC>=12006
+        //$$ networkManager.transitionInbound(LoginStates.S2C, new ClientLoginNetworkHandler(
+        //$$         networkManager, mc, null, null, false, null, it -> {}, null
+        //$$ ));
+        //$$ networkManager.transitionOutbound(LoginStates.C2S);
+        //#else
         //#if MC>=12002
         //$$ channel.attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY).set(NetworkState.LOGIN.getHandler(NetworkSide.CLIENTBOUND));
         //$$ channel.attr(ClientConnection.SERVERBOUND_PROTOCOL_KEY).set(NetworkState.LOGIN.getHandler(NetworkSide.SERVERBOUND));
@@ -363,6 +379,7 @@ public class ReplayHandler {
                 , it -> {}
                 //#endif
         ));
+        //#endif
 
         //#if MC>=11400
         ((MinecraftAccessor) mc).setConnection(networkManager);
@@ -657,7 +674,28 @@ public class ReplayHandler {
         long diff = targetTime - (replaySender.isHurrying() ? replaySender.getDesiredTimestamp() : replaySender.currentTimeStamp());
         if (diff != 0) {
             if (diff > 0 && diff < 5000) { // Small difference and no time travel
-                replaySender.jumpToTime(targetTime);
+                if (replaySender.paused()) {
+                    replaySender.setSyncModeAndWait();
+                    do {
+                        replaySender.sendPacketsTill(targetTime);
+                        targetTime += 500;
+                    } while (mc.player == null || mc.currentScreen instanceof DownloadingTerrainScreen);
+                    replaySender.setAsyncMode(true);
+
+                    for (int i = 0; i < Math.min(diff / 50, 3); i++) {
+                        //#if MC>=10800 && MC<11400
+                        //$$ try {
+                        //$$     mc.runTick();
+                        //$$ } catch (IOException e) {
+                        //$$     e.printStackTrace(); // This should never be thrown but whatever
+                        //$$ }
+                        //#else
+                        mc.tick();
+                        //#endif
+                    }
+                } else {
+                    replaySender.jumpToTime(targetTime);
+                }
             } else { // We either have to restart the replay or send a significant amount of packets
                 // Render our please-wait-screen
                 GuiScreen guiScreen = new GuiScreen();
@@ -696,9 +734,14 @@ public class ReplayHandler {
                         //$$ , VertexSorter.BY_Z
                         //#endif
                 //$$ );
+                //#if MC>=12006
+                //$$ org.joml.Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+                //$$ matrixStack.translation(0, 0, -2000);
+                //#else
                 //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
                 //$$ matrixStack.loadIdentity();
                 //$$ matrixStack.translate(0, 0, -2000);
+                //#endif
                 //$$ RenderSystem.applyModelViewMatrix();
                 //$$ DiffuseLighting.enableGuiDepthLighting();
                 //#else
@@ -719,7 +762,9 @@ public class ReplayHandler {
 
                 guiScreen.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
                 //#if MC>=12000
-                //$$ guiScreen.toMinecraft().render(new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()), 0, 0, 0);
+                //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+                //$$ guiScreen.toMinecraft().render(drawContext, 0, 0, 0);
+                //$$ drawContext.draw();
                 //#elseif MC>=11600
                 guiScreen.toMinecraft().render(new MatrixStack(), 0, 0, 0);
                 //#else

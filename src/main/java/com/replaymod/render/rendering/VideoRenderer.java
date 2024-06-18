@@ -512,9 +512,14 @@ public class VideoRenderer implements RenderInfo {
                     //$$ , VertexSorter.BY_Z
                     //#endif
             //$$ );
+            //#if MC>=12006
+            //$$ org.joml.Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+            //$$ matrixStack.translation(0, 0, -2000);
+            //#else
             //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
             //$$ matrixStack.loadIdentity();
             //$$ matrixStack.translate(0, 0, -2000);
+            //#endif
             //$$ RenderSystem.applyModelViewMatrix();
             //$$ DiffuseLighting.enableGuiDepthLighting();
             //#else
@@ -558,13 +563,17 @@ public class VideoRenderer implements RenderInfo {
             int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / Math.max(window.getWidth(), 1);
             int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / Math.max(window.getHeight(), 1);
 
+            //#if MC>=12000
+            //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+            //#endif
+
             if (mc.getOverlay() != null) {
                 Screen orgScreen = mc.currentScreen;
                 try {
                     mc.currentScreen = gui.toMinecraft();
                     mc.getOverlay().render(
                             //#if MC>=12000
-                            //$$ new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
+                            //$$ drawContext,
                             //#elseif MC>=11600
                             new MatrixStack(),
                             //#endif
@@ -582,6 +591,9 @@ public class VideoRenderer implements RenderInfo {
                         //#endif
                         mouseX, mouseY, 0);
             }
+            //#if MC>=12000
+            //$$ drawContext.draw();
+            //#endif
             //#else
             //$$ int mouseX = Mouse.getX() * window.getScaledWidth() / mc.displayWidth;
             //$$ int mouseY = window.getScaledHeight() - Mouse.getY() * window.getScaledHeight() / mc.displayHeight - 1;

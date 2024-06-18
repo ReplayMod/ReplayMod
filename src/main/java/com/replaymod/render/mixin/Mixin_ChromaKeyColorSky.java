@@ -22,7 +22,9 @@ public abstract class Mixin_ChromaKeyColorSky {
 
     //#if MC>=11800
     //$$ @Inject(
-            //#if MC>=11802
+            //#if MC>=12005
+            //$$ method = "renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
+            //#elseif MC>=11802
             //$$ method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
             //#else
             //$$ method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLjava/lang/Runnable;)V",

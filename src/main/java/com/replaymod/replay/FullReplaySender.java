@@ -675,6 +675,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     //$$ packet.showDeathScreen(),
                     //$$ packet.doLimitedCrafting(),
                     //$$ withSpectatorMode(packet.commonPlayerSpawnInfo())
+                    //#if MC>=12006
+                    //$$ , packet.enforcesSecureChat()
+                    //#endif
                     //#else
                     //#if MC>=11800
                     //$$ packet.hardcore(),

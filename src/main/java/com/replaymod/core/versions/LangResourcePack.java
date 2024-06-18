@@ -34,6 +34,13 @@ import net.fabricmc.loader.api.ModContainer;
 //#else
 //#endif
 
+//#if MC>=12006
+//$$ import net.minecraft.resource.ResourcePackInfo;
+//$$ import net.minecraft.resource.ResourcePackSource;
+//$$ import net.minecraft.text.Text;
+//$$ import java.util.Optional;
+//#endif
+
 //#if MC>=11903
 //$$ import java.util.Objects;
 //$$ import net.minecraft.resource.InputSupplier;
@@ -64,7 +71,9 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
     private final Path basePath;
     public LangResourcePack() {
-        //#if MC>=11903
+        //#if MC>=12006
+        //$$ super(new ResourcePackInfo(NAME, Text.literal("ReplayMod Translations"), ResourcePackSource.NONE, Optional.empty()));
+        //#elseif MC>=11903
         //$$ super(NAME, true);
         //#else
         super(new File(NAME));

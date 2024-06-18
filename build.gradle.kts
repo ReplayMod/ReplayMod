@@ -85,6 +85,7 @@ dependencies {
             12001 -> "0.83.1+1.20.1"
             12002 -> "0.91.2+1.20.2"
             12004 -> "0.91.2+1.20.4"
+            12006 -> "0.98.0+1.20.6"
             else -> throw UnsupportedOperationException()
         }
         val fabricApiModules = mutableListOf(
@@ -154,7 +155,7 @@ dependencies {
 
     implementation(shadow("com.github.ReplayMod.JavaBlend:2.79.0:a0696f8")!!)
 
-    implementation(shadow("com.github.ReplayMod:ReplayStudio:d9f7c11")!!)
+    implementation(shadow("com.github.ReplayMod:ReplayStudio:6d59510")!!)
     // FIXME this should be pulled in by ReplayStudio, and IntelliJ sees it, but javac for some reason does not
     implementation("com.github.viaversion:opennbt:0a02214") // 2.0-SNAPSHOT (ViaVersion Edition)
 
@@ -163,6 +164,7 @@ dependencies {
 
     if (platform.isFabric) {
         val modMenuVersion = when {
+            mcVersion >= 12006 -> "10.0.0-beta.1"
             mcVersion >= 12003 -> "9.0.0-pre.1"
             mcVersion >= 12002 -> "8.0.0"
             mcVersion >= 12000 -> "7.0.1"
@@ -179,10 +181,14 @@ dependencies {
             else -> null
         }
         if (modMenuVersion != null) {
-            modImplementation("com.terraformersmc:modmenu:$modMenuVersion")
+            modCompileOnly("com.terraformersmc:modmenu:$modMenuVersion")
         } else {
             // Oldest modmenu on their maven is 1.10.5 for MC 1.15.2; for older versions we won't run it in dev
             modCompileOnly("com.terraformersmc:modmenu:1.10.6")
+        }
+        // Lacks maven dependencies
+        if (mcVersion == 12006) {
+            //modRuntimeOnly("net.fabricmc.fabric-api:fabric-api:0.98.0+1.20.6")
         }
     }
 

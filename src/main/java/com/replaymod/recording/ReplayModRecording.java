@@ -16,6 +16,10 @@ import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+//#if MC>=12006
+//$$ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+//#endif
+
 //#if FABRIC>=1
 //#if MC>=11700
 //$$ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -73,7 +77,11 @@ public class ReplayModRecording implements Module {
         new GuiHandler(core).register();
 
         //#if FABRIC>=1
-        //#if MC>=11700
+        //#if MC>=12006
+        //$$ PayloadTypeRegistry.configurationS2C().register(Restrictions.ID, Restrictions.CODEC);
+        //$$ PayloadTypeRegistry.playS2C().register(Restrictions.ID, Restrictions.CODEC);
+        //$$ ClientPlayNetworking.registerGlobalReceiver(Restrictions.ID, (payload, context) -> {});
+        //#elseif MC>=11700
         //$$ ClientPlayNetworking.registerGlobalReceiver(Restrictions.PLUGIN_CHANNEL, (client, handler, buf, resp) -> {});
         //#else
         ClientSidePacketRegistry.INSTANCE.register(Restrictions.PLUGIN_CHANNEL, (packetContext, packetByteBuf) -> {});

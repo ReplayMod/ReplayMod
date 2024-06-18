@@ -15,12 +15,18 @@ import com.llamalad7.mixinextras.sugar.Local;
 
 @Mixin(WorldRenderer.class)
 public class Mixin_PostRenderWorldCalback {
+    //#if MC>=12005
+    //$$ @Inject(method = "render", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;"))
+    //$$ private void postRenderWorld(CallbackInfo ci) {
+    //$$     MatrixStack matrixStack = new MatrixStack();
+    //#else
     @Inject(method = "render", at = @At("RETURN"))
     //#if MC>=11500
     private void postRenderWorld(CallbackInfo ci, @Local(argsOnly = true) MatrixStack matrixStack) {
     //#else
     //$$ private void postRenderWorld(CallbackInfo ci) {
     //$$     MatrixStack matrixStack = new MatrixStack();
+    //#endif
     //#endif
         PostRenderWorldCallback.EVENT.invoker().postRenderWorld(matrixStack);
     }

@@ -21,6 +21,7 @@ import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -576,7 +577,9 @@ class Patterns {
 
     @Pattern
     private static void GL11_glRotatef(float angle, float x, float y, float z) {
-        //#if MC>=11700
+        //#if MC>=12006
+        //$$ com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().rotate(com.replaymod.core.versions.MCVer.quaternion(angle, new org.joml.Vector3f(x, y, z)));
+        //#elseif MC>=11700
         //$$ com.mojang.blaze3d.systems.RenderSystem.getModelViewStack().multiply(com.replaymod.core.versions.MCVer.quaternion(angle, new net.minecraft.util.math.Vec3f(x, y, z)));
         //#else
         GL11.glRotatef(angle, x, y, z);
@@ -917,7 +920,9 @@ class Patterns {
 
     @Pattern
     public Object channel(CustomPayloadS2CPacket packet) {
-        //#if MC>=12002
+        //#if MC>=12006
+        //$$ return packet.payload().getId().id();
+        //#elseif MC>=12002
         //$$ return packet.payload().id();
         //#else
         return packet.getChannel();
@@ -925,6 +930,9 @@ class Patterns {
     }
 
     //#if MC>=10904
+    //#if MC>=12006
+    //$$ @Pattern public void getPacketId() {}
+    //#else
     @Pattern
     public Integer getPacketId(NetworkState state, NetworkSide side, Packet<?> packet) throws Exception {
         //#if MC>=12002
@@ -933,6 +941,7 @@ class Patterns {
         return state.getPacketId(side, packet);
         //#endif
     }
+    //#endif
 
     @Pattern
     public int UnloadChunkPacket_getX(UnloadChunkS2CPacket packet) {
@@ -981,6 +990,15 @@ class Patterns {
         //$$ return mc.getDebugHud().shouldShowDebugHud();
         //#else
         return mc.options.debugEnabled;
+        //#endif
+    }
+
+    @Pattern
+    public Text getMessage(DisconnectS2CPacket packet) {
+        //#if MC>=12006
+        //$$ return packet.reason();
+        //#else
+        return packet.getReason();
         //#endif
     }
 }

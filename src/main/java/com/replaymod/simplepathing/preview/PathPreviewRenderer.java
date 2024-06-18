@@ -108,7 +108,11 @@ public class PathPreviewRenderer extends EventRegistrations {
             //#endif
 
             //#if MC>=11700
+            //#if MC>=12006
+            //$$ RenderSystem.getModelViewStack().mul(matrixStack.peek().getPositionMatrix());
+            //#else
             //$$ RenderSystem.getModelViewStack().method_34425(matrixStack.peek().getModel());
+            //#endif
             //$$ RenderSystem.applyModelViewMatrix();
             //#elseif MC>=11500
             RenderSystem.multMatrix(matrixStack.peek().getModel());

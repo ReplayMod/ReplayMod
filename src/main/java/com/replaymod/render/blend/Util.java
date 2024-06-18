@@ -183,6 +183,9 @@ public class Util {
     }
 
     public static String getTileEntityId(BlockEntity tileEntity) {
+        //#if MC>=12006
+        //$$ return net.minecraft.block.entity.BlockEntityType.getId(tileEntity.getType()).toString();
+        //#else
         //#if MC>=11800
         //$$ NbtCompound nbt = tileEntity.createNbt();
         //#else
@@ -194,6 +197,7 @@ public class Util {
         //#endif
         //#endif
         return nbt.getString("id");
+        //#endif
     }
 
     public interface IOCallable<R> {

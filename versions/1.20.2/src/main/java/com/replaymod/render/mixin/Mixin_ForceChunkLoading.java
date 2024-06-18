@@ -1,5 +1,6 @@
 package com.replaymod.render.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.hooks.IForceChunkLoading;
 import com.replaymod.render.utils.FlawlessFrames;
@@ -50,7 +51,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
     @Shadow protected abstract void applyFrustum(Frustum par1);
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;setupTerrain(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;ZZ)V"))
-    private void forceAllChunks(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
+    private void forceAllChunks(CallbackInfo ci, @Local(argsOnly = true) Camera camera) {
         if (replayModRender_hook == null) {
             return;
         }

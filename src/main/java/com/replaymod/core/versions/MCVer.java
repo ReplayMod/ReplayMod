@@ -397,7 +397,9 @@ public class MCVer {
     }
 
     public static void pushMatrix() {
-        //#if MC>=11700
+        //#if MC>=12006
+        //$$ RenderSystem.getModelViewStack().pushMatrix();
+        //#elseif MC>=11700
         //$$ RenderSystem.getModelViewStack().push();
         //#else
         GlStateManager.pushMatrix();
@@ -406,7 +408,11 @@ public class MCVer {
 
     public static void popMatrix() {
         //#if MC>=11700
+        //#if MC>=12006
+        //$$ RenderSystem.getModelViewStack().popMatrix();
+        //#else
         //$$ RenderSystem.getModelViewStack().pop();
+        //#endif
         //$$ RenderSystem.applyModelViewMatrix();
         //#else
         GlStateManager.popMatrix();

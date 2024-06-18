@@ -23,9 +23,11 @@ import de.johni0702.minecraft.gui.container.VanillaGuiScreen;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import io.netty.util.AttributeKey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
@@ -40,6 +42,15 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC>=12006
+//$$ import com.replaymod.recording.mixin.DecoderHandlerAccessor;
+//$$ import net.minecraft.network.NetworkState;
+//$$ import net.minecraft.network.handler.DecoderHandler;
+//$$ import net.minecraft.network.handler.NetworkStateTransitions;
+//$$ import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
+//$$ import net.minecraft.network.state.LoginStates;
+//#endif
 
 //#if MC>=12002
 //$$ import net.minecraft.entity.EntityType;
@@ -307,6 +318,9 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         } else if (msg instanceof net.minecraft.network.Packet) {
             // for integrated server connections MC is passing the packet objects directly, so we need to encode them
             // ourselves to be able to store them
+            //#if MC>=12006
+            //$$ // No longer applies. MC now encodes packets even for the integrated server connection.
+            //#else
             //#if MC>=11904
             //#if MC>=12002
             //$$ PacketBundleHandler bundleHandler = ctx.channel().attr(ClientConnection.CLIENTBOUND_PROTOCOL_KEY).get().getBundler();
@@ -330,6 +344,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             //#else
             packet = encodeMcPacket(connectionState, (net.minecraft.network.Packet) msg);
             //#endif
+            //#endif
         }
 
         currentRawPacket = packet;
@@ -344,7 +359,13 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
     }
 
     private NetworkState getConnectionState() {
-        //#if MC>=12002
+        //#if MC>=12006
+        //$$ var decoderHandler = (DecoderHandlerAccessor<?>) channel.pipeline().get(DecoderHandler.class);
+        //$$ if (decoderHandler == null) {
+        //$$     return NetworkPhase.LOGIN;
+        //$$ }
+        //$$ return decoderHandler.getState().id();
+        //#elseif MC>=12002
         //$$ AttributeKey<NetworkState.PacketHandler<?>> key = ClientConnection.CLIENTBOUND_PROTOCOL_KEY;
         //$$ return channel.attr(key).get().getState();
         //#else
@@ -353,7 +374,25 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         //#endif
     }
 
-    private static Packet encodeMcPacket(NetworkState connectionState, net.minecraft.network.Packet packet) throws Exception {
+    private Packet encodeMcPacket(NetworkState connectionState, net.minecraft.network.Packet packet) throws Exception {
+        //#if MC>=12006
+        //$$ var byteBuf = Unpooled.buffer();
+        //$$ try {
+        //$$     NetworkState<?> state;
+        //$$     if (connectionState == NetworkPhase.LOGIN) {
+        //$$         // Special case for our initial LoginSuccess packet which we only save after the pipeline has already
+        //$$         // started to transition to the next phase, so we can't just use its DecoderHandler (and luckily we
+        //$$         // also don't need it).
+        //$$         state = LoginStates.S2C;
+        //$$     } else {
+        //$$         state = ((DecoderHandlerAccessor<?>) channel.pipeline().get(DecoderHandler.class)).getState();
+        //$$     }
+        //$$     state.codec().encode(byteBuf, packet);
+        //$$     return decodePacket(state.id(), byteBuf);
+        //$$ } finally {
+        //$$     byteBuf.release();
+        //$$ }
+        //#else
         //#if MC>=10800
         Integer packetId = connectionState.getPacketId(NetworkSide.CLIENTBOUND, packet);
         //#else
@@ -377,6 +416,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         } finally {
             byteBuf.release();
         }
+        //#endif
     }
 
     private static Packet decodePacket(NetworkState connectionState, ByteBuf buf) {
@@ -434,7 +474,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         return resourcePackRecorder;
     }
 
-    public class DecodedPacketListener extends ChannelInboundHandlerAdapter {
+    public class DecodedPacketListener extends ChannelDuplexHandler {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
@@ -482,12 +522,39 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 return;
             }
 
+            //#if MC>=12006
+            //$$ // Special case: We need to inject another packet before this one, and we can only construct that
+            //$$ // packet on the main thread, so we'll skip saving this packet here and then manually re-add it after
+            //$$ // that other packet has been injected.
+            //$$ // See MixinNetHandlerConfigClient.
+            //$$ if (msg instanceof ReadyS2CPacket) {
+            //$$     super.channelRead(ctx, msg);
+            //$$     return;
+            //$$ }
+            //#endif
+
             if (currentRawPacket != null) {
                 save(currentRawPacket);
                 currentRawPacket = null;
             }
 
             super.channelRead(ctx, msg);
+        }
+
+        @Override
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+            //#if MC>=12006
+            //$$ if (msg instanceof NetworkStateTransitions.DecoderTransitioner) {
+            //$$     // We need our DecodedPacketListener to stay right behind the decoder, however MC will on network state
+            //$$     // transitions insert the bundler in the middle, so we need to re-position our handler in that case.
+            //$$     msg = ((NetworkStateTransitions.DecoderTransitioner) msg).andThen(context -> {
+            //$$         context.pipeline().remove(this);
+            //$$         context.pipeline().addAfter(DECODER_KEY, DECODED_RECORDER_KEY, new DecodedPacketListener());
+            //$$     });
+            //$$ }
+            //#endif
+
+            super.write(ctx, msg, promise);
         }
     }
 }

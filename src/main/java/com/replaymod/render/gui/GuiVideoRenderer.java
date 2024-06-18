@@ -112,7 +112,13 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
                 size(contentPanel, width - 10, height - 10);
             }
         });
+        // FIXME default background doesn't work during rendering because the blur effect relies on the framebuffer
+        //#if MC>=12006
+        //$$ setBackground(Background.NONE);
+        //$$ setBackgroundColor(new de.johni0702.minecraft.gui.utils.lwjgl.Color(32, 32, 32));
+        //#else
         setBackground(Background.DIRT);
+        //#endif
     }
 
     public GuiVideoRenderer(VideoRenderer renderer) {
