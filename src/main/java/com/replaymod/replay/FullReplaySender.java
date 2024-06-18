@@ -11,6 +11,7 @@ import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
+import com.replaymod.replaystudio.protocol.PacketType;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
@@ -266,6 +267,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      * Whether the world has been loaded and the dirt-screen should go away.
      */
     protected boolean hasWorldLoaded;
+
+    /**
+     * Whether we are currently in the middle of a bundle packet.
+     */
+    protected boolean inBundle;
 
     /**
      * The minecraft instance.
@@ -1025,7 +1031,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                         while (true) {
                             try {
                                 // When playback is paused and the world has loaded (we don't want any dirt-screens) we sleep
-                                while (paused() && hasWorldLoaded) {
+                                while (paused() && hasWorldLoaded && !inBundle) {
                                     // Unless we are going to terminate, restart or jump
                                     if (terminate || startFromBeginning || desiredTimeStamp != -1) {
                                         break;
@@ -1033,7 +1039,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                                     Thread.sleep(10);
                                 }
 
-                                if (terminate) {
+                                if (terminate && !inBundle) {
                                     break REPLAY_LOOP;
                                 }
 
@@ -1053,7 +1059,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
                                 // If we aren't jumping and the world has already been loaded (no dirt-screens) then wait
                                 // the required amount to get proper packet timing
-                                if (!isHurrying() && hasWorldLoaded) {
+                                if (!isHurrying() && hasWorldLoaded && !inBundle) {
                                     // Timestamp of when the next packet should be sent
                                     long expectedTime = realTimeStart + (long) (nextTimeStamp / replaySpeed);
                                     long now = System.currentTimeMillis();
@@ -1064,6 +1070,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                                 }
 
                                 // Process packet
+                                if (nextPacket.type == PacketType.Bundle) inBundle = !inBundle;
                                 channel.pipeline().fireChannelRead(Unpooled.wrappedBuffer(nextPacket.bytes));
                                 nextPacket = null;
 
@@ -1111,6 +1118,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
                         // Restart the replay.
                         hasWorldLoaded = false;
+                        inBundle = false;
                         lastTimeStamp = 0;
                         registry = getPacketTypeRegistry(State.LOGIN);
                         startFromBeginning = false;
@@ -1243,6 +1251,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 }
                 if (timestamp < lastTimeStamp) { // Restart the replay if we need to go backwards in time
                     hasWorldLoaded = false;
+                    inBundle = false;
                     lastTimeStamp = 0;
                     if (replayIn != null) {
                         replayIn.close();
@@ -1271,13 +1280,14 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                         }
 
                         int nextTimeStamp = pd.timestamp;
-                        if (nextTimeStamp > timestamp) {
+                        if (nextTimeStamp > timestamp && !inBundle) {
                             // We are done sending all packets
                             nextPacket = pd;
                             break;
                         }
 
                         // Process packet
+                        if (pd.type == PacketType.Bundle) inBundle = !inBundle;
                         channel.pipeline().fireChannelRead(Unpooled.wrappedBuffer(pd.bytes));
 
                         // MC as of 1.20.2 relies on autoRead, so it can update the connection state on the main
@@ -1497,6 +1507,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
         private final int timestamp;
         private final byte[] bytes;
+        private final PacketType type;
 
         PacketData(ReplayInputStream in) throws IOException {
             if (ReplayMod.isMinimalMode()) {
@@ -1508,6 +1519,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 }
                 bytes = new byte[length];
                 IOUtils.readFully(in, bytes);
+                type = PacketType.UnknownLogin;
             } else {
                 com.replaymod.replaystudio.PacketData data = in.readPacket();
                 if (data == null) {
@@ -1515,6 +1527,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 }
                 timestamp = (int) data.getTime();
                 com.replaymod.replaystudio.protocol.Packet packet = data.getPacket();
+                type = packet.getType();
                 // We need to re-encode ReplayStudio packets, so we can later decode them as NMS packets
                 // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
                 // to apply ViaVersion (and potentially other magic) to it.
