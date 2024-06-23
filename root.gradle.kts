@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream
 plugins {
     id("gg.essential.multi-version.root")
     id("com.github.hierynomus.license") version "0.15.0"
-    kotlin("jvm") version "1.9.24" apply false // workaround for EGT crashing without
 }
 
 val latestVersion = file("version.txt").readLines().first()
