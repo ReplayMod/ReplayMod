@@ -120,8 +120,8 @@ dependencies {
         })
     }
 
-    if (mcVersion >= 11604) {
-        implementation(shadow(annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")!!)!!)
+    if (platform.isFabric) {
+        "include"(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.6")!!)!!)
     }
 
     implementation(shadow("com.googlecode.mp4parser:isoparser:1.1.7")!!)
