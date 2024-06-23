@@ -153,8 +153,12 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
                     final int color = 0xff0000ff;
                     Tessellator tessellator = Tessellator.getInstance();
+                    //#if MC>=12100
+                    //$$ BufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
+                    //#else
                     BufferBuilder buffer = tessellator.getBuffer();
                     buffer.begin(GL11.GL_LINE_STRIP, VertexFormats.POSITION_COLOR);
+                    //#endif
 
                     // Start just below the top border of the replay timeline
                     Vector2f p1 = new Vector2f(replayTimelineLeft + positionXReplayTimeline, replayTimelineTop + BORDER_TOP);
@@ -178,7 +182,13 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     pushScissorState();
                     setScissorDisabled();
                     GL11.glLineWidth(2);
+                    //#if MC>=12100
+                    //$$ try (var builtBuffer = buffer.end()) {
+                    //$$     net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(builtBuffer);
+                    //$$ }
+                    //#else
                     tessellator.draw();
+                    //#endif
                     popScissorState();
                     //#if MC<11700
                     GL11.glEnable(GL11.GL_TEXTURE_2D);

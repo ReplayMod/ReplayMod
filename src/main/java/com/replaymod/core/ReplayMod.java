@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
+
 //#if MC>=12006
 //$$ import net.minecraft.resource.ResourcePackInfo;
 //$$ import net.minecraft.resource.ResourcePackSource;
@@ -52,9 +54,9 @@ public class ReplayMod implements Module, Scheduler {
 
     public static final String MOD_ID = "replaymod";
 
-    public static final Identifier TEXTURE = new Identifier("replaymod", "replay_gui.png");
+    public static final Identifier TEXTURE = identifier("replaymod", "replay_gui.png");
     public static final int TEXTURE_SIZE = 256;
-    public static final Identifier LOGO_FAVICON = new Identifier("replaymod", "favicon_logo.png");
+    public static final Identifier LOGO_FAVICON = identifier("replaymod", "favicon_logo.png");
 
     private static final MinecraftClient mc = MCVer.getMinecraft();
 

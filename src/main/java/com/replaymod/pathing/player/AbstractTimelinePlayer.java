@@ -31,7 +31,11 @@ public abstract class AbstractTimelinePlayer extends EventRegistrations {
     private Timeline timeline;
     protected long startOffset;
     private boolean wasAsyncMode;
+    //#if MC>=12100
+    //$$ private RenderTickCounter.Dynamic orgTimer;
+    //#else
     private RenderTickCounter orgTimer;
+    //#endif
     private long lastTime;
     private long lastTimestamp;
     private ListenableFuture<Void> future;

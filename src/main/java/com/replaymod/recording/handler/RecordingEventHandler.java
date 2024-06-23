@@ -113,7 +113,21 @@ public class RecordingEventHandler extends EventRegistrations {
         try {
             ClientPlayerEntity player = mc.player;
             assert player != null;
-            //#if MC>=12002
+            //#if MC>=12100
+            //$$ packetListener.save(new EntitySpawnS2CPacket(
+            //$$         player.getId(),
+            //$$         player.getUuid(),
+            //$$         player.getX(),
+            //$$         player.getY(),
+            //$$         player.getZ(),
+            //$$         player.getPitch(),
+            //$$         player.getYaw(),
+            //$$         player.getType(),
+            //$$         0,
+            //$$         player.getVelocity(),
+            //$$         player.getHeadYaw()
+            //$$ ));
+            //#elseif MC>=12002
             //$$ packetListener.save(new EntitySpawnS2CPacket(player));
             //#else
             packetListener.save(new PlayerSpawnS2CPacket(player));

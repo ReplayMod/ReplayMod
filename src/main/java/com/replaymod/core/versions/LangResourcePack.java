@@ -28,6 +28,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
+
 //#if FABRIC>=1
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -253,7 +255,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
                     .map(LANG_FILE_NAME_PATTERN::matcher)
                     .filter(Matcher::matches)
                     .map(matcher -> String.format("%s_%s.json", matcher.group(1), matcher.group(1)))
-                    .map(name -> new Identifier(ReplayMod.MOD_ID, "lang/" + name))
+                    .map(name -> identifier(ReplayMod.MOD_ID, "lang/" + name))
                     .forEach(consumer);
         } catch (IOException e) {
             e.printStackTrace();

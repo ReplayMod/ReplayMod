@@ -3,7 +3,7 @@ import gg.essential.gradle.util.*
 
 plugins {
     java
-    id("com.github.johnrengelman.shadow") apply false
+    id("io.github.goooler.shadow") apply false
     id("gg.essential.multi-version")
     id("gg.essential.defaults.repo")
     id("gg.essential.defaults.java")
@@ -86,6 +86,7 @@ dependencies {
             12002 -> "0.91.2+1.20.2"
             12004 -> "0.91.2+1.20.4"
             12006 -> "0.98.0+1.20.6"
+            12100 -> "0.100.3+1.21"
             else -> throw UnsupportedOperationException()
         }
         val fabricApiModules = mutableListOf(
@@ -155,7 +156,7 @@ dependencies {
 
     implementation(shadow("com.github.ReplayMod.JavaBlend:2.79.0:a0696f8")!!)
 
-    implementation(shadow("com.github.ReplayMod:ReplayStudio:6d59510")!!)
+    implementation(shadow("com.github.ReplayMod:ReplayStudio:5d17653db9")!!)
     // FIXME this should be pulled in by ReplayStudio, and IntelliJ sees it, but javac for some reason does not
     implementation("com.github.viaversion:opennbt:0a02214") // 2.0-SNAPSHOT (ViaVersion Edition)
 
@@ -164,6 +165,7 @@ dependencies {
 
     if (platform.isFabric) {
         val modMenuVersion = when {
+            mcVersion >= 12100 -> "11.0.0-rc.4"
             mcVersion >= 12006 -> "10.0.0-beta.1"
             mcVersion >= 12003 -> "9.0.0-pre.1"
             mcVersion >= 12002 -> "8.0.0"

@@ -6,7 +6,11 @@ import net.minecraft.client.render.RenderTickCounter;
 /**
  * A timer that does not advance by itself.
  */
+//#if MC>=12100
+//$$ public class ReplayTimer extends RenderTickCounter.Dynamic {
+//#else
 public class ReplayTimer extends RenderTickCounter {
+//#endif
     //#if MC>=11600
     public int ticksThisFrame;
     //#endif
@@ -37,12 +41,27 @@ public class ReplayTimer extends RenderTickCounter {
             //#if MC>=11400
             long sysClock
             //#endif
+            //#if MC>=12100
+            //$$ , boolean tick
+            //#endif
     ) {
+        //#if MC>=12100
+        //$$ if (!tick) return 0;
+        //#endif
         UpdatedCallback.EVENT.invoker().onUpdate();
         //#if MC>=11600
         return ticksThisFrame;
         //#endif
     }
+
+    //#if MC>=12100
+    //$$ public float tickDelta;
+    //$$
+    //$$ @Override
+    //$$ public float getTickDelta(boolean bl) {
+    //$$     return tickDelta;
+    //$$ }
+    //#endif
 
     public interface UpdatedCallback {
         Event<UpdatedCallback> EVENT = Event.create((listeners) ->

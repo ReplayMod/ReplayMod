@@ -35,7 +35,11 @@ public abstract class Mixin_Stereoscopic_Camera implements EntityRendererHandler
     }
 
     //#if MC>=12005
+    //#if MC>=12100
+    //$$ @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotation(Lorg/joml/Quaternionfc;)Lorg/joml/Matrix4f;"))
+    //#else
     //$$ @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"))
+    //#endif
     //$$ private Matrix4f replayModRender_setupStereoscopicProjection(Matrix4f matrix) {
     //#else
     @Inject(method = "renderWorld", at = @At("HEAD"))

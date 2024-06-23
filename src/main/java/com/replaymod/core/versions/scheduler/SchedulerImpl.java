@@ -9,6 +9,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+//#if MC>=12100
+//$$ import net.minecraft.util.crash.ReportType;
+//#endif
+
 public class SchedulerImpl implements  Scheduler {
     private static final MinecraftClient mc = MinecraftClient.getInstance();
 
@@ -113,7 +117,11 @@ public class SchedulerImpl implements  Scheduler {
                     runnable.run();
                 } catch (CrashException e) {
                     e.printStackTrace();
+                    //#if MC>=12100
+                    //$$ System.err.println(e.getReport().asString(ReportType.MINECRAFT_CRASH_REPORT));
+                    //#else
                     System.err.println(e.getReport().asString());
+                    //#endif
                     mc.setCrashReport(e.getReport());
                 } finally {
                     inRunLater = false;

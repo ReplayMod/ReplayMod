@@ -454,13 +454,15 @@ public class MCVer {
                 //#if MC>=11700
                 //$$ .normal(n.x, n.y, n.z)
                 //#endif
-                .next();
+                ;
+        buffer.next();
         buffer.vertex(p2.x, p2.y, p2.z)
                 .color(r, g, b, a)
                 //#if MC>=11700
                 //$$ .normal(n.x, n.y, n.z)
                 //#endif
-                .next();
+                ;
+        buffer.next();
     }
 
     public static void bindTexture(Identifier id) {

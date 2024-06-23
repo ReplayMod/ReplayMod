@@ -22,7 +22,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinCamera {
     @Shadow @Final private MinecraftClient client;
     //#if MC>=12005
+    //#if MC>=12100
+    //$$ @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotation(Lorg/joml/Quaternionfc;)Lorg/joml/Matrix4f;"))
+    //#else
     //$$ @ModifyExpressionValue(method = "renderWorld", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"))
+    //#endif
     //$$ private Matrix4f applyRoll(Matrix4f matrix) {
     //#else
     @Inject(

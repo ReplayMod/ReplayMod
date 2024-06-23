@@ -10,6 +10,7 @@ import net.minecraft.network.PacketByteBuf;
 
 //#if MC>=10904
 import net.minecraft.util.Identifier;
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
 //#endif
 
 //#if MC<=10710 || MC>=12002
@@ -22,7 +23,7 @@ import net.minecraft.util.Identifier;
  */
 public class Restrictions {
     //#if MC>=11400
-    public static final Identifier PLUGIN_CHANNEL = new Identifier("replaymod", "restrict");
+    public static final Identifier PLUGIN_CHANNEL = identifier("replaymod", "restrict");
     //#else
     //$$ public static final String PLUGIN_CHANNEL = "Replay|Restrict";
     //#endif
@@ -77,7 +78,7 @@ public class Restrictions {
     }
 
     //#if MC>=12006
-    //$$ public static final CustomPayload.Id<Payload> ID = CustomPayload.id(PLUGIN_CHANNEL.toString());
+    //$$ public static final CustomPayload.Id<Payload> ID = new CustomPayload.Id<>(PLUGIN_CHANNEL);
     //$$ public static final PacketCodec<? super PacketByteBuf, Payload> CODEC = PacketCodec.ofStatic(
     //$$         (buf, payload) -> buf.writeBytes(payload.bytes()),
     //$$         buf -> {

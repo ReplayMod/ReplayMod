@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import static com.replaymod.core.ReplayMod.MOD_ID;
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
 //#else
 //$$ import net.minecraftforge.fml.client.registry.ClientRegistry;
 //#endif
@@ -66,7 +67,7 @@ public class KeyBindingRegistry extends EventRegistrations {
             if (keyCode == 0) {
                 keyCode = -1;
             }
-            Identifier id = new Identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
+            Identifier id = identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
             //#if MC>=11600
             String key = String.format("key.%s.%s", id.getNamespace(), id.getPath());
             KeyBinding keyBinding = new KeyBinding(key, InputUtil.Type.KEYSYM, keyCode, CATEGORY);

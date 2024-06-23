@@ -27,8 +27,10 @@ import net.minecraft.client.texture.NativeImage;
 
 import java.nio.ByteBuffer;
 
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
+
 public class GuiVideoRenderer extends GuiScreen implements Tickable {
-    private static final Identifier NO_PREVIEW_TEXTURE = new Identifier("replaymod", "logo.png");
+    private static final Identifier NO_PREVIEW_TEXTURE = identifier("replaymod", "logo.png");
 
     private final VideoRenderer renderer;
 

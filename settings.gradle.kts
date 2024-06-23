@@ -12,7 +12,7 @@ pluginManagement {
     }
     plugins {
         id("gg.essential.multi-version.root") version "0.6.1"
-        id("com.github.johnrengelman.shadow") version "8.1.1"
+        id("io.github.goooler.shadow") version "8.1.7"
     }
 }
 
@@ -39,6 +39,7 @@ val jGuiVersions = listOf(
         "1.20.2",
         "1.20.4",
         "1.20.6",
+        "1.21",
 )
 val replayModVersions = listOf(
         // "1.7.10",
@@ -68,6 +69,7 @@ val replayModVersions = listOf(
         "1.20.2",
         "1.20.4",
         "1.20.6",
+        "1.21",
 )
 
 rootProject.buildFileName = "root.gradle.kts"

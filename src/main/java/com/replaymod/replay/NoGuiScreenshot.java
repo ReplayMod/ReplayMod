@@ -11,6 +11,10 @@ import net.minecraft.client.util.ScreenshotUtils;
 import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
 
+//#if MC>=12100
+//$$ import net.minecraft.client.render.RenderTickCounter;
+//#endif
+
 //#if MC>=11500
 import net.minecraft.client.util.math.MatrixStack;
 //#endif
@@ -73,6 +77,9 @@ public class NoGuiScreenshot {
                     GlStateManager.enableTexture();
                     //#endif
 
+                    //#if MC>=12100
+                    //$$ mc.gameRenderer.renderWorld(RenderTickCounter.ONE);
+                    //#else
                     float tickDelta = mc.getTickDelta();
                     //#if MC>=12006
                     //$$ mc.gameRenderer.renderWorld(tickDelta, System.nanoTime());
@@ -86,6 +93,7 @@ public class NoGuiScreenshot {
                     //$$ mc.entityRenderer.updateCameraAndRender(tickDelta, System.nanoTime());
                     //#else
                     //$$ mc.entityRenderer.updateCameraAndRender(tickDelta);
+                    //#endif
                     //#endif
                     //#endif
                     //#endif

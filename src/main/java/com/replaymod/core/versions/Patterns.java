@@ -46,6 +46,7 @@ import org.lwjgl.opengl.GL11;
 //#endif
 
 //#if MC>=11600
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Matrix4f;
@@ -367,6 +368,9 @@ class Patterns {
         //#endif
     }
 
+    //#if MC>=12100
+    //$$ @Pattern private static void Tessellator_getBuffer() {}
+    //#else
     @Pattern
     private static BufferBuilder Tessellator_getBuffer(Tessellator tessellator) {
         //#if MC>=10800
@@ -375,6 +379,20 @@ class Patterns {
         //$$ return new BufferBuilder(tessellator);
         //#endif
     }
+    //#endif
+
+    //#if MC>=11600
+    @Pattern
+    private static void VertexConsumer_next(VertexConsumer buffer) {
+        //#if MC>=12100
+        //$$ buffer./*next()*/getClass();
+        //#else
+        buffer.next();
+        //#endif
+    }
+    //#else
+    //$$ private static void VertexConsumer_next() {}
+    //#endif
 
     //#if MC<11700
     @Pattern
@@ -477,7 +495,9 @@ class Patterns {
 
     @Pattern
     private static float getRenderPartialTicks(MinecraftClient mc) {
-        //#if MC>=10900
+        //#if MC>=12100
+        //$$ return mc.getRenderTickCounter().getTickDelta(true);
+        //#elseif MC>=10900
         return mc.getTickDelta();
         //#else
         //$$ return ((com.replaymod.core.mixin.MinecraftAccessor) mc).getTimer().renderPartialTicks;
@@ -524,7 +544,7 @@ class Patterns {
         //#endif
     }
 
-    //#if MC>=11600
+    //#if MC>=11600 && MC<12100
     @Pattern
     private static void BufferBuilder_beginLineStrip(BufferBuilder buffer, VertexFormat vertexFormat) {
         //#if MC>=11700

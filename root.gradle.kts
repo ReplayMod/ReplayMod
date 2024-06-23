@@ -202,6 +202,7 @@ val doRelease by tasks.registering {
 defaultTasks("bundleJar")
 
 preprocess {
+    val mc12100 = createNode("1.21", 12100, "yarn")
     val mc12006 = createNode("1.20.6", 12006, "yarn")
     val mc12004 = createNode("1.20.4", 12004, "yarn")
     val mc12002 = createNode("1.20.2", 12002, "yarn")
@@ -230,6 +231,7 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc12100.link(mc12006)
     mc12006.link(mc12004)
     mc12004.link(mc12002, file("versions/mapping-fabric-1.20.4-1.20.2.txt"))
     mc12002.link(mc12001)
