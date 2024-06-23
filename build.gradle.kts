@@ -156,7 +156,13 @@ dependencies {
 
     implementation(shadow("com.github.ReplayMod.JavaBlend:2.79.0:a0696f8")!!)
 
-    implementation(shadow("com.github.ReplayMod:ReplayStudio:5d17653db9")!!)
+    implementation(shadow("com.github.ReplayMod:ReplayStudio") {
+        attributes {
+            // Force use of jar (as opposed to classes directory) because only the jar contains the relocated ViaVersion
+            // Doesn't seem to work for IDE though, so will have to publishToMavenLocal it for that.
+            attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
+        }
+    })
     // FIXME this should be pulled in by ReplayStudio, and IntelliJ sees it, but javac for some reason does not
     implementation("com.github.viaversion:opennbt:0a02214") // 2.0-SNAPSHOT (ViaVersion Edition)
 
