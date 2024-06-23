@@ -24,10 +24,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-//#if MC>=11200
-import com.replaymod.core.utils.WrappedTimer;
-//#endif
-
+import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 import static com.replaymod.core.versions.MCVer.getPacketTypeRegistry;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
@@ -164,7 +161,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
         TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK / (float) factor);
+        timer.setTickLength(DEFAULT_MS_PER_TICK / (float) factor);
         //#else
         //$$ timer.setTimerSpeed((float) factor);
         //#endif

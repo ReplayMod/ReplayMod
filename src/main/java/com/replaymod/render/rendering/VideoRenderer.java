@@ -3,7 +3,6 @@ package com.replaymod.render.rendering;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
-import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
 import com.replaymod.pathing.properties.TimestampProperty;
@@ -85,6 +84,7 @@ import java.util.concurrent.FutureTask;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Iterables.getLast;
+import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -207,7 +207,7 @@ public class VideoRenderer implements RenderInfo {
                 int replayTime = videoStart - 1000;
                 //#if MC>=11200
                 timer.tickDelta = 0;
-                ((TimerAccessor) timer).setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK);
+                ((TimerAccessor) timer).setTickLength(DEFAULT_MS_PER_TICK);
                 //#else
                 //$$ timer.elapsedPartialTicks = timer.renderPartialTicks = 0;
                 //$$ timer.timerSpeed = 1;

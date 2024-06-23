@@ -7,11 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(RenderTickCounter.class)
 public interface TimerAccessor {
-    @Accessor("prevTimeMillis")
-    long getLastSyncSysClock();
-    @Accessor("prevTimeMillis")
-    void setLastSyncSysClock(long value);
-
     //#if MC>=11200
     @Accessor("tickTime")
     float getTickLength();
@@ -23,25 +18,5 @@ public interface TimerAccessor {
     //$$ float getTimerSpeed();
     //$$ @Accessor
     //$$ void setTimerSpeed(float value);
-    //$$ @Accessor
-    //$$ float getTicksPerSecond();
-    //$$ @Accessor
-    //$$ void setTicksPerSecond(float value);
-    //$$ @Accessor
-    //$$ double getLastHRTime();
-    //$$ @Accessor
-    //$$ void setLastHRTime(double value);
-    //$$ @Accessor
-    //$$ long getLastSyncHRClock();
-    //$$ @Accessor
-    //$$ void setLastSyncHRClock(long value);
-    //$$ @Accessor
-    //$$ double getTimeSyncAdjustment();
-    //$$ @Accessor
-    //$$ void setTimeSyncAdjustment(double value);
-    //$$ @Accessor
-    //$$ long getCounter();
-    //$$ @Accessor
-    //$$ void setCounter(long value);
     //#endif
 }

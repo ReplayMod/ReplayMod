@@ -117,7 +117,6 @@ import net.minecraft.util.Identifier;
 //#endif
 
 //#if MC>=11200
-import com.replaymod.core.utils.WrappedTimer;
 import net.minecraft.network.packet.s2c.play.AdvancementUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.SelectAdvancementTabS2CPacket;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
@@ -152,6 +151,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replaystudio.util.Utils.readInt;
 
@@ -985,7 +985,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
         }
         TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK / (float) d);
+        timer.setTickLength(DEFAULT_MS_PER_TICK / (float) d);
         //#else
         //$$ timer.setTimerSpeed((float) d);
         //#endif

@@ -10,7 +10,6 @@ import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
 import com.replaymod.core.utils.Restrictions;
 import com.replaymod.core.utils.Utils;
-import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replay.camera.SpectatorCameraController;
 import com.replaymod.replay.events.ReplayClosedCallback;
@@ -124,6 +123,7 @@ import net.minecraft.network.NetworkSide;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -263,7 +263,7 @@ public class ReplayHandler {
 
         TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK);
+        timer.setTickLength(DEFAULT_MS_PER_TICK);
         //#else
         //$$ timer.setTimerSpeed(1);
         //#endif

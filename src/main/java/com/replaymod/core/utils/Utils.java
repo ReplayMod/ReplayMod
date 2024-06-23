@@ -71,6 +71,8 @@ import static com.replaymod.core.versions.MCVer.getMinecraft;
 public class Utils {
     private static Logger LOGGER = LogManager.getLogger();
 
+    public static final float DEFAULT_MS_PER_TICK = 1000 / 20;
+
     private static InputStream getResourceAsStream(String path) {
         return Utils.class.getResourceAsStream(path);
     }
