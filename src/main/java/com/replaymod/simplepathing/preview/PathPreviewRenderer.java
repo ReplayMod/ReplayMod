@@ -254,7 +254,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
         //#endif
 
-        emitLine(buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
+        emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
 
         //#if MC>=11700
         //$$ RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
@@ -350,7 +350,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
         //#endif
 
-        emitLine(buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa);
+        emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa);
 
         //#if MC>=11700
         //$$ RenderSystem.applyModelViewMatrix();
