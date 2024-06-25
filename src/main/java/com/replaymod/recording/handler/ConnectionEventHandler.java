@@ -158,8 +158,9 @@ public class ConnectionEventHandler {
             packetListener = new PacketListener(core, channel, outputPath, replayFile, metaData);
 
             //#if MC>=12005
-            //$$ channel.pipeline().addBefore("inbound_config", PacketListener.RAW_RECORDER_KEY, packetListener);
-            //$$ channel.pipeline().addAfter("inbound_config", PacketListener.DECODED_RECORDER_KEY, packetListener.new DecodedPacketListener());
+            //$$ String target = channel.pipeline().get("inbound_config") != null ? "inbound_config" : PacketListener.DECODER_KEY;
+            //$$ channel.pipeline().addBefore(target, PacketListener.RAW_RECORDER_KEY, packetListener);
+            //$$ channel.pipeline().addAfter(target, PacketListener.DECODED_RECORDER_KEY, packetListener.new DecodedPacketListener());
             //#else
             if (channel.pipeline().get(PacketListener.DECODER_KEY) != null) {
                 // Regular channel, we'll inject our recorder directly before the decoder
