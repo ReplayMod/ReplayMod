@@ -74,7 +74,7 @@ val replayModVersions = listOf(
 
 rootProject.buildFileName = "root.gradle.kts"
 
-includeBuild("ReplayStudio")
+includeBuild("libs/ReplayStudio")
 
 include(":jGui")
 project(":jGui").apply {
