@@ -34,8 +34,7 @@ subprojects {
             maven("https://jitpack.io")
         }
     }
-
-    if (name == "jGui") {
+    if (name == "jGui" || name == "ReplayStudio") {
         return@subprojects
     }
     val (_, minor) = name.split("-")[0].split(".")
