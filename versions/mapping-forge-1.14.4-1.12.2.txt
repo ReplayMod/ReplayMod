@@ -8,7 +8,7 @@ net.minecraft.resources.IResourceManager net.minecraft.client.resources.IResourc
 net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository
 net.minecraft.client.renderer.chunk.ChunkRenderTask net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator
 net.minecraft.client.settings.AbstractOption net.minecraft.client.settings.GameSettings.Options
-net.minecraft.client.settings.AbstractOption func_216728_a() setValueMax()
+net.minecraft.client.settings.SliderPercentageOption func_216728_a() net.minecraft.client.settings.GameSettings.Options setValueMax()
 net.minecraftforge.eventbus.api.SubscribeEvent net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 net.minecraftforge.eventbus.api.EventPriority net.minecraftforge.fml.common.eventhandler.EventPriority
 net.minecraftforge.eventbus.api.Cancelable net.minecraftforge.fml.common.eventhandler.Cancelable
@@ -25,13 +25,12 @@ net.minecraft.client.audio.SimpleSound net.minecraft.client.audio.PositionedSoun
 net.minecraft.client.gui.IngameGui net.minecraft.client.gui.GuiIngame
 net.minecraft.util.HandSide net.minecraft.util.EnumHandSide
 
-net.minecraft.resources.FolderPack getInputStream() getInputStreamByName()
-net.minecraft.client.gui.GuiYesNoCallback confirmResult() confirmClicked()
+net.minecraft.resources.ResourcePack getInputStream() net.minecraft.client.resources.AbstractResourcePack getInputStreamByName()
 net.minecraft.util.text.ITextComponent getString() getUnformattedText()
-net.minecraft.network.play.server.SPacketRespawn func_212643_b() getDimensionID()
 net.minecraft.client.Minecraft getPackFinder() getResourcePackRepository()
-net.minecraft.entity.Entity getPositionVec() getPositionVector()
+net.minecraft.entity.Entity getPositionVec() net.minecraft.command.ICommandSender getPositionVector()
 
+net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent
 net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent addWidget() addButton()
 net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent removeWidget() removeButton()
 net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent getWidgetList() getButtonList()
@@ -110,7 +109,7 @@ net.minecraft.client.gui.screen.WorldSelectionScreen net.minecraft.client.gui.Gu
 # Note: GuiButton has been split into Button and Widget (now shared with e.g. checkboxes),
 #       most members are actually on the latter (there's also AbstractButton in the middle, but it isn't interesting)
 net.minecraft.client.gui.widget.Widget net.minecraft.client.gui.GuiButton
-net.minecraft.client.gui.widget.button.AbstractButton active net.minecraft.client.gui.GuiButton enabled
+net.minecraft.client.gui.widget.Widget active net.minecraft.client.gui.GuiButton enabled
 net.minecraft.client.gui.screen.MainMenuScreen net.minecraft.client.gui.GuiMainMenu
 net.minecraft.client.gui.screen.MainMenuScreen realmsNotificationGui realmsNotification
 net.minecraft.realms.RealmsScreenProxy net.minecraft.client.gui.GuiScreenRealmsProxy
@@ -162,10 +161,6 @@ com.mojang.blaze3d.platform.GlStateManager.Texture2DState capState texture2DStat
 net.minecraft.SharedConstants isValidChar() isAllowedCharacter()
 net.minecraft.SharedConstants net.minecraft.util.SharedConstants
 net.minecraft.server.MinecraftServer getLevelName() getWorldName()
-com.replaymod.core.versions.MCVer.Keyboard onKey() onKeyEvent()
-com.replaymod.core.versions.MCVer.Keyboard pollDebugCrash() tick()
-com.replaymod.core.versions.MCVer.Keyboard getClipboard() getClipboardString()
-com.replaymod.core.versions.MCVer.Keyboard setClipboard() setClipboardString()
 net.minecraft.client.gui.screen.ConfirmScreen net.minecraft.client.gui.GuiYesNo
 net.minecraft.client.Mouse getX() getMouseX()
 net.minecraft.client.Mouse getY() getMouseY()
@@ -181,7 +176,7 @@ net.minecraft.client.gui.DrawableHelper fill() drawRect()
 net.minecraft.client.gui.DrawableHelper net.minecraft.client.gui.Gui
 net.minecraft.client.gui.screen.Screen hasControlDown() isCtrlKeyDown()
 net.minecraft.client.gui.screen.Screen hasShiftDown() isShiftKeyDown()
-net.minecraft.client.gui.screen.Screen init() setWorldAndResolution()
+net.minecraft.client.gui.screen.Screen init(Lnet/minecraft/client/Minecraft;II)V setWorldAndResolution()
 net.minecraft.client.gui.screen.Screen minecraft mc
 net.minecraft.client.gui.screen.Screen net.minecraft.client.gui.GuiScreen
 net.minecraft.client.gui.screen.Screen resize() onResize()
@@ -308,13 +303,9 @@ net.minecraft.network.login.server.SCustomPayloadLoginPacket net.minecraft.netwo
 net.minecraft.network.login.server.SEnableCompressionPacket net.minecraft.network.login.server.SPacketEnableCompression
 net.minecraft.network.login.server.SLoginSuccessPacket net.minecraft.network.login.server.SPacketLoginSuccess
 net.minecraft.network.play.server.SJoinGamePacket net.minecraft.network.play.server.SPacketJoinGame
-net.minecraft.client.network.packet.GameJoinS2CPacket getEntityId() getPlayerId()
-net.minecraft.client.network.packet.GameJoinS2CPacket getDimension() func_212642_e()
-net.minecraft.client.network.packet.GameJoinS2CPacket getDifficulty() getDifficulty()
 net.minecraft.network.play.server.SChatPacket net.minecraft.network.play.server.SPacketChat
 net.minecraft.network.play.server.SSpawnParticlePacket net.minecraft.network.play.server.SPacketParticles
 net.minecraft.network.play.server.SChangeGameStatePacket net.minecraft.network.play.server.SPacketChangeGameState
-net.minecraft.client.network.packet.GameStateChangeS2CPacket getReason() getGameState()
 net.minecraft.network.play.server.SPlayerPositionLookPacket net.minecraft.network.play.server.SPacketPlayerPosLook
 net.minecraft.network.play.server.SPlayerPositionLookPacket.Flag net.minecraft.network.play.server.SPacketPlayerPosLook.EnumFlags
 net.minecraft.network.play.server.SPlayerListItemPacket net.minecraft.network.play.server.SPacketPlayerListItem
@@ -322,13 +313,8 @@ net.minecraft.network.play.server.SPlayerListItemPacket.Action net.minecraft.net
 net.minecraft.network.play.server.SPlayerListItemPacket.Entry net.minecraft.network.play.server.SPacketPlayerListItem.AddPlayerData
 net.minecraft.network.play.server.SRespawnPacket net.minecraft.network.play.server.SPacketRespawn
 net.minecraft.network.play.server.SSpawnPlayerPacket net.minecraft.network.play.server.SPacketSpawnPlayer
-net.minecraft.client.network.packet.PlayerSpawnS2CPacket getPlayerUuid() getUniqueId()
-net.minecraft.client.network.packet.PlayerSpawnS2CPacket getTrackedValues() getDataManagerEntries()
-net.minecraft.client.network.packet.PlayerSpawnS2CPacket dataTracker watcher
 net.minecraft.network.play.server.SSpawnObjectPacket net.minecraft.network.play.server.SPacketSpawnObject
 net.minecraft.network.play.server.SSpawnMobPacket net.minecraft.network.play.server.SPacketSpawnMob
-net.minecraft.client.network.packet.MobSpawnS2CPacket getTrackedValues() getDataManagerEntries()
-net.minecraft.client.network.packet.MobSpawnS2CPacket dataTracker dataManager
 net.minecraft.network.play.server.SSpawnGlobalEntityPacket net.minecraft.network.play.server.SPacketSpawnGlobalEntity
 net.minecraft.network.play.server.SSpawnPaintingPacket net.minecraft.network.play.server.SPacketSpawnPainting
 net.minecraft.network.play.server.SSpawnExperienceOrbPacket net.minecraft.network.play.server.SPacketSpawnExperienceOrb
@@ -339,15 +325,11 @@ net.minecraft.network.play.server.SEntityVelocityPacket net.minecraft.network.pl
 net.minecraft.network.play.server.SMountEntityPacket net.minecraft.network.play.server.SPacketEntityAttach
 net.minecraft.network.play.server.SAnimateHandPacket net.minecraft.network.play.server.SPacketAnimation
 net.minecraft.network.play.server.SCollectItemPacket net.minecraft.network.play.server.SPacketCollectItem
-net.minecraft.client.network.packet.ItemPickupAnimationS2CPacket getEntityId() getEntityID()
 net.minecraft.network.play.server.SAnimateBlockBreakPacket net.minecraft.network.play.server.SPacketBlockBreakAnim
 net.minecraft.network.play.client.CResourcePackStatusPacket net.minecraft.network.play.client.CPacketResourcePackStatus
 net.minecraft.network.play.client.CResourcePackStatusPacket.Status net.minecraft.network.play.client.CPacketResourcePackStatus.Action
 net.minecraft.network.play.server.SSendResourcePackPacket net.minecraft.network.play.server.SPacketResourcePackSend
-net.minecraft.client.network.packet.ResourcePackSendS2CPacket getSHA1() getHash()
 net.minecraft.network.play.server.SCustomPayloadPlayPacket net.minecraft.network.play.server.SPacketCustomPayload
-net.minecraft.client.network.packet.CustomPayloadS2CPacket getChannel() getChannelName()
-net.minecraft.client.network.packet.CustomPayloadS2CPacket getData() getBufferData()
 net.minecraft.network.play.server.SDisconnectPacket net.minecraft.network.play.server.SPacketDisconnect
 net.minecraft.network.login.server.SLoginSuccessPacket net.minecraft.network.login.server.SPacketLoginSuccess
 net.minecraft.network.play.server.SUpdateRecipesPacket net.minecraft.network.play.server.SPacketRecipeBook
